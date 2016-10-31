@@ -62,6 +62,7 @@ private:
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
     void UpdateClipCursor();
+    void DoSetFocus(Window* window, bool focusState);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);

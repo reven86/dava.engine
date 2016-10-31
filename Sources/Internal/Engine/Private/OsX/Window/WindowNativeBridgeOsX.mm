@@ -114,6 +114,8 @@ void WindowNativeBridge::WindowDidBecomeKey()
 
 void WindowNativeBridge::WindowDidResignKey()
 {
+    SetSystemCursorVisible(false);
+    SetSystemCursorCapture(false);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
     if (isAppHidden)
     {
@@ -304,13 +306,11 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
             break;
         case DAVA::eCursorCapture::PINNING:
         {
-            SetCursorVisibility(false);
             SetSystemCursorCapture(true);
             break;
         }
         case DAVA::eCursorCapture::OFF:
         {
-            SetCursorVisibility(true);
             SetSystemCursorCapture(false);
             break;
         }

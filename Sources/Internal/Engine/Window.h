@@ -156,6 +156,7 @@ private:
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
     bool deferredCursorCaptureOn = false;
+    bool skipMouseUpEvent = false;
     // Friends
     friend class Private::EngineBackend;
     friend class Private::PlatformCore;

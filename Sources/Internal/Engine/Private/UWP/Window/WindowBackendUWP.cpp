@@ -108,11 +108,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
-    //for now, eCursorCapture::FRAME not supported
-    if (eCursorCapture::FRAME != mode)
-    {
-        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
-    }
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
 }
 
 void WindowBackend::SetCursorVisibility(bool visible)

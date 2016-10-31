@@ -111,11 +111,7 @@ void WindowBackend::TriggerPlatformEvents()
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
-    //for now, eCursorCapture::FRAME not supported
-    if (eCursorCapture::FRAME != mode)
-    {
-        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
-    }
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
 }
 
 void WindowBackend::SetCursorVisibility(bool visible)
@@ -195,13 +191,11 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
             lastCursorPosition.x = p.x;
             lastCursorPosition.y = p.y;
             SetCursorInCenter();
-            DoSetCursorVisibility(false);
             break;
         }
         case eCursorCapture::OFF:
         {
             ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
-            DoSetCursorVisibility(true);
             break;
         }
         }
@@ -220,6 +214,16 @@ void WindowBackend::UpdateClipCursor()
         ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect) + 1);
         ::ClipCursor(&rect);
     }
+}
+
+void WindowBackend::DoSetFocus(Window* window, bool focusState)
+{
+    if (!focusState)
+    {
+        DoSetCursorCapture(eCursorCapture::OFF);
+        DoSetCursorVisibility(true);
+    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
 }
 
 void WindowBackend::DoSetCursorVisibility(bool visible)
@@ -288,7 +292,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         if (hasFocus)
         {
             hasFocus = false;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+            DoSetFocus(window, hasFocus);
         }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
@@ -341,7 +345,7 @@ LRESULT WindowBackend::OnActivate(WPARAM wparam)
             isMinimized = false;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
         }
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+        DoSetFocus(window, hasFocus);
     }
     return 0;
 }
