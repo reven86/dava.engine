@@ -9,11 +9,6 @@
 #include <Logger/Logger.h>
 #include <Utils/NSStringUtils.h>
 
-void NativeDelegateMac::applicationWillFinishLaunching()
-{
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::applicationWillFinishLaunching");
-}
-
 void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notification)
 {
     using namespace DAVA;
@@ -63,6 +58,13 @@ void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application,
 void NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken)
 {
     DAVA::Logger::Debug("TestBedMacNativeDelegate::didRegisterForRemoteNotificationsWithDeviceToken");
+}
+
+void NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error)
+{
+    using namespace DAVA;
+    String descr = StringFromNSString([error localizedDescription]);
+    DAVA::Logger::Debug("TestBedMacNativeDelegate::didFailToRegisterForRemoteNotificationsWithError: %s", descr.c_str());
 }
 
 #endif // __DAVAENGINE_MACOS__

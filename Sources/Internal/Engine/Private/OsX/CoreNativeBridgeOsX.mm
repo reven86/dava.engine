@@ -135,7 +135,6 @@ void CoreNativeBridge::OnFrameTimer()
 
 void CoreNativeBridge::ApplicationWillFinishLaunching()
 {
-    NotifyListeners(ON_WILL_FINISH_LAUNCHING, nullptr, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
@@ -241,9 +240,6 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         ++i;
         switch (type)
         {
-        case ON_WILL_FINISH_LAUNCHING:
-            l->applicationWillFinishLaunching();
-            break;
         case ON_DID_FINISH_LAUNCHING:
             l->applicationDidFinishLaunching(static_cast<NSNotification*>(arg1));
             break;
@@ -261,6 +257,9 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             break;
         case ON_DID_REGISTER_REMOTE_NOTIFICATION:
             l->didRegisterForRemoteNotificationsWithDeviceToken(static_cast<NSApplication*>(arg1), static_cast<NSData*>(arg2));
+            break;
+        case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
+            l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
             break;
         default:
             break;

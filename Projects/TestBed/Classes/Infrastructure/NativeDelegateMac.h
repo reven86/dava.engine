@@ -10,7 +10,6 @@
 
 struct NativeDelegateMac : public DAVA::NSApplicationDelegateListener
 {
-    void applicationWillFinishLaunching() override;
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;
     void applicationDidResignActive() override;
@@ -18,6 +17,7 @@ struct NativeDelegateMac : public DAVA::NSApplicationDelegateListener
 
     void didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo) override;
     void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken) override;
+    void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error) override;
 };
 
 #endif // __DAVAENGINE_MACOS__

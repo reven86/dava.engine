@@ -53,13 +53,13 @@ struct CoreNativeBridge final
 
     enum eNotificationType
     {
-        ON_WILL_FINISH_LAUNCHING,
         ON_DID_FINISH_LAUNCHING,
         ON_DID_BECOME_ACTIVE,
         ON_DID_RESIGN_ACTIVE,
         ON_WILL_TERMINATE,
         ON_DID_RECEIVE_REMOTE_NOTIFICATION,
         ON_DID_REGISTER_REMOTE_NOTIFICATION,
+        ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION,
     };
     void NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3);
 

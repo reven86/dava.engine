@@ -10,6 +10,7 @@ DAVA_FORWARD_DECLARE_OBJC_CLASS(NSApplication);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSNotification);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSData);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(NSError);
 
 namespace DAVA
 {
@@ -26,9 +27,6 @@ struct NSApplicationDelegateListener
 {
     virtual ~NSApplicationDelegateListener() = default;
 
-    virtual void applicationWillFinishLaunching()
-    {
-    }
     virtual void applicationDidFinishLaunching(NSNotification* notification)
     {
     }
@@ -46,6 +44,9 @@ struct NSApplicationDelegateListener
     {
     }
     virtual void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken)
+    {
+    }
+    virtual void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error)
     {
     }
 };
