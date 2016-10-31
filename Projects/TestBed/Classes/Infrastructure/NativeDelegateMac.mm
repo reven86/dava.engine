@@ -13,7 +13,7 @@ void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notificati
 {
     using namespace DAVA;
     String name = StringFromNSString([notification name]);
-    Logger::Debug("TestBedMacNativeDelegate::applicationDidFinishLaunching: enter");
+    Logger::Debug("TestBed.NativeDelegateMac::applicationDidFinishLaunching: enter");
     Logger::Debug("    notification name=%s", name.c_str());
     Logger::Debug("    notification dictionary:");
     NSDictionary* dict = [notification userInfo];
@@ -23,28 +23,28 @@ void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notificati
         String d = StringFromNSString([dict[key] description]);
         Logger::Debug("        %s: %d", k.c_str(), d.c_str());
     }
-    Logger::Debug("TestBedMacNativeDelegate::applicationDidFinishLaunching: leave");
+    Logger::Debug("TestBed.NativeDelegateMac::applicationDidFinishLaunching: leave");
 }
 
 void NativeDelegateMac::applicationDidBecomeActive()
 {
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::applicationDidBecomeActive");
+    DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationDidBecomeActive");
 }
 
 void NativeDelegateMac::applicationDidResignActive()
 {
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::applicationDidResignActive");
+    DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationDidResignActive");
 }
 
 void NativeDelegateMac::applicationWillTerminate()
 {
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::applicationWillTerminate");
+    DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationWillTerminate");
 }
 
 void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo)
 {
     using namespace DAVA;
-    Logger::Debug("TestBedMacNativeDelegate::didReceiveRemoteNotification: enter");
+    Logger::Debug("TestBed.NativeDelegateMac::didReceiveRemoteNotification: enter");
     Logger::Debug("    dictionary:");
     for (NSString* key in userInfo)
     {
@@ -52,19 +52,19 @@ void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application,
         String d = StringFromNSString([userInfo[key] description]);
         Logger::Debug("        %s: %d", k.c_str(), d.c_str());
     }
-    Logger::Debug("TestBedMacNativeDelegate::didReceiveRemoteNotification: leave");
+    Logger::Debug("TestBed.NativeDelegateMac::didReceiveRemoteNotification: leave");
 }
 
 void NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken)
 {
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::didRegisterForRemoteNotificationsWithDeviceToken");
+    DAVA::Logger::Debug("TestBed.NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken");
 }
 
 void NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error)
 {
     using namespace DAVA;
     String descr = StringFromNSString([error localizedDescription]);
-    DAVA::Logger::Debug("TestBedMacNativeDelegate::didFailToRegisterForRemoteNotificationsWithError: %s", descr.c_str());
+    DAVA::Logger::Debug("TestBed.NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError: %s", descr.c_str());
 }
 
 #endif // __DAVAENGINE_MACOS__

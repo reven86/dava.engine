@@ -39,6 +39,7 @@
 #endif
 
 #include "Infrastructure/NativeDelegateMac.h"
+#include "Infrastructure/NativeDelegateIos.h"
 
 void CheckDeviceInfoValid();
 
@@ -98,6 +99,9 @@ TestBed::TestBed(Engine& engine)
 #elif defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset(new NativeDelegateMac());
     engine.GetNativeService()->RegisterNSApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_IPHONE__)
+    nativeDelegate.reset(new NativeDelegateIos());
+    engine.GetNativeService()->RegisterUIApplicationDelegateListener(nativeDelegate.get());
 #endif
 
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
@@ -157,6 +161,8 @@ void TestBed::OnGameLoopStopped()
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
     engine.GetNativeService()->UnregisterNSApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_IPHONE__)
+    engine.GetNativeService()->UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #endif
 }
 

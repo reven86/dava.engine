@@ -18,6 +18,7 @@ class TestData;
 class BaseScreen;
 class TestListScreen;
 class NativeDelegateMac;
+class NativeDelegateIos;
 
 class TestBed
 {
@@ -92,6 +93,8 @@ private:
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
     std::unique_ptr<NativeDelegateMac> nativeDelegate;
+#elif defined(__DAVAENGINE_IPHONE__)
+    std::unique_ptr<NativeDelegateIos> nativeDelegate;
 #endif
 };
 
