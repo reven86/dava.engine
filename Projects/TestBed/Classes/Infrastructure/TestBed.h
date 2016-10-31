@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Network/NetCore.h"
-#include "Network/PeerDesription.h"
-#include "Network/Services/NetLogger.h"
+#include <Network/NetCore.h>
+#include <Network/PeerDesription.h>
+#include <Network/Services/NetLogger.h>
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "Network/Services/MMNet/MMNetServer.h"
+#include <Network/Services/MMNet/MMNetServer.h>
 #endif
 
 namespace DAVA
@@ -17,6 +17,7 @@ class Window;
 class TestData;
 class BaseScreen;
 class TestListScreen;
+class NativeDelegateMac;
 
 class TestBed
 {
@@ -86,6 +87,12 @@ private:
     DAVA::Net::PeerDescription peerDescr;
 
     bool loggerInUse = false;
+    
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
+    std::unique_ptr<NativeDelegateMac> nativeDelegate;
+#endif
 };
 
 inline DAVA::Engine& TestBed::GetEngine() const

@@ -1,10 +1,12 @@
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/EngineModule.h"
+#include <Engine/EngineModule.h>
+#include <Engine/NativeService.h>
 
-#include "Platform/DateTime.h"
-#include "CommandLine/CommandLineParser.h"
-#include "Utils/Utils.h"
+#include <Platform/DateTime.h>
+#include <CommandLine/CommandLineParser.h>
+#include <Utils/Utils.h>
+
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
@@ -33,8 +35,10 @@
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "MemoryManager/MemoryProfiler.h"
+#include <MemoryManager/MemoryProfiler.h>
 #endif
+
+#include "Infrastructure/NativeDelegateMac.h"
 
 void CheckDeviceInfoValid();
 
@@ -89,6 +93,13 @@ TestBed::TestBed(Engine& engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
+    nativeDelegate.reset(new NativeDelegateMac());
+    engine.GetNativeService()->RegisterNSApplicationDelegateListener(nativeDelegate.get());
+#endif
+
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
     engine.gameLoopStopped.Connect(this, &TestBed::OnGameLoopStopped);
     engine.cleanup.Connect(this, &TestBed::OnEngineCleanup);
@@ -141,6 +152,12 @@ void TestBed::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
+    
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
+    engine.GetNativeService()->UnregisterNSApplicationDelegateListener(nativeDelegate.get());
+#endif
 }
 
 void TestBed::OnEngineCleanup()
@@ -152,8 +169,6 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
-    w->Resize(1024, 768);
-    w->SetTitle("TestBed");
 
     // TODO FullScreen
     //w->SetFullScreen(false);
