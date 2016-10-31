@@ -354,7 +354,7 @@ LRESULT WindowBackend::OnActivate(WPARAM wparam)
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseMoveDeltaEvent(uint16 keyModifiers, int x, int y)
+LRESULT WindowBackend::OnMouseMoveRelativeEvent(uint16 keyModifiers, int x, int y)
 {
     RECT clientRect;
     ::GetClientRect(hwnd, &clientRect);
