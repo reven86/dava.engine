@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#include "LocalNotificationImpl.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 #include "Base/Message.h"
 
