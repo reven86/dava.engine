@@ -3,7 +3,7 @@
 
 namespace DAVA
 {
-class ValueWrapperDirect : public PropertieWrapper
+class ValueWrapperDirect : public ValueWrapper
 {
 public:
     ValueWrapperDirect(const RttiType* type_)
@@ -56,7 +56,7 @@ public:
         return ret;
     }
 
-    ReflectedObject GetPropertieObject(const ReflectedObject& object) const override
+    ReflectedObject GetValueObject(const ReflectedObject& object) const override
     {
         return object;
     }

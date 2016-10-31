@@ -8,7 +8,8 @@ class ReflectionBase
 public:
     virtual const ReflectedType* GetReflectedType() const = 0;
 
-protected:
+private:
     virtual ~ReflectionBase() = default;
 };
+
 } // namespace DAVA

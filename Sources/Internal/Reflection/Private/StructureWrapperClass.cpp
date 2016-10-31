@@ -11,7 +11,7 @@ StructureWrapperClass::StructureWrapperClass(const RttiType* type)
 {
 }
 
-bool StructureWrapperClass::HasFields(const ReflectedObject& object, const PropertieWrapper* vw) const
+bool StructureWrapperClass::HasFields(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     bool ret = !fields.empty();
 
@@ -34,7 +34,7 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Prope
     return ret;
 }
 
-Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const PropertieWrapper* vw, const Any& key) const
+Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
     Reflection ret;
 
@@ -58,7 +58,7 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
         {
             if (it->first == name)
             {
-                ret = Reflection(vw->GetPropertieObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
+                ret = Reflection(vw->GetValueObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
 
                 break;
             }
@@ -87,7 +87,7 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
     return ret;
 }
 
-Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const PropertieWrapper* vw) const
+Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     Vector<Reflection::Field> ret;
 
@@ -110,7 +110,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
         Reflection::Field rf;
 
         rf.key = it.first;
-        rf.ref = Reflection(vw->GetPropertieObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
+        rf.ref = Reflection(vw->GetValueObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
 
         ret.emplace_back(std::move(rf));
     }
@@ -118,7 +118,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     return ret;
 }
 
-bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const PropertieWrapper* vw) const
+bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     bool ret = !methods.empty();
 
@@ -141,7 +141,7 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Prop
     return ret;
 }
 
-AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const PropertieWrapper* vw, const Any& key) const
+AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
     AnyFn ret;
 
@@ -184,7 +184,7 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Prop
     return ret;
 }
 
-Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const PropertieWrapper* vw) const
+Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     Vector<Reflection::Method> ret;
 

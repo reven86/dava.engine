@@ -14,7 +14,7 @@ public:
     {
         String name;
         std::unique_ptr<ReflectedMeta> meta;
-        std::unique_ptr<PropertieWrapper> fieldWrapper;
+        std::unique_ptr<ValueWrapper> fieldWrapper;
 
         const ReflectedType* rtype;
     };
