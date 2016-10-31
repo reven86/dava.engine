@@ -27,7 +27,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
-    bridge->ApplicationDidFinishLaunching();
+    bridge->ApplicationDidFinishLaunching(notification);
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification*)notification

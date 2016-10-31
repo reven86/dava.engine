@@ -21,7 +21,7 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , bridge(new CoreNativeBridge(this))
-    , nativeService(new NativeService(this))
+    , nativeService(new NativeService(bridge.get()))
 {
 }
 
