@@ -2,54 +2,6 @@
 
 #include "DAVAConfig.h"
 
-//-------------------------------------------------------------------------------------
-//Compiler features
-//-------------------------------------------------------------------------------------
-//GCC && Clang
-#if defined(__GNUC__)
-
-#define DAVA_NOINLINE __attribute__((noinline))
-#define DAVA_FORCEINLINE inline __attribute__((always_inline))
-#define DAVA_ALIGNOF(x) alignof(x)
-#define DAVA_CONSTEXPR constexpr
-#define DAVA_DEPRECATED(func) func __attribute__((deprecated))
-#define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
-#define DAVA_NOEXCEPT noexcept
-
-//Microsoft Visual C++
-#elif defined(_MSC_VER)
-
-#define DAVA_NOINLINE __declspec(noinline)
-#define DAVA_FORCEINLINE __forceinline
-#define DAVA_ALIGNOF(x) __alignof(x)
-
-#if _MSC_VER >= 1900 //msvs 2015 RC or later
-//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
-#define DAVA_CONSTEXPR constexpr
-#define DAVA_NOEXCEPT noexcept
-#else
-#define DAVA_CONSTEXPR
-#define DAVA_NOEXCEPT throw()
-#endif
-
-#define DAVA_DEPRECATED(func) __declspec(deprecated) func
-#define DAVA_ALIGNED(Var, Len) __declspec(align(Len)) Var
-
-#endif
-
-// clang-format off
-//detecting of compiler features definitions
-#if !defined(DAVA_NOINLINE) || \
-    !defined(DAVA_FORCEINLINE) || \
-    !defined(DAVA_ALIGNOF) || \
-    !defined(DAVA_NOEXCEPT) || \
-    !defined(DAVA_CONSTEXPR) || \
-    !defined(DAVA_DEPRECATED) || \
-    !defined(DAVA_ALIGNED)
-#error Some compiler features is not defined for current platform
-#endif
-// clang-format on
-
 #if defined(__clang__)
 #define DAVA_SWITCH_CASE_FALLTHROUGH [[clang::fallthrough]]
 #else
@@ -107,10 +59,4 @@
 #define USE_CPP11_CONCURRENCY
 #endif
 
-#endif
-
-#if defined(__DAVAENGINE_WINDOWS__)
-#define Snprintf _snprintf
-#else
-#define Snprintf snprintf
 #endif

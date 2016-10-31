@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
 #include "NullType.h"
 #include "TypeList.h"
 

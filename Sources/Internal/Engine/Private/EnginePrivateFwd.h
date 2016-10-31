@@ -1,5 +1,4 @@
 // Utility header with forward declarations of Engine-related public and private classes
-#include "Base/Platform.h"
 namespace DAVA
 {
 class Engine;
