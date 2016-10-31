@@ -15,7 +15,6 @@
 #include <QFileInfo>
 #include <QAbstractItemView>
 #include <QKeyEvent>
-#include <QDir>
 
 using namespace DAVA;
 
@@ -214,7 +213,6 @@ QString FindFileDialog::ToShortName(const QString& name) const
         const int relPathSize = name.size() - prefixSize;
         return FindFileDialogDetails::newPrefix + name.right(relPathSize);
     }
-
     return name;
 }
 
@@ -224,6 +222,5 @@ QString FindFileDialog::FromShortName(const QString& name) const
     {
         return prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size());
     }
-
     return name;
 }
