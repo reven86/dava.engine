@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/iOS/UIApplicationDelegateListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -147,7 +148,7 @@ bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* l
     return true;
 }
 
-bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
@@ -160,6 +161,8 @@ bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* la
     [objcInterop setDisplayLinkInterval:1];
 
     [objcInterop enableGameControllerObserver:YES];
+
+    NotifyListeners(ON_DID_FINISH_LAUNCHING, application, launchOptions);
     return true;
 }
 
@@ -168,6 +171,7 @@ void CoreNativeBridge::ApplicationDidBecomeActive()
     Logger::FrameworkDebug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
+    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationWillResignActive()
@@ -175,11 +179,14 @@ void CoreNativeBridge::ApplicationWillResignActive()
     Logger::FrameworkDebug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
+    NotifyListeners(ON_WILL_RESIGN_ACTIVE, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidEnterBackground()
 {
     core->didEnterForegroundBackground.Emit(false);
+    NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
+
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
@@ -187,11 +194,14 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
 {
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
+    NotifyListeners(ON_WILL_ENTER_FOREGROUND, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationWillTerminate()
 {
     Logger::FrameworkDebug("******** applicationWillTerminate");
+
+    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr);
 
     [objcInterop cancelDisplayLink];
     [objcInterop enableGameControllerObserver:NO];
@@ -213,6 +223,57 @@ void CoreNativeBridge::GameControllerDidConnected()
 void CoreNativeBridge::GameControllerDidDisconnected()
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
+}
+
+void CoreNativeBridge::RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    DVASSERT(listener != nullptr);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it == end(appDelegateListeners))
+    {
+        appDelegateListeners.push_back(listener);
+    }
+}
+
+void CoreNativeBridge::UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it != end(appDelegateListeners))
+    {
+        appDelegateListeners.erase(it);
+    }
+}
+
+void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)
+{
+    for (auto i = begin(appDelegateListeners), e = end(appDelegateListeners); i != e;)
+    {
+        UIApplicationDelegateListener* l = *i;
+        ++i;
+        switch (type)
+        {
+        case ON_DID_FINISH_LAUNCHING:
+            l->didFinishLaunchingWithOptions(static_cast<UIApplication*>(arg1), static_cast<NSDictionary*>(arg2));
+            break;
+        case ON_DID_BECOME_ACTIVE:
+            l->applicationDidBecomeActive();
+            break;
+        case ON_WILL_RESIGN_ACTIVE:
+            l->applicationDidResignActive();
+            break;
+        case ON_WILL_ENTER_FOREGROUND:
+            l->applicationWillEnterForeground();
+            break;
+        case ON_DID_ENTER_BACKGROUND:
+            l->applicationDidEnterBackground();
+            break;
+        case ON_WILL_TERMINATE:
+            l->applicationWillTerminate();
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 } // namespace Private

@@ -4,13 +4,23 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/Private/iOS/PlatformCoreiOS.h"
+#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
 namespace DAVA
 {
-NativeService::NativeService(Private::PlatformCore* c)
-    : core(c)
+NativeService::NativeService(Private::CoreNativeBridge* bridge_)
+    : bridge(bridge_)
 {
+}
+
+void NativeService::RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    bridge->RegisterUIApplicationDelegateListener(listener);
+}
+
+void NativeService::UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    bridge->UnregisterUIApplicationDelegateListener(listener);
 }
 
 } // namespace DAVA

@@ -24,7 +24,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions) ? YES : NO;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
