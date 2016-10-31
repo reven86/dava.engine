@@ -66,11 +66,10 @@ public:
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-    /** Set cursor capture mode for current Window, if it has focus, see more about modes in eCursorCapture enum class.
+    /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        When the Window loses focus, itself release cursor capture.
-        The Window sets the last mode, after the focus was received.
+        The Window keeps the last mode, and itself releases or captures cursor if need(when it loses or receives focus).
         If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
     */
     void SetCursorCapture(eCursorCapture mode);
@@ -78,11 +77,10 @@ public:
     /** Get cursor capture mode.*/
     eCursorCapture GetCursorCapture() const;
 
-    /** Set cursor visibility for current Window, if it has focus.
+    /** Set cursor visibility for current Window.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        When the Window loses focus, itself recover cursor visibility.
-        The Window sets the last cursor visibility, after the focus was received.
+        The Window keeps the last state, and itself shows or hides cursor if need(when it loses or receives focus).
     */
     void SetCursorVisibility(bool visible);
 
