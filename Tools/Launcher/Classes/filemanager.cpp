@@ -282,13 +282,13 @@ void FileManager::SetFilesDirectory(const QString& newDirPath)
     }
     QFileInfo oldFileInfo(oldFilesDirectory + FileManagerDetails::baseAppDir);
     QFileInfo newFileInfo(GetFilesDirectory() + FileManagerDetails::baseAppDir);
-    //if user choose folder with another baseAppDir - its wierdo case
+    //if user choose folder with another baseAppDir - its weirdo case
     if (oldFileInfo.isDir() && !newFileInfo.exists())
     {
         QFile file(oldFileInfo.absoluteFilePath());
         QString newPath = newFileInfo.absoluteFilePath();
         //if we can move - do it
-        //otherwice use must care about files now
+        //otherwise user must take care about files now
         if (!file.rename(newPath))
         {
             ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Can not move folder with artifacts from %1 to %2").arg(oldFileInfo.absoluteFilePath(), newFileInfo.absoluteFilePath()));
