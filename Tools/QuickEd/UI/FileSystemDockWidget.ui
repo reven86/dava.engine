@@ -58,14 +58,6 @@
     </item>
    </layout>
   </widget>
-  <action name="actionFile_action">
-   <property name="text">
-    <string>file action</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+H</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>

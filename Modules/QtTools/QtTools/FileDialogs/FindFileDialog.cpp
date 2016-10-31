@@ -222,8 +222,7 @@ QString FindFileDialog::FromShortName(const QString& name) const
 {
     if (!prefix.isEmpty())
     {
-        QString fileInfo(prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size()));
-        return fileInfo;
+        return prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size());
     }
 
     return name;
