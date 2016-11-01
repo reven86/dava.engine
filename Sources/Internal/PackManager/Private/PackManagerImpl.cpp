@@ -33,9 +33,10 @@ const String& IPackManager::ToString(IPackManager::InitState state)
         "DeleteDownloadedPacksIfNotMatchHash",
         "LoadingPacksDataFromLocalDB",
         "MountingDownloadedPacks",
-        "Ready"
+        "Ready",
+        "Offline"
     };
-    DVASSERT(states.size() == 13);
+    DVASSERT(states.size() == 14);
     return states.at(static_cast<size_t>(state));
 }
 
@@ -116,8 +117,6 @@ void PackManagerImpl::Initialize(const String& architecture_,
     dbLocalName = dbLocalNameZipped;
     dbLocalName.ReplaceExtension("");
 
-    initPaused = false;
-
     // if Initialize called second time
     fullSizeServerData = 0;
     if (0 != downloadTaskId)
@@ -133,15 +132,22 @@ void PackManagerImpl::Initialize(const String& architecture_,
     initFileData.clear();
 
     initError = InitError::AllGood;
-    initPaused = false;
 
     initState = InitState::LoadingRequestAskFooter;
 }
 
 bool PackManagerImpl::IsInitialized() const
 {
+    // current inputState can be in differect states becouse of
+    // offline mode
     LockGuard<Mutex> lock(protectPM);
-    return InitState::Ready == initState;
+
+    bool dbLoaded = db != nullptr;
+    bool requestManagerCreated = requestManager != nullptr;
+    bool packsDataLoaded = packs.size() > 0;
+    bool packIndexBuilded = !packsIndex.empty();
+
+    return dbLoaded && requestManagerCreated && packsDataLoaded && packIndexBuilded;
 }
 
 // start ISync //////////////////////////////////////
@@ -171,24 +177,9 @@ void PackManagerImpl::RetryInit()
     Initialize(architecture, dirToDownloadedPacks, dbPath, urlToSuperPack, hints);
 }
 
-bool PackManagerImpl::IsPausedInit() const
-{
-    DVASSERT(Thread::IsMainThread());
-    return initPaused;
-}
+// end Initialization ////////////////////////////////////////
 
-void PackManagerImpl::PauseInit()
-{
-    DVASSERT(Thread::IsMainThread());
-
-    if (initState != InitState::Ready)
-    {
-        initPaused = true;
-    }
-}
-// end IInitialization ////////////////////////////////////////
-
-void PackManagerImpl::Update(float)
+void PackManagerImpl::Update(float frameDelta)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -196,18 +187,15 @@ void PackManagerImpl::Update(float)
     {
         if (InitState::Starting != initState)
         {
-            if (!initPaused)
+            if (initState != InitState::Ready)
             {
-                if (initState != InitState::Ready)
+                ContinueInitialization(frameDelta);
+            }
+            else if (isProcessingEnabled)
+            {
+                if (requestManager)
                 {
-                    ContinueInitialization();
-                }
-                else if (isProcessingEnabled)
-                {
-                    if (requestManager)
-                    {
-                        requestManager->Update();
-                    }
+                    requestManager->Update();
                 }
             }
         }
@@ -219,8 +207,19 @@ void PackManagerImpl::Update(float)
     }
 }
 
-void PackManagerImpl::ContinueInitialization()
+void PackManagerImpl::ContinueInitialization(float frameDelta)
 {
+    if (timeWaitingNextInitializationAttempt > 0.f)
+    {
+        timeWaitingNextInitializationAttempt -= frameDelta;
+        if (timeWaitingNextInitializationAttempt <= 0.f)
+        {
+            timeWaitingNextInitializationAttempt = 0.f;
+            RetryInit();
+            return;
+        }
+    }
+
     const InitState beforeState = initState;
 
     if (InitState::Starting == initState)
@@ -284,15 +283,18 @@ void PackManagerImpl::ContinueInitialization()
     }
 }
 
-void PackManagerImpl::InitializePacksAndBuildIndex()
+void PackManagerImpl::InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_)
 {
-    db->InitializePacks(packs);
+    db_.InitializePacks(packs_);
+}
 
-    packsIndex.clear();
+void PackManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_)
+{
+    index_.clear();
     uint32 packIndex = 0;
-    for (const auto& pack : packs)
+    for (const auto& pack : packs_)
     {
-        packsIndex[pack.name] = packIndex++;
+        index_[pack.name] = packIndex++;
     }
 }
 
@@ -654,14 +656,60 @@ void PackManagerImpl::LoadPacksDataFromDB()
 {
     //Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
-    // now build all packs from localDB, later after request to server
-    // we can delete localDB and replace with new from server if needed
-    db.reset(new PacksDB(dbLocalName, hints.dbInMemory));
+    if (IsInitialized() && !requestManager->Empty())
+    {
+        // 1. create new objects for db, packs, packsIndex, requestManager
+        // 2. transit all pack request from old requestManager
+        // 3. reset db, packs, packsIndex, requestManager to new objects
+        try
+        {
+            bool dbInMemory = true;
+            std::unique_ptr<PacksDB> tmpDb(new PacksDB(dbLocalName, dbInMemory));
+            Vector<Pack> tmpPacks;
 
-    InitializePacksAndBuildIndex();
+            InitializePacksFromDB(*tmpDb, tmpPacks);
 
-    // now user can do requests for local packs
-    requestManager.reset(new RequestManager(*this));
+            UnorderedMap<String, uint32> tmpIndex;
+            BuildPackIndex(tmpIndex, tmpPacks);
+
+            std::unique_ptr<RequestManager> tmpRequestManager(new RequestManager(*this));
+
+            const Vector<PackRequest>& requests = requestManager->GetRequests();
+
+            for (const PackRequest& request : requests)
+            {
+                const String& packName = request.GetRootPack().name;
+                float32 priority = request.GetPriority();
+                tmpRequestManager->Push(packName, priority);
+            }
+
+            // if no exceptions switch to new objects
+
+            db.swap(tmpDb);
+            packs.swap(tmpPacks);
+            packsIndex.swap(tmpIndex);
+            requestManager.swap(tmpRequestManager);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("can't reinitialize new DB during runtime: %s", ex.what());
+            throw;
+        }
+    }
+    else
+    {
+        // now build all packs from localDB, later after request to server
+        // we can delete localDB and replace with new from server if needed
+        bool dbInMemory = true;
+        db.reset(new PacksDB(dbLocalName, dbInMemory));
+
+        InitializePacksFromDB(*db, packs);
+
+        BuildPackIndex(packsIndex, packs);
+
+        // now user can do requests for local packs
+        requestManager.reset(new RequestManager(*this));
+    }
 
     initState = InitState::MountingDownloadedPacks;
 }
@@ -814,6 +862,7 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
 const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     if (requestManager)
     {
@@ -868,6 +917,7 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     if (!relativePathDir.IsDirectoryPathname())
     {
@@ -1029,6 +1079,7 @@ bool PackManagerImpl::IsRequestingEnabled() const
 void PackManagerImpl::EnableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     if (!isProcessingEnabled)
     {
@@ -1043,6 +1094,7 @@ void PackManagerImpl::EnableRequesting()
 void PackManagerImpl::DisableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     if (isProcessingEnabled)
     {
@@ -1076,6 +1128,7 @@ uint32 PackManagerImpl::GetPackIndex(const String& packName) const
 IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     uint32 index = GetPackIndex(packName);
     return packs.at(index);
@@ -1084,6 +1137,7 @@ IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) const
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(IsInitialized());
 
     uint32 index = GetPackIndex(packName);
     return packs.at(index);

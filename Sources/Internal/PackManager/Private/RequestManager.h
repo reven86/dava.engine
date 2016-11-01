@@ -28,6 +28,15 @@ public:
     static const uint32 emptyZipArchiveHash = 0xD7CBC50E;
     static const uint32 emptyLZ4HCArchiveCrc32 = 0xA4324938;
 
+    const Vector<PackRequest>& GetRequests() const
+    {
+        return items;
+    }
+    const String& GetCurrentTopLoadingPack() const
+    {
+        return currentTopLoadingPack;
+    }
+
 private:
     void CheckRestartLoading();
 
