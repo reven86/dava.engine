@@ -1193,34 +1193,32 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_used = true;
     }
 
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
     for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
-        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-        for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+        RenderPassGLES2_t* pp = *p;
+
+        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
         {
-            RenderPassGLES2_t* pp = *p;
+            Handle cb_h = pp->cmdBuf[b];
+            CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+            cb->Execute();
+
+            if (cb->sync != InvalidHandle)
             {
-                Handle cb_h = pp->cmdBuf[b];
-                CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+                SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
 
-                cb->Execute();
-
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
-
-                    sync->frame = frame_n;
-                    sync->is_signaled = false;
-                    sync->is_used = true;
-                }
-
-                CommandBufferPoolGLES2::Free(cb_h);
+                sync->frame = frame_n;
+                sync->is_signaled = false;
+                sync->is_used = true;
             }
+
+            CommandBufferPoolGLES2::Free(cb_h);
         }
-        Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
     }
+    Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
+
     for (Handle p : frame.pass)
         RenderPassPoolGLES2::Free(p);
 
