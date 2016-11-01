@@ -162,7 +162,6 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 void GameCore::OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    KeyedArchive* archive = engine.GetOptions();
     uint32 width = window->GetWidth();
     uint32 height = window->GetHeight();
 
@@ -369,8 +368,6 @@ KeyedArchive* CreateOptions()
     appOptions->SetInt32("max_packet_list_count", 64);
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
     appOptions->SetInt32("renderer", rhi::ApiIsSupported(rhi::RHI_METAL) ? rhi::RHI_METAL : rhi::RHI_GLES2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 #else
