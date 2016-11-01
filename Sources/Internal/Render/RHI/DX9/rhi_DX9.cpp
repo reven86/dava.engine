@@ -80,7 +80,7 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
         found = strstr(DeviceCaps().deviceDescription, "Radeon");
         if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
         {
-            if (found[7] == 'X')
+            if (found[7] == 'X' && found[8] == '1')
             {
                 supported = false;
             }
