@@ -1,6 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/Qt/WindowBackendQt.h"
+#include "Input/InputSystem.h"
 
 #if defined(__DAVAENGINE_QT__)
 

@@ -287,20 +287,9 @@ enum MoviePlayerHelperPlaybackState
 {
     DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::VirtualCoordinatesSystem::Instance();
 
-    // 1. map virtual to physical
-    DAVA::Rect rect = coordSystem->ConvertVirtualToPhysical(videoRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    NSRect controlRect = [[videoView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#else
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#endif
-    [videoView setFrame:controlRect];
+    DAVA::Rect r = coordSystem->ConvertVirtualToInput(videoRect);
+    DAVA::float32 dy = static_cast<DAVA::float32>(coordSystem->GetInputScreenSize().dy);
+    [videoView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 }
 
 - (void)applyPlaybackState
