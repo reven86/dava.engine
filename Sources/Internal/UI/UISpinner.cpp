@@ -83,7 +83,7 @@ UISpinner::UISpinner(const Rect& rect)
     contentViewport->SetInputEnabled(false);
     contentViewport->SetClipContents(true);
 
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UISpinner::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 UISpinner::~UISpinner()

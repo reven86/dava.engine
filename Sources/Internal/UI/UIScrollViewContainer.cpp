@@ -23,7 +23,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIScrollViewContainer::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()

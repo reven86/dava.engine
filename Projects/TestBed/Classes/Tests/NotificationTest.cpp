@@ -15,7 +15,7 @@ NotificationScreen::NotificationScreen(TestBed& app)
     , notificationText(nullptr)
     , progress(0)
 {
-    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&NotificationScreen::Update, this, std::placeholders::_1));
+    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
 }
 
 void NotificationScreen::LoadResources()

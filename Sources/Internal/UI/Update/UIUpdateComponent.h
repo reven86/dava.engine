@@ -12,11 +12,12 @@ public:
     using UpdateFunction = Function<void(float32)>;
 
     UIUpdateComponent() = default;
-    UIUpdateComponent(const UIUpdateComponent& src) = default;
+    UIUpdateComponent(const UIUpdateComponent& src);
+    UIUpdateComponent(const UpdateFunction& f);
     UIComponent* Clone() const override;
 
-    void SetFunction(const UpdateFunction& f);
-    const UpdateFunction& GetFunction() const;
+    void SetUpdateFunction(const UpdateFunction& f);
+    const UpdateFunction& GetUpdateFunction() const;
 
 protected:
     ~UIUpdateComponent() override = default;

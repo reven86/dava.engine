@@ -51,7 +51,7 @@ DlcTest::DlcTest(TestBed& app)
     , options(new KeyedArchive)
     , dlc(nullptr)
 {
-    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&DlcTest::Update, this, std::placeholders::_1));
+    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
 }
 
 void DlcTest::LoadResources()

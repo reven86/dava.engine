@@ -42,7 +42,7 @@ void UIUpdateSystem::Process(float32 elapsedTime)
 {
     for (UIUpdateComponent* c : components)
     {
-        const auto& f = c->GetFunction();
+        const auto& f = c->GetUpdateFunction();
         if (f)
         {
             f(elapsedTime);

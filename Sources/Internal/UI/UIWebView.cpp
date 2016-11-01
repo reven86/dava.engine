@@ -40,7 +40,7 @@ UIWebView::UIWebView(const Rect& rect)
     UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIWebView::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 UIWebView::~UIWebView()

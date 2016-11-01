@@ -41,7 +41,7 @@ UIMovieView::UIMovieView(const Rect& rect)
 {
     movieViewControl->Initialize(rect);
     UpdateControlRect();
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIMovieView::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 UIMovieView::~UIMovieView()

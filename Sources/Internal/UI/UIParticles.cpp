@@ -36,7 +36,7 @@ UIParticles::UIParticles(const Rect& rect)
         defaultCamera->RebuildCameraFromValues();
         defaultCamera->RebuildViewMatrix();
     }
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIParticles::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 UIParticles::~UIParticles()

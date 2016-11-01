@@ -1191,6 +1191,7 @@ private:
     /* Components */
 public:
     void AddComponent(UIComponent* component);
+    UIComponent* AddComponent(uint32 componentType);
     void InsertComponentAt(UIComponent* component, uint32 index);
     void RemoveComponent(UIComponent* component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
@@ -1200,6 +1201,11 @@ public:
     int32 GetComponentIndex(const UIComponent* component) const;
     UIComponent* GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
+    template <class T>
+    inline T* AddComponent()
+    {
+        return DynamicTypeCheck<T*>(AddComponent(T::C_TYPE));
+    }
     template <class T>
     inline T* GetComponent(uint32 index = 0) const
     {

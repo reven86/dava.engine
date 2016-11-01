@@ -9,7 +9,7 @@ FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 UIMovieTest::UIMovieTest(TestBed& app)
     : BaseScreen(app, "UIMovieTest")
 {
-    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&UIMovieTest::Update, this, std::placeholders::_1));
+    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
 }
 
 void UIMovieTest::LoadResources()

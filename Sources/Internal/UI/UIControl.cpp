@@ -2193,6 +2193,14 @@ void UIControl::AddComponent(UIComponent* component)
     SetLayoutDirty();
 }
 
+UIComponent* UIControl::AddComponent(uint32 componentType)
+{
+    UIComponent* c = UIComponent::CreateByType(componentType);
+    AddComponent(c);
+    SafeRelease(c); // refCount was increased in AddComponent
+    return c;
+}
+
 void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
 {
     uint32 count = family->GetComponentsCount(component->GetType());

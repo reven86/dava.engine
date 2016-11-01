@@ -37,7 +37,7 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , aggregatorPath(FilePath())
 {
     InitAfterYaml();
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIList::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 void UIList::InitAfterYaml()

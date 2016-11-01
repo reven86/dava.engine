@@ -53,7 +53,7 @@ UITextField::UITextField(const Rect& rect)
     textFieldImpl->Initialize();
     textFieldImpl->SetVisible(false);
     SetupDefaults();
-    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UITextField::Update, this, std::placeholders::_1));
+    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
 }
 
 void UITextField::SetupDefaults()

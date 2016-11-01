@@ -91,6 +91,12 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
 bool UIComponent::IsMultiple(uint32 componentType)
 {
-    return false;
+    switch (componentType)
+    {
+    case UPDATE_COMPONENT:
+        return true;
+    default:
+        return false;
+    }
 }
 }

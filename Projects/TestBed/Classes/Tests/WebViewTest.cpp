@@ -17,7 +17,7 @@ WebViewTest::WebViewTest(TestBed& app)
     , bgStubPanel(nullptr)
     , updateWait(false)
 {
-    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&WebViewTest::Update, this, std::placeholders::_1));
+    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
 }
 
 void WebViewTest::LoadResources()
