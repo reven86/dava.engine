@@ -301,8 +301,6 @@ enum class eErrorCode
 // clang-format on
 
 /**
-
-/**
     \ingroup engine
     Forward declare Objective-C class `classname` in a manner that it can be used as either Objective-C or C++.
 
