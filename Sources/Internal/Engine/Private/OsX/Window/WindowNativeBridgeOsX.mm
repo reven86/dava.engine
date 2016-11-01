@@ -48,7 +48,6 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
-    [nswindow setAcceptsMouseMovedEvents:YES];
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
@@ -193,8 +192,17 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
+
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
+}
+
+void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
+{
+}
+
+void WindowNativeBridge::MouseExited(NSEvent* theEvent)
+{
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)

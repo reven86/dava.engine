@@ -57,6 +57,8 @@ struct WindowNativeBridge final
 
     void MouseClick(NSEvent* theEvent);
     void MouseMove(NSEvent* theEvent);
+    void MouseEntered(NSEvent* theEvent);
+    void MouseExited(NSEvent* theEvent);
     void MouseWheel(NSEvent* theEvent);
     void KeyEvent(NSEvent* theEvent);
     void FlagsChanged(NSEvent* theEvent);

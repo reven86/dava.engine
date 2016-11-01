@@ -70,7 +70,7 @@ void KeyboardTest::LoadResources()
     resetButton->SetStateFont(0xFF, font);
     resetButton->SetStateFontColor(0xFF, Color::White);
     resetButton->SetStateText(0xFF, L"Reset");
-    resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &KeyboardTest::OnResetClick));
+    resetButton->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &KeyboardTest::OnResetClick));
     AddControl(resetButton);
 
     for (auto& touch : touches)
