@@ -2,7 +2,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Notification/Private/UWP/LocalNotificationUAP.h"
+#include "Notification/Private/Win10/LocalNotificationWin10.h"
 #include "Utils/UTF8Utils.h"
 
 namespace DAVA

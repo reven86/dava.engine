@@ -1,4 +1,4 @@
-#include "Notification/Private/OsX/LocalNotificationMac.h"
+#include "Notification/Private/Mac/LocalNotificationMac.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
