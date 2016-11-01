@@ -54,7 +54,7 @@ void UnpackHelp(DAVA::FileSystem* fileSystem)
         }
         catch (std::exception& ex)
         {
-            DVASSERT_MSG("can't unpack help docs to documents dir: %s", ex.what());
+            DVASSERT("can't unpack help docs to documents dir: %s", ex.what());
         }
     }
 }

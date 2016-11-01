@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Logger/Logger.h"
 #include "Engine/Engine.h"
 
 #include "UWPRunner.h"

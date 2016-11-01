@@ -1,5 +1,6 @@
 #include "ResourcesManageHelper.h"
 #include "Engine/Engine.h"
+#include "Utils/StringFormat.h"
 #include "DAVAVersion.h"
 #include "QtTools/Utils/Utils.h"
 #include "version.h"

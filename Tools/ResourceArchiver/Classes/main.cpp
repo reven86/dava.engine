@@ -1,4 +1,5 @@
 #include <Base/BaseTypes.h>
+#include <Logger/Logger.h>
 #include <Engine/EngineModule.h>
 
 #include "CommandLineApplication.h"

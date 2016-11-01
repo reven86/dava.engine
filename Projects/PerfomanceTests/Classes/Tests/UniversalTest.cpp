@@ -21,7 +21,7 @@ void UniversalTest::LoadResources()
     BaseTest::LoadResources();
 
     SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
-    DVASSERT(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene " + GetParams().scenePath);
+    DVASSERT(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
 
     Entity* cameraEntity = GetScene()->FindByName(CAMERA);
 
