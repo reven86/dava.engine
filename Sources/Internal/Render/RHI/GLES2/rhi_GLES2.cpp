@@ -364,8 +364,9 @@ static bool gles2_CheckSurface()
     return android_gl_checkSurface();
 #elif defined __DAVAENGINE_IPHONE__
     return ios_gl_check_layer();
-#endif
+#else
     return true;
+#endif
 }
 
 static void gles2_Suspend()

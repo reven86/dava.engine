@@ -61,7 +61,6 @@ uint32 TextureStride(TextureFormat format, Size2i size, uint32 level)
     default:
         return 0;
     }
-    return 0;
 }
 
 //------------------------------------------------------------------------------
