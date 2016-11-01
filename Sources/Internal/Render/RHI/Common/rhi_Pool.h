@@ -1,7 +1,6 @@
 #pragma once
 
 #define RHI_RESOURCE_INCLUDE_BACKTRACE 0
-#define RHI_LOG_POOL_ERRORS 1
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
