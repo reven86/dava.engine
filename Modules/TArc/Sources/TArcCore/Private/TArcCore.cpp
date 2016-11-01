@@ -11,10 +11,11 @@
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/NativeService.h"
-
 #include "Engine/EngineContext.h"
+
 #include "Functional/Function.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
@@ -221,20 +222,22 @@ public:
         rendererParams.acquireContextFunc = []() {};
         rendererParams.releaseContextFunc = []() {};
 
-        rendererParams.maxIndexBufferCount = 0;
-        rendererParams.maxVertexBufferCount = 0;
-        rendererParams.maxConstBufferCount = 0;
-        rendererParams.maxTextureCount = 0;
+        const DAVA::KeyedArchive* options = engine.GetOptions();
 
-        rendererParams.maxTextureSetCount = 0;
-        rendererParams.maxSamplerStateCount = 0;
-        rendererParams.maxPipelineStateCount = 0;
-        rendererParams.maxDepthStencilStateCount = 0;
-        rendererParams.maxRenderPassCount = 0;
-        rendererParams.maxCommandBuffer = 0;
-        rendererParams.maxPacketListCount = 0;
+        rendererParams.maxIndexBufferCount = options->GetInt32("max_index_buffer_count");
+        rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
+        rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
+        rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
 
-        rendererParams.shaderConstRingBufferSize = 0;
+        rendererParams.maxTextureSetCount = options->GetInt32("max_texture_set_count");
+        rendererParams.maxSamplerStateCount = options->GetInt32("max_sampler_state_count");
+        rendererParams.maxPipelineStateCount = options->GetInt32("max_pipeline_state_count");
+        rendererParams.maxDepthStencilStateCount = options->GetInt32("max_depthstencil_state_count");
+        rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
+        rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
+        rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
+
+        rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
         rendererParams.window = nullptr;
         rendererParams.width = 1024;
