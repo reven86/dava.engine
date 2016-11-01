@@ -597,7 +597,7 @@ void EditorHeightmap::DrawCopypasteRGBA(Image* src, Image* dst, Image* mask, con
     DVASSERT(src->format == dst->format);
 
     DVASSERT(dst->format == FORMAT_RGBA8888,
-            Format("Can't use %s with format %s", __FUNCTION__, PixelFormatDescriptor::GetPixelFormatString(dst->format)).c_str());
+             Format("Can't use %s with format %s", __FUNCTION__, PixelFormatDescriptor::GetPixelFormatString(dst->format)).c_str());
 
     static const int32 formatSizeInBytes = 4;
 
