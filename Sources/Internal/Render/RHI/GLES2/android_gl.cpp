@@ -147,10 +147,10 @@ bool android_gl_checkSurface()
 
         needRecreateSurface = false;
 
-        return true;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 bool android_gl_end_frame()
