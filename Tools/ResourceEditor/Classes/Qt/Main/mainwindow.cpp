@@ -166,6 +166,11 @@ public:
 private:
     GlobalOperations* globalOperations;
 };
+
+void OpenScene(QtMainWindow* mainWindow, const QString& path)
+{
+    mainWindow->OpenScene(path);
+}
 }
 
 QtMainWindow::QtMainWindow(QWidget* parent)
@@ -3414,11 +3419,10 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
     {
     case GlobalOperations::OpenScene:
     {
+        // OpenScene function open WaitDialog and run EventLoop
+        // To avoid embedded DAVA::OnFrame calling we will execute OpenScene inside Qt loop.
         QString scenePath = QString::fromStdString(args.Cast<DAVA::String>());
-        delayedExecutor.DelayedExecute([scenePath, this]()
-                                       {
-                                           OpenScene(scenePath);
-                                       });
+        delayedExecutor.DelayedExecute(DAVA::Bind(&MainWindowDetails::OpenScene, this, scenePath));
     }
         break;
     case GlobalOperations::SetNameAsFilter:

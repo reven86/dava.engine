@@ -7,6 +7,7 @@
 #include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
+#include "TArcUtils/RhiEmptyFrame.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
@@ -18,6 +19,7 @@
 #include "FileSystem/KeyedArchive.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
 #include "Debug/DVAssert.h"
 
@@ -262,6 +264,7 @@ public:
             module->Init(this);
         }
 
+        RhiEmptyFrame frame;
         for (std::unique_ptr<ConsoleModule>& module : modules)
         {
             module->PostInit();
@@ -272,17 +275,19 @@ public:
     {
         context->makeCurrent(surface);
         Impl::OnFrame(delta);
-        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
         {
-            modules.front()->BeforeDestroyed();
-            modules.pop_front();
-        }
+            RhiEmptyFrame frame;
+            if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
+            {
+                modules.front()->BeforeDestroyed();
+                modules.pop_front();
+            }
 
-        if (modules.empty() == true)
-        {
-            engine.Quit(0);
+            if (modules.empty() == true)
+            {
+                engine.Quit(0);
+            }
         }
-
         context->swapBuffers(surface);
     }
 
