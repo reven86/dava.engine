@@ -76,15 +76,6 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
                 supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
             }
         }
-
-        found = strstr(DeviceCaps().deviceDescription, "Radeon");
-        if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
-        {
-            if (found[7] == 'X' && found[8] == '1')
-            {
-                supported = false;
-            }
-        }
     }
 
     return supported;
@@ -393,6 +384,16 @@ void dx9_Initialize(const InitParam& param)
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
+
+    const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
+    if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
+    {
+        if (found[7] == 'X' && found[8] == '1')
+        {
+            MutableDeviceCaps::Get().isVertexTextureUnitsSupported = false;
+        }
+    }
+
     DX9CheckMultisampleSupport();
 }
 
