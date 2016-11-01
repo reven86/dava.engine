@@ -52,15 +52,29 @@ void GamepadDeviceImpl::HandleGamepadMotion(const MainDispatcherEvent& e)
     case AMotionEvent::AXIS_GAS:
         element = eGamepadElements::RIGHT_TRIGGER;
         break;
+    case AMotionEvent::AXIS_HAT_X:
+        element = eGamepadElements::DPAD_X;
+        break;
+    case AMotionEvent::AXIS_HAT_Y:
+        element = eGamepadElements::DPAD_Y;
+        break;
     default:
         return;
     }
 
     // Android joystick Y-axis position is normalized to a range [-1, 1] where -1 for up or far and 1 for down or near.
     // Historically dava.engine's clients expect Y-axis value -1 for down or near and 1 for up and far so negate Y-axes.
-    if (axis == AMotionEvent::AXIS_Y || axis == AMotionEvent::AXIS_RY || axis == AMotionEvent::AXIS_RZ)
+    // The same applies to so called 'hats'.
+    switch (axis)
     {
+    case AMotionEvent::AXIS_Y:
+    case AMotionEvent::AXIS_RY:
+    case AMotionEvent::AXIS_RZ:
+    case AMotionEvent::AXIS_HAT_Y:
         value = -value;
+        break;
+    default:
+        break;
     }
 
     size_t index = static_cast<size_t>(element);
