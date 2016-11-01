@@ -55,7 +55,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     {
         float32 dpi = GetDpi();
-        CGSize surfaceSize = [renderView convertSizeToBacking:viewRect.size];
+        CGSize surfaceSize = [renderView surfaceSize];
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
@@ -125,14 +125,14 @@ void WindowNativeBridge::WindowDidResignKey()
 void WindowNativeBridge::WindowDidResize()
 {
     CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
+    CGSize surfSize = [renderView surfaceSize];
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
     CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
+    CGSize surfSize = [renderView surfaceSize];
     float32 dpi = GetDpi();
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));

@@ -18,6 +18,7 @@
 + (Class)layerClass;
 
 - (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
+- (CGSize)surfaceSize;
 
 @end
 

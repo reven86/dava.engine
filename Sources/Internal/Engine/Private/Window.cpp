@@ -439,6 +439,22 @@ void Window::ClearMouseButtons()
     mouseButtonState.reset();
 }
 
+float32 Window::GetSurfaceScale() const
+{
+    return windowBackend->GetSurfaceScale();
+}
+
+bool Window::SetSurfaceScale(float32 scale)
+{
+    if (scale <= 0.0f || scale > 1.0f)
+    {
+        return false;
+    }
+
+    windowBackend->SetSurfaceScale(scale);
+    return true;
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__

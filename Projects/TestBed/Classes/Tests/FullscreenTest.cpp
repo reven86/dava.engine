@@ -223,13 +223,9 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = primaryWindow->GetSurfaceScale();
-    if (mul < 2.0f)
-    {
-        mul += 0.1f;
-    }
+    mul += 0.1f;
 
-    // TODO: implement window user scale factor in engine and testbed
-    // Core::Instance()->SetScreenScaleMultiplier(mul);
+    primaryWindow->SetSurfaceScale(mul);
 
     mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
@@ -238,13 +234,9 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = primaryWindow->GetSurfaceScale();
-    if (mul > 0.2f)
-    {
-        mul -= 0.1f;
-    }
+    mul -= 0.1f;
 
-    // TODO: implement window user scale factor in engine and testbed
-    // Core::Instance()->SetScreenScaleMultiplier(mul);
+    primaryWindow->SetSurfaceScale(mul);
 
     mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));

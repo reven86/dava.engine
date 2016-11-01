@@ -21,7 +21,13 @@
     DAVA::Private::WindowNativeBridge* bridge;
 }
 
+@property DAVA::float32 backbufferScale;
+
 - (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
+
+// Should be used instead of convertSizeToBacking
+// Since convertSizeToBacking doesn't work if custom back buffer size was applied via CGLEnable(..., kCGLCESurfaceBackingSize)
+- (NSSize)surfaceSize;
 
 @end
 

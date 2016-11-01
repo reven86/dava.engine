@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <AppKit/NSScreen.h>
 #import <AppKit/NSOpenGL.h>
 #import <OpenGL/OpenGL.h>
 
@@ -38,9 +39,45 @@
     // Create non-fullscreen pixel format.
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-    // Enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
+
+    [self setBackbufferScale:1.0f];
+
     return self;
+}
+
+- (void)reshape
+{
+    const NSSize frameSize = [self frame].size;
+    const DAVA::float32 resultScale = _backbufferScale * [[NSScreen mainScreen] backingScaleFactor];
+    
+    GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
+    CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[self openGLContext] CGLContextObj]);
+}
+
+- (NSSize)surfaceSize
+{
+    GLint customScaleEnabled = 0;
+    CGLIsEnabled([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize, &customScaleEnabled);
+
+    // If SurfaceBackingSize is enabled - calculate custom size
+    // Otherwise it's the same as frontbuffer
+    if (customScaleEnabled)
+    {
+        GLint backingSize[2];
+        CGLGetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+
+        NSSize result;
+        result.width = backingSize[0];
+        result.height = backingSize[1];
+
+        return result;
+    }
+    else
+    {
+        return [self frame].size;
+    }
 }
 
 - (uint32_t)displayBitsPerPixel:(CGDirectDisplayID)displayId

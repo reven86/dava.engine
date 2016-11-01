@@ -79,7 +79,7 @@ public:
 
     /** 
         Returns window rendering surface scale. 
-        By default it is 1.0f unit user changes it with `SetSurfaceScale()` method.
+        By default it is 1.0f until user changes it with `SetSurfaceScale()` method.
     */
     float32 GetSurfaceScale() const;
 
@@ -163,7 +163,6 @@ private:
     float32 height = 0.0f; //!< Window client area height.
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
-    float32 surfaceScale = 1.0f; //!< Window rendering surface scale.
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
@@ -196,11 +195,6 @@ inline Size2f Window::GetSize() const
 inline Size2f Window::GetSurfaceSize() const
 {
     return { surfaceWidth, surfaceHeight };
-}
-
-inline float32 Window::GetSurfaceScale() const
-{
-    return surfaceScale;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

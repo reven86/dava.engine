@@ -29,6 +29,13 @@
     return self;
 }
 
+- (CGSize)surfaceSize
+{
+    CGSize size = [self frame].size;
+    CGFloat scaleFactor = [self contentScaleFactor];
+    return CGSizeMake(size.width * scaleFactor, size.height * scaleFactor);
+}
+
 - (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
     bridge->TouchesBegan(touches);

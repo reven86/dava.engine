@@ -6,7 +6,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include <AppKit/NSScreen.h>
+#import <AppKit/NSWindow.h>
+#import <AppKit/NSScreen.h>
 
 #include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
@@ -16,6 +17,8 @@
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
+
+#include "Engine/Private/OsX/Window/RenderViewOsX.h"
 
 namespace DAVA
 {
@@ -109,6 +112,24 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 void WindowBackend::WindowWillClose()
 {
     engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+}
+
+float32 WindowBackend::GetSurfaceScale() const
+{
+    return [bridge->renderView backbufferScale];
+}
+
+void WindowBackend::SetSurfaceScale(float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    [bridge->renderView setBackbufferScale:scale];
+
+    // Workaround to force change backbuffer size
+    [bridge->nswindow setContentView:nil];
+    [bridge->nswindow setContentView:bridge->renderView];
+
+    bridge->WindowDidResize();
 }
 
 } // namespace Private

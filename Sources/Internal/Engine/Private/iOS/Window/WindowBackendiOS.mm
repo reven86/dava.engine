@@ -13,6 +13,9 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
+#import "RenderViewiOS.h"
+#import <UIKit/UIKit.h>
+
 namespace DAVA
 {
 namespace Private
@@ -95,6 +98,22 @@ void WindowBackend::TriggerPlatformEvents()
 void WindowBackend::ProcessPlatformEvents()
 {
     uiDispatcher.ProcessEvents();
+}
+
+float32 WindowBackend::WindowBackend::GetSurfaceScale() const
+{
+    return [bridge->renderView contentScaleFactor] / [[UIScreen mainScreen] scale];
+}
+
+void WindowBackend::SetSurfaceScale(float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    [bridge->renderView setContentScaleFactor:[[UIScreen mainScreen] scale] * scale];
+
+    CGSize size = [bridge->renderView frame].size;
+    CGSize surfaceSize = [bridge->renderView surfaceSize];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height));
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
