@@ -50,7 +50,7 @@ private:
     ConfigParser localConfig;
     ConfigParser remoteConfig;
 
-    FileManager* fileManager;
+    FileManager* fileManager = nullptr;
 };
 
 #endif // APPLICATIONMANAGER_H

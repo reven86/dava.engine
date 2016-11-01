@@ -162,7 +162,7 @@ void PreferencesDialog::ProcessSaveButtonEnabled()
     {
         QString path = lineEdit_launcherDataPath->text();
         QFileInfo fileInfo(path);
-        enabled &= fileInfo.isDir();
+        enabled = fileInfo.isDir();
     }
     QPushButton* button = buttonBox->button(QDialogButtonBox::Save);
     Q_ASSERT(button != nullptr);

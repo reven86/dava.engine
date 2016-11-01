@@ -129,12 +129,13 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
             }
         }
     }
+    //we expect that folder exists
+    //or we just downloaded it and did not find original folder? make new folder with a correct name
     if (mustExists)
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application %1 in branch %2 not exists!").arg(appID).arg(branchID));
         return "";
     }
-    //we just downloaded it and did not find original folder? make new folder with a correct name
     else
     {
         FileManager::MakeDirectory(runPath);
