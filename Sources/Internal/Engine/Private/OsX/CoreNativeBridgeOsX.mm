@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
@@ -224,7 +225,7 @@ void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* no
         DAVA::String uidStr = DAVA::StringFromNSString(uid);
         mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        core->engineBackend->GetNativeService()->DoWindowDeminiaturize();
+        core->engineBackend->GetPrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
     }
 }
 
