@@ -149,10 +149,10 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
 {
     if (viewSize_ != viewSize)
     {
-        DAVA::Size2i phSize = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-        DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(phSize.dx, phSize.dy);
-
         viewSize = viewSize_;
+
+        DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(viewSize.dx, viewSize.dy);
+
         auto newSize = Vector2(viewSize_.width(), viewSize_.height());
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
         UpdatePosition();

@@ -291,10 +291,11 @@ void WindowBackend::OnCreated()
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
-    float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
+    float32 dpi = renderWidget->logicalDpiX();
+    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi));
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -330,9 +331,10 @@ void WindowBackend::OnFrame()
 
 void WindowBackend::OnResized(uint32 width, uint32 height)
 {
+    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w, h));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)

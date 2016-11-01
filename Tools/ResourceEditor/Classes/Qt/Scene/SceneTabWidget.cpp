@@ -434,8 +434,7 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
 
 void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    DAVA::Size2i phSize = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-    DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(phSize.dx, phSize.dy);
+    DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
 
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
