@@ -16,6 +16,7 @@ void Frame::Reset()
     perfQuerySet = InvalidHandle;
     pass.clear();
     readyToExecute = false;
+    discarded = false;
 }
 }
 

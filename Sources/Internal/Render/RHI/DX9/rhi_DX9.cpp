@@ -341,8 +341,9 @@ void dx9_InitContext()
     dx9_InitCaps();
 }
 
-void dx9_CheckSurface()
+bool dx9_CheckSurface()
 {
+    return true;
 }
 
 //------------------------------------------------------------------------------

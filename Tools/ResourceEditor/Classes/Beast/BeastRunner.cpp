@@ -59,7 +59,8 @@ void BeastRunner::Run()
             cancelledManually |= waitDialog->WasCanceled();
         }
 
-        if (Core::Instance()->IsConsoleMode())
+        // if waitDialog is nullptr, it means that we are working in console mode
+        if (waitDialog == nullptr)
         {
             RenderObjectsFlusher::Flush();
         }

@@ -109,9 +109,8 @@ static void RenderFunc()
             DispatchPlatform::FinishRendering();
             renderThreadSuspendSyncReached = true;
             renderThreadSuspendSync.Wait();
+            DispatchPlatform::ValidateSurface();
         }
-
-        DispatchPlatform::ValidateSurface();
         bool frameReady = false;
         {
             DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
@@ -144,7 +143,10 @@ static void RenderFunc()
         }
         else if (frameReady)
         {
-            FrameLoop::ProcessFrame();
+            if (DispatchPlatform::ValidateSurface())
+                FrameLoop::ProcessFrame();
+            else
+                FrameLoop::RejectFrames();
             frameDoneEvent.Signal();
         }
     }

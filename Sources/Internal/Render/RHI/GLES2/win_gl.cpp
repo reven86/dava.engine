@@ -10,6 +10,9 @@ HDC _GLES2_WindowDC = 0;
 
 void win_gl_reset(const rhi::ResetParam& param)
 {
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
+
     if (wglSwapIntervalEXT != nullptr)
     {
         wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);

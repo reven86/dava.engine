@@ -266,8 +266,6 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-
-    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -295,6 +293,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -306,7 +308,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -957,11 +958,6 @@ Analytics::Core& Core::GetAnalyticsCore() const
 {
     DVASSERT(analyticsCore);
     return *analyticsCore;
-}
-
-const ModuleManager& Core::GetModuleManager() const
-{
-    return moduleManager;
 }
 
 } // namespace DAVA

@@ -11,6 +11,11 @@ endif()
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+set ( DAVA_COREV2 1 )
+add_definitions       (
+-D__DAVAENGINE_COREV2__
+)
+
 find_package( DavaFramework REQUIRED )
 
 include_directories   ( "iOSSpecific" )
@@ -26,9 +31,6 @@ set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 set( CommandLineTools        ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.h 
                              ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.cpp )
 
-if( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
-endif()
 if( ANDROID )
     set( PLATFORM_SPECIFIC_FOLDER ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
 
@@ -40,9 +42,7 @@ elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
 
 elseif( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
-
 endif()
 
 define_source ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )

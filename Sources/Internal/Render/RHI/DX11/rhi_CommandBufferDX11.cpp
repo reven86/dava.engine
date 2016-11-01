@@ -177,9 +177,7 @@ static ID3D11RasterizerState* dx11_GetRasterizerState(RasterizerParamDX11 param)
         desc.MultisampleEnable = FALSE;
         desc.AntialiasedLineEnable = FALSE;
 
-        hr = _D3D11_Device->CreateRasterizerState(&desc, &state);
-        CHECK_HR(hr);
-
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRasterizerState(&desc, &state), hr);
         if (SUCCEEDED(hr))
         {
             RasterizerStateDX11 s;
@@ -227,9 +225,8 @@ static Handle dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         if (!cb->context)
         {
-            HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
-            CHECK_HR(hr);
-
+            HRESULT hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
             if (SUCCEEDED(hr))
             {
                 hr = cb->context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)));
@@ -890,7 +887,6 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                 sync->frame = frame_n;
                 sync->is_signaled = false;
             }
-
             CommandBufferPoolDX11::Free(cb_h);
         }
 
@@ -920,13 +916,9 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 bool dx11_PresentBuffer()
 {
     // do present
-    HRESULT hr = _D3D11_SwapChain->Present(1, 0);
-    CHECK_HR(hr)
-    if (hr == DXGI_ERROR_DEVICE_REMOVED)
-    {
-        CHECK_HR(_D3D11_Device->GetDeviceRemovedReason())
-        return false;
-    }
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
+    //still not sure we are to handle all situations with renderingNotPossible here
     return true;
 }
 

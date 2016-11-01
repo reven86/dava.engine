@@ -37,24 +37,36 @@ void RejectFrames()
         frameToBuild -= framePoolSize;
         frameToExecute -= framePoolSize;
     }
+    if (frames[frameToBuild].pass.size())
+    {
+        frames[frameToBuild].discarded = true;
+    }
 }
 
 void ProcessFrame()
 {
     DVASSERT(framePoolSize);
-    bool presentResult = false;
+    bool presentResult = true;
     if (NeedRestoreResources())
     {
         RejectFrames();
-        presentResult = true;
     }
     else
     {
+        bool frameRejected = false;
         {
             DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteFrame");
 
-            frames[frameToExecute].frameNumber = currentFrameNumber++;
-            DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
+            if (frames[frameToExecute].discarded)
+            {
+                DispatchPlatform::RejectFrame(frames[frameToExecute]);
+                frameRejected = true;
+            }
+            else
+            {
+                frames[frameToExecute].frameNumber = currentFrameNumber++;
+                DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
+            }
             frames[frameToExecute].Reset();
             frameSync.Lock();
             frameToExecute++;
@@ -66,6 +78,7 @@ void ProcessFrame()
             frameSync.Unlock();
         }
 
+        if (!frameRejected)
         {
             DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
             presentResult = DispatchPlatform::PresentBuffer();

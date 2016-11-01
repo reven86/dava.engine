@@ -15,11 +15,11 @@
 
 using namespace DAVA;
 
-CommandLineManager::CommandLineManager(int argc, char* argv[])
+CommandLineManager::CommandLineManager(const DAVA::Vector<DAVA::String>& cmdLine)
     : helpOption("help")
 {
     CreateTools();
-    ParseCommandLine(argc, argv);
+    ParseCommandLine(cmdLine);
 }
 
 void CommandLineManager::CreateTools()
@@ -39,11 +39,9 @@ void CommandLineManager::CreateTools()
 
 CommandLineManager::~CommandLineManager() = default;
 
-void CommandLineManager::ParseCommandLine(int argc, char* argv[])
+void CommandLineManager::ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine)
 {
-    isConsoleModeEnabled = Core::Instance()->IsConsoleMode();
-
-    helpRequested = helpOption.Parse(argc, argv);
+    helpRequested = helpOption.Parse(cmdLine);
     if (helpRequested)
     {
         isConsoleModeEnabled = true;
@@ -52,7 +50,7 @@ void CommandLineManager::ParseCommandLine(int argc, char* argv[])
     {
         for (auto& cmdTool : commandLineTools)
         {
-            auto parseResult = cmdTool->ParseCommandLine(argc, argv);
+            auto parseResult = cmdTool->ParseCommandLine(cmdLine);
             if (parseResult)
             {
                 activeTool = cmdTool.get();
@@ -75,6 +73,11 @@ void CommandLineManager::Process()
     {
         activeTool->Process();
     }
+}
+
+void CommandLineManager::Cleanup()
+{
+    commandLineTools.clear();
 }
 
 void CommandLineManager::PrintUsage()

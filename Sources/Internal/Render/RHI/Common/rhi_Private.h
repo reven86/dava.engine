@@ -187,7 +187,7 @@ void SetMarker(Handle cmdBuf, const char* text);
 namespace DispatchPlatform
 {
 void InitContext();
-void ValidateSurface(); //TODO - may be this should be part of opengl only?
+bool ValidateSurface(); //TODO - may be this should be part of opengl only?
 void FinishRendering(); //perform finalization before going to suspend
 
 void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command); //called from render thread

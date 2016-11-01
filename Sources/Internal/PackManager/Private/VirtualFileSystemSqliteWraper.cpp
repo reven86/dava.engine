@@ -10,6 +10,17 @@
 
 #include <ctime>
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite3.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
+
 static bool loadDBinRAM = false;
 
 /*

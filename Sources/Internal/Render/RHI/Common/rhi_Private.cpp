@@ -165,9 +165,9 @@ void InitContext()
 {
     (*_Impl.impl_InitContext)();
 }
-void ValidateSurface()
+bool ValidateSurface()
 {
-    (*_Impl.impl_ValidateSurface)();
+    return (*_Impl.impl_ValidateSurface)();
 }
 void FinishRendering()
 {

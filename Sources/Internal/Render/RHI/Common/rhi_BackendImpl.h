@@ -19,7 +19,7 @@ struct Dispatch
     void (*impl_InvalidateCache)();
 
     void (*impl_InitContext)();
-    void (*impl_ValidateSurface)(); //TODO - may be this should be part of opengl only?
+    bool (*impl_ValidateSurface)(); //TODO - may be this should be part of opengl only?
     void (*impl_FinishRendering)(); //perform finalization before going to suspend
     void (*impl_ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
     void (*impl_FinishFrame)(); //this functions is called from main thread
