@@ -12,7 +12,7 @@ public:
     void AddProjectDirectory(const QString& directory);
     void RemoveProjectDirectory(const QString& directory);
     void RemoveAllProjectDirectories();
-    QStringList GetProjectDirectories() const;
+    const QStringList& GetProjectDirectories() const;
 
     QStringList GetFiles(const QString& extension) const;
 

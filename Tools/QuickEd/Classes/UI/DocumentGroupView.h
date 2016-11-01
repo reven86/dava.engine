@@ -13,8 +13,7 @@ public:
 
     void SetDocumentActionsEnabled(bool enabled);
 
-    LibraryWidget* GetLibraryWidget();
-    PropertiesWidget* GetPropertiesWidget();
+    void SetProject(Project* project);
 
     QTabBar* GetTabBar();
     QAction* GetActionRedo();

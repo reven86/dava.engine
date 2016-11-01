@@ -1,19 +1,15 @@
 #include "FileSystemDockWidget.h"
 
+#include "UI/FileSystemView/ValidatedTextInputDialog.h"
+#include "UI/FileSystemView/FileSystemModel.h"
+
+#include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
+
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
-
-#include "ValidatedTextInputDialog.h"
-#include "FileSystemModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
-#include "QtTools/Utils/Utils.h"
-#include "QtTools/ProjectInformation/ProjectStructure.h"
-
-#include "QtTools/FileDialogs/FindFileDialog.h"
-#include "QtHelpers/HelperFunctions.h"
-
-#include "ui_FileSystemDockWidget.h"
 #include <QClipboard>
 #include <QMimeData>
 #include <QMenu>
@@ -25,6 +21,8 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
+
+#include "ui_FileSystemDockWidget.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)

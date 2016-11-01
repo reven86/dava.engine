@@ -87,7 +87,6 @@ void PropertiesWidget::OnDocumentChanged(Document* document)
     {
         commandExecutor = nullptr;
     }
-
     UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
 }
 

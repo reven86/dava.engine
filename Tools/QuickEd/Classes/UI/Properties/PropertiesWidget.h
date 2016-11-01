@@ -7,13 +7,13 @@
 #include "EditorSystems/SelectionContainer.h"
 
 class ControlNode;
-class StyleSheetNode;
 class Document;
 class PackageBaseNode;
+class Project;
 class PropertiesModel;
 class PropertiesTreeItemDelegate;
-class Project;
 class QtModelPackageCommandExecutor;
+class StyleSheetNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -22,6 +22,7 @@ public:
     PropertiesWidget(QWidget* parent = nullptr);
 
     void SetProject(const Project* project);
+
 public slots:
     void UpdateModel(PackageBaseNode* node);
     void OnDocumentChanged(Document* doc);

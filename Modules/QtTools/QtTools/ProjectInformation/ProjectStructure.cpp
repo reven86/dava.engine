@@ -27,7 +27,7 @@ public:
     void RemoveProjectDirectory(const QString& directory);
     void RemoveAllProjectDirectories();
 
-    QStringList GetProjectDirectories() const;
+    const QStringList& GetProjectDirectories() const;
 
     QStringList GetFiles(const QString& extension) const;
 
@@ -37,8 +37,6 @@ private slots:
 
 private:
     std::tuple<QStringList, QSet<QFileInfo>> CollectFilesAndDirectories(const QDir& dir) const;
-    void AddFilesRecursively(const QDir& dir);
-
     bool ForceRemovePaths(const QStringList& directories);
 
     std::unique_ptr<QFileSystemWatcher> watcher;
@@ -70,7 +68,7 @@ void ProjectStructure::RemoveAllProjectDirectories()
     impl->RemoveAllProjectDirectories();
 }
 
-QStringList ProjectStructure::GetProjectDirectories() const
+const QStringList& ProjectStructure::GetProjectDirectories() const
 {
     return impl->GetProjectDirectories();
 }
@@ -119,24 +117,6 @@ void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
 
     watcher->addPaths(subDirectories << directory);
     projectFiles += filesInDirectory;
-
-    //projectDirectories = QDir();
-    //we delete watcher because "remove paths" us not work. It was reproduced in DF-11828
-    //delete watcher;
-    //watcher = nullptr;
-    //     if (!directory.IsEmpty())
-    //     {
-    //         watcher = new QFileSystemWatcher(this);
-    //         QObject::connect(watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
-    //         QObject::connect(watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
-
-    //         QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
-    //         projectDir = QDir(directoryStr);
-    //         DVASSERT(projectDir.exists());
-    //         DVASSERT(!watcher->directories().contains(directoryStr))
-    //watcher->addPath(directoryStr);
-    //AddFilesRecursively(QDir(directory));
-    //    }
 }
 
 void ProjectStructure::Impl::RemoveProjectDirectory(const QString& directory)
@@ -160,21 +140,21 @@ void ProjectStructure::Impl::RemoveProjectDirectory(const QString& directory)
     std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(QDir(directory));
 
     projectDirectories.removeOne(directory);
-    ForceRemovePaths(subDirectories << directory);
+    bool removeResult = ForceRemovePaths(subDirectories << directory);
+    DVASSERT(removeResult);
     projectFiles -= filesInDirectory;
 }
 
 void ProjectStructure::Impl::RemoveAllProjectDirectories()
 {
-    ForceRemovePaths(watcher->directories());
+    bool removeResult = ForceRemovePaths(watcher->directories());
+    DVASSERT(removeResult);
     projectDirectories.clear();
     projectFiles.clear();
 }
 
-QStringList ProjectStructure::Impl::GetProjectDirectories() const
+const QStringList& ProjectStructure::Impl::GetProjectDirectories() const
 {
-    //QString absPath = projectDir.absolutePath();
-    //return FilePath(absPath.toStdString());
     return projectDirectories;
 }
 
@@ -242,32 +222,6 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
     }
 }
 
-void ProjectStructure::Impl::AddFilesRecursively(const QDir& dir)
-{
-    DVASSERT(dir.exists());
-    DVASSERT(watcher != nullptr);
-    QStringList watchedDirectories = watcher->directories();
-
-    QString absDirPath(dir.absolutePath());
-    QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden, QDirIterator::Subdirectories);
-    while (dirIterator.hasNext())
-    {
-        dirIterator.next();
-        QString tmp = dirIterator.filePath();
-        QFileInfo fileInfo(dirIterator.fileInfo());
-        QString absFilePath = fileInfo.absoluteFilePath();
-        if (fileInfo.isDir() && !watchedDirectories.contains(absFilePath))
-        {
-            watcher->addPath(absFilePath);
-            watchedDirectories.append(absFilePath);
-        }
-        if (fileInfo.isFile() && supportedExtensions.contains(fileInfo.suffix().toLower()))
-        {
-            projectFiles.insert(fileInfo);
-        }
-    }
-}
-
 std::tuple<QStringList, QSet<QFileInfo>> ProjectStructure::Impl::CollectFilesAndDirectories(const QDir& dir) const
 {
     DVASSERT(dir.exists());
@@ -305,7 +259,4 @@ bool ProjectStructure::Impl::ForceRemovePaths(const QStringList& directories)
     }
 
     return result;
-    //     QStringList watchingDirectories = watcher->directories();
-    //     watchingDirectories.remo
-    //     watcher->removePaths(directories);
 }

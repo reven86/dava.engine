@@ -1,26 +1,24 @@
 #include "DocumentGroup.h"
-#include "Document/Document.h"
-#include "Command/CommandStack.h"
+
 #include "Document/CommandsBase/CommandStackGroup.h"
-
+#include "Document/Document.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-
-#include "Debug/DVAssert.h"
-#include "UI/FileSystemView/FileSystemModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
-#include "UI/UIPackageLoader.h"
 #include "Project/Project.h"
+#include "UI/DocumentGroupView.h"
+#include "UI/FileSystemView/FileSystemModel.h"
+
+#include "Command/CommandStack.h"
+#include "Debug/DVAssert.h"
+#include "UI/UIPackageLoader.h"
+
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QApplication>
 #include <QMutableListIterator>
 #include <QAction>
 #include <QTabBar>
 #include <QMessageBox>
-
-#include "UI/Library/LibraryWidget.h"
-#include "UI/Properties/PropertiesWidget.h"
-#include "UI/DocumentGroupView.h"
 
 using namespace DAVA;
 
@@ -50,18 +48,21 @@ DocumentGroup::DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* a
     AttachCloseDocumentAction(view->GetActionCloseDocument());
     AttachReloadDocumentAction(view->GetActionReloadDocument());
 
-    view->GetLibraryWidget()->SetLibraryPackages(project->GetLibraryPackages());
-    view->GetPropertiesWidget()->SetProject(project);
+    view->SetProject(project);
 }
 
 DocumentGroup::~DocumentGroup()
 {
-    view->GetPropertiesWidget()->SetProject(nullptr);
-    view->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
+    view->SetProject(nullptr);
     DisconnectTabBar(view->GetTabBar());
 };
 
-QList<Document*> DocumentGroup::GetDocuments() const
+Project* DocumentGroup::GetProject() const
+{
+    return project;
+}
+
+const QList<Document*>& DocumentGroup::GetDocuments() const
 {
     return documents;
 }

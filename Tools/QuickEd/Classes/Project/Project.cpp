@@ -1,25 +1,22 @@
 #include "Project.h"
 
-#include "Document/DocumentGroup.h"
 #include "Document/Document.h"
-#include "Model/YamlPackageSerializer.h"
+#include "Document/DocumentGroup.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/YamlPackageSerializer.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "UI/ProjectView.h"
 
-#include "UI/UIControlSystem.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "FileSystem/YamlParser.h"
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/FileSystem.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
-#include "UI/mainwindow.h"
-#include "UI/FileSystemView/FileSystemDockWidget.h"
-#include "UI/Library/LibraryWidget.h"
-#include "UI/Properties/PropertiesWidget.h"
-#include "UI/ProjectView.h"
+
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/UIControlSystem.h"
 
 #include <QDir>
 #include <QApplication>
@@ -41,6 +38,8 @@ Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
     , projectName(QFileInfo(aSettings.projectFile).fileName())
 {
     settings.sourceResourceDirectory = projectDirectory + settings.sourceResourceDirectory;
+    settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
+    FilePath::AddResourcesFolder(FilePath(settings.intermediateResourceDirectory.toStdString()));
     FilePath::AddResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
 
     settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
@@ -78,7 +77,7 @@ Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
-    QDirIterator it(/*projectPath + */ "/DataSource"); //TODO fix
+    QDirIterator it(projectDirectory + /*projectPath + */ "/DataSource"); //TODO fix
     while (it.hasNext())
     {
         it.next();
@@ -110,8 +109,6 @@ Project::~Project()
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
-    //mainWindow->GetPropertiesWidget()->SetProject(nullptr);
-    //view->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
     QFileInfo pathInfo = settings.sourceResourceDirectory + Project::GetUIRelativePath();
     QString path = pathInfo.absoluteFilePath();
     projectStructure->RemoveProjectDirectory(path);
@@ -120,6 +117,7 @@ Project::~Project()
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
     FilePath::RemoveResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
+    FilePath::RemoveResourcesFolder(FilePath(settings.intermediateResourceDirectory.toStdString()));
 }
 // bool Project::OpenInternal(const QString& path)
 // {

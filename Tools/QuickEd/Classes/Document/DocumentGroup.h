@@ -1,16 +1,15 @@
 #ifndef QUICKED_DOCUMENTGROUP_H
 #define QUICKED_DOCUMENTGROUP_H
 
-#include <QObject>
-#include <QSet>
 #include <QList>
+#include <QObject>
 #include <QPointer>
+#include <QSet>
+
 #include "UI/mainwindow.h"
 
-class MainWindow;
-class Document;
 class CommandStackGroup;
-class PackageBaseNode;
+class Document;
 class PackageNode;
 class QAction;
 class QTabBar;
@@ -26,12 +25,9 @@ public:
     explicit DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent = nullptr);
     ~DocumentGroup();
 
-    Project* GetProject() const
-    {
-        return project;
-    }
+    Project* GetProject() const;
 
-    QList<Document*> GetDocuments() const;
+    const QList<Document*>& GetDocuments() const;
     Document* GetActiveDocument() const;
 
     bool CanSave() const;

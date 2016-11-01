@@ -12,12 +12,6 @@ namespace ResourcesManageHelperLocal
 const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
 const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
-// Documentation path.
-const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
-// Project DATA folder
-const QString PROJECT_DATA = "%1/Data";
-// Project file path
-const QString PROJECT_FILE_PATH = "%1ui.uieditor";
 //Available fonts extensions
 const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
                                                            << "*.otf"

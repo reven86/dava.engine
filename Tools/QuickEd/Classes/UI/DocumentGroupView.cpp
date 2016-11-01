@@ -1,10 +1,13 @@
 #include "DocumentGroupView.h"
-#include "ui_mainwindow.h"
-#include "UI/Preview/PreviewWidget.h"
-#include "UI/Package/PackageWidget.h"
-#include "UI/Library/LibraryWidget.h"
-#include "UI/Properties/PropertiesWidget.h"
+
 #include "Document/Document.h"
+#include "Project/Project.h"
+#include "UI/Library/LibraryWidget.h"
+#include "UI/Package/PackageWidget.h"
+#include "UI/Preview/PreviewWidget.h"
+#include "UI/Properties/PropertiesWidget.h"
+
+#include "ui_mainwindow.h"
 
 MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* aMainWindow)
     : QObject(aMainWindow)
@@ -70,12 +73,16 @@ void MainWindow::DocumentGroupView::SetDocumentActionsEnabled(bool enabled)
     mainWindow->ui->actionUndo->setEnabled(enabled);
 }
 
-LibraryWidget* MainWindow::DocumentGroupView::GetLibraryWidget()
+void MainWindow::DocumentGroupView::SetProject(Project* project)
 {
-    return mainWindow->ui->libraryWidget;
-}
+    if (project)
+    {
+        mainWindow->ui->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
+    }
+    else
+    {
+        mainWindow->ui->libraryWidget->SetLibraryPackages(DAVA::Vector<DAVA::FilePath>());
+    }
 
-PropertiesWidget* MainWindow::DocumentGroupView::GetPropertiesWidget()
-{
-    return mainWindow->ui->propertiesWidget;
+    mainWindow->ui->propertiesWidget->SetProject(project);
 }
