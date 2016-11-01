@@ -152,7 +152,7 @@ float32 WindowBackend::GetSurfaceScale() const
 
 void WindowBackend::SetSurfaceScale(float32 scale)
 {
-	DVASSERT(scale > 0.0f && scale <= 1.0f);
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     try
     {

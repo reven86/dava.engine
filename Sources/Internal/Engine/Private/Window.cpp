@@ -8,6 +8,7 @@
 #include "Engine/Private/WindowBackend.h"
 
 #include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
@@ -448,6 +449,14 @@ bool Window::SetSurfaceScale(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
+        Logger::Instance()->Debug(Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        return false;
+    }
+
+    const float32 currentScale = GetSurfaceScale();
+    if (FLOAT_EQUAL(currentScale, scale))
+    {
+        Logger::Instance()->Debug(Format("Window::SetSurfaceScale: specified scale (%f) is the same as the current one, ignoring", scale).c_str());
         return false;
     }
 
