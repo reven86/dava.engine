@@ -1,4 +1,5 @@
 #include "ProjectView.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "ui_mainwindow.h"
 
 #include <QComboBox>
@@ -152,4 +153,14 @@ void MainWindow::ProjectView::SelectFile(const QString& filePath)
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
 {
     mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);
+}
+
+void MainWindow::ProjectView::ExecDialogReloadSprites(SpritesPacker* packer)
+{
+    DVASSERT(nullptr != packer);
+    auto lastFlags = mainWindow->acceptableLoggerFlags;
+    mainWindow->acceptableLoggerFlags = (1 << DAVA::Logger::LEVEL_ERROR) | (1 << DAVA::Logger::LEVEL_WARNING);
+    DialogReloadSprites dialogReloadSprites(packer, mainWindow);
+    dialogReloadSprites.exec();
+    mainWindow->acceptableLoggerFlags = lastFlags;
 }

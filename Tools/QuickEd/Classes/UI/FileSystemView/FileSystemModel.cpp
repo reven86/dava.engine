@@ -1,4 +1,5 @@
 #include "FileSystemModel.h"
+#include "Project/Project.h"
 #include <QRegularExpression>
 
 FileSystemModel::FileSystemModel(QObject* parent)
@@ -28,7 +29,7 @@ QVariant FileSystemModel::data(const QModelIndex& index, int role) const
     QVariant data = QFileSystemModel::data(index, role);
     if (index.isValid() && role == Qt::EditRole && !isDir(index) && data.canConvert<QString>())
     {
-        return data.toString().remove(QRegularExpression(GetYamlExtensionString() + "$"));
+        return data.toString().remove(QRegularExpression(Project::GetUIFileExtension() + "$"));
     }
     return data;
 }
@@ -38,16 +39,10 @@ bool FileSystemModel::setData(const QModelIndex& idx, const QVariant& value, int
     if (idx.isValid() && !isDir(idx) && value.canConvert<QString>())
     {
         QString name = value.toString();
-        if (!name.endsWith(GetYamlExtensionString()))
+        if (!name.endsWith(Project::GetUIFileExtension()))
         {
-            return QFileSystemModel::setData(idx, name + GetYamlExtensionString(), role);
+            return QFileSystemModel::setData(idx, name + Project::GetUIFileExtension(), role);
         }
     }
     return QFileSystemModel::setData(idx, value, role);
-}
-
-QString FileSystemModel::GetYamlExtensionString()
-{
-    static QString str(".yaml");
-    return str;
 }

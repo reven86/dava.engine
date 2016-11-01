@@ -31,18 +31,23 @@ Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
-    , spritesPacker(new SpritesPacker(this))
+    , spritesPacker(new SpritesPacker())
     , projectStructure(new ProjectStructure(QStringList() << "yaml"))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
     , projectName(QFileInfo(aSettings.projectFile).fileName())
 {
-    settings.sourceResourceDirectory = projectDirectory + settings.sourceResourceDirectory;
+    settings.resourceDirectory = projectDirectory + settings.resourceDirectory;
+    settings.additionalResourceDirectory = projectDirectory + settings.additionalResourceDirectory;
     settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
-    FilePath::AddResourcesFolder(FilePath(settings.intermediateResourceDirectory.toStdString()));
-    FilePath::AddResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
 
-    settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
+    if (QDir(settings.additionalResourceDirectory).exists())
+    {
+        FilePath::AddResourcesFolder(FilePath(settings.additionalResourceDirectory.toStdString()));
+    }
+
+    FilePath::AddResourcesFolder(FilePath(settings.intermediateResourceDirectory.toStdString()));
+    FilePath::AddResourcesFolder(FilePath(settings.resourceDirectory.toStdString()));
 
     editorFontSystem->SetDefaultFontsPath(settings.fontsConfigsDirectory);
     editorFontSystem->LoadLocalizedFonts();
@@ -50,11 +55,16 @@ Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
     editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(settings.textsDirectory.GetAbsolutePathname())));
     editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(settings.defaultLanguage));
 
-    QFileInfo pathInfo = settings.sourceResourceDirectory + Project::GetUIRelativePath();
-    QString path = pathInfo.absoluteFilePath();
+    QDir uiDirectoryPath(settings.resourceDirectory + Project::GetUIRelativePath());
+    if (!uiDirectoryPath.exists())
+    {
+        uiDirectoryPath = QDir(settings.additionalResourceDirectory + Project::GetUIRelativePath());
+    }
+    DVASSERT(uiDirectoryPath.exists());
+    uiResourcesPath = uiDirectoryPath.absolutePath();
 
-    projectStructure->AddProjectDirectory(path);
-    view->SetResourceDirectory(path);
+    projectStructure->AddProjectDirectory(uiResourcesPath);
+    view->SetResourceDirectory(uiResourcesPath);
 
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
@@ -74,149 +84,31 @@ Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
 
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
 
-
-    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
-    QDirIterator it(projectDirectory + /*projectPath + */ "/DataSource"); //TODO fix
-    while (it.hasNext())
+    for (const auto& gfxOptions : settings.gfxDirectories)
     {
-        it.next();
-        const QFileInfo& fileInfo = it.fileInfo();
-        if (fileInfo.isDir())
-        {
-            QString outputPath = fileInfo.absoluteFilePath();
-            if (!outputPath.contains(searchOption))
-            {
-                continue;
-            }
-            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
-            QDir outputDir(outputPath);
-            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
-        }
+        QDir gfxDirectory(settings.resourceDirectory + gfxOptions.first);
+        QDir gfxOutDirectory(settings.intermediateResourceDirectory + gfxOptions.first);
+        DVASSERT(gfxDirectory.exists());
+        spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
     }
 }
 
 Project::~Project()
 {
-    //disconnect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
-    //disconnect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
-    //disconnect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
-    //disconnect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
-
-    disconnect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
-
     view->SetLanguages(QStringList(), QString());
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
-    QFileInfo pathInfo = settings.sourceResourceDirectory + Project::GetUIRelativePath();
-    QString path = pathInfo.absoluteFilePath();
-    projectStructure->RemoveProjectDirectory(path);
+    projectStructure->RemoveProjectDirectory(uiResourcesPath);
     view->SetResourceDirectory(QString());
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
-    FilePath::RemoveResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
+    FilePath::RemoveResourcesFolder(FilePath(settings.resourceDirectory.toStdString()));
+    FilePath::RemoveResourcesFolder(FilePath(settings.additionalResourceDirectory.toStdString()));
     FilePath::RemoveResourcesFolder(FilePath(settings.intermediateResourceDirectory.toStdString()));
 }
-// bool Project::OpenInternal(const QString& path)
-// {
-//     // Attempt to create a project
-//     ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
-//     if (!parser)
-//     {
-//         return false;
-//     }
-//
-//     QFileInfo fileInfo(path);
-//     if (!fileInfo.exists())
-//     {
-//         return false;
-//     }
-//     SetProjectName(fileInfo.fileName());
-//
-//     editorLocalizationSystem->Cleanup();
-//
-//     QDir projectDir = fileInfo.absoluteDir();
-//     if (!projectDir.mkpath("." + GetScreensRelativePath()))
-//     {
-//         return false;
-//     }
-//
-//     editorLocalizationSystem->Cleanup();
-//
-//     SetProjectPath(fileInfo.absolutePath());
-//
-//     YamlNode* projectRoot = parser->GetRootNode();
-//     if (nullptr != projectRoot)
-//     {
-//         const YamlNode* dataFoldersNode = projectRoot->Get("DataFolders");
-//
-//         // Get font node
-//         if (nullptr != dataFoldersNode)
-//         {
-//             for (uint32 i = 0; i < dataFoldersNode->GetCount(); i++)
-//             {
-//                 auto it = dataFoldersNode->Get(i)->AsMap().begin();
-//                 String key = it->first;
-//                 FilePath path = FilePath(projectPath.GetAbsolutePathname() + it->second->AsString());
-//                 dataFolders.push_back(std::make_pair(key, path));
-//             }
-//         }
-//         else
-//         {
-//             dataFolders.push_back(std::make_pair("Default", "./Data/"));
-//         }
-//
-//         const YamlNode* fontNode = projectRoot->Get("font");
-//
-//         // Get font node
-//         if (nullptr != fontNode)
-//         {
-//             // Get default font node
-//             const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-//             if (nullptr != defaultFontPath)
-//             {
-//                 FilePath localizationFontsPath(defaultFontPath->AsString());
-//                 if (FileSystem::Instance()->Exists(localizationFontsPath))
-//                 {
-//                     editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
-//                 }
-//             }
-//         }
-//
-//         if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-//         {
-//             editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-//         }
-//
-//         editorFontSystem->LoadLocalizedFonts();
-//
-//         const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-//         const YamlNode* localeNode = projectRoot->Get("Locale");
-//         if (localizationPathNode != nullptr && localeNode != nullptr)
-//         {
-//             FilePath localePath = localizationPathNode->AsString();
-//             QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-//             QDir localePathDir(absPath);
-//             editorLocalizationSystem->SetDirectory(localePathDir);
-//
-//             QString currentLocale = QString::fromStdString(localeNode->AsString());
-//             editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-//         }
-//         const YamlNode* libraryNode = projectRoot->Get("Library");
-//         libraryPackages.clear();
-//         if (libraryNode != nullptr)
-//         {
-//             for (uint32 i = 0; i < libraryNode->GetCount(); i++)
-//             {
-//                 libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
-//             }
-//         }
-//     }
-//
-//     return true;
-// }
 
 const Vector<FilePath>& Project::GetLibraryPackages() const
 {
@@ -236,126 +128,26 @@ std::tuple<Project::Settings, ResultList> Project::ParseProjectSettings(const QS
         return std::make_tuple(Project::Settings(), resultList);
     }
 
-    Project::Settings settings{ projectFile };
-
     YamlNode* projectRoot = parser->GetRootNode();
 
-    const YamlNode* sourceResourceDirNode = projectRoot->Get("SourceResourceDirectory");
-    if (nullptr != sourceResourceDirNode)
-    {
-        settings.sourceResourceDirectory = QString::fromStdString(sourceResourceDirNode->AsString());
-    }
-    else
-    {
-        QString defaultDirectory = "./DataSource/";
-        QString message = tr("Data source directories not set. Used default directory: %1.").arg(defaultDirectory);
-        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-        settings.sourceResourceDirectory = defaultDirectory;
-    }
+    const YamlNode* headerNode = projectRoot->Get("Header");
 
-    const YamlNode* intermediateResourceDirNode = projectRoot->Get("IntermediateResourceDirectory");
-    if (nullptr != intermediateResourceDirNode)
+    int version = 0;
+    if (headerNode != nullptr)
     {
-        settings.intermediateResourceDirectory = QString::fromStdString(intermediateResourceDirNode->AsString());
-    }
-    else
-    {
-        QString defaultDirectory = "./quickEd/Data/";
-        QString message = tr("Data source directories not set. Used default directory: %1.").arg(defaultDirectory);
-        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-        settings.intermediateResourceDirectory = defaultDirectory;
-    }
-
-    const YamlNode* fontsDirNode = projectRoot->Get("FontsDirectory");
-    if (fontsDirNode != nullptr)
-    {
-        settings.fontsDirectory = fontsDirNode->AsString();
-    }
-    else
-    {
-        String defaultDirectory = "~res:/Fonts/";
-        QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
-        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-        settings.fontsDirectory = defaultDirectory;
-    }
-
-    const YamlNode* fontsConfigsDirNode = projectRoot->Get("FontsConfigsDirectory");
-    if (fontsConfigsDirNode != nullptr)
-    {
-        settings.fontsConfigsDirectory = fontsConfigsDirNode->AsString();
-    }
-    else
-    {
-        const YamlNode* fontNode = projectRoot->Get("font");
-
-        // Get font node
-        if (nullptr != fontNode)
+        const YamlNode* versionNode = headerNode->Get("version");
+        if (versionNode != nullptr && versionNode->AsInt32())
         {
-            // Get default font node
-            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-            if (nullptr != defaultFontPath)
-            {
-                FilePath localizationFontsPath(defaultFontPath->AsString());
-                if (FileSystem::Instance()->Exists(localizationFontsPath))
-                {
-                    settings.fontsConfigsDirectory = localizationFontsPath.GetDirectory();
-                }
-            }
-        }
-        else
-        {
-            String defaultDirectory = "~res:/UI/Fonts/";
-            QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
-            resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-            settings.fontsConfigsDirectory = defaultDirectory;
+            version = versionNode->AsInt32();
         }
     }
 
-    const YamlNode* textsDirNode = projectRoot->Get("TextsDirectory");
-    if (textsDirNode != nullptr)
+    if (version != CURRENT_PROJECT_FILE_VERSION)
     {
-        settings.textsDirectory = textsDirNode->AsString();
-        const YamlNode* defaultLanguageNode = projectRoot->Get("DefaultLanguage");
-        if (defaultLanguageNode != nullptr)
-        {
-            settings.defaultLanguage = defaultLanguageNode->AsString();
-        }
-    }
-    else
-    {
-        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-        const YamlNode* localeNode = projectRoot->Get("Locale");
-        if (localizationPathNode != nullptr && localeNode != nullptr)
-        {
-            FilePath localePath = localizationPathNode->AsString();
-            //QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-            //QDir localePathDir(absPath);
-            //editorLocalizationSystem->SetDirectory(localePathDir);
-            settings.textsDirectory = localePath;
-            settings.defaultLanguage = localeNode->AsString();
-
-            //QString currentLocale = QString::fromStdString(localeNode->AsString());
-            //editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-        }
-        else
-        {
-            String defaultDirectory = "~res:/Strings/";
-            QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
-            resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-            settings.textsDirectory = defaultDirectory;
-        }
+        return ParseLegacyProjectSettings(projectFile, projectRoot, version);
     }
 
-    const YamlNode* libraryNode = projectRoot->Get("Library");
-    if (libraryNode != nullptr)
-    {
-        for (uint32 i = 0; i < libraryNode->GetCount(); i++)
-        {
-            settings.libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
-        }
-    }
-
-    return std::make_tuple(settings, resultList);
+    return ParseActualProjectSettings(projectFile, projectRoot);
 }
 
 const QString& Project::GetUIRelativePath()
@@ -368,6 +160,41 @@ const QString& Project::GetProjectFileName()
 {
     static const QString projectFile("ui.uieditor");
     return projectFile;
+}
+
+const QStringList& Project::GetFontsFileExtensionFilter()
+{
+    static const QStringList filter(QStringList() << "*.ttf"
+                                                  << "*.otf"
+                                                  << "*.fon"
+                                                  << "*.fnt"
+                                                  << "*.def"
+                                                  << "*.df");
+    return filter;
+}
+
+const QString& Project::GetGraphicsFileExtensionFilter()
+{
+    static const QString filter("*.psd");
+    return filter;
+}
+
+const QString& Project::Get3dFileExtensionFilter()
+{
+    static const QString filter("*.sc2");
+    return filter;
+}
+
+const QString& Project::GetUIFileExtensionFilter()
+{
+    static const QString filter("*.yaml");
+    return filter;
+}
+
+const QString& Project::GetUIFileExtension()
+{
+    static const QString extension(".yaml");
+    return extension;
 }
 
 QStringList Project::GetAvailableLanguages() const
@@ -444,7 +271,7 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
 
 const QString& Project::SourceResourceDirectory() const
 {
-    return settings.sourceResourceDirectory;
+    return settings.resourceDirectory;
 }
 
 void Project::OnReloadSprites()
@@ -457,17 +284,11 @@ void Project::OnReloadSprites()
         }
     }
 
-    //mainWindow->ExecDialogReloadSprites(spritesPacker.get());TODO Fix
+    view->ExecDialogReloadSprites(spritesPacker.get());
 }
 
 void Project::OnReloadSpritesFinished()
 {
-    //     if (cacheClient)
-    //     {
-    //         cacheClient->Disconnect();
-    //         cacheClient.reset();
-    //     }
-
     Sprite::ReloadSprites();
 }
 
@@ -500,6 +321,179 @@ bool Project::TryCloseAllDocuments()
     }
 
     return true;
+}
+
+std::tuple<Project::Settings, DAVA::ResultList> Project::ParseActualProjectSettings(const QString& projectFile, const YamlNode* root)
+{
+    ResultList resultList;
+    Project::Settings settings{ projectFile };
+
+    const YamlNode* projectPropertiesNode = root->Get("ProjectProperties");
+    if (projectPropertiesNode == nullptr)
+    {
+        QString message = tr("Wrong project properties in file %1.").arg(projectFile);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+
+        return std::make_tuple(Project::Settings(), resultList);
+    }
+
+    const YamlNode* resourceDirNode = projectPropertiesNode->Get("ResourceDirectory");
+    if (resourceDirNode != nullptr)
+    {
+        settings.resourceDirectory = QString::fromStdString(resourceDirNode->AsString());
+    }
+    else
+    {
+        QString defaultDirectory = "/DataSource/";
+        QString message = tr("Data source directories not set. Used default directory: %1.").arg(defaultDirectory);
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.resourceDirectory = defaultDirectory;
+    }
+
+    const YamlNode* additionalResourceDirNode = projectPropertiesNode->Get("AdditionalResourceDirectory");
+    if (additionalResourceDirNode != nullptr)
+    {
+        settings.additionalResourceDirectory = QString::fromStdString(additionalResourceDirNode->AsString());
+    }
+
+    const YamlNode* intermediateResourceDirNode = projectPropertiesNode->Get("IntermediateResourceDirectory");
+    if (intermediateResourceDirNode != nullptr)
+    {
+        settings.intermediateResourceDirectory = QString::fromStdString(intermediateResourceDirNode->AsString());
+    }
+    else
+    {
+        QString defaultDirectory = "/Data/";
+        QString message = tr("Data source directories not set. Used default directory: %1.").arg(defaultDirectory);
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.intermediateResourceDirectory = defaultDirectory;
+    }
+
+    const YamlNode* gfxDirsNode = projectPropertiesNode->Get("GfxDirectories");
+    if (gfxDirsNode != nullptr)
+    {
+        for (uint32 index = 0; index < gfxDirsNode->GetCount(); ++index)
+        {
+            const YamlNode* gfxDirNode = gfxDirsNode->Get(index);
+            DVASSERT(gfxDirNode);
+            QString directory = QString::fromStdString(gfxDirNode->Get("directory")->AsString());
+            Vector2 res = gfxDirNode->Get("resolution")->AsVector2();
+            QSize resolution(res.dx, res.dy);
+            settings.gfxDirectories.push_back(std::make_pair(directory, resolution));
+        }
+    }
+    else
+    {
+        QString defaultDirectory = "/Gfx/";
+        QSize defaultResolution(960, 640);
+        QString message = tr("Data source directories not set. Used default directory: %1, with resoulution %2x%3.")
+                          .arg(defaultDirectory)
+                          .arg(defaultResolution.width())
+                          .arg(defaultResolution.height());
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.gfxDirectories.push_back(std::make_pair(defaultDirectory, defaultResolution));
+    }
+
+    const YamlNode* fontsDirNode = projectPropertiesNode->Get("FontsDirectory");
+    if (fontsDirNode != nullptr)
+    {
+        settings.fontsDirectory = fontsDirNode->AsString();
+    }
+    else
+    {
+        String defaultDirectory = "~res:/Fonts/";
+        QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.fontsDirectory = defaultDirectory;
+    }
+
+    const YamlNode* fontsConfigsDirNode = projectPropertiesNode->Get("FontsConfigsDirectory");
+    if (fontsConfigsDirNode != nullptr)
+    {
+        settings.fontsConfigsDirectory = fontsConfigsDirNode->AsString();
+    }
+    else
+    {
+        String defaultDirectory = "~res:/UI/Fonts/";
+        QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.fontsConfigsDirectory = defaultDirectory;
+    }
+
+    const YamlNode* textsDirNode = projectPropertiesNode->Get("TextsDirectory");
+    if (textsDirNode != nullptr)
+    {
+        settings.textsDirectory = textsDirNode->AsString();
+        const YamlNode* defaultLanguageNode = projectPropertiesNode->Get("DefaultLanguage");
+        if (defaultLanguageNode != nullptr)
+        {
+            settings.defaultLanguage = defaultLanguageNode->AsString();
+        }
+    }
+    else
+    {
+        String defaultDirectory = "~res:/Strings/";
+        QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
+        resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
+        settings.textsDirectory = defaultDirectory;
+    }
+
+    const YamlNode* libraryNode = projectPropertiesNode->Get("Library");
+    if (libraryNode != nullptr)
+    {
+        for (uint32 i = 0; i < libraryNode->GetCount(); i++)
+        {
+            settings.libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
+        }
+    }
+    return std::make_tuple(std::move(settings), resultList);
+}
+
+std::tuple<Project::Settings, DAVA::ResultList> Project::ParseLegacyProjectSettings(const QString& projectFile, const YamlNode* root, int version)
+{
+    ResultList resultList;
+    Project::Settings settings{ projectFile };
+
+    const YamlNode* fontNode = root->Get("font");
+
+    // Get font node
+    if (nullptr != fontNode)
+    {
+        // Get default font node
+        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
+        if (nullptr != defaultFontPath)
+        {
+            FilePath localizationFontsPath(defaultFontPath->AsString());
+            if (FileSystem::Instance()->Exists(localizationFontsPath))
+            {
+                settings.fontsConfigsDirectory = localizationFontsPath.GetDirectory();
+            }
+        }
+    }
+
+    const YamlNode* localizationPathNode = root->Get("LocalizationPath");
+    const YamlNode* localeNode = root->Get("Locale");
+    if (localizationPathNode != nullptr && localeNode != nullptr)
+    {
+        FilePath localePath = localizationPathNode->AsString();
+        settings.textsDirectory = localePath;
+        settings.defaultLanguage = localeNode->AsString();
+    }
+
+    const YamlNode* libraryNode = root->Get("Library");
+    if (libraryNode != nullptr)
+    {
+        for (uint32 i = 0; i < libraryNode->GetCount(); i++)
+        {
+            settings.libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
+        }
+    }
+
+    QString defaultDirectory = "/Gfx/";
+    QSize defaultResolution(960, 640);
+    settings.gfxDirectories.push_back(std::make_pair(defaultDirectory, defaultResolution));
+
+    return std::make_tuple(std::move(settings), resultList);
 }
 
 void Project::FindFileInProject()

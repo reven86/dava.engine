@@ -2,6 +2,7 @@
 #include <QObject>
 #include "UI/mainwindow.h"
 
+class SpritesPacker;
 class QComboBox;
 
 class MainWindow::ProjectView : public QObject
@@ -16,6 +17,8 @@ public:
 
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
+
+    void ExecDialogReloadSprites(SpritesPacker* packer);
 
     void SetProjectActionsEnabled(bool enable);
 

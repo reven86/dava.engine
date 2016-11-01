@@ -1,39 +1,31 @@
 #include "EditorCore.h"
 
+#include "Project/Project.h"
 #include "UI/mainwindow.h"
-#include "Document/DocumentGroup.h"
-#include "Document/Document.h"
 
-#include "Model/PackageHierarchy/PackageNode.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/Utils/AssertGuard.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/Utils.h"
 
+#include "TextureCompression/PVRConverter.h"
+#include "version.h"
+
+#include "Base/Result.h"
+#include "DAVAVersion.h"
+#include "Engine/Engine.h"
+#include "Engine/Qt/NativeServiceQt.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
+#include "Particles/ParticleEmitter.h"
+#include "UI/Input/UIInputSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "UI/FileSystemView/FileSystemModel.h"
-#include "UI/Package/PackageModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
-#include "Base/Result.h"
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/FileSystem.h"
-#include "Project/Project.h"
-#include "UI/FileSystemView/FileSystemDockWidget.h"
-#include "UI/Library/LibraryWidget.h"
-#include "UI/Preview/PreviewWidget.h"
-#include "UI/Package/PackageWidget.h"
-#include "UI/Properties/PropertiesWidget.h"
-
-#include "DAVAVersion.h"
-#include "TextureCompression/PVRConverter.h"
-#include "Engine/Engine.h"
-#include "UI/Layouts/UILayoutSystem.h"
-#include "UI/Input/UIInputSystem.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "Engine/Qt/NativeServiceQt.h"
-#include "version.h"
 
 using namespace DAVA;
 
@@ -41,7 +33,6 @@ namespace EditorCoreDetails
 {
 static const char* EDITOR_TITLE = "DAVA Framework - QuickEd | %s-%s [%u bit]";
 static const DAVA::String DOCUMENTATION_DIRECTORY("~doc:/Help/");
-//static const DAVA::String EDITOR_TITLE("QuickEd");
 
 void InitPVRTexTool()
 {
@@ -64,6 +55,9 @@ EditorCore::EditorCore(DAVA::Engine& engine)
     : QObject()
     , cacheClient()
 {
+    ParticleEmitter::FORCE_DEEP_CLONE = true;
+    ToolsAssetGuard::Instance()->Init();
+
     using namespace DAVA;
     EngineContext* context = engine.GetContext();
 

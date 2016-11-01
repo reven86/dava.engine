@@ -1,5 +1,6 @@
 #include "ResourcesManageHelper.h"
 #include "QtTools/Utils/Utils.h"
+#include "Project/Project.h"
 #include <QString>
 #include <QStringList>
 #include <QDir>
@@ -12,13 +13,6 @@ namespace ResourcesManageHelperLocal
 const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
 const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
-//Available fonts extensions
-const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
-                                                           << "*.otf"
-                                                           << "*.fon"
-                                                           << "*.fnt"
-                                                           << "*.def"
-                                                           << "*.df");
 }
 
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
@@ -40,7 +34,7 @@ QStringList ResourcesManageHelper::GetFontsList()
     QString fontsPath = QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     QDir dir(fontsPath);
     // Get the list of files in fonts directory - both true type fonts and graphics fonts
-    filesNamesList = dir.entryList(FONTS_EXTENSIONS_FILTER, QDir::Files);
+    filesNamesList = dir.entryList(Project::GetFontsFileExtensionFilter(), QDir::Files);
     fontsPath.clear();
     return filesNamesList;
 }

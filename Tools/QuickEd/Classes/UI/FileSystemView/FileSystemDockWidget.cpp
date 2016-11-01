@@ -2,6 +2,7 @@
 
 #include "UI/FileSystemView/ValidatedTextInputDialog.h"
 #include "UI/FileSystemView/FileSystemModel.h"
+#include "Project/Project.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
@@ -164,7 +165,7 @@ bool FileSystemDockWidget::CanDelete(const QModelIndex& index) const
     QDirIterator dirIterator(dir, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {
-        if (dirIterator.next().endsWith(FileSystemModel::GetYamlExtensionString()))
+        if (dirIterator.next().endsWith(Project::GetUIFileExtension()))
         {
             return false;
         }
@@ -206,7 +207,7 @@ void FileSystemDockWidget::onDoubleClicked(const QModelIndex& index)
 void FileSystemDockWidget::setFilterFixedString(const QString& filterStr)
 {
     QStringList filters;
-    filters << QString("*%1*" + FileSystemModel::GetYamlExtensionString()).arg(filterStr);
+    filters << QString("*%1*" + Project::GetUIFileExtension()).arg(filterStr);
     model->setNameFilters(filters);
 }
 
@@ -255,14 +256,14 @@ void FileSystemDockWidget::onNewFolder()
 void FileSystemDockWidget::onNewFile()
 {
     auto path = GetPathByCurrentPos(DirPath);
-    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, "*" + FileSystemModel::GetYamlExtensionString());
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, Project::GetUIFileExtensionFilter());
     if (strFile.isEmpty())
     {
         return;
     }
-    if (!strFile.endsWith(FileSystemModel::GetYamlExtensionString()))
+    if (!strFile.endsWith(Project::GetUIFileExtension()))
     {
-        strFile += FileSystemModel::GetYamlExtensionString();
+        strFile += Project::GetUIFileExtension();
     }
 
     QFile file(strFile);

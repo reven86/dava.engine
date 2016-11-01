@@ -11,17 +11,9 @@ namespace DAVA
 {
 class RenderWidget;
 }
-class Document;
-class DocumentGroup;
-class FileSystemDockWidget;
-class LibraryWidget;
-class LocalizationEditorDialog;
+
 class LoggerOutputObject;
-class PackageWidget;
-class PreviewWidget;
 class Project;
-class PropertiesWidget;
-class SpritesPacker;
 
 namespace DAVA
 {
@@ -52,15 +44,9 @@ public:
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
-    void ExecDialogReloadSprites(SpritesPacker* packer);
-
     ProjectView* GetProjectView()
     {
         return projectView;
-    }
-    DocumentGroupView* GetDocumentGroupView()
-    {
-        return documentGroupView;
     }
 
 signals:

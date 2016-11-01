@@ -110,16 +110,6 @@ void MainWindow::OnRecentMenu(QAction* action)
     emit RecentProject(projectPath);
 }
 
-void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
-{
-    DVASSERT(nullptr != packer);
-    auto lastFlags = acceptableLoggerFlags;
-    acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
-    DialogReloadSprites dialogReloadSprites(packer, this);
-    dialogReloadSprites.exec();
-    acceptableLoggerFlags = lastFlags;
-}
-
 QString MainWindow::ConvertLangCodeToString(const QString& langCode)
 {
     QLocale locale(langCode);

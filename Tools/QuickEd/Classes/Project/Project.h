@@ -2,10 +2,10 @@
 #define QUICKED__PROJECT_H__
 
 #include <QObject>
-//#include "Project/EditorFontSystem.h"
-//#include "Project/EditorLocalizationSystem.h"
+
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
+
 #include <QVector>
 #include <QPair>
 
@@ -21,6 +21,7 @@ class ProjectStructure;
 namespace DAVA
 {
 class AssetCacheClient;
+class YamlNode;
 }
 
 class Project : public QObject
@@ -30,19 +31,29 @@ public:
     struct Settings
     {
         QString projectFile;
-        QString sourceResourceDirectory;
+        QString resourceDirectory;
+        QString additionalResourceDirectory;
         QString intermediateResourceDirectory;
 
         DAVA::FilePath fontsDirectory;
         DAVA::FilePath textsDirectory;
         DAVA::FilePath fontsConfigsDirectory;
         DAVA::String defaultLanguage;
+        DAVA::Vector<std::pair<QString, QSize>> gfxDirectories;
         DAVA::Vector<DAVA::FilePath> libraryPackages;
     };
+
+    static const int CURRENT_PROJECT_FILE_VERSION = 1;
 
     static std::tuple<Settings, DAVA::ResultList> ParseProjectSettings(const QString& projectFile);
     static const QString& GetUIRelativePath();
     static const QString& GetProjectFileName();
+
+    static const QStringList& GetFontsFileExtensionFilter();
+    static const QString& GetGraphicsFileExtensionFilter();
+    static const QString& Get3dFileExtensionFilter();
+    static const QString& GetUIFileExtensionFilter();
+    static const QString& GetUIFileExtension();
 
     Project(MainWindow::ProjectView* aView, const Settings& aSettings);
     ~Project();
@@ -79,11 +90,14 @@ signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
+    static std::tuple<Settings, DAVA::ResultList> ParseActualProjectSettings(const QString& projectFile, const DAVA::YamlNode* root);
+    static std::tuple<Settings, DAVA::ResultList> ParseLegacyProjectSettings(const QString& projectFile, const DAVA::YamlNode* root, int version);
     void FindFileInProject();
 
     Settings settings;
     const QString projectDirectory;
     const QString projectName;
+    QString uiResourcesPath;
 
     MainWindow::ProjectView* view = nullptr;
     std::unique_ptr<EditorFontSystem> editorFontSystem;
