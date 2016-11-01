@@ -1,5 +1,6 @@
 #include "Classes/Qt/Application/REApplication.h"
 #include "Classes/Qt/Application/REModule.h"
+#include "Classes/Qt/Application/REGlobal.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -13,7 +14,7 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include "TArcCore/TArcCore.h"
+#include "TArc/Core/TArcCore.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
@@ -88,6 +89,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
+    REGlobal::InitTArcCore(tarcCore->GetCoreInterface());
     if (isConsoleMode)
     {
         CreateConsoleModules(tarcCore);
@@ -132,6 +134,7 @@ void REApplication::Init(DAVA::EngineContext& engineContext)
 
 void REApplication::Cleanup()
 {
+    REGlobal::InitTArcCore(nullptr);
     DAVA::SafeRelease(beastProxy);
     DAVA::SafeRelease(config);
     DAVA::SafeRelease(settingsManager);

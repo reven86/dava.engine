@@ -1,12 +1,17 @@
 #include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 #include "Tools/Widgets/FilePathBrowser.h"
 
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt//DataStructures/ProjectManagerData.h"
+
 #include "Project/ProjectManager.h"
 #include "Settings/SettingsManager.h"
 #include "TextureCompression/TextureConverter.h"
 
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -133,7 +138,9 @@ void ExportSceneDialog::SetupUI()
 
 void ExportSceneDialog::InitializeValues()
 {
-    DAVA::String path = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
+    DVASSERT(ctx.HasData<ProjectManagerData>());
+    DAVA::String path = ctx.GetData<ProjectManagerData>().GetProjectPath().GetAbsolutePathname();
     projectPathBrowser->SetPath(QString::fromStdString(path + "Data/3d/"));
 
     for (DAVA::int32 gpu = DAVA::GPU_POWERVR_IOS; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)

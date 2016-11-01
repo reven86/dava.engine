@@ -100,7 +100,9 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
 FilePath CreatePresetFolderPathname(const String& folder)
 {
-    const FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+    DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
+    DVASSERT(ctx.HasData<ProjectManagerData>());
+    const FilePath& projectPath = ctx.GetData<ProjectManagerData>().GetProjectPath();
     FilePath folderPath = projectPath + folder;
     folderPath.MakeDirectoryPathname();
     return folderPath;

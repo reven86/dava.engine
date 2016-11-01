@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArcCore/ControllerModule.h"
+#include "TArc/Core/ControllerModule.h"
 
 class TextureCache;
 class ResourceEditorLauncher;

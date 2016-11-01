@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArcCore/BaseApplication.h"
+#include "TArc/Core/BaseApplication.h"
 
 #include <QString>
 

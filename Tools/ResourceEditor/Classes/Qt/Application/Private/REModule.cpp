@@ -1,12 +1,13 @@
 #include "Classes/Qt/Application/REModule.h"
+#include "Classes/Qt/Application/REGlobal.h"
 
 #include "ResourceEditorLauncher.h"
 #include "Main/mainwindow.h"
 #include "TextureCache.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-#include "WindowSubSystem/Private/UIManager.h"
-#include "DataProcessing/DataNode.h"
+#include "TArc/WindowSubSystem/Private/UIManager.h"
+#include "TArc/DataProcessing/DataNode.h"
 #include "version.h"
 #include "Deprecated/ControlsFactory.h"
 
@@ -18,7 +19,7 @@ class REGlobalData : public DAVA::TArc::DataNode
 {
 public:
     REGlobalData()
-        : windowKey(DAVA::FastName("ResourceEditor"))
+        : windowKey(REGlobal::MainWindowName)
     {
         textureCache = new TextureCache();
         mainWindow = new QtMainWindow();

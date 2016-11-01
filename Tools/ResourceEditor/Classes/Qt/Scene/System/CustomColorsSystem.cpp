@@ -15,8 +15,13 @@
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
 #include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")

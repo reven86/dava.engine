@@ -226,11 +226,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuRecentProjects">
-     <property name="title">
-      <string>Recent Projects</string>
-     </property>
-    </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
       <string>Import</string>
@@ -244,10 +239,6 @@
      <addaction name="actionOnlyOriginalTextures"/>
      <addaction name="actionWithCompressedTextures"/>
     </widget>
-    <addaction name="actionOpenProject"/>
-    <addaction name="menuRecentProjects"/>
-    <addaction name="actionCloseProject"/>
-    <addaction name="separator"/>
     <addaction name="actionNewScene"/>
     <addaction name="actionOpenScene"/>
     <addaction name="actionSaveScene"/>
@@ -757,7 +748,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>95</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -887,7 +878,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>96</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -942,15 +933,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionOpenProject">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/openproject.png</normaloff>:/QtIcons/openproject.png</iconset>
-   </property>
-   <property name="text">
-    <string>Open Project</string>
    </property>
   </action>
   <action name="actionExportPVRIOS">
@@ -1896,14 +1878,6 @@
    </property>
    <property name="toolTip">
     <string>Set Materials LightViewMode</string>
-   </property>
-  </action>
-  <action name="actionCloseProject">
-   <property name="text">
-    <string>Close Project</string>
-   </property>
-   <property name="toolTip">
-    <string>Close Project</string>
    </property>
   </action>
   <action name="actionLightmapCanvas">
