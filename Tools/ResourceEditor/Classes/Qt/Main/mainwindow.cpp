@@ -3424,7 +3424,7 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         QString scenePath = QString::fromStdString(args.Cast<DAVA::String>());
         delayedExecutor.DelayedExecute(DAVA::Bind(&MainWindowDetails::OpenScene, this, scenePath));
     }
-        break;
+    break;
     case GlobalOperations::SetNameAsFilter:
         ui->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
         break;
