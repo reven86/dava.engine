@@ -224,7 +224,7 @@ void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* no
         DAVA::String uidStr = DAVA::StringFromNSString(uid);
         mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        DAVA::Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
+        core->engineBackend->GetNativeService()->DoWindowDeminiaturize();
     }
 }
 
