@@ -42,18 +42,7 @@ void QtWaitDialog::Show(const QString& title, const QString& message, bool hasWa
 
 void QtWaitDialog::Reset()
 {
-    wasCanceled = false;
-    emit canceled();
-
-    if (isRunnedFromExec)
-    {
-        loop.quit();
-    }
-
-    close();
-    setCursor(Qt::ArrowCursor);
-
-    emit closed();
+    executor.DelayedExecute(DAVA::MakeFunction(this, &QtWaitDialog::ResetImpl));
 }
 
 void QtWaitDialog::SetMessage(const QString& message)
@@ -97,6 +86,22 @@ void QtWaitDialog::WaitCanceled()
 {
     ui->waitButton->setEnabled(false);
     processEvents();
+}
+
+void QtWaitDialog::ResetImpl()
+{
+    wasCanceled = false;
+    emit canceled();
+
+    if (isRunnedFromExec)
+    {
+        loop.quit();
+    }
+
+    close();
+    setCursor(Qt::ArrowCursor);
+
+    emit closed();
 }
 
 void QtWaitDialog::processEvents()

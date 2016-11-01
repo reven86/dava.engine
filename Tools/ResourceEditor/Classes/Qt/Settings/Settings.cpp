@@ -71,6 +71,7 @@ const FastName Settings::Scene_Grab_Size_Width = FastName("Scene/Grab Scene/Widt
 const FastName Settings::Scene_Grab_Size_Height = FastName("Scene/Grab Scene/Height");
 const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/InvertWheel");
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
+const FastName Settings::General_Mouse_WheelMoveIntensity = FastName("General/Mouse/WheelMoveIntensity");
 const FastName Settings::InternalGroup = FastName("Internal");
 const FastName Settings::Internal_TextureViewGPU = FastName("Internal/TextureViewGPU");
 const FastName Settings::Internal_SpriteViewGPU = FastName("Internal/SpriteViewGPU");
@@ -97,6 +98,7 @@ const FastName Settings::Internal_Validate_CollisionProperties = FastName("Inter
 const FastName Settings::Internal_Validate_TexturesRelevance = FastName("Internal/ValidateTexturesRelevance");
 const FastName Settings::Internal_Validate_MaterialGroups = FastName("Internal/ValidateMaterialGroups");
 const FastName Settings::Internal_Validate_ShowConsole = FastName("Internal/ValidateShowConsole");
+const FastName Settings::Internal_GizmoEnabled = FastName("Internal/GizmoEnabled");
 
 DAVA::eGPUFamily Settings::GetGPUFormat()
 {

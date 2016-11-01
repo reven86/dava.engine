@@ -81,6 +81,7 @@ public:
 
     static const DAVA::FastName General_Mouse_InvertWheel;
     static const DAVA::FastName General_Mouse_WheelMoveCamera;
+    static const DAVA::FastName General_Mouse_WheelMoveIntensity;
 
     // this settings won't be shown in settings dialog
     // and are used only by application
@@ -105,6 +106,8 @@ public:
 
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
+    static const DAVA::FastName Internal_EnableSounds;
+    static const DAVA::FastName Internal_GizmoEnabled;
 
     static const DAVA::FastName Internal_EnableSounds;
 

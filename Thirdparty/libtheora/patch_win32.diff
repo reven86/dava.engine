@@ -1,0 +1,1719 @@
+PATCHED: migrated to vs2015
+
+Binary files ./libtheora_source_original/win32/VS2008/.vs/libtheora_static/v14/.suo and ./libtheora_source/win32/VS2008/.vs/libtheora_static/v14/.suo differ
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/Backup/libtheora_static.sln ./libtheora_source/win32/VS2008/Backup/libtheora_static.sln
+--- ./libtheora_source_original/win32/VS2008/Backup/libtheora_static.sln	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/Backup/libtheora_static.sln	2009-07-14 02:54:57.000000000 +0300
+@@ -0,0 +1,146 @@
++﻿
++Microsoft Visual Studio Solution File, Format Version 10.00
++# Visual Studio 2008
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dump_video_static", "dump_video\dump_video_static.vcproj", "{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtheora_static", "libtheora\libtheora_static.vcproj", "{653F3841-3F26-49B9-AFCF-091DB4B67031}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encoder_example_static", "encoder_example\encoder_example_static.vcproj", "{AD710263-EBFA-4388-BAA9-AD73C32AFF26}"
++EndProject
++Global
++	GlobalSection(SolutionConfigurationPlatforms) = preSolution
++		Debug|Win32 = Debug|Win32
++		Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I) = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I) = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		Debug|Windows Mobile 6 Professional SDK (ARMV4I) = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
++		Debug|x64 = Debug|x64
++		Release_SSE|Win32 = Release_SSE|Win32
++		Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I) = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I) = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I) = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
++		Release_SSE|x64 = Release_SSE|x64
++		Release_SSE2|Win32 = Release_SSE2|Win32
++		Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I) = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I) = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I) = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
++		Release_SSE2|x64 = Release_SSE2|x64
++		Release|Win32 = Release|Win32
++		Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I) = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I) = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		Release|Windows Mobile 6 Professional SDK (ARMV4I) = Release|Windows Mobile 6 Professional SDK (ARMV4I)
++		Release|x64 = Release|x64
++	EndGlobalSection
++	GlobalSection(ProjectConfigurationPlatforms) = postSolution
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|Win32.ActiveCfg = Debug|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|Win32.Build.0 = Debug|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|x64.ActiveCfg = Debug|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Debug|x64.Build.0 = Debug|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|Win32.ActiveCfg = Release_SSE|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|Win32.Build.0 = Release_SSE|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|x64.ActiveCfg = Release_SSE|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE|x64.Build.0 = Release_SSE|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|Win32.ActiveCfg = Release_SSE2|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|Win32.Build.0 = Release_SSE2|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|x64.ActiveCfg = Release_SSE2|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release_SSE2|x64.Build.0 = Release_SSE2|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|Win32.ActiveCfg = Release|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|Win32.Build.0 = Release|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Win32
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|x64.ActiveCfg = Release|x64
++		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|x64.Build.0 = Release|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Win32.ActiveCfg = Debug|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Win32.Build.0 = Debug|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|x64.ActiveCfg = Debug|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|x64.Build.0 = Debug|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Win32.ActiveCfg = Release_SSE|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Win32.Build.0 = Release_SSE|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|x64.ActiveCfg = Release_SSE|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|x64.Build.0 = Release_SSE|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Win32.ActiveCfg = Release_SSE2|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Win32.Build.0 = Release_SSE2|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|x64.ActiveCfg = Release_SSE2|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|x64.Build.0 = Release_SSE2|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Win32.ActiveCfg = Release|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Win32.Build.0 = Release|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|x64.ActiveCfg = Release|x64
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|x64.Build.0 = Release|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Win32.ActiveCfg = Debug|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Win32.Build.0 = Debug|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|x64.ActiveCfg = Debug|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|x64.Build.0 = Debug|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|Win32.ActiveCfg = Release_SSE|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|Win32.Build.0 = Release_SSE|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|x64.ActiveCfg = Release_SSE|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE|x64.Build.0 = Release_SSE|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|Win32.ActiveCfg = Release_SSE2|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|Win32.Build.0 = Release_SSE2|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|x64.ActiveCfg = Release_SSE2|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release_SSE2|x64.Build.0 = Release_SSE2|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|Win32.ActiveCfg = Release|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|Win32.Build.0 = Release|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Win32
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|x64.ActiveCfg = Release|x64
++		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Release|x64.Build.0 = Release|x64
++	EndGlobalSection
++	GlobalSection(SolutionProperties) = preSolution
++		HideSolutionNode = FALSE
++	EndGlobalSection
++EndGlobal
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/dump_video/dump_video_static.vcxproj ./libtheora_source/win32/VS2008/dump_video/dump_video_static.vcxproj
+--- ./libtheora_source_original/win32/VS2008/dump_video/dump_video_static.vcxproj	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/dump_video/dump_video_static.vcxproj	2016-10-17 15:52:58.555687600 +0300
+@@ -0,0 +1,369 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|Win32">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|x64">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|Win32">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|x64">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}</ProjectGuid>
++    <RootNamespace>dump_video</RootNamespace>
++    <Keyword>Win32Proj</Keyword>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\..\examples\dump_video.c" />
++    <ClCompile Include="..\..\getopt.c" />
++    <ClCompile Include="..\..\getopt1.c" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\..\examples\getopt.h" />
++    <ClInclude Include="..\..\getopt_win.h" />
++  </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\libtheora\libtheora_static.vcxproj">
++      <Project>{653f3841-3f26-49b9-afcf-091db4b67031}</Project>
++    </ProjectReference>
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/encoder_example/encoder_example_static.vcxproj ./libtheora_source/win32/VS2008/encoder_example/encoder_example_static.vcxproj
+--- ./libtheora_source_original/win32/VS2008/encoder_example/encoder_example_static.vcxproj	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/encoder_example/encoder_example_static.vcxproj	2016-10-17 15:52:58.629758200 +0300
+@@ -0,0 +1,391 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|Win32">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|x64">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|Win32">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|x64">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{AD710263-EBFA-4388-BAA9-AD73C32AFF26}</ProjectGuid>
++    <RootNamespace>encoder_example</RootNamespace>
++    <Keyword>Win32Proj</Keyword>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\libogg.props" />
++    <Import Project="..\libvorbis.props" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\libogg\include;..\..\..\..\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>libogg_static.lib;libvorbis_static.lib;libtheora_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\libvorbis\win32\VS2008\$(Platform)\$(Configuration);..\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++      <GenerateDebugInformation>false</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <RandomizedBaseAddress>false</RandomizedBaseAddress>
++      <DataExecutionPrevention />
++      <TargetMachine>MachineX64</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\..\examples\encoder_example.c" />
++    <ClCompile Include="..\..\getopt.c" />
++    <ClCompile Include="..\..\getopt1.c" />
++  </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\libtheora\libtheora_static.vcxproj">
++      <Project>{653f3841-3f26-49b9-afcf-091db4b67031}</Project>
++    </ProjectReference>
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/libogg.props ./libtheora_source/win32/VS2008/libogg.props
+--- ./libtheora_source_original/win32/VS2008/libogg.props	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/libogg.props	2016-10-17 16:02:47.590198200 +0300
+@@ -0,0 +1,24 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ImportGroup Label="PropertySheets">
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros">
++    <LIBOGG_VERSION>1.1.4</LIBOGG_VERSION>
++  </PropertyGroup>
++  <PropertyGroup>
++    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
++  </PropertyGroup>
++  <ItemDefinitionGroup>
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\..\libogg-$(LIBOGG_VERSION)\include;..\..\..\..\ogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++    </ClCompile>
++    <Link>
++      <AdditionalLibraryDirectories>..\..\..\..\libogg-$(LIBOGG_VERSION)\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\ogg\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\..\..\..\core\ogg\libogg\win32\VS2008\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <BuildMacro Include="LIBOGG_VERSION">
++      <Value>$(LIBOGG_VERSION)</Value>
++    </BuildMacro>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+Binary files ./libtheora_source_original/win32/VS2008/libtheora/.vs/libtheora_static/v14/.suo and ./libtheora_source/win32/VS2008/libtheora/.vs/libtheora_static/v14/.suo differ
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/libtheora/libtheora_static.vcxproj ./libtheora_source/win32/VS2008/libtheora/libtheora_static.vcxproj
+--- ./libtheora_source_original/win32/VS2008/libtheora/libtheora_static.vcxproj	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/libtheora/libtheora_static.vcxproj	2016-10-17 16:02:52.544005300 +0300
+@@ -0,0 +1,443 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|Win32">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE2|x64">
++      <Configuration>Release_SSE2</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|Win32">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release_SSE|x64">
++      <Configuration>Release_SSE</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{653F3841-3F26-49B9-AFCF-091DB4B67031}</ProjectGuid>
++    <RootNamespace>libtheora</RootNamespace>
++    <Keyword>Win32Proj</Keyword>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
++    <Import Project="..\libogg.props" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;DEBUG;OC_X86_ASM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;OC_X86_ASM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">
++    <Midl>
++      <TargetEnvironment>X64</TargetEnvironment>
++    </Midl>
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
++      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\lib;..\..\..\..\libogg\include;..\..\..\..\..\..\..\core\ogg\libogg\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_BIND_TO_CURRENT_CRT_VERSION;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBTHEORA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <StringPooling>true</StringPooling>
++      <ExceptionHandling />
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <BufferSecurityCheck>false</BufferSecurityCheck>
++      <PrecompiledHeader />
++      <WarningLevel>Level4</WarningLevel>
++      <DebugInformationFormat />
++      <CompileAs>CompileAsC</CompileAs>
++      <DisableSpecificWarnings>4244;4267;4057;4100;4245;%(DisableSpecificWarnings)</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\..\include\theora\codec.h" />
++    <ClInclude Include="..\..\..\include\theora\theora.h" />
++    <ClInclude Include="..\..\..\include\theora\theoradec.h" />
++    <ClInclude Include="..\..\..\lib\apiwrapper.h" />
++    <ClInclude Include="..\..\..\lib\bitpack.h" />
++    <ClInclude Include="..\..\..\lib\cpu.h" />
++    <ClInclude Include="..\..\..\lib\dct.h" />
++    <ClInclude Include="..\..\..\lib\decint.h" />
++    <ClInclude Include="..\..\..\lib\dequant.h" />
++    <ClInclude Include="..\..\..\lib\encint.h" />
++    <ClInclude Include="..\..\..\lib\enquant.h" />
++    <ClInclude Include="..\..\..\lib\huffdec.h" />
++    <ClInclude Include="..\..\..\lib\huffenc.h" />
++    <ClInclude Include="..\..\..\lib\huffman.h" />
++    <ClInclude Include="..\..\..\lib\idct.h" />
++    <ClInclude Include="..\..\..\lib\internal.h" />
++    <ClInclude Include="..\..\..\lib\mathops.h" />
++    <ClInclude Include="..\..\..\lib\modedec.h" />
++    <ClInclude Include="..\..\..\lib\ocintrin.h" />
++    <ClInclude Include="..\..\..\lib\quant.h" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\..\lib\analyze.c" />
++    <ClCompile Include="..\..\..\lib\apiwrapper.c" />
++    <ClCompile Include="..\..\..\lib\bitpack.c" />
++    <ClCompile Include="..\..\..\lib\cpu.c" />
++    <ClCompile Include="..\..\..\lib\decapiwrapper.c" />
++    <ClCompile Include="..\..\..\lib\decinfo.c" />
++    <ClCompile Include="..\..\..\lib\decode.c">
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\dequant.c" />
++    <ClCompile Include="..\..\..\lib\encapiwrapper.c" />
++    <ClCompile Include="..\..\..\lib\encfrag.c" />
++    <ClCompile Include="..\..\..\lib\encinfo.c" />
++    <ClCompile Include="..\..\..\lib\encode.c" />
++    <ClCompile Include="..\..\..\lib\encoder_disabled.c">
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\enquant.c" />
++    <ClCompile Include="..\..\..\lib\fdct.c" />
++    <ClCompile Include="..\..\..\lib\fragment.c" />
++    <ClCompile Include="..\..\..\lib\huffdec.c" />
++    <ClCompile Include="..\..\..\lib\huffenc.c" />
++    <ClCompile Include="..\..\..\lib\idct.c">
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\info.c" />
++    <ClCompile Include="..\..\..\lib\internal.c" />
++    <ClCompile Include="..\..\..\lib\mathops.c" />
++    <ClCompile Include="..\..\..\lib\mcenc.c" />
++    <ClCompile Include="..\..\..\lib\quant.c">
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE2|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release_SSE|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
++      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\rate.c" />
++    <ClCompile Include="..\..\..\lib\state.c" />
++    <ClCompile Include="..\..\..\lib\tokenize.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxencfrag.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxfdct.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxfrag.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxidct.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxstate.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\x86enc.c" />
++    <ClCompile Include="..\..\..\lib\x86_vc\x86state.c" />
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/libtheora/libtheora_static.vcxproj.filters ./libtheora_source/win32/VS2008/libtheora/libtheora_static.vcxproj.filters
+--- ./libtheora_source_original/win32/VS2008/libtheora/libtheora_static.vcxproj.filters	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/libtheora/libtheora_static.vcxproj.filters	2016-10-17 16:02:52.546005800 +0300
+@@ -0,0 +1,192 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="include">
++      <UniqueIdentifier>{03882a56-698b-459e-9126-01a92d713c0b}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="include\theora">
++      <UniqueIdentifier>{5c110b7c-b301-402a-98a2-3eea4d6e3cd1}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="lib">
++      <UniqueIdentifier>{0a76b73b-bd82-4d6e-b220-35da6c4ba095}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="lib\enc">
++      <UniqueIdentifier>{fc459e06-857a-4a79-9277-4f97edd9eb89}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="lib\enc\x86_vc">
++      <UniqueIdentifier>{cb6fb340-7e52-4e8d-ad6d-2c45fe06d352}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="lib\dec">
++      <UniqueIdentifier>{0450ec33-fc9e-4214-b48d-8144677047ad}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="lib\dec\x86_vc">
++      <UniqueIdentifier>{87435b32-0eb0-408b-80c3-4f1e2d8b440c}</UniqueIdentifier>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\..\include\theora\codec.h">
++      <Filter>include\theora</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\include\theora\theora.h">
++      <Filter>include\theora</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\include\theora\theoradec.h">
++      <Filter>include\theora</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\cpu.h">
++      <Filter>lib</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\internal.h">
++      <Filter>lib</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\encint.h">
++      <Filter>lib\enc</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\enquant.h">
++      <Filter>lib\enc</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\huffenc.h">
++      <Filter>lib\enc</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\mathops.h">
++      <Filter>lib\enc</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\modedec.h">
++      <Filter>lib\enc</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\apiwrapper.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\bitpack.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\dct.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\decint.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\dequant.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\huffdec.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\huffman.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\idct.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\ocintrin.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\lib\quant.h">
++      <Filter>lib\dec</Filter>
++    </ClInclude>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\..\lib\cpu.c">
++      <Filter>lib</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\analyze.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\encapiwrapper.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\encfrag.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\encinfo.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\encode.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\encoder_disabled.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\enquant.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\fdct.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\huffenc.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\mathops.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\mcenc.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\rate.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\tokenize.c">
++      <Filter>lib\enc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxencfrag.c">
++      <Filter>lib\enc\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxfdct.c">
++      <Filter>lib\enc\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\x86enc.c">
++      <Filter>lib\enc\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\apiwrapper.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\bitpack.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\decapiwrapper.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\decinfo.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\decode.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\dequant.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\fragment.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\huffdec.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\idct.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\info.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\internal.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\quant.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\state.c">
++      <Filter>lib\dec</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxfrag.c">
++      <Filter>lib\dec\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxidct.c">
++      <Filter>lib\dec\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\mmxstate.c">
++      <Filter>lib\dec\x86_vc</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\lib\x86_vc\x86state.c">
++      <Filter>lib\dec\x86_vc</Filter>
++    </ClCompile>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+Binary files ./libtheora_source_original/win32/VS2008/libtheora/UpgradeLog.htm and ./libtheora_source/win32/VS2008/libtheora/UpgradeLog.htm differ
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/libtheora_static.sln ./libtheora_source/win32/VS2008/libtheora_static.sln
+--- ./libtheora_source_original/win32/VS2008/libtheora_static.sln	2009-07-14 02:54:57.000000000 +0300
++++ ./libtheora_source/win32/VS2008/libtheora_static.sln	2016-10-17 15:52:58.638453500 +0300
+@@ -1,11 +1,13 @@
+ ﻿
+-Microsoft Visual Studio Solution File, Format Version 10.00
+-# Visual Studio 2008
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dump_video_static", "dump_video\dump_video_static.vcproj", "{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}"
++Microsoft Visual Studio Solution File, Format Version 12.00
++# Visual Studio 14
++VisualStudioVersion = 14.0.25420.1
++MinimumVisualStudioVersion = 10.0.40219.1
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dump_video_static", "dump_video\dump_video_static.vcxproj", "{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtheora_static", "libtheora\libtheora_static.vcproj", "{653F3841-3F26-49B9-AFCF-091DB4B67031}"
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtheora_static", "libtheora\libtheora_static.vcxproj", "{653F3841-3F26-49B9-AFCF-091DB4B67031}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encoder_example_static", "encoder_example\encoder_example_static.vcproj", "{AD710263-EBFA-4388-BAA9-AD73C32AFF26}"
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encoder_example_static", "encoder_example\encoder_example_static.vcxproj", "{AD710263-EBFA-4388-BAA9-AD73C32AFF26}"
+ EndProject
+ Global
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+@@ -61,54 +63,30 @@
+ 		{1A8CA99D-B6C7-48CB-B263-6CECDADF5FBF}.Release|x64.Build.0 = Release|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Win32.ActiveCfg = Debug|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Win32.Build.0 = Debug|Win32
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Debug|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|x64.ActiveCfg = Debug|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Debug|x64.Build.0 = Debug|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Win32.ActiveCfg = Release_SSE|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Win32.Build.0 = Release_SSE|Win32
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|x64.ActiveCfg = Release_SSE|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE|x64.Build.0 = Release_SSE|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Win32.ActiveCfg = Release_SSE2|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Win32.Build.0 = Release_SSE2|Win32
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release_SSE2|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release_SSE2|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|x64.ActiveCfg = Release_SSE2|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release_SSE2|x64.Build.0 = Release_SSE2|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Win32.ActiveCfg = Release|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Win32.Build.0 = Release|Win32
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Build.0 = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).Deploy.0 = Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Build.0 = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).Deploy.0 = Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
+-		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I).ActiveCfg = Release|Win32
++		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Win32
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|x64.ActiveCfg = Release|x64
+ 		{653F3841-3F26-49B9-AFCF-091DB4B67031}.Release|x64.Build.0 = Release|x64
+ 		{AD710263-EBFA-4388-BAA9-AD73C32AFF26}.Debug|Win32.ActiveCfg = Debug|Win32
+Binary files ./libtheora_source_original/win32/VS2008/libtheora_static.VC.db and ./libtheora_source/win32/VS2008/libtheora_static.VC.db differ
+diff -ur --new-file ./libtheora_source_original/win32/VS2008/libvorbis.props ./libtheora_source/win32/VS2008/libvorbis.props
+--- ./libtheora_source_original/win32/VS2008/libvorbis.props	1970-01-01 03:00:00.000000000 +0300
++++ ./libtheora_source/win32/VS2008/libvorbis.props	2016-10-17 15:52:52.445480100 +0300
+@@ -0,0 +1,24 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ImportGroup Label="PropertySheets">
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros">
++    <LIBVORBIS_VERSION>1.2.2</LIBVORBIS_VERSION>
++  </PropertyGroup>
++  <PropertyGroup>
++    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
++  </PropertyGroup>
++  <ItemDefinitionGroup>
++    <ClCompile>
++      <AdditionalIncludeDirectories>..\..\..\..\libvorbis-$(LIBVORBIS_VERSION)\include;..\..\..\..\vorbis\include;..\..\..\..\..\..\vorbis\libs\libvorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++    </ClCompile>
++    <Link>
++      <AdditionalLibraryDirectories>..\..\..\..\libvorbis-$(LIBVORBIS_VERSION)\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\vorbis\win32\VS2008\$(Platform)\$(Configuration);..\..\..\..\..\..\vorbis\libs\libvorbis\win32\VS2008\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <BuildMacro Include="LIBVORBIS_VERSION">
++      <Value>$(LIBVORBIS_VERSION)</Value>
++    </BuildMacro>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+Binary files ./libtheora_source_original/win32/VS2008/UpgradeLog.htm and ./libtheora_source/win32/VS2008/UpgradeLog.htm differ

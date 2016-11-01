@@ -14,7 +14,7 @@ public:
 
     DAVA::String GetToolKey() const;
 
-    bool ParseCommandLine(int argc, char* argv[]);
+    bool ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine);
     void PrintUsage() const;
     void Process();
 

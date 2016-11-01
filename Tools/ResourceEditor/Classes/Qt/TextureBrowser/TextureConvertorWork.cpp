@@ -1,5 +1,7 @@
 #include "TextureBrowser/TextureConvertorWork.h"
 
+#include "Concurrency/LockGuard.h"
+
 JobStack::JobStack()
     : head(NULL)
     , itemsCount(0)
@@ -109,4 +111,120 @@ JobStack::JobItemWrapper::JobItemWrapper(const JobItem& item)
     , next(NULL)
     , prev(NULL)
 {
+}
+
+class JobWatcher::Impl
+{
+public:
+    Impl(JobWatcher* watcher_)
+        : watcher(watcher_)
+    {
+    }
+
+    void Deinit()
+    {
+        DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+        watcher = nullptr;
+    }
+
+    // will be called on worker thread
+    void OnConvert()
+    {
+        DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+        if (watcher != nullptr)
+        {
+            watcher->OnConvert();
+        }
+    }
+
+    // will be called on main thread
+    void OnReady()
+    {
+        if (watcher != nullptr)
+        {
+            watcher->OnReady();
+        }
+    }
+
+private:
+    DAVA::Mutex mutex;
+    JobWatcher* watcher = nullptr;
+};
+
+JobWatcher::JobWatcher(DAVA::JobManager* manager_)
+    : impl(new Impl(this))
+    , manager(manager_)
+{
+    DVASSERT(manager != nullptr);
+}
+
+JobWatcher::~JobWatcher()
+{
+    DVASSERT(impl != nullptr);
+    impl->Deinit();
+}
+
+void JobWatcher::Init(const TJobFunction& convertFunction_, const TReadyCallback& readyCallback_)
+{
+    convertFunction = convertFunction_;
+    readyCallback = readyCallback_;
+}
+
+bool JobWatcher::IsFinished() const
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+    return isFinished;
+}
+
+void JobWatcher::RunJob(std::unique_ptr<JobItem>&& item)
+{
+    DVASSERT(convertFunction != nullptr);
+    DVASSERT(readyCallback != nullptr);
+    DVASSERT(IsFinished() == true);
+    DVASSERT(GetCurrentJobItem() == nullptr);
+    {
+        DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+        isFinished = false;
+        jobItem = std::move(item);
+    }
+
+    manager->CreateWorkerJob(DAVA::MakeFunction(impl, &JobWatcher::Impl::OnConvert));
+}
+
+const JobItem* JobWatcher::GetCurrentJobItem() const
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+    return jobItem.get();
+}
+
+JobItem* JobWatcher::GetCurrentJobItemImpl()
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+    return jobItem.get();
+}
+
+void JobWatcher::OnConvert()
+{
+    DVASSERT(IsFinished() == false);
+    TextureInfo r = convertFunction(GetCurrentJobItemImpl());
+    {
+        DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+        result = r;
+    }
+
+    manager->CreateMainJob(DAVA::MakeFunction(impl, &JobWatcher::Impl::OnReady), DAVA::JobManager::JOB_MAINLAZY);
+}
+
+void JobWatcher::OnReady()
+{
+    TextureInfo r;
+    std::unique_ptr<JobItem> readyJobItem;
+    {
+        DAVA::LockGuard<DAVA::Mutex> guard(mutex);
+        isFinished = true;
+        readyJobItem = std::move(jobItem);
+        r = result;
+        result = TextureInfo();
+    }
+    readyCallback(r, readyJobItem.get());
 }

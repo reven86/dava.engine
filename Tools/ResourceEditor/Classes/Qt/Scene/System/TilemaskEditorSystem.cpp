@@ -10,6 +10,8 @@
 
 #include "Render/Image/ImageConvert.h"
 
+#include "UI/UIEvent.h"
+
 #include <QApplication>
 
 static std::array<DAVA::FastName, 4> TILECOLOR_PARAM_NAMES;
@@ -510,9 +512,13 @@ DAVA::uint32 TilemaskEditorSystem::GetTileTextureIndex()
 
 void TilemaskEditorSystem::InitSprites()
 {
-    DAVA::float32 texSize = drawSystem->GetTextureSize(textureLevel);
+    DAVA::int32 texSize = static_cast<DAVA::int32>(drawSystem->GetTextureSize(textureLevel));
+    if (toolTexture != nullptr && texSize != toolTexture->GetWidth())
+    {
+        DAVA::SafeRelease(toolTexture);
+    }
 
-    if (toolTexture == NULL)
+    if (toolTexture == nullptr)
     {
         toolTexture = DAVA::Texture::CreateFBO(texSize, texSize, DAVA::FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
     }
