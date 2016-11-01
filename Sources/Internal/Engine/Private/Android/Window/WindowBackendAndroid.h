@@ -44,6 +44,9 @@ public:
 
     void TriggerPlatformEvents();
 
+    float32 GetSurfaceScale() const;
+    void SetSurfaceScale(float32 scale);
+
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
     // These methods are public intentionally as they are accessed from
@@ -72,6 +75,9 @@ private:
     std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
     Function<void(jobject)> triggerPlatformEvents;
     Function<jobject(jobject, jstring, jlong)> createNativeControl;
+    Function<void(jobject, jfloat)> setScale;
+
+    float32 surfaceScale = 1.0f;
 
     bool firstTimeSurfaceChanged = true;
 

@@ -145,6 +145,26 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
+float32 WindowBackend::GetSurfaceScale() const
+{
+    return surfaceScale;
+}
+
+void WindowBackend::SetSurfaceScale(float32 scale)
+{
+	DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    try
+    {
+        setScale(surfaceView, scale);
+        surfaceScale = scale;
+    }
+    catch (const JNI::Exception& e)
+    {
+        Logger::Error("[WindowBackend::SetSurfaceScale] failed to set scale %f: %s", scale, e.what());
+    }
+}
+
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
 {
     jobject object = nullptr;
@@ -225,6 +245,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             surfaceViewJavaClass.reset(new JNI::JavaClass("com/dava/engine/DavaSurfaceView"));
             triggerPlatformEvents = surfaceViewJavaClass->GetMethod<void>("triggerPlatformEvents");
             createNativeControl = surfaceViewJavaClass->GetMethod<jobject, jstring, jlong>("createNativeControl");
+            setScale = surfaceViewJavaClass->GetMethod<void, jfloat>("setScale");
         }
         catch (const JNI::Exception& e)
         {
