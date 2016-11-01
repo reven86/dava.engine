@@ -1,7 +1,8 @@
 #pragma once
 
-#include "NullType.h"
-#include "TypeList.h"
+#include "Base/BaseTypes.h"
+#include "Base/NullType.h"
+#include "Base/TypeList.h"
 
 #include <typeinfo>
 #include <type_traits>

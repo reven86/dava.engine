@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_ATOMIC_H__
 #define __DAVAENGINE_ATOMIC_H__
 
+#include "Base/BaseTypes.h"
 #include "Base/Platform.h"
 #include <type_traits>
 
