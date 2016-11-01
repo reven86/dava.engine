@@ -17,8 +17,9 @@ class Window;
 class TestData;
 class BaseScreen;
 class TestListScreen;
-class NativeDelegateMac;
-class NativeDelegateIos;
+struct NativeDelegateMac;
+struct NativeDelegateIos;
+struct NativeDelegateWin10;
 
 class TestBed
 {
@@ -95,6 +96,8 @@ private:
     std::unique_ptr<NativeDelegateMac> nativeDelegate;
 #elif defined(__DAVAENGINE_IPHONE__)
     std::unique_ptr<NativeDelegateIos> nativeDelegate;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    std::unique_ptr<NativeDelegateWin10> nativeDelegate;
 #endif
 };
 

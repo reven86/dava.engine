@@ -40,6 +40,7 @@
 
 #include "Infrastructure/NativeDelegateMac.h"
 #include "Infrastructure/NativeDelegateIos.h"
+#include "Infrastructure/NativeDelegateWin10.h"
 
 void CheckDeviceInfoValid();
 
@@ -102,6 +103,9 @@ TestBed::TestBed(Engine& engine)
 #elif defined(__DAVAENGINE_IPHONE__)
     nativeDelegate.reset(new NativeDelegateIos());
     engine.GetNativeService()->RegisterUIApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    nativeDelegate.reset(new NativeDelegateWin10());
+    engine.GetNativeService()->RegisterXamlApplicationListener(nativeDelegate.get());
 #endif
 
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
@@ -163,6 +167,8 @@ void TestBed::OnGameLoopStopped()
     engine.GetNativeService()->UnregisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     engine.GetNativeService()->UnregisterUIApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    engine.GetNativeService()->UnregisterXamlApplicationListener(nativeDelegate.get());
 #endif
 }
 
@@ -170,6 +176,7 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
+    nativeDelegate.reset();
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)
