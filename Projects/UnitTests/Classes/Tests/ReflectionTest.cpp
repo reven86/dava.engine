@@ -99,7 +99,7 @@ struct SimpleStruct
     }
 };
 
-class BaseBase : public DAVA::ReflectionBase
+class BaseBase : public DAVA::ReflectedBase
 {
 public:
     int basebase = 99;

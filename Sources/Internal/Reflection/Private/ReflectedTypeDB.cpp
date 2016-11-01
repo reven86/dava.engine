@@ -6,6 +6,8 @@ UnorderedMap<const RttiType*, ReflectedType*> ReflectedTypeDB::rttiTypeToReflect
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rttiNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
 
+#ifdef __REFLECTION_FEATURE__
+
 void ReflectedTypeDBB : SetPermanentName(const String& name) const
 {
     ReflectedType* rt = const_cast<ReflectedType*>(this);
@@ -17,7 +19,6 @@ void ReflectedTypeDBB : SetPermanentName(const String& name) const
     rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
-#ifdef __REFLECTION_FEATURE__
 const CtorWrapper* ReflectedType::GetCtor(const AnyFn::Params& params) const
 {
     const CtorWrapper* ret = nullptr;
@@ -53,7 +54,7 @@ const DtorWrapper* ReflectedType::GetDtor() const
 }
 #endif
 
-const ReflectedType* ReflectedType::GetByRttiType(const RttiType* type)
+const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* type)
 {
     const ReflectedType* ret = nullptr;
 
@@ -66,7 +67,7 @@ const ReflectedType* ReflectedType::GetByRttiType(const RttiType* type)
     return ret;
 }
 
-const ReflectedType* ReflectedType::GetByRttiName(const String& name)
+const ReflectedType* ReflectedTypeDB::GetByRttiName(const String& name)
 {
     const ReflectedType* ret = nullptr;
 
@@ -79,7 +80,7 @@ const ReflectedType* ReflectedType::GetByRttiName(const String& name)
     return ret;
 }
 
-const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
+const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& name)
 {
     const ReflectedType* ret = nullptr;
 

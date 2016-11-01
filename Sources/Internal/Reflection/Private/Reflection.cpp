@@ -3,6 +3,8 @@
 #include <cstring>
 
 #include "Reflection/Reflection.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/WrappersRuntime.h"
 
 namespace DAVA
 {
@@ -251,6 +253,96 @@ const Dumper::PrintersTable Dumper::pointerPrinters = {
 };
 
 } // ReflectionDetail
+
+Reflection::Reflection(const ReflectedObject& object_, const ReflectedType* objectType_, const ReflectedMeta* objectMeta_, const ValueWrapper* valueWrapper_)
+    : object(object_)
+    , objectType(objectType_)
+    , objectMeta(objectMeta_)
+    , valueWrapper(valueWrapper_)
+{
+    if (nullptr != objectType)
+    {
+        structureWrapper = objectType->structureWrapper;
+    }
+
+    if (nullptr != objectMeta)
+    {
+        if (objectMeta->HasMeta<StructureWrapper>())
+        {
+            structureWrapper = objectMeta->GetMeta<StructureWrapper>();
+        }
+    }
+}
+
+bool Reflection::HasFields() const
+{
+    return structureWrapper->HasFields(object, valueWrapper);
+}
+
+Reflection Reflection::GetField(const Any& key) const
+{
+    return structureWrapper->GetField(object, valueWrapper, key);
+}
+
+Vector<Reflection::Field> Reflection::GetFields() const
+{
+    return structureWrapper->GetFields(object, valueWrapper);
+}
+
+bool Reflection::CanAddFields() const
+{
+    return structureWrapper->CanAdd(object, valueWrapper);
+}
+
+bool Reflection::CanInsertFields() const
+{
+    return structureWrapper->CanInsert(object, valueWrapper);
+}
+
+bool Reflection::CanRemoveFields() const
+{
+    return structureWrapper->CanRemove(object, valueWrapper);
+}
+
+bool Reflection::CanCreateFieldValue() const
+{
+    return structureWrapper->CanCreateValue(object, valueWrapper);
+}
+
+Any Reflection::CreateFieldValue() const
+{
+    return structureWrapper->CreateValue(object, valueWrapper);
+}
+
+bool Reflection::AddField(const Any& key, const Any& value) const
+{
+    return structureWrapper->AddField(object, valueWrapper, key, value);
+}
+
+bool Reflection::InsertField(const Any& beforeKey, const Any& key, const Any& value) const
+{
+    return structureWrapper->InsertField(object, valueWrapper, beforeKey, key, value);
+}
+
+bool Reflection::RemoveField(const Any& key) const
+{
+    return structureWrapper->RemoveField(object, valueWrapper, key);
+}
+
+bool Reflection::HasMethods() const
+{
+    return structureWrapper->HasMethods(object, valueWrapper);
+}
+
+AnyFn Reflection::GetMethod(const String& key) const
+{
+    return structureWrapper->GetMethod(object, valueWrapper, key);
+}
+
+Vector<Reflection::Method> Reflection::GetMethods() const
+{
+    return structureWrapper->GetMethods(object, valueWrapper);
+}
 
 void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 {

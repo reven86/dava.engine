@@ -30,6 +30,7 @@ public:
 
     size_t GetSize() const;
     const char* GetName() const;
+    std::type_index GetTypeIndex() const;
     const RttiInheritance* GetInheritance() const;
 
     bool IsConst() const;
@@ -58,7 +59,7 @@ private:
     };
 
     size_t size = 0;
-    const char* name = nullptr;
+    std::type_index stdTypeIndex;
 
     const RttiType* derefType = nullptr;
     const RttiType* decayType = nullptr;

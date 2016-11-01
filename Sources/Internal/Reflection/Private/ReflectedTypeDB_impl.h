@@ -17,13 +17,13 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::false_type)
 template <typename T>
 const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
 {
-    return static_cast<const ReflectionBase*>(ptr)->GetReflectedType();
+    return static_cast<const ReflectedBase*>(ptr)->GetReflectedType();
 }
 
 template <typename T>
 const ReflectedType* GetVirtualReflectedType(const T* ptr)
 {
-    static const bool isReflectedBase = std::is_base_of<ReflectionBase, T>::value;
+    static const bool isReflectedBase = std::is_base_of<ReflectedBase, T>::value;
     return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isReflectedBase>());
 }
 
@@ -109,7 +109,7 @@ ReflectedType* ReflectedTypeDB::Edit()
         //         }
 
         rttiTypeToReflectedTypeMap[ret->rttiType] = ret;
-        rttiNameToReflectedTypeMap[ret->rttiName] = ret;
+        rttiNameToReflectedTypeMap[String(ret->rttiType->GetName())] = ret;
 
         ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
     }

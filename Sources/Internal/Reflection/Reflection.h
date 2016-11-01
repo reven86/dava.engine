@@ -5,21 +5,25 @@
 #include "Base/AnyFn.h"
 #include "Base/RttiType.h"
 
-#include "Reflection/ReflectionBase.h"
-#include "Reflection/ReflectionRaw.h"
 #include "Reflection/ReflectedMeta.h"
 #include "Reflection/ReflectedObject.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
+class ValueWrapper;
+class StructureWrapper;
+
 class Reflection final
 {
 public:
-    class Field;
-    class Method;
+    struct Field;
+    struct Method;
 
     Reflection() = default;
-    Reflection(ReflectionRaw&& raw);
+    Reflection(const Reflection&) = default;
+    Reflection(const ReflectedObject& object_, const ReflectedType* objectType_, const ReflectedMeta* objectMeta_, const ValueWrapper* valueWrapper_);
 
     bool IsValid() const;
     bool IsReadonly() const;
@@ -60,32 +64,26 @@ public:
     const Meta* GetMeta() const;
 
     template <typename T>
-    static Reflection Create(T& ptr, const ReflectedMeta* meta = nullptr);
+    static Reflection Create(T& object, const ReflectedMeta* objectMeta = nullptr);
 
 private:
     ReflectedObject object;
-
-    const ValueWrapper* vw = nullptr;
-    const StructureWrapper* sw = nullptr;
-    const ReflectedMeta* meta = nullptr;
+    const ReflectedMeta* objectMeta = nullptr;
     const ReflectedType* objectType = nullptr;
+    const ValueWrapper* valueWrapper = nullptr;
+    const StructureWrapper* structureWrapper = nullptr;
 };
 
 /// \brief A reflection field.
-class Reflection::Field
+struct Reflection::Field
 {
-public:
-    Any key; ///< field key (usually name or index)
-    Reflection ref; ///< field reflection
-
-    template <typename T>
-    static Reflection::Field Create(const Any& key, T* ptr, const ReflectedMeta* meta = nullptr);
+    Any key;
+    Reflection ref;
 };
 
 /// \brief A reflection method.
-class Reflection::Method
+struct Reflection::Method
 {
-public:
     String key; ///< method key (usually its name)
     AnyFn fn; ///< method itself with binded runtime object it belongs to
 };

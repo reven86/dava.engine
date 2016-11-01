@@ -3,13 +3,13 @@
 namespace DAVA
 {
 class ReflectedType;
-class ReflectionBase
+class ReflectedBase
 {
 public:
     virtual const ReflectedType* GetReflectedType() const = 0;
 
 private:
-    virtual ~ReflectionBase() = default;
+    virtual ~ReflectedBase() = default;
 };
 
 } // namespace DAVA

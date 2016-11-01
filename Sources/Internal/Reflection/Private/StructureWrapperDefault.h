@@ -1,5 +1,5 @@
 #pragma once
-#include "Reflection/Wrappers.h"
+#include "Reflection/WrappersRuntime.h"
 
 namespace DAVA
 {

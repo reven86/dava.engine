@@ -15,7 +15,7 @@ class ReflectedType final
 
 public:
     String permanentName;
-    const RttiType* rttiType;
+    const RttiType* rttiType; // ??? don't need it
 
     ReflectedStructure* structure;
     StructureWrapper* structureWrapper;

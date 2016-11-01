@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/RttiType.h"
 #include "Reflection/ReflectedBase.h"
 #include "Reflection/ReflectedType.h"
 
@@ -30,8 +31,8 @@ protected:
     static ReflectedType* Edit();
 
     static UnorderedMap<const RttiType*, ReflectedType*> rttiTypeToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> rttiNameToReflectedTypeMap;
+    static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
 
