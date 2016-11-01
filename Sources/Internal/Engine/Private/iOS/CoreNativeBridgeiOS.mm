@@ -8,6 +8,7 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Utils/NSStringUtils.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -172,16 +173,13 @@ void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
 }
 
-void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UIApplicationState state, UILocalNotification* notification)
+void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UILocalNotification* notification)
 {
-    if ([application applicationState] != UIApplicationStateActive)
+    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+    if (uid != nil && [uid length] != 0)
     {
-        NSString* uid = [[notification userInfo] valueForKey:@"uid"];
-        if (uid != nil && [uid length] != 0)
-        {
-            const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
-            mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
+        const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
+        mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
     }
 }
 

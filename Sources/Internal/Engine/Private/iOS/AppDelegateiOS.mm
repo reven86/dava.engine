@@ -22,7 +22,10 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (void)application:(UIApplication*)application didReceiveLocalNotification:(UILocalNotification*)notification
 {
-    bridge->ApplicationDidReceiveLocalNotification([application applicationState], notification);
+    if ([application applicationState] != UIApplicationStateActive)
+    {
+        bridge->ApplicationDidReceiveLocalNotification(notification);
+    }
 }
 
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions

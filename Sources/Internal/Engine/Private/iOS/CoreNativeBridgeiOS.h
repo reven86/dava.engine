@@ -11,7 +11,6 @@
 @class NSDictionary;
 @class FrameTimer;
 @class UILocalNotification;
-@class UIApplicationState;
 
 namespace DAVA
 {
@@ -39,7 +38,7 @@ struct CoreNativeBridge final
     void ApplicationWillEnterForeground();
     void ApplicationWillTerminate();
     void ApplicationDidReceiveMemoryWarning();
-    void ApplicationDidReceiveLocalNotification(UIApplicationState state, UILocalNotification* notification);
+    void ApplicationDidReceiveLocalNotification(UILocalNotification* notification);
 
     PlatformCore* core = nullptr;
     EngineBackend* engineBackend = nullptr;
