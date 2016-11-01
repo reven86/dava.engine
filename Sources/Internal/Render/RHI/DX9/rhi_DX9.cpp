@@ -76,6 +76,15 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
                 supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
             }
         }
+
+        found = strstr(DeviceCaps().deviceDescription, "Radeon");
+        if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
+        {
+            if (found[7] == 'X')
+            {
+                supported = false;
+            }
+        }
     }
 
     return supported;
@@ -374,9 +383,12 @@ void dx9_Initialize(const InitParam& param)
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
 
+    D3DCAPS9 caps;
+    _D3D9_Device->GetDeviceCaps(&caps);
+
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) >= 3);
     MutableDeviceCaps::Get().isInstancingSupported = true;
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
