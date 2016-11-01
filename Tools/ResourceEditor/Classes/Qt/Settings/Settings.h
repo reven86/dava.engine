@@ -113,6 +113,7 @@ public:
     static const DAVA::FastName Internal_Validate_CollisionProperties;
     static const DAVA::FastName Internal_Validate_TexturesRelevance;
     static const DAVA::FastName Internal_Validate_MaterialGroups;
+    static const DAVA::FastName Internal_Validate_ShowConsole;
 
     static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings

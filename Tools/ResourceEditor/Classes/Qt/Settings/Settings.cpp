@@ -96,6 +96,7 @@ const FastName Settings::Internal_Validate_SameNames = FastName("Internal/Valida
 const FastName Settings::Internal_Validate_CollisionProperties = FastName("Internal/ValidateCollisionProperties");
 const FastName Settings::Internal_Validate_TexturesRelevance = FastName("Internal/ValidateTexturesRelevance");
 const FastName Settings::Internal_Validate_MaterialGroups = FastName("Internal/ValidateMaterialGroups");
+const FastName Settings::Internal_Validate_ShowConsole = FastName("Internal/ValidateShowConsole");
 
 DAVA::eGPUFamily Settings::GetGPUFormat()
 {

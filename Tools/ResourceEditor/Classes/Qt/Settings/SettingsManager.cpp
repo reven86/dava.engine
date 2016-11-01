@@ -130,6 +130,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_Validate_CollisionProperties, DAVA::VariantType(true));
     CreateValue(Settings::Internal_Validate_TexturesRelevance, DAVA::VariantType(true));
     CreateValue(Settings::Internal_Validate_MaterialGroups, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_ShowConsole, DAVA::VariantType(true));
 
     const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
     DAVA::uint32 colors[nColors]; // Init from Qt::GlobalColor

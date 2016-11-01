@@ -10,6 +10,7 @@
 #include "CommandLine/Beast/BeastCommandLineTool.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorTool.h"
 #include "CommandLine/Version/VersionTool.h"
+#include "CommandLine/SceneValidation/SceneValidationTool.h"
 
 #include "Main/QtUtils.h"
 
@@ -35,6 +36,7 @@ void CommandLineManager::CreateTools()
 #endif //#if defined (__DAVAENGINE_BEAST__)
     commandLineTools.emplace_back(new VersionTool());
     commandLineTools.emplace_back(new SceneImageDump());
+    commandLineTools.emplace_back(new SceneValidationTool());
 }
 
 CommandLineManager::~CommandLineManager() = default;

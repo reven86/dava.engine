@@ -36,6 +36,7 @@ public:
 
     static const DAVA::String Links;
     static const DAVA::String Scene;
+    static const DAVA::String SceneList;
     static const DAVA::String Texture;
     static const DAVA::String Yaml;
 
@@ -61,6 +62,8 @@ public:
     static const DAVA::String Width;
     static const DAVA::String Height;
     static const DAVA::String Camera;
+
+    static const DAVA::String Validate;
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };

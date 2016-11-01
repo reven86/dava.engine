@@ -22,6 +22,7 @@ SceneValidationDialog::SceneValidationDialog(SceneEditor2* scene, QWidget* paren
 
     LoadOptions();
     ui->validateButton->setEnabled(!AreAllOptionsSetTo(false));
+    ShowConsole(ui->showConsoleCheckBox->isChecked());
 
     LoggerOutputObject* loggerOutput = new LoggerOutputObject(this);
     connect(loggerOutput, &LoggerOutputObject::OutputReady, ui->logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
@@ -34,6 +35,8 @@ void SceneValidationDialog::LoadOptions()
     ui->collisionsCheckBox->setChecked(SettingsManager::GetValue(Settings::Internal_Validate_CollisionProperties).AsBool());
     ui->relevanceCheckBox->setChecked(SettingsManager::GetValue(Settings::Internal_Validate_TexturesRelevance).AsBool());
     ui->materialGroupsCheckBox->setChecked(SettingsManager::GetValue(Settings::Internal_Validate_MaterialGroups).AsBool());
+
+    ui->showConsoleCheckBox->setChecked(SettingsManager::GetValue(Settings::Internal_Validate_ShowConsole).AsBool());
 }
 
 void SceneValidationDialog::SaveOptions()
@@ -43,14 +46,24 @@ void SceneValidationDialog::SaveOptions()
     SettingsManager::SetValue(Settings::Internal_Validate_CollisionProperties, VariantType(ui->collisionsCheckBox->isChecked()));
     SettingsManager::SetValue(Settings::Internal_Validate_TexturesRelevance, VariantType(ui->relevanceCheckBox->isChecked()));
     SettingsManager::SetValue(Settings::Internal_Validate_MaterialGroups, VariantType(ui->materialGroupsCheckBox->isChecked()));
+
+    SettingsManager::SetValue(Settings::Internal_Validate_ShowConsole, VariantType(ui->showConsoleCheckBox->isChecked()));
+}
+
+void SceneValidationDialog::DoMatrices()
+{
+    SceneValidation::ValidateMatrices(scene);
 }
 
 void SceneValidationDialog::Validate()
 {
-    ui->validateButton->setEnabled(false);
+    DVASSERT(Thread::IsMainThread());
+
+    //ui->validateButton->setEnabled(false);
 
     if (ui->matriciesCheckBox->isChecked())
     {
+        //JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &SceneValidationDialog::DoMatrices));
         SceneValidation::ValidateMatrices(scene);
     }
 
@@ -112,6 +125,7 @@ void SceneValidationDialog::OnOptionToggled(int buttonId, bool toggled)
 void SceneValidationDialog::ShowConsole(bool checked)
 {
     ui->logWidget->setVisible(checked);
+    ui->showConsoleCheckBox->setChecked(checked);
     if (!checked)
     {
         setFixedHeight(minimumSizeHint().height());

@@ -29,6 +29,7 @@ const DAVA::String OptionName::Create("-create");
 
 const DAVA::String OptionName::Links("-links");
 const DAVA::String OptionName::Scene("-scene");
+const DAVA::String OptionName::SceneList("-scenelist");
 const DAVA::String OptionName::Texture("-texture");
 const DAVA::String OptionName::Yaml("-yaml");
 
@@ -54,6 +55,8 @@ const DAVA::String OptionName::AssetCacheTimeout("-t");
 const DAVA::String OptionName::Width("-width");
 const DAVA::String OptionName::Height("-height");
 const DAVA::String OptionName::Camera("-camera");
+
+const DAVA::String OptionName::Validate("-validate");
 
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {

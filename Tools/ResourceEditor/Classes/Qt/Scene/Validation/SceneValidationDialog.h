@@ -36,6 +36,8 @@ private:
 
     bool AreAllOptionsSetTo(bool value);
 
+    void DoMatrices();
+
 private:
     SceneEditor2* scene;
     Ui::SceneValidationDialog* ui;

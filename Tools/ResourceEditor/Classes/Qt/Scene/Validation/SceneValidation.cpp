@@ -247,13 +247,13 @@ bool IsAssignableMaterialTemplate(const FastName& materialTemplatePath)
     return materialTemplatePath != DAVA::NMaterialName::SHADOW_VOLUME;
 }
 
-int32 GetCollisionTypeWaterID()
+int32 GetCollisionTypeID(const char* collisionTypeName)
 {
     const Vector<String>& collisionTypes = EditorConfig::Instance()->GetComboPropertyValues("CollisionType");
 
     for (int32 i = 0; i < collisionTypes.size(); ++i)
     {
-        if (collisionTypes[i] == "Water")
+        if (collisionTypes[i] == collisionTypeName)
         {
             return i;
         }
@@ -290,12 +290,19 @@ void ValidateMatrices(SceneEditor2* scene)
                                              return (props != nullptr && props->IsKeyExists("editor.referenceToOwner"));
                                          });
 
+    UnorderedSet<String> checkedScenes;
+
     for (const Entity* entity : container)
     {
         KeyedArchive* props = GetCustomPropertiesArchieve(entity);
         DVASSERT(props);
 
         const String pathToSourceScene = props->GetString("editor.referenceToOwner");
+
+        auto insertResult = checkedScenes.insert(pathToSourceScene);
+        bool wasAlreadyInSet = (insertResult.second == false);
+        if (wasAlreadyInSet)
+            continue;
 
         ScopedPtr<Scene> sourceScene(new Scene);
         SceneFileV2::eError result = sourceScene->LoadScene(pathToSourceScene);
@@ -360,7 +367,8 @@ void ValidateCollisionProperties(SceneEditor2* scene)
 {
     DVASSERT(scene);
 
-    int32 collisionTypeWaterId = Details::GetCollisionTypeWaterID();
+    int32 collisionTypeWaterId = Details::GetCollisionTypeID("Water");
+    int32 collisionTypeSpeedTreeId = Details::GetCollisionTypeID("SpeedTree");
 
     Vector<Entity*> container;
     scene->GetChildEntitiesWithComponent(container, Component::CUSTOM_PROPERTIES_COMPONENT);
@@ -371,13 +379,14 @@ void ValidateCollisionProperties(SceneEditor2* scene)
         DVASSERT(props);
 
         bool isWater = (props->GetInt32("CollisionType") == collisionTypeWaterId);
+        bool isSpeedTree = (props->GetInt32("CollisionType") == collisionTypeSpeedTreeId);
 
         if (props->IsKeyExists("CollisionType")
             && !isWater
+            && !isSpeedTree
             && !props->IsKeyExists("MaterialKind")
             && !props->IsKeyExists("FallType"))
         {
-            auto t = props->GetVariant("CollisionType")->GetType();
             Logger::Warning("Entity '%s' (id=%u) has 'CollisionType' property but hasn't 'MaterialKind' or 'FallType'",
                             entity->GetName().c_str(), entity->GetID());
         }
