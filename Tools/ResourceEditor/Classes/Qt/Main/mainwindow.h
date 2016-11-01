@@ -10,6 +10,7 @@
 #include "Classes/Beast/BeastProxy.h"
 
 #include "QtTools/Utils/ShortcutChecker.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "DAVAEngine.h"
 #include "Base/Platform.h"
@@ -321,6 +322,8 @@ private:
 #if defined(__DAVAENGINE_MACOS__)
     ShortcutChecker shortcutChecker;
 #endif
+
+    QtDelayedExecutor delayedExecutor;
 
 private:
     struct EmitterDescriptor

@@ -3413,7 +3413,7 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
     switch (id)
     {
     case GlobalOperations::OpenScene:
-        OpenScene(args.Cast<DAVA::String>().c_str());
+        delayedExecutor.DelayedExecute(DAVA::Bind(&QtMainWindow::OpenScene, this, QString(args.Cast<DAVA::String>().c_str())));
         break;
     case GlobalOperations::SetNameAsFilter:
         ui->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
