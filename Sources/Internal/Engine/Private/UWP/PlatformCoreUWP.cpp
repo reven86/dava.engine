@@ -6,6 +6,7 @@
 
 #include "Engine/Window.h"
 #include "Engine/UWP/NativeServiceUWP.h"
+#include "Engine/UWP/XamlApplicationListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
@@ -37,6 +38,15 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    if (savedLaunchArgs != nullptr)
+    {
+        // Here notify listeners about OnLaunched
+        engineBackend->GetPrimaryWindow()->RunAsyncOnUIThread([ this, savedLaunchArgs = savedLaunchArgs ]() {
+            NotifyListeners(ON_LAUNCHED, savedLaunchArgs);
+        });
+        savedLaunchArgs = nullptr;
+    }
+
     engineBackend->OnGameLoopStarted();
 
     while (!quitGameThread)
@@ -72,7 +82,7 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunched()
+void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
 {
     if (!gameThreadRunning)
     {
@@ -84,6 +94,14 @@ void PlatformCore::OnLaunched()
         //gameThread->Release();
 
         gameThreadRunning = true;
+
+        // Save launch arguments if game thread is not runnnig yet and notify listeners later
+        // when dava.engine is initialized and listeners have had chance to register.
+        savedLaunchArgs = launchArgs;
+    }
+    else
+    {
+        NotifyListeners(ON_LAUNCHED, launchArgs);
     }
 }
 
@@ -162,6 +180,25 @@ void PlatformCore::OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ /*gamepa
     dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
+void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    DVASSERT(listener != nullptr);
+    auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
+    if (it == end(xamlApplicationListeners))
+    {
+        xamlApplicationListeners.push_back(listener);
+    }
+}
+
+void PlatformCore::UnregisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
+    if (it != end(xamlApplicationListeners))
+    {
+        xamlApplicationListeners.erase(it);
+    }
+}
+
 void PlatformCore::GameThread()
 {
     Vector<String> cmdline = engineBackend->GetCommandLine();
@@ -169,6 +206,26 @@ void PlatformCore::GameThread()
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();
+}
+
+void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1)
+{
+    using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
+    using ::Windows::ApplicationModel::Activation::IActivatedEventArgs;
+
+    for (auto i = begin(xamlApplicationListeners), e = end(xamlApplicationListeners); i != e;)
+    {
+        XamlApplicationListener* l = *i;
+        ++i;
+        switch (type)
+        {
+        case ON_LAUNCHED:
+            l->OnLaunched(static_cast<LaunchActivatedEventArgs ^>(arg1));
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 } // namespace Private

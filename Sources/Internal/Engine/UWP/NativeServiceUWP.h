@@ -10,9 +10,26 @@
 
 namespace DAVA
 {
+/**
+    \ingroup engine_win10
+    NativeService provides access to some Win10 (Universal Windows Platform) platform specific services.
+
+    NativeService instance is obtained through `Engine::GetNativeService` method.
+*/
 class NativeService final
 {
 public:
+    /**
+        Register a listener to be invoked when `Windows::UI::Xaml::Application` lifecycle event occurs.
+        Listener should implement `DAVA::XamlApplicationListener` interface.
+    */
+    void RegisterXamlApplicationListener(XamlApplicationListener* listener);
+
+    /**
+        Unregister `Windows::UI::Xaml::Application` listener.
+    */
+    void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
+
 private:
     NativeService(Private::PlatformCore* c);
 

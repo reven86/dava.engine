@@ -30,10 +30,10 @@ UWPApplication::UWPApplication(const Vector<String>& cmdargs)
 {
 }
 
-void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ /*args*/)
+void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
     InstallEventHandlers();
-    core->OnLaunched();
+    core->OnLaunched(args);
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ /*args*/)

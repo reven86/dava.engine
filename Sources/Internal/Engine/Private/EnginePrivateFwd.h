@@ -15,6 +15,8 @@ class Dispatcher;
 struct NSApplicationDelegateListener;
 #elif defined(__DAVAENGINE_IPHONE__)
 struct UIApplicationDelegateListener;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+struct XamlApplicationListener;
 #endif
 
 namespace Private
