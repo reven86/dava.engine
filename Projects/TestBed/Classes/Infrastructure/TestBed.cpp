@@ -176,9 +176,6 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
-    // TODO FullScreen
-    //w->SetFullScreen(false);
-
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
     RegisterTests();
