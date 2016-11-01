@@ -32,7 +32,7 @@ bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString
     {
         news = newsValue.toString();
     }
-    return !platformObject.isEmpty();
+    return !launcherObject.isEmpty();
 }
 
 bool GetLauncherStrings(const QJsonValue& value, QMap<QString, QString>& strings)
