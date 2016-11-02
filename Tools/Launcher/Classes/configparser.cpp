@@ -129,12 +129,12 @@ bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch
         branch->applications.append(Application(appName));
         app = &branch->applications.last();
     }
-    QString build_type = entry["build_type"].toString();
-    if (build_type.isEmpty())
+    QString buildType = entry["build_type"].toString();
+    if (buildType.isEmpty())
     {
         return false;
     }
-    AppVersion* appVer = app->GetVersion(build_type);
+    AppVersion* appVer = app->GetVersion(buildType);
     if (appVer == nullptr)
     {
         app->versions.append(AppVersion());

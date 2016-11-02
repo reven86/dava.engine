@@ -35,7 +35,6 @@ int ConfigDownloader::exec()
     aborted = false;
     appManager->GetRemoteConfig()->Clear();
 
-    //QMap gives you a value when you use range-based for
     for (const QString& str : urls)
     {
         requests << networkManager->get(QNetworkRequest(QUrl(str)));

@@ -1,13 +1,13 @@
-#ifndef CONFIGDOWNLOADER_H
-#define CONFIGDOWNLOADER_H
+#pragma once
 
-#include <array>
+#include "filedownloader.h"
 
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
-#include "filedownloader.h"
+
+#include <array>
 
 namespace Ui
 {
@@ -57,4 +57,3 @@ private:
     std::array<QString, URLTypesCount> urls;
 };
 
-#endif // CONFIGDOWNLOADER_H
