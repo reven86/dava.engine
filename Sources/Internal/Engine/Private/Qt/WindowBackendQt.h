@@ -64,7 +64,7 @@ private:
     bool OnUserCloseRequest() override;
     void OnDestroyed() override;
     void OnFrame() override;
-    void OnResized(uint32 width, uint32 height, float32 dpi) override;
+    void OnResized(uint32 width, uint32 height) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;

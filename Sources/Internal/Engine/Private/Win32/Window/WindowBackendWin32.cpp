@@ -6,6 +6,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
+#include <ShellScalingAPI.h>
+
 #include "Engine/Window.h"
 #include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
@@ -146,15 +148,19 @@ void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 void WindowBackend::HandleSizeChanged(int32 w, int32 h)
 {
     // Do not send excessive size changed events
-    if (width != w || height != h)
+    if (lastWidth != w || lastHeight != h)
     {
-        width = w;
-        height = h;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                    static_cast<float32>(width),
-                                                                                    static_cast<float32>(height),
-                                                                                    1.0f,
-                                                                                    1.0f));
+        lastWidth = w;
+        lastHeight = h;
+
+        float32 width = static_cast<float32>(lastWidth);
+        float32 height = static_cast<float32>(lastHeight);
+
+        // on win32 surfaceWidth/surfaceHeight is same as window width/height
+        float32 surfaceWidth = width;
+        float32 surfaceHeight = height;
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, width, surfaceWidth, surfaceHeight));
     }
 }
 
@@ -198,7 +204,6 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
             return 0;
         }
     }
-
     if (!isEnteredSizingModalLoop)
     {
         HandleSizeChanged(width, height);
@@ -222,6 +227,22 @@ LRESULT WindowBackend::OnExitSizeMove()
     HandleSizeChanged(w, h);
 
     isEnteredSizingModalLoop = false;
+    return 0;
+}
+
+LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
+{
+    float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
+    float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
+    Resize(w, h);
+
+    float32 curDpi = GetDpi();
+    if (dpi != curDpi)
+    {
+        dpi = curDpi;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    }
+
     return 0;
 }
 
@@ -263,7 +284,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
         button = 1;
         break;
     case WM_LBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
+        // TODO: somehow handle mouse double-click
         return 0;
     case WM_RBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
@@ -274,7 +295,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
         button = 2;
         break;
     case WM_RBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
+        // TODO: somehow handle mouse double-click
         return 0;
     case WM_MBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
@@ -285,7 +306,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
         button = 3;
         break;
     case WM_MBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
+        // TODO: somehow handle mouse double-click
         return 0;
     case WM_XBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
@@ -296,7 +317,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
         button = xbutton == XBUTTON1 ? 4 : 5;
         break;
     case WM_XBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
+        // TODO: somehow handle mouse double-click
         return 0;
     default:
         return 0;
@@ -335,11 +356,16 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
-    width = rc.right - rc.left;
-    height = rc.bottom - rc.top;
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f));
+    lastWidth = rc.right - rc.left;
+    lastHeight = rc.bottom - rc.top;
+
+    float32 width = static_cast<float32>(lastWidth);
+    float32 height = static_cast<float32>(lastHeight);
+    float32 surfaceWidth = width;
+    float32 surfaceHeight = height;
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
@@ -450,6 +476,11 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         lresult = OnDestroy();
     }
+    else if (message == WM_DPICHANGED)
+    {
+        RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
+        lresult = OnDpiChanged(suggestedRect);
+    }
     else
     {
         isHandled = false;
@@ -514,6 +545,40 @@ bool WindowBackend::RegisterWindowClass()
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
     }
     return windowClassRegistered;
+}
+
+float32 WindowBackend::GetDpi() const
+{
+    float32 ret = 0.0f;
+
+    using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
+
+    // we are trying to get pointer on GetDpiForMonitor function with GetProcAddress
+    // because this function is available only on win8.1 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and GetDpiForMonitor wont be called
+    HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
+    MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
+
+    if (nullptr != fn)
+    {
+        UINT x = 0;
+        UINT y = 0;
+        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
+
+        ret = static_cast<float32>(x);
+    }
+    else
+    {
+        // default behavior for windows (ver < 8.1)
+        // get dpi from caps
+        HDC screen = GetDC(NULL);
+        ret = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
+        ReleaseDC(NULL, screen);
+    }
+
+    return ret;
 }
 
 } // namespace Private
