@@ -496,7 +496,7 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     switch (currentInput->device)
     {
     case eInputDevices::MOUSE:
-        webViewOffSet = webView.GetAbsolutePosition();
+        webViewPos = webView.GetAbsolutePosition();
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:

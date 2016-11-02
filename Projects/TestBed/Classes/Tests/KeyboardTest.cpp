@@ -433,8 +433,6 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
 }
 
 void KeyboardTest::OnGestureEvent(UIEvent* event)
-uint32 numMouseDblUp = 0;
-uint32 numMouseDblDown = 0;
 {
     float32 magnification = event->gesture.magnification;
     Vector2 newSize = redBox->GetSize();
