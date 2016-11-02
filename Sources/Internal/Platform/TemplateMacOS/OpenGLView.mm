@@ -16,11 +16,7 @@ using namespace DAVA;
 {
     NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
 	
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
     NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-    NSLog(@"Display bpp: %d", CGDisplayBitsPerPixel(kCGDirectMainDisplay));
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
     // Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
     NSOpenGLPixelFormatAttribute attrs[] =
@@ -30,11 +26,7 @@ using namespace DAVA;
       NSOpenGLPFANoRecovery,
 
 // Attributes Common to FullScreen and non-FullScreen
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
       NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]), //24,
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-      NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
       NSOpenGLPFADepthSize, 16,
       NSOpenGLPFAStencilSize, 8,
       NSOpenGLPFADoubleBuffer,
@@ -55,7 +47,6 @@ using namespace DAVA;
     return self;
 }
 
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 - (size_t)displayBitsPerPixel:(CGDirectDisplayID)displayId
 {
     CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
@@ -74,7 +65,6 @@ using namespace DAVA;
 
     return depth;
 }
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
 - (void)dealloc
 {
