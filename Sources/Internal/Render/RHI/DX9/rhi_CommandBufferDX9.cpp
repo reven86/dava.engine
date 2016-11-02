@@ -1016,7 +1016,6 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
         VertexBufferDX9::LogUnrestoredBacktraces();
         IndexBufferDX9::LogUnrestoredBacktraces();
         DVASSERT_MSG(0, "Failed to restore all resources in time.");
-
     }
 #endif
 }
