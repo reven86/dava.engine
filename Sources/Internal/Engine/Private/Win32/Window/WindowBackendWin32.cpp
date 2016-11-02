@@ -160,7 +160,7 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 surfaceWidth = width;
         float32 surfaceHeight = height;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, width, surfaceWidth, surfaceHeight));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
     }
 }
 
