@@ -1,6 +1,7 @@
 #include "../dbg_Draw.h"
 #include "../rhi_ShaderSource.h"
 #include "../rhi_ShaderCache.h"
+#include "rhi_Utils.h"
 
 #include "Math/Matrix4.h"
 #include "Math/Vector.h"
@@ -681,8 +682,7 @@ DbgDraw::Text2D(int x, int y, uint32 color, const char* format, ...)
 
 //------------------------------------------------------------------------------
 
-unsigned
-DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
+unsigned DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
 {
     va_list arglist;
     char text[2048] = { 0 };

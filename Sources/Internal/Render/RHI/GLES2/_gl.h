@@ -4,13 +4,15 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-    #include "GL/glew.h"
-    #include <GL/GL.h>
-    #include "GL/wglew.h"
-    
-    #define GetGLErrorString gluErrorString
+#include "GL/glew.h"
+#include <GL/GL.h>
+#include "GL/wglew.h"
 
-    #include "win_gl.h"
+
+    
+#define GetGLErrorString gluErrorString
+
+#include "win_gl.h"
 
 #elif defined(__DAVAENGINE_MACOS__)
 
@@ -415,10 +417,6 @@ extern GLuint _GLES2_LastSetVB;
 extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
-
-#if defined(__DAVAENGINE_WIN32__)
-extern HDC _GLES2_WindowDC;
-#endif
 
 extern bool _GLES2_IsDebugSupported;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;

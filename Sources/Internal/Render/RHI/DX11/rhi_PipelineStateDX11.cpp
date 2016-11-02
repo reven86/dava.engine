@@ -1,21 +1,22 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../rhi_ShaderCache.h"
-    #include "rhi_DX11.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_DX11.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
 using DAVA::uint8;
 
-    #include "_dx11.h"
-    #include <D3D11Shader.h>
-    #include <D3Dcompiler.h>
+#include "_dx11.h"
+#include <D3D11Shader.h>
+#include <D3Dcompiler.h>
 
-    #include <vector>
+#include <vector>
 
 namespace rhi
 {
@@ -545,8 +546,7 @@ void ConstBufDX11::Invalidate()
 
 //==============================================================================
 
-static void
-DumpShaderText(const char* code, unsigned code_sz)
+static void DumpShaderText(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -680,8 +680,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    // create vertex-shader
+#if 0
+	DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
+	DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
+#endif
 
+    // create vertex-shader
     hr = D3DCompile(
     (const char*)(&vprog_bin[0]), vprog_bin.size(),
     "vprog",

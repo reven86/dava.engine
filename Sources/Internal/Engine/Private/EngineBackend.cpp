@@ -678,7 +678,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->logger->EnableConsoleMode();
     }
 
-    context->moduleManager = new ModuleManager();
+    context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
     context->analyticsCore = new Analytics::Core;
@@ -687,7 +687,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
-    context->moduleManager->ResetModules();
+    context->moduleManager->ShutdownModules();
     delete context->moduleManager;
 
     if (context->jobManager != nullptr)

@@ -1,28 +1,33 @@
 #ifndef __RHI_IMPL_H__
 #define __RHI_IMPL_H__
 
-    #include "rhi_Private.h"
+#include "rhi_Private.h"
+#include "rhi_CommonImpl.h"
 
 namespace rhi
 {
 struct ResetParam;
-struct RenderDeviceCaps;
 
-struct
-Dispatch
+struct Dispatch
 {
-    //    void    (*impl_Initialize)();
     void (*impl_Reset)(const ResetParam&);
     void (*impl_Uninitialize)();
-    void (*impl_Present)(Handle);
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
     bool (*impl_TextureFormatSupported)(TextureFormat, ProgType);
 
-    void (*impl_SuspendRendering)();
-    void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
     void (*impl_SyncCPUGPU)(uint64* cpuTimestamp, uint64* gpuTimestamp);
+
+    void (*impl_InitContext)();
+    bool (*impl_ValidateSurface)(); //TODO - may be this should be part of opengl only?
+    void (*impl_FinishRendering)(); //perform finalization before going to suspend
+    void (*impl_ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
+    void (*impl_FinishFrame)(); //this functions is called from main thread
+    void (*impl_ExecuteFrame)(const CommonImpl::Frame&); //should also handle command buffer sync here
+    void (*impl_RejectFrame)(const CommonImpl::Frame&); //should also handle command buffer sync here
+    bool (*impl_PresentBuffer)();
+    void (*impl_ResetBlock)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
     void (*impl_VertexBuffer_Delete)(Handle);
@@ -112,16 +117,9 @@ Dispatch
     void (*impl_CommandBuffer_DrawInstancedPrimitive)(Handle, PrimitiveType, uint32, uint32);
     void (*impl_CommandBuffer_DrawInstancedIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32, uint32, uint32);
     void (*impl_CommandBuffer_SetMarker)(Handle, const char*);
-    void (*impl_CommandBuffer_SetSync)(Handle, Handle);
 };
 
 void SetDispatchTable(const Dispatch& dispatch);
-
-//------------------------------------------------------------------------------
-
-Size2i TextureExtents(Size2i size, uint32 level);
-uint32 TextureStride(TextureFormat format, Size2i size, uint32 level);
-uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level = 0);
 
 //------------------------------------------------------------------------------
 #if defined(__DAVAENGINE_IPHONE__)

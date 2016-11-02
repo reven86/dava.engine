@@ -1,91 +1,20 @@
 #include "../rhi_Public.h"
-    #include "rhi_Private.h"
-    #include "rhi_Pool.h"
+#include "rhi_Private.h"
+#include "rhi_CommonImpl.h"
+#include "rhi_Pool.h"
+#include "rhi_Utils.h"
 
-    #include "Core/Core.h"
-using DAVA::Logger;
+#include "Core/Core.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
+#include "RenderLoop.h"
+#include "FrameLoop.h"
 
 namespace rhi
 {
-struct
-TextureSet_t
-{
-    struct Desc
-    {
-    };
-
-    uint32 fragmentTextureCount;
-    Handle fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    uint32 vertexTextureCount;
-    Handle vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
-    int refCount;
-};
-
-typedef ResourcePool<TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false> TextureSetPool;
-RHI_IMPL_POOL(TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false);
-
-void InitTextreSetPool(uint32 maxCount)
-{
-    TextureSetPool::Reserve(maxCount);
-}
-
-struct
-TextureSetInfo
-{
-    TextureSetDescriptor desc;
-    Handle handle;
-};
-
-struct
-DepthStencilState_t
-{
-    DepthStencilState::Descriptor desc;
-    Handle state;
-    int refCount;
-};
-
-struct
-SamplerState_t
-{
-    SamplerState::Descriptor desc;
-    Handle state;
-    int refCount;
-};
-
-static DAVA::Mutex _TextureSetInfoMutex;
-static std::vector<TextureSetInfo> _TextureSetInfo;
-
-static DAVA::Mutex _DepthStencilStateInfoMutex;
-static std::vector<DepthStencilState_t> _DepthStencilStateInfo;
-
-static DAVA::Mutex _SamplerStateInfoMutex;
-static std::vector<SamplerState_t> _SamplerStateInfo;
-
-struct ScheduledDeleteResource
-{
-    Handle handle;
-    ResourceType resourceType;
-};
-
-const static uint32 frameSyncObjectsCount = 16;
-static uint32 currFrameSyncId = 0;
-static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
-static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
-static DAVA::Mutex scheduledDeleteMutex;
-
-inline void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
-{
-    scheduledDeleteMutex.Lock();
-    scheduledDeleteResources[currFrameSyncId].push_back({ handle, resourceType });
-    scheduledDeleteMutex.Unlock();
-}
-
-struct
-PacketList_t
+struct PacketList_t
 {
     struct Desc
     {
@@ -125,143 +54,6 @@ void InitPacketListPool(uint32 maxCount)
     PacketListPool::Reserve(maxCount);
 }
 
-//------------------------------------------------------------------------------
-
-HVertexBuffer
-CreateVertexBuffer(const VertexBuffer::Descriptor& desc)
-{
-    return HVertexBuffer(VertexBuffer::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate)
-{
-    if (forceImmediate)
-        VertexBuffer::Delete(vb);
-    else
-        ScheduleResourceDeletion(vb, RESOURCE_VERTEX_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapVertexBuffer(HVertexBuffer vb, uint32 offset, uint32 size)
-{
-    return VertexBuffer::Map(vb, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapVertexBuffer(HVertexBuffer vb)
-{
-    VertexBuffer::Unmap(vb);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateVertexBuffer(HVertexBuffer vb, const void* data, uint32 offset, uint32 size)
-{
-    VertexBuffer::Update(vb, data, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreVertexBuffer(HVertexBuffer vb)
-{
-    return VertexBuffer::NeedRestore(vb);
-}
-
-//------------------------------------------------------------------------------
-
-HIndexBuffer
-CreateIndexBuffer(const IndexBuffer::Descriptor& desc)
-{
-    return HIndexBuffer(IndexBuffer::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate)
-{
-    if (forceImmediate)
-        IndexBuffer::Delete(ib);
-    else
-        ScheduleResourceDeletion(ib, RESOURCE_INDEX_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapIndexBuffer(HIndexBuffer ib, uint32 offset, uint32 size)
-{
-    return IndexBuffer::Map(ib, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapIndexBuffer(HIndexBuffer ib)
-{
-    IndexBuffer::Unmap(ib);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateIndexBuffer(HIndexBuffer ib, const void* data, uint32 offset, uint32 size)
-{
-    IndexBuffer::Update(ib, data, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreIndexBuffer(HIndexBuffer ib)
-{
-    return IndexBuffer::NeedRestore(ib);
-}
-
-//------------------------------------------------------------------------------
-
-HQueryBuffer
-CreateQueryBuffer(uint32 maxObjectCount)
-{
-    return HQueryBuffer(QueryBuffer::Create(maxObjectCount));
-}
-
-//------------------------------------------------------------------------------
-
-void ResetQueryBuffer(HQueryBuffer buf)
-{
-    QueryBuffer::Reset(buf);
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate)
-{
-    if (forceImmediate)
-        QueryBuffer::Delete(buf);
-    else
-        ScheduleResourceDeletion(buf, RESOURCE_QUERY_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-bool QueryBufferIsReady(HQueryBuffer buf)
-{
-    return QueryBuffer::BufferIsReady(buf);
-}
-
-//------------------------------------------------------------------------------
-
-bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
-{
-    return QueryBuffer::IsReady(buf, objectIndex);
-}
-
-//------------------------------------------------------------------------------
-
-int QueryValue(HQueryBuffer buf, uint32 objectIndex)
-{
-    return QueryBuffer::Value(buf, objectIndex);
-}
 
 //------------------------------------------------------------------------------
 
@@ -308,446 +100,13 @@ void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
 
 //------------------------------------------------------------------------------
 
-HPipelineState
-AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
-{
-    HPipelineState ps;
-
-    if (!ps.IsValid())
-    {
-        ps = HPipelineState(PipelineState::Create(desc));
-    }
-
-    return ps;
-}
-
-//------------------------------------------------------------------------------
-
-void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate)
-{
-    //    PipelineState::Delete( rps );
-}
-
-//------------------------------------------------------------------------------
-
-HConstBuffer
-CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex)
-{
-    return HConstBuffer(PipelineState::CreateVertexConstBuffer(rps, bufIndex));
-}
-
-//------------------------------------------------------------------------------
-
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
-{
-    bool success = false;
-
-    for (unsigned i = 0; i != maxCount; ++i)
-        constBuf[i] = HConstBuffer(PipelineState::CreateVertexConstBuffer(rps, i));
-
-    return success;
-}
-
-//------------------------------------------------------------------------------
-
-HConstBuffer
-CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex)
-{
-    return HConstBuffer(PipelineState::CreateFragmentConstBuffer(rps, bufIndex));
-}
-
-//------------------------------------------------------------------------------
-
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
-{
-    bool success = false;
-
-    for (unsigned i = 0; i != maxCount; ++i)
-        constBuf[i] = HConstBuffer(PipelineState::CreateFragmentConstBuffer(rps, i));
-
-    return success;
-}
-
-//------------------------------------------------------------------------------
-
-bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount)
-{
-    return ConstBuffer::SetConst(constBuf, constIndex, constCount, data);
-}
-
-//------------------------------------------------------------------------------
-
-bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount)
-{
-    return ConstBuffer::SetConst(constBuf, constIndex, constSubIndex, data, dataCount);
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate)
-{
-    if (forceImmediate)
-        ConstBuffer::Delete(constBuf);
-    else
-        ScheduleResourceDeletion(constBuf, RESOURCE_CONST_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-HTexture
-CreateTexture(const Texture::Descriptor& desc)
-{
-    return HTexture(Texture::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteTexture(HTexture tex, bool forceImmediate)
-{
-    if (forceImmediate)
-        Texture::Delete(tex);
-    else
-        ScheduleResourceDeletion(tex, RESOURCE_TEXTURE);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapTexture(HTexture tex, uint32 level)
-{
-    return Texture::Map(tex, level);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapTexture(HTexture tex)
-{
-    Texture::Unmap(tex);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace face)
-{
-    Texture::Update(tex, data, level, face);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreTexture(HTexture tex)
-{
-    return Texture::NeedRestore(tex);
-}
-
-//------------------------------------------------------------------------------
-
-HTextureSet
-AcquireTextureSet(const TextureSetDescriptor& desc)
-{
-    HTextureSet handle;
-
-    DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
-    for (std::vector<TextureSetInfo>::const_iterator i = _TextureSetInfo.begin(), i_end = _TextureSetInfo.end(); i != i_end; ++i)
-    {
-        if (i->desc.fragmentTextureCount == desc.fragmentTextureCount && i->desc.vertexTextureCount == desc.vertexTextureCount && memcmp(i->desc.fragmentTexture, desc.fragmentTexture, desc.fragmentTextureCount * sizeof(Handle)) == 0 && memcmp(i->desc.vertexTexture, desc.vertexTexture, desc.vertexTextureCount * sizeof(Handle)) == 0)
-        {
-            TextureSet_t* ts = TextureSetPool::Get(i->handle);
-
-            ++ts->refCount;
-
-            handle = HTextureSet(i->handle);
-            break;
-        }
-    }
-
-    if (!handle.IsValid())
-    {
-        handle = HTextureSet(TextureSetPool::Alloc());
-
-        TextureSet_t* ts = TextureSetPool::Get(handle);
-        TextureSetInfo info;
-
-        ts->refCount = 1;
-        ts->fragmentTextureCount = desc.fragmentTextureCount;
-        ts->vertexTextureCount = desc.vertexTextureCount;
-        memcpy(ts->fragmentTexture, desc.fragmentTexture, desc.fragmentTextureCount * sizeof(Handle));
-        memcpy(ts->vertexTexture, desc.vertexTexture, desc.vertexTextureCount * sizeof(Handle));
-
-        info.desc = desc;
-        info.handle = handle;
-        _TextureSetInfo.push_back(info);
-    }
-
-    return handle;
-}
-
-//------------------------------------------------------------------------------
-
-HTextureSet
-CopyTextureSet(HTextureSet tsh)
-{
-    HTextureSet handle;
-    TextureSet_t* ts = TextureSetPool::Get(tsh);
-
-    if (ts)
-    {
-        ++ts->refCount;
-        handle = tsh;
-    }
-
-    return handle;
-}
-
-//------------------------------------------------------------------------------
-
-void ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
-{
-    if (tsh != InvalidHandle)
-    {
-        TextureSet_t* ts = TextureSetPool::Get(tsh);
-        if (--ts->refCount == 0)
-        {
-            if (forceImmediate)
-                TextureSetPool::Free(tsh);
-            else
-                ScheduleResourceDeletion(tsh, RESOURCE_TEXTURE_SET);
-
-            DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
-            for (std::vector<TextureSetInfo>::iterator i = _TextureSetInfo.begin(), i_end = _TextureSetInfo.end(); i != i_end; ++i)
-            {
-                if (i->handle == tsh)
-                {
-                    _TextureSetInfo.erase(i);
-                    break;
-                }
-            }
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle)
-{
-    DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
-    for (std::vector<TextureSetInfo>::iterator s = _TextureSetInfo.begin(), s_end = _TextureSetInfo.end(); s != s_end; ++s)
-    {
-        // update texture-set itself
-
-        TextureSet_t* ts = TextureSetPool::Get(s->handle);
-
-        if (ts)
-        {
-            for (unsigned i = 0; i != ts->fragmentTextureCount; ++i)
-            {
-                if (ts->fragmentTexture[i] == oldHandle)
-                    ts->fragmentTexture[i] = newHandle;
-            }
-            for (unsigned i = 0; i != ts->vertexTextureCount; ++i)
-            {
-                if (ts->vertexTexture[i] == oldHandle)
-                    ts->vertexTexture[i] = newHandle;
-            }
-        }
-
-        // update desc as well
-
-        for (uint32 t = 0; t != s->desc.fragmentTextureCount; ++t)
-        {
-            if (s->desc.fragmentTexture[t] == oldHandle)
-                s->desc.fragmentTexture[t] = newHandle;
-        }
-        for (uint32 t = 0; t != s->desc.vertexTextureCount; ++t)
-        {
-            if (s->desc.vertexTexture[t] == oldHandle)
-                s->desc.vertexTexture[t] = newHandle;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-HDepthStencilState
-AcquireDepthStencilState(const DepthStencilState::Descriptor& desc)
-{
-    Handle ds = InvalidHandle;
-    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
-    for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
-    {
-        if (memcmp(&(i->desc), &desc, sizeof(DepthStencilState::Descriptor)) == 0)
-        {
-            ds = i->state;
-            ++i->refCount;
-            break;
-        }
-    }
-
-    if (ds == InvalidHandle)
-    {
-        DepthStencilState_t info;
-
-        info.desc = desc;
-        info.state = DepthStencilState::Create(desc);
-        info.refCount = 1;
-
-        _DepthStencilStateInfo.push_back(info);
-        ds = info.state;
-    }
-
-    return HDepthStencilState(ds);
-}
-
-//------------------------------------------------------------------------------
-
-HDepthStencilState
-CopyDepthStencilState(HDepthStencilState ds)
-{
-    HDepthStencilState handle;
-
-    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
-    for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
-    {
-        if (i->state == ds)
-        {
-            ++i->refCount;
-            handle = ds;
-            break;
-        }
-    }
-
-    return handle;
-}
-
-//------------------------------------------------------------------------------
-
-void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate)
-{
-    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
-    for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
-    {
-        if (i->state == ds)
-        {
-            if (--i->refCount == 0)
-            {
-                if (forceImmediate)
-                    DepthStencilState::Delete(i->state);
-                else
-                    ScheduleResourceDeletion(i->state, RESOURCE_DEPTHSTENCIL_STATE);
-                _DepthStencilStateInfo.erase(i);
-            }
-
-            break;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-HSamplerState
-AcquireSamplerState(const SamplerState::Descriptor& desc)
-{
-    Handle ss = InvalidHandle;
-
-    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
-    for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
-    {
-        if (memcmp(&(i->desc), &desc, sizeof(SamplerState::Descriptor)) == 0)
-        {
-            ss = i->state;
-            ++i->refCount;
-            break;
-        }
-    }
-
-    if (ss == InvalidHandle)
-    {
-        SamplerState_t info;
-
-        info.desc = desc;
-        info.state = SamplerState::Create(desc);
-        info.refCount = 1;
-
-        _SamplerStateInfo.push_back(info);
-        ss = info.state;
-    }
-
-    return HSamplerState(ss);
-}
-
-//------------------------------------------------------------------------------
-
-HSamplerState
-CopySamplerState(HSamplerState ss)
-{
-    Handle handle = InvalidHandle;
-
-    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
-    for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
-    {
-        if (i->state == ss)
-        {
-            ++i->refCount;
-            handle = i->state;
-            break;
-        }
-    }
-
-    return HSamplerState(handle);
-}
-
-//------------------------------------------------------------------------------
-
-void ReleaseSamplerState(HSamplerState ss, bool forceImmediate)
-{
-    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
-    for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
-    {
-        if (i->state == ss)
-        {
-            if (--i->refCount == 0)
-            {
-                if (forceImmediate)
-                    SamplerState::Delete(i->state);
-                else
-                    ScheduleResourceDeletion(i->state, RESOURCE_SAMPLER_STATE);
-                _SamplerStateInfo.erase(i);
-            }
-
-            break;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-HSyncObject
-CreateSyncObject()
-{
-    return HSyncObject(SyncObject::Create());
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteSyncObject(HSyncObject obj)
-{
-    SyncObject::Delete(obj);
-}
-
-//------------------------------------------------------------------------------
-
-bool SyncObjectSignaled(HSyncObject obj)
-{
-    return SyncObject::IsSygnaled(obj);
-}
-
-//------------------------------------------------------------------------------
-
-HRenderPass
-AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList)
+HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList)
 {
     Handle cb[8];
     DVASSERT(packetListCount < countof(cb));
 
     Handle pass = RenderPass::Allocate(passDesc, packetListCount, cb);
+    FrameLoop::AddPass(pass);
 
     for (unsigned i = 0; i != packetListCount; ++i)
     {
@@ -778,16 +137,6 @@ void BeginRenderPass(HRenderPass pass)
 void EndRenderPass(HRenderPass pass)
 {
     RenderPass::End(pass);
-}
-
-bool NeedInvertProjection(const RenderPassConfig& passDesc)
-{
-    bool isRT =
-    (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
-    (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
-    (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
-
-    return (isRT && !rhi::DeviceCaps().isUpperLeftRTOrigin);
 }
 
 //------------------------------------------------------------------------------
@@ -946,7 +295,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         {
             if (p->textureSet != InvalidHandle)
             {
-                TextureSet_t* ts = TextureSetPool::Get(p->textureSet);
+                CommonImpl::TextureSet_t* ts = TextureSet::Get(p->textureSet);
                 for (unsigned i = 0; i != ts->fragmentTextureCount; ++i)
                 {
                     rhi::CommandBuffer::SetFragmentTexture(cmdBuf, i, ts->fragmentTexture[i]);
@@ -1032,84 +381,56 @@ void AddPacket(HPacketList packetList, const Packet& packet)
     AddPackets(packetList, &packet, 1);
 }
 
-/**/
-
-void ProcessScheduledDelete()
-{
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
-
-    for (int i = 0; i < frameSyncObjectsCount; i++)
-    {
-        if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
-        {
-            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)
-            {
-                ScheduledDeleteResource& res = *it;
-                switch (res.resourceType)
-                {
-                case RESOURCE_VERTEX_BUFFER: //+
-                    VertexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_INDEX_BUFFER: //+
-                    IndexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE: //+
-                    Texture::Delete(res.handle);
-                    break;
-                case RESOURCE_QUERY_BUFFER: //+
-                    QueryBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_CONST_BUFFER: //+
-                    ConstBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_PIPELINE_STATE: //-
-                    PipelineState::Delete(res.handle);
-                    break;
-                case RESOURCE_DEPTHSTENCIL_STATE: //+
-                    DepthStencilState::Delete(res.handle);
-                    break;
-                case RESOURCE_SAMPLER_STATE: //+
-                    SamplerState::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE_SET:
-                    TextureSetPool::Free(res.handle);
-                    break;
-                default:
-                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
-                }
-            }
-            scheduledDeleteResources[i].clear();
-        }
-    }
-}
-
 void Present()
 {
-    scheduledDeleteMutex.Lock();
-    if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
-        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
-
-    PresentImpl(frameSyncObjects[currFrameSyncId]);
-
-    currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
-    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
-    if (frameSyncObjects[currFrameSyncId].IsValid())
-    {
-        DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
-        frameSyncObjects[currFrameSyncId] = HSyncObject();
-    }
-
-    ProcessScheduledDelete();
-
-    scheduledDeleteMutex.Unlock();
+    RenderLoop::Present();
 }
 
 HSyncObject GetCurrentFrameSyncObject()
 {
-    if (!frameSyncObjects[currFrameSyncId].IsValid())
-        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
+    return RenderLoop::GetCurrentFrameSyncObject();
+}
 
-    return frameSyncObjects[currFrameSyncId];
+void SuspendRendering()
+{
+    RenderLoop::SuspendRender();
+}
+
+void ResumeRendering()
+{
+    RenderLoop::ResumeRender();
+}
+
+void Initialize(Api api, const InitParam& param)
+{
+    InitializeImplementation(api, param);
+
+    //init common
+    if (param.maxTextureSetCount)
+        TextureSet::InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
+
+    //temporary here to support legacy - later read all this from config, and assert on unsupported values
+    DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
+    int32 bindToProcessor = -1;
+    uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
+    if (api == RHI_METAL)
+        renderTreadFrameCount = 0; //no render thread for metal yet
+    if (api == RHI_DX11)
+    {
+        bindToProcessor = 1;
+        priority = DAVA::Thread::PRIORITY_HIGH;
+    }
+    //end of temporary
+
+    RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
+}
+
+void Uninitialize()
+{
+    UninitializeImplementation();
+    RenderLoop::UninitializeRenderLoop();
 }
 
 } //namespace rhi

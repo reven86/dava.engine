@@ -1,6 +1,5 @@
 #include "rhi_DX11.h"
-#include "../Common/rhi_Impl.h"
-
+#include "../Common/rhi_BackendImpl.h"
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 #include "Core/Core.h"
@@ -9,8 +8,15 @@ using DAVA::Logger;
 #include "_dx11.h"
 #include "../rhi_Type.h"
 #include "../Common/dbg_StatSet.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_CommonImpl.h"
+#include "../Common/RenderLoop.h"
+#include "../Common/FrameLoop.h"
 
 #include <vector>
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
+
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include "uap_dx11.h"
@@ -23,26 +29,26 @@ namespace rhi
 
 static Dispatch DispatchDX11 = {};
 
+static ResetParam resetParams;
+static DAVA::Mutex resetParamsSync;
+
 //------------------------------------------------------------------------------
 
-static Api
-dx11_HostApi()
+static Api dx11_HostApi()
 {
     return RHI_DX11;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_NeedRestoreResources()
+static bool dx11_NeedRestoreResources()
 {
     return false;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_TextureFormatSupported(TextureFormat format, ProgType)
+static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -66,8 +72,7 @@ dx11_TextureFormatSupported(TextureFormat format, ProgType)
 
 //------------------------------------------------------------------------------
 
-static bool
-_IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
+static bool _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -97,38 +102,63 @@ _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Uninitialize()
+static void dx11_Uninitialize()
 {
     QueryBufferDX11::ReleaseQueryPool();
     PerfQueryDX11::ReleasePerfQueryPool();
-    UninitializeRenderThreadDX11();
 }
 
-//------------------------------------------------------------------------------
+static void ResizeSwapchain()
+{
+    //todo - not implemented yet
+}
+
+static void dx11_ResetBlock()
+{
+	
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    DAVA::LockGuard<DAVA::Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
+
+    ID3D11CommandList* cl = nullptr;
+
+    _D3D11_SecondaryContext->ClearState();
+    CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
+    cl->Release();
+    _D3D11_SecondaryContext->Release();
+
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+
+#else
+    rhi::ConstBufferDX11::InvalidateAll();
+#endif
+
+    ID3D11RenderTargetView* view[] = { nullptr };
+    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
+
+    resetParamsSync.Lock();
+#if defined(__DAVAENGINE_WIN_UAP__)
+    resize_swapchain_uap(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
+#else
+    ResizeSwapchain();
+#endif
+    resetParamsSync.Unlock();
+}
 
 static void dx11_Reset(const ResetParam& param)
 {
-    if (_DX11_InitParam.fullScreen != param.fullScreen)
-    {
-    }
-    else
-    {
-	#if defined(__DAVAENGINE_WIN_UAP__)
-        resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
-	#else
-// TODO : implement resize
-	#endif
-    }
+    resetParamsSync.Lock();
+    resetParams = param;
+    resetParamsSync.Unlock();
+    RenderLoop::SetResetPending();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_SuspendRendering()
+static void dx11_SuspendRendering()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    CommandBufferDX11::DiscardAll();
+    FrameLoop::RejectFrames();
 
     IDXGIDevice3* dxgiDevice3 = NULL;
 
@@ -143,41 +173,16 @@ dx11_SuspendRendering()
 #endif
 }
 
-//------------------------------------------------------------------------------
-
-static void
-dx11_ResumeRendering()
+#if !defined(__DAVAENGINE_WIN_UAP__)
+void InitDeviceAndSwapChain()
 {
-}
-
-//------------------------------------------------------------------------------
-
-static void dx11_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
-{
-    DX11Command cmd = { DX11Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
-    ExecDX11(&cmd, 1);
-}
-
-//------------------------------------------------------------------------------
-
-void _InitDX11()
-{
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-    init_device_and_swapchain_uap(_DX11_InitParam.window);
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
-    get_device_description(MutableDeviceCaps::Get().deviceDescription);
-
-#else
-
     HRESULT hr;
     DWORD flags = 0;
-    #if RHI_DX11__FORCE_9X_PROFILE
+#if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
-    #else
+#else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-    #endif
+#endif
     DXGI_SWAP_CHAIN_DESC swapchain_desc = { 0 };
     IDXGIAdapter* defAdapter = NULL;
 
@@ -232,10 +237,10 @@ void _InitDX11()
     }
 
 
-    #if 0
+#if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
-    #endif
+#endif
 
     swapchain_desc.BufferDesc.Width = _DX11_InitParam.width;
     swapchain_desc.BufferDesc.Height = _DX11_InitParam.height;
@@ -328,12 +333,56 @@ void _InitDX11()
         DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&ds_desc, 0, &_D3D11_DepthStencilBuffer), hr);
         DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(_D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView), hr);
     }
-
+}
 #endif
+
+void dx11_InitCaps()
+{
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = false;
+    MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
+    {
+        // explicitly disable multisampling support on win phones
+        MutableDeviceCaps::Get().maxSamples = 1;
+    }
+    else
+#endif
+    {
+        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void dx11_InitContext()
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    init_device_and_swapchain_uap(_DX11_InitParam.window);
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+    get_device_description(MutableDeviceCaps::Get().deviceDescription);
+#else
+    InitDeviceAndSwapChain();    
+#endif
+
+    dx11_InitCaps();
 
     #if !RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
     #endif
+}
+
+bool dx11_CheckSurface()
+{
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -341,7 +390,6 @@ void _InitDX11()
 void dx11_Initialize(const InitParam& param)
 {
     _DX11_InitParam = param;
-    InitializeRenderThreadDX11((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
@@ -360,8 +408,11 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_HostApi = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
-    DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
-    DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
+
+    DispatchDX11.impl_InitContext = &dx11_InitContext;
+    DispatchDX11.impl_ValidateSurface = &dx11_CheckSurface;
+    DispatchDX11.impl_FinishRendering = &dx11_SuspendRendering;
+    DispatchDX11.impl_ResetBlock = &dx11_ResetBlock;
     DispatchDX11.impl_SyncCPUGPU = &dx11_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchDX11);
@@ -387,28 +438,6 @@ void dx11_Initialize(const InitParam& param)
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-
-    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
-    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
-    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
-    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
-    MutableDeviceCaps::Get().isCenterPixelMapping = false;
-    MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
-    MutableDeviceCaps::Get().isPerfQuerySupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
-    MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-    if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
-    {
-        // explicitly disable multisampling support on win phones
-        MutableDeviceCaps::Get().maxSamples = 1;
-    }
-    else 
-#endif
-    {
-        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
-    }
 }
 
 //==============================================================================

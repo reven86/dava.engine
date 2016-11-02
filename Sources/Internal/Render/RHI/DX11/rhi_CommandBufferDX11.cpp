@@ -1,4 +1,5 @@
 #include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 #include "_dx11.h"
 #include "rhi_DX11.h"
 
@@ -8,14 +9,17 @@
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
-using DAVA::Logger;
+
 #include "Core/Core.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Platform/SystemTimer.h"
-#include "Concurrency/Thread.h"
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/AutoResetEvent.h"
+
+#include "../Common/SoftwareCommandBuffer.h"
+#include "../Common/RenderLoop.h"
+#include "../Common/rhi_CommonImpl.h"
+
+using DAVA::Logger;
 
 #define LUMIA_1020_DEPTHBUF_WORKAROUND 1
 
@@ -23,241 +27,12 @@ using DAVA::Logger;
 #include "Platform/DeviceInfo.h"
 #endif
 
-namespace rhi
-{
-extern void _InitDX11();
-}
-    #include <vector>
+
+#include <vector>
 
 namespace rhi
 {
-//==============================================================================
-
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
-enum CommandDX11Type
-{
-    DX11__BEGIN,
-    DX11__END,
-
-    DX11__SET_VERTEX_DATA,
-    DX11__SET_INDICES,
-    DX11__SET_QUERY_BUFFER,
-    DX11__SET_QUERY_INDEX,
-    DX11__ISSUE_TIMESTAMP_QUERY,
-
-    DX11__SET_PIPELINE_STATE,
-    DX11__SET_CULL_MODE,
-    DX11__SET_SCISSOR_RECT,
-    DX11__SET_VIEWPORT,
-    DX11__SET_FILLMODE,
-    DX11__SET_VERTEX_PROG_CONST_BUFFER,
-    DX11__SET_FRAGMENT_PROG_CONST_BUFFER,
-    DX11__SET_FRAGMENT_TEXTURE,
-    DX11__SET_VERTEX_TEXTURE,
-
-    DX11__SET_DEPTHSTENCIL_STATE,
-    DX11__SET_SAMPLER_STATE,
-
-    DX11__DRAW_PRIMITIVE,
-    DX11__DRAW_INDEXED_PRIMITIVE,
-    DX11__DRAW_INSTANCED_PRIMITIVE,
-    DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE,
-
-    DX11__DEBUG_MARKER,
-
-    DX11__NOP
-};
-
-struct
-CommandDX11
-{
-    uint8 type;
-    uint8 size;
-
-    CommandDX11(uint8 t, uint8 sz)
-        : type(t)
-        , size(sz)
-    {
-    }
-};
-
-template <class T, CommandDX11Type t>
-struct
-CommandDX11Impl
-: public CommandDX11
-{
-    CommandDX11Impl()
-        : CommandDX11(t, sizeof(T))
-    {
-    }
-};
-
-struct
-CommandDX11_Begin : public CommandDX11Impl<CommandDX11_Begin, DX11__BEGIN>
-{
-};
-
-struct
-CommandDX11_End : public CommandDX11Impl<CommandDX11_End, DX11__END>
-{
-    Handle syncObject;
-};
-
-struct
-CommandDX11_SetVertexData : public CommandDX11Impl<CommandDX11_SetVertexData, DX11__SET_VERTEX_DATA>
-{
-    uint16 streamIndex;
-    Handle vb;
-};
-
-struct
-CommandDX11_SetIndices : public CommandDX11Impl<CommandDX11_SetIndices, DX11__SET_INDICES>
-{
-    Handle ib;
-};
-
-struct
-CommandDX11_SetQueryBuffer : public CommandDX11Impl<CommandDX11_SetQueryBuffer, DX11__SET_QUERY_BUFFER>
-{
-    Handle queryBuf;
-};
-
-struct
-CommandDX11_SetQueryIndex : public CommandDX11Impl<CommandDX11_SetQueryIndex, DX11__SET_QUERY_INDEX>
-{
-    uint32 objectIndex;
-};
-
-struct
-CommandDX11_SetPipelineState : public CommandDX11Impl<CommandDX11_SetPipelineState, DX11__SET_PIPELINE_STATE>
-{
-    Handle ps;
-    uint32 vdeclUID;
-};
-
-struct
-CommandDX11_SetDepthStencilState : public CommandDX11Impl<CommandDX11_SetDepthStencilState, DX11__SET_DEPTHSTENCIL_STATE>
-{
-    Handle depthStencilState;
-};
-
-struct
-CommandDX11_SetSamplerState : public CommandDX11Impl<CommandDX11_SetSamplerState, DX11__SET_SAMPLER_STATE>
-{
-    Handle samplerState;
-};
-
-struct
-CommandDX11_SetCullMode : public CommandDX11Impl<CommandDX11_SetCullMode, DX11__SET_CULL_MODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandDX11_SetScissorRect : public CommandDX11Impl<CommandDX11_SetScissorRect, DX11__SET_SCISSOR_RECT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandDX11_SetViewport : public CommandDX11Impl<CommandDX11_SetViewport, DX11__SET_VIEWPORT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandDX11_SetFillMode : public CommandDX11Impl<CommandDX11_SetFillMode, DX11__SET_FILLMODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandDX11_SetVertexProgConstBuffer : public CommandDX11Impl<CommandDX11_SetVertexProgConstBuffer, DX11__SET_VERTEX_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    const void* inst;
-};
-
-struct
-CommandDX11_SetFragmentProgConstBuffer : public CommandDX11Impl<CommandDX11_SetFragmentProgConstBuffer, DX11__SET_FRAGMENT_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    const void* inst;
-};
-
-struct
-CommandDX11_SetFragmentTexture : public CommandDX11Impl<CommandDX11_SetFragmentTexture, DX11__SET_FRAGMENT_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandDX11_SetVertexTexture : public CommandDX11Impl<CommandDX11_SetVertexTexture, DX11__SET_VERTEX_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandDX11_DrawPrimitive : public CommandDX11Impl<CommandDX11_DrawPrimitive, DX11__DRAW_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 vertexCount;
-    uint32 baseVertex;
-};
-
-struct
-CommandDX11_DrawIndexedPrimitive : public CommandDX11Impl<CommandDX11_DrawIndexedPrimitive, DX11__DRAW_INDEXED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-};
-
-struct
-CommandDX11_DrawInstancedPrimitive : public CommandDX11Impl<CommandDX11_DrawInstancedPrimitive, DX11__DRAW_INSTANCED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 instCount;
-};
-
-struct
-CommandDX11_DrawInstancedIndexedPrimitive : public CommandDX11Impl<CommandDX11_DrawInstancedIndexedPrimitive, DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-    uint32 instCount;
-    uint32 baseInst;
-};
-
-struct
-CommandDX11_SetMarker : public CommandDX11Impl<CommandDX11_SetMarker, DX11__DEBUG_MARKER>
-{
-};
-
-struct
-CommandDX11_IssueTimestamptQuery : public CommandDX11Impl<CommandDX11_IssueTimestamptQuery, DX11__ISSUE_TIMESTAMP_QUERY>
-{
-    Handle perfQuery;
-};
-
-
-#endif
-
-//==============================================================================
-
-struct
-RasterizerParamDX11
+struct RasterizerParamDX11
 {
     uint32 cullMode : 3;
     uint32 scissorEnabled : 1;
@@ -269,22 +44,20 @@ RasterizerParamDX11
     }
 };
 
-struct
-RasterizerStateDX11
+struct RasterizerStateDX11
 {
     RasterizerParamDX11 param;
     ID3D11RasterizerState* state;
 };
 
 //==============================================================================
-
-class
-CommandBufferDX11_t
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+class CommandBufferDX11_t
+#else
+class CommandBufferDX11_t : public SoftwareCommandBuffer
+#endif
 {
 public:
-    CommandBufferDX11_t();
-    ~CommandBufferDX11_t();
-
     void Begin(ID3D11DeviceContext* context);
     void Reset();
     void Execute();
@@ -316,29 +89,12 @@ public:
     Handle last_ps;
     uint32 last_vdecl;
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    ID3D11DeviceContext* context;
-    ID3DUserDefinedAnnotation* contextAnnotation;
-    ID3D11CommandList* commandList;
+    ID3D11DeviceContext* context = nullptr;
+    ID3DUserDefinedAnnotation* contextAnnotation = nullptr;
+    ID3D11CommandList* commandList = nullptr;
 
     ID3D11Buffer* vertexConstBuffer[MAX_CONST_BUFFER_COUNT];
     ID3D11Buffer* fragmentConstBuffer[MAX_CONST_BUFFER_COUNT];
-#else
-    template <class T>
-    T* allocCmd()
-    {
-        if (curUsedSize + sizeof(T) >= cmdDataSize)
-        {
-            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
-            cmdData = (uint8*)::realloc(cmdData, cmdDataSize);
-        }
-
-        uint8* p = cmdData + curUsedSize;
-        curUsedSize += sizeof(T);
-        return new ((T*)p) T();
-    }
-    uint8* cmdData;
-    uint32 cmdDataSize;
-    uint32 curUsedSize;
 #endif
 
     PerfQueryDX11::PerfQueryFrameDX11* perfQueryFrame;
@@ -346,8 +102,7 @@ public:
     Handle sync;
 };
 
-class
-RenderPassDX11_t
+class RenderPassDX11_t
 {
 public:
     std::vector<Handle> cmdBuf;
@@ -356,8 +111,7 @@ public:
     Handle perfQuery1;
 };
 
-struct
-SyncObjectDX11_t
+struct SyncObjectDX11_t
 {
     uint32 frame;
     uint32 is_signaled : 1;
@@ -372,47 +126,20 @@ RHI_IMPL_POOL(CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descr
 RHI_IMPL_POOL(RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-struct
-FrameDX11
-{
-    unsigned number;
-    Handle sync;
-    PerfQueryDX11::PerfQueryFrameDX11* perfQueryFrame;
-    std::vector<Handle> pass;
-    uint32 readyToExecute : 1;
-    uint32 toBeDiscarded : 1;
+static DAVA::Mutex _DX11_SyncObjectsSync;
 
-    ID3D11CommandList* cmdList;
-};
+static bool _DX11_PerfQuerySetPending = false;
 
-static std::vector<FrameDX11> _DX11_Frame;
-static bool _DX11_FrameStarted = false;
-static unsigned _DX11_FrameNumber = 1;
-static bool _DX11_ResetPending = false;
-//static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex _DX11_FrameSync;
-
-static DAVA::AutoResetEvent _DX11_FramePreparedEvent(false, 400);
-static DAVA::AutoResetEvent _DX11_FrameDoneEvent(false, 400);
-
-static void _ExecuteQueuedCommandsDX11();
-
-static DAVA::Thread* _DX11_RenderThread = nullptr;
-static unsigned _DX11_RenderThreadFrameCount = 0;
-static bool _DX11_RenderThreadExitPending = false;
-static DAVA::Spinlock _DX11_RenderThreadExitSync;
-static DAVA::Semaphore _DX11_RenderThreadStartedSync(0);
-
-static DX11Command* _DX11_PendingImmediateCmd = nullptr;
-static uint32 _DX11_PendingImmediateCmdCount = 0;
-static DAVA::Mutex _DX11_PendingImmediateCmdSync;
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+DAVA::Vector<ID3D11CommandList*> pendingSecondaryCmdLists;
+DAVA::Mutex pendingSecondaryCmdListSync;
+#endif
 
 //------------------------------------------------------------------------------
 
 static std::vector<RasterizerStateDX11> _RasterizerStateDX11;
 
-static ID3D11RasterizerState*
-_GetRasterizerState(RasterizerParamDX11 param)
+static ID3D11RasterizerState* dx11_GetRasterizerState(RasterizerParamDX11 param)
 {
     ID3D11RasterizerState* state = nullptr;
 
@@ -474,8 +201,7 @@ _GetRasterizerState(RasterizerParamDX11 param)
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+static Handle dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
     DVASSERT(passDesc.IsValid());
@@ -521,39 +247,13 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_RenderPass_Begin(Handle pass)
+static void dx11_RenderPass_Begin(Handle pass)
 {
-    _DX11_FrameSync.Lock();
-
-    if (!_DX11_FrameStarted)
-    {
-        _DX11_Frame.push_back(FrameDX11());
-        _DX11_Frame.back().number = _DX11_FrameNumber;
-        _DX11_Frame.back().sync = rhi::InvalidHandle;
-        _DX11_Frame.back().perfQueryFrame = PerfQueryDX11::NextPerfQueryFrame();
-        _DX11_Frame.back().readyToExecute = false;
-        _DX11_Frame.back().toBeDiscarded = false;
-        _DX11_Frame.back().cmdList = nullptr;
-
-        Trace("\n\n-------------------------------\nframe %u started\n", _DX11_FrameNumber);
-        _DX11_FrameStarted = true;
-        ++_DX11_FrameNumber;
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
-        ConstBufferDX11::InvalidateAllInstances();
-#endif
-    }
-
-    if (_DX11_Frame.size())
-        _DX11_Frame.back().pass.push_back(pass);
-
-    _DX11_FrameSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_RenderPass_End(Handle pass)
+static void dx11_RenderPass_End(Handle pass)
 {
 }
 
@@ -571,8 +271,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_Begin(Handle cmdBuf)
+static void dx11_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -581,14 +280,13 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     cb->Begin(context);
 #else
     cb->curUsedSize = 0;
-    CommandDX11_Begin* cmd = cb->allocCmd<CommandDX11_Begin>();
+    cb->allocCmd<SWCommand_Begin>();
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
+static void dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
@@ -600,15 +298,14 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     cb->sync = syncObject;
     cb->isComplete = true;
 #else
-    CommandDX11_End* cmd = cb->allocCmd<CommandDX11_End>();
+    SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
+static void dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -627,16 +324,15 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
         StatSet::IncStat(stat_SET_PS, 1);
     }
 #else
-    CommandDX11_SetPipelineState* cmd = cb->allocCmd<CommandDX11_SetPipelineState>();
+    SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
     cmd->ps = ps;
-    cmd->vdeclUID = vdeclUID;
+    cmd->vdecl = vdeclUID;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
+static void dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
@@ -644,7 +340,7 @@ dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
     cb->rs_param.cullMode = mode;
     cb->cur_rs = nullptr;
 #else
-    CommandDX11_SetCullMode* cmd = cb->allocCmd<CommandDX11_SetCullMode>();
+    SWCommand_SetCullMode* cmd = cb->allocCmd<SWCommand_SetCullMode>();
     cmd->mode = mode;
 #endif
 }
@@ -675,18 +371,17 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
         cb->cur_rs = nullptr;
     }
 #else
-    CommandDX11_SetScissorRect* cmd = cb->allocCmd<CommandDX11_SetScissorRect>();
+    SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
+static void dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     int x = vp.x;
@@ -713,33 +408,31 @@ dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
         cb->context->RSSetViewports(1, &(cb->def_viewport));
     }
 #else
-    CommandDX11_SetViewport* cmd = cb->allocCmd<CommandDX11_SetViewport>();
+    SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
+static void dx11_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     cb->rs_param.wireframe = (mode == FILLMODE_WIREFRAME);
 #else
-    CommandDX11_SetFillMode* cmd = cb->allocCmd<CommandDX11_SetFillMode>();
+    SWCommand_SetFillMode* cmd = cb->allocCmd<SWCommand_SetFillMode>();
     cmd->mode = mode;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
+static void dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
@@ -748,7 +441,7 @@ dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
     if (!cb->cur_vb_stride[streamIndex])
         cb->cur_vb_stride[streamIndex] = PipelineStateDX11::VertexLayoutStride(cb->cur_pipelinestate, streamIndex);
 #else
-    CommandDX11_SetVertexData* cmd = cb->allocCmd<CommandDX11_SetVertexData>();
+    SWCommand_SetVertexData* cmd = cb->allocCmd<SWCommand_SetVertexData>();
     cmd->vb = vb;
     cmd->streamIndex = streamIndex;
 #endif
@@ -756,15 +449,14 @@ dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
+static void dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::SetToRHI(buffer, cb->context, cb->vertexConstBuffer);
 #else
-    CommandDX11_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandDX11_SetVertexProgConstBuffer>();
+    SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst = ConstBufferDX11::Instance(buffer);
@@ -773,8 +465,7 @@ dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle b
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
+static void dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
@@ -782,7 +473,7 @@ dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
     TextureDX11::SetToRHIVertex(tex, unitIndex, cb->context);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandDX11_SetVertexTexture* cmd = cb->allocCmd<CommandDX11_SetVertexTexture>();
+    SWCommand_SetVertexTexture* cmd = cb->allocCmd<SWCommand_SetVertexTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -790,15 +481,14 @@ dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
+static void dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     IndexBufferDX11::SetToRHI(ib, 0, cb->context);
 #else
-    CommandDX11_SetIndices* cmd = cb->allocCmd<CommandDX11_SetIndices>();
+    SWCommand_SetIndices* cmd = cb->allocCmd<SWCommand_SetIndices>();
     cmd->ib = ib;
 #endif
 }
@@ -814,7 +504,7 @@ dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     if (cb->cur_query_buf != InvalidHandle)
         QueryBufferDX11::SetQueryIndex(cb->cur_query_buf, objectIndex, cb->context);
 #else
-    CommandDX11_SetQueryIndex* cmd = cb->allocCmd<CommandDX11_SetQueryIndex>();
+    SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
 #endif
 }
@@ -830,7 +520,7 @@ dx11_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     cb->cur_query_buf = queryBuf;
 #else
-    CommandDX11_SetQueryBuffer* cmd = cb->allocCmd<CommandDX11_SetQueryBuffer>();
+    SWCommand_SetQueryBuffer* cmd = cb->allocCmd<SWCommand_SetQueryBuffer>();
     cmd->queryBuf = queryBuf;
 #endif
 }
@@ -842,7 +532,7 @@ dx11_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle perfQuery)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     PerfQueryDX11::IssueTimestamp(PerfQueryDX11::CurrentPerfQueryFrame(), perfQuery, cb->context);
 #else
-    CommandDX11_IssueTimestamptQuery* cmd = cb->allocCmd<CommandDX11_IssueTimestamptQuery>();
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
     cmd->perfQuery = perfQuery;
 #endif
 }
@@ -857,7 +547,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::SetToRHI(buffer, cb->context, cb->fragmentConstBuffer);
 #else
-    CommandDX11_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandDX11_SetFragmentProgConstBuffer>();
+    SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst = ConstBufferDX11::Instance(buffer);
@@ -875,7 +565,7 @@ dx11_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle te
     TextureDX11::SetToRHIFragment(tex, unitIndex, cb->context);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandDX11_SetFragmentTexture* cmd = cb->allocCmd<CommandDX11_SetFragmentTexture>();
+    SWCommand_SetFragmentTexture* cmd = cb->allocCmd<SWCommand_SetFragmentTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -891,7 +581,7 @@ dx11_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DepthStencilStateDX11::SetToRHI(depthStencilState, cb->context);
 #else
-    CommandDX11_SetDepthStencilState* cmd = cb->allocCmd<CommandDX11_SetDepthStencilState>();
+    SWCommand_SetDepthStencilState* cmd = cb->allocCmd<SWCommand_SetDepthStencilState>();
     cmd->depthStencilState = depthStencilState;
 #endif
 }
@@ -907,7 +597,7 @@ dx11_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
     SamplerStateDX11::SetToRHI(samplerState, cb->context);
     StatSet::IncStat(stat_SET_SS, 1);
 #else
-    CommandDX11_SetSamplerState* cmd = cb->allocCmd<CommandDX11_SetSamplerState>();
+    SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
 #endif
 }
@@ -932,12 +622,11 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawPrimitive* cmd = cb->allocCmd<CommandDX11_DrawPrimitive>();
+    SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
     cb->_ApplyTopology(type, count, &vertexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = 0;
+    cmd->mode = cb->cur_topo;
+    cmd->vertexCount = vertexCount;    
 #endif
 }
 
@@ -960,12 +649,11 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawIndexedPrimitive>();
+    SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
     cb->_ApplyTopology(type, count, &indexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = firstVertex;
+    cmd->mode = cb->cur_topo;
+    cmd->firstVertex = firstVertex;
     cmd->indexCount = indexCount;
     cmd->startIndex = startIndex;
 #endif
@@ -991,13 +679,12 @@ dx11_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uin
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawInstancedPrimitive>();
+    SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
     cb->_ApplyTopology(type, count, &vertexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->instCount = instCount;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = 0;
+    cmd->mode = cb->cur_topo;
+    cmd->instanceCount = instCount;
+    cmd->vertexCount = vertexCount;    
 #endif
 }
 
@@ -1020,16 +707,15 @@ dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType ty
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawInstancedIndexedPrimitive>();
+    SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
     cb->_ApplyTopology(type, count, &indexCount);
 
-    cmd->topo = cb->cur_topo;
+    cmd->mode = cb->cur_topo;
     cmd->indexCount = indexCount;
-    cmd->instCount = instCount;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = firstVertex;
-    cmd->instCount = instCount;
-    cmd->baseInst = baseInstance;
+    cmd->instanceCount = instCount;
+    cmd->firstVertex = firstVertex;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInstance;
 #endif
 }
 
@@ -1058,9 +744,9 @@ dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx11_SyncObject_Create()
+static Handle dx11_SyncObject_Create()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     Handle handle = SyncObjectPoolDX11::Alloc();
     SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(handle);
 
@@ -1072,17 +758,17 @@ dx11_SyncObject_Create()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_SyncObject_Delete(Handle obj)
+static void dx11_SyncObject_Delete(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     SyncObjectPoolDX11::Free(obj);
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_SyncObject_IsSignaled(Handle obj)
+static bool dx11_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     if (!SyncObjectPoolDX11::IsAlive(obj))
         return true;
 
@@ -1097,161 +783,153 @@ dx11_SyncObject_IsSignaled(Handle obj)
 
 //------------------------------------------------------------------------------
 
-static void
-_ExecuteQueuedCommandsDX11()
+static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_QUEUED_CMDS);
+
+    DVASSERT(frame.readyToExecute);
+
+    DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX11::IsAlive(frame.sync));
 
     StatSet::ResetAll();
 
     Trace("rhi-dx11.exec-queued-cmd\n");
 
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Lock();
-
     std::vector<RenderPassDX11_t*> pass;
-    std::vector<Handle> pass_h;
-    ID3D11CommandList* cmdList = nullptr;
-    PerfQueryDX11::PerfQueryFrameDX11* perfQueryFrame = nullptr;
     unsigned frame_n = 0;
-    bool do_exec = true;
-    bool do_discard = false;
 
-    _DX11_FrameSync.Lock();
-    if (_DX11_Frame.size())
+    for (Handle p : frame.pass)
     {
-        for (std::vector<Handle>::iterator p = _DX11_Frame.begin()->pass.begin(), p_end = _DX11_Frame.begin()->pass.end(); p != p_end; ++p)
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(p);
+        bool do_add = true;
+
+        for (unsigned i = 0; i != pass.size(); ++i)
         {
-            RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
-            bool do_add = true;
-
-            for (unsigned i = 0; i != pass.size(); ++i)
+            if (pp->priority > pass[i]->priority)
             {
-                if (pp->priority > pass[i]->priority)
-                {
-                    pass.insert(pass.begin() + i, 1, pp);
-                    do_add = false;
-                    break;
-                }
+                pass.insert(pass.begin() + i, 1, pp);
+                do_add = false;
+                break;
             }
-
-            if (do_add)
-                pass.push_back(pp);
         }
 
-        pass_h = _DX11_Frame.begin()->pass;
-        frame_n = _DX11_Frame.begin()->number;
-        cmdList = _DX11_Frame.begin()->cmdList;
-        do_discard = _DX11_Frame.begin()->toBeDiscarded;
-        perfQueryFrame = _DX11_Frame.begin()->perfQueryFrame;
-    }
-    else
-    {
-        do_exec = false;
+        if (do_add)
+            pass.push_back(pp);
     }
 
-    if (_DX11_Frame.size() && _DX11_Frame.begin()->sync != InvalidHandle)
+    frame_n = frame.frameNumber;
+
+    perfQuerySet = frame.perfQuerySet;
+
+    if (frame.sync != InvalidHandle)
     {
-        SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(_DX11_Frame.begin()->sync);
+        SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(frame.sync);
 
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
 
-    _DX11_FrameSync.Unlock();
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
 
-    PerfQueryDX11::ObtainPerfQueryMeasurment(_D3D11_ImmediateContext);
-
-    if (do_exec)
+    if (perfQuerySet != InvalidHandle)
     {
-        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-
-        PerfQueryDX11::BeginMeasurment(perfQueryFrame, _D3D11_ImmediateContext);
-        PerfQueryDX11::BeginFrame(perfQueryFrame, _D3D11_ImmediateContext);
-
-        #if RHI_DX11__USE_DEFERRED_CONTEXTS
-        _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
-        cmdList->Release();
-        cmdList = nullptr;
-        #endif
-
-        for (std::vector<RenderPassDX11_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+        if (_DX11_PerfQuerySetPending)
         {
-            RenderPassDX11_t* pp = *p;
+            bool ready = false;
+            bool valid = false;
+            PerfQuerySetDX11::ObtainResults(perfQuerySet);
+            PerfQuerySet::GetStatus(perfQuerySet, &ready, &valid);
 
-            if (pp->perfQuery0 != InvalidHandle)
-                PerfQueryDX11::IssueTimestamp(perfQueryFrame, pp->perfQuery0, _D3D11_ImmediateContext);
-
-            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+            if (ready)
             {
-                Handle cb_h = pp->cmdBuf[b];
-                CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
-
-                if (!do_discard)
-                {
-                    cb->Execute();
-                }
-
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(cb->sync);
-
-                    sync->frame = frame_n;
-                    sync->is_signaled = false;
-                }
-
-                CommandBufferPoolDX11::Free(cb_h);
+                _DX11_PerfQuerySetPending = false;
+                perfQuerySet = InvalidHandle;
             }
-
-            if (pp->perfQuery1 != InvalidHandle)
-                PerfQueryDX11::IssueTimestamp(perfQueryFrame, pp->perfQuery1, _D3D11_ImmediateContext);
         }
-
-        uint32 executedFrameIndex = 0;
-        _DX11_FrameSync.Lock();
+        else
         {
-            executedFrameIndex = _DX11_Frame.begin()->number;
-
-            Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-            _DX11_Frame.erase(_DX11_Frame.begin());
-
-            for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-                RenderPassPoolDX11::Free(*p);
-        }
-        _DX11_FrameSync.Unlock();
-
-        PerfQueryDX11::EndFrame(perfQueryFrame, _D3D11_ImmediateContext);
-
-        // do present
-        HRESULT hr = E_FAIL;
-        {
-            DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT, executedFrameIndex);
-            DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
-        }
-
-        PerfQueryDX11::EndMeasurment(perfQueryFrame, _D3D11_ImmediateContext);
-
-        // update sync-objects
-        for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
-        {
-            if (s->is_used && (frame_n - s->frame >= 2))
-                s->is_signaled = true;
+            PerfQuerySet::Reset(perfQuerySet);
+            PerfQuerySetDX11::BeginFreqMeasurment(perfQuerySet, _D3D11_ImmediateContext);
         }
     }
 
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+    if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
+        PerfQuerySetDX11::IssueFrameBeginQuery(perfQuerySet, _D3D11_ImmediateContext);
+
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    pendingSecondaryCmdListSync.Lock();
+    for (ID3D11CommandList* cmdList : pendingSecondaryCmdLists)
+    {
+        _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
+        cmdList->Release();
+    }
+    pendingSecondaryCmdLists.clear();
+    pendingSecondaryCmdListSync.Unlock();
+#endif
+
+    for (std::vector<RenderPassDX11_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    {
+        RenderPassDX11_t* pp = *p;
+
+        if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex0 != DAVA::InvalidIndex)
+            PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex0, _D3D11_ImmediateContext);
+
+        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+        {
+            Handle cb_h = pp->cmdBuf[b];
+            CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
+            cb->Execute();
+
+            if (cb->sync != InvalidHandle)
+            {
+                SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(cb->sync);
+
+                sync->frame = frame_n;
+                sync->is_signaled = false;
+            }
+            CommandBufferPoolDX11::Free(cb_h);
+        }
+
+        if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex1 != DAVA::InvalidIndex)
+            PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex1, _D3D11_ImmediateContext);
+    }
+
+    if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
+    {
+        PerfQuerySetDX11::IssueFrameEndQuery(perfQuerySet, _D3D11_ImmediateContext);
+        PerfQuerySetDX11::EndFreqMeasurment(perfQuerySet, _D3D11_ImmediateContext);
+        _DX11_PerfQuerySetPending = true;
+    }
+
+    for (Handle p : frame.pass)
+        RenderPassPoolDX11::Free(p);
+
+    _DX11_SyncObjectsSync.Lock();
+    for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
+    {
+        if (s->is_used && (frame_n - s->frame >= 2))
+            s->is_signaled = true;
+    }
+    _DX11_SyncObjectsSync.Unlock();
+}
+
+bool dx11_PresentBuffer()
+{
+    // do present
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
+    //still not sure we are to handle all situations with renderingNotPossible here
+    return true;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-_ExecDX11(DX11Command* command, uint32 cmdCount)
+static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
-
-    for (DX11Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
+    DX11Command* commandData = reinterpret_cast<DX11Command*>(command->cmdData);
+    for (DX11Command *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
 
@@ -1338,244 +1016,78 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
 
 void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
 {
-    if (force_immediate || !_DX11_RenderThreadFrameCount)
-    {
-        _ExecDX11(command, cmdCount);
-    }
-    else
-    {
-        bool scheduled = false;
-        bool executed = false;
-
-        // CRAP: busy-wait
-        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
-
-        while (!scheduled)
-        {
-            _DX11_PendingImmediateCmdSync.Lock();
-            if (!_DX11_PendingImmediateCmd)
-            {
-                _DX11_PendingImmediateCmd = command;
-                _DX11_PendingImmediateCmdCount = cmdCount;
-                scheduled = true;
-            }
-            _DX11_PendingImmediateCmdSync.Unlock();
-        }
-
-        // CRAP: busy-wait
-        while (!executed)
-        {
-            _DX11_PendingImmediateCmdSync.Lock();
-            if (!_DX11_PendingImmediateCmd)
-            {
-                executed = true;
-            }
-            _DX11_PendingImmediateCmdSync.Unlock();
-
-            if (!executed)
-            {
-                _DX11_FramePreparedEvent.Signal();
-            }
-        }
-    }
+    CommonImpl::ImmediateCommand cmd;
+    cmd.cmdData = command;
+    cmd.cmdCount = cmdCount;
+    cmd.forceImmediate = force_immediate;
+    RenderLoop::IssueImmediateCommand(&cmd);
 }
 
-//------------------------------------------------------------------------------
-
-static void
-_RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
+static void dx11_EndFrame()
 {
-    _InitDX11();
-
-    _DX11_RenderThreadStartedSync.Post();
-    Logger::Info("RHI render-thread started");
-
-    bool do_exit = false;
-    while (!do_exit)
-    {
-        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_RENDER_LOOP);
-
-        {
-            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME);
-
-            bool do_wait = true;
-            while (do_wait)
-            {
-                // CRAP: busy-wait
-                _DX11_RenderThreadExitSync.Lock();
-                do_exit = _DX11_RenderThreadExitPending;
-                _DX11_RenderThreadExitSync.Unlock();
-
-                if (do_exit)
-                    break;
-
-                _DX11_PendingImmediateCmdSync.Lock();
-                if (_DX11_PendingImmediateCmd)
-                {
-                    Trace("exec imm cmd (%u)\n", _DX11_PendingImmediateCmdCount);
-
-                    _ExecDX11(_DX11_PendingImmediateCmd, _DX11_PendingImmediateCmdCount);
-                    _DX11_PendingImmediateCmd = nullptr;
-                    _DX11_PendingImmediateCmdCount = 0;
-
-                    Trace("exec-imm-cmd done\n");
-                }
-                _DX11_PendingImmediateCmdSync.Unlock();
-
-                _DX11_FrameSync.Lock();
-                do_wait = !(_DX11_Frame.size() && _DX11_Frame.begin()->readyToExecute);
-                _DX11_FrameSync.Unlock();
-
-                if (do_wait)
-                {
-                    _DX11_FramePreparedEvent.Wait();
-                }
-            }
-        }
-
-        if (!do_exit)
-        {
-            _ExecuteQueuedCommandsDX11();
-        }
-
-        _DX11_FrameDoneEvent.Signal();
-    }
-
-    Logger::Info("RHI render-thread stopped");
-}
-
-void InitializeRenderThreadDX11(uint32 frameCount)
-{
-    _DX11_RenderThreadFrameCount = frameCount;
-
-    if (_DX11_RenderThreadFrameCount)
-    {
-        _DX11_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFuncDX11));
-        _DX11_RenderThread->SetName("RHI.dx11-render");
-        _DX11_RenderThread->Start();
-        _DX11_RenderThread->BindToProcessor(1);
-        _DX11_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
-        _DX11_RenderThreadStartedSync.Wait();
-    }
-    else
-    {
-        _InitDX11();
-    }
-}
-
-//------------------------------------------------------------------------------
-
-void UninitializeRenderThreadDX11()
-{
-    if (_DX11_RenderThreadFrameCount)
-    {
-        _DX11_RenderThreadExitSync.Lock();
-        _DX11_RenderThreadExitPending = true;
-        _DX11_RenderThreadExitSync.Unlock();
-        _DX11_FramePreparedEvent.Signal();
-
-        _DX11_RenderThread->Join();
-    }
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx11_Present(Handle sync)
-{
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PRESENT);
-
-    if (_DX11_RenderThreadFrameCount)
-    {
-        Trace("rhi-dx11.present\n");
-
-        _DX11_FrameSync.Lock();
-        {
-            if (_DX11_Frame.size())
-            {
-                #if RHI_DX11__USE_DEFERRED_CONTEXTS
-                CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
-                #endif
-
-                _DX11_Frame.back().readyToExecute = true;
-                _DX11_Frame.back().sync = sync;
-
-                _DX11_FrameStarted = false;
-                Trace("\n\n-------------------------------\nframe %u generated\n", _DX11_Frame.back().number);
-            }
-        }
-        _DX11_FrameSync.Unlock();
-
-        _DX11_FramePreparedEvent.Signal();
-
-        unsigned frame_cnt = 0;
-        bool reset_pending = false;
-
-        {
-            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION);
-            do
-            {
-                _DX11_FrameSync.Lock();
-                frame_cnt = static_cast<unsigned>(_DX11_Frame.size());
-                reset_pending = _DX11_ResetPending;
-                _DX11_FrameSync.Unlock();
-
-                if (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending)
-                {
-                    _DX11_FrameDoneEvent.Wait();
-                }
-            } while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
-        }
-    }
-    else
-    {
-        if (_DX11_Frame.size())
-        {
-            #if RHI_DX11__USE_DEFERRED_CONTEXTS
-            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
-            #endif
-
-            _DX11_Frame.back().readyToExecute = true;
-            _DX11_Frame.back().sync = sync;
-            _DX11_FrameStarted = false;
-        }
-        else
-        {
-            #if RHI_DX11__USE_DEFERRED_CONTEXTS
-            ID3D11CommandList* cl = nullptr;
-
-            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &cl));
-            _D3D11_ImmediateContext->ExecuteCommandList(cl, FALSE);
-            cl->Release();
-            #endif
-        }
-
-        _ExecuteQueuedCommandsDX11();
-    }
-}
-
-//------------------------------------------------------------------------------
-
-CommandBufferDX11_t::CommandBufferDX11_t()
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    : context(nullptr)
-    , contextAnnotation(nullptr)
-    , commandList(nullptr)
+    ID3D11CommandList* cmdList = nullptr;
+    CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &cmdList))
+    pendingSecondaryCmdListSync.Lock();
+    pendingSecondaryCmdLists.push_back(cmdList);
+    pendingSecondaryCmdListSync.Unlock();
 #else
-    : cmdData(nullptr)
-    , cmdDataSize(0)
-    , curUsedSize(0)
+    ConstBufferDX11::InvalidateAllInstances();
 #endif
-{
 }
 
-//------------------------------------------------------------------------------
-
-CommandBufferDX11_t::~CommandBufferDX11_t()
+static void dx11_RejectFrame(const CommonImpl::Frame& frame)
 {
-}
+    if (frame.sync != InvalidHandle)
+    {
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(frame.sync);
+        s->is_signaled = true;
+        s->is_used = true;
+    }
 
-//------------------------------------------------------------------------------
+    for (Handle p : frame.pass)
+    {
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(p);
+        for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
+        {
+            CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
+
+            if (cb->sync != InvalidHandle)
+            {
+                SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(cb->sync);
+                s->is_signaled = true;
+                s->is_used = true;
+            }
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+            if (cb->context)
+            {
+                if (!cb->isComplete)
+                {
+                    cb->context->ClearState();
+                    cb->context->FinishCommandList(FALSE, &(cb->commandList));
+                }
+
+                if (nullptr != cb->contextAnnotation)
+                {
+                    cb->contextAnnotation->Release();
+                    cb->contextAnnotation = nullptr;
+                }
+                cb->context->Release();
+                cb->context = nullptr;
+            }
+
+            if (cb->commandList)
+            {
+                cb->commandList->Release();
+                cb->commandList = nullptr;
+            }
+#endif
+            CommandBufferPoolDX11::Free(*b);
+        }
+        RenderPassPoolDX11::Free(p);
+    }
+}
 
 void CommandBufferDX11_t::Reset()
 {
@@ -1671,7 +1183,7 @@ void CommandBufferDX11_t::_ApplyRasterizerState()
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     if (!cur_rs)
     {
-        cur_rs = _GetRasterizerState(rs_param);
+        cur_rs = dx11_GetRasterizerState(rs_param);
     }
 
     if (cur_rs != last_rs)
@@ -1720,7 +1232,7 @@ void CommandBufferDX11_t::Execute()
         contextAnnotation = nullptr;
     }
 
-    _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
+    _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);    
 
     #if LUMIA_1020_DEPTHBUF_WORKAROUND
     {
@@ -1742,31 +1254,33 @@ void CommandBufferDX11_t::Execute()
 
     commandList->Release();
     commandList = nullptr;
+
+    
 #else
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const CommandDX11* cmd = (const CommandDX11*)c;
+        const SWCommand* cmd = (const SWCommand*)c;
 
-        switch (CommandDX11Type(cmd->type))
+        switch (SoftwareCommandType(cmd->type))
         {
-        case DX11__BEGIN:
+        case CMD_BEGIN:
         {
             Reset();
             Begin(_D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__END:
+        case CMD_END:
         {
-            sync = ((CommandDX11_End*)cmd)->syncObject;
+            sync = static_cast<const SWCommand_End*>(cmd)->syncObject;
         }
         break;
 
-        case DX11__SET_VERTEX_DATA:
+        case CMD_SET_VERTEX_DATA:
         {
-            Handle vb = ((CommandDX11_SetVertexData*)cmd)->vb;
-            unsigned stream_i = ((CommandDX11_SetVertexData*)cmd)->streamIndex;
+            Handle vb = static_cast<const SWCommand_SetVertexData*>(cmd)->vb;
+            unsigned stream_i = static_cast<const SWCommand_SetVertexData*>(cmd)->streamIndex;
 
             cur_vb[stream_i] = vb;
             if (!cur_vb_stride[stream_i])
@@ -1774,39 +1288,40 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_INDICES:
+        case CMD_SET_INDICES:
         {
-            Handle ib = ((CommandDX11_SetIndices*)cmd)->ib;
+            Handle ib = static_cast<const SWCommand_SetIndices*>(cmd)->ib;
             IndexBufferDX11::SetToRHI(ib, 0, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_QUERY_BUFFER:
+        case CMD_SET_QUERY_BUFFER:
         {
-            cur_query_buf = ((CommandDX11_SetQueryBuffer*)cmd)->queryBuf;
+            cur_query_buf = static_cast<const SWCommand_SetQueryBuffer*>(cmd)->queryBuf;
         }
         break;
 
-        case DX11__SET_QUERY_INDEX:
+        case CMD_SET_QUERY_INDEX:
         {
             if (cur_query_buf != InvalidHandle)
-                QueryBufferDX11::SetQueryIndex(cur_query_buf, ((CommandDX11_SetQueryIndex*)cmd)->objectIndex, _D3D11_ImmediateContext);
+                QueryBufferDX11::SetQueryIndex(cur_query_buf, static_cast<const SWCommand_SetQueryIndex*>(cmd)->objectIndex, context);
         }
         break;
 
-        case DX11__ISSUE_TIMESTAMP_QUERY:
+        case CMD_ISSUE_TIMESTAMP_QUERY:
         {
-            DVASSERT(perfQueryFrame);
+            Handle hset = static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->querySet;
+            uint32 timestampIndex = static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->timestampIndex;
 
             Handle perfQuery = ((CommandDX11_IssueTimestamptQuery*)cmd)->perfQuery;
             PerfQueryDX11::IssueTimestamp(perfQueryFrame, perfQuery, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_PIPELINE_STATE:
+        case CMD_SET_PIPELINE_STATE:
         {
-            Handle ps = ((CommandDX11_SetPipelineState*)cmd)->ps;
-            Handle vdeclUID = ((CommandDX11_SetPipelineState*)cmd)->vdeclUID;
+            Handle ps = static_cast<const SWCommand_SetPipelineState*>(cmd)->ps;
+            Handle vdeclUID = static_cast<const SWCommand_SetPipelineState*>(cmd)->vdecl;
             const VertexLayout* vdecl = (vdeclUID == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vdeclUID);
 
             cur_pipelinestate = ps;
@@ -1818,19 +1333,19 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_CULL_MODE:
+        case CMD_SET_CULL_MODE:
         {
-            rs_param.cullMode = CullMode(((CommandDX11_SetCullMode*)cmd)->mode);
+            rs_param.cullMode = CullMode(static_cast<const SWCommand_SetCullMode*>(cmd)->mode);
             cur_rs = nullptr;
         }
         break;
 
-        case DX11__SET_SCISSOR_RECT:
+        case CMD_SET_SCISSOR_RECT:
         {
-            int x = ((CommandDX11_SetScissorRect*)cmd)->x;
-            int y = ((CommandDX11_SetScissorRect*)cmd)->y;
-            int w = ((CommandDX11_SetScissorRect*)cmd)->w;
-            int h = ((CommandDX11_SetScissorRect*)cmd)->h;
+            int x = static_cast<const SWCommand_SetScissorRect*>(cmd)->x;
+            int y = static_cast<const SWCommand_SetScissorRect*>(cmd)->y;
+            int w = static_cast<const SWCommand_SetScissorRect*>(cmd)->width;
+            int h = static_cast<const SWCommand_SetScissorRect*>(cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -1849,12 +1364,12 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_VIEWPORT:
+        case CMD_SET_VIEWPORT:
         {
-            int x = ((CommandDX11_SetViewport*)cmd)->x;
-            int y = ((CommandDX11_SetViewport*)cmd)->y;
-            int w = ((CommandDX11_SetViewport*)cmd)->w;
-            int h = ((CommandDX11_SetViewport*)cmd)->h;
+            int x = static_cast<const SWCommand_SetViewport*>(cmd)->x;
+            int y = static_cast<const SWCommand_SetViewport*>(cmd)->y;
+            int w = static_cast<const SWCommand_SetViewport*>(cmd)->width;
+            int h = static_cast<const SWCommand_SetViewport*>(cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -1876,63 +1391,62 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_FILLMODE:
+        case CMD_SET_FILLMODE:
         {
-            rs_param.wireframe = FillMode(((CommandDX11_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME;
+            rs_param.wireframe = FillMode(static_cast<const SWCommand_SetFillMode*>(cmd)->mode) == FILLMODE_WIREFRAME;
         }
         break;
 
-        case DX11__SET_VERTEX_PROG_CONST_BUFFER:
+        case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandDX11_SetVertexProgConstBuffer*)cmd)->buffer;
-            const void* inst = ((CommandDX11_SetVertexProgConstBuffer*)cmd)->inst;
+            Handle buffer = static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd)->buffer;
+            const void* inst = static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd)->inst;
 
             ConstBufferDX11::SetToRHI(buffer, inst);
         }
         break;
 
-        case DX11__SET_FRAGMENT_PROG_CONST_BUFFER:
+        case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandDX11_SetFragmentProgConstBuffer*)cmd)->buffer;
-            const void* inst = ((CommandDX11_SetFragmentProgConstBuffer*)cmd)->inst;
+            Handle buffer = static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd)->buffer;
+            const void* inst = static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd)->inst;
 
             ConstBufferDX11::SetToRHI(buffer, inst);
         }
         break;
 
-        case DX11__SET_FRAGMENT_TEXTURE:
+        case CMD_SET_FRAGMENT_TEXTURE:
         {
-            Handle tex = ((CommandDX11_SetFragmentTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandDX11_SetFragmentTexture*)cmd)->unitIndex;
+            Handle tex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->tex;
+            unsigned unitIndex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->unitIndex;
             TextureDX11::SetToRHIFragment(tex, unitIndex, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_VERTEX_TEXTURE:
+        case CMD_SET_VERTEX_TEXTURE:
         {
-            Handle tex = ((CommandDX11_SetVertexTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandDX11_SetVertexTexture*)cmd)->unitIndex;
+            Handle tex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->tex;
+            unsigned unitIndex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->unitIndex;
             TextureDX11::SetToRHIVertex(tex, unitIndex, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_DEPTHSTENCIL_STATE:
+        case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateDX11::SetToRHI(((CommandDX11_SetDepthStencilState*)cmd)->depthStencilState, _D3D11_ImmediateContext);
+            DepthStencilStateDX11::SetToRHI(static_cast<const SWCommand_SetDepthStencilState*>(cmd)->depthStencilState, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_SAMPLER_STATE:
+        case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateDX11::SetToRHI(((CommandDX11_SetSamplerState*)cmd)->samplerState, _D3D11_ImmediateContext);
+            SamplerStateDX11::SetToRHI(static_cast<const SWCommand_SetSamplerState*>(cmd)->samplerState, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_PRIMITIVE:
+        case CMD_DRAW_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawPrimitive*)cmd)->baseVertex;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(static_cast<const SWCommand_DrawPrimitive*>(cmd)->mode);
+            unsigned vertexCount = static_cast<const SWCommand_DrawPrimitive*>(cmd)->vertexCount;
 
             if (topo != cur_topo)
             {
@@ -1942,7 +1456,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1952,20 +1466,19 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->Draw(vertexCount, baseVertex);
+            _D3D11_ImmediateContext->Draw(vertexCount, 0);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::EndQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawIndexedPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawIndexedPrimitive*)cmd)->baseVertex;
-            unsigned indexCount = ((CommandDX11_DrawIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((CommandDX11_DrawIndexedPrimitive*)cmd)->startIndex;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->mode);
+            unsigned baseVertex = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->firstVertex;
+            unsigned indexCount = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->indexCount;
+            unsigned startIndex = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->startIndex;
 
             if (topo != cur_topo)
             {
@@ -1975,7 +1488,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1992,12 +1505,11 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__DRAW_INSTANCED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawInstancedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawInstancedPrimitive*)cmd)->baseVertex;
-            unsigned instCount = ((CommandDX11_DrawInstancedPrimitive*)cmd)->instCount;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->mode);
+            unsigned vertexCount = static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->vertexCount;
+            unsigned instCount = static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->instanceCount;
 
             if (topo != cur_topo)
             {
@@ -2007,7 +1519,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -2017,22 +1529,21 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->DrawInstanced(vertexCount, instCount, baseVertex, 0);
+            _D3D11_ImmediateContext->DrawInstanced(vertexCount, instCount, 0, 0);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::EndQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->baseVertex;
-            unsigned indexCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
-            unsigned instCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->instCount;
-            unsigned baseInst = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->baseInst;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->mode);
+            unsigned vertexCount = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->indexCount;
+            unsigned indexCount = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->indexCount;
+            unsigned startIndex = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->startIndex;
+            unsigned instCount = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->instanceCount;
+            unsigned baseInst = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->baseInstance;
 
             if (topo != cur_topo)
             {
@@ -2042,7 +1553,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -2052,15 +1563,18 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->DrawIndexedInstanced(indexCount, instCount, startIndex, baseVertex, baseInst);
+            _D3D11_ImmediateContext->DrawIndexedInstanced(indexCount, instCount, startIndex, 0, baseInst);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
+        default:
+            Logger::Error("unsupported command: %d", cmd->type);
+            DVASSERT_MSG(false, "unsupported command");
         }
 
-        if (cmd->type == DX11__END)
+        if (cmd->type == CMD_END)
             break;
         c += cmd->size;
     }
@@ -2185,129 +1699,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &dx11_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &dx11_SyncObject_IsSignaled;
 
-    dispatch->impl_Present = &dx11_Present;
-}
-
-void DiscardAll()
-{
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Lock();
-
-    _DX11_FrameSync.Lock();
-    _DX11_ResetPending = true;
-    _DX11_FrameSync.Unlock();
-
-    _DX11_FrameSync.Lock();
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
-    for (std::vector<FrameDX11>::iterator f = _DX11_Frame.begin(); f != _DX11_Frame.end();)
-    {
-        if (f->readyToExecute && f->sync != InvalidHandle)
-        {
-            SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(f->sync);
-            s->is_signaled = true;
-            s->is_used = true;
-        }
-
-        for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
-        {
-            RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
-
-            for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
-            {
-                CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
-
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(cb->sync);
-                    s->is_signaled = true;
-                    s->is_used = true;
-                }
-
-                if (cb->context)
-                {
-                    if (!cb->isComplete)
-                    {
-                        cb->context->ClearState();
-                        cb->context->FinishCommandList(FALSE, &(cb->commandList));
-                    }
-
-                    if (nullptr != cb->contextAnnotation)
-                    {
-                        cb->contextAnnotation->Release();
-                        cb->contextAnnotation = nullptr;
-                    }
-
-                    cb->context->Release();
-                    cb->context = nullptr;
-                }
-
-                if (cb->commandList)
-                {
-                    cb->commandList->Release();
-                    cb->commandList = nullptr;
-                }
-
-                if (f->readyToExecute)
-                    CommandBufferPoolDX11::Free(*b);
-            }
-
-            if (f->readyToExecute)
-                RenderPassPoolDX11::Free(*p);
-        }
-
-        if (f->readyToExecute)
-        {
-            if (f->cmdList)
-            {
-                f->cmdList->Release();
-                f->cmdList = nullptr;
-            }
-
-            f = _DX11_Frame.erase(f);
-        }
-        else
-        {
-            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
-            {
-                RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
-
-                for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
-                {
-                    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
-
-                    HRESULT hr = E_FAIL;
-                    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
-
-                    DVASSERT(cb->context);
-                    cb->Reset();
-                }
-            }
-
-            f->toBeDiscarded = true;
-            ++f;
-        }
-    }
-
-    {
-        ID3D11CommandList* cl = nullptr;
-
-        _D3D11_SecondaryContext->ClearState();
-        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
-        cl->Release();
-        _D3D11_SecondaryContext->Release();
-
-        HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
-    }
-#endif
-    _DX11_ResetPending = false;
-    _DX11_FrameSync.Unlock();
-
-    ID3D11RenderTargetView* view[] = { nullptr };
-    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
-
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+    dispatch->impl_ProcessImmediateCommand = &dx11_ExecImmediateCommand;
+    dispatch->impl_ExecuteFrame = &dx11_ExecuteQueuedCommands;
+    dispatch->impl_RejectFrame = &dx11_RejectFrame;
+    dispatch->impl_PresentBuffer = &dx11_PresentBuffer;
+    dispatch->impl_FinishFrame = &dx11_EndFrame;
 }
 }
 

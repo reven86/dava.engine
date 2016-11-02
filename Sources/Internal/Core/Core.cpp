@@ -267,8 +267,6 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-
-    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -276,7 +274,6 @@ void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
-
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
         rendererParams.threadedRenderEnabled = true;
@@ -312,7 +309,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -634,7 +630,6 @@ void Core::SystemProcessFrame()
 
     if (!isActive)
     {
-        LCP;
         return;
     }
 
@@ -964,11 +959,6 @@ Analytics::Core& Core::GetAnalyticsCore() const
 {
     DVASSERT(analyticsCore);
     return *analyticsCore;
-}
-
-const ModuleManager& Core::GetModuleManager() const
-{
-    return moduleManager;
 }
 
 } // namespace DAVA

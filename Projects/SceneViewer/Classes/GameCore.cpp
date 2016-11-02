@@ -189,7 +189,6 @@ KeyedArchive* CreateOptions()
     KeyedArchive* appOptions = new KeyedArchive();
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     //appOptions->SetInt32("renderer", rhi::RHI_METAL);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
