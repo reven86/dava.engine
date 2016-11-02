@@ -199,15 +199,23 @@ DAVA::Image* LandscapeProxy::GetTilemaskImageCopy()
 
 void LandscapeProxy::InitTilemaskDrawTextures()
 {
-    if (tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] == NULL || tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] == NULL)
-    {
-        DAVA::SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
-        DAVA::SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
+    DAVA::int32 texSize = static_cast<DAVA::int32>(GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK)->GetWidth());
 
-        DAVA::uint32 texSize = static_cast<DAVA::uint32>(GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK)->GetWidth());
-        tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = DAVA::Texture::CreateFBO(texSize, texSize, DAVA::FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
-        tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = DAVA::Texture::CreateFBO(texSize, texSize, DAVA::FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
-    }
+    auto updateTexture = [&texSize](DAVA::Texture*& texture)
+    {
+        if (texture != nullptr && texture->GetWidth() != texSize)
+        {
+            DAVA::SafeRelease(texture);
+        }
+
+        if (texture == nullptr)
+        {
+            texture = DAVA::Texture::CreateFBO(texSize, texSize, DAVA::FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
+        }
+    };
+
+    updateTexture(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
+    updateTexture(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 }
 
 DAVA::Texture* LandscapeProxy::GetTilemaskDrawTexture(DAVA::int32 number)
