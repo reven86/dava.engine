@@ -81,6 +81,8 @@ public:
         numMouseUp = 0;
         numMouseWheel = 0;
         numMouseCancel = 0;
+        numMouseDblUp = 0;
+        numMouseDblDown = 0;
         lastMouseKey = L'\0';
         lastMouseX = 0;
         lastMouseY = 0;
@@ -228,6 +230,11 @@ private:
                 lastMouseX = static_cast<int32>(currentInput->point.x);
                 lastMouseY = static_cast<int32>(currentInput->point.y);
                 lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
+
+                if (currentInput->tapCount > 1)
+                {
+                    numMouseDblDown++;
+                }
             }
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
@@ -274,6 +281,11 @@ private:
                 lastMouseX = static_cast<int32>(currentInput->point.x);
                 lastMouseY = static_cast<int32>(currentInput->point.y);
                 lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
+
+                if (currentInput->tapCount > 1)
+                {
+                    numMouseDblUp++;
+                }
             }
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
@@ -360,6 +372,8 @@ private:
                     << L"Mv: " << numMouseMove << L"\n"
                     << L"Dn: " << numMouseDown << L"\n"
                     << L"Up: " << numMouseUp << L"\n"
+                    << L"DblDn: " << numMouseDblDown << L"\n"
+                    << L"DblUp: " << numMouseDblUp << L"\n"
                     << L"Whl: " << numMouseWheel << L"\n"
                     << L"Cncl: " << numMouseCancel << L"\n"
                     << L"Btn: " << lastMouseKey << L"\n"
@@ -388,6 +402,8 @@ private:
     uint32 numMouseUp = 0;
     uint32 numMouseWheel = 0;
     uint32 numMouseCancel = 0;
+    uint32 numMouseDblUp = 0;
+    uint32 numMouseDblDown = 0;
     wchar_t lastMouseKey = L'\0';
     int32 lastMouseX = 0;
     int32 lastMouseY = 0;

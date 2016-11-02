@@ -2,6 +2,7 @@
 #include "Render/RenderBase.h"
 #include "Render/Renderer.h"
 #include "UI/UIEvent.h"
+#include "UI/UIControlSystem.h"
 #include "Debug/Private/ImGui.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/rhi_ShaderCache.h"
@@ -9,7 +10,6 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace ImGuiImplDetails
 {
@@ -419,7 +419,7 @@ void OnInput(UIEvent* input)
 
     ImGuiIO& io = ImGui::GetIO();
 
-    Vector2 physPoint = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(input->point);
+    Vector2 physPoint = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(input->point);
     int32 mouseButton = (input->device == UIEvent::Device::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
 
     switch (input->phase)

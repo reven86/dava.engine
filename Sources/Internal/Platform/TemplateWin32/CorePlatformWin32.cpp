@@ -15,7 +15,6 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -277,8 +276,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         Logger::Info("system not supported touch input");
     }
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
     return true;
 }
@@ -476,8 +475,8 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
 
         Logger::FrameworkDebug("[CoreWin32Platform] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
     }
     return true;
 }
