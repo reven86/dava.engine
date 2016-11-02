@@ -77,9 +77,9 @@ public:
 
     const String& GetSuperPackUrl() const override;
 
-    const PackFormat::PackFile::FooterBlock& GetInitFooter() const
+    uint32 GetServerFooterCrc32() const
     {
-        return initFooterOnServer;
+        return initFooterOnServer.infoCrc32;
     }
 
     const Hints& GetHints() const

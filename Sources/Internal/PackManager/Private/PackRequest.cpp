@@ -120,7 +120,7 @@ void PackRequest::GetFooter()
                     Logger::Error("downloaded superpack footer crc32 not match, url: %s\ntry again", packManagerImpl->GetSuperPackUrl().c_str());
                     Restart();
                 }
-                else if (packManagerImpl->GetInitFooter().infoCrc32 != footerOnServer.infoCrc32)
+                else if (packManagerImpl->GetServerFooterCrc32() != footerOnServer.infoCrc32)
                 {
                     // server Superpack changed during current session
                     Logger::Error("during current session server superpack file changed, crc32 not match, url: %s\n, try reinitialization for PM", packManagerImpl->GetSuperPackUrl().c_str());
@@ -338,7 +338,10 @@ void PackRequest::MountPack()
         }
         catch (std::exception& ex)
         {
-            Logger::Error("%s", ex.what());
+            Logger::Error("can't mount downloaded pack: %s", ex.what());
+            fs->DeleteFile(packPath);
+            Restart();
+            return;
         }
     }
 
@@ -359,7 +362,7 @@ void PackRequest::GoToNextSubRequest()
 
 void PackRequest::Start()
 {
-    // do nothing
+    Restart();
 }
 
 void PackRequest::Stop()
@@ -375,9 +378,8 @@ void PackRequest::Stop()
             {
                 DownloadManager* dm = DownloadManager::Instance();
                 dm->Cancel(subRequest.taskId);
-
+                subRequest.taskId = 0;
                 // start loading again this subRequest on resume
-
                 subRequest.status = SubRequest::Wait;
             }
             break;
@@ -441,6 +443,7 @@ void PackRequest::Update()
 
 void PackRequest::ChangePriority(float32 newPriority)
 {
+    rootPack->priority = newPriority;
     for (SubRequest& subRequest : dependencies)
     {
         IPackManager::Pack& pack = *subRequest.pack;

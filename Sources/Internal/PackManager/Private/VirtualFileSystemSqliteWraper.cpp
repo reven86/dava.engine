@@ -421,16 +421,30 @@ static sqlite3_vfs* sqlite3DavaVFS()
 
 namespace DAVA
 {
+static int32 countVFS = 0;
+
 void RegisterDavaVFSForSqlite3(bool dbInMemory)
 {
-    loadDBinRAM = dbInMemory;
-    DAVA::int32 result = sqlite3_vfs_register(sqlite3DavaVFS(), 1);
-    DVASSERT(result == SQLITE_OK);
+    DVASSERT(Thread::IsMainThread());
+
+    if (countVFS == 0)
+    {
+        loadDBinRAM = dbInMemory;
+        int32 result = sqlite3_vfs_register(sqlite3DavaVFS(), 1);
+        DVASSERT(result == SQLITE_OK);
+    }
+    ++countVFS;
 }
 
 void UnregisterDavaVFSForSqlite3()
 {
-    DAVA::int32 result = sqlite3_vfs_unregister(sqlite3DavaVFS());
-    DVASSERT(result == SQLITE_OK);
+    DVASSERT(Thread::IsMainThread());
+
+    --countVFS;
+    if (countVFS == 0)
+    {
+        int32 result = sqlite3_vfs_unregister(sqlite3DavaVFS());
+        DVASSERT(result == SQLITE_OK);
+    }
 }
 } // end namespace DAVA

@@ -95,44 +95,40 @@ void PackManagerImpl::Initialize(const String& architecture_,
     DVASSERT(Thread::IsMainThread());
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
-    LockGuard<Mutex> lock(protectPM); // just paranoia
-
-    dbPath = dbFileName_;
-    dirToDownloadedPacks = dirToDownloadPacks_;
-
-    FileSystem* fs = FileSystem::Instance();
-    if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
+    if (IsInitialized())
     {
-        DAVA_THROW(DAVA::Exception, "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue());
+        // if Initialize called second time
+        fullSizeServerData = 0;
+        if (0 != downloadTaskId)
+        {
+            DownloadManager::Instance()->Cancel(downloadTaskId);
+            downloadTaskId = 0;
+        }
     }
-
-    urlToSuperPack = urlToServerSuperpack_;
-    architecture = architecture_;
-    hints = hints_;
-
-    dbName = dbPath.GetFilename();
-
-    dbLocalNameZipped = dirToDownloadedPacks + dbName;
-
-    dbLocalName = dbLocalNameZipped;
-    dbLocalName.ReplaceExtension("");
-
-    // if Initialize called second time
-    fullSizeServerData = 0;
-    if (0 != downloadTaskId)
+    else
     {
-        DownloadManager::Instance()->Cancel(downloadTaskId);
-        downloadTaskId = 0;
+        dbPath = dbFileName_;
+        dirToDownloadedPacks = dirToDownloadPacks_;
+
+        FileSystem* fs = FileSystem::Instance();
+        if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
+        {
+            DAVA_THROW(DAVA::Exception, "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue());
+        }
+
+        urlToSuperPack = urlToServerSuperpack_;
+        architecture = architecture_;
+        hints = hints_;
+
+        dbName = dbPath.GetFilename();
+
+        dbLocalNameZipped = dirToDownloadedPacks + dbName;
+
+        dbLocalName = dbLocalNameZipped;
+        dbLocalName.ReplaceExtension("");
     }
-    requestManager.reset();
-    db.reset();
-    // do not! packs.clear();
-    // later we will need remember all mounted packs and remount it back
-    packsIndex.clear();
-    initFileData.clear();
 
     initError = InitError::AllGood;
-
     initState = InitState::LoadingRequestAskFooter;
 }
 
@@ -175,6 +171,10 @@ void PackManagerImpl::RetryInit()
 
     // clear error state
     Initialize(architecture, dirToDownloadedPacks, dbPath, urlToSuperPack, hints);
+
+    // wait and then try again
+    timeWaitingNextInitializationAttempt = hints.retryConnectMilliseconds / 1000.f; // to seconds
+    initState = InitState::Offline;
 }
 
 // end Initialization ////////////////////////////////////////
@@ -215,7 +215,10 @@ void PackManagerImpl::ContinueInitialization(float frameDelta)
         if (timeWaitingNextInitializationAttempt <= 0.f)
         {
             timeWaitingNextInitializationAttempt = 0.f;
-            RetryInit();
+            initState = InitState::LoadingRequestAskFooter;
+        }
+        else
+        {
             return;
         }
     }
@@ -280,6 +283,11 @@ void PackManagerImpl::ContinueInitialization(float frameDelta)
     if (newState != beforeState || initError != InitError::AllGood)
     {
         initStateChanged.Emit(*this);
+
+        if (initError != InitError::AllGood)
+        {
+            RetryInit();
+        }
     }
 }
 
@@ -370,6 +378,7 @@ void PackManagerImpl::AskFooter()
                 {
                     initError = InitError::LoadingRequestFailed;
                     initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error);
+                    Logger::Error("%s", initErrorMsg.c_str());
                 }
             }
         }
@@ -1079,7 +1088,8 @@ bool PackManagerImpl::IsRequestingEnabled() const
 void PackManagerImpl::EnableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
+
+    LockGuard<Mutex> lock(protectPM);
 
     if (!isProcessingEnabled)
     {
@@ -1094,7 +1104,8 @@ void PackManagerImpl::EnableRequesting()
 void PackManagerImpl::DisableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
+
+    LockGuard<Mutex> lock(protectPM);
 
     if (isProcessingEnabled)
     {

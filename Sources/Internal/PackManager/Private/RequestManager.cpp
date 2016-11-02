@@ -62,38 +62,38 @@ void RequestManager::Update()
 
 bool RequestManager::IsInQueue(const String& packName) const
 {
-    auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
+    auto it = std::find_if(begin(requests), end(requests), [packName](const PackRequest& r) -> bool
                            {
                                return r.GetRootPack().name == packName;
                            });
-    return it != end(items);
+    return it != end(requests);
 }
 
 bool RequestManager::Empty() const
 {
-    return items.empty();
+    return requests.empty();
 }
 
-size_type RequestManager::Size() const
+size_type RequestManager::CountRequests() const
 {
-    return static_cast<size_type>(items.size());
+    return static_cast<size_type>(requests.size());
 }
 
 PackRequest& RequestManager::Top()
 {
-    DVASSERT(!items.empty());
+    DVASSERT(!requests.empty());
 
-    PackRequest& topItem = items.front();
+    PackRequest& topItem = requests.front();
     return topItem;
 }
 
 PackRequest& RequestManager::Find(const String& packName)
 {
-    auto it = std::find_if(begin(items), end(items), [&packName](const PackRequest& r) -> bool
+    auto it = std::find_if(begin(requests), end(requests), [&packName](const PackRequest& r) -> bool
                            {
                                return r.GetRootPack().name == packName;
                            });
-    if (it == end(items))
+    if (it == end(requests))
     {
         DAVA_THROW(DAVA::Exception, "can't fined pack by name: " + packName);
     }
@@ -102,24 +102,24 @@ PackRequest& RequestManager::Find(const String& packName)
 
 void RequestManager::CheckRestartLoading()
 {
-    DVASSERT(!items.empty());
+    DVASSERT(!requests.empty());
 
     PackRequest& top = Top();
 
-    if (Size() == 1)
+    if (CountRequests() == 1)
     {
-        currentTopLoadingPack = top.GetRootPack().name;
+        loadingPackName = top.GetRootPack().name;
         top.Start();
     }
-    else if (!currentTopLoadingPack.empty() && top.GetRootPack().name != currentTopLoadingPack)
+    else if (!loadingPackName.empty() && top.GetRootPack().name != loadingPackName)
     {
         // we have to cancel current pack request and start new with higher priority
-        if (IsInQueue(currentTopLoadingPack))
+        if (IsInQueue(loadingPackName))
         {
-            PackRequest& prevTopRequest = Find(currentTopLoadingPack);
+            PackRequest& prevTopRequest = Find(loadingPackName);
             prevTopRequest.Stop();
         }
-        currentTopLoadingPack = top.GetRootPack().name;
+        loadingPackName = top.GetRootPack().name;
         top.Start();
     }
 }
@@ -136,8 +136,8 @@ void RequestManager::Push(const String& packName, float32 priority)
     pack.state = IPackManager::Pack::Status::Requested;
     pack.priority = priority;
 
-    items.emplace_back(packManager, pack);
-    stable_sort(begin(items), end(items));
+    requests.emplace_back(packManager, pack);
+    stable_sort(begin(requests), end(requests));
 
     packManager.packStateChanged.Emit(pack);
 
@@ -152,7 +152,7 @@ void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
         if (packRequest.GetPriority() != newPriority)
         {
             packRequest.ChangePriority(newPriority);
-            stable_sort(begin(items), end(items));
+            stable_sort(begin(requests), end(requests));
 
             CheckRestartLoading();
         }
@@ -161,9 +161,9 @@ void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
 
 void RequestManager::Pop()
 {
-    DVASSERT(!items.empty());
+    DVASSERT(!requests.empty());
 
-    items.erase(items.begin());
+    requests.erase(requests.begin());
 }
 
 } // end namespace DAVA
