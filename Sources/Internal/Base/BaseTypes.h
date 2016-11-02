@@ -168,9 +168,17 @@ enum class eErrorCode
     #define DAVA_FORCEINLINE inline __attribute__((always_inline))
     #define DAVA_ALIGNOF(x) alignof(x)
     #define DAVA_CONSTEXPR constexpr
-    #define DAVA_DEPRECATED(func) func __attribute__((deprecated))
     #define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
     #define DAVA_NOEXCEPT noexcept
+    #ifndef DAVA_DEPRECATED
+        #define DAVA_DEPRECATED(func) func __attribute__((deprecated))
+    #endif
+#endif
+
+#if defined(__clang__)
+#define DAVA_SWITCH_CASE_FALLTHROUGH [[clang::fallthrough]]
+#else
+#define DAVA_SWITCH_CASE_FALLTHROUGH
 #endif
 
 } // namespace DAVA

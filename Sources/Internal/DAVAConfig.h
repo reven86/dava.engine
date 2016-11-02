@@ -56,3 +56,9 @@
 
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY
+
+//suppressing of deprecated functions
+#ifdef DAVAENGINE_HIDE_DEPRECATED
+#undef DAVA_DEPRECATED
+#define DAVA_DEPRECATED(func) func
+#endif

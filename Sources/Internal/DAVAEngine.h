@@ -6,6 +6,7 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Base/BaseMath.h"
 #include "Utils/StringFormat.h"
 
