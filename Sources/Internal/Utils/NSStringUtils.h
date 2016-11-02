@@ -14,6 +14,9 @@ NSString* NSStringFromString(const DAVA::String& str);
 
 NSString* NSStringFromWideString(const DAVA::WideString& str);
 
+/**
+  Convert specified 'string' to DAVA::String in UTF8 format. Return empty string if 'string' is nullptr.
+*/
 String StringFromNSString(NSString* string);
 
 WideString WideStringFromNSString(NSString* string);
