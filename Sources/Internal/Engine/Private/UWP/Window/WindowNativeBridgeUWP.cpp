@@ -35,9 +35,10 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
 
     float32 w = xamlWindow->Bounds.Width;
     float32 h = xamlWindow->Bounds.Height;
-    float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
-    float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, scaleX, scaleY));
+    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
+    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
+    float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfW, surfH, dpi));
 
     xamlWindow->Activate();
 }
@@ -156,18 +157,22 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
 {
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
-    float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
-    float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY));
+    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
+    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH));
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
-    float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY));
+    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
+    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
+    float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)

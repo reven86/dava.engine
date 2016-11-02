@@ -48,9 +48,6 @@ protected:
     SelectSceneScreen* selectSceneScreen;
     ViewSceneScreen* viewSceneScreen;
 
-    rhi::HPerfQuerySet perfQuerySet;
-    bool perfQuerySetFired;
-
     DAVA::FilePath scenePath;
 
 private:
