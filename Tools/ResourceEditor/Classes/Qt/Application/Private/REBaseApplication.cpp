@@ -54,7 +54,7 @@ void REBaseApplication::OnLoopStarted()
     SettingsManager::UpdateGPUSettings();
 
     engineContext->logger->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-    engineContext->virtualCoordSystem->EnableReloadResourceOnResize(false);
+    engineContext->uiControlSystem->vcs->EnableReloadResourceOnResize(false);
     engineContext->performanceSettings->SetPsPerformanceMinFPS(5.0f);
     engineContext->performanceSettings->SetPsPerformanceMaxFPS(10.0f);
 }

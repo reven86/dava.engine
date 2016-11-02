@@ -22,7 +22,7 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
 
 void BaseTest::LoadResources()
 {
-    const Size2i& size = DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    const Size2i& size = DAVA::UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
 
     scene = new Scene();
 

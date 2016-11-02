@@ -1,4 +1,5 @@
 #include "../Common/rhi_Private.h"
+#include "../rhi_Public.h"
     #include "../rhi_ShaderCache.h"
     #include "../Common/rhi_Pool.h"
 
@@ -260,7 +261,7 @@ VertexDeclGLES2
                     vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
+                if (DeviceCaps().isInstancingSupported && (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor))
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));

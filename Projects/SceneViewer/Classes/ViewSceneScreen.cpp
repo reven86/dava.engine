@@ -66,7 +66,7 @@ void ViewSceneScreen::LoadResources()
 
         ScopedPtr<Camera> camera(new Camera());
 
-        VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
         float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
         camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
         camera->SetLeft(Vector3(1, 0, 0));
@@ -94,7 +94,7 @@ void ViewSceneScreen::LoadResources()
                          Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         Rect screenRect = GetRect();
-        Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         screenRect.dx = static_cast<float32>(screenSize.dx);
         screenRect.dy = static_cast<float32>(screenSize.dy);
         SetRect(screenRect);

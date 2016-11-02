@@ -5,12 +5,15 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Base/Singleton.h"
-#include "Base/TemplateHelpers.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
-#include "UI/UIPopup.h"
+#if !defined(__DAVAENGINE_COREV2__)
 #include "UI/UIScreenTransition.h"
+#include "UI/UIPopup.h"
+#endif
 
 #define FRAME_SKIP 5
 
@@ -27,6 +30,10 @@ class UIFocusSystem;
 class UIInputSystem;
 class UIScreenshoter;
 class UIUpdateSystem;
+#if defined(__DAVAENGINE_COREV2__)
+class UIScreenTransition;
+class UIPopup;
+#endif
 
 class ScreenSwitchListener
 {
@@ -309,14 +316,14 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool useClearPass);
 
-    void SetDefaultTapCountSettings();
-    void SetTapCountSettings(float32 time, float32 inch);
+    void SetDoubleTapSettings(float32 time, float32 inch);
 
     void UI3DViewAdded();
     void UI3DViewRemoved();
     int32 GetUI3DViewCount();
 
     void UpdateControl(UIControl* control);
+    VirtualCoordinatesSystem* vcs = nullptr; // TODO: Should be completely removed in favor of direct DAVA::Window methods
 
 private:
     void ProcessScreenLogic();
@@ -358,10 +365,16 @@ private:
     bool removeCurrentScreen = false;
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
-    float32 doubleClickRadiusSquared = 0.f;
+
     float32 doubleClickTime = 0.f;
-    const float32 defaultDoubleClickTime = 0.5f; // seconds
-    float32 defaultDoubleClickRadiusSquared = 0.f; // calculate in constructor
+#if !defined(__DAVAENGINE_COREV2__)
+    float32 doubleClickPhysSquare = 0.f;
+    float32 doubleClickRadiusSquared = 0.f;
+    float32 defaultDoubleClickRadiusSquared = 0.f;
+    float32 defaultDoubleClickTime = 0.5f;
+#else
+    float32 doubleClickInchSquare = 0.f;
+#endif
     struct LastClickData
     {
         uint32 touchId = 0;

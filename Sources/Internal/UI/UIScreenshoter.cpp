@@ -1,6 +1,5 @@
 #include "UIScreenshoter.h"
 #include "Render/RenderHelper.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Scene.h"
 #include "UI/UI3DView.h"
@@ -47,7 +46,7 @@ void UIScreenshoter::OnFrame()
 
 RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha, bool updateControl)
 {
-    const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
+    const Vector2 size(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot.Get(), nullptr, clearAlpha, updateControl);
@@ -57,7 +56,7 @@ RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFo
 
 RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl)
 {
-    const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
+    const Vector2 size(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot.Get(), callback, clearAlpha, updateControl);
