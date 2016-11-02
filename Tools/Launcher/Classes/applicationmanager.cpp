@@ -245,7 +245,7 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
 #ifdef Q_OS_WIN
         localAppPath = localAppID + ".exe";
 #elif defined(Q_OS_MAC)
-        localAppPath = "ToolSet.app/Contents/MacOS/" + localAppID;
+        localAppPath = localAppID + ".app";
 #else
 #error "unsupported platform"
 #endif //platform
