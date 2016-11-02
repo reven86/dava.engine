@@ -33,7 +33,6 @@ RHI_IMPL_POOL(PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, fals
 
 DAVA::Vector<GLuint> queryObjectPoolGLES2;
 DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>> pendingQueriesGLES2;
-Handle currentFramePerfQueryGLES2[2] = { InvalidHandle, InvalidHandle };
 GLuint currentTimeElapsedQuery = 0;
 
 //==============================================================================
@@ -97,12 +96,6 @@ static uint64 gles2_PerfQuery_Value(Handle handle)
     return ret;
 }
 
-static void gles2_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
-{
-    currentFramePerfQueryGLES2[0] = handle0;
-    currentFramePerfQueryGLES2[1] = handle1;
-}
-
 namespace PerfQueryGLES2
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -112,7 +105,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PerfQuery_Reset = &gles2_PerfQuery_Reset;
     dispatch->impl_PerfQuery_IsReady = &gles2_PerfQuery_IsReady;
     dispatch->impl_PerfQuery_Value = &gles2_PerfQuery_Value;
-    dispatch->impl_PerfQuery_SetCurrent = &gles2_PerfQuery_SetCurrent;
 }
 
 GLuint GetQueryFromPool()
@@ -321,15 +313,6 @@ void SkipQuery(Handle handle)
         query->isValid = 1;
         query->isUsed = 1;
     }
-}
-
-void GetCurrentFrameQueries(Handle* query0, Handle* query1)
-{
-    *query0 = currentFramePerfQueryGLES2[0];
-    *query1 = currentFramePerfQueryGLES2[1];
-
-    currentFramePerfQueryGLES2[0] = InvalidHandle;
-    currentFramePerfQueryGLES2[1] = InvalidHandle;
 }
 
 void ReleaseQueryObjectsPool()

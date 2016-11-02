@@ -209,6 +209,7 @@ void dx9_InitCaps()
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
+    MutableDeviceCaps::Get().isPerfQuerySupported = true;
     DX9CheckMultisampleSupport();
 }
 

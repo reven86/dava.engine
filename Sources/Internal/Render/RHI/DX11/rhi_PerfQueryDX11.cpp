@@ -36,10 +36,12 @@ struct PerfQueryFrameDX11
     ID3D11Query* freqQuery = nullptr;
     DAVA::List<HPerfQuery> perfQueries;
     uint64 freq = 0;
-    rhi::Handle frameQuery0 = InvalidHandle;
-    rhi::Handle frameQuery1 = InvalidHandle;
     bool isFreqValid = false;
 };
+
+PerfQueryFrameDX11* NextPerfQueryFrame();
+void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context);
+void ReleasePerfQueryPool();
 }
 
 //==============================================================================
@@ -141,17 +143,12 @@ static uint64 dx11_PerfQuery_Value(Handle handle)
     return ret;
 }
 
-static void dx11_PerfQuery_SetCurrent(Handle start, Handle end)
-{
-    DVASSERT(currentPerfQueryFrameDX11);
-    currentPerfQueryFrameDX11->frameQuery0 = start;
-    currentPerfQueryFrameDX11->frameQuery1 = end;
-}
-
 namespace PerfQueryDX11
 {
-void IssueTimestamp(PerfQueryFrameDX11* frame, Handle handle, ID3D11DeviceContext* context)
+void IssueTimestamp(Handle handle, ID3D11DeviceContext* context)
 {
+    DVASSERT(currentPerfQueryFrameDX11);
+
     PerfQueryDX11_t* perfQuery = PerfQueryDX11Pool::Get(handle);
     if (perfQuery)
     {
@@ -163,32 +160,27 @@ void IssueTimestamp(PerfQueryFrameDX11* frame, Handle handle, ID3D11DeviceContex
         perfQuery->isUsed = 1;
         perfQuery->isReady = 0;
 
-        frame->perfQueries.push_back(HPerfQuery(handle));
+        if (currentPerfQueryFrameDX11)
+            currentPerfQueryFrameDX11->perfQueries.push_back(HPerfQuery(handle));
     }
 }
 
-void BeginMeasurment(PerfQueryFrameDX11* frame, ID3D11DeviceContext* context)
+void BeginMeasurment(ID3D11DeviceContext* context)
 {
-    context->Begin(frame->freqQuery);
+    DVASSERT(currentPerfQueryFrameDX11 == nullptr);
+
+    currentPerfQueryFrameDX11 = NextPerfQueryFrame();
+    context->Begin(currentPerfQueryFrameDX11->freqQuery);
 }
 
-void EndMeasurment(PerfQueryFrameDX11* frame, ID3D11DeviceContext* context)
+void EndMeasurment(ID3D11DeviceContext* context)
 {
-    context->End(frame->freqQuery);
+    DVASSERT(currentPerfQueryFrameDX11);
 
-    pendingPerfQueryFrameDX11.push_back(frame);
-}
+    context->End(currentPerfQueryFrameDX11->freqQuery);
 
-void BeginFrame(PerfQueryFrameDX11* frame, ID3D11DeviceContext* context)
-{
-    if (frame->frameQuery0)
-        IssueTimestamp(frame, frame->frameQuery0, context);
-}
-
-void EndFrame(PerfQueryFrameDX11* frame, ID3D11DeviceContext* context)
-{
-    if (frame->frameQuery1)
-        IssueTimestamp(frame, frame->frameQuery1, context);
+    pendingPerfQueryFrameDX11.push_back(currentPerfQueryFrameDX11);
+    currentPerfQueryFrameDX11 = nullptr;
 }
 
 void SetupDispatch(Dispatch* dispatch)
@@ -198,11 +190,36 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PerfQuery_Reset = &dx11_PerfQuery_Reset;
     dispatch->impl_PerfQuery_IsReady = &dx11_PerfQuery_IsReady;
     dispatch->impl_PerfQuery_Value = &dx11_PerfQuery_Value;
-    dispatch->impl_PerfQuery_SetCurrent = &dx11_PerfQuery_SetCurrent;
 }
 
 //==============================================================================
-//called from main-thread
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+void DeferredPerfQueriesIssued(const std::vector<Handle>& queries)
+{
+    DVASSERT(currentPerfQueryFrameDX11);
+    currentPerfQueryFrameDX11->perfQueries.insert(currentPerfQueryFrameDX11->perfQueries.end(), queries.begin(), queries.end());
+}
+
+//==============================================================================
+
+void IssueTimestampDeferred(Handle handle, ID3D11DeviceContext* context)
+{
+    PerfQueryDX11_t* perfQuery = PerfQueryDX11Pool::Get(handle);
+    if (perfQuery)
+    {
+        DVASSERT(perfQuery->query);
+        DVASSERT(!perfQuery->isUsed);
+
+        context->End(perfQuery->query);
+
+        perfQuery->isUsed = 1;
+        perfQuery->isReady = 0;
+    }
+}
+#endif
+
+//==============================================================================
 
 PerfQueryFrameDX11* NextPerfQueryFrame()
 {
@@ -221,8 +238,6 @@ PerfQueryFrameDX11* NextPerfQueryFrame()
         currentPerfQueryFrameDX11->freq = 0;
         currentPerfQueryFrameDX11->isFreqValid = false;
         currentPerfQueryFrameDX11->perfQueries.clear();
-        currentPerfQueryFrameDX11->frameQuery0 = InvalidHandle;
-        currentPerfQueryFrameDX11->frameQuery1 = InvalidHandle;
     }
     else
     {
@@ -239,13 +254,7 @@ PerfQueryFrameDX11* NextPerfQueryFrame()
     return currentPerfQueryFrameDX11;
 }
 
-PerfQueryFrameDX11* CurrentPerfQueryFrame()
-{
-    return currentPerfQueryFrameDX11;
-}
-
 //==============================================================================
-//called from render-thread
 
 void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context)
 {

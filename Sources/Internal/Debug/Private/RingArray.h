@@ -36,6 +36,8 @@ public:
     RingArray(RingArray&& a)
     {
         elements = a.elements;
+        a.elements = nullptr;
+
         elementsCount = a.elementsCount;
         head = a.head;
     }

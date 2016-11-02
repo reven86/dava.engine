@@ -46,18 +46,12 @@ void ReleaseQueryPool();
 
 namespace PerfQueryDX9
 {
-struct PerfQueryFrameDX9;
-
 void SetupDispatch(Dispatch* dispatch);
 
-void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle);
-void BeginFrame(PerfQueryFrameDX9* frame);
-void EndFrame(PerfQueryFrameDX9* frame);
-void BeginMeasurment(PerfQueryFrameDX9* frame);
-void EndMeasurment(PerfQueryFrameDX9* frame);
+void IssueTimestamp(Handle handle);
+void BeginMeasurment();
+void EndMeasurment();
 
-PerfQueryFrameDX9* NextPerfQueryFrame();
-void RejectPerfQueryFrame(PerfQueryFrameDX9* frame);
 void ReleaseAll();
 
 void ObtainPerfQueryMeasurment();

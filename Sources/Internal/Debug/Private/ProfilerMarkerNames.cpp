@@ -46,6 +46,7 @@ const char* RENDER_PREPARE_LANDSCAPE = "Landscape::Prepare";
 
 //RHI
 const char* RHI_RENDER_LOOP = "rhi::RenderLoop";
+const char* RHI_EXECUTE_FRAME = "rhi::ExecuteFrame";
 const char* RHI_PRESENT = "rhi::Present";
 const char* RHI_DEVICE_PRESENT = "rhi::DevicePresent";
 const char* RHI_EXECUTE_QUEUED_CMDS = "rhi::ExecuteQueuedCmds";
@@ -53,7 +54,7 @@ const char* RHI_EXECUTE_IMMEDIATE_CMDS = "rhi::ExecuteImmidiateCmds";
 const char* RHI_WAIT_IMMEDIATE_CMDS = "rhi::WaitImmediateCmd";
 const char* RHI_WAIT_FRAME_EXECUTION = "rhi::WaitFrameExecution";
 const char* RHI_CMD_BUFFER_EXECUTE = "rhi::cb::Execute";
-const char* RHI_WAIT_FRAME = "rhi::WaitFrame";
+const char* RHI_WAIT_FRAME_CONSTRACTION = "rhi::WaitFrameConstruction";
 const char* RHI_PROCESS_SCHEDULED_DELETE = "rhi::ProcessScheduledDelete";
 };
 

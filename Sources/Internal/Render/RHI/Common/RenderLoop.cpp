@@ -6,7 +6,8 @@
 #include "../rhi_Type.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/Concurrency.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Logger/Logger.h"
 #include <atomic>
 
@@ -48,7 +49,8 @@ static void ProcessScheduledDelete();
 
 void Present() // called from main thread
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PRESENT);
+
     scheduledDeleteMutex.Lock();
     if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
@@ -76,7 +78,8 @@ void Present() // called from main thread
     }
     else //wait for render thread if needed
     {
-        DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION);
+
         if (!renderThreadSuspended)
             framePreparedEvent.Signal();
 
@@ -103,7 +106,7 @@ static void RenderFunc()
 
     while (!renderThreadExitPending)
     {
-        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_RENDER_LOOP);
         if (renderThreadSuspended.load())
         {
             DispatchPlatform::FinishRendering();
@@ -113,7 +116,8 @@ static void RenderFunc()
         }
         bool frameReady = false;
         {
-            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRACTION);
+
             while ((!frameReady) && (!resetPending))
             {
                 //exit or suspend should leave frame loop
@@ -245,7 +249,8 @@ void SetResetPending()
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
+
     if (command->forceImmediate || (renderThreadFrameCount == 0))
     {
         DispatchPlatform::ProcessImmediateCommand(command);
@@ -288,7 +293,7 @@ void CheckImmediateCommand()
         CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.load();
         if (cmd != nullptr)
         {
-            DAVA_CPU_PROFILER_SCOPE("ProcessImmediateCommand");
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
             DispatchPlatform::ProcessImmediateCommand(cmd);
             pendingImmediateCmd = nullptr;
         }
@@ -304,7 +309,8 @@ void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
 
 void ProcessScheduledDelete()
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::ProcessScheduledDelete")
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
+
     scheduledDeleteMutex.Lock();
     for (int i = 0; i < frameSyncObjectsCount; i++)
     {

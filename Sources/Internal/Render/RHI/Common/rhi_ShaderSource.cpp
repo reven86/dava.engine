@@ -5,7 +5,7 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 

@@ -173,6 +173,14 @@ static void dx11_SuspendRendering()
 #endif
 }
 
+static void dx11_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX11Command cmd = { DX11Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX11(&cmd, 1);
+}
+
+//------------------------------------------------------------------------------
+
 #if !defined(__DAVAENGINE_WIN_UAP__)
 void InitDeviceAndSwapChain()
 {
@@ -345,6 +353,7 @@ void dx11_InitCaps()
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = false;
     MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().isPerfQuerySupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 
 #if defined(__DAVAENGINE_WIN_UAP__)

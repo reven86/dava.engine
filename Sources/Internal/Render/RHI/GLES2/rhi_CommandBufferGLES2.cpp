@@ -257,12 +257,9 @@ gles2_CommandBuffer_IssueTimestamp(Handle cmdBuf, Handle query)
 {
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     cb->skipPassPerfQueries = !_GLES2_TimeStampQuerySupported;
-#if RHI_GLES2__USE_CMDBUF_PACKING
-    CommandGLES2_IssueTimestamp* cmd = cb->allocCmd<CommandGLES2_IssueTimestamp>();
+
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
     cmd->perfQuery = query;
-#else
-    cb->Command(GLES2__ISSUE_TIMESTAMP, query);
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -716,14 +713,9 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__ISSUE_TIMESTAMP:
+        case CMD_ISSUE_TIMESTAMP_QUERY:
         {
-#if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle query = (static_cast<const CommandGLES2_IssueTimestamp*>(cmd))->perfQuery;
-#else
-            Handle query = (Handle)arg[0];
-            c += 1;
-#endif
+            Handle query = (static_cast<const SWCommand_IssueTimestamptQuery*>(cmd))->perfQuery;
             PerfQueryGLES2::IssueQuery(query);
         }
         break;
@@ -1201,6 +1193,9 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     std::vector<RenderPassGLES2_t*> pass;
     unsigned frame_n = 0;
+    Handle framePerfQuery0 = InvalidHandle;
+    Handle framePerfQuery1 = InvalidHandle;
+    bool skipFramePerfQueries = false;
 
     for (Handle p : frame.pass)
     {
@@ -1218,9 +1213,22 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         }
         if (do_add)
             pass.push_back(pp);
+
+        if (DeviceCaps().isPerfQuerySupported && !_GLES2_TimeStampQuerySupported)
+        {
+            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+            {
+                pp->skipPerfQueries |= CommandBufferPoolGLES2::Get(pp->cmdBuf[b])->skipPassPerfQueries;
+            }
+
+            skipFramePerfQueries |= (pp->perfQuery0 != InvalidHandle) || pp->skipPerfQueries;
+            skipFramePerfQueries |= (pp->perfQuery1 != InvalidHandle) || pp->skipPerfQueries;
+        }
     }
 
     frame_n = frame.frameNumber;
+    framePerfQuery0 = frame.perfQuery0;
+    framePerfQuery1 = frame.perfQuery1;
 
     if (frame.sync != InvalidHandle)
     {
@@ -1228,6 +1236,24 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
+    }
+
+    if (skipFramePerfQueries)
+    {
+        if (framePerfQuery0 != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQuery0);
+        if (framePerfQuery1 != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQuery1);
+
+        framePerfQuery0 = InvalidHandle;
+        framePerfQuery1 = InvalidHandle;
+    }
+
+    PerfQueryGLES2::ObtainPerfQueryResults();
+
+    if (framePerfQuery0 != InvalidHandle)
+    {
+        PerfQueryGLES2::IssueQuery(framePerfQuery0);
     }
 
     Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
@@ -1247,6 +1273,7 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                 else
                     PerfQueryGLES2::IssueQuery(pp->perfQuery0);
             }
+
             cb->Execute();
 
             if (cb->sync != InvalidHandle)
@@ -1258,17 +1285,7 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                 sync->is_used = true;
             }
 
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
-
-                    sync->frame = frame_n;
-                    sync->is_signaled = false;
-                    sync->is_used = true;
-                }
-
-                CommandBufferPoolGLES2::Free(cb_h);
-            }
+            CommandBufferPoolGLES2::Free(cb_h);
 
             if (pp->perfQuery1 != InvalidHandle)
             {
@@ -1285,10 +1302,9 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     {
         PerfQueryGLES2::IssueQuery(framePerfQuery1);
     }
+
     for (Handle p : frame.pass)
         RenderPassPoolGLES2::Free(p);
-
-    uint32 executedFrameIndex = 0;
 
     //update sync objects
     _GLES2_SyncObjectsSync.Lock();
@@ -1773,6 +1789,7 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             }
         }
         break;
+
         case GLCommand::SYNC_CPU_GPU:
         {
             if (_GLES2_TimeStampQuerySupported)

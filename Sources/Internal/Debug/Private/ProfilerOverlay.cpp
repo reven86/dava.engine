@@ -7,6 +7,7 @@
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
+#include "Render/RHI/Common/rhi_Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
@@ -59,7 +60,7 @@ static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, Prof
                                                FastName(ProfilerCPUMarkerName::SCENE_DRAW),
                                                FastName(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS),
                                                FastName(ProfilerCPUMarkerName::RHI_PRESENT),
-                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME),
+                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRACTION),
                                                FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
                                                FastName(ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
                                                FastName(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME),

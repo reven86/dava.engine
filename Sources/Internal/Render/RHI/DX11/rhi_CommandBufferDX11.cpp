@@ -95,9 +95,9 @@ public:
 
     ID3D11Buffer* vertexConstBuffer[MAX_CONST_BUFFER_COUNT];
     ID3D11Buffer* fragmentConstBuffer[MAX_CONST_BUFFER_COUNT];
-#endif
 
-    PerfQueryDX11::PerfQueryFrameDX11* perfQueryFrame;
+    std::vector<Handle> deferredPerfQueries;
+#endif
 
     Handle sync;
 };
@@ -530,7 +530,8 @@ dx11_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle perfQuery)
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    PerfQueryDX11::IssueTimestamp(PerfQueryDX11::CurrentPerfQueryFrame(), perfQuery, cb->context);
+    PerfQueryDX11::IssueTimestampDeferred(perfQuery, cb->context);
+    cb->deferredPerfQueries.push_back(perfQuery);
 #else
     SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
     cmd->perfQuery = perfQuery;
@@ -785,8 +786,6 @@ static bool dx11_SyncObject_IsSignaled(Handle obj)
 
 static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_QUEUED_CMDS);
-
     DVASSERT(frame.readyToExecute);
 
     DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX11::IsAlive(frame.sync));
@@ -819,8 +818,6 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     frame_n = frame.frameNumber;
 
-    perfQuerySet = frame.perfQuerySet;
-
     if (frame.sync != InvalidHandle)
     {
         SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(frame.sync);
@@ -830,33 +827,13 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_used = true;
     }
 
+    PerfQueryDX11::ObtainPerfQueryMeasurment(_D3D11_ImmediateContext);
+    PerfQueryDX11::BeginMeasurment(_D3D11_ImmediateContext);
+
+    if (frame.perfQuery0 != InvalidHandle)
+        PerfQueryDX11::IssueTimestamp(frame.perfQuery0, _D3D11_ImmediateContext);
+
     Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-
-    if (perfQuerySet != InvalidHandle)
-    {
-        if (_DX11_PerfQuerySetPending)
-        {
-            bool ready = false;
-            bool valid = false;
-            PerfQuerySetDX11::ObtainResults(perfQuerySet);
-            PerfQuerySet::GetStatus(perfQuerySet, &ready, &valid);
-
-            if (ready)
-            {
-                _DX11_PerfQuerySetPending = false;
-                perfQuerySet = InvalidHandle;
-            }
-        }
-        else
-        {
-            PerfQuerySet::Reset(perfQuerySet);
-            PerfQuerySetDX11::BeginFreqMeasurment(perfQuerySet, _D3D11_ImmediateContext);
-        }
-    }
-
-    if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
-        PerfQuerySetDX11::IssueFrameBeginQuery(perfQuerySet, _D3D11_ImmediateContext);
-
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     pendingSecondaryCmdListSync.Lock();
@@ -873,14 +850,19 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     {
         RenderPassDX11_t* pp = *p;
 
-        if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex0 != DAVA::InvalidIndex)
-            PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex0, _D3D11_ImmediateContext);
+        if (pp->perfQuery0 != InvalidHandle)
+            PerfQueryDX11::IssueTimestamp(pp->perfQuery0, _D3D11_ImmediateContext);
 
         for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
         {
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
+
             cb->Execute();
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+            PerfQueryDX11::DeferredPerfQueriesIssued(cb->deferredPerfQueries);
+#endif
 
             if (cb->sync != InvalidHandle)
             {
@@ -892,19 +874,15 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             CommandBufferPoolDX11::Free(cb_h);
         }
 
-        if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex1 != DAVA::InvalidIndex)
-            PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex1, _D3D11_ImmediateContext);
-    }
-
-    if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
-    {
-        PerfQuerySetDX11::IssueFrameEndQuery(perfQuerySet, _D3D11_ImmediateContext);
-        PerfQuerySetDX11::EndFreqMeasurment(perfQuerySet, _D3D11_ImmediateContext);
-        _DX11_PerfQuerySetPending = true;
+        if (pp->perfQuery1 != InvalidHandle)
+            PerfQueryDX11::IssueTimestamp(pp->perfQuery1, _D3D11_ImmediateContext);
     }
 
     for (Handle p : frame.pass)
         RenderPassPoolDX11::Free(p);
+
+    if (frame.perfQuery1 != InvalidHandle)
+        PerfQueryDX11::IssueTimestamp(frame.perfQuery1, _D3D11_ImmediateContext);
 
     _DX11_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
@@ -921,6 +899,9 @@ bool dx11_PresentBuffer()
     HRESULT hr = E_FAIL;
     DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
     //still not sure we are to handle all situations with renderingNotPossible here
+
+    PerfQueryDX11::EndMeasurment(_D3D11_ImmediateContext);
+
     return true;
 }
 
@@ -1120,6 +1101,8 @@ void CommandBufferDX11_t::Reset()
     memset(fragmentConstBuffer, 0, sizeof(fragmentConstBuffer));
 
     context->IASetPrimitiveTopology(cur_topo);
+
+    deferredPerfQueries.clear();
 #endif
 
     isComplete = false;
@@ -1310,11 +1293,8 @@ void CommandBufferDX11_t::Execute()
 
         case CMD_ISSUE_TIMESTAMP_QUERY:
         {
-            Handle hset = static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->querySet;
-            uint32 timestampIndex = static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->timestampIndex;
-
-            Handle perfQuery = ((CommandDX11_IssueTimestamptQuery*)cmd)->perfQuery;
-            PerfQueryDX11::IssueTimestamp(perfQueryFrame, perfQuery, _D3D11_ImmediateContext);
+            Handle perfQuery = ((SWCommand_IssueTimestamptQuery*)cmd)->perfQuery;
+            PerfQueryDX11::IssueTimestamp(perfQuery, _D3D11_ImmediateContext);
         }
         break;
 

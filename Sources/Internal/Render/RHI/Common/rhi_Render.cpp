@@ -54,48 +54,11 @@ void InitPacketListPool(uint32 maxCount)
     PacketListPool::Reserve(maxCount);
 }
 
-
-//------------------------------------------------------------------------------
-
-HPerfQuery CreatePerfQuery()
-{
-    return HPerfQuery(PerfQuery::Create());
-}
-
-//------------------------------------------------------------------------------
-
-void DeletePerfQuery(HPerfQuery handle, bool forceImmediate)
-{
-    if (forceImmediate)
-        PerfQuery::Delete(handle);
-    else
-        ScheduleResourceDeletion(handle, RESOURCE_PERFQUERY);
-}
-
-void ResetPerfQuery(HPerfQuery handle)
-{
-    PerfQuery::Reset(handle);
-}
-
-//------------------------------------------------------------------------------
-
-bool PerfQueryIsReady(HPerfQuery handle)
-{
-    return PerfQuery::IsReady(handle);
-}
-
-//------------------------------------------------------------------------------
-
-uint64 PerfQueryTimeStamp(HPerfQuery handle)
-{
-    return PerfQuery::Value(handle);
-}
-
 //------------------------------------------------------------------------------
 
 void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
 {
-    PerfQuery::SetCurrent(startQuery, endQuery);
+    FrameLoop::SetFramePerfQueries(startQuery, endQuery);
 }
 
 //------------------------------------------------------------------------------

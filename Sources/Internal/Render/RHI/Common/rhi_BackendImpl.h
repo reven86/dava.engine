@@ -55,7 +55,6 @@ struct Dispatch
     void (*impl_PerfQuery_Reset)(Handle query);
     bool (*impl_PerfQuery_IsReady)(Handle query);
     uint64 (*impl_PerfQuery_Value)(Handle query);
-    void (*impl_PerfQuery_SetCurrent)(Handle startQuery, Handle endQuery);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);
     void (*impl_Texture_Delete)(Handle);

@@ -372,10 +372,6 @@ uint64 Value(Handle query)
     return (*_Impl.impl_PerfQuery_Value)(query);
 }
 
-void SetCurrent(Handle startQuery, Handle endQuery)
-{
-    (*_Impl.impl_PerfQuery_SetCurrent)(startQuery, endQuery);
-}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

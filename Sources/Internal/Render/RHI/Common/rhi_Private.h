@@ -69,8 +69,6 @@ void Reset(Handle query);
 
 bool IsReady(Handle query);
 uint64 Value(Handle query);
-
-void SetCurrent(Handle startQuery, Handle endQuery);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -48,7 +48,6 @@ void ObtainPerfQueryResults();
 void IssueQuery(Handle handle);
 void SkipQuery(Handle handle);
 
-void GetCurrentFrameQueries(Handle* query0, Handle* query1);
 void ReleaseQueryObjectsPool();
 }
 

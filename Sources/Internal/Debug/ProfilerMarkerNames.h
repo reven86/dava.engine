@@ -46,14 +46,14 @@ extern const char* RENDER_PREPARE_LANDSCAPE;
 
 //RHI
 extern const char* RHI_RENDER_LOOP;
+extern const char* RHI_EXECUTE_FRAME;
 extern const char* RHI_PRESENT;
 extern const char* RHI_DEVICE_PRESENT;
-extern const char* RHI_EXECUTE_QUEUED_CMDS;
 extern const char* RHI_EXECUTE_IMMEDIATE_CMDS;
 extern const char* RHI_WAIT_IMMEDIATE_CMDS;
 extern const char* RHI_WAIT_FRAME_EXECUTION;
 extern const char* RHI_CMD_BUFFER_EXECUTE;
-extern const char* RHI_WAIT_FRAME;
+extern const char* RHI_WAIT_FRAME_CONSTRACTION;
 extern const char* RHI_PROCESS_SCHEDULED_DELETE;
 };
 

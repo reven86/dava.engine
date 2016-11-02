@@ -107,7 +107,6 @@ public:
     RenderPassConfig passCfg; //-V730_NOINIT
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
-    PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
 };
@@ -307,7 +306,9 @@ static void dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 static void
 dx9_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle query)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__ISSUE_TIMESTAMP_QUERY, query);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
+    cmd->perfQuery = query;
 }
 
 //------------------------------------------------------------------------------
@@ -655,14 +656,13 @@ void CommandBufferDX9_t::Execute()
         }
         break;
 
-        case DX9__ISSUE_TIMESTAMP_QUERY:
+        case CMD_ISSUE_TIMESTAMP_QUERY:
         {
-            DVASSERT(perfQueryFrame);
-            PerfQueryDX9::IssueTimestamp(perfQueryFrame, Handle(arg[0]));
+            PerfQueryDX9::IssueTimestamp(static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->perfQuery);
         }
         break;
 
-        case DX9__ISSUE_TIMESTAMP_QUERY:
+        case CMD_SET_PIPELINE_STATE:
         {
             Handle ps = (static_cast<const SWCommand_SetPipelineState*>(cmd))->ps;
             uint32 vd_uid = (static_cast<const SWCommand_SetPipelineState*>(cmd))->vdecl;
@@ -1017,9 +1017,6 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
         IndexBufferDX9::LogUnrestoredBacktraces();
         DVASSERT_MSG(0, "Failed to restore all resources in time.");
 
-            if (f->perfQueryFrame)
-                PerfQueryDX9::RejectPerfQueryFrame(f->perfQueryFrame);
-
     }
 #endif
 }
@@ -1032,6 +1029,8 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     _DX9_FramesWithRestoreAttempt = 0;
 
+    PerfQueryDX9::ObtainPerfQueryMeasurment();
+
     std::vector<RenderPassDX9_t*> pass;
 
     for (Handle p : frame.pass)
@@ -1041,12 +1040,6 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         bool do_add = true;
         for (unsigned i = 0; i != pass.size(); ++i)
         {
-            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
-            {
-                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(pp->cmdBuf[b]);
-                cb->perfQueryFrame = _DX9_Frame.front().perfQueryFrame;
-            }
-
             if (pp->priority > pass[i]->priority)
             {
                 pass.insert(pass.begin() + i, 1, pp);
@@ -1068,8 +1061,16 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_signaled = false;
         sync->is_used = true;
     }
+
+    PerfQueryDX9::BeginMeasurment();
+    if (frame.perfQuery0 != InvalidHandle)
+        PerfQueryDX9::IssueTimestamp(frame.perfQuery0);
+
     for (RenderPassDX9_t* pp : pass)
     {
+        if (pp->perfQuery0)
+            PerfQueryDX9::IssueTimestamp(pp->perfQuery0);
+
         for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
         {
             Handle cb_h = pp->cmdBuf[b];
@@ -1087,10 +1088,18 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
             CommandBufferPoolDX9::Free(cb_h);
         }
+
+        if (pp->perfQuery1)
+            PerfQueryDX9::IssueTimestamp(pp->perfQuery1);
     }
 
     for (Handle p : frame.pass)
         RenderPassPoolDX9::Free(p);
+
+    if (frame.perfQuery1 != InvalidHandle)
+        PerfQueryDX9::IssueTimestamp(frame.perfQuery1);
+
+    PerfQueryDX9::EndMeasurment();
 
     // update sync-objects
     _DX9_SyncObjectsSync.Lock();

@@ -37,10 +37,10 @@ struct PerfQueryFrameDX9
     IDirect3DQuery9* freqQuery = nullptr;
     DAVA::List<HPerfQuery> perfQueries;
     uint64 freq = 0;
-    Handle frameQuery0 = InvalidHandle;
-    Handle frameQuery1 = InvalidHandle;
     bool isValid = false;
 };
+
+PerfQueryFrameDX9* NextPerfQueryFrame();
 }
 //==============================================================================
 
@@ -128,17 +128,12 @@ static uint64 dx9_PerfQuery_Value(Handle handle)
     return ret;
 }
 
-static void dx9_PerfQuery_SetCurrent(Handle start, Handle end)
-{
-    DVASSERT(currentPerfQueryFrameDX9);
-    currentPerfQueryFrameDX9->frameQuery0 = start;
-    currentPerfQueryFrameDX9->frameQuery1 = end;
-}
-
 namespace PerfQueryDX9
 {
-void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle)
+void IssueTimestamp(Handle handle)
 {
+    DVASSERT(currentPerfQueryFrameDX9);
+
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
     if (perfQuery)
     {
@@ -152,38 +147,33 @@ void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle)
         perfQuery->isUsed = 1;
         perfQuery->isReady = 0;
 
-        frame->perfQueries.push_back(HPerfQuery(handle));
+        currentPerfQueryFrameDX9->perfQueries.push_back(HPerfQuery(handle));
     }
 }
-void BeginFrame(PerfQueryFrameDX9* frame)
+
+void BeginMeasurment()
 {
-    if (frame->frameQuery0)
-        IssueTimestamp(frame, frame->frameQuery0);
+    DVASSERT(currentPerfQueryFrameDX9 == nullptr);
+    currentPerfQueryFrameDX9 = NextPerfQueryFrame();
+
+    if (!currentPerfQueryFrameDX9->disjointQuery)
+        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &(currentPerfQueryFrameDX9->disjointQuery));
+
+    if (!currentPerfQueryFrameDX9->freqQuery)
+        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &(currentPerfQueryFrameDX9->freqQuery));
+
+    currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_BEGIN);
+    currentPerfQueryFrameDX9->freqQuery->Issue(D3DISSUE_END);
 }
 
-void EndFrame(PerfQueryFrameDX9* frame)
+void EndMeasurment()
 {
-    if (frame->frameQuery1)
-        IssueTimestamp(frame, frame->frameQuery1);
-}
+    DVASSERT(currentPerfQueryFrameDX9);
 
-void BeginMeasurment(PerfQueryFrameDX9* frame)
-{
-    if (!frame->disjointQuery)
-        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &(frame->disjointQuery));
+    currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_END);
 
-    if (!frame->freqQuery)
-        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &(frame->freqQuery));
-
-    frame->disjointQuery->Issue(D3DISSUE_BEGIN);
-    frame->freqQuery->Issue(D3DISSUE_END);
-}
-
-void EndMeasurment(PerfQueryFrameDX9* frame)
-{
-    frame->disjointQuery->Issue(D3DISSUE_END);
-
-    pendingPerfQueryFrameDX9.push_back(frame);
+    pendingPerfQueryFrameDX9.push_back(currentPerfQueryFrameDX9);
+    currentPerfQueryFrameDX9 = nullptr;
 }
 
 void SetupDispatch(Dispatch* dispatch)
@@ -193,11 +183,9 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PerfQuery_Reset = &dx9_PerfQuery_Reset;
     dispatch->impl_PerfQuery_IsReady = &dx9_PerfQuery_IsReady;
     dispatch->impl_PerfQuery_Value = &dx9_PerfQuery_Value;
-    dispatch->impl_PerfQuery_SetCurrent = &dx9_PerfQuery_SetCurrent;
 }
 
 //==============================================================================
-//called from main-thread
 
 PerfQueryFrameDX9* NextPerfQueryFrame()
 {
@@ -216,8 +204,6 @@ PerfQueryFrameDX9* NextPerfQueryFrame()
         currentPerfQueryFrameDX9->freq = 0;
         currentPerfQueryFrameDX9->isValid = false;
         currentPerfQueryFrameDX9->perfQueries.clear();
-        currentPerfQueryFrameDX9->frameQuery0 = InvalidHandle;
-        currentPerfQueryFrameDX9->frameQuery1 = InvalidHandle;
     }
     else
     {
@@ -228,15 +214,6 @@ PerfQueryFrameDX9* NextPerfQueryFrame()
 }
 
 //==============================================================================
-//called from render-thread
-
-void RejectPerfQueryFrame(PerfQueryFrameDX9* frame)
-{
-    DVASSERT(frame);
-
-    DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
-    perfQueryFramePoolDX9.push_back(frame);
-}
 
 void ReleaseAll()
 {
