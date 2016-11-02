@@ -105,6 +105,7 @@ void RulerToolSystem::Input(DAVA::UIEvent* event)
     switch (event->phase)
     {
     case DAVA::UIEvent::Phase::KEY_DOWN:
+    case DAVA::UIEvent::Phase::KEY_DOWN_REPEAT:
         if (DAVA::Key::BACKSPACE == event->key)
         {
             RemoveLastPoint();
