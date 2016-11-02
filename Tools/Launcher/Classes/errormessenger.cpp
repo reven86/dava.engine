@@ -15,7 +15,7 @@ QString errorsMsg[ERROR_COUNT] = {
     "Archive unpacking error",
     "Application is running. Please, close it",
     "Updating error",
-    "Can not work with file",
+    "File error",
     "Can not find path"
 };
 

@@ -56,4 +56,3 @@ private:
 
     std::array<QString, URLTypesCount> urls;
 };
-

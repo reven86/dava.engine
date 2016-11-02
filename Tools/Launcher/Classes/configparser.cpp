@@ -512,13 +512,13 @@ QByteArray ConfigParser::Serialize() const
     QJsonArray buildsArray;
     for (int i = 0; i < branches.size(); ++i)
     {
-        Branch* branch = GetBranch(i);
+        const Branch* branch = GetBranch(i);
         for (int j = 0; j < branch->GetAppCount(); ++j)
         {
-            Application* app = branch->GetApplication(j);
+            const Application* app = branch->GetApplication(j);
             for (int k = 0; k < app->GetVerionsCount(); ++k)
             {
-                AppVersion* ver = app->GetVersion(k);
+                const AppVersion* ver = app->GetVersion(k);
                 QJsonObject buildObj = {
                     { "buildNum", ver->buildNum },
                     { "build_type", ver->id },
@@ -619,22 +619,32 @@ QString ConfigParser::GetBranchID(int branchIndex)
     return QString();
 }
 
-Branch* ConfigParser::GetBranch(int branchIndex) const
+Branch* ConfigParser::GetBranch(int branchIndex)
 {
     if (branchIndex >= 0 && branchIndex < branches.size())
-        return const_cast<Branch*>(&branches[branchIndex]);
+        return &branches[branchIndex];
 
-    return 0;
+    return nullptr;
 }
 
-Branch* ConfigParser::GetBranch(const QString& branch) const
+Branch* ConfigParser::GetBranch(const QString& branch)
 {
     int branchCount = branches.size();
     for (int i = 0; i < branchCount; ++i)
         if (branches[i].id == branch)
-            return const_cast<Branch*>(&branches[i]);
+            return &branches[i];
 
-    return 0;
+    return nullptr;
+}
+
+const Branch* ConfigParser::GetBranch(int branchIndex) const
+{
+    return const_cast<ConfigParser*>(this)->GetBranch(branchIndex);
+}
+
+const Branch* ConfigParser::GetBranch(const QString& branch) const
+{
+    return const_cast<ConfigParser*>(this)->GetBranch(branch);
 }
 
 Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID)
