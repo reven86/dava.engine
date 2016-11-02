@@ -5,7 +5,10 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
+#import <UIKit/UIScreen.h>
 #import <QuartzCore/CAEAGLLayer.h>
 
 @implementation RenderView
@@ -27,6 +30,17 @@
         [self setMultipleTouchEnabled:YES];
     }
     return self;
+}
+
+- (void)setSurfaceScale:(DAVA::float32)surfaceScale
+{
+    // TODO: test with metal
+    [self setContentScaleFactor:[[UIScreen mainScreen] scale] * surfaceScale];
+}
+
+- (DAVA::float32)surfaceScale
+{
+    return [self contentScaleFactor] / [[UIScreen mainScreen] scale];
 }
 
 - (CGSize)surfaceSize

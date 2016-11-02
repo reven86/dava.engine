@@ -9,12 +9,9 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
+#include "Engine/Private/iOS/Window/RenderViewiOS.mm"
 
-#include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
-
-#import "RenderViewiOS.h"
-#import <UIKit/UIKit.h>
 
 namespace DAVA
 {
@@ -102,14 +99,14 @@ void WindowBackend::ProcessPlatformEvents()
 
 float32 WindowBackend::WindowBackend::GetSurfaceScale() const
 {
-    return [bridge->renderView contentScaleFactor] / [[UIScreen mainScreen] scale];
+    return [bridge->renderView surfaceScale];
 }
 
 void WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-    [bridge->renderView setContentScaleFactor:[[UIScreen mainScreen] scale] * scale];
+    [bridge->renderView setSurfaceScale:scale];
 
     CGSize size = [bridge->renderView frame].size;
     CGSize surfaceSize = [bridge->renderView surfaceSize];
