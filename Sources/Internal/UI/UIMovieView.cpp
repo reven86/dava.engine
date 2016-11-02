@@ -122,6 +122,7 @@ void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 
 void UIMovieView::Update(float32 timeElapsed)
 {
+    UIControl::Update(timeElapsed);
     movieViewControl->Update();
 }
 

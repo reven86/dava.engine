@@ -1,7 +1,6 @@
 #include "ScenePreviewControl.h"
 #include "Deprecated/ControlsFactory.h"
 #include "Deprecated/SceneValidator.h"
-#include "UI/UIControlSystem.h"
 #include "Scene3D/Components/CameraComponent.h"
 
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
@@ -76,6 +75,8 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 
 void ScenePreviewControl::Update(DAVA::float32 timeElapsed)
 {
+    UI3DView::Update(timeElapsed);
+
     if (needSetCamera)
     {
         needSetCamera = false;

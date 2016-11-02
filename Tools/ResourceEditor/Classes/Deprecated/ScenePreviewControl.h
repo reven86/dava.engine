@@ -16,7 +16,7 @@ public:
     ScenePreviewControl(const DAVA::Rect& rect);
     ~ScenePreviewControl() override;
 
-    void Update(DAVA::float32 timeElapsed);
+    void Update(DAVA::float32 timeElapsed) override;
 
     DAVA::int32 OpenScene(const DAVA::FilePath& pathToFile);
     void ReleaseScene();

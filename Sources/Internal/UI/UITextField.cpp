@@ -51,7 +51,9 @@ UITextField::UITextField(const Rect& rect)
     // Additional step to do impl initialization which cannot be done in impl constructor, e.g.
     // call shared_from_this() to create std::weak_ptr from std::shared_ptr
     textFieldImpl->Initialize();
+
     textFieldImpl->SetVisible(false);
+
     SetupDefaults();
     GetOrCreateComponent<UIUpdateComponent>();
 }

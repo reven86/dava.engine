@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 class TestBed;
-class UIMovieTest : public BaseScreen, public TrackedObject
+class UIMovieTest : public BaseScreen
 {
 protected:
     virtual ~UIMovieTest() = default;

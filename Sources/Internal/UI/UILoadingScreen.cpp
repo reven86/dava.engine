@@ -59,6 +59,8 @@ void UILoadingScreen::OnActive()
 
 void UILoadingScreen::Update(float32 timeElapsed)
 {
+    UIScreen::Update(timeElapsed);
+
     if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
     {
         JobManager::Instance()->WaitMainJobs(thread->GetId());

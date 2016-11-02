@@ -5,6 +5,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "UI/UIScreenshoter.h"
@@ -84,6 +85,8 @@ void UIScreenTransition::EndTransition()
 
 void UIScreenTransition::Update(float32 timeElapsed)
 {
+    UIScreen::Update(timeElapsed);
+
     currentTime += timeElapsed;
     normalizedTime = interpolationFunc(currentTime / duration);
     if (currentTime >= duration)

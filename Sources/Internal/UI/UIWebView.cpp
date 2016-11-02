@@ -245,6 +245,7 @@ void UIWebView::Input(UIEvent* currentInput)
 void UIWebView::Update(float32 timeElapsed)
 {
     webViewControl->Update();
+    UIControl::Update(timeElapsed);
 }
 
 } // namespace DAVA

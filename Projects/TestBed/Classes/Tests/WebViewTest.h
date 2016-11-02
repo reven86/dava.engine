@@ -7,7 +7,7 @@
 using namespace DAVA;
 
 class TestBed;
-class WebViewTest : public BaseScreen, public TrackedObject
+class WebViewTest : public BaseScreen
 {
 public:
     WebViewTest(TestBed& app);

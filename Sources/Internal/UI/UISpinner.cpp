@@ -358,5 +358,4 @@ void UISpinner::SetupInternalControls()
     newPivotPoint.x = content->size.dx;
     nextContent->SetPivotPoint(newPivotPoint);
 }
-
 }
