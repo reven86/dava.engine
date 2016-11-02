@@ -2,7 +2,7 @@ RenderTechnique:
     Layers: ["AlphaTestLayer"]
     RenderPass:
         Name: "ForwardPass"
-        Shader: "~res:/Materials/Shaders/Default/materials"
+        Shader: "~res:/QuickEd/Materials/Shaders/Default/materials"
         UniqueDefines: ["MATERIAL_TEXTURE", "VERTEX_COLOR", "ALPHABLEND"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"

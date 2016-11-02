@@ -2,7 +2,7 @@ RenderTechnique:
     Layers: ["OpaqueRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
-        Shader: "~res:/Materials/Shaders/Landscape/tilemask"
+        Shader: "~res:/QuickEd/Materials/Shaders/Landscape/tilemask"
         UniqueDefines: ["TILEMASK"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
