@@ -32,6 +32,7 @@ public:
     bool IsRunning() const;
 
     void SetCacheClient(AssetCacheClient* cacheClient, const String& comment);
+    void SetTexturePostfix(String postfix);
 
     void PackResources(const Vector<eGPUFamily>& forGPUs);
 
@@ -63,6 +64,7 @@ public:
     FilePath rootDirectory;
     FilePath dataSourceDirectory;
     String gfxDirName;
+    String texturePostfix;
 
     bool outputDirModified = true;
 

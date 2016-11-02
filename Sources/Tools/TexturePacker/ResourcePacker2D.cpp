@@ -467,6 +467,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     packer.SetTwoSideMargin(useTwoSideMargin);
                     packer.SetTexturesMargin(marginInPixels);
                     packer.SetAlgorithms(packAlgorithms);
+                    packer.SetTexturePostfix(texturePostfix);
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {
@@ -547,6 +548,11 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
     cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
 
     cacheItemDescription.comment = comment;
+}
+
+void ResourcePacker2D::SetTexturePostfix(String postfix)
+{
+    texturePostfix = postfix;
 }
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
