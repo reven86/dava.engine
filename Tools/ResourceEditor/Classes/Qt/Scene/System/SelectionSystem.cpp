@@ -26,6 +26,8 @@ SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
+
+    wasLockedInActiveMode = IsLocked();
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -838,11 +840,12 @@ void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
 
 void SceneSelectionSystem::Activate()
 {
-    SetLocked(false);
+    SetLocked(wasLockedInActiveMode);
 }
 
 void SceneSelectionSystem::Deactivate()
 {
+    wasLockedInActiveMode = IsLocked();
     SetLocked(true);
 }
 

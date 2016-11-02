@@ -1,5 +1,4 @@
-#ifndef __SCENE_SELECTION_SYSTEM_H__
-#define __SCENE_SELECTION_SYSTEM_H__
+#pragma once
 
 #include "Scene/SceneTypes.h"
 #include "Scene/SelectableGroup.h"
@@ -150,6 +149,8 @@ private:
     bool selectionHasChanges = false;
     bool selecting = false;
     bool systemIsEnabled = false;
+
+    bool wasLockedInActiveMode = false;
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()
@@ -171,5 +172,3 @@ inline bool SceneSelectionSystem::IsSelectionAllowed() const
 {
     return selectionAllowed;
 }
-
-#endif //__SCENE_SELECTION_SYSTEM_H__
