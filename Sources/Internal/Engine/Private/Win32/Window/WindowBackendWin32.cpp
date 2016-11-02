@@ -115,6 +115,22 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+float32 WindowBackend::GetSurfaceScale() const
+{
+    return surfaceScale;
+}
+
+void WindowBackend::SetSurfaceScale(float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    surfaceScale = scale;
+
+    float32 surfaceWidth = lastWidth * surfaceScale;
+    float32 surfaceHeight = lastHeight * surfaceScale;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, lastWidth, lastHeight, surfaceWidth, surfaceHeight));
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
     int32 w = static_cast<int32>(width);
@@ -156,9 +172,8 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 width = static_cast<float32>(lastWidth);
         float32 height = static_cast<float32>(lastHeight);
 
-        // on win32 surfaceWidth/surfaceHeight is same as window width/height
-        float32 surfaceWidth = width;
-        float32 surfaceHeight = height;
+        float32 surfaceWidth = width * surfaceScale;
+        float32 surfaceHeight = height * surfaceScale;
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
     }
@@ -361,8 +376,8 @@ LRESULT WindowBackend::OnCreate()
 
     float32 width = static_cast<float32>(lastWidth);
     float32 height = static_cast<float32>(lastHeight);
-    float32 surfaceWidth = width;
-    float32 surfaceHeight = height;
+    float32 surfaceWidth = width * surfaceScale;
+    float32 surfaceHeight = height * surfaceScale;
     float32 dpi = GetDpi();
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
