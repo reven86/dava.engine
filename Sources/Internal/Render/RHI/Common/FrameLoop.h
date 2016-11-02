@@ -13,6 +13,6 @@ bool FrameReady();
 uint32 FramesCount();
 void AddPass(Handle pass);
 void RejectFrames();
-void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery);
+void SetFramePerfQueries(Handle startQuery, Handle endQuery);
 }
 }

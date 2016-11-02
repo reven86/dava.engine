@@ -63,10 +63,6 @@ static uint64 metal_PerfQueryValue(Handle handle)
     return 0;
 }
 
-static void metal_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
-{
-}
-
 namespace PerfQueryMetal
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -76,7 +72,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PerfQuery_Reset = &metal_PerfQuery_Reset;
     dispatch->impl_PerfQuery_IsReady = &metal_PerfQuery_IsReady;
     dispatch->impl_PerfQuery_Value = &metal_PerfQueryValue;
-    dispatch->impl_PerfQuery_SetCurrent = &metal_PerfQuery_SetCurrent;
 }
 }
 

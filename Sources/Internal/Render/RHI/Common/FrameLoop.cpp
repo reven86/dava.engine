@@ -126,7 +126,7 @@ void AddPass(Handle pass)
     frames[frameToBuild % framePoolSize].pass.push_back(pass);
 }
 
-void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
+void SetFramePerfQueries(Handle startQuery, Handle endQuery)
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     CommonImpl::Frame& frame = frames[frameToBuild % framePoolSize];

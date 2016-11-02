@@ -3,6 +3,7 @@
 #include "Base/BaseMath.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIButton.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Font.h"
 #include "Scene3D/Scene.h"
 #include "Debug/ProfilerOverlay.h"
@@ -36,7 +37,7 @@ void ProfilerTest::LoadResources()
 
     ScopedPtr<Camera> camera(new Camera());
 
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
 
     float32 aspect = float32(screenSize.dy) / float32(screenSize.dx);
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);

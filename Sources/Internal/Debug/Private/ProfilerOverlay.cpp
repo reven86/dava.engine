@@ -10,6 +10,7 @@
 #include "Render/RHI/Common/rhi_Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIEvent.h"
+#include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"
 #include <ostream>
 
@@ -271,7 +272,7 @@ void ProfilerOverlay::ProcessTouch(UIEvent* input)
     {
         for (int32 i = 0; i < BUTTON_COUNT; ++i)
         {
-            Vector2 physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(input->point);
+            Vector2 physPoint = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(input->point);
             Point2i point = Point2i(int32(physPoint.x / overlayScale), int32(physPoint.y / overlayScale));
             if (buttons[i].PointInside(point))
                 OnButtonPressed(eButton(i));
