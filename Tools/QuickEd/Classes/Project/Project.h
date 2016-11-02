@@ -1,11 +1,12 @@
 #ifndef QUICKED__PROJECT_H__
 #define QUICKED__PROJECT_H__
 
-#include <QObject>
+#include "ProjectProperties.h"
 
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
 
+#include <QObject>
 #include <QVector>
 #include <QPair>
 
@@ -28,25 +29,9 @@ class Project : public QObject
 {
     Q_OBJECT
 public:
-    struct Settings
-    {
-        QString projectFile;
-        QString resourceDirectory;
-        QString additionalResourceDirectory;
-        QString intermediateResourceDirectory;
+    static std::tuple<DAVA::ResultList, ProjectProperties> ParseProjectPropertiesFromFile(const QString& projectFile);
+    static bool EmitProjectPropertiesToFile(const ProjectProperties& settings);
 
-        DAVA::FilePath fontsDirectory;
-        DAVA::FilePath textsDirectory;
-        DAVA::FilePath fontsConfigsDirectory;
-        DAVA::String defaultLanguage;
-        DAVA::Vector<std::pair<QString, QSize>> gfxDirectories;
-        DAVA::Vector<DAVA::FilePath> libraryPackages;
-    };
-
-    static const int CURRENT_PROJECT_FILE_VERSION = 1;
-
-    static std::tuple<Settings, DAVA::ResultList> ParseProjectSettings(const QString& projectFile);
-    static const QString& GetUIRelativePath();
     static const QString& GetProjectFileName();
 
     static const QStringList& GetFontsFileExtensionFilter();
@@ -55,14 +40,15 @@ public:
     static const QString& GetUIFileExtensionFilter();
     static const QString& GetUIFileExtension();
 
-    Project(MainWindow::ProjectView* aView, const Settings& aSettings);
+    Project(MainWindow::ProjectView* aView, const ProjectProperties& aSettings);
     ~Project();
 
     void SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient);
 
     QString GetProjectPath() const;
-    QString GetProjectDirectory() const;
-    QString GetProjectName() const;
+    const QString& GetProjectDirectory() const;
+    const QString& GetProjectName() const;
+    QString GetResourceDirectory() const;
 
     QStringList GetAvailableLanguages() const;
     QString GetCurrentLanguage() const;
@@ -76,9 +62,7 @@ public:
     void SetBiDiSupport(bool support);
     void SetGlobalStyleClasses(const QString& classesStr);
 
-    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
-
-    const QString& SourceResourceDirectory() const;
+    DAVA::Vector<DAVA::FilePath> GetLibraryPackages() const;
 
     void OnReloadSprites();
 
@@ -90,11 +74,12 @@ signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
-    static std::tuple<Settings, DAVA::ResultList> ParseActualProjectSettings(const QString& projectFile, const DAVA::YamlNode* root);
-    static std::tuple<Settings, DAVA::ResultList> ParseLegacyProjectSettings(const QString& projectFile, const DAVA::YamlNode* root, int version);
+    static void ConvertPathsAfterParse(ProjectProperties& settings);
+    static void ConvertPathsBeforeEmit(ProjectProperties& settings);
+
     void FindFileInProject();
 
-    Settings settings;
+    ProjectProperties properties;
     const QString projectDirectory;
     const QString projectName;
     QString uiResourcesPath;

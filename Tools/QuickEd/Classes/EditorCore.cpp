@@ -103,7 +103,7 @@ EditorCore::EditorCore(DAVA::Engine& engine)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
 
-    mainWindow->SetEditorTitle(ReadEditorTitle());
+    mainWindow->SetEditorTitle(GenerateEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::NewProject, this, &EditorCore::OnNewProject);
@@ -196,9 +196,9 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
         return std::make_tuple(nullptr, resultList);
     }
 
-    Project::Settings settings;
-    std::tie(settings, resultList) = Project::ParseProjectSettings(path);
-    if (settings.projectFile.isEmpty())
+    ProjectProperties settings;
+    std::tie(resultList, settings) = Project::ParseProjectPropertiesFromFile(path);
+    if (!resultList.IsSuccess())
     {
         return std::make_tuple(nullptr, resultList);
     }
@@ -224,19 +224,95 @@ std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
         resultList.AddResult(Result::RESULT_FAILURE, String("Project file exists!"));
         return std::make_tuple(QString(), resultList);
     }
+
     QFile projectFile(fullProjectFilePath);
     if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
     {
-        resultList.AddResult(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
+        resultList.AddResult(Result::RESULT_ERROR, QString("Can not open project file %1.").arg(fullProjectFilePath).toStdString());
         return std::make_tuple(QString(), resultList);
     }
-    if (!projectDir.mkpath(projectDir.canonicalPath() + Project::GetUIRelativePath()))
+
+    ProjectProperties defaultSettings = ProjectProperties::Default();
+    defaultSettings.projectFile = fullProjectFilePath.toStdString();
+
+    Result result = CreateProjectDirectories(projectDir.canonicalPath(), defaultSettings);
+    if (result.type != Result::RESULT_SUCCESS)
     {
-        resultList.AddResult(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        resultList.AddResult(result);
+        return std::make_tuple(QString(), resultList);
+    }
+
+    defaultSettings.projectFile = fullProjectFilePath.toStdString();
+
+    if (!Project::EmitProjectPropertiesToFile(defaultSettings))
+    {
+        resultList.AddResult(Result::RESULT_ERROR, QString("Can not create project file %1.").arg(fullProjectFilePath).toStdString());
         return std::make_tuple(QString(), resultList);
     }
 
     return std::make_tuple(fullProjectFilePath, resultList);
+}
+
+DAVA::Result EditorCore::CreateProjectDirectories(const QDir& projectDir, ProjectProperties& defaultSettings)
+{
+    DAVA::ResultList resultList;
+    QString resourceDirectory = QString::fromStdString(defaultSettings.resourceDirectory);
+    if (!projectDir.mkpath(resourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
+    }
+
+    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.intermediateResourceDirectory);
+    if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
+    }
+
+    QString gfxDirectory = QString::fromStdString(defaultSettings.gfxDirectories.front().first);
+    if (!projectDir.mkpath(gfxDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create gfx directory %1.").arg(gfxDirectory).toStdString());
+    }
+
+    QString uiDirectory = QString::fromStdString(defaultSettings.uiDirectory);
+    if (!projectDir.mkpath(uiDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create UI directory %1.").arg(uiDirectory).toStdString());
+    }
+
+    QString textsDirectory = QString::fromStdString(defaultSettings.textsDirectory);
+    if (!projectDir.mkpath(textsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create UI directory %1.").arg(textsDirectory).toStdString());
+    }
+
+    QFile defaultLanguageTextFile(textsDirectory + QString::fromStdString(defaultSettings.defaultLanguage) + ".yaml");
+    if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
+    }
+    defaultLanguageTextFile.close();
+
+    QString fontsDirectory = QString::fromStdString(defaultSettings.fontsDirectory);
+    if (!projectDir.mkpath(fontsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create Fonts config directory %1.").arg(fontsDirectory).toStdString());
+    }
+
+    QString fontsConfigDirectory = QString::fromStdString(defaultSettings.fontsConfigsDirectory);
+    if (!projectDir.mkpath(fontsConfigDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create Fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
+    }
+
+    QFile defaultFontsConfigFile(fontsConfigDirectory + "fonts.yaml");
+    if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
+    }
+    defaultFontsConfigFile.close();
+
+    return Result();
 }
 
 void EditorCore::OnCloseProject()
@@ -366,7 +442,7 @@ void EditorCore::OnOpenProject()
     }
 
     QString projectPath = QFileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
-                                                       defaultPath, tr("QuickEd project file(*.quicked *.uieditor)"));
+                                                       defaultPath, tr("Project files(*.quicked *.uieditor)"));
 
     if (projectPath.isEmpty())
     {
@@ -416,7 +492,7 @@ void EditorCore::UnpackHelp()
     }
 }
 
-QString EditorCore::ReadEditorTitle() const
+QString EditorCore::GenerateEditorTitle() const
 {
     using namespace EditorCoreDetails;
     return QString::fromStdString(DAVA::Format(EDITOR_TITLE, DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION, static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8)));

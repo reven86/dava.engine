@@ -1,11 +1,14 @@
 #pragma once
 
+#include "Project/Project.h"
+
 #include "Base/Introspection.h"
 #include "AssetCache/AssetCacheClient.h"
 
 #include <QObject>
 
 class QAction;
+class QDir;
 class Document;
 class DocumentGroup;
 class Project;
@@ -17,6 +20,7 @@ namespace DAVA
 {
 class AssetCacheClient;
 class Engine;
+struct Result;
 class ResultList;
 }
 
@@ -45,6 +49,8 @@ private:
     static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path, MainWindow* mainWindow);
     static std::tuple<QString, DAVA::ResultList> CreateNewProject();
 
+    static DAVA::Result CreateProjectDirectories(const QDir& projectDir, ProjectProperties& defaultSettings);
+
     void OpenProject(const QString& path);
     bool CloseProject();
 
@@ -61,7 +67,7 @@ private:
     DAVA::String GetRecentProjectsAsString() const;
     void SetRecentProjectsFromString(const DAVA::String& str);
 
-    QString ReadEditorTitle() const;
+    QString GenerateEditorTitle() const;
 
     void UnpackHelp();
 

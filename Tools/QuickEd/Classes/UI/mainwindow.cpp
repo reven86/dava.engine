@@ -90,14 +90,6 @@ void MainWindow::SetProjectPath(const QString& aProjectPath)
     UpdateWindowTitle();
 }
 
-// void MainWindow::OnDocumentChanged(Document* document)
-// {
-//     bool enabled = (document != nullptr);
-//     ui->packageWidget->setEnabled(enabled);
-//     ui->propertiesWidget->setEnabled(enabled);
-//     ui->libraryWidget->setEnabled(enabled);
-// }
-
 void MainWindow::OnRecentMenu(QAction* action)
 {
     QString projectPath = action->data().toString();
@@ -183,14 +175,13 @@ void MainWindow::SetupViewMenu()
 {
     // Setup the common menu actions.
     QList<QAction*> dockWidgetToggleActions;
-    dockWidgetToggleActions
-    << ui->propertiesWidget->toggleViewAction()
-    << ui->fileSystemDockWidget->toggleViewAction()
-    << ui->packageWidget->toggleViewAction()
-    << ui->libraryWidget->toggleViewAction()
-    << ui->consoleDockWidget->toggleViewAction()
-    << ui->mainToolbar->toggleViewAction()
-    << ui->toolBarPlugins->toggleViewAction();
+    dockWidgetToggleActions << ui->propertiesWidget->toggleViewAction()
+                            << ui->fileSystemDockWidget->toggleViewAction()
+                            << ui->packageWidget->toggleViewAction()
+                            << ui->libraryWidget->toggleViewAction()
+                            << ui->consoleDockWidget->toggleViewAction()
+                            << ui->mainToolbar->toggleViewAction()
+                            << ui->toolBarPlugins->toggleViewAction();
 
     QAction* separator = ui->menuView->insertSeparator(ui->menuApplicationStyle->menuAction());
     ui->menuView->insertActions(separator, dockWidgetToggleActions);

@@ -27,7 +27,7 @@ struct Result
 
 inline Result::operator bool() const
 {
-    return type == RESULT_SUCCESS;
+    return type == RESULT_SUCCESS || type == RESULT_WARNING;
 }
 
 class ResultList
