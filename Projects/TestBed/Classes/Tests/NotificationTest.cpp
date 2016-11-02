@@ -15,7 +15,7 @@ NotificationScreen::NotificationScreen(TestBed& app)
     , notificationText(nullptr)
     , progress(0)
 {
-    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void NotificationScreen::LoadResources()
@@ -95,6 +95,8 @@ void NotificationScreen::UnloadResources()
 
 void NotificationScreen::Update(float32 timeElapsed)
 {
+    BaseScreen::Update(timeElapsed);
+
     if (nullptr == notificationProgress)
         return;
 

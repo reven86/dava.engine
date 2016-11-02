@@ -51,7 +51,7 @@ DlcTest::DlcTest(TestBed& app)
     , options(new KeyedArchive)
     , dlc(nullptr)
 {
-    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void DlcTest::LoadResources()
@@ -291,6 +291,7 @@ void DlcTest::OnActive()
 
 void DlcTest::Update(float32 timeElapsed)
 {
+    BaseScreen::Update(timeElapsed);
     lastUpdateTime += timeElapsed;
     if (lastUpdateTime > 0.05f)
     {

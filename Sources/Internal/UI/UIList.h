@@ -141,7 +141,7 @@ private:
     }
     \endcode
  */
-class UIList : public UIControl, public UIScrollBarDelegate, public TrackedObject
+class UIList : public UIControl, public UIScrollBarDelegate
 {
 public:
     static const int32 maximumElementsCount = 100000;
@@ -211,6 +211,8 @@ protected:
 
     void FullRefresh();
 
+    void Update(float32 timeElapsed) override;
+
     void Input(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
 
@@ -245,9 +247,6 @@ protected:
     FilePath aggregatorPath;
 
     Map<String, Vector<UIListCell*>*> cellStore;
-
-private:
-    void Update(float32 timeElapsed);
 
 public:
     INTROSPECTION_EXTEND(UIList, UIControl,

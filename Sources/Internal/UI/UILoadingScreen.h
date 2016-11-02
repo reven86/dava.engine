@@ -9,7 +9,7 @@ namespace DAVA
 {
 class Thread;
 
-class UILoadingScreen : public UIScreen, public TrackedObject
+class UILoadingScreen : public UIScreen
 {
 public:
     UILoadingScreen();
@@ -17,6 +17,7 @@ public:
 
     virtual void SetScreenToLoad(int32 screenId);
 
+    void Update(float32 timeElapsed) override;
     void OnActive() override;
     void OnInactive() override;
 
@@ -25,8 +26,6 @@ protected:
     RefPtr<Thread> thread;
 
 private:
-    void Update(float32 timeElapsed);
-
     int32 nextScreenId = -1;
 };
 }

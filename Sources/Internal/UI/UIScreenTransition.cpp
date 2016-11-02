@@ -16,7 +16,7 @@ UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
-    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIScreenTransition::~UIScreenTransition()

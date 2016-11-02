@@ -8,7 +8,7 @@ const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 AssertTest::AssertTest(TestBed& app)
     : BaseScreen(app, "AssertTest")
 {
-    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
+    GetOrCreateComponent<DAVA::UIUpdateComponent>();
 }
 
 void AssertTest::LoadResources()
@@ -47,6 +47,7 @@ void AssertTest::UnloadResources()
 
 void AssertTest::Update(DAVA::float32 timeElapsed)
 {
+    BaseScreen::Update(timeElapsed);
     if (timeOut > 0.f)
     {
         timeOut -= timeElapsed;

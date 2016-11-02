@@ -18,12 +18,12 @@ public:
     void OnStart() override;
     void OnFinish() override;
 
+    void Update(float32 timeElapsed);
+
     bool IsFinished() const override;
 
     void OnActive() override;
     void OnInactive() override;
-    void OnVisible() override;
-    void OnInvisible() override;
 
 protected:
     void LoadResources() override;
@@ -35,8 +35,6 @@ protected:
     void PerformTestLogic(float32 timeElapsed) override{};
 
 private:
-    void Update(float32 timeElapsed);
-
     static const uint32 JOB_GROUP_MAX_COUNT = 10;
 
     uint32 loadingDelayFrames = 0U;

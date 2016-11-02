@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
-#include "Functional/Signal.h"
 
 class TestBed;
-class AssertTest : public BaseScreen, public DAVA::TrackedObject
+class AssertTest : public BaseScreen
 {
 public:
     AssertTest(TestBed& app);
@@ -12,10 +11,9 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
+    void Update(DAVA::float32 timeElapsed) override;
 
 private:
-    void Update(DAVA::float32 timeElapsed);
-
     DAVA::float32 timeOut = 0.f;
     DAVA::RefPtr<DAVA::UIStaticText> countdownText;
 };

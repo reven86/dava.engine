@@ -6,7 +6,7 @@
 using namespace DAVA;
 
 class TestBed;
-class NotificationScreen : public BaseScreen, public TrackedObject
+class NotificationScreen : public BaseScreen
 {
 public:
     NotificationScreen(TestBed& app);
@@ -19,13 +19,13 @@ protected:
 public:
     void LoadResources() override;
     void UnloadResources() override;
+
+    void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
     void UpdateNotification();
 
 private:
-    void Update(float32 timeElapsed);
-
     void OnNotifyText(BaseObject* obj, void* data, void* callerData);
     void OnNotifyTextDelayed(BaseObject* obj, void* data, void* callerData);
     void OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData);

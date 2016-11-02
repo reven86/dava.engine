@@ -9,10 +9,8 @@ public:
     CustomUI3DView(BaseTest* baseTest, const DAVA::Rect& rect = DAVA::Rect());
 
 protected:
-    void OnVisible() override;
+    void Update(DAVA::float32 timeElapsed) override;
 
 private:
-    void Update(DAVA::float32 timeElapsed);
-
     BaseTest* baseTest = nullptr;
 };

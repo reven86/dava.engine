@@ -20,9 +20,9 @@ public:
     void UnloadResources() override;
 
     void OnActive() override;
+    void Update(float32 timeElapsed) override;
 
 private:
-    void Update(float32 timeElapsed);
     void UpdatePlayerStateText();
     UIButton* CreateUIButton(Font* font, const Rect& rect, const String& text,
                              void (UIMovieTest::*onClick)(BaseObject*, void*, void*));

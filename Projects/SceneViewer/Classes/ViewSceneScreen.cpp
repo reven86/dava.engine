@@ -2,9 +2,14 @@
 #include "GameCore.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
-#include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 using namespace DAVA;
+
+ViewSceneScreen::ViewSceneScreen()
+{
+    GetOrCreateComponent<UIUpdateComponent>();
+}
 
 void ViewSceneScreen::LoadResources()
 {
@@ -207,11 +212,11 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
-    static uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
+    uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
-    uint64 endTime = SystemTimer::Instance()->GetAbsoluteNano();
-    updateTime += (endTime - startTime);
-    startTime = endTime;
+    BaseScreen::Update(timeElapsed);
+
+    updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
     UpdateInfo(timeElapsed);
 

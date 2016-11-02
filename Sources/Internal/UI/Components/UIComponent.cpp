@@ -84,19 +84,13 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
         return new UIUpdateComponent();
 
     default:
-        DVASSERT(false);
+        DVASSERT_MSG(false, Format("Can't create component with type %d", componentType).c_str());
         return nullptr;
     }
 }
 
 bool UIComponent::IsMultiple(uint32 componentType)
 {
-    switch (componentType)
-    {
-    case UPDATE_COMPONENT:
-        return true;
-    default:
-        return false;
-    }
+    return false;
 }
 }

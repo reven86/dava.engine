@@ -8,7 +8,7 @@ namespace DAVA
 {
 class ScrollHelper;
 
-class UIScrollViewContainer : public UIControl, public TrackedObject
+class UIScrollViewContainer : public UIControl
 {
 protected:
     virtual ~UIScrollViewContainer();
@@ -20,6 +20,7 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
 public:
+    void Update(float32 timeElapsed) override;
     void Input(UIEvent* currentTouch) override;
     void InputCancelled(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override;
@@ -63,9 +64,6 @@ protected:
     bool scrollStartMovement : 1;
     bool enableHorizontalScroll : 1;
     bool enableVerticalScroll : 1;
-
-private:
-    void Update(float32 timeElapsed);
 };
 };
 

@@ -17,6 +17,7 @@ protected:
 public:
     UIParticles(const Rect& rect = Rect());
 
+    void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
     void OnActive() override;
@@ -68,8 +69,6 @@ protected:
     };
 
 private:
-    void Update(float32 timeElapsed);
-
     FilePath effectPath;
     bool isAutostart;
     float32 startDelay;

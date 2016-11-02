@@ -13,7 +13,7 @@ static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
 
 UILoadingScreen::UILoadingScreen()
 {
-    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UILoadingScreen::~UILoadingScreen()

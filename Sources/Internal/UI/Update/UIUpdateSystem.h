@@ -7,7 +7,6 @@ namespace DAVA
 {
 class UIControl;
 class UIComponent;
-class UIUpdateComponent;
 
 class UIUpdateSystem : public UISystem
 {
@@ -25,6 +24,6 @@ public:
     void Process(float32 elapsedTime) override;
 
 private:
-    List<UIUpdateComponent*> components;
+    Set<UIComponent*> components;
 };
 }

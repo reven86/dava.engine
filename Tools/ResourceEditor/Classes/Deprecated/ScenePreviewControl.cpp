@@ -7,6 +7,7 @@
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include <UI/Update/UIUpdateComponent.h>
 
 ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     : UI3DView(rect)
@@ -16,6 +17,7 @@ ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     SetBasePriority(-100);
     SetInputEnabled(true, true);
     SetDrawToFrameBuffer(true);
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 ScenePreviewControl::~ScenePreviewControl()
@@ -70,18 +72,6 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
     SetScene(editorScene);
 
     return retError;
-}
-
-void ScenePreviewControl::OnVisible()
-{
-    DAVA::UI3DView::OnVisible();
-    DAVA::UIControlSystem::Instance()->update.Connect(this, &ScenePreviewControl::Update);
-}
-
-void ScenePreviewControl::OnInvisible()
-{
-    DAVA::UIControlSystem::Instance()->update.Disconnect(this);
-    DAVA::UI3DView::OnInvisible();
 }
 
 void ScenePreviewControl::Update(DAVA::float32 timeElapsed)

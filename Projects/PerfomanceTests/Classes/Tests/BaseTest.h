@@ -5,9 +5,8 @@
 #include "Infrastructure/Utils/ControlHelpers.h"
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
-#include "Functional/SignalBase.h"
 
-class BaseTest : public BaseScreen, public DAVA::TrackedObject
+class BaseTest : public BaseScreen
 {
 public:
     struct FrameInfo
@@ -104,8 +103,7 @@ protected:
 
     void LoadResources() override;
     void UnloadResources() override;
-    void OnVisible() override;
-    void OnInvisible() override;
+    void Update(float32 timeElapsed) override;
 
     virtual void PrintStatistic(const Vector<FrameInfo>& frames);
 
@@ -117,8 +115,6 @@ protected:
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
 
 private:
-    void Update(float32 timeElapsed);
-
     Vector<FrameInfo> frames;
 
     String testName;

@@ -29,7 +29,7 @@ struct DLCCrashTest
     void ExitThread(BaseObject* caller, void* callerData, void* userData);
 };
 
-class DlcTest : public BaseScreen, public UITextFieldDelegate, public TrackedObject
+class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
     DlcTest(TestBed& app);
@@ -42,12 +42,12 @@ public:
     void UnloadResources() override;
     void OnActive() override;
 
+    void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
     void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override;
 
 private:
-    void Update(float32 timeElapsed);
     void UpdateInfoStr();
     void SetInternalDlServer(BaseObject* obj, void* data, void* callerData);
     void SetExternalDlServer(BaseObject* obj, void* data, void* callerData);

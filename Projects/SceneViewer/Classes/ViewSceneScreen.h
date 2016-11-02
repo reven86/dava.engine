@@ -2,7 +2,6 @@
 #define __VIEW_SCENE_SCREEN_H__
 
 #include "BaseScreen.h"
-#include "Functional/SignalBase.h"
 
 namespace DAVA
 {
@@ -10,7 +9,7 @@ class RotationControllerSystem;
 class WASDControllerSystem;
 };
 
-class ViewSceneScreen : public BaseScreen, public DAVA::TrackedObject
+class ViewSceneScreen : public BaseScreen
 {
 protected:
     virtual ~ViewSceneScreen()
@@ -18,12 +17,13 @@ protected:
     }
 
 public:
+    ViewSceneScreen();
+
     virtual void LoadResources();
     virtual void UnloadResources();
 
     virtual void Draw(const UIGeometricData& geometricData);
-    void OnVisible() override;
-    void OnInvisible() override;
+    virtual void Update(float32 timeElapsed);
 
     virtual void DidAppear();
 
@@ -49,9 +49,6 @@ protected:
 
     Vector2 cursorPosition;
     float32 cursorSize = 0.1f;
-
-private:
-    void Update(float32 timeElapsed);
 };
 
 #endif //__VIEW_SCENE_SCREEN_H__

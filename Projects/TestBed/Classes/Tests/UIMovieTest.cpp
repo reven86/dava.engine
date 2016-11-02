@@ -9,7 +9,7 @@ FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 UIMovieTest::UIMovieTest(TestBed& app)
     : BaseScreen(app, "UIMovieTest")
 {
-    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void UIMovieTest::LoadResources()
@@ -75,6 +75,7 @@ void UIMovieTest::OnActive()
 void UIMovieTest::Update(float32 timeElapsed)
 {
     UpdatePlayerStateText();
+    BaseScreen::Update(timeElapsed);
 }
 
 void UIMovieTest::UpdatePlayerStateText()

@@ -17,7 +17,7 @@ WebViewTest::WebViewTest(TestBed& app)
     , bgStubPanel(nullptr)
     , updateWait(false)
 {
-    AddComponent<DAVA::UIUpdateComponent>()->SetUpdateFunction([this](DAVA::float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void WebViewTest::LoadResources()
@@ -62,6 +62,8 @@ void WebViewTest::Update(float32 delta)
         Thread::Sleep(500);
         updateWait = false;
     }
+
+    BaseScreen::Update(delta);
 }
 
 void WebViewTest::OnVisibleClick(BaseObject* sender, void* data, void* callerData)

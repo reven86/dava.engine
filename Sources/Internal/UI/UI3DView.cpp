@@ -21,7 +21,7 @@ UI3DView::UI3DView(const Rect& rect)
     , fbScaleFactor(1.f)
     , fbRenderSize()
 {
-    AddComponent<UIUpdateComponent>()->SetUpdateFunction([this](float32 t) { Update(t); });
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UI3DView::~UI3DView()

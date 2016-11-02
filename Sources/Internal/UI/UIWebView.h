@@ -7,7 +7,7 @@
 namespace DAVA
 {
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
-class UIWebView : public UIControl, public TrackedObject
+class UIWebView : public UIControl
 {
 public:
     // Data detector types. May be a combination of several flags.
@@ -61,6 +61,8 @@ public:
     void Draw(const UIGeometricData& geometricData) override;
     void Input(UIEvent* currentInput) override;
 
+    void Update(float32 timeElapsed) override;
+
 protected:
     void OnVisible() override;
     void OnInvisible() override;
@@ -98,8 +100,6 @@ protected:
     std::shared_ptr<IWebViewControl> webViewControl;
 
 private:
-    void Update(float32 timeElapsed);
-
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
 

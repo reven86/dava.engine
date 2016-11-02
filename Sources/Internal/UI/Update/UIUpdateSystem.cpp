@@ -14,38 +14,53 @@ void UIUpdateSystem::UnregisterControl(UIControl* control)
 
 void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
+    if (component->GetType() == UIComponent::UPDATE_COMPONENT && control->IsVisible())
+    {
+        components.insert(component);
+    }
 }
 
 void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
+    if (component->GetType() == UIComponent::UPDATE_COMPONENT)
+    {
+        components.erase(component);
+    }
 }
 
 void UIUpdateSystem::OnControlVisible(UIControl* control)
 {
-    UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
-    if (component)
+    uint32 count = control->GetComponentCount<UIUpdateComponent>();
+    for (uint32 i = 0; i < count; ++i)
     {
-        components.push_back(component);
+        UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>(i);
+        if (component)
+        {
+            components.insert(component);
+        }
     }
 }
 
 void UIUpdateSystem::OnControlInvisible(UIControl* control)
 {
-    UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
-    if (component)
+    uint32 count = control->GetComponentCount<UIUpdateComponent>();
+    for (uint32 i = 0; i < count; ++i)
     {
-        components.remove(component);
+        UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>(i);
+        if (component)
+        {
+            components.erase(component);
+        }
     }
 }
 
 void UIUpdateSystem::Process(float32 elapsedTime)
 {
-    for (UIUpdateComponent* c : components)
+    for (UIComponent* c : components)
     {
-        const auto& f = c->GetUpdateFunction();
-        if (f)
+        if (c->GetControl())
         {
-            f(elapsedTime);
+            c->GetControl()->Update(elapsedTime);
         }
     }
 }

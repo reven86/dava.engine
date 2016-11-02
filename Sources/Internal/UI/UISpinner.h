@@ -89,7 +89,7 @@ protected:
  * To display selected element UISpinner itself (as UIControl) or its children should be used:
  * use SpinnerAdapter with your custom DisplaySelectedData implementation of display logic.
  */
-class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver, public TrackedObject
+class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver
 {
 public:
     UISpinner(const Rect& rect = Rect());
@@ -105,6 +105,7 @@ public:
     void RemoveControl(UIControl* control) override;
 
     void Input(UIEvent* currentInput) override;
+    void Update(float32 timeElapsed) override;
 
     void LoadFromYamlNodeCompleted() override;
 
@@ -162,9 +163,6 @@ protected:
 
     void OnSelectWithSlide(bool isPrevious);
     void SetupInternalControls();
-
-private:
-    void Update(float32 timeElapsed);
 };
 }
 #endif //__DAVAENGINE_UI_SPINNER_H__

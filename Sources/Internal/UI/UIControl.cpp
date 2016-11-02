@@ -1009,8 +1009,11 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     for (UIComponent* srcComponent : srcControl->components)
     {
         UIComponent* dest = srcComponent->Clone();
-        AddComponent(dest);
-        SafeRelease(dest);
+        if (dest)
+        {
+            AddComponent(dest);
+            SafeRelease(dest);
+        }
     }
 
     RemoveAllControls();
@@ -1513,6 +1516,10 @@ void UIControl::Input(UIEvent* currentInput)
 }
 
 void UIControl::InputCancelled(UIEvent* currentInput)
+{
+}
+
+void UIControl::Update(float32 timeElapsed)
 {
 }
 
@@ -2196,8 +2203,11 @@ void UIControl::AddComponent(UIComponent* component)
 UIComponent* UIControl::AddComponent(uint32 componentType)
 {
     UIComponent* c = UIComponent::CreateByType(componentType);
-    AddComponent(c);
-    SafeRelease(c); // refCount was increased in AddComponent
+    if (c)
+    {
+        AddComponent(c);
+        c->Release(); // refCount was increased in AddComponent
+    }
     return c;
 }
 
