@@ -107,6 +107,16 @@ QString ProcessID(const QString& id)
     return result;
 }
 
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
+{
+    QString build_type = entry["build_type"].toString();
+    appVer->id = ProcessID(build_type);
+    appVer->url = entry["artifacts"].toString();
+    appVer->buildNum = entry["build_num"].toString();
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    return !appVer->id.isEmpty();
+}
+
 bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
 {
     if (appName.isEmpty())
@@ -119,24 +129,18 @@ bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch
         branch->applications.append(Application(appName));
         app = &branch->applications.last();
     }
-    QString verID = entry["build_type"].toString();
-    if (verID.isEmpty())
+    QString build_type = entry["build_type"].toString();
+    if (build_type.isEmpty())
     {
         return false;
     }
-    AppVersion* appVer = app->GetVersion(verID);
+    AppVersion* appVer = app->GetVersion(build_type);
     if (appVer == nullptr)
     {
         app->versions.append(AppVersion());
         appVer = &app->versions.last();
     }
-
-    appVer->id = ProcessID(verID);
-    appVer->url = entry["artifacts"].toString();
-    appVer->buildNum = entry["build_num"].toString();
-    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
-
-    return (!appVer->url.isEmpty() && !appVer->id.isEmpty());
+    return FillAppFields(appVer, entry, toolset);
 }
 
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
@@ -156,7 +160,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         QString branchName = entry[branchNameID].toString();
 
         Branch* branch = nullptr;
-        //foreach will cause deeo copy in this case
+        //foreach will cause deep copy in this case
         int branchCount = branches.size();
         for (int i = 0; i < branchCount; ++i)
         {
@@ -174,6 +178,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         QString appName = entry["build_name"].toString();
         if (appName.startsWith("toolset", Qt::CaseInsensitive))
         {
+            //try to get project name as it stored in ba-manager
             QString prefix =
 #ifdef Q_OS_WIN
             "_win";
@@ -480,11 +485,10 @@ QByteArray ConfigParser::Serialize() const
     rootObject["launcher"] = launcherObject;
 
     QJsonArray favoritesArray;
-    int favCount = favorites.size();
-    for (int i = 0; i < favCount; i++)
+    for (const QString& favoriteBranch : favorites)
     {
         QJsonObject favObject = {
-            { "branch_name", favorites[i] },
+            { "branch_name", favoriteBranch },
             { "favourite", "1" }
         };
         favoritesArray.append(favObject);

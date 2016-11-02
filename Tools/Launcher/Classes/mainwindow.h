@@ -65,7 +65,6 @@ private:
 
     Ui::MainWindow* ui = nullptr;
     ApplicationManager* appManager = nullptr;
-    FileManager* fileManager = nullptr;
 
     FileDownloader* newsDownloader = nullptr;
     ConfigDownloader* configDownloader = nullptr;

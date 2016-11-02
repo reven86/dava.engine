@@ -80,7 +80,6 @@ private:
     QTreeWidgetItem* currentLogItem = nullptr;
     QTreeWidgetItem* currentTopLogItem = nullptr;
     ApplicationManager* appManager = nullptr;
-    FileManager* fileManager = nullptr;
 };
 
 #endif // UPDATEDIALOG_H

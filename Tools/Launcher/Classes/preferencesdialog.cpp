@@ -30,7 +30,7 @@ void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDo
     }
 }
 
-void PreferencesDialog::SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader)
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader)
 {
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
@@ -51,7 +51,7 @@ void PreferencesDialog::SavePreferences(FileManager* fileManager, ConfigDownload
     }
 }
 
-void PreferencesDialog::LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader)
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader)
 {
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);

@@ -63,7 +63,6 @@ QString ConfigDownloader::GetDefaultURL(eURLType type) const
 
 QString ConfigDownloader::GetURL(eURLType type) const
 {
-    Q_ASSERT(urls.contains(type));
     return urls[type];
 }
 

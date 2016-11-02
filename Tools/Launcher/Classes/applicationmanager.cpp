@@ -12,7 +12,6 @@
 
 namespace ApplicationManagerDetails
 {
-
 QString RemoveWhitespace(const QString& str)
 {
     QString replacedStr = str;

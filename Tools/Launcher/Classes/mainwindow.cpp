@@ -115,7 +115,6 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OpenPreferencesEditor);
 
     appManager = new ApplicationManager(this);
-    fileManager = appManager->GetFileManager();
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
 
@@ -134,7 +133,8 @@ MainWindow::MainWindow(QWidget* parent)
     restoreGeometry(settings.value(geometryKey).toByteArray());
     restoreState(settings.value(stateKey).toByteArray());
 
-    PreferencesDialog::LoadPreferences(fileManager, configDownloader);
+    FileManager* fileManager = appManager->GetFileManager();
+    ::LoadPreferences(fileManager, configDownloader);
 }
 
 MainWindow::~MainWindow()
@@ -143,7 +143,8 @@ MainWindow::~MainWindow()
     settings.setValue(geometryKey, saveGeometry());
     settings.setValue(stateKey, saveState());
 
-    PreferencesDialog::SavePreferences(fileManager, configDownloader);
+    FileManager* fileManager = appManager->GetFileManager();
+    ::SavePreferences(fileManager, configDownloader);
     SafeDelete(ui);
 }
 
@@ -248,6 +249,7 @@ void MainWindow::OnRemove(int rowNumber)
 void MainWindow::OnRefreshClicked()
 {
     ui->action_updateConfiguration->setEnabled(false);
+    FileManager* fileManager = appManager->GetFileManager();
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     if (configDownloader->exec() == QDialog::Accepted)
@@ -314,6 +316,7 @@ void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QBy
 
 void MainWindow::OpenPreferencesEditor()
 {
+    FileManager* fileManager = appManager->GetFileManager();
     PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, this);
 }
 
@@ -441,6 +444,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
+            FileManager* fileManager = appManager->GetFileManager();
             SelfUpdater updater(fileManager, tasks.front().version.url, this);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();

@@ -1,6 +1,8 @@
 #ifndef CONFIGDOWNLOADER_H
 #define CONFIGDOWNLOADER_H
 
+#include <array>
+
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -52,7 +54,7 @@ private:
     QList<QNetworkReply*> requests;
     bool aborted = false;
 
-    QMap<eURLType, QString> urls;
+    std::array<QString, URLTypesCount> urls;
 };
 
 #endif // CONFIGDOWNLOADER_H

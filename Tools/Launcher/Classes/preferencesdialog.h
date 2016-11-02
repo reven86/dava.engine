@@ -13,10 +13,6 @@ class PreferencesDialog : public QDialog, private Ui::PreferencesDialog
 public:
     static void ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, QWidget* parent = nullptr);
 
-    //in all launcher controller and dialog class are the same, so lets support it
-    static void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader);
-    static void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader);
-
 private slots:
     void OnButtonResetURLClicked();
     void OnButtonChooseFilesPathClicked();
@@ -33,3 +29,6 @@ private:
     QMap<ConfigDownloader::eURLType, QLineEdit*> urlWidgets;
     QMap<ConfigDownloader::eURLType, QPushButton*> resetUrlWidgets;
 };
+
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader);
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader);
