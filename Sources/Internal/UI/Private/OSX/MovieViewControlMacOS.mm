@@ -11,7 +11,7 @@
 #endif
 #include "Logger/Logger.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Platform/Steam.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -285,10 +285,8 @@ enum MoviePlayerHelperPlaybackState
 
 - (void)applyVideoRect
 {
-    DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::VirtualCoordinatesSystem::Instance();
-
-    DAVA::Rect r = coordSystem->ConvertVirtualToInput(videoRect);
-    DAVA::float32 dy = static_cast<DAVA::float32>(coordSystem->GetInputScreenSize().dy);
+    DAVA::Rect r = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToInput(videoRect);
+    DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
     [videoView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 }
 

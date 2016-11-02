@@ -53,8 +53,9 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     [nswindow setDelegate:windowDelegate];
 
     {
-        float32 scale = [nswindow backingScaleFactor];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, scale, scale));
+        float32 dpi = GetDpi();
+        CGSize surfaceSize = [renderView convertSizeToBacking:viewRect.size];
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 
@@ -122,13 +123,19 @@ void WindowNativeBridge::WindowDidResignKey()
 
 void WindowNativeBridge::WindowDidResize()
 {
-    float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, scale, scale));
+    CGSize surfSize = [renderView convertSizeToBacking:size];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
+    CGSize size = [renderView frame].size;
+    CGSize surfSize = [renderView convertSizeToBacking:size];
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
 bool WindowNativeBridge::WindowShouldClose()
@@ -354,6 +361,17 @@ eModifierKeys WindowNativeBridge::GetModifierKeys(NSEvent* theEvent)
         result |= eModifierKeys::COMMAND;
     }
     return result;
+}
+
+float32 WindowNativeBridge::GetDpi()
+{
+    NSScreen* screen = [NSScreen mainScreen];
+    NSDictionary* description = [screen deviceDescription];
+    NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
+    CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+
+    // there being 25.4 mm in an inch
+    return (displayPixelSize.width / displayPhysicalSize.width) * 25.4f;
 }
 
 eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)

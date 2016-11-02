@@ -54,7 +54,7 @@ public:
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
-    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
+    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 dpi);
     void SurfaceDestroyed();
     void ProcessProperties();
     void OnMouseEvent(int32 action, int32 nativeButtonState, float32 x, float32 y, float32 deltaX, float32 deltaY, int32 nativeModifierKeys);

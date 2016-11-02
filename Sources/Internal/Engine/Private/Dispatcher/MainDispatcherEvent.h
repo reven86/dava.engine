@@ -21,7 +21,8 @@ struct MainDispatcherEvent final
         WINDOW_DESTROYED,
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,
-        WINDOW_SIZE_SCALE_CHANGED,
+        WINDOW_SIZE_CHANGED,
+        WINDOW_DPI_CHANGED,
 
         MOUSE_BUTTON_DOWN,
         MOUSE_BUTTON_UP,
@@ -83,13 +84,20 @@ struct MainDispatcherEvent final
 
     /// Parameter for events:
     ///     - WINDOW_CREATED
-    ///     - WINDOW_SIZE_SCALE_CHANGED
+    ///     - WINDOW_SIZE_CHANGED
     struct WindowSizeEvent
     {
         float32 width;
         float32 height;
-        float32 scaleX;
-        float32 scaleY;
+        float32 surfaceWidth;
+        float32 surfaceHeight;
+        float32 dpi; //< is set only by WINDOW_CREATED
+    };
+
+    /// Parameter for event WINDOW_DPI_CHANGED
+    struct WindowDpiEvent
+    {
+        float32 dpi;
     };
 
     /// Parameter for mouse events:
@@ -184,6 +192,7 @@ struct MainDispatcherEvent final
         WindowStateEvent stateEvent;
         WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
+        WindowDpiEvent dpiEvent;
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
         TrackpadGestureEvent trackpadGestureEvent;
@@ -202,11 +211,12 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value);
     static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button);
 
-    static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
-    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
+    static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);
 
     static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated);
     static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, eMouseButtons button, float32 x, float32 y, uint32 clicks, eModifierKeys modifierKeys, bool isRelative);

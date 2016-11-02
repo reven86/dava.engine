@@ -39,6 +39,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    float32 GetDpi();
 
     void TriggerPlatformEvents();
 
