@@ -32,13 +32,10 @@ public:
     static std::tuple<DAVA::ResultList, ProjectProperties> ParseProjectPropertiesFromFile(const QString& projectFile);
     static bool EmitProjectPropertiesToFile(const ProjectProperties& settings);
 
-    static const QString& GetProjectFileName();
-
     static const QStringList& GetFontsFileExtensionFilter();
-    static const QString& GetGraphicsFileExtensionFilter();
-    static const QString& Get3dFileExtensionFilter();
-    static const QString& GetUIFileExtensionFilter();
-    static const QString& GetUIFileExtension();
+    static const QString& GetGraphicsFileExtension();
+    static const QString& Get3dFileExtension();
+    static const QString& GetUiFileExtension();
 
     Project(MainWindow::ProjectView* aView, const ProjectProperties& aSettings);
     ~Project();
@@ -62,11 +59,7 @@ public:
     void SetBiDiSupport(bool support);
     void SetGlobalStyleClasses(const QString& classesStr);
 
-    DAVA::Vector<DAVA::FilePath> GetLibraryPackages() const;
-
-    void OnReloadSprites();
-
-    void OnReloadSpritesFinished();
+    DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
 
     bool TryCloseAllDocuments();
 
@@ -74,10 +67,9 @@ signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
-    static void ConvertPathsAfterParse(ProjectProperties& settings);
-    static void ConvertPathsBeforeEmit(ProjectProperties& settings);
-
-    void FindFileInProject();
+    void OnReloadSprites();
+    void OnReloadSpritesFinished();
+    void OnFindFileInProject();
 
     ProjectProperties properties;
     const QString projectDirectory;

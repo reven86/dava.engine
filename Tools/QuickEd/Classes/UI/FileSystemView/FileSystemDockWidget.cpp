@@ -165,7 +165,7 @@ bool FileSystemDockWidget::CanDelete(const QModelIndex& index) const
     QDirIterator dirIterator(dir, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {
-        if (dirIterator.next().endsWith(Project::GetUIFileExtension()))
+        if (dirIterator.next().endsWith(Project::GetUiFileExtension()))
         {
             return false;
         }
@@ -207,7 +207,7 @@ void FileSystemDockWidget::onDoubleClicked(const QModelIndex& index)
 void FileSystemDockWidget::setFilterFixedString(const QString& filterStr)
 {
     QStringList filters;
-    filters << QString("*%1*" + Project::GetUIFileExtension()).arg(filterStr);
+    filters << QString("*%1*" + Project::GetUiFileExtension()).arg(filterStr);
     model->setNameFilters(filters);
 }
 
@@ -256,14 +256,14 @@ void FileSystemDockWidget::onNewFolder()
 void FileSystemDockWidget::onNewFile()
 {
     auto path = GetPathByCurrentPos(DirPath);
-    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, Project::GetUIFileExtensionFilter());
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, "*" + Project::GetUiFileExtension());
     if (strFile.isEmpty())
     {
         return;
     }
-    if (!strFile.endsWith(Project::GetUIFileExtension()))
+    if (!strFile.endsWith(Project::GetUiFileExtension()))
     {
-        strFile += Project::GetUIFileExtension();
+        strFile += Project::GetUiFileExtension();
     }
 
     QFile file(strFile);

@@ -4,12 +4,11 @@
 #include "FileSystem/FilePath.h"
 #include "Base/Result.h"
 #include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
-namespace ProjectPropertiesDetails
-{
-std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProjectProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
+std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
 {
     ResultList resultList;
 
@@ -22,8 +21,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProjectProperties(con
     }
 
     ProjectProperties props = ProjectProperties::Default();
-    props.projectFile = projectFile;
-    props.additionalResourceDirectory = String("./Data/");
+    props.additionalResourceDirectory.relative = String("./Data/");
 
     const YamlNode* fontNode = root->Get("font");
     // Get font node
@@ -33,11 +31,8 @@ std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProjectProperties(con
         const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
         if (nullptr != defaultFontPath)
         {
-            FilePath localizationFontsPath(defaultFontPath->AsString());
-            if (FileSystem::Instance()->Exists(localizationFontsPath))
-            {
-                props.fontsConfigsDirectory = localizationFontsPath.GetDirectory().GetStringValue();
-            }
+            String fontsConfigsPath = "./" + FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
+            props.fontsConfigsDirectory.relative = fontsConfigsPath;
         }
     }
 
@@ -45,8 +40,8 @@ std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProjectProperties(con
     const YamlNode* localeNode = root->Get("Locale");
     if (localizationPathNode != nullptr && localeNode != nullptr)
     {
-        FilePath localePath = localizationPathNode->AsString();
-        props.textsDirectory = localePath.GetAbsolutePathname();
+        String localePath = "./" + FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
+        props.textsDirectory.relative = localePath;
         props.defaultLanguage = localeNode->AsString();
     }
 
@@ -55,89 +50,123 @@ std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProjectProperties(con
     {
         for (uint32 i = 0; i < libraryNode->GetCount(); i++)
         {
-            props.libraryPackages.push_back(libraryNode->Get(i)->AsString());
+            String packagePath = "./" + FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
+            props.libraryPackages.push_back({ "", packagePath });
         }
     }
 
+    props.SetProjectFile(projectFile);
+
     return std::make_tuple(resultList, std::move(props));
 }
+
+void ProjectProperties::RefreshAbsolutePaths()
+{
+    DVASSERT(!projectFile.IsEmpty());
+    projectDirectory = projectFile.GetDirectory();
+    resourceDirectory.absolute = projectDirectory + resourceDirectory.relative;
+    additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
+    intermediateResourceDirectory.absolute = projectDirectory + intermediateResourceDirectory.relative;
+
+    uiDirectory.absolute = MakeAbsolutePath(uiDirectory.relative);
+    fontsDirectory.absolute = MakeAbsolutePath(fontsDirectory.relative);
+    fontsConfigsDirectory.absolute = MakeAbsolutePath(fontsConfigsDirectory.relative);
+    textsDirectory.absolute = MakeAbsolutePath(textsDirectory.relative);
+
+    for (auto& gfxDir : gfxDirectories)
+    {
+        gfxDir.directory.absolute = MakeAbsolutePath(gfxDir.directory.relative);
+    }
+
+    for (auto& resDir : libraryPackages)
+    {
+        resDir.absolute = MakeAbsolutePath(resDir.relative);
+    }
 }
 
 ProjectProperties ProjectProperties::Default()
 {
     ProjectProperties properties;
 
-    properties.resourceDirectory = "./DataSource/";
-    properties.intermediateResourceDirectory = "./Data/";
-    properties.gfxDirectories.push_back(std::make_pair(String("./Gfx/"), Vector2(960, 640)));
-    properties.uiDirectory = "./UI/";
-    properties.fontsDirectory = "./Fonts/";
-    properties.fontsConfigsDirectory = "./Fonts/Configs/";
-    properties.textsDirectory = "./Strings/";
+    properties.resourceDirectory.relative = "./DataSource/";
+    properties.intermediateResourceDirectory.relative = "./Data/";
+    properties.gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
+    properties.uiDirectory.relative = "./UI/";
+    properties.fontsDirectory.relative = "./Fonts/";
+    properties.fontsConfigsDirectory.relative = "./Fonts/Configs/";
+    properties.textsDirectory.relative = "./Strings/";
     properties.defaultLanguage = "en";
 
     return properties;
 }
 
-FilePath ProjectProperties::GetResourceDirectory() const
+const ProjectProperties::ResDir& ProjectProperties::GetResourceDirectory() const
 {
-    return FilePath(projectFile.GetDirectory()) + resourceDirectory;
+    return resourceDirectory;
 }
 
-FilePath ProjectProperties::GetAdditionalResourceDirectory() const
+const ProjectProperties::ResDir& ProjectProperties::GetAdditionalResourceDirectory() const
 {
-    return FilePath(projectFile.GetDirectory()) + additionalResourceDirectory;
+    return additionalResourceDirectory;
 }
 
-FilePath ProjectProperties::GetIntermediateResourceDirectory() const
+const ProjectProperties::ResDir& ProjectProperties::GetIntermediateResourceDirectory() const
 {
-    return FilePath(projectFile.GetDirectory()) + intermediateResourceDirectory;
+    return intermediateResourceDirectory;
 }
 
-FilePath ProjectProperties::GetUiDirectory(bool useAdditionalResDir /*= false*/) const
+const ProjectProperties::ResDir& ProjectProperties::GetUiDirectory() const
 {
-    return GetAbsolutePath(uiDirectory, useAdditionalResDir);
+    return uiDirectory;
 }
 
-FilePath ProjectProperties::GetFontsDirectory(bool useAdditionalResDir /*= false*/) const
+const ProjectProperties::ResDir& ProjectProperties::GetFontsDirectory() const
 {
-    return GetAbsolutePath(fontsDirectory, useAdditionalResDir);
+    return fontsDirectory;
 }
 
-FilePath ProjectProperties::GetFontsConfigsDirectory(bool useAdditionalResDir /*= false*/) const
+const ProjectProperties::ResDir& ProjectProperties::GetFontsConfigsDirectory() const
 {
-    return GetAbsolutePath(fontsConfigsDirectory, useAdditionalResDir);
+    return fontsConfigsDirectory;
 }
 
-FilePath ProjectProperties::GetTextsDirectory(bool useAdditionalResDir /*= false*/) const
+const ProjectProperties::ResDir& ProjectProperties::GetTextsDirectory() const
 {
-    return GetAbsolutePath(textsDirectory, useAdditionalResDir);
+    return textsDirectory;
 }
 
-Vector<FilePath> ProjectProperties::GetGfxDirectories(bool useAdditionalResDir /*= false*/) const
+const Vector<ProjectProperties::GfxDir>& ProjectProperties::GetGfxDirectories() const
 {
-    return Vector<FilePath>();
+    return gfxDirectories;
 }
 
-Vector<FilePath> ProjectProperties::GetLibraryPackages(bool useAdditionalResDir /*= false*/) const
+const Vector<ProjectProperties::ResDir>& ProjectProperties::GetLibraryPackages() const
 {
-    return Vector<FilePath>();
+    return libraryPackages;
 }
 
-DAVA::FilePath ProjectProperties::GetAbsolutePath(const DAVA::String& relPath, bool useAdditionalResDir) const
+DAVA::FilePath ProjectProperties::MakeAbsolutePath(const DAVA::String& relPath) const
 {
     if (relPath.empty())
         return FilePath();
 
-    const String directory = useAdditionalResDir ? resourceDirectory : additionalResourceDirectory;
+    FilePath pathInResDir = resourceDirectory.absolute + relPath;
+    if (FileSystem::Instance()->Exists(pathInResDir))
+    {
+        return pathInResDir;
+    }
 
-    return FilePath(projectFile.GetDirectory()) + directory + relPath;
+    FilePath pathInAddResDir = additionalResourceDirectory.absolute + relPath;
+    if (FileSystem::Instance()->Exists(pathInAddResDir))
+    {
+        return pathInAddResDir;
+    }
+
+    return FilePath();
 }
 
 std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::FilePath& projectFile, const YamlNode* root)
 {
-    using namespace ProjectPropertiesDetails;
-
     const YamlNode* headerNode = root->Get("Header");
     int32 version = 0;
     if (headerNode != nullptr)
@@ -151,7 +180,7 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
 
     if (version != CURRENT_PROJECT_FILE_VERSION)
     {
-        return ParseLegacyProjectProperties(projectFile, root, version);
+        return ParseLegacyProperties(projectFile, root, version);
     }
 
     ResultList resultList;
@@ -166,33 +195,32 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     }
 
     ProjectProperties props = Default();
-    props.projectFile = projectFile;
 
     const YamlNode* resourceDirNode = projectPropertiesNode->Get("ResourceDirectory");
     if (resourceDirNode != nullptr)
     {
-        props.resourceDirectory = resourceDirNode->AsString();
+        props.resourceDirectory.relative = resourceDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.resourceDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.resourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* additionalResourceDirNode = projectPropertiesNode->Get("AdditionalResourceDirectory");
     if (additionalResourceDirNode != nullptr)
     {
-        props.additionalResourceDirectory = additionalResourceDirNode->AsString();
+        props.additionalResourceDirectory.relative = additionalResourceDirNode->AsString();
     }
 
     const YamlNode* intermediateResourceDirNode = projectPropertiesNode->Get("IntermediateResourceDirectory");
     if (intermediateResourceDirNode != nullptr)
     {
-        props.intermediateResourceDirectory = intermediateResourceDirNode->AsString();
+        props.intermediateResourceDirectory.relative = intermediateResourceDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.intermediateResourceDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.intermediateResourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -204,59 +232,60 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
             const YamlNode* gfxDirNode = gfxDirsNode->Get(index);
             DVASSERT(gfxDirNode);
             String directory = gfxDirNode->Get("directory")->AsString();
-            Vector2 resolution = gfxDirNode->Get("resolution")->AsVector2();
-            props.gfxDirectories.push_back(std::make_pair(directory, resolution));
+            Vector2 res = gfxDirNode->Get("resolution")->AsVector2();
+            Size2i resolution((int32)res.dx, (int32)res.dy);
+            props.gfxDirectories.push_back({ ResDir{ FilePath(), directory }, resolution });
         }
     }
     else
     {
         String message = Format("Data source directories not set. Used default directory: %s, with resolution %dx%d."
                                 ,
-                                props.gfxDirectories.front().first.c_str()
+                                props.gfxDirectories.front().directory.relative.c_str()
                                 ,
-                                props.gfxDirectories.front().second.dy
+                                props.gfxDirectories.front().resolution.dx
                                 ,
-                                props.gfxDirectories.front().second.dy);
+                                props.gfxDirectories.front().resolution.dy);
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* uiDirNode = projectPropertiesNode->Get("UiDirectory");
     if (uiDirNode != nullptr)
     {
-        props.uiDirectory = uiDirNode->AsString();
+        props.uiDirectory.relative = uiDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.uiDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.uiDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* fontsDirNode = projectPropertiesNode->Get("FontsDirectory");
     if (fontsDirNode != nullptr)
     {
-        props.fontsDirectory = fontsDirNode->AsString();
+        props.fontsDirectory.relative = fontsDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.fontsDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.fontsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* fontsConfigsDirNode = projectPropertiesNode->Get("FontsConfigsDirectory");
     if (fontsConfigsDirNode != nullptr)
     {
-        props.fontsConfigsDirectory = fontsConfigsDirNode->AsString();
+        props.fontsConfigsDirectory.relative = fontsConfigsDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.fontsConfigsDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.fontsConfigsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* textsDirNode = projectPropertiesNode->Get("TextsDirectory");
     if (textsDirNode != nullptr)
     {
-        props.textsDirectory = textsDirNode->AsString();
+        props.textsDirectory.relative = textsDirNode->AsString();
         const YamlNode* defaultLanguageNode = projectPropertiesNode->Get("DefaultLanguage");
         if (defaultLanguageNode != nullptr)
         {
@@ -265,7 +294,7 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.textsDirectory.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", props.textsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -274,9 +303,11 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     {
         for (uint32 i = 0; i < libraryNode->GetCount(); i++)
         {
-            props.libraryPackages.push_back(libraryNode->Get(i)->AsString());
+            props.libraryPackages.push_back(ResDir{ FilePath(), libraryNode->Get(i)->AsString() });
         }
     }
+
+    props.SetProjectFile(projectFile);
 
     return std::make_tuple(resultList, std::move(props));
 }
@@ -286,37 +317,73 @@ RefPtr<YamlNode> ProjectProperties::Emit(const ProjectProperties& props)
     RefPtr<YamlNode> node(YamlNode::CreateMapNode(false));
 
     YamlNode* headerNode(YamlNode::CreateMapNode(false));
-    headerNode->Add("Version", CURRENT_PROJECT_FILE_VERSION);
+    headerNode->Add("version", CURRENT_PROJECT_FILE_VERSION);
     node->Add("Header", headerNode);
 
     YamlNode* propertiesNode(YamlNode::CreateMapNode(false));
     YamlNode* resourceDirNode(YamlNode::CreateMapNode(false));
-    propertiesNode->Add("ResourceDirectory", props.resourceDirectory);
+    propertiesNode->Add("ResourceDirectory", props.resourceDirectory.relative);
 
-    if (!props.additionalResourceDirectory.empty())
+    if (!props.additionalResourceDirectory.relative.empty())
     {
-        propertiesNode->Add("AdditionalResourceDirectory", props.additionalResourceDirectory);
+        propertiesNode->Add("AdditionalResourceDirectory", props.additionalResourceDirectory.relative);
     }
 
-    propertiesNode->Add("IntermediateResourceDirectory", props.intermediateResourceDirectory);
+    propertiesNode->Add("IntermediateResourceDirectory", props.intermediateResourceDirectory.relative);
+
+    propertiesNode->Add("UiDirectory", props.uiDirectory.relative);
+    propertiesNode->Add("FontsDirectory", props.fontsDirectory.relative);
+    propertiesNode->Add("FontsConfigsDirectory", props.fontsConfigsDirectory.relative);
+    propertiesNode->Add("TextsDirectory", props.textsDirectory.relative);
+    propertiesNode->Add("DefaultLanguage", props.defaultLanguage);
 
     YamlNode* gfxDirsNode(YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION));
     for (const auto& gfxDir : props.gfxDirectories)
     {
         YamlNode* gfxDirNode(YamlNode::CreateMapNode(false));
-        gfxDirNode->Add("directory", gfxDir.first);
-        const Vector2& resolution = gfxDir.second;
+        gfxDirNode->Add("directory", gfxDir.directory.relative);
+        Vector2 resolution((float32)gfxDir.resolution.dx, (float32)gfxDir.resolution.dy);
         gfxDirNode->Add("resolution", resolution);
+        gfxDirsNode->Add(gfxDirNode);
     }
     propertiesNode->Add("GfxDirectories", gfxDirsNode);
 
-    propertiesNode->Add("UiDirectory", props.uiDirectory);
-    propertiesNode->Add("FontsDirectory", props.fontsDirectory);
-    propertiesNode->Add("FontsConfigsDirectory", props.fontsConfigsDirectory);
-    propertiesNode->Add("TextsDirectory", props.textsDirectory);
-    propertiesNode->Add("DefaultLanguage", props.defaultLanguage);
+    YamlNode* librarysNode(YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION));
+    for (const auto& resDir : props.libraryPackages)
+    {
+        librarysNode->Add(resDir.relative);
+    }
+    propertiesNode->Add("Library", librarysNode);
 
     node->Add("ProjectProperties", propertiesNode);
 
     return node;
+}
+
+const DAVA::String& ProjectProperties::GetProjectFileName()
+{
+    static const String projectFile("ui.quicked");
+    return projectFile;
+}
+
+const DAVA::String& ProjectProperties::GetFontsConfigFileName()
+{
+    static const String configFile("fonts.yaml");
+    return configFile;
+}
+
+const DAVA::FilePath& ProjectProperties::GetProjectFile() const
+{
+    return projectFile;
+}
+
+void ProjectProperties::SetProjectFile(const DAVA::FilePath& newProjectFile)
+{
+    projectFile = newProjectFile;
+    RefreshAbsolutePaths();
+}
+
+const DAVA::FilePath& ProjectProperties::GetProjectDirectory() const
+{
+    return projectDirectory;
 }

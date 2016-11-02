@@ -100,7 +100,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
         dir = projectResourceDir + resourceSubDir;
     }
 
-    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, resourceExtension);
+    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);
     if (!filePathText.isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(filePathText);

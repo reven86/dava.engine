@@ -57,8 +57,8 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
-    const QString& gfxExtension = Project::GetGraphicsFileExtensionFilter();
-    const QString& paticleExtension = Project::Get3dFileExtensionFilter();
+    const QString& gfxExtension = Project::GetGraphicsFileExtension();
+    const QString& particleExtension = Project::Get3dFileExtension();
 
     propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
@@ -66,7 +66,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(paticleExtension, "/3d/", this);
+    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
 
     propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);

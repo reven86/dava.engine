@@ -77,7 +77,12 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
 {
     if (project)
     {
-        mainWindow->ui->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
+        DAVA::Vector<DAVA::FilePath> libraryPackages;
+        for (const auto& resDir : project->GetLibraryPackages())
+        {
+            libraryPackages.push_back(resDir.absolute);
+        }
+        mainWindow->ui->libraryWidget->SetLibraryPackages(libraryPackages);
     }
     else
     {

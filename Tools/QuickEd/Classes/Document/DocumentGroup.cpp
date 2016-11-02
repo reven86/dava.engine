@@ -583,7 +583,7 @@ void DocumentGroup::SaveDocument(Document* document, bool force)
     QFileInfo fileInfo(document->GetPackageAbsolutePath());
     if (!fileInfo.exists())
     {
-        QString saveFileName = FileDialog::getSaveFileName(qApp->activeWindow(), tr("Save document as"), document->GetPackageAbsolutePath(), Project::GetUIFileExtensionFilter());
+        QString saveFileName = FileDialog::getSaveFileName(qApp->activeWindow(), tr("Save document as"), document->GetPackageAbsolutePath(), "*" + Project::GetUiFileExtension());
         if (!saveFileName.isEmpty())
         {
             FilePath projectPath(saveFileName.toStdString().c_str());

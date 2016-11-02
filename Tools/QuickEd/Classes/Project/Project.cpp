@@ -35,30 +35,26 @@ Project::Project(MainWindow::ProjectView* aView, const ProjectProperties& aSetti
     , spritesPacker(new SpritesPacker())
     , projectStructure(new ProjectStructure(QStringList() << "yaml"))
     , properties(aSettings)
-    , projectDirectory(QString::fromStdString(aSettings.projectFile.GetDirectory().GetAbsolutePathname()))
-    , projectName(QString::fromStdString(aSettings.projectFile.GetFilename()))
+    , projectDirectory(QString::fromStdString(aSettings.GetProjectDirectory().GetStringValue()))
+    , projectName(QString::fromStdString(aSettings.GetProjectFile().GetFilename()))
 {
-    if (FileSystem::Instance()->IsDirectory(properties.GetAdditionalResourceDirectory()))
+    if (FileSystem::Instance()->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
     {
-        FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory());
+        FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
     }
 
-    FilePath::AddResourcesFolder(properties.GetIntermediateResourceDirectory());
-    FilePath::AddResourcesFolder(properties.GetResourceDirectory());
+    FilePath::AddResourcesFolder(properties.GetIntermediateResourceDirectory().absolute);
+    FilePath::AddResourcesFolder(properties.GetResourceDirectory().absolute);
 
-    editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory());
+    editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory().absolute);
     editorFontSystem->LoadLocalizedFonts();
 
-    editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(properties.GetTextsDirectory().GetAbsolutePathname())));
-    editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.defaultLanguage));
+    editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(properties.GetTextsDirectory().absolute.GetStringValue())));
+    editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.GetDefaultLanguage()));
 
-    FilePath uiDirectory = properties.GetUiDirectory();
-    if (!FileSystem::Instance()->IsDirectory(uiDirectory))
-    {
-        uiDirectory = properties.GetUiDirectory(true);
-    }
+    FilePath uiDirectory = properties.GetUiDirectory().absolute;
     DVASSERT(FileSystem::Instance()->IsDirectory(uiDirectory));
-    uiResourcesPath = QString::fromStdString(uiDirectory.GetAbsolutePathname());
+    uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
 
     projectStructure->AddProjectDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
@@ -75,21 +71,20 @@ Project::Project(MainWindow::ProjectView* aView, const ProjectProperties& aSetti
     connect(view, &MainWindow::ProjectView::BiDiSupportChanged, this, &Project::SetBiDiSupport);
     connect(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
     connect(view, &MainWindow::ProjectView::ReloadSprites, this, &Project::OnReloadSprites);
-    connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::FindFileInProject);
+    connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::OnFindFileInProject);
 
     connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
 
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
 
     spritesPacker->ClearTasks();
-    for (const auto& gfxOptions : properties.gfxDirectories)
+    for (const auto& gfxOptions : properties.GetGfxDirectories())
     {
-        QDir gfxDirectory(QString::fromStdString(gfxOptions.first));
+        QDir gfxDirectory(QString::fromStdString(gfxOptions.directory.absolute.GetStringValue()));
         DVASSERT(gfxDirectory.exists());
 
-        String uiRelativeDir = FilePath(gfxOptions.first).GetRelativePathname(properties.resourceDirectory);
-        FilePath gfxOutDir = FilePath(properties.intermediateResourceDirectory) + uiRelativeDir;
-        QDir gfxOutDirectory(QString::fromStdString(gfxOutDir.GetAbsolutePathname()));
+        FilePath gfxOutDir = properties.GetIntermediateResourceDirectory().absolute + gfxOptions.directory.relative;
+        QDir gfxOutDirectory(QString::fromStdString(gfxOutDir.GetStringValue()));
 
         spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
     }
@@ -106,12 +101,12 @@ Project::~Project()
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
-    FilePath::RemoveResourcesFolder(properties.GetResourceDirectory());
-    FilePath::RemoveResourcesFolder(properties.GetAdditionalResourceDirectory());
-    FilePath::RemoveResourcesFolder(properties.GetIntermediateResourceDirectory());
+    FilePath::RemoveResourcesFolder(properties.GetResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(properties.GetIntermediateResourceDirectory().absolute);
 }
 
-Vector<FilePath> Project::GetLibraryPackages() const
+Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
 {
     return properties.GetLibraryPackages();
     //return properties.libraryPackages;
@@ -137,13 +132,7 @@ bool Project::EmitProjectPropertiesToFile(const ProjectProperties& properties)
 {
     RefPtr<YamlNode> node = ProjectProperties::Emit(properties);
 
-    return YamlEmitter::SaveToYamlFile(FilePath(properties.projectFile), node.Get());
-}
-
-const QString& Project::GetProjectFileName()
-{
-    static const QString projectFile("ui.quicked");
-    return projectFile;
+    return YamlEmitter::SaveToYamlFile(properties.GetProjectFile(), node.Get());
 }
 
 const QStringList& Project::GetFontsFileExtensionFilter()
@@ -157,25 +146,19 @@ const QStringList& Project::GetFontsFileExtensionFilter()
     return filter;
 }
 
-const QString& Project::GetGraphicsFileExtensionFilter()
+const QString& Project::GetGraphicsFileExtension()
 {
-    static const QString filter("*.psd");
+    static const QString filter(".psd");
     return filter;
 }
 
-const QString& Project::Get3dFileExtensionFilter()
+const QString& Project::Get3dFileExtension()
 {
-    static const QString filter("*.sc2");
+    static const QString filter(".sc2");
     return filter;
 }
 
-const QString& Project::GetUIFileExtensionFilter()
-{
-    static const QString filter("*.yaml");
-    return filter;
-}
-
-const QString& Project::GetUIFileExtension()
+const QString& Project::GetUiFileExtension()
 {
     static const QString extension(".yaml");
     return extension;
@@ -255,7 +238,7 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
 
 QString Project::GetResourceDirectory() const
 {
-    return QString::fromStdString(properties.resourceDirectory);
+    return QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue());
 }
 
 void Project::OnReloadSprites()
@@ -307,50 +290,7 @@ bool Project::TryCloseAllDocuments()
     return true;
 }
 
-void Project::ConvertPathsAfterParse(ProjectProperties& properties)
-{
-    if (properties.projectFile.IsEmpty())
-    {
-        return;
-    }
-    FilePath projectDir = FilePath(properties.projectFile).GetDirectory();
-    properties.resourceDirectory = FilePath(projectDir + properties.resourceDirectory).GetAbsolutePathname();
-    properties.intermediateResourceDirectory = FilePath(projectDir + properties.intermediateResourceDirectory).GetAbsolutePathname();
-    if (!properties.additionalResourceDirectory.empty())
-    {
-        properties.additionalResourceDirectory = FilePath(projectDir + properties.additionalResourceDirectory).GetAbsolutePathname();
-    }
-
-    for (auto& gfxDir : properties.gfxDirectories)
-    {
-        gfxDir.first = FilePath(projectDir + gfxDir.first).GetAbsolutePathname();
-    }
-
-    properties.uiDirectory = FilePath(projectDir + properties.uiDirectory).GetAbsolutePathname();
-    properties.fontsDirectory = FilePath(projectDir + properties.fontsDirectory).GetAbsolutePathname();
-    properties.fontsConfigsDirectory = FilePath(projectDir + properties.fontsConfigsDirectory).GetAbsolutePathname();
-    properties.textsDirectory = FilePath(projectDir + properties.textsDirectory).GetAbsolutePathname();
-}
-
-void Project::ConvertPathsBeforeEmit(ProjectProperties& properties)
-{
-    FilePath projectDir = FilePath(properties.projectFile).GetDirectory();
-    properties.resourceDirectory = FilePath(properties.resourceDirectory).GetRelativePathname(projectDir);
-    properties.intermediateResourceDirectory = FilePath(properties.intermediateResourceDirectory).GetRelativePathname(projectDir);
-    properties.additionalResourceDirectory = FilePath(properties.additionalResourceDirectory).GetRelativePathname(projectDir);
-
-    for (auto& gfxDir : properties.gfxDirectories)
-    {
-        gfxDir.first = FilePath(gfxDir.first).GetRelativePathname(projectDir);
-    }
-
-    properties.uiDirectory = FilePath(properties.uiDirectory).GetRelativePathname(projectDir);
-    properties.fontsDirectory = FilePath(properties.fontsDirectory).GetRelativePathname(projectDir);
-    properties.fontsConfigsDirectory = FilePath(properties.fontsConfigsDirectory).GetRelativePathname(projectDir);
-    properties.textsDirectory = FilePath(properties.textsDirectory).GetRelativePathname(projectDir);
-}
-
-void Project::FindFileInProject()
+void Project::OnFindFileInProject()
 {
     QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);
     if (filePath.isEmpty())
@@ -368,7 +308,7 @@ void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)
 
 QString Project::GetProjectPath() const
 {
-    return QString::fromStdString(properties.projectFile.GetAbsolutePathname());
+    return QString::fromStdString(properties.GetProjectFile().GetStringValue());
 }
 
 const QString& Project::GetProjectDirectory() const
