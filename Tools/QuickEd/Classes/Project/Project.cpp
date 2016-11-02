@@ -158,7 +158,7 @@ const QString& Project::GetUIRelativePath()
 
 const QString& Project::GetProjectFileName()
 {
-    static const QString projectFile("ui.uieditor");
+    static const QString projectFile("ui.quicked");
     return projectFile;
 }
 

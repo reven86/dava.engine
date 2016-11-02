@@ -366,8 +366,7 @@ void EditorCore::OnOpenProject()
     }
 
     QString projectPath = QFileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
-                                                       defaultPath,
-                                                       tr("Project (*.uieditor)"));
+                                                       defaultPath, tr("QuickEd project file(*.quicked *.uieditor)"));
 
     if (projectPath.isEmpty())
     {
