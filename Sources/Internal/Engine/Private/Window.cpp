@@ -245,6 +245,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e)
 {
+    // If the native window loses the cursor capture, restore it and visibility when input activated.
     waitInputActivation = true;
 }
 
@@ -315,11 +316,13 @@ void Window::UpdateVirtualCoordinatesSystem()
 bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
+    // If the pinning mode was activated from mouse button(MOUSE_BUTTON_DOWN), skip the first mouse button event(MOUSE_BUTTON_UP).
     if (skipFirstMouseUpEventBeforeCursorCapture)
     {
         skipFirstMouseUpEventBeforeCursorCapture = false;
         return true;
     }
+    // Restore the cursor capture and cursor visibility.
     if (waitInputActivation)
     {
         if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
@@ -346,6 +349,9 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     hasFocus = e.stateEvent.state != 0;
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
+        // When the native window loses focus, it restores the original cursor capture and visibility.
+        // After the window gives the focus back, set the current visibility state, if not set pinning mode.
+        // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
         if (hasFocus && !waitInputActivation)
         {
             windowBackend->SetCursorVisibility(cursorVisible);
