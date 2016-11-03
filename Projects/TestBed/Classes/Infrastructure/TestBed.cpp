@@ -26,6 +26,7 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/ScriptingTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
@@ -227,6 +228,7 @@ void TestBed::RegisterTests()
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
     new UILoggingTest(*this);
+    new ScriptingTest(*this);
     //$UNITTEST_CTOR
 }
 

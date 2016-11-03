@@ -1,14 +1,15 @@
 #include "../rhi_Type.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
+#include "Base/BaseTypes.h"
+#include "Logger/Logger.h"
+#include "FileSystem/File.h"
+
 using DAVA::uint32;
 using DAVA::uint16;
 using DAVA::uint8;
 using DAVA::int8;
-    #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "FileSystem/File.h"
 
 namespace rhi
 {
@@ -50,7 +51,7 @@ void VertexLayout::AddStream(VertexDataFrequency freq)
 
 //------------------------------------------------------------------------------
 
-void VertexLayout::AddElement(VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension)
+void VertexLayout::AddElement(VertexSemantics usage, uint32 usage_i, VertexDataType type, uint32 dimension)
 {
     DVASSERT(_elem_count < MaxElemCount);
     Element* e = _elem + _elem_count;
@@ -83,12 +84,11 @@ VertexLayout::insert_elem( unsigned pos, VertexSemantics usage, unsigned usage_i
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::Stride(unsigned stream_i) const
+uint32 VertexLayout::Stride(uint32 stream_i) const
 {
-    unsigned sz = 0;
+    uint32 sz = 0;
 
-    for (unsigned e = _stream[stream_i].first_elem; e != _stream[stream_i].first_elem + _stream[stream_i].elem_count; ++e)
+    for (uint32 e = _stream[stream_i].first_elem; e != _stream[stream_i].first_elem + _stream[stream_i].elem_count; ++e)
         sz += ElementSize(e);
 
     return sz;
@@ -96,16 +96,14 @@ VertexLayout::Stride(unsigned stream_i) const
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::StreamCount() const
+uint32 VertexLayout::StreamCount() const
 {
     return _stream_count;
 }
 
 //------------------------------------------------------------------------------
 
-VertexDataFrequency
-VertexLayout::StreamFrequency(unsigned stream_i) const
+VertexDataFrequency VertexLayout::StreamFrequency(uint32 stream_i) const
 {
     DVASSERT(stream_i < _stream_count);
     return static_cast<VertexDataFrequency>(_stream[stream_i].freq);
@@ -113,18 +111,16 @@ VertexLayout::StreamFrequency(unsigned stream_i) const
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementCount() const
+uint32 VertexLayout::ElementCount() const
 {
     return _elem_count;
 }
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementStreamIndex(unsigned elem_i) const
+uint32 VertexLayout::ElementStreamIndex(uint32 elem_i) const
 {
-    unsigned s = 0;
+    uint32 s = 0;
 
     for (; s != _stream_count; ++s)
     {
@@ -137,45 +133,40 @@ VertexLayout::ElementStreamIndex(unsigned elem_i) const
 
 //------------------------------------------------------------------------------
 
-VertexSemantics
-VertexLayout::ElementSemantics(unsigned elem_i) const
+VertexSemantics VertexLayout::ElementSemantics(uint32 elem_i) const
 {
     return static_cast<VertexSemantics>(_elem[elem_i].usage);
 }
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementSemanticsIndex(unsigned elem_i) const
+uint32 VertexLayout::ElementSemanticsIndex(uint32 elem_i) const
 {
     return static_cast<VertexSemantics>(_elem[elem_i].usage_index);
 }
 
 //------------------------------------------------------------------------------
 
-VertexDataType
-VertexLayout::ElementDataType(unsigned elem_i) const
+VertexDataType VertexLayout::ElementDataType(uint32 elem_i) const
 {
     return static_cast<VertexDataType>(_elem[elem_i].data_type);
 }
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementDataCount(unsigned elem_i) const
+uint32 VertexLayout::ElementDataCount(uint32 elem_i) const
 {
     return _elem[elem_i].data_count;
 }
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementOffset(unsigned elem_i) const
+uint32 VertexLayout::ElementOffset(uint32 elem_i) const
 {
-    unsigned off = 0;
-    unsigned s = ElementStreamIndex(elem_i);
+    uint32 off = 0;
+    uint32 s = ElementStreamIndex(elem_i);
 
-    for (unsigned e = _stream[s].first_elem; e < elem_i; ++e)
+    for (uint32 e = _stream[s].first_elem; e < elem_i; ++e)
         off += ElementSize(e);
 
     return off;
@@ -183,8 +174,7 @@ VertexLayout::ElementOffset(unsigned elem_i) const
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayout::ElementSize(unsigned elem_i) const
+uint32 VertexLayout::ElementSize(uint32 elem_i) const
 {
     const Element& e = _elem[elem_i];
 
@@ -211,10 +201,10 @@ VertexLayout::ElementSize(unsigned elem_i) const
 
 void VertexLayout::Dump() const
 {
-    for (unsigned s = 0; s != _stream_count; ++s)
+    for (uint32 s = 0; s != _stream_count; ++s)
     {
         Logger::Info("stream[%u]  stride= %u", s, Stride(s));
-        for (unsigned a = _stream[s].first_elem, a_end = _stream[s].first_elem + _stream[s].elem_count; a != a_end; ++a)
+        for (uint32 a = _stream[s].first_elem, a_end = _stream[s].first_elem + _stream[s].elem_count; a != a_end; ++a)
         {
             Logger::Info(
             "  [%u] +%02u  %s%u  %s x%u",
@@ -234,17 +224,16 @@ bool VertexLayout::operator==(const VertexLayout& vl) const
 
 //------------------------------------------------------------------------------
 
-VertexLayout&
-VertexLayout::operator=(const VertexLayout& src)
+VertexLayout& VertexLayout::operator=(const VertexLayout& src)
 {
     this->_elem_count = src._elem_count;
 
-    for (unsigned e = 0; e != _elem_count; ++e)
+    for (uint32 e = 0; e != _elem_count; ++e)
         this->_elem[e] = src._elem[e];
 
     this->_stream_count = src._stream_count;
 
-    for (unsigned s = 0; s != _stream_count; ++s)
+    for (uint32 s = 0; s != _stream_count; ++s)
         this->_stream[s] = src._stream[s];
 
     return *this;
@@ -252,8 +241,7 @@ VertexLayout::operator=(const VertexLayout& src)
 
 //==============================================================================
 
-struct
-VertexLayoutInfo
+struct VertexLayoutInfo
 {
     uint32 uid;
     VertexLayout layout;
@@ -264,8 +252,7 @@ static uint32 LastUID = 0;
 
 //------------------------------------------------------------------------------
 
-const VertexLayout*
-VertexLayout::Get(uint32 uid)
+const VertexLayout* VertexLayout::Get(uint32 uid)
 {
     const VertexLayout* layout = nullptr;
 
@@ -283,8 +270,7 @@ VertexLayout::Get(uint32 uid)
 
 //------------------------------------------------------------------------------
 
-uint32
-VertexLayout::UniqueId(const VertexLayout& layout)
+uint32 VertexLayout::UniqueId(const VertexLayout& layout)
 {
     uint32 uid = InvalidUID;
 
@@ -317,13 +303,13 @@ bool VertexLayout::IsCompatible(const VertexLayout& vbLayout, const VertexLayout
 {
     bool usable = true;
 
-    for (unsigned s = 0; s != shaderLayout.ElementCount(); ++s)
+    for (uint32 s = 0; s != shaderLayout.ElementCount(); ++s)
     {
         DVASSERT(shaderLayout.ElementSemantics(s) != VS_PAD);
 
         bool hasAttr = false;
 
-        for (unsigned v = 0; v != vbLayout.ElementCount(); ++v)
+        for (uint32 v = 0; v != vbLayout.ElementCount(); ++v)
         {
             if (vbLayout.ElementSemantics(v) == shaderLayout.ElementSemantics(s) && vbLayout.ElementSemanticsIndex(v) == shaderLayout.ElementSemanticsIndex(s))
             {
@@ -354,12 +340,12 @@ bool VertexLayout::MakeCompatible(const VertexLayout& vbLayout, const VertexLayo
 
         compatibleLayout->Clear();
 
-        unsigned last_stream_i = 0;
-        for (unsigned v = 0; v != vbLayout.ElementCount(); ++v)
+        uint32 last_stream_i = 0;
+        for (uint32 v = 0; v != vbLayout.ElementCount(); ++v)
         {
             bool do_pad = true;
 
-            for (unsigned s = 0; s != shaderLayout.ElementCount(); ++s)
+            for (uint32 s = 0; s != shaderLayout.ElementCount(); ++s)
             {
                 if (vbLayout.ElementSemantics(v) == shaderLayout.ElementSemantics(s) && vbLayout.ElementSemanticsIndex(v) == shaderLayout.ElementSemanticsIndex(s))
                 {
