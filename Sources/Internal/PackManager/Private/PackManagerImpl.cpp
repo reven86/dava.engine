@@ -95,17 +95,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
     DVASSERT(Thread::IsMainThread());
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
-    if (IsInitialized())
-    {
-        // if Initialize called second time
-        fullSizeServerData = 0;
-        if (0 != downloadTaskId)
-        {
-            DownloadManager::Instance()->Cancel(downloadTaskId);
-            downloadTaskId = 0;
-        }
-    }
-    else
+    if (!IsInitialized())
     {
         dbPath = dbFileName_;
         dirToDownloadedPacks = dirToDownloadPacks_;
@@ -126,6 +116,14 @@ void PackManagerImpl::Initialize(const String& architecture_,
 
         dbLocalName = dbLocalNameZipped;
         dbLocalName.ReplaceExtension("");
+    }
+
+    // if Initialize called second time
+    fullSizeServerData = 0;
+    if (0 != downloadTaskId)
+    {
+        DownloadManager::Instance()->Cancel(downloadTaskId);
+        downloadTaskId = 0;
     }
 
     initError = InitError::AllGood;
@@ -174,6 +172,7 @@ void PackManagerImpl::RetryInit()
 
     // wait and then try again
     timeWaitingNextInitializationAttempt = hints.retryConnectMilliseconds / 1000.f; // to seconds
+    retryCount++;
     initState = InitState::Offline;
 }
 
@@ -377,7 +376,7 @@ void PackManagerImpl::AskFooter()
                 else
                 {
                     initError = InitError::LoadingRequestFailed;
-                    initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error);
+                    initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
                     Logger::Error("%s", initErrorMsg.c_str());
                 }
             }
@@ -410,7 +409,7 @@ void PackManagerImpl::GetFooter()
             else
             {
                 initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error);
+                initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
             }
         }
     }
@@ -466,7 +465,7 @@ void PackManagerImpl::GetFileTable()
             else
             {
                 initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error);
+                initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
             }
         }
     }
@@ -558,7 +557,7 @@ void PackManagerImpl::GetDB()
             else
             {
                 initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error);
+                initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
             }
         }
     }
@@ -871,7 +870,17 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
 const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
+
+    if (!IsInitialized())
+    {
+        static Pack p;
+        if (p.otherErrorMsg.empty())
+        {
+            p.state = Pack::Status::OtherError;
+            p.otherErrorMsg = "initialization not finished";
+        }
+        return p;
+    }
 
     if (requestManager)
     {

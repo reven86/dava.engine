@@ -224,8 +224,7 @@ bool PackRequest::IsLoadingPackFileFinished()
             {
                 dm->GetProgress(subRequest.taskId, progress);
 
-                if (progress != currentPack.totalSizeFromDB ||
-                    progress != currentPack.totalSize)
+                if (progress != currentPack.totalSizeFromDB)
                 {
                     Logger::Error("size not match for downloaded pack: %s,\ntry again", currentPack.name.c_str());
                     Restart();
@@ -235,6 +234,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                     result = true;
                     currentPack.downloadProgress = 1.0f;
                     currentPack.downloadedSize = progress;
+                    currentPack.totalSize = progress;
                     packManagerImpl->packDownloadChanged.Emit(currentPack);
                     packManagerImpl->requestProgressChanged.Emit(*this);
                 }

@@ -141,6 +141,7 @@ private:
     Hints hints;
 
     float32 timeWaitingNextInitializationAttempt = 0;
+    uint32 retryCount = 0; // count every initialization error during session
 };
 
 } // end namespace DAVA
