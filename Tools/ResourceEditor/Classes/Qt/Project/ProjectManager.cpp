@@ -18,8 +18,7 @@
 
 ProjectManager::ProjectManager()
 {
-    DAVA::Vector<DAVA::String> extensions = { "sc2" };
-    dataSourceSceneFiles.reset(new ProjectStructure(extensions));
+    dataSourceSceneFiles.reset(new ProjectStructure(QStringList() << "sc2"));
 }
 
 ProjectManager::~ProjectManager() = default;
@@ -109,7 +108,7 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
 
             if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
             {
-                dataSourceSceneFiles->SetProjectDirectory(dataSourcePath);
+                dataSourceSceneFiles->AddProjectDirectory(QString::fromStdString(dataSourcePath.GetAbsolutePathname()));
             }
 
             bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
@@ -154,6 +153,7 @@ void ProjectManager::CloseProject()
 {
     if (!projectPath.IsEmpty())
     {
+        dataSourceSceneFiles->RemoveAllProjectDirectories();
         DAVA::FilePath::RemoveResourcesFolder(projectPath + "Data/");
 
         projectPath = "";
