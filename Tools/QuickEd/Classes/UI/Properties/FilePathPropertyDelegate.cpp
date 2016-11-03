@@ -2,6 +2,8 @@
 #include <QLineEdit>
 #include <QApplication>
 #include "DAVAEngine.h"
+#include "Engine/Engine.h"
+
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeItemDelegate.h"
 
@@ -74,5 +76,6 @@ void FilePathPropertyDelegate::OnTextChanged(const QString& text)
 bool FilePathPropertyDelegate::IsPathValid(const QString& path) const
 {
     DAVA::FilePath filePath(QStringToString(path));
-    return DAVA::FileSystem::Instance()->Exists(filePath);
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    return fileSystem->Exists(filePath);
 }

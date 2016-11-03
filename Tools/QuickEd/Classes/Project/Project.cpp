@@ -12,6 +12,7 @@
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
 
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlEmitter.h"
 #include "FileSystem/YamlNode.h"
@@ -38,7 +39,8 @@ Project::Project(MainWindow::ProjectView* aView, const ProjectProperties& aSetti
     , projectDirectory(QString::fromStdString(aSettings.GetProjectDirectory().GetStringValue()))
     , projectName(QString::fromStdString(aSettings.GetProjectFile().GetFilename()))
 {
-    if (FileSystem::Instance()->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
     {
         FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
     }
@@ -53,7 +55,7 @@ Project::Project(MainWindow::ProjectView* aView, const ProjectProperties& aSetti
     editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.GetDefaultLanguage()));
 
     FilePath uiDirectory = properties.GetUiDirectory().absolute;
-    DVASSERT(FileSystem::Instance()->IsDirectory(uiDirectory));
+    DVASSERT(fileSystem->IsDirectory(uiDirectory));
     uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
 
     projectStructure->AddProjectDirectory(uiResourcesPath);

@@ -9,6 +9,8 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Project/Project.h"
 
+#include "Engine/Engine.h"
+
 using namespace DAVA;
 
 ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
@@ -161,5 +163,7 @@ bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
         fullPath.append(resourceExtension);
     }
     DAVA::FilePath filePath(QStringToString(fullPath));
-    return FileSystem::Instance()->Exists(filePath);
+
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    return fileSystem->Exists(filePath);
 }

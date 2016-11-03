@@ -1,9 +1,10 @@
 #include "ProjectProperties.h"
 
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/FilePath.h"
 #include "Base/Result.h"
+#include "Engine/Engine.h"
+#include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
 
 using namespace DAVA;
@@ -31,7 +32,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
         const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
         if (nullptr != defaultFontPath)
         {
-            String fontsConfigsPath = "./" + FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
+            String fontsConfigsPath = FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
             props.fontsConfigsDirectory.relative = fontsConfigsPath;
         }
     }
@@ -40,7 +41,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
     const YamlNode* localeNode = root->Get("Locale");
     if (localizationPathNode != nullptr && localeNode != nullptr)
     {
-        String localePath = "./" + FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
+        String localePath = FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
         props.textsDirectory.relative = localePath;
         props.defaultLanguage = localeNode->AsString();
     }
@@ -50,7 +51,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
     {
         for (uint32 i = 0; i < libraryNode->GetCount(); i++)
         {
-            String packagePath = "./" + FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
+            String packagePath = FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
             props.libraryPackages.push_back({ "", packagePath });
         }
     }
@@ -65,7 +66,15 @@ void ProjectProperties::RefreshAbsolutePaths()
     DVASSERT(!projectFile.IsEmpty());
     projectDirectory = projectFile.GetDirectory();
     resourceDirectory.absolute = projectDirectory + resourceDirectory.relative;
-    additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
+    if (additionalResourceDirectory.relative.empty())
+    {
+        additionalResourceDirectory.absolute = FilePath();
+    }
+    else
+    {
+        additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
+    }
+
     intermediateResourceDirectory.absolute = projectDirectory + intermediateResourceDirectory.relative;
 
     uiDirectory.absolute = MakeAbsolutePath(uiDirectory.relative);
@@ -150,14 +159,16 @@ DAVA::FilePath ProjectProperties::MakeAbsolutePath(const DAVA::String& relPath) 
     if (relPath.empty())
         return FilePath();
 
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+
     FilePath pathInResDir = resourceDirectory.absolute + relPath;
-    if (FileSystem::Instance()->Exists(pathInResDir))
+    if (fileSystem->Exists(pathInResDir))
     {
         return pathInResDir;
     }
 
     FilePath pathInAddResDir = additionalResourceDirectory.absolute + relPath;
-    if (FileSystem::Instance()->Exists(pathInAddResDir))
+    if (fileSystem->Exists(pathInAddResDir))
     {
         return pathInAddResDir;
     }
