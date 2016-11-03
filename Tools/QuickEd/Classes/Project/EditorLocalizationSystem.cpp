@@ -17,7 +17,6 @@ QStringList EditorLocalizationSystem::GetAvailableLocales() const
     return availableLocales;
 }
 
-
 void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
 {
     Cleanup();

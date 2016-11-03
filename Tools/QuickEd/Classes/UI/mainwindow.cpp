@@ -328,7 +328,6 @@ void MainWindow::OnPixelizationStateChanged(bool isPixelized)
     Texture::SetPixelization(isPixelized);
 }
 
-
 void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
 {
     if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
