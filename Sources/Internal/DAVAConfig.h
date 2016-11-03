@@ -31,9 +31,6 @@
 //    #define __DAVAENGINE_ENABLE_TOOLS_STATS__
 #endif //__DAVAENGINE_ENABLE_DEBUG_STATS__
 
-//suppress 'deprecated' warning
-#define DAVAENGINE_HIDE_DEPRECATED
-
 // Switch on/off message box in assertion situation. In case this flag is
 // enabled the assertion message will be displayed even in release builds.
 #if defined(__DAVAENGINE_DEBUG__) //always enable full DVASSERT service for debug configurations
@@ -57,6 +54,8 @@
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY
 
+//suppress 'deprecated' warning
+#define DAVAENGINE_HIDE_DEPRECATED
 //suppressing of deprecated functions
 #ifdef DAVAENGINE_HIDE_DEPRECATED
 #undef DAVA_DEPRECATED
