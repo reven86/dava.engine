@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "DAVAConfig.h"
 #include "Base/String.h"
 #include "Base/StringStream.h"
 #include "Base/Array.h"

@@ -2,7 +2,6 @@
 #define __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Platform.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
