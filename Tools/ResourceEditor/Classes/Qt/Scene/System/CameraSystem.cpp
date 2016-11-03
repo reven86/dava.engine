@@ -266,6 +266,7 @@ bool SceneCameraSystem::Input(DAVA::UIEvent* event)
     switch (event->phase)
     {
     case DAVA::UIEvent::Phase::KEY_DOWN:
+    case DAVA::UIEvent::Phase::KEY_DOWN_REPEAT:
         OnKeyboardInput(event);
         break;
     case DAVA::UIEvent::Phase::WHEEL:
