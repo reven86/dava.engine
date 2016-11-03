@@ -155,10 +155,10 @@ void SelectionSystem::FocusToChild(bool next)
     SelectNode(newSelectedNodes, selectionContainer.selectedNodes);
 }
 
-void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::MouseButton buttonID)
+void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, DAVA::eMouseButtons buttonID)
 {
     ControlNode* selectedNode = nullptr;
-    if (buttonID == UIEvent::MouseButton::LEFT)
+    if (buttonID == DAVA::eMouseButtons::LEFT)
     {
         selectedNode = systemsManager->GetControlNodeAtPoint(point);
     }

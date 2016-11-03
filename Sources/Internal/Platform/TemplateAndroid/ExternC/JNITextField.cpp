@@ -6,8 +6,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 extern "C"
 {
 JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
@@ -60,10 +59,10 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyboardSho
 {
     // Recalculate to virtual coordinates.
     DAVA::Vector2 keyboardOrigin(x, y);
-    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
+    keyboardOrigin = DAVA::UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardOrigin);
 
     DAVA::Vector2 keyboardSize(dx, dy);
-    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
+    keyboardSize = DAVA::UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardSize);
 
     DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
 }
