@@ -160,6 +160,7 @@ public:
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
+    virtual void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) = 0;
 
     virtual void ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration = 0) = 0;
     virtual void ClearMessage(const WindowKey& windowKey) = 0;

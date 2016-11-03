@@ -28,6 +28,11 @@ private:
     void LoadMaterialsSettings(ProjectManagerData* data);
     ProjectManagerData* GetData();
 
+    void AddRecentProjectActions();
+    void AddRecentProject(const DAVA::FilePath& projectPath);
+    void RemoveRecentProjects();
+    DAVA::Vector<DAVA::String> GetRecentProjects();
+
 private:
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;

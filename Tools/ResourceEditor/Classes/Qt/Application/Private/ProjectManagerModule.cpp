@@ -87,6 +87,8 @@ void ProjectManagerModule::CreateActions()
                                   ReloadSprites();
                               });
     ui.AddAction(windowKey, reloadSpritePlacement, reloadSprites);
+
+    AddRecentProjectActions();
 }
 
 void ProjectManagerModule::RegisterOperations()
@@ -155,6 +157,8 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     {
         data->dataSourceSceneFiles->SetProjectDirectory(data->GetDataSourcePath());
     }
+
+    AddRecentProject(incomePath);
 
     // TODO remove imperative code that sync state of action
     if (closeAction)
@@ -266,4 +270,83 @@ ProjectManagerData* ProjectManagerModule::GetData()
     ContextAccessor& accessor = GetAccessor();
     DataContext* ctx = accessor.GetGlobalContext();
     return ctx->GetData<ProjectManagerData>();
+}
+
+void ProjectManagerModule::AddRecentProjectActions()
+{
+    using namespace DAVA::TArc;
+
+    UI& ui = GetUI();
+    DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
+
+    WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
+    for (DAVA::String& projectPath : recentProjects)
+    {
+        QAction* project = new QAction(QString::fromStdString(projectPath), nullptr);
+        connections.AddConnection(project, &QAction::triggered, [this, projectPath]()
+                                  {
+                                      OpenProjectByPath(projectPath);
+                                  });
+
+        ActionPlacementInfo placement(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects"))));
+        ui.AddAction(windowKey, placement, project);
+    }
+}
+
+void ProjectManagerModule::AddRecentProject(const DAVA::FilePath& projectPath)
+{
+    RemoveRecentProjects();
+
+    DAVA::Vector<DAVA::String> vectorToSave = GetRecentProjects();
+
+    DAVA::String stringToInsert = projectPath.GetAbsolutePathname();
+
+    //check present set to avoid duplicates
+    vectorToSave.erase(std::remove(vectorToSave.begin(), vectorToSave.end(), stringToInsert), vectorToSave.end());
+    vectorToSave.insert(vectorToSave.begin(), stringToInsert);
+
+    DAVA::uint32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
+    DAVA::uint32 size = DAVA::Min((DAVA::uint32)vectorToSave.size(), recentFilesMaxCount);
+
+    DAVA::KeyedArchive* archive = new DAVA::KeyedArchive();
+    for (DAVA::uint32 i = 0; i < size; ++i)
+    {
+        archive->SetString(DAVA::Format("%d", i), vectorToSave[i]);
+    }
+    SettingsManager::SetValue(Settings::Internal_RecentProjects, DAVA::VariantType(archive));
+    SafeRelease(archive);
+
+    AddRecentProjectActions();
+}
+
+void ProjectManagerModule::RemoveRecentProjects()
+{
+    using namespace DAVA::TArc;
+
+    UI& ui = GetUI();
+    DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
+
+    WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
+    for (DAVA::String& projectPath : recentProjects)
+    {
+        ui.RemoveAction(windowKey, ActionPlacementInfo(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects$/") + projectPath))));
+    }
+}
+
+DAVA::Vector<DAVA::String> ProjectManagerModule::GetRecentProjects()
+{
+    DAVA::Vector<DAVA::String> retVector;
+    DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentProjects);
+    if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
+    {
+        DAVA::KeyedArchive* archiveRecentFiles = recentFilesVariant.AsKeyedArchive();
+        DAVA::uint32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
+        DAVA::uint32 size = DAVA::Min(archiveRecentFiles->Count(), recentFilesMaxCount);
+        retVector.resize(size);
+        for (DAVA::uint32 i = 0; i < size; ++i)
+        {
+            retVector[i] = archiveRecentFiles->GetString(DAVA::Format("%d", i));
+        }
+    }
+    return retVector;
 }
