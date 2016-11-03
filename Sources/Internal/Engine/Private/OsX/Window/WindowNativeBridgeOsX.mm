@@ -80,7 +80,7 @@ void WindowNativeBridge::SetTitle(const char8* title)
     [nsTitle release];
 }
 
-void WindowNativeBridge::SetFullscreen(Fullscreen newMode)
+void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
 {
     bool isFullscreenRequested = newMode == eFullscreen::On;
 
@@ -135,7 +135,7 @@ void WindowNativeBridge::WindowDidResize()
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
-    Fullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
 }
 
@@ -144,7 +144,7 @@ void WindowNativeBridge::WindowDidChangeScreen()
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 dpi = GetDpi();
-    Fullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
