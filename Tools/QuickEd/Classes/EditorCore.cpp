@@ -27,6 +27,9 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 
+#include <QFile>
+#include <QDir>
+
 using namespace DAVA;
 
 namespace EditorCoreDetails
@@ -286,7 +289,7 @@ DAVA::Result EditorCore::CreateProjectStructure(const QString& projectFilePath)
     }
 
     QDir textsDir(resourceDir.absolutePath() + textsDirectory);
-    QFile defaultLanguageTextFile = textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml");
+    QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml"));
     if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
     {
         return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
@@ -294,7 +297,7 @@ DAVA::Result EditorCore::CreateProjectStructure(const QString& projectFilePath)
     defaultLanguageTextFile.close();
 
     QDir fontsConfigDir(resourceDir.absolutePath() + fontsConfigDirectory);
-    QFile defaultFontsConfigFile = fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName()));
+    QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName())));
     if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
     {
         return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
