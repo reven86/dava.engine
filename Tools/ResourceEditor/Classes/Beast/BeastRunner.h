@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-    class Scene;
+class Scene;
 }
 
 class BeastManager;
