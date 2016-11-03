@@ -15,7 +15,7 @@ using namespace DAVA;
 - (id)initWithFrame:(NSRect)frameRect
 {
     NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
-	
+
     NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
 
     // Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
@@ -25,7 +25,7 @@ using namespace DAVA;
       // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
       NSOpenGLPFANoRecovery,
 
-// Attributes Common to FullScreen and non-FullScreen
+      // Attributes Common to FullScreen and non-FullScreen
       NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]), //24,
       NSOpenGLPFADepthSize, 16,
       NSOpenGLPFAStencilSize, 8,

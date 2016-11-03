@@ -1,9 +1,42 @@
 #pragma once
 
-#include <cstdint>
-#include <cstring>
-
 #include "DAVAConfig.h"
+
+#if defined(__DAVAENGINE_WINDOWS__)
+#define DAVA_NOINLINE __declspec(noinline)
+#define DAVA_FORCEINLINE __forceinline
+#define DAVA_ALIGNOF(x) __alignof(x)
+#if _MSC_VER >= 1900 //msvc 2015 RC or later
+//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
+#define DAVA_CONSTEXPR constexpr
+#define DAVA_NOEXCEPT noexcept
+#else
+#define DAVA_CONSTEXPR
+#define DAVA_NOEXCEPT throw()
+#endif
+#else
+#define DAVA_NOINLINE __attribute__((noinline))
+#define DAVA_FORCEINLINE inline __attribute__((always_inline))
+#define DAVA_ALIGNOF(x) alignof(x)
+#define DAVA_CONSTEXPR constexpr
+#define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
+#define DAVA_NOEXCEPT noexcept
+#ifndef DAVA_DEPRECATED
+#define DAVA_DEPRECATED(func) func __attribute__((deprecated))
+#endif
+#endif
+
+#if defined(__clang__)
+#define DAVA_SWITCH_CASE_FALLTHROUGH [[clang::fallthrough]]
+#else
+#define DAVA_SWITCH_CASE_FALLTHROUGH
+#endif
+
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/AllocPools.h"
+#include "MemoryManager/TrackingAllocator.h"
+#endif
+
 #include "Base/String.h"
 #include "Base/StringStream.h"
 #include "Base/Array.h"
@@ -18,10 +51,8 @@
 #include "Base/UnordererMap.h"
 #include "Base/Bitset.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "MemoryManager/AllocPools.h"
-#include "MemoryManager/TrackingAllocator.h"
-#endif
+#include <cstdint>
+#include <cstring>
 
 namespace DAVA
 {
@@ -151,36 +182,6 @@ enum class eErrorCode
     ERROR_WRITE_FAIL,
     ERROR_DECODE_FAIL
 };
-
-#if defined(__DAVAENGINE_WINDOWS__)
-    #define DAVA_NOINLINE __declspec(noinline)
-    #define DAVA_FORCEINLINE __forceinline
-    #define DAVA_ALIGNOF(x) __alignof(x)
-    #if _MSC_VER >= 1900 //msvc 2015 RC or later
-//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
-        #define DAVA_CONSTEXPR constexpr
-        #define DAVA_NOEXCEPT noexcept
-    #else
-        #define DAVA_CONSTEXPR
-        #define DAVA_NOEXCEPT throw()
-    #endif
-#else
-    #define DAVA_NOINLINE __attribute__((noinline))
-    #define DAVA_FORCEINLINE inline __attribute__((always_inline))
-    #define DAVA_ALIGNOF(x) alignof(x)
-    #define DAVA_CONSTEXPR constexpr
-    #define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
-    #define DAVA_NOEXCEPT noexcept
-    #ifndef DAVA_DEPRECATED
-        #define DAVA_DEPRECATED(func) func __attribute__((deprecated))
-    #endif
-#endif
-
-#if defined(__clang__)
-#define DAVA_SWITCH_CASE_FALLTHROUGH [[clang::fallthrough]]
-#else
-#define DAVA_SWITCH_CASE_FALLTHROUGH
-#endif
 
 } // namespace DAVA
 
