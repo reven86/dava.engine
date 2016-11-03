@@ -2,12 +2,13 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
+#include <bitset>
+
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
 
-#include "UI/UIEvent.h"
-
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -138,12 +139,12 @@ private:
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
     void HandleTouchClick(const Private::MainDispatcherEvent& e);
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
+    void HandleTrackpadGesture(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
     void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
-    void ClearMouseButtons();
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
@@ -158,14 +159,16 @@ private:
     bool hasFocus = false;
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
 
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
+
     float32 dpi = 0.0f; //!< Window DPI
     float32 width = 0.0f; //!< Window client area width.
     float32 height = 0.0f; //!< Window client area height.
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
     float32 surfaceScale = 1.0f; //!< Window rendering surface scale.
-
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
 
 inline bool Window::IsPrimary() const

@@ -183,7 +183,7 @@ void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -196,7 +196,7 @@ void WindowNativeBridge::TouchesBegan(NSSet* touches)
 
 void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -209,7 +209,7 @@ void WindowNativeBridge::TouchesMoved(NSSet* touches)
 
 void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];

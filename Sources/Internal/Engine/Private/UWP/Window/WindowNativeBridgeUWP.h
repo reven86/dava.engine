@@ -6,6 +6,9 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include <bitset>
+
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -19,7 +22,7 @@ ref struct WindowNativeBridge sealed
 
     void* GetHandle() const;
 
-    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd);
+    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_);
 
     void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
     void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
@@ -49,9 +52,8 @@ private:
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
 
-    static uint32 GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
-    static uint32 GetMouseButtonIndex(std::bitset<5> state);
-    static std::bitset<5> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
+    eModifierKeys GetModifierKeys() const;
+    static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
 
     void CreateBaseXamlUI();
     void InstallEventHandlers();
@@ -66,8 +68,6 @@ private:
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
     ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
-
-    std::bitset<5> mouseButtonState;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;
