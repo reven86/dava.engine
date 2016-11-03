@@ -82,7 +82,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;

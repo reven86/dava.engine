@@ -25,7 +25,7 @@ void DeviceInfoTest::LoadResources()
     DVASSERT(font);
 
     font->SetSize(24.0f);
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     BaseScreen::LoadResources();
     info = new UIStaticText(Rect(0.f, 0.f, static_cast<float32>(screenSize.dx), static_cast<float32>(screenSize.dy)));
     info->SetTextColor(Color::White);
@@ -60,7 +60,10 @@ void DeviceInfoTest::UpdateTestInfo()
     infoStream << L"GetHTTPProxyHost() :" << StringToWString(DeviceInfo::GetHTTPProxyHost()) << L"\n";
     infoStream << L"GetHTTPNonProxyHosts() :" << StringToWString(DeviceInfo::GetHTTPNonProxyHosts()) << L"\n";
     infoStream << L"GetHTTPProxyPort() :" << DeviceInfo::GetHTTPProxyPort() << L"\n";
-    infoStream << L"GetScreenInfo() :" << L"width: " << DeviceInfo::GetScreenInfo().width << L", height: " << DeviceInfo::GetScreenInfo().height << L", scale: " << DeviceInfo::GetScreenInfo().scale << L"\n";
+#if !defined(__DAVAENGINE_COREV2__)
+    infoStream << L"GetScreenInfo() :" << L"width: " << DeviceInfo::GetScreenInfo().width << L", height: " << DeviceInfo::GetScreenInfo().height << L"\n";
+    infoStream << L"GetScreenInfo() :" << L"scale: " << DeviceInfo::GetScreenInfo().scale << L"\n";
+#endif
     infoStream << L"GetZBufferSize() :" << DeviceInfo::GetZBufferSize() << L"\n";
     infoStream << L"GetGPUFamily() :" << int(DeviceInfo::GetGPUFamily()) << L"\n";
     infoStream << L"GetNetworkInfo() :" << L"networkType: " << int(DeviceInfo::GetNetworkInfo().networkType) << L", signalStrength: " << int(DeviceInfo::GetNetworkInfo().signalStrength) << L"\n";
