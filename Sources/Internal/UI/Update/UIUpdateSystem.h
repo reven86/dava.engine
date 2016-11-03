@@ -26,6 +26,7 @@ public:
 
 private:
     UICustomUpdateDeltaComponent* FindParentComponent(UIControl* ctrl);
+    void UpdateCustomComponentInBinds();
 
     struct UpdateBind
     {

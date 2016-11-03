@@ -10,8 +10,6 @@ AssertTest::AssertTest(TestBed& app)
     : BaseScreen(app, "AssertTest")
 {
     GetOrCreateComponent<DAVA::UIUpdateComponent>();
-    //DAVA::UICustomUpdateDeltaComponent* c = GetOrCreateComponent<DAVA::UICustomUpdateDeltaComponent>();
-    //c->SetDelta(0.01f);
 }
 
 void AssertTest::LoadResources()

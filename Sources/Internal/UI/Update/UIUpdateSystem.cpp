@@ -24,10 +24,7 @@ void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* componen
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
     {
-        // Append `UICustomUpdateDeltaComponent` to binds of children of
-        // specified control if control is visible only
-
-        // TODO: for-children
+        UpdateCustomComponentInBinds();
     }
 }
 
@@ -42,10 +39,7 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
     {
-        // Remove `UICustomUpdateDeltaComponent` from binds of children of
-        // specified control if control is visible only
-
-        // TODO: for-children
+        UpdateCustomComponentInBinds();
     }
 }
 
@@ -102,5 +96,17 @@ UICustomUpdateDeltaComponent* UIUpdateSystem::FindParentComponent(UIControl* ctr
         ctrl = ctrl->GetParent();
     }
     return nullptr;
+}
+
+void UIUpdateSystem::UpdateCustomComponentInBinds()
+{
+    // For all binds find near `UICustomUpdateDeltaComponent` set it
+    // to current bind. It is faster that search for all controls children and
+    // check its components because count of binds is much less that count of
+    // controls
+    for (UpdateBind& b : binds)
+    {
+        b.customDeltaComponent = FindParentComponent(b.updateComponent->GetControl());
+    }
 }
 }

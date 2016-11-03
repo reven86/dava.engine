@@ -1,6 +1,7 @@
 #include "BaseTest.h"
 #include "Infrastructure/UI/CustomUI3DView.h"
 #include <UI/Update/UIUpdateComponent.h>
+#include <UI/Update/UICustomUpdateDeltaComponent.h>
 
 const uint32 BaseTest::FRAME_OFFSET = 5;
 
@@ -32,8 +33,9 @@ void BaseTest::LoadResources()
     rect.dx = size.dx;
     rect.dy = size.dy;
 
-    sceneView = new CustomUI3DView(this, rect);
+    sceneView = new UI3DView(rect);
     sceneView->SetScene(scene);
+    sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
 
     AddControl(sceneView);
 
@@ -245,6 +247,12 @@ void BaseTest::Update(float32 timeElapsed)
         }
 
         PerformTestLogic(currentFrameDelta);
+    }
+
+    UICustomUpdateDeltaComponent* sceneComponent = sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
+    if (sceneComponent)
+    {
+        sceneComponent->SetDelta(currentFrameDelta);
     }
 }
 
