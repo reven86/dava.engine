@@ -46,6 +46,9 @@ def _download_and_extract(working_directory_path):
 def _patch_sources(source_folder_path, working_directory_path):
     shutil.copyfile(
         'CMakeLists.txt', os.path.join(source_folder_path, 'CMakeLists.txt'))
+    build_utils.apply_patch(
+        os.path.abspath('patch.diff'),
+        working_directory_path)
 
 
 def _build_win32(working_directory_path, root_project_path):
@@ -83,6 +86,7 @@ def _build_win10(working_directory_path, root_project_path):
 
 def _build_macos(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources(source_folder_path, working_directory_path)
 
     install_dir_macos = os.path.join(
         working_directory_path, 'gen/install_macos')
@@ -105,6 +109,7 @@ def _build_macos(working_directory_path, root_project_path):
 
 def _build_ios(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources(source_folder_path, working_directory_path)
 
     install_dir_ios = os.path.join(working_directory_path, 'gen/install_ios')
     build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
@@ -126,6 +131,7 @@ def _build_ios(working_directory_path, root_project_path):
 
 def _build_android(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources(source_folder_path, working_directory_path)
 
     install_dir_android_arm = os.path.join(
         working_directory_path, 'gen/install_android_arm')
