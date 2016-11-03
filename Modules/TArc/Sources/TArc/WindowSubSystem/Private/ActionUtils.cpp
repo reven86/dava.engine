@@ -9,11 +9,13 @@ namespace DAVA
 {
 namespace TArc
 {
-QUrl CreateMenuPoint(const QString& path, const MenuInsertionParams& params)
+namespace ActionUtilsDetail
+{
+QUrl CreateUrl(const QString scemeName, const QString& path, const InsertionParams& params)
 {
     QUrl url;
     url.setPath(path);
-    url.setScheme(menuScheme);
+    url.setScheme(scemeName);
 
     QList<QPair<QString, QString>> items;
     items.push_back(qMakePair(QString("eInsertionMethod"), QString::number(static_cast<DAVA::int32>(params.method))));
@@ -25,20 +27,21 @@ QUrl CreateMenuPoint(const QString& path, const MenuInsertionParams& params)
 
     return url;
 }
-
-QUrl CreateToolbarPoint(const QString& toolbarName)
-{
-    QUrl url;
-    url.setPath(toolbarName);
-    url.setScheme(toolbarScheme);
-
-    return url;
 }
 
-QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor)
+QUrl CreateMenuPoint(const QString& path, const InsertionParams& params)
 {
-    QUrl url;
-    url.setScheme(statusbarScheme);
+    return ActionUtilsDetail::CreateUrl(menuScheme, path, params);
+}
+
+QUrl CreateToolbarPoint(const QString& toolbarName, const InsertionParams& params)
+{
+    return ActionUtilsDetail::CreateUrl(toolbarScheme, toolbarName, params);
+}
+
+QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor, const InsertionParams& params)
+{
+    QUrl url = ActionUtilsDetail::CreateUrl(statusbarScheme, "", params);
     if (isPermanent)
     {
         url.setPath(permanentStatusbarAction);

@@ -52,8 +52,8 @@ void ProjectManagerModule::CreateActions()
     UI& ui = GetUI();
     DAVA::TArc::WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
 
-    DAVA::TArc::MenuInsertionParams insertionParams;
-    insertionParams.method = DAVA::TArc::MenuInsertionParams::eInsertionMethod::BeforeItem;
+    DAVA::TArc::InsertionParams insertionParams;
+    insertionParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     insertionParams.item = QString("actionNewScene");
     DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", insertionParams));
 
@@ -80,7 +80,9 @@ void ProjectManagerModule::CreateActions()
     separator->setSeparator(true);
     ui.AddAction(windowKey, placementInfo, separator);
 
-    DAVA::TArc::ActionPlacementInfo reloadSpritePlacement(DAVA::TArc::CreateToolbarPoint("sceneToolBar"));
+    DAVA::TArc::InsertionParams reloadSpritesInsertionParams;
+    reloadSpritesInsertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
+    DAVA::TArc::ActionPlacementInfo reloadSpritePlacement(DAVA::TArc::CreateToolbarPoint("sceneToolBar", reloadSpritesInsertionParams));
     QAction* reloadSprites = new QAction(QIcon(":/QtIcons/refresh_particle.png"), "Reload Sprites", nullptr);
     connections.AddConnection(reloadSprites, &QAction::triggered, [this]()
                               {

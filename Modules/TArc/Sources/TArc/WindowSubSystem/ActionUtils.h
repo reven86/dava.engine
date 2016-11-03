@@ -17,7 +17,7 @@ static const QString statusbarScheme = QStringLiteral("statusbar");
 
 static const QString permanentStatusbarAction = QStringLiteral("permanent");
 
-struct MenuInsertionParams
+struct InsertionParams
 {
     enum class eInsertionMethod
     {
@@ -29,9 +29,9 @@ struct MenuInsertionParams
     QString item;
 };
 
-QUrl CreateMenuPoint(const QString& path, const MenuInsertionParams& params = MenuInsertionParams());
-QUrl CreateToolbarPoint(const QString& toolbarName);
-QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor = 0);
+QUrl CreateMenuPoint(const QString& path, const InsertionParams& params = InsertionParams());
+QUrl CreateToolbarPoint(const QString& toolbarName, const InsertionParams& params = InsertionParams());
+QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor = 0, const InsertionParams& params = InsertionParams());
 
 void AttachWidgetToAction(QAction* action, QWidget* widget);
 } // namespace TArc
