@@ -1,18 +1,4 @@
 
-macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
-    set(OUTPUT_LIST "")
-    foreach (LIB_FILE ${LIB_LIST})
-        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
-        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
-        if (${LIB_INDEX} EQUAL -1)
-            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
-        endif()
-    endforeach()
-    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
-    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
-endmacro()
-
-
 set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
@@ -301,12 +287,6 @@ if( WIN )
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
         )
-
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
-
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_DEBUG   "msvcrtd.lib" )
 
 endif()
 

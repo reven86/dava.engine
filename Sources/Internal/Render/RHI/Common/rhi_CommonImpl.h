@@ -10,8 +10,9 @@ struct Frame
     Handle sync = InvalidHandle;
     Handle perfQuerySet = InvalidHandle;
     std::vector<Handle> pass;
-    bool readyToExecute = false;
     uint32 frameNumber = 0;
+    bool readyToExecute = false;
+    bool discarded = false;
 
     void Reset();
 };

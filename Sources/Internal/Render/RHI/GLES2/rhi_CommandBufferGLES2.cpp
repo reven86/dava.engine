@@ -1069,17 +1069,17 @@ void CommandBufferGLES2_t::Execute()
 
             #if defined(__DAVAENGINE_IPHONE__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
-            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
             if (glDrawElementsInstanced)
             {
-                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
             }
             #elif defined(__DAVAENGINE_MACOS__)
-            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
+            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount, baseInst));
             #else
-            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount, baseInst));
             #endif
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
@@ -1130,8 +1130,6 @@ void CommandBufferGLES2_t::Execute()
 
 static void _GLES2_RejectFrame(const CommonImpl::Frame& frame)
 {
-#ifdef __DAVAENGINE_ANDROID__
-
     if (frame.sync != InvalidHandle)
     {
         SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(frame.sync);
@@ -1151,14 +1149,11 @@ static void _GLES2_RejectFrame(const CommonImpl::Frame& frame)
                 s->is_signaled = true;
                 s->is_used = true;
             }
-
             cc->curUsedSize = 0;
             CommandBufferPoolGLES2::Free(*c);
         }
-
         RenderPassPoolGLES2::Free(p);
-    }           
-#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1184,7 +1179,6 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                 break;
             }
         }
-
         if (do_add)
             pass.push_back(pp);
     }
@@ -1199,6 +1193,7 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_used = true;
     }
 
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
     for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassGLES2_t* pp = *p;
@@ -1222,6 +1217,8 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             CommandBufferPoolGLES2::Free(cb_h);
         }
     }
+    Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
+
     for (Handle p : frame.pass)
         RenderPassPoolGLES2::Free(p);
 

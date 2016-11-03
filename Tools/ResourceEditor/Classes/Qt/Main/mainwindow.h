@@ -31,6 +31,12 @@ class PropertyPanel;
 class DeviceListController;
 class SpritesPackerModule;
 class ErrorDialogOutput;
+
+namespace DAVA
+{
+class RenderWidget;
+}
+
 class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
@@ -46,8 +52,8 @@ public:
     explicit QtMainWindow(QWidget* parent = 0);
     ~QtMainWindow();
 
-    Ui::MainWindow* GetUI();
-    SceneTabWidget* GetSceneWidget();
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnRenderingInitialized();
     SceneEditor2* GetCurrentScene();
 
     bool OpenScene(const QString& path);
@@ -108,6 +114,8 @@ public slots:
     void OnReleaseVisibilityFrame();
 
     void OnEnableDisableShadows(bool enable);
+
+    void EnableSounds(bool enable);
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);

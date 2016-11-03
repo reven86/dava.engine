@@ -122,8 +122,9 @@ RHI_IMPL_POOL(CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descri
 RHI_IMPL_POOL(RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-static Handle
-dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+static DAVA::Mutex _DX9_SyncObjectsSync;
+
+static Handle dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
     DVASSERT(passDesc.IsValid());
@@ -424,6 +425,7 @@ static void dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 
 static Handle dx9_SyncObject_Create()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
     Handle handle = SyncObjectPoolDX9::Alloc();
     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(handle);
 
@@ -437,6 +439,7 @@ static Handle dx9_SyncObject_Create()
 
 static void dx9_SyncObject_Delete(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
     SyncObjectPoolDX9::Free(obj);
 }
 
@@ -444,6 +447,7 @@ static void dx9_SyncObject_Delete(Handle obj)
 
 static bool dx9_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
     if (!SyncObjectPoolDX9::IsAlive(obj))
         return true;
 
@@ -958,6 +962,7 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
 {
     if (frame.sync != InvalidHandle)
     {
+        DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
         SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(frame.sync);
         s->is_signaled = true;
         s->is_used = true;
@@ -971,6 +976,7 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
             CommandBufferDX9_t* cc = CommandBufferPoolDX9::Get(c);
             if (cc->sync != InvalidHandle)
             {
+                DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
                 SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(cc->sync);
                 s->is_signaled = true;
                 s->is_used = true;
@@ -996,6 +1002,8 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
 
 static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
+    DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX9::IsAlive(frame.sync));
+
     StatSet::ResetAll();
 
     _DX9_FramesWithRestoreAttempt = 0;
@@ -1055,11 +1063,13 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         RenderPassPoolDX9::Free(p);
 
     // update sync-objects
+    _DX9_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _DX9_SyncObjectsSync.Unlock();
 }
 
 bool _DX9_PresentBuffer()
@@ -1128,11 +1138,13 @@ void _DX9_ResetBlock()
     IndexBufferDX9::ReCreateAll();
 
     // update sync-objects, as pre-reset state is not actual anymore, also resolves constant reset causing already executed frame being never synced
+    _DX9_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used)
             s->is_signaled = true;
     }
+    _DX9_SyncObjectsSync.Unlock();
 }
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)

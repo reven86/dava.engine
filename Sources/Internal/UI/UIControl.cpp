@@ -1,4 +1,6 @@
 #include "UI/UIControl.h"
+
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
@@ -11,10 +13,10 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 
 #include "Components/UIComponent.h"
@@ -1191,7 +1193,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
-        const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
         point.y = virtScreenSize.dy / 2.f;
     }
@@ -1378,15 +1380,17 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                     if (totalTouches == 0)
                     {
-                        if (IsPointInside(currentInput->point, true))
+                        bool isPointInside = IsPointInside(currentInput->point, true);
+                        eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
+
+                        Analytics::EmitUIEvent(this, event, currentInput);
+                        PerformEventWithData(event, currentInput);
+
+                        if (isPointInside)
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                             UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
-                        else
-                        {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                        }
+
                         controlState &= ~STATE_PRESSED_INSIDE;
                         controlState &= ~STATE_PRESSED_OUTSIDE;
                         controlState |= STATE_NORMAL;

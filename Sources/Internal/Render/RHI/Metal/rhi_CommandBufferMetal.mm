@@ -82,6 +82,8 @@ RHI_IMPL_POOL(CommandBufferMetal_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Desc
 RHI_IMPL_POOL(RenderPassMetal_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
+static DAVA::Mutex _Metal_SyncObjectsSync;
+
 static bool _Metal_NextDrawablePending = false;
 static bool _Metal_PresentDrawablePending = false;
 id<CAMetalDrawable> _Metal_currentDrawable = nil;
@@ -1465,6 +1467,7 @@ metal_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 metal_SyncObject_Create()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
     Handle handle = SyncObjectPoolMetal::Alloc();
     SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(handle);
 
@@ -1478,6 +1481,7 @@ metal_SyncObject_Create()
 static void
 metal_SyncObject_Delete(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
     SyncObjectPoolMetal::Free(obj);
 }
 
@@ -1487,7 +1491,7 @@ static bool
 metal_SyncObject_IsSignaled(Handle obj)
 {
     bool signaled = false;
-
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
     if (SyncObjectPoolMetal::IsAlive(obj))
     {
         SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(obj);
@@ -1559,6 +1563,7 @@ static void Metal_RejectFrame(const CommonImpl::Frame& frame)
 
     if (frame.sync != InvalidHandle)
     {
+        DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
         SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(frame.sync);
         sync->is_signaled = true;
     }
@@ -1628,6 +1633,7 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             [_Metal_currentCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
                                                              {
                                                                MTL_TRACE("  .frame %u complete", f);
+                                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
                                                                SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
                                                                sync->is_signaled = true;
                                                              }];

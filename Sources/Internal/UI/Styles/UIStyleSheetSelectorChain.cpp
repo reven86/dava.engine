@@ -180,6 +180,6 @@ Vector<UIStyleSheetSelector>::const_reverse_iterator UIStyleSheetSelectorChain::
 
 int32 UIStyleSheetSelectorChain::GetSize() const
 {
-    return (int32)selectors.size();
+    return static_cast<int32>(selectors.size());
 }
 }

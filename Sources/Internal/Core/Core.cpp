@@ -20,11 +20,11 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -61,7 +61,8 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include <PackManager/Private/PackManagerImpl.h>
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Analytics/Analytics.h"
 
 namespace DAVA
 {
@@ -114,7 +115,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-        throw std::runtime_error(ss.str());
+        DAVA_THROW(DAVA::Exception, ss.str());
     }
     default:
         if (SEFuncPtr != nullptr)
@@ -126,7 +127,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
             StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-            throw std::runtime_error(ss.str());
+            DAVA_THROW(DAVA::Exception, ss.str());
         }
     }
 };
@@ -238,6 +239,8 @@ void Core::CreateSingletons()
     new VersionInfo();
 
     new VirtualCoordinatesSystem();
+    UIControlSystem::Instance()->vcs = VirtualCoordinatesSystem::Instance();
+
     new RenderSystem2D();
 
 #if defined __DAVAENGINE_IPHONE__
@@ -253,7 +256,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl());
+    packManager.reset(new PackManagerImpl);
+    analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
 
@@ -264,8 +268,6 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-
-    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -293,6 +295,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -304,7 +310,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -329,10 +334,11 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
+    analyticsCore.reset();
+
     DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
@@ -554,9 +560,9 @@ void Core::SystemAppStarted()
 {
     Logger::Info("Core::SystemAppStarted in");
 
-    if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+    if (UIControlSystem::Instance()->vcs->WasScreenSizeChanged())
     {
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        UIControlSystem::Instance()->vcs->ScreenSizeChanged();
         /*  Question to Hottych: Does it really necessary here?
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
@@ -635,7 +641,7 @@ void Core::SystemProcessFrame()
 
 #if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
-        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* vsc = UIControlSystem::Instance()->vcs;
         if (vsc->WasScreenSizeChanged())
         {
             vsc->ScreenSizeChanged();
@@ -661,7 +667,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update();
+        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
@@ -830,7 +836,7 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     rendererParams.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
     rendererParams.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(static_cast<int32>(rendererParams.width), static_cast<int32>(rendererParams.height));
     virtSystem->EnableReloadResourceOnResize(true);
@@ -876,7 +882,7 @@ void Core::ApplyWindowSize()
         params.window = screenMetrics.nativeView;
         Renderer::Reset(params);
 
-        VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
         virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
         virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
         virtSystem->ScreenSizeChanged();
@@ -949,9 +955,10 @@ IPackManager& Core::GetPackManager() const
     return *packManager;
 }
 
-const ModuleManager& Core::GetModuleManager() const
+Analytics::Core& Core::GetAnalyticsCore() const
 {
-    return moduleManager;
+    DVASSERT(analyticsCore);
+    return *analyticsCore;
 }
 
 } // namespace DAVA

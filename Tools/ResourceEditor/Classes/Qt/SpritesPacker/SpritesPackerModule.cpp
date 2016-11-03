@@ -140,7 +140,7 @@ void SpritesPackerModule::ConnectCacheClient()
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
-        cacheClient = new DAVA::AssetCacheClient(false);
+        cacheClient = new DAVA::AssetCacheClient();
         DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
         if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
