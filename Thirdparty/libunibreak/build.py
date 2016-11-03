@@ -93,7 +93,7 @@ def _build_macos(working_directory_path, root_project_path):
     build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     env=build_utils.get_autotools_macos_env()
     env['CFLAGS'] += ' -DNDEBUG'
-    env['CXXFLAGS'] = env['CFLAGS']
+    env['CXXFLAGS'] += ' -DNDEBUG'
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'],
@@ -118,7 +118,7 @@ def _build_ios(working_directory_path, root_project_path):
     build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     env=build_utils.get_autotools_ios_env()
     env['CFLAGS'] += ' -DNDEBUG'
-    env['CXXFLAGS'] = env['CFLAGS']
+    env['CXXFLAGS'] += ' -DNDEBUG'
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=armv7-apple-darwin', '--disable-shared', '--enable-static'],
@@ -144,7 +144,7 @@ def _build_android(working_directory_path, root_project_path):
     build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     env=build_utils.get_autotools_android_arm_env(root_project_path)
     env['CFLAGS'] += ' -DNDEBUG'
-    env['CXXFLAGS'] = env['CFLAGS']
+    env['CPPFLAGS'] += ' -DNDEBUG'
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=arm-linux-androideabi',
