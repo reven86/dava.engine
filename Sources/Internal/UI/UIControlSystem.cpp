@@ -25,6 +25,7 @@
 #include "Input/InputSystem.h"
 #include "Debug/ProfilerOverlay.h"
 #include "Engine/EngineModule.h"
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {

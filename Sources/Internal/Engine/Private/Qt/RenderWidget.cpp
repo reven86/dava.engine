@@ -7,6 +7,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Exception.h"
 #include "Debug/DVAssert.h"
 
 #include "Input/InputSystem.h"

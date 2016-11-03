@@ -1,7 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
-
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
@@ -9,46 +8,42 @@
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
-#include "Render/Renderer.h"
-#include "UI/UIControlSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-
-#include "Logger/Logger.h"
+// Please place headers in alphabetic ascending order
 #include "DAVAClassRegistrator.h"
-#include "FileSystem/FileSystem.h"
-#include "Base/ObjectFactory.h"
-#include "Core/ApplicationCore.h"
-#include "Core/Core.h"
-#include "Core/PerformanceSettings.h"
-#include "Platform/SystemTimer.h"
-#include "UI/UIScreenManager.h"
-#include "UI/UIControlSystem.h"
-#include "Input/InputSystem.h"
-#include "Debug/DVAssert.h"
-#include "Render/2D/TextBlock.h"
-#include "Debug/Replay.h"
-#include "Debug/ProfilerCPU.h"
-#include "Sound/SoundSystem.h"
-#include "Sound/SoundEvent.h"
-#include "Input/InputSystem.h"
-#include "Platform/DPIHelper.h"
-#include "Base/AllocatorFactory.h"
-#include "Render/2D/FTFont.h"
-#include "Scene3D/SceneFile/VersionInfo.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "DLC/Downloader/DownloadManager.h"
-#include "DLC/Downloader/CurlDownloader.h"
-#include "Notification/LocalNotificationController.h"
-#include "Platform/DeviceInfo.h"
-#include "Render/Renderer.h"
-#include "UI/UIControlSystem.h"
-#include "Job/JobManager.h"
-#include "Network/NetCore.h"
-#include "PackManager/Private/PackManagerImpl.h"
-#include "ModuleManager/ModuleManager.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "Base/AllocatorFactory.h"
+#include "Base/ObjectFactory.h"
+#include "Core/PerformanceSettings.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/DVAssert.h"
+#include "Debug/Replay.h"
+#include "DLC/Downloader/CurlDownloader.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Input/InputSystem.h"
+#include "Job/JobManager.h"
+#include "Logger/Logger.h"
+#include "ModuleManager/ModuleManager.h"
+#include "Network/NetCore.h"
+#include "Notification/LocalNotificationController.h"
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/DPIHelper.h"
+#include "Platform/SystemTimer.h"
+#include "Render/2D/FTFont.h"
+#include "Render/2D/TextBlock.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Renderer.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
+#include "Sound/SoundEvent.h"
+#include "Sound/SoundSystem.h"
+#include "UI/UIEvent.h"
+#include "UI/UIScreenManager.h"
+#include "UI/UIControlSystem.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Debug/ProfilerCPU.h"
 
@@ -56,9 +51,6 @@
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #endif
-
-#include "UI/UIEvent.h"
-#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
@@ -242,11 +234,6 @@ void EngineBackend::OnGameLoopStopped()
     dyingWindows.clear();
 
     engine->gameLoopStopped.Emit();
-    if (!IsConsoleMode())
-    {
-        if (Renderer::IsInitialized())
-            Renderer::Uninitialize();
-    }
 }
 
 void EngineBackend::OnEngineCleanup()
@@ -254,6 +241,13 @@ void EngineBackend::OnEngineCleanup()
     engine->cleanup.Emit();
 
     DestroySubsystems();
+
+    if (!IsConsoleMode())
+    {
+        if (Renderer::IsInitialized())
+            Renderer::Uninitialize();
+    }
+
     delete context;
     delete dispatcher;
     delete platformCore;
@@ -320,13 +314,14 @@ void EngineBackend::OnBeginFrame()
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_BEGIN_FRAME);
     Renderer::BeginFrame();
 
-    context->inputSystem->OnBeforeUpdate();
     engine->beginFrame.Emit();
 }
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE);
+    engine->update.Emit(frameDelta);
+
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
@@ -334,8 +329,6 @@ void EngineBackend::OnUpdate(float32 frameDelta)
     {
         w->Update(frameDelta);
     }
-
-    engine->update.Emit(frameDelta);
 }
 
 void EngineBackend::OnDraw()
@@ -411,11 +404,27 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_RESUMED:
         HandleAppResumed(e);
         break;
+    case MainDispatcherEvent::BACK_NAVIGATION:
+        HandleBackNavigation(e);
+        break;
     case MainDispatcherEvent::USER_CLOSE_REQUEST:
         HandleUserCloseRequest(e);
         break;
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_MOTION:
+        context->inputSystem->HandleGamepadMotion(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_BUTTON_DOWN:
+    case MainDispatcherEvent::GAMEPAD_BUTTON_UP:
+        context->inputSystem->HandleGamepadButton(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_ADDED:
+        context->inputSystem->HandleGamepadAdded(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_REMOVED:
+        context->inputSystem->HandleGamepadRemoved(e);
         break;
     default:
         if (e.window != nullptr)
@@ -487,6 +496,17 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
             rhi::ResumeRendering();
         engine->resumed.Emit();
     }
+}
+
+void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
+{
+    UIEvent uie;
+    uie.key = Key::BACK;
+    uie.phase = UIEvent::Phase::KEY_UP;
+    uie.device = eInputDevices::KEYBOARD;
+    uie.timestamp = e.timestamp / 1000.0;
+
+    context->inputSystem->HandleInputEvent(&uie);
 }
 
 void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
@@ -610,7 +630,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->fontManager = new FontManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
+    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicationPath());
 #endif
 
     // Naive implementation of on demand module creation
@@ -663,7 +683,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     if (!IsConsoleMode())
     {
-        context->inputSystem = new InputSystem();
+        context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
@@ -696,7 +716,7 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->inputSystem->Release();
+        delete context->inputSystem;
     }
 
     context->fontManager->Release();
