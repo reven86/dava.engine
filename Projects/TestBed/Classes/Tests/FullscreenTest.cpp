@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
+#include <Input/MouseDevice.h>
 
 using namespace DAVA;
 
@@ -109,7 +110,7 @@ void FullscreenTest::LoadResources()
     currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
-    currentScaleText->SetText(Format(L"%f", primaryWindow->GetUserScale()));
+    currentScaleText->SetText(Format(L"%f", primaryWindow->GetSurfaceScale()));
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -121,7 +122,7 @@ void FullscreenTest::LoadResources()
     scene->LoadScene("~res:/3d/Objects/monkey.sc2");
 
     ScopedPtr<Camera> camera(new Camera());
-    VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
     camera->SetLeft(Vector3(1, 0, 0));
@@ -225,7 +226,7 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul < 2.0f)
     {
         mul += 0.1f;
@@ -234,13 +235,13 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul > 0.2f)
     {
         mul -= 0.1f;
@@ -249,7 +250,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
@@ -367,7 +368,7 @@ void FullscreenTest::UpdateMode()
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-    if (currentInput->device == UIEvent::Device::MOUSE)
+    if (currentInput->device == eInputDevices::MOUSE)
     {
         Window* primWind = Engine::Instance()->PrimaryWindow();
         switch (currentInput->phase)

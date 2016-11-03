@@ -21,7 +21,6 @@
 @interface RenderView : NSOpenGLView
 {
     DAVA::Private::WindowNativeBridge* bridge;
-    //for using MouseEntered MouseExited events, set trackArea
     NSTrackingArea* trackingArea;
 }
 

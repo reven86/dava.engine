@@ -13,10 +13,10 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 
 #include "Components/UIComponent.h"
@@ -1193,7 +1193,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 #if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
-        const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
         point.y = virtScreenSize.dy / 2.f;
     }

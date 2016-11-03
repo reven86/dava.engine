@@ -42,10 +42,20 @@
     // Enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 
-    NSTrackingAreaOptions areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp | NSTrackingInVisibleRect);
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:areaOptions owner:self userInfo:nil];
+    // Prepare tracking area to receive messages:
+    //  - mouseEntered and mouseExited, used with mouse capture handling
+    //  - mouseMoved which is delivered only when cursor inside active window
+    // clang-format off
+    NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                    NSTrackingActiveInKeyWindow |
+                                    NSTrackingInVisibleRect |
+                                    NSTrackingMouseMoved;
+    // clang-format on
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                                options:options
+                                                  owner:self
+                                               userInfo:nil];
     [self addTrackingArea:trackingArea];
-
     return self;
 }
 
@@ -86,6 +96,16 @@
 - (void)mouseMoved:(NSEvent*)theEvent
 {
     bridge->MouseMove(theEvent);
+}
+
+- (void)mouseEntered:(NSEvent*)theEvent
+{
+    bridge->MouseEntered(theEvent);
+}
+
+- (void)mouseExited:(NSEvent*)theEvent
+{
+    bridge->MouseExited(theEvent);
 }
 
 - (void)scrollWheel:(NSEvent*)theEvent
@@ -160,6 +180,22 @@
 
 - (void)flagsChanged:(NSEvent*)theEvent
 {
+    bridge->FlagsChanged(theEvent);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)theEvent
+{
+    bridge->MagnifyWithEvent(theEvent);
+}
+
+- (void)rotateWithEvent:(NSEvent*)theEvent
+{
+    bridge->RotateWithEvent(theEvent);
+}
+
+- (void)swipeWithEvent:(NSEvent*)theEvent
+{
+    bridge->SwipeWithEvent(theEvent);
 }
 
 @end

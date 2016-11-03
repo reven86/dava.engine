@@ -288,12 +288,6 @@ if( WIN )
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
         )
 
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
-
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_DEBUG   "msvcrtd.lib" )
-
 endif()
 
 

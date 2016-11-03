@@ -16,7 +16,7 @@ public:
     bool DisableLandscapeEdititing();
 
     virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent* event);
+    bool Input(DAVA::UIEvent* event) override;
 
     DAVA::float32 GetLength();
     DAVA::float32 GetPreviewLength();

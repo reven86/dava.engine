@@ -14,8 +14,7 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 extern "C"
 {
 
@@ -199,7 +198,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
         {
             controlRect = rect;
 
-            Rect rc = JNI::V2I(controlRect);
+            Rect rc = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
             rc.dx = std::max(0.0f, rc.dx);
             rc.dy = std::max(0.0f, rc.dy);
             setRect(javaTextField, rc.x, rc.y, rc.dx, rc.dy);
@@ -274,7 +273,7 @@ void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
     if (javaTextField != nullptr)
     {
         // TODO: window.GetVirtualCoordinatesSystem
-        float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputY(virtualFontSize);
+        float32 fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputY(virtualFontSize);
         setFontSize(javaTextField, fontSize);
     }
 }

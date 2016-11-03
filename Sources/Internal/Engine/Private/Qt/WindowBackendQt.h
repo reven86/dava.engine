@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -68,7 +69,7 @@ private:
     bool OnUserCloseRequest() override;
     void OnDestroyed() override;
     void OnFrame() override;
-    void OnResized(uint32 width, uint32 height, float32 dpi) override;
+    void OnResized(uint32 width, uint32 height) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;
@@ -80,7 +81,8 @@ private:
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 
-    uint32 ConvertButtons(Qt::MouseButton button);
+    eModifierKeys GetModifierKeys() const;
+    static eMouseButtons GetMouseButton(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
     uint32 ConvertQtKeyToSystemScanCode(int key);
 #endif

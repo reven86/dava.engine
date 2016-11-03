@@ -5,6 +5,8 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 
+#include "Engine/EngineTypes.h"
+
 namespace DAVA
 {
 class UIControl;
@@ -56,6 +58,9 @@ public:
 
     friend class UIControlSystem;
 
+#if defined(__DAVAENGINE_COREV2__)
+    using MouseButton = eMouseButtons;
+#else
     enum class MouseButton : uint32
     {
         NONE = 0,
@@ -67,7 +72,11 @@ public:
 
         NUM_BUTTONS = EXTENDED2
     };
+#endif
 
+#if defined(__DAVAENGINE_COREV2__)
+    using Device = eInputDevices;
+#else
     enum class Device : uint32
     {
         UNKNOWN = 0,
@@ -78,7 +87,9 @@ public:
         PEN,
         TOUCH_PAD,
     };
+#endif
 
+#if !defined(__DAVAENGINE_COREV2__)
     enum Modifier
     {
         NONE = 0, // Used to denote no flags explicitly
@@ -89,6 +100,7 @@ public:
 
         LAST = COMMAND_DOWN
     };
+#endif
 
     UIEvent() = default;
 
@@ -129,8 +141,13 @@ public:
         uint32 touchId;
         Key key;
         char32_t keyChar; // unicode utf32 char
+#if defined(__DAVAENGINE_COREV2__)
+        eMouseButtons mouseButton;
+        eGamepadElements element;
+#else
         MouseButton mouseButton;
         GamepadDevice::eDavaGamepadElement element;
+#endif
         WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
         Gesture gesture; // pinch/rotate/swipe
     };
@@ -142,9 +159,14 @@ public:
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
-    Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
+#if defined(__DAVAENGINE_COREV2__)
+    eInputDevices device = eInputDevices::UNKNOWN;
+    eModifierKeys modifiers = eModifierKeys::NONE;
+#else
+    Device device = Device::UNKNOWN;
     uint32 modifiers = 0;
+#endif
 };
 };
 
