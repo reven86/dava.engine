@@ -2,6 +2,7 @@
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Update/UICustomUpdateDeltaComponent.h"
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
@@ -9,6 +10,8 @@ AssertTest::AssertTest(TestBed& app)
     : BaseScreen(app, "AssertTest")
 {
     GetOrCreateComponent<DAVA::UIUpdateComponent>();
+    //DAVA::UICustomUpdateDeltaComponent* c = GetOrCreateComponent<DAVA::UICustomUpdateDeltaComponent>();
+    //c->SetDelta(0.01f);
 }
 
 void AssertTest::LoadResources()

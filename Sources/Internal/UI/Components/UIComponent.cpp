@@ -15,6 +15,7 @@
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Update/UICustomUpdateDeltaComponent.h"
 
 namespace DAVA
 {
@@ -82,6 +83,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case UPDATE_COMPONENT:
         return new UIUpdateComponent();
+
+    case CUSTOM_UPDATE_DELTA_COMPONENT:
+        return new UICustomUpdateDeltaComponent();
 
     default:
         DVASSERT_MSG(false, Format("Can't create component with type %d", componentType).c_str());

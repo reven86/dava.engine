@@ -144,16 +144,6 @@ void ViewSceneScreen::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void ViewSceneScreen::OnVisible()
-{
-    UIControlSystem::Instance()->update.Connect(this, &ViewSceneScreen::Update);
-}
-
-void ViewSceneScreen::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-}
-
 void ViewSceneScreen::OnBack(BaseObject* caller, void* param, void* callerData)
 {
     SetPreviousScreen();

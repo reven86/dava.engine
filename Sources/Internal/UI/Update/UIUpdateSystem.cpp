@@ -1,22 +1,33 @@
 #include "UIUpdateSystem.h"
 #include "UIUpdateComponent.h"
+#include "UICustomUpdateDeltaComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA
 {
 void UIUpdateSystem::RegisterControl(UIControl* control)
 {
+    // Do nothing because this system work only with visible controls
 }
 
 void UIUpdateSystem::UnregisterControl(UIControl* control)
 {
+    // Do nothing because this system work only with visible controls
 }
 
 void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
     if (component->GetType() == UIComponent::UPDATE_COMPONENT && control->IsVisible())
     {
-        components.insert(component);
+        UICustomUpdateDeltaComponent* customUpdate = FindParentComponent(control);
+        binds.emplace_back(component, customUpdate);
+    }
+    else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
+    {
+        // Append `UICustomUpdateDeltaComponent` to binds of children of
+        // specified control if control is visible only
+
+        // TODO: for-children
     }
 }
 
@@ -24,44 +35,72 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
 {
     if (component->GetType() == UIComponent::UPDATE_COMPONENT)
     {
-        components.erase(component);
+        binds.erase(std::remove_if(binds.begin(), binds.end(), [component](const UpdateBind& b)
+                                   {
+                                       return b.updateComponent == component;
+                                   }));
+    }
+    else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
+    {
+        // Remove `UICustomUpdateDeltaComponent` from binds of children of
+        // specified control if control is visible only
+
+        // TODO: for-children
     }
 }
 
 void UIUpdateSystem::OnControlVisible(UIControl* control)
 {
-    uint32 count = control->GetComponentCount<UIUpdateComponent>();
-    for (uint32 i = 0; i < count; ++i)
+    UICustomUpdateDeltaComponent* customUpdate = FindParentComponent(control);
+    UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
+    if (component)
     {
-        UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>(i);
-        if (component)
-        {
-            components.insert(component);
-        }
+        binds.emplace_back(component, customUpdate);
     }
 }
 
 void UIUpdateSystem::OnControlInvisible(UIControl* control)
 {
-    uint32 count = control->GetComponentCount<UIUpdateComponent>();
-    for (uint32 i = 0; i < count; ++i)
+    UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
+    if (component)
     {
-        UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>(i);
-        if (component)
-        {
-            components.erase(component);
-        }
+        binds.erase(std::remove_if(binds.begin(), binds.end(), [component](const UpdateBind& b)
+                                   {
+                                       return b.updateComponent == component;
+                                   }));
     }
+
+    // If specified control has `UICustomUpdateDeltaComponent` component then
+    // we don't need remove this component from all bind of children because
+    // all children binds will be remove as *invisible*
 }
 
 void UIUpdateSystem::Process(float32 elapsedTime)
 {
-    for (UIComponent* c : components)
+    for (const UpdateBind& b : binds)
     {
-        if (c->GetControl())
+        if (b.customDeltaComponent)
         {
-            c->GetControl()->Update(elapsedTime);
+            b.updateComponent->GetControl()->Update(b.customDeltaComponent->GetDelta());
+        }
+        else
+        {
+            b.updateComponent->GetControl()->Update(elapsedTime);
         }
     }
+}
+
+UICustomUpdateDeltaComponent* UIUpdateSystem::FindParentComponent(UIControl* ctrl)
+{
+    while (ctrl)
+    {
+        UICustomUpdateDeltaComponent* comp = ctrl->GetComponent<UICustomUpdateDeltaComponent>();
+        if (comp)
+        {
+            return comp;
+        }
+        ctrl = ctrl->GetParent();
+    }
+    return nullptr;
 }
 }

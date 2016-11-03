@@ -7,6 +7,7 @@ namespace DAVA
 {
 class UIControl;
 class UIComponent;
+class UICustomUpdateDeltaComponent;
 
 class UIUpdateSystem : public UISystem
 {
@@ -24,6 +25,20 @@ public:
     void Process(float32 elapsedTime) override;
 
 private:
-    Set<UIComponent*> components;
+    UICustomUpdateDeltaComponent* FindParentComponent(UIControl* ctrl);
+
+    struct UpdateBind
+    {
+        UpdateBind(UIComponent* uc, UICustomUpdateDeltaComponent* cdc)
+            : updateComponent(uc)
+            , customDeltaComponent(cdc)
+        {
+        }
+
+        UIComponent* updateComponent = nullptr;
+        UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
+    };
+
+    List<UpdateBind> binds;
 };
 }
