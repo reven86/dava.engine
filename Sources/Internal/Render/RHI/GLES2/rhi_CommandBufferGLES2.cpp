@@ -21,6 +21,7 @@ using DAVA::Logger;
 #include "_gl.h"
 
 #define RHI_GLES2__USE_CMDBUF_PACKING 1
+#define RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION 1
 
 namespace rhi
 {
@@ -2502,7 +2503,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             cmd->status = 0;
         }
         break;
-
+            
         case GLCommand::ATTACH_SHADER:
         {
             GL_CALL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
@@ -2510,6 +2511,13 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         }
         break;
 
+        case GLCommand::DETACH_SHADER:
+        {
+            GL_CALL(glDetachShader(GLuint(arg[0]), GLuint(arg[1])));
+            cmd->status = err;
+        }
+        break;
+            
         case GLCommand::LINK_PROGRAM:
         {
             GLint linkStatus = GL_FALSE;
@@ -2518,14 +2526,25 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &linkStatus));
             if (linkStatus)
             {
+            #if (RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION)
+                // Force OpenGL to compile program immediately
                 GLint currentProgram = 0;
                 GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram));
-
-                // Force OpenGL to compile program immediately
+                GLint validateStatus = 0;
+                GLchar validateLog[2048] = { };
+                GLsizei validateLogLength = 0;
                 GL_CALL(glUseProgram(program));
-
-                // Restore original state
+                GL_CALL(glValidateProgram(program));
+                GL_CALL(glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus));
+                GL_CALL(glGetProgramInfoLog(program, 2048, &validateLogLength, validateLog));
+                #if __DAVAENGINE_DEBUG__
+                if (validateLogLength > 1)
+                {
+                    DAVA::Logger::Info("Program validation log:\n%s", validateLog);
+                }
+                #endif
                 GL_CALL(glUseProgram(currentProgram));
+            #endif
             }
             cmd->retval = linkStatus;
             cmd->status = err;
