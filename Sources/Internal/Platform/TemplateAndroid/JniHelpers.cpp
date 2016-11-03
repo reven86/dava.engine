@@ -4,7 +4,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Utils/UTF8Utils.h"
 
@@ -22,7 +22,7 @@ JNIEnv* GetEnv()
     JNIEnv* env;
     JavaVM* vm = GetJVM();
 
-    if (nullptr == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (nullptr == vm || JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
@@ -38,7 +38,7 @@ void AttachCurrentThreadToJVM()
     JavaVM* vm = GetJVM();
     JNIEnv* env;
 
-    if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         if (vm->AttachCurrentThread(&env, NULL) != 0)
             Logger::Error("runtime_error(Could not attach current thread to JNI)");
@@ -52,7 +52,7 @@ void DetachCurrentThreadFromJVM()
 
     JavaVM* vm = GetJVM();
     JNIEnv* env;
-    if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_OK == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         if (0 != vm->DetachCurrentThread())
             Logger::Error("runtime_error(Could not detach current thread from JNI)");
@@ -61,7 +61,7 @@ void DetachCurrentThreadFromJVM()
 
 Rect V2I(const Rect& srcRect)
 {
-    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(srcRect);
+    return UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
 }
 
 DAVA::String ToString(const jstring jniString)

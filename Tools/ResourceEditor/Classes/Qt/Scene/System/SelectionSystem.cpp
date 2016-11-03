@@ -1,3 +1,5 @@
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/HoodSystem.h"
@@ -55,7 +57,15 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    DAVA::EngineContext* engineContext = engine->GetContext();
+    DVASSERT(engineContext != nullptr);
+    if (engineContext->inputSystem == nullptr)
+    {
+        return;
+    }
+    const DAVA::KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
 
     bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
@@ -383,11 +393,11 @@ void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
     invalidSelectionBoxes = true;
 }
 
-void SceneSelectionSystem::Input(DAVA::UIEvent* event)
+bool SceneSelectionSystem::Input(DAVA::UIEvent* event)
 {
-    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
+    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::eMouseButtons::LEFT))
     {
-        return;
+        return false;
     }
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
@@ -396,7 +406,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
         {
             if (selectionDelegate->AllowPerformSelectionHavingCurrent(currentSelection) == false)
             {
-                return;
+                return false;
             }
         }
 
@@ -413,13 +423,14 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
     }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if ((event->mouseButton == DAVA::UIEvent::MouseButton::LEFT) && applyOnPhaseEnd)
+        if ((event->mouseButton == DAVA::eMouseButtons::LEFT) && applyOnPhaseEnd)
         {
             FinishSelection();
         }
         applyOnPhaseEnd = false;
         selecting = false;
     }
+    return false;
 }
 
 void SceneSelectionSystem::DrawItem(const DAVA::AABBox3& originalBox, const DAVA::Matrix4& transform, DAVA::int32 drawMode,

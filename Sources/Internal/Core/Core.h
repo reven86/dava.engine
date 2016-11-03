@@ -258,7 +258,6 @@ public:
 
     IPackManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
-    const ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -292,7 +291,6 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
     std::unique_ptr<Analytics::Core> analyticsCore;

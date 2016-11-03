@@ -1,6 +1,8 @@
 #include "Base/BaseTypes.h"
 #include "Platform/DPIHelper.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include <AppKit/NSScreen.h>
 #include <ApplicationServices/ApplicationServices.h>
 #import <Foundation/Foundation.h>
@@ -42,3 +44,5 @@ Size2i DPIHelper::GetScreenSize()
     return screenSize;
 }
 }
+
+#endif
