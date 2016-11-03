@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.util.Log;
+import android.util.DisplayMetrics;
 import java.lang.reflect.Constructor;
 
 final class DavaSurfaceView extends SurfaceView
@@ -24,7 +25,7 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnResume(long windowBackendPointer);
     public static native void nativeSurfaceViewOnPause(long windowBackendPointer);
     public static native void nativeSurfaceViewOnSurfaceCreated(long windowBackendPointer, DavaSurfaceView surfaceView);
-    public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height);
+    public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height, int surfaceWidth, int surfaceHeight, int dpi);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
@@ -103,6 +104,16 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnPause(windowBackendPointer);
     }
 
+    public int getDpi()
+    {
+        final DisplayMetrics dm = new DisplayMetrics();
+        DavaActivity.instance().getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        // Use dm.densityDpi because it returns DPI that used by system for UI scaling.
+        // Values of dm.(x|y)dpi don't return correct DPI on some devices.
+        return dm.densityDpi; 
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -139,8 +150,10 @@ final class DavaSurfaceView extends SurfaceView
             return;
         }
 
-        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
-        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
+        int dpi = getDpi();
+
+        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
+        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
         if (DavaActivity.davaMainThread == null)
         {
