@@ -6,26 +6,36 @@
 
 namespace DAVA
 {
+/**
+    \brief  Structure that represent trace data in format of Chromium Trace Viewer.
+            Also it allows to dump set of events to JSON-format, that can be opened by Trace Viewer.
+*/
 struct TraceEvent
 {
+    //! Valid values of event type
     enum EventPhase
     {
-        PHASE_BEGIN = 0,
-        PHASE_END,
-        PHASE_INSTANCE,
-        PHASE_DURATION,
+        PHASE_BEGIN = 0, ///< Begin of duration event. Must come before the corresponding end event. It's no use 'duration' field
+        PHASE_END, ///< End of duration event. It's no use 'duration' field
+        PHASE_INSTANCE, ///< The instance event-type. Correspond to something that happens buy has no duration. It's no use 'duration' field
+        PHASE_DURATION, ///< Complete event. Logically combines a pair of 'Begin' and 'End' events. Preferably to use this event type instead Begin/End because it reduce the size of the trace.
 
-        PHASE_COUNT
+        PHASE_COUNT ///< Count of implemented event types.
     };
 
-    FastName name;
-    uint64 timestamp;
-    uint64 duration;
-    uint64 threadID;
-    uint32 processID;
-    EventPhase phase;
-    Vector<std::pair<FastName, uint32>> args;
+    FastName name; ///< The name of the event, as displayed in Trace Viewer.
+    uint64 timestamp; ///< The tracing timestamp of the event.
+    uint64 duration; ///< The tracing duration if the event.
+    uint64 threadID; ///< The thread ID for the thread that generate this event.
+    uint32 processID; ///< The process ID for the process that generate this event.
+    EventPhase phase; ///< The event type. The valid values are listed in enum description.
+    Vector<std::pair<FastName, uint32>> args; ///< Any arguments provided for the event. Used as 'meta-info'. The arguments are displayed in Trace Viewer.
 
+    /**
+        Dump trace events from any type container to stream in JSON-format.
+        \param[in] trace Container of events
+        \param[out] stream Stream which output will be written
+    */
     template <template <typename, typename> class Container, class TAlloc>
     static void DumpJSON(const Container<TraceEvent, TAlloc>& trace, std::ostream& stream);
 };

@@ -76,7 +76,7 @@ ProfilerGPU::~ProfilerGPU()
 {
 }
 
-const ProfilerGPU::FrameInfo& ProfilerGPU::GetLastFrame(uint32 index) const
+const ProfilerGPU::FrameInfo& ProfilerGPU::GetFrame(uint32 index) const
 {
     DVASSERT(index < uint32(framesInfo.size()));
     return *(framesInfo.crbegin() - index);

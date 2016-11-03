@@ -118,13 +118,13 @@ void ProfilerOverlay::OnFrameEnd()
     Draw();
 }
 
-void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
+void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* rootCounterName)
 {
-    if (cpuProfiler == profiler && cpuCounterName == counterName)
+    if (cpuProfiler == profiler && cpuCounterName == rootCounterName)
         return;
 
     cpuProfiler = profiler;
-    cpuCounterName = counterName;
+    cpuCounterName = rootCounterName;
 
     if (selectedTrace == TRACE_CPU && !cpuProfiler)
         selectedTrace = TRACE_GPU;
@@ -338,7 +338,7 @@ void ProfilerOverlay::Update()
     if (overlayPaused)
         return;
 
-    uint32 frameIndex = (gpuProfiler && gpuProfiler->IsStarted()) ? gpuProfiler->GetLastFrame().frameIndex : 0;
+    uint32 frameIndex = (gpuProfiler && gpuProfiler->IsStarted()) ? gpuProfiler->GetFrame().frameIndex : 0;
 
     bool needUpdateGPUInfo = gpuProfiler && gpuProfiler->IsStarted() && (tracesData[TRACE_GPU].crbegin()->frameIndex != frameIndex || frameIndex == 0);
     bool needUpdateCPUInfo = cpuProfiler && cpuProfiler->IsStarted() && (tracesData[TRACE_CPU].crbegin()->frameIndex != frameIndex || frameIndex == 0);
@@ -357,7 +357,7 @@ void ProfilerOverlay::Update()
 
     if (needUpdateGPUInfo)
     {
-        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), &tracesData[TRACE_GPU].next());
+        ProcessEventsTrace(gpuProfiler->GetFrame().GetTrace(), &tracesData[TRACE_GPU].next());
     }
 
     if (needUpdateCPUInfo)

@@ -10,11 +10,114 @@ namespace DAVA
 class UIEvent;
 class ProfilerCPU;
 class ProfilerGPU;
+/**
+    \ingroup profilers
+    \brief   Overlay display debug information retrieved from 'ProfilerCPU' and 'ProfilerGPU'.
+    \details Overlay display debug information retrieved from 'ProfilerCPU' and 'ProfilerGPU'. To display overlay just call 'SetEnabled'. If overlay disabled - it's almost free.
+             Overlay store history from 10 frames. You can select frames after pause overlay-updating.
+             Also Overlay store history for 120 values of interest markers. You can modify list of these markers using 'ClearInterestMarkers' and 'AddInterestMarker(s)'.
+             To control overlay you can use keyboard shortcuts or touches.
+             To enable touches and keyboard shortcuts you should call 'SetInputEnabled'. If input enabled, overlay intercept on input from engine.
+             Keyboard shortcuts:
+               - Ctrl + F12   -- Enable/Disable overlay. Equals 'SetEnabled'
+               - Ctrl + F11   -- Pause/Unpause information update.
+               - Ctrl + F10   -- Switch scale of overlay (x1/x2). Useful for High-DPI displays. Equals 'SetScale'
+               - Ctrl + F9    -- Show/Hide charts of interested markers history.
+               - Ctrl + Left  -- Select previous frame from history.
+               - Ctrl + Right -- Select next frame from history.
+               - Ctrl + Up    -- Select previous marker from active (focused) trace.
+               - Ctrl + Down  -- Select previous marker from active (focused) trace.
+               - Ctrl + Tab   -- Switch focus between CPU and GPU traces.
+
+            You can set to overlay your own 'ProfilerCPU' to display info. Call 'SetCPUProfiler' and pass to it root counter name. This name will be used to retrieve one counter for one frame.
+            Default cpu-profiler is 'ProfilerCPU::globalProfiler' with root counter 'ENGINE_ON_FRAME'.
+*/
 class ProfilerOverlay
 {
 public:
+    static ProfilerOverlay* const globalProfilerOverlay; ///< Global Engine Profiler Overlay
+
+    ProfilerOverlay(ProfilerCPU* cpuProfiler, const char* cpuCounterName, ProfilerGPU* gpuProfiler, const Vector<FastName>& interestMarkers = Vector<FastName>());
+
+    /**
+        Enable/Disable overlay.
+    */
+    void SetEnabled(bool enabled);
+
+    /**
+        \return Is overlay enabled
+    */
+    bool IsEnabled();
+
+    /**
+        Enable/Disable overlay input.
+    */
+    void SetInputEnabled(bool enabled);
+
+    /**
+        \return Is overlay input enabled
+    */
+    bool IsInputEnabled();
+
+    /**
+        Set draw scale. Useful for High-DPI displays.
+        \param[in] scale Scale
+    */
+    void SetDrawScace(float32 scale);
+
+    /**
+        \return draw scale
+    */
+    float32 GetDrawScale() const;
+
+    /**
+        Frame separator. You should call this method once per-frame and before 'rhi::Present()'.
+    */
+    void OnFrameEnd();
+
+    /**
+        Input events processing. 
+        \return 'true' if input processed and 'false' otherwise
+    */
+    bool OnInput(UIEvent* input);
+
+    /**
+        Change cpu-profiler to displaying their counter information.
+        \param[in] profiler CPU-profiler
+        \param[in] rootCounterName Name of root counter
+    */
+    void SetCPUProfiler(ProfilerCPU* profiler, const char* rootCounterName);
+
+    /**
+        Clear list of interest markers.
+    */
+    void ClearInterestMarkers();
+
+    /**
+        Add name to list of interested markers.
+        \param[in] name Marker name
+    */
+    void AddInterestMarker(const FastName& name);
+
+    /**
+        Add vector names to list of interested markers.
+        \param[in] markers Vector of marker names
+    */
+    void AddInterestMarkers(const Vector<FastName>& markers);
+
+    /**
+        \return List of interest markers
+    */
+    const Vector<FastName> GetInterestMarkers() const;
+
+    /**
+        \return List of avaliable markers
+    */
+    Vector<FastName> GetAvalibleMarkers() const;
+
+protected:
     static const std::size_t TRACE_HISTORY_SIZE = 10;
-    static ProfilerOverlay* const globalProfilerOverlay;
+    static const uint32 MARKER_HISTORY_LENGTH = 120;
 
     enum eTrace
     {
@@ -23,48 +126,6 @@ public:
 
         TRACE_COUNT
     };
-
-    ProfilerOverlay(ProfilerCPU* cpuProfiler, const char* cpuCounterName, ProfilerGPU* gpuProfiler, const Vector<FastName>& interestMarkers = Vector<FastName>());
-
-    void SetEnabled(bool enabled);
-    bool IsEnabled();
-
-    void SetInputEnabled(bool enabled);
-    bool IsInputEnabled();
-
-    void SetPaused(bool paused);
-    bool IsPaused() const;
-
-    void SetDrawScace(float32 scale);
-    float32 GetDrawScale() const;
-
-    void OnFrameEnd(); //should be called before rhi::Present();
-    bool OnInput(UIEvent* input); //return 'true' if input processed and 'false' otherwise
-
-    void SetCPUProfiler(ProfilerCPU* profiler, const char* counterName);
-
-    //marker's history control
-    void ClearInterestMarkers();
-    void AddInterestMarker(const FastName& name);
-    void AddInterestMarkers(const Vector<FastName>& markers);
-
-    const Vector<FastName> GetInterestMarkers() const;
-    Vector<FastName> GetAvalibleMarkers() const;
-
-    //selection control
-    void SelectNextMarker();
-    void SelectPreviousMarker();
-    void SelectMarker(const FastName& name);
-
-    void SelectTrace(eTrace trace);
-    eTrace GetSelectedTrace();
-
-    //trace history control
-    void SetTraceHistoryOffset(uint32 offset);
-    uint32 GetTraceHistoryOffset() const;
-
-protected:
-    static const uint32 MARKER_HISTORY_LENGTH = 120;
 
     struct MarkerHistory
     {
@@ -141,6 +202,21 @@ protected:
 
     void ProcessTouch(UIEvent* input);
     void OnButtonPressed(eButton button);
+
+    void SetPaused(bool paused);
+    bool IsPaused() const;
+
+    //selection control
+    void SelectNextMarker();
+    void SelectPreviousMarker();
+    void SelectMarker(const FastName& name);
+
+    void SelectTrace(eTrace trace);
+    eTrace GetSelectedTrace();
+
+    //trace history control
+    void SetTraceHistoryOffset(uint32 offset);
+    uint32 GetTraceHistoryOffset() const;
 
     FastNameMap<MarkerHistory> markersHistory = FastNameMap<MarkerHistory>(128, MarkerHistory({ MarkerHistory::HistoryArray(MARKER_HISTORY_LENGTH), 0 }));
     FastNameMap<uint32> markersColor;
