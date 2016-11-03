@@ -5,7 +5,6 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
-#include "Input/MouseDevice.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
 
@@ -20,7 +19,6 @@ InputSystem::InputSystem(Engine* engine)
     : uiControlSystem(engine->GetContext()->uiControlSystem)
     , keyboard(new KeyboardDevice())
     , gamepad(new GamepadDevice(this))
-    , mouse(new MouseDevice())
 {
     engine->update.Connect(MakeFunction(this, &InputSystem::Update));
 }
@@ -132,9 +130,7 @@ InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
-#if !defined(__DAVAENGINE_COREV2__)
     mouse = new MouseDevice();
-#endif // !defined(__DAVAENGINE_COREV2__)
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
@@ -143,9 +139,7 @@ InputSystem::~InputSystem()
 {
     SafeRelease(gamepad);
     SafeRelease(keyboard);
-#if !defined(__DAVAENGINE_COREV2__)
     SafeRelease(mouse);
-#endif // !defined(__DAVAENGINE_COREV2__)
 }
 
 void InputSystem::ProcessInputEvent(UIEvent* event)
