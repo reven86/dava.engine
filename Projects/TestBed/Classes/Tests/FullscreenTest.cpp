@@ -180,8 +180,8 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
-    auto update = [this](Window*, float32, float32, float32, float32) { UpdateMode(); };
-    sizeChangedSigConn = primaryWindow->sizeScaleChanged.Connect(update);
+    auto update = [this](Window*, Size2f, Size2f) { UpdateMode(); };
+    sizeChangedSigConn = primaryWindow->sizeChanged.Connect(update);
 
     UpdateMode();
 }
@@ -199,7 +199,7 @@ void FullscreenTest::UnloadResources()
     SafeRelease(pinningText);
     SafeRelease(pinningMousePosText);
 
-    primaryWindow->sizeScaleChanged.Disconnect(sizeChangedSigConn);
+    primaryWindow->sizeChanged.Disconnect(sizeChangedSigConn);
     sizeChangedSigConn = SigConnectionID();
 
     BaseScreen::UnloadResources();

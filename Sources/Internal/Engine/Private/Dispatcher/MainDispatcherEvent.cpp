@@ -60,7 +60,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceI
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi, Fullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -80,7 +80,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, Fullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
