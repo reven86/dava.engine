@@ -147,10 +147,10 @@ bool android_gl_checkSurface()
 
         needRecreateSurface = false;
 
-        return true;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 bool android_gl_end_frame()
@@ -179,26 +179,6 @@ void android_gl_acquire_context()
 void android_gl_release_context()
 {
     eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-}
-
-void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
-                                           GLsizei length, const GLchar* message, const void* userdata)
-{
-    if ((message != nullptr) && (length > 1))
-    {
-        DAVA::Logger::Info("OpenGL debug message (%d): %s", length, message);
-    }
-}
-
-void android_gl_enable_debug()
-{
-    DVASSERT(_GLES2_IsDebugSupported);
-
-    DAVA::Logger::Info("Enabling OpenGL debug...");
-
-    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
-    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
-    GL_CALL(glDebugMessageCallback(&android_gl_debug_callback, nullptr));
 }
 
 #endif

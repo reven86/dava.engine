@@ -1,27 +1,28 @@
-#include "rhi_Impl.h"
+#include "rhi_BackendImpl.h"
+#include "rhi_Utils.h"
 #include "../rhi_Public.h"
+#if defined(__DAVAENGINE_WIN32__)
+    #include "../DX9/rhi_DX9.h"
+    #include "../DX11/rhi_DX11.h"
+    #include "../GLES2/rhi_GLES2.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    #include "../DX11/rhi_DX11.h"
+#elif defined(__DAVAENGINE_MACOS__)
+    #include "../GLES2/rhi_GLES2.h"
+#elif defined(__DAVAENGINE_IPHONE__)
+    #include "../Metal/rhi_Metal.h"
+    #include "../GLES2/rhi_GLES2.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+    #include "../GLES2/rhi_GLES2.h"
+#else
+#endif
 
-    #if defined(__DAVAENGINE_WIN32__)
-        #include "../DX9/rhi_DX9.h"
-        #include "../DX11/rhi_DX11.h"
-        #include "../GLES2/rhi_GLES2.h"
-    #elif defined(__DAVAENGINE_WIN_UAP__)
-        #include "../DX11/rhi_DX11.h"
-    #elif defined(__DAVAENGINE_MACOS__)
-        #include "../GLES2/rhi_GLES2.h"
-    #elif defined(__DAVAENGINE_IPHONE__)
-        #include "../Metal/rhi_Metal.h"
-        #include "../GLES2/rhi_GLES2.h"
-    #elif defined(__DAVAENGINE_ANDROID__)
-        #include "../GLES2/rhi_GLES2.h"
-    #else
-    #endif
+#include "Core/Core.h"
+#include "Concurrency/Spinlock.h"
+#include "Concurrency/Thread.h"
+#include "MemoryManager/MemoryProfiler.h"
 
-    #include "Core/Core.h"
 using DAVA::Logger;
-    #include "Concurrency/Spinlock.h"
-
-    #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
 {
@@ -45,8 +46,7 @@ void SetDispatchTable(const Dispatch& dispatch)
     _Impl = dispatch;
 }
 
-bool
-ApiIsSupported(Api api)
+bool ApiIsSupported(Api api)
 {
     bool supported = false;
 
@@ -54,37 +54,40 @@ ApiIsSupported(Api api)
     {
     case RHI_DX9:
     {
-            #if defined(__DAVAENGINE_WIN32__)
+        #if defined(__DAVAENGINE_WIN32__)
         supported = true;
-            #endif
+        #endif
     }
     break;
 
     case RHI_DX11:
     {
-            #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+
+        #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         supported = true;
-            #endif
+        #endif
     }
     break;
 
     case RHI_METAL:
     {
-            #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
+         #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
         supported = rhi_MetalIsSupported();
-            #endif
+        #endif
     }
     break;
 
     case RHI_GLES2:
+        #if !defined(__DAVAENGINE_WIN_UAP__)
         supported = true;
+        #endif
         break;
     }
 
     return supported;
 }
 
-void Initialize(Api api, const InitParam& param)
+void InitializeImplementation(Api api, const InitParam& param)
 {
     switch (api)
     {
@@ -116,9 +119,14 @@ void Initialize(Api api, const InitParam& param)
 
     default:
     {
-        // error 'unsupported' here
+        DVASSERT_MSG(false, "Unsupported rendering api");
     }
     }
+}
+
+void UninitializeImplementation()
+{
+    (*_Impl.impl_Uninitialize)();
 }
 
 void Reset(const ResetParam& param)
@@ -129,16 +137,6 @@ void Reset(const ResetParam& param)
 bool NeedRestoreResources()
 {
     return (*_Impl.impl_NeedRestoreResources)();
-}
-
-void Uninitialize()
-{
-    (*_Impl.impl_Uninitialize)();
-}
-
-void PresentImpl(Handle sync)
-{
-    (*_Impl.impl_Present)(sync);
 }
 
 Api HostApi()
@@ -156,28 +154,57 @@ const RenderDeviceCaps& DeviceCaps()
     return renderDeviceCaps;
 }
 
-void SuspendRendering()
-{
-    (*_Impl.impl_SuspendRendering)();
-}
-
-void ResumeRendering()
-{
-    (*_Impl.impl_ResumeRendering)();
-}
-
 void InvalidateCache()
 {
     if (_Impl.impl_InvalidateCache)
         (*_Impl.impl_InvalidateCache)();
 }
 
+namespace DispatchPlatform
+{
+void InitContext()
+{
+    (*_Impl.impl_InitContext)();
+}
+bool ValidateSurface()
+{
+    return (*_Impl.impl_ValidateSurface)();
+}
+void FinishRendering()
+{
+    (*_Impl.impl_FinishRendering)();
+}
+void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command)
+{
+    (*_Impl.impl_ProcessImmediateCommand)(command);
+}
+void FinishFrame()
+{
+    (*_Impl.impl_FinishFrame)();
+}
+void ExecuteFrame(const CommonImpl::Frame& frame)
+{
+    (*_Impl.impl_ExecuteFrame)(frame);
+}
+void RejectFrame(const CommonImpl::Frame& frame)
+{
+    (*_Impl.impl_RejectFrame)(frame);
+}
+bool PresentBuffer()
+{
+    return (*_Impl.impl_PresentBuffer)();
+}
+void ResetBlock()
+{
+    (*_Impl.impl_ResetBlock)();
+}
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_VertexBuffer_Create)(desc);
@@ -229,8 +256,7 @@ bool NeedRestore(Handle vb)
 
 namespace IndexBuffer
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_IndexBuffer_Create)(desc);
@@ -282,8 +308,7 @@ bool NeedRestore(Handle ib)
 
 namespace QueryBuffer
 {
-Handle
-Create(uint32 maxObjectCount)
+Handle Create(uint32 maxObjectCount)
 {
     return (*_Impl.impl_QueryBuffer_Create)(maxObjectCount);
 }
@@ -376,8 +401,7 @@ uint32 TextureSizeForProfiling(Handle handle, const Texture::Descriptor& desc)
 }
 #endif
 
-Handle
-Create(const Texture::Descriptor& desc)
+Handle Create(const Texture::Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_Texture_Create)(desc);
@@ -429,8 +453,7 @@ bool NeedRestore(Handle tex)
 
 namespace PipelineState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_PipelineState_Create)(desc);
 }
@@ -440,26 +463,22 @@ void Delete(Handle ps)
     return (*_Impl.impl_PipelineState_Delete)(ps);
 }
 
-Handle
-CreateVertexConstBuffer(Handle ps, uint32 bufIndex)
+Handle CreateVertexConstBuffer(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_CreateVertexConstBuffer)(ps, bufIndex);
 }
 
-Handle
-CreateFragmentConstBuffer(Handle ps, uint32 bufIndex)
+Handle CreateFragmentConstBuffer(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_CreateFragmentConstBuffer)(ps, bufIndex);
 }
 
-uint32
-VertexConstBufferCount(Handle ps)
+uint32 VertexConstBufferCount(Handle ps)
 {
     return (*_Impl.impl_PipelineState_VertexConstBufferCount)(ps);
 }
 
-uint32
-VertexConstCount(Handle ps, uint32 bufIndex)
+uint32 VertexConstCount(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_VertexConstCount)(ps, bufIndex);
 }
@@ -469,14 +488,12 @@ bool GetVertexConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConstIn
     return (*_Impl.impl_PipelineState_GetVertexConstInfo)(ps, bufIndex, maxCount, info);
 }
 
-uint32
-FragmentConstBufferCount(Handle ps)
+uint32 FragmentConstBufferCount(Handle ps)
 {
     return (*_Impl.impl_PipelineState_FragmentConstBufferCount)(ps);
 }
 
-uint32
-FragmentConstCount(Handle ps, uint32 bufIndex)
+uint32 FragmentConstCount(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_FragmentConstCount)(ps, bufIndex);
 }
@@ -492,8 +509,7 @@ bool GetFragmentConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConst
 
 namespace ConstBuffer
 {
-uint32
-ConstCount(Handle cb)
+uint32 ConstCount(Handle cb)
 {
     return (*_Impl.impl_ConstBuffer_ConstCount)(cb);
 }
@@ -520,8 +536,7 @@ void Delete(Handle cb)
 
 namespace DepthStencilState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_DepthStencilState_Create)(desc);
 }
@@ -536,8 +551,7 @@ void Delete(Handle state)
 
 namespace SamplerState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_SamplerState_Create)(desc);
 }
@@ -552,8 +566,7 @@ void Delete(Handle state)
 
 namespace RenderPass
 {
-Handle
-Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+Handle Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     return (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
 }
@@ -573,8 +586,7 @@ void End(Handle pass)
 
 namespace SyncObject
 {
-Handle
-Create()
+Handle Create()
 {
     return (*_Impl.impl_SyncObject_Create)();
 }
@@ -584,7 +596,7 @@ void Delete(Handle obj)
     (*_Impl.impl_SyncObject_Delete)(obj);
 }
 
-bool IsSygnaled(Handle obj)
+bool IsSignaled(Handle obj)
 {
     return (*_Impl.impl_SyncObject_IsSignaled)(obj);
 }
@@ -710,348 +722,6 @@ void SetMarker(Handle cmdBuf, const char* text)
 
 } // namespace CommandBuffer
 
-//------------------------------------------------------------------------------
-
-uint32
-TextureStride(TextureFormat format, Size2i size, uint32 level)
-{
-    uint32 stride = 0;
-    uint32 width = TextureExtents(size, level).dx;
-
-    switch (format)
-    {
-    case TEXTURE_FORMAT_R8G8B8A8:
-    {
-        stride = width * sizeof(uint32);
-    }
-    break;
-
-    case TEXTURE_FORMAT_R8G8B8:
-    {
-        stride = width * 3 * sizeof(uint8);
-    }
-    break;
-
-    case TEXTURE_FORMAT_R4G4B4A4:
-    case TEXTURE_FORMAT_R5G5B5A1:
-    case TEXTURE_FORMAT_R5G6B5:
-    case TEXTURE_FORMAT_R16:
-    case TEXTURE_FORMAT_D16:
-    {
-        stride = width * sizeof(uint16);
-    }
-    break;
-
-    case TEXTURE_FORMAT_R8:
-    {
-        stride = width * sizeof(uint8);
-    }
-    break;
-
-    case TEXTURE_FORMAT_D24S8:
-    {
-        stride = width * sizeof(uint32);
-    }
-    break;
-
-    case TEXTURE_FORMAT_DXT1:
-    {
-        stride = 8 * std::max(1u, (width + 3) / 4);
-    }
-    break;
-
-    case TEXTURE_FORMAT_DXT3:
-    case TEXTURE_FORMAT_DXT5:
-    {
-        stride = 16 * std::max(1u, (width + 3) / 4);
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return stride;
-}
-
-//------------------------------------------------------------------------------
-
-Size2i
-TextureExtents(Size2i size, uint32 level)
-{
-    Size2i sz(size.dx >> level, size.dy >> level);
-
-    if (sz.dx == 0)
-        sz.dx = 1;
-    if (sz.dy == 0)
-        sz.dy = 1;
-
-    return sz;
-}
-
-//------------------------------------------------------------------------------
-
-uint32
-TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
-{
-    Size2i ext = TextureExtents(Size2i(width, height), level);
-    uint32 sz = 0;
-
-    switch (format)
-    {
-    case TEXTURE_FORMAT_R8G8B8A8:
-    case TEXTURE_FORMAT_R8G8B8X8:
-        sz = ext.dx * ext.dy * sizeof(uint32);
-        break;
-
-    case TEXTURE_FORMAT_R8G8B8:
-        sz = ext.dx * ext.dy * 3 * sizeof(uint8);
-        break;
-
-    case TEXTURE_FORMAT_R5G5B5A1:
-    case TEXTURE_FORMAT_R5G6B5:
-        sz = ext.dx * ext.dy * sizeof(uint16);
-        break;
-
-    case TEXTURE_FORMAT_R4G4B4A4:
-        sz = ext.dx * ext.dy * sizeof(uint16);
-        break;
-
-    case TEXTURE_FORMAT_A16R16G16B16:
-        sz = ext.dx * ext.dy * sizeof(uint16);
-        break;
-
-    case TEXTURE_FORMAT_A32R32G32B32:
-        sz = ext.dx * ext.dy * sizeof(float32);
-        break;
-
-    case TEXTURE_FORMAT_R8:
-        sz = ext.dx * ext.dy * sizeof(uint8);
-        break;
-
-    case TEXTURE_FORMAT_R16:
-        sz = ext.dx * ext.dy * sizeof(uint16);
-        break;
-
-    case TEXTURE_FORMAT_DXT1:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 3;
-    }
-    break;
-
-    case TEXTURE_FORMAT_DXT3:
-    case TEXTURE_FORMAT_DXT5:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 4;
-    }
-    break;
-
-    case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
-    {
-        uint32 block_h = 8;
-        uint32 block_w = 8;
-
-        sz = ((height + block_h - 1) / block_h) * ((width + block_w - 1) / block_w) * (sizeof(uint64) * 4);
-    }
-    break;
-
-    case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
-    {
-        uint32 block_h = 16;
-        uint32 block_w = 8;
-
-        sz = ((height + block_h - 1) / block_h) * ((width + block_w - 1) / block_w) * (sizeof(uint64) * 4);
-    }
-    break;
-
-    case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
-    case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
-    {
-        uint32 block_h = 4;
-        uint32 block_w = 4;
-
-        sz = ((height + block_h - 1) / block_h) * ((width + block_w - 1) / block_w) * sizeof(uint64);
-    }
-    break;
-
-    case TEXTURE_FORMAT_PVRTC2_2BPP_RGB:
-    case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
-    {
-        uint32 block_h = 4;
-        uint32 block_w = 8;
-
-        sz = ((height + block_h - 1) / block_h) * ((width + block_w - 1) / block_w) * sizeof(uint64);
-    }
-    break;
-
-    case TEXTURE_FORMAT_ATC_RGB:
-        sz = ((ext.dx + 3) / 4) * ((ext.dy + 3) / 4) * 8;
-        break;
-
-    case TEXTURE_FORMAT_ATC_RGBA_EXPLICIT:
-    case TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED:
-        sz = ((ext.dx + 3) / 4) * ((ext.dy + 3) / 4) * 16;
-        break;
-
-    case TEXTURE_FORMAT_ETC1:
-    case TEXTURE_FORMAT_ETC2_R8G8B8:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 3;
-    }
-    break;
-
-    case TEXTURE_FORMAT_ETC2_R8G8B8A8:
-    case TEXTURE_FORMAT_ETC2_R8G8B8A1:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 4;
-    }
-    break;
-
-    case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
-    case TEXTURE_FORMAT_EAC_R11_SIGNED:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 3;
-    }
-    break;
-
-    case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED:
-    case TEXTURE_FORMAT_EAC_R11G11_SIGNED:
-    {
-        int ww = ext.dx >> 2;
-        int hh = ext.dy >> 2;
-
-        if (!ww)
-            ww = 1;
-        if (!hh)
-            hh = 1;
-
-        sz = (ww * hh) << 4;
-    }
-    break;
-
-    case TEXTURE_FORMAT_D16:
-        sz = ext.dx * ext.dy * sizeof(uint16);
-        break;
-
-    case TEXTURE_FORMAT_D24S8:
-        sz = ext.dx * ext.dy * sizeof(uint32);
-        break;
-
-    case TEXTURE_FORMAT_R32F:
-        sz = ext.dx * ext.dy * sizeof(float32);
-        break;
-
-    case TEXTURE_FORMAT_RG32F:
-        sz = ext.dx * ext.dy * sizeof(float32) * 2;
-        break;
-
-    case TEXTURE_FORMAT_RGBA32F:
-        sz = ext.dx * ext.dy * sizeof(float32) * 4;
-        break;
-
-    default:
-        break;
-    }
-
-    return sz;
-}
-
-//------------------------------------------------------------------------------
-
-uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
-{
-    uint32 color = 0;
-    int r = int(red * 255.0f);
-    int g = int(green * 255.0f);
-    int b = int(blue * 255.0f);
-    int a = int(alpha * 255.0f);
-
-    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
-
-    switch (HostApi())
-    {
-    case RHI_DX9:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
-        break;
-
-    case RHI_DX11:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
-        break;
-
-    case RHI_GLES2:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-
-    case RHI_METAL:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-    }
-
-    return color;
-}
-
-uint32 NativeColorRGBA(uint32 color)
-{
-    uint32 c = 0;
-
-    switch (HostApi())
-    {
-    case RHI_DX9:
-        c = (color & 0xff000000) | ((color & 0x000000ff) << 16) | (color & 0x0000ff00) | ((color & 0x00ff0000) >> 16);
-        break;
-
-    case RHI_DX11:
-    case RHI_GLES2:
-    case RHI_METAL:
-        c = color;
-        break;
-    }
-
-    return c;
-}
-
 namespace MutableDeviceCaps
 {
 RenderDeviceCaps& Get()
@@ -1061,33 +731,3 @@ RenderDeviceCaps& Get()
 }
 
 } //namespace rhi
-
-//------------------------------------------------------------------------------
-
-static DAVA::Spinlock _TraceSync;
-static char _TraceBuf[4096];
-
-void Trace(const char* format, ...)
-{
-#if 0
-    _TraceSync.Lock();
-
-    va_list  arglist;
-
-    va_start( arglist, format );
-    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
-    _vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
-    #else
-    vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
-    #endif
-    va_end( arglist );
-    
-    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
-    ::OutputDebugStringA( _TraceBuf );
-    #else
-    puts( _TraceBuf );
-    #endif
-    
-    _TraceSync.Unlock();
-#endif
-}

@@ -275,7 +275,6 @@ void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
-
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
         rendererParams.threadedRenderEnabled = true;
@@ -631,7 +630,6 @@ void Core::SystemProcessFrame()
 
     if (!isActive)
     {
-        LCP;
         return;
     }
 
