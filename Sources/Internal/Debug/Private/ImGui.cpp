@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Render/RenderBase.h"
 #include "Render/Renderer.h"
 #include "UI/UIEvent.h"
@@ -420,7 +421,11 @@ void OnInput(UIEvent* input)
     ImGuiIO& io = ImGui::GetIO();
 
     Vector2 physPoint = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(input->point);
+#if defined(__DAVAENGINE_COREV2__)
+    int32 mouseButton = (input->device == DAVA::eInputDevices::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
+#else
     int32 mouseButton = (input->device == UIEvent::Device::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
+#endif
 
     switch (input->phase)
     {

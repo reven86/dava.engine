@@ -461,7 +461,11 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (eInputDevices::MOUSE == currentInput->device)
+#else
         if (UIEvent::Device::MOUSE == currentInput->device)
+#endif
         {
             newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
         }
