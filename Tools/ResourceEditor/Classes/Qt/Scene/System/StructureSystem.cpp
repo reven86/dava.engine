@@ -2,6 +2,8 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/EntityParentChangeCommand.h"
@@ -352,7 +354,13 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             //
             // Перенести в Load и завалидейтить только подгруженную Entity
             // -->
-            SceneValidator::Instance()->ValidateScene(sceneEditor, sceneEditor->GetScenePath());
+            SceneValidator validator;
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            if (data)
+            {
+                validator.SetPathForChecking(data->GetProjectPath());
+            }
+            validator.ValidateScene(sceneEditor, sceneEditor->GetScenePath());
             // <--
 
             EmitChanged();

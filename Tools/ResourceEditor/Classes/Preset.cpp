@@ -1,4 +1,6 @@
 #include "Preset.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"

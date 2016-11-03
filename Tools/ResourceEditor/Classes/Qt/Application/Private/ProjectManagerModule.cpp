@@ -4,11 +4,22 @@
 #include "Classes/Qt/DataStructures/ProjectManagerData.h"
 #include "Classes/Qt/Settings/Settings.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/Main/QtUtils.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 
 #include "QtTools/ProjectInformation/ProjectStructure.h"
+
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Engine/EngineContext.h"
+#include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/KeyedArchive.h"
+#include "FileSystem/FileSystem.h"
+
+#include <QAction>
 
 namespace ProjectManagerDetails
 {
@@ -179,6 +190,7 @@ void ProjectManagerModule::OpenLastProject()
     {
         // Back compatibility
         projectPath = SettingsManager::Instance()->GetValue(Settings::Internal_LastProjectPath).AsFilePath();
+        SettingsManager::Instance()->SetValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
     }
 
     if (!projectPath.IsEmpty())
@@ -207,7 +219,7 @@ void ProjectManagerModule::CloseProject()
 
             SettingsManager::ResetPerProjectSettings();
             DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
-            propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any());
+            propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(DAVA::FilePath()));
         }
     }
 }

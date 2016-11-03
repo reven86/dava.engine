@@ -56,7 +56,8 @@ void InitModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAV
     if (!projectPath.IsEmpty())
     {
         sharedData->editorConfig->ParseConfig(projectPath + "EditorConfig.yaml");
-        sharedData->sceneValidator->SetPathForChecking(projectPath);
+        // Hack to inform listeners about config reparse
+        // It would be better to remove EditorConfig, but all EditorConfig's data put into ProjectManagerData
         sharedData->wasDataChanged = !sharedData->wasDataChanged;
     }
 }

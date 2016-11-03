@@ -123,7 +123,6 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
     {
         new EditorConfig();
-        new SceneValidator();
     }
 
     settingsManager = new SettingsManager();
@@ -146,7 +145,6 @@ void REApplication::Cleanup()
     if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
     {
         EditorConfig::Instance()->Release();
-        SceneValidator::Instance()->Release();
     }
     DAVA::SafeRelease(beastProxy);
     DAVA::SafeRelease(settingsManager);

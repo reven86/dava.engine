@@ -2,6 +2,8 @@
 
 #include "Classes/Qt/Application/REGlobal.h"
 #include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
 
 #include "Functional/Function.h"
 
@@ -11,6 +13,9 @@
 
 #include "TArc/DataProcessing/DataContext.h"
 #include "TArc/WindowSubSystem/UI.h"
+
+#include "Job/JobManager.h"
+#include "Render/2D/Sprite.h"
 
 #include <QAction>
 #include <QDir>

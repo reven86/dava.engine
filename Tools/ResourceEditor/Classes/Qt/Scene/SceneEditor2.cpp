@@ -1,5 +1,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
 
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -174,7 +176,14 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
     }
 
     SceneValidator::ExtractEmptyRenderObjects(this);
-    SceneValidator::Instance()->ValidateScene(this, path);
+
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+    validator.ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 

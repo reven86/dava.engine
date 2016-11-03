@@ -90,8 +90,9 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 
     //scene->Update(0.1f);
 
-    FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
-    SceneValidator::Instance()->ValidateScene(scene, fileName);
+    SceneValidator validator;
+    validator.SetPathForChecking(sceneUtils.dataSourceFolder);
+    validator.ValidateScene(scene, fileName);
 
     {
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
@@ -134,8 +135,6 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
     {
         Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
     }
-
-    SceneValidator::Instance()->SetPathForChecking(oldPath);
 
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
     Logger::FrameworkDebug("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);

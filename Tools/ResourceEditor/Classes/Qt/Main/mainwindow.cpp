@@ -40,6 +40,8 @@
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
 #include "Classes/Qt/Tools/LoggerOutput/ErrorDialogOutput.h"
 #include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -84,6 +86,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Qt/RenderWidget.h"
+#include "Reflection/ReflectedType.h"
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"

@@ -1,20 +1,12 @@
-#include <QFile>
-#include <QFileInfo>
-#include <QTextStream>
-#include <QAction>
-#include <QVariant>
-#include <QGroupBox>
-#include <QDialogButtonBox>
-#include <QDebug>
-
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"
 
 #include "MaterialModel.h"
 #include "MaterialFilterModel.h"
 
-#include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"
@@ -37,6 +29,20 @@
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Base/Introspection.h"
+
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
+#include <QAction>
+#include <QVariant>
+#include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QDebug>
+#include <QScrollBar>
+#include <QMenu>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QBoxLayout>
 
 namespace UIName
 {

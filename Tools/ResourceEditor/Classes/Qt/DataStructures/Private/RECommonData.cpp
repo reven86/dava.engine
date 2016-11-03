@@ -23,9 +23,7 @@ RECommonData::~RECommonData()
 void RECommonData::Init()
 {
     DVASSERT(EditorConfig::Instance() == nullptr);
-    DVASSERT(SceneValidator::Instance() == nullptr);
     editorConfig.reset(new EditorConfig(), RECommonDataDetails::SingletonDeleter<EditorConfig>());
-    sceneValidator.reset(new SceneValidator(), RECommonDataDetails::SingletonDeleter<SceneValidator>());
 }
 
 bool RECommonData::WasDataChanged() const
@@ -36,9 +34,4 @@ bool RECommonData::WasDataChanged() const
 EditorConfig* RECommonData::GetEditorConfig()
 {
     return editorConfig.get();
-}
-
-SceneValidator* RECommonData::GetSceneValidator()
-{
-    return sceneValidator.get();
 }

@@ -1,11 +1,9 @@
 #include "LibraryWidget.h"
 #include "LibraryFileSystemModel.h"
 #include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "GlobalOperations.h"
 
-#include "Render/Image/ImageFormatInterface.h"
-
-
-#include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
 #include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
@@ -14,6 +12,9 @@
 
 #include "QtTools/Utils/Utils.h"
 #include "QtHelpers/HelperFunctions.h"
+
+#include "Render/Image/ImageFormatInterface.h"
+#include "Reflection/ReflectedType.h"
 
 #include <QToolBar>
 #include <QLineEdit>

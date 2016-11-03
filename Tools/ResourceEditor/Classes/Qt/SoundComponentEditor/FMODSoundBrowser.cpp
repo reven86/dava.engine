@@ -1,14 +1,18 @@
 #include "FMODSoundBrowser.h"
 #include "ui_soundbrowser.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 #include "Scene/SceneEditor2.h"
+
+#include "Reflection/ReflectedType.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QTreeWidget>
 #include <QMessageBox>
 #include <QLabel>
 #include <QSlider>
 #include <QToolTip>
-
-#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     : QDialog(parent)

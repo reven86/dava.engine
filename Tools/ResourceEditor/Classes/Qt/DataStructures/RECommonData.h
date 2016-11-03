@@ -17,13 +17,11 @@ public:
 
     bool WasDataChanged() const;
     EditorConfig* GetEditorConfig();
-    SceneValidator* GetSceneValidator();
 
 private:
     friend class InitModule;
     bool wasDataChanged = false;
     std::shared_ptr<EditorConfig> editorConfig;
-    std::shared_ptr<SceneValidator> sceneValidator;
 
     DAVA_VIRTUAL_REFLECTION(RECommonData, DAVA::TArc::DataNode)
     {

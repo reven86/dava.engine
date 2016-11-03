@@ -1,4 +1,6 @@
 #include "ScenePreviewControl.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 #include "Deprecated/ControlsFactory.h"
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/CameraComponent.h"
@@ -64,7 +66,13 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
     CreateCamera();
 
     SceneValidator::ExtractEmptyRenderObjects(editorScene);
-    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile);
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+    validator.ValidateScene(editorScene, pathToFile);
 
     SetScene(editorScene);
 
