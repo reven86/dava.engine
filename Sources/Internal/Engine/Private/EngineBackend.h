@@ -89,6 +89,7 @@ private:
     void EventHandler(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
+    void HandleBackNavigation(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
     void HandleUserCloseRequest(const MainDispatcherEvent& e);
 

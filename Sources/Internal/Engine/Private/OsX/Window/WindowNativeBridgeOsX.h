@@ -40,6 +40,7 @@ struct WindowNativeBridge final
     void CloseWindow();
     void SetTitle(const char8* title);
     void SetFullscreen(Fullscreen newMode);
+    float32 GetDpi();
 
     void TriggerPlatformEvents();
 
@@ -60,8 +61,17 @@ struct WindowNativeBridge final
 
     void MouseClick(NSEvent* theEvent);
     void MouseMove(NSEvent* theEvent);
+    void MouseEntered(NSEvent* theEvent);
+    void MouseExited(NSEvent* theEvent);
     void MouseWheel(NSEvent* theEvent);
     void KeyEvent(NSEvent* theEvent);
+    void FlagsChanged(NSEvent* theEvent);
+    void MagnifyWithEvent(NSEvent* theEvent);
+    void RotateWithEvent(NSEvent* theEvent);
+    void SwipeWithEvent(NSEvent* theEvent);
+
+    static eModifierKeys GetModifierKeys(NSEvent* theEvent);
+    static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -76,6 +86,7 @@ struct WindowNativeBridge final
     bool isAppHidden = false;
     bool isMiniaturized = false;
     bool isFullscreen;
+    uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
 };
 
 } // namespace Private

@@ -3,9 +3,11 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Exception.h"
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 
@@ -125,13 +127,12 @@ void RenderWidget::OnSceneGraphInvalidated()
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
 
     QQuickWindow* qWindow = quickWindow();
     bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
 
-    widgetDelegate->OnResized(size.width(), size.height(), dpi, isFullScreen);
+    widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
     emit Resized(size.width(), size.height());
 }
 

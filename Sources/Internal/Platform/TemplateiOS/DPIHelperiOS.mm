@@ -6,6 +6,8 @@
 #include <UIKit/UIKit.h>
 #include <UIKit/UIDevice.h>
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #define NO_DPI_INFO_FOUND 0
 
 namespace DAVA
@@ -99,7 +101,6 @@ uint32 DeterminateExactDPI(List<const DeviceScreenInfo*>& devList)
 
 uint32 DPIHelper::GetScreenDPI()
 {
-#if !defined(__DAVAENGINE_COREV2__)
     //due to magnificent api of ios the only way of determination of dpi is hardcode
     CGRect screenRect = [[UIScreen mainScreen] bounds];
 
@@ -129,7 +130,8 @@ uint32 DPIHelper::GetScreenDPI()
     {
         return DeterminateExactDPI(outputList);
     }
-#endif
     return NO_DPI_INFO_FOUND;
 }
 }
+
+#endif

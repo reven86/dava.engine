@@ -6,17 +6,17 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include <algorithm>
 #include "Render/2D/FTFont.h"
 
 namespace DAVA
 {
 UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
-    : UIControl(Rect(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f,
-                     VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.f,
-                     VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx * 2.f / 3.f,
-                     VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy * 4.f / 5.f
+    : UIControl(Rect(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx / 2.f,
+                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 2.f,
+                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx * 2.f / 3.f,
+                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy * 4.f / 5.f
                      )
                 )
 {
@@ -30,9 +30,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     delegate = NULL;
     extensionFilter.push_back(".*");
 
-    cellH = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 20.0f;
+    cellH = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 20.0f;
     cellH = Max(cellH, 32.0f);
-    float32 border = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 64.0f;
+    float32 border = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 64.0f;
     float32 halfBorder = float32(int32(border / 2.0f));
     fileListView = new UIList(Rect(border, border + cellH, size.x - border * 2.0f, size.y - cellH * 3.0f - border * 3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);

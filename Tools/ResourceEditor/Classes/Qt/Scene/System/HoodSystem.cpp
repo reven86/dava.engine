@@ -259,7 +259,7 @@ void HoodSystem::Process(float timeElapsed)
     }
 }
 
-void HoodSystem::Input(DAVA::UIEvent* event)
+bool HoodSystem::Input(DAVA::UIEvent* event)
 {
     if (!event->point.IsZero())
     {
@@ -301,6 +301,7 @@ void HoodSystem::Input(DAVA::UIEvent* event)
             }
         }
     }
+    return false;
 }
 
 void HoodSystem::Draw()
