@@ -1140,7 +1140,6 @@ bool VariantType::Read(File* fp)
         stringValue = new String(buf.data());
         return (read == len);
     }
-    break;
     case TYPE_WIDE_STRING:
     {
         int32 len;
@@ -1337,7 +1336,6 @@ bool VariantType::Read(File* fp)
         filepathValue = new FilePath(buf.data());
         return (read == len);
     }
-    break;
     default:
     {
         return false;

@@ -162,7 +162,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
         while (!in->IsEof())
         {
-            char line[4 * 1024] = { };
+            char line[4 * 1024] = {};
             in->ReadLine(line, sizeof(line));
             #if RHI__USE_STD_REGEX
             std::cmatch match;

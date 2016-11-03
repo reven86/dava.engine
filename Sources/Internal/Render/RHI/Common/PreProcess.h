@@ -13,5 +13,5 @@ struct ShaderPreprocessScope
 private:
     ShaderPreprocessScope(const ShaderPreprocessScope&) = delete;
     ShaderPreprocessScope(ShaderPreprocessScope&&) = delete;
-    ShaderPreprocessScope operator = (const ShaderPreprocessScope&) = delete;
+    ShaderPreprocessScope operator=(const ShaderPreprocessScope&) = delete;
 };
