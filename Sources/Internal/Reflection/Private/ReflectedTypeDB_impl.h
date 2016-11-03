@@ -74,7 +74,7 @@ public:
 } // namespace ReflectedTypeDBDetail
 
 template <typename T>
-ReflectedType* ReflectedTypeDB::Create()
+ReflectedType* ReflectedTypeDB::CreateStatic()
 {
     static ReflectedType ret;
     return &ret;
@@ -84,7 +84,7 @@ template <typename T>
 ReflectedType* ReflectedTypeDB::Edit()
 {
     using DecayT = RttiType::DecayT<T>;
-    ReflectedType* ret = Create<DecayT>();
+    ReflectedType* ret = CreateStatic<DecayT>();
 
     if (nullptr == ret->rttiType)
     {
@@ -140,14 +140,14 @@ const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
     return ret;
 }
 
-#ifdef __REFLECTION_FEATURE__
 template <typename T, typename... Bases>
-void ReflectedType::RegisterBases()
+void ReflectedTypeDB::RegisterBases()
 {
     RttiInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
 }
 
+#ifdef __REFLECTION_FEATURE__
 inline const RttiType* ReflectedType::GetRttiType() const
 {
     return rttiType;

@@ -1,9 +1,9 @@
 #pragma once
 #include "Base/BaseTypes.h"
+#include "Base/RttiType.h"
 
 namespace DAVA
 {
-class RttiType;
 class RttiInheritance final
 {
 public:
@@ -25,8 +25,8 @@ public:
     static bool Cast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr);
 
 private:
-    InheritanceMap baseTypes;
-    InheritanceMap derivedTypes;
+    mutable InheritanceMap baseTypes;
+    mutable InheritanceMap derivedTypes;
 
     template <typename T, typename B>
     static bool AddBaseType();

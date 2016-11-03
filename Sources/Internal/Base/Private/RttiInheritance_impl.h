@@ -29,13 +29,16 @@ template <typename T, typename B>
 bool RttiInheritance::AddBaseType()
 {
     const RttiType* type = RttiType::Instance<T>();
-    if (type->inheritance == nullptr)
+    const RttiInheritance* inheritance = type->GetInheritance();
+
+    if (nullptr == inheritance)
     {
-        type->inheritance.reset(new RttiInheritance());
+        inheritance = new RttiInheritance();
+        type->inheritance.reset(inheritance);
     }
 
     const RttiType* base = RttiType::Instance<B>();
-    type->inheritance->baseTypes.emplace(RttiType::Instance<B>(), &RttiTypeDetail::CastFromTo<T, B>);
+    inheritance->baseTypes.emplace(RttiType::Instance<B>(), &RttiTypeDetail::CastFromTo<T, B>);
     return true;
 }
 
@@ -43,13 +46,16 @@ template <typename T, typename D>
 bool RttiInheritance::AddDerivedType()
 {
     const RttiType* type = RttiType::Instance<T>();
-    if (type->inheritance == nullptr)
+    const RttiInheritance* inheritance = type->GetInheritance();
+
+    if (nullptr == inheritance)
     {
-        type->inheritance.reset(new RttiInheritance());
+        inheritance = new RttiInheritance();
+        type->inheritance.reset(inheritance);
     }
 
     const RttiType* derived = RttiType::Instance<D>();
-    type->inheritance->derivedTypes.emplace(derived, &RttiTypeDetail::CastFromTo<T, D>);
+    inheritance->derivedTypes.emplace(derived, &RttiTypeDetail::CastFromTo<T, D>);
     return true;
 }
 } // namespace DAVA

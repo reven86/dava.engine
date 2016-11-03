@@ -1,5 +1,6 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
+#include "Base/RttiInheritance.h"
 #include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
 #include <numeric>

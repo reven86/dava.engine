@@ -14,15 +14,14 @@ class ReflectedType final
     friend class ReflectedTypeDB;
 
 public:
+    const RttiType* rttiType;
     String permanentName;
-    const RttiType* rttiType; // ??? don't need it
 
-    ReflectedStructure* structure;
-    StructureWrapper* structureWrapper;
+    std::unique_ptr<ReflectedStructure, void (*)(ReflectedStructure*)> structure;
+    std::unique_ptr<StructureWrapper, void (*)(StructureWrapper*)> structureWrapper;
 
 protected:
-    ReflectedType() = default;
-    ~ReflectedType();
+    ReflectedType(const RttiType* rttiType_);
 };
 
 } // namespace DAVA

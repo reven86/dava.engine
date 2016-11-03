@@ -463,7 +463,7 @@ DAVA_TESTCLASS (ReflectionTest)
 
     DAVA_TEST (CtorDtorTest)
     {
-        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<SimpleStruct>();
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
 
 #ifdef __REFLECTION_FEATURE__
         TEST_VERIFY(nullptr != rtype);

@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/RttiType.h"
+#include "Base/RttiInheritance.h"
 #include "Reflection/ReflectedBase.h"
 #include "Reflection/ReflectedType.h"
 
@@ -13,23 +14,31 @@ class ReflectedTypeDB
     friend class ReflectionRegistrator;
 
 public:
+    static ReflectedType* Create(const RttiType* rttiType, const String& permanentName);
+
     template <typename T>
     static const ReflectedType* Get();
 
     template <typename T>
     static const ReflectedType* GetByPointer(const T* ptr);
 
-    static const ReflectedType* GetByRttiType(const RttiType* type);
-    static const ReflectedType* GetByRttiName(const String& name);
-    static const ReflectedType* GetByPermanentName(const String& name);
+    static const ReflectedType* GetByRttiType(const RttiType* rttiType);
+    static const ReflectedType* GetByRttiName(const String& rttiName);
+    static const ReflectedType* GetByPermanentName(const String& permanentName);
+
+    template <typename T, typename... Bases>
+    static void RegisterBases();
+
+    static void RegisterPermanentName(const ReflectedType* reflectedType, const String& permanentName);
 
 protected:
     template <typename T>
-    static ReflectedType* Create();
+    static ReflectedType* CreateStatic();
 
     template <typename T>
     static ReflectedType* Edit();
 
+    static List<std::unique_ptr<ReflectedType>> allCustomReflectedTypes;
     static UnorderedMap<const RttiType*, ReflectedType*> rttiTypeToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> rttiNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;

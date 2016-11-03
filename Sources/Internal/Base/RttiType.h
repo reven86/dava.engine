@@ -59,19 +59,19 @@ private:
     };
 
     size_t size = 0;
-    std::type_index stdTypeIndex;
+    const std::type_info* stdTypeInfo = &typeid(void);
 
     const RttiType* derefType = nullptr;
     const RttiType* decayType = nullptr;
     const RttiType* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    const RttiInheritance* inheritance = nullptr;
-
-    RttiType() = default;
+    mutable std::unique_ptr<const RttiInheritance, void (*)(const RttiInheritance*)> inheritance;
 
     template <typename T>
     static void Init(RttiType** ptype);
+
+    RttiType();
 };
 
 } // namespace DAVA

@@ -13,17 +13,17 @@ inline size_t RttiType::GetSize() const
 
 inline const char* RttiType::GetName() const
 {
-    return stdTypeIndex.name();
+    return stdTypeInfo->name();
 }
 
 inline std::type_index RttiType::GetTypeIndex() const
 {
-    return stdTypeIndex;
+    return std::type_index(*stdTypeInfo);
 }
 
 inline const RttiInheritance* RttiType::GetInheritance() const
 {
-    return inheritance;
+    return static_cast<const RttiInheritance*>(inheritance.get());
 }
 
 inline bool RttiType::IsConst() const
@@ -138,7 +138,7 @@ void RttiType::Init(RttiType** ptype)
     static const bool needPointer = (!std::is_pointer<T>::value);
 
     rttiType.size = RttiTypeDetail::TypeSize<T>::size;
-    rttiType.stdTypeIndex = std::type_index(typeid(T));
+    rttiType.stdTypeInfo = &typeid(T);
 
     rttiType.flags.set(isConst, std::is_const<T>::value);
     rttiType.flags.set(isPointer, std::is_pointer<T>::value);

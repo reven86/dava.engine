@@ -10,6 +10,15 @@
 #include "Reflection/ReflectedType.h"
 #include "Reflection/ReflectedTypeDB.h"
 
+// TODO: usage comments
+#define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
+
+// TODO: usage comments
+#define DAVA_VIRTUAL_REFLECTION(Cls, ...) DAVA_VIRTUAL_REFLECTION__IMPL(Cls, ##__VA_ARGS__)
+
+// TODO: usage comments
+#define DAVA_REFLECTION_IMPL(Cls) DAVA_REFLECTION_IMPL__IMPL(Cls)
+
 namespace DAVA
 {
 class ValueWrapper;
@@ -65,6 +74,9 @@ public:
 
     template <typename T>
     static Reflection Create(T& object, const ReflectedMeta* objectMeta = nullptr);
+
+    template <typename T>
+    static Reflection Create(T* object, const ReflectedMeta* objectMeta = nullptr);
 
 private:
     ReflectedObject object;

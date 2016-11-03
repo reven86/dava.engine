@@ -18,36 +18,6 @@
 #include "Reflection/Private/StructureEditorWrapperPtr.h"
 #include "Reflection/Private/StructureEditorWrapperStd.h"
 
-#define DAVA_REFLECTION(Cls) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(!std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectedBase"); \
-        /*DAVA::ReflectedTypeDB::Get<Cls>()->SetPermanentName(#Cls);*/ \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define DAVA_VIRTUAL_REFLECTION(Cls, ...) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
-    const DAVA::ReflectedType* GetReflectedType() const override \
-    { \
-        return DAVA::ReflectedTypeDBDetail::GetByThisPointer(this); \
-    } \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectedBase"); \
-        /*DAVA::ReflectedType::RegisterBases<Cls, ##__VA_ARGS__>();*/ \
-        /*DAVA::ReflectedTypeDB::Get<Cls>()->SetPermanentName(#Cls);*/ \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define DAVA_REFLECTION_IMPL(Cls) \
-    void Cls::__ReflectionInitializer_Impl()
-
 namespace DAVA
 {
 /// \brief A reflection registration, that is used to register complex types structure.
@@ -64,17 +34,17 @@ public:
     template <typename... Args>
     ReflectionRegistrator& Constructor()
     {
-        ReflectedType* type = ReflectedType::Edit<C>();
+        ReflectedType* type = ReflectedTypeDB::Edit<C>();
         auto ctorWrapper = std::make_unique<CtorWrapperDefault<C, Args...>>();
-        type->ctorWrappers.emplace(std::move(ctorWrapper));
+        //type->ctorWrappers.emplace(std::move(ctorWrapper));
         return *this;
     }
 
     ReflectionRegistrator& Destructor()
     {
-        ReflectedType* type = ReflectedType::Edit<C>();
+        ReflectedType* type = ReflectedTypeDB::Edit<C>();
         auto dtorWrapper = std::make_unique<DtorWrapperDefault<C>>();
-        type->dtorWrapper = std::move(dtorWrapper);
+        //type->dtorWrapper = std::move(dtorWrapper);
         return *this;
     }
 
@@ -82,7 +52,7 @@ public:
     ReflectionRegistrator& Field(const char* name, T* field)
     {
         auto valueWrapper = std::make_unique<ValueWrapperStatic<T>>(field);
-        sw->AddField<T>(name, std::move(valueWrapper));
+        //sw->AddField<T>(name, std::move(valueWrapper));
         return *this;
     }
 
@@ -90,7 +60,7 @@ public:
     ReflectionRegistrator& Field(const char* name, T C::*field)
     {
         auto valueWrapper = std::make_unique<ValueWrapperClass<T, C>>(field);
-        sw->AddField<T>(name, std::move(valueWrapper));
+        //sw->AddField<T>(name, std::move(valueWrapper));
         return *this;
     }
 
@@ -107,7 +77,7 @@ public:
     ReflectionRegistrator& Field(const char* name, GetT (*getter)(), void (*setter)(SetT))
     {
         auto valueWrapper = std::make_unique<ValueWrapperStaticFnPtr<GetT, SetT>>(getter, setter);
-        sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
     }
 
@@ -142,7 +112,7 @@ public:
     ReflectionRegistrator& Field(const char* name, GetT (C::*getter)(), void (C::*setter)(SetT))
     {
         auto valueWrapper = std::make_unique<ValueWrapperClassFnPtr<GetT, SetT, C>>(getter, setter);
-        sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
     }
 
@@ -159,7 +129,7 @@ public:
     ReflectionRegistrator& Field(const char* name, const Function<GetT()>& getter, const Function<void(SetT)>& setter)
     {
         auto valueWrapper = std::make_unique<ValueWrapperStaticFn<GetT, SetT>>(getter, setter);
-        sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
     }
 
@@ -176,34 +146,39 @@ public:
     ReflectionRegistrator& Field(const char* name, const Function<GetT(C*)>& getter, const Function<void(C*, SetT)>& setter)
     {
         auto valueWrapper = std::make_unique<ValueWrapperClassFn<C, GetT, SetT>>(getter, setter);
-        sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
     }
 
     template <typename Mt>
     ReflectionRegistrator& Method(const char* name, const Mt& method)
     {
-        sw->AddMethod(name, method);
+        //sw->AddMethod(name, method);
         return *this;
     }
 
     ReflectionRegistrator& operator[](ReflectedMeta&& meta)
     {
-        sw->AddMeta(std::move(meta));
+        //sw->AddMeta(std::move(meta));
         return *this;
     }
 
     void End()
     {
         // override children for class C in appropriate ReflectedType
-        ReflectedType* type = ReflectedType::Edit<C>();
-        //type->structureWrapper = std::move(sw);
+        ReflectedType* type = ReflectedTypeDB::Edit<C>();
+        type->structure.reset(structure);
+        structure = nullptr;
+
+        // TODO:
+        // ...
+        // Add class wrapper
+        // ...
     }
 
 private:
     ReflectionRegistrator() = default;
-    //std::unique_ptr<StructureWrapperClass> sw = std::make_unique<StructureWrapperClass>(Type::Instance<C>());
-    std::unique_ptr<ReflectedMeta> meta;
+    ReflectedStructure* structure = nullptr;
 };
 
 } // namespace DAVA

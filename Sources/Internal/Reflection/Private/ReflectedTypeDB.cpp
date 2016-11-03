@@ -54,11 +54,11 @@ const DtorWrapper* ReflectedType::GetDtor() const
 }
 #endif
 
-const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* type)
+const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* rttiType)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rttiTypeToReflectedTypeMap.find(type);
+    auto it = rttiTypeToReflectedTypeMap.find(rttiType);
     if (it != rttiTypeToReflectedTypeMap.end())
     {
         ret = it->second;
@@ -67,11 +67,11 @@ const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* type)
     return ret;
 }
 
-const ReflectedType* ReflectedTypeDB::GetByRttiName(const String& name)
+const ReflectedType* ReflectedTypeDB::GetByRttiName(const String& rttiName)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rttiNameToReflectedTypeMap.find(name);
+    auto it = rttiNameToReflectedTypeMap.find(rttiName);
     if (it != rttiNameToReflectedTypeMap.end())
     {
         ret = it->second;
@@ -80,17 +80,47 @@ const ReflectedType* ReflectedTypeDB::GetByRttiName(const String& name)
     return ret;
 }
 
-const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& name)
+const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanentName)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = permanentNameToReflectedTypeMap.find(name);
+    auto it = permanentNameToReflectedTypeMap.find(permanentName);
     if (it != permanentNameToReflectedTypeMap.end())
     {
         ret = it->second;
     }
 
     return ret;
+}
+
+ReflectedType* ReflectedTypeDB::Create(const RttiType* rttiType, const String& permanentName)
+{
+    allCustomReflectedTypes.emplace_back(new ReflectedType(rttiType));
+    ReflectedType* ret = allCustomReflectedTypes.back().get();
+
+    String rttiName(rttiType->GetName());
+
+    assert(rttiTypeToReflectedTypeMap.count(rttiType) == 0 && "ReflectedType with specified RttiType already exists");
+    assert(rttiNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
+
+    rttiTypeToReflectedTypeMap[rttiType] = ret;
+    rttiNameToReflectedTypeMap[rttiName] = ret;
+
+    RegisterPermanentName(ret, permanentName);
+
+    return ret;
+}
+
+void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, const String& permanentName)
+{
+    ReflectedType* rt = const_cast<ReflectedType*>(reflectedType);
+
+    assert(rt != nullptr);
+    assert(rt->permanentName.empty() && "Name is already set");
+    assert(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
+
+    rt->permanentName = permanentName;
+    permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
 } // namespace DAVA
