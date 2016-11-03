@@ -109,8 +109,8 @@ QString ProcessID(const QString& id)
 
 bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
 {
-    QString build_type = entry["build_type"].toString();
-    appVer->id = ProcessID(build_type);
+    QString buildType = entry["build_type"].toString();
+    appVer->id = ProcessID(buildType);
     appVer->url = entry["artifacts"].toString();
     appVer->buildNum = entry["build_num"].toString();
     appVer->runPath = toolset ? "" : entry["exe_location"].toString();
