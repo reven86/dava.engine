@@ -544,12 +544,7 @@ void EngineBackend::InitRenderer(Window* w)
 
     if (!rhi::ApiIsSupported(renderer))
     {
-        // search supported api
-        rhi::Api apis[] = { rhi::RHI_DX11, rhi::RHI_DX9, rhi::RHI_GLES2, rhi::RHI_METAL };
-        auto iter = std::find_if(std::begin(apis), std::end(apis), rhi::ApiIsSupported);
-
-        DVASSERT(iter != std::end(apis));
-        renderer = iter != std::end(apis) ? *iter : rhi::RHI_GLES2;
+        renderer = rhi::RHI_GLES2;
     }
 
     rhi::InitParam rendererParams;

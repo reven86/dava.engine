@@ -31,7 +31,7 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetTitleEvent(const String& title)
     return e;
 }
 
-UIDispatcherEvent UIDispatcherEvent::CreateSetFullscreenEvent(Fullscreen mode)
+UIDispatcherEvent UIDispatcherEvent::CreateSetFullscreenEvent(eFullscreen mode)
 {
     UIDispatcherEvent e(SET_FULLSCREEN);
     e.setFullscreenEvent.mode = mode;

@@ -55,7 +55,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     {
         float32 dpi = GetDpi();
         CGSize surfaceSize = [renderView convertSizeToBacking:viewRect.size];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi, Fullscreen::Off));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi, eFullscreen::Off));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 
@@ -82,7 +82,7 @@ void WindowNativeBridge::SetTitle(const char8* title)
 
 void WindowNativeBridge::SetFullscreen(Fullscreen newMode)
 {
-    bool isFullscreenRequested = newMode == Fullscreen::On;
+    bool isFullscreenRequested = newMode == eFullscreen::On;
 
     if (isFullscreen != isFullscreenRequested)
     {
@@ -135,7 +135,7 @@ void WindowNativeBridge::WindowDidResize()
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
-    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    Fullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
 }
 
@@ -144,8 +144,9 @@ void WindowNativeBridge::WindowDidChangeScreen()
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 dpi = GetDpi();
+    Fullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 

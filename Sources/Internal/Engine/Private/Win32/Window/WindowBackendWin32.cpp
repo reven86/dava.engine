@@ -95,7 +95,7 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetFullscreen(Fullscreen newMode)
+void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
@@ -144,84 +144,57 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-void WindowBackend::DoSetFullscreen(Fullscreen newMode)
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
-    bool result;
-    bool oldMode = isFullscreen;
+    if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
+    {
+        return;
+    }
 
     // Changing of fullscreen mode leads to size changing, so set mode before it applying
-    if (newMode == Fullscreen::On)
+    if (newMode == eFullscreen::On)
     {
         isFullscreen = true;
-        result = SetFullscreenMode();
+        SetFullscreenMode();
     }
     else
     {
         isFullscreen = false;
-        result = SetWindowedMode();
-    }
-
-    if (!result)
-    {
-        isFullscreen = oldMode;
+        SetWindowedMode();
     }
 }
 
-bool WindowBackend::SetFullscreenMode()
+void WindowBackend::SetFullscreenMode()
 {
     // Get window placement which is needed for back to windowed mode
-    bool result = ::GetWindowPlacement(hwnd, &windowPlacement) == TRUE;
-    if (!result)
-    {
-        return false;
-    }
+    ::GetWindowPlacement(hwnd, &windowPlacement);
 
     // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
     // If it's not yet visible, the style should not be modified
     // since ShowWindow(..., SW_SHOW) will occur later
     uint32 style = fullscreenStyle | (::IsWindowVisible(hwnd) == TRUE ? WS_VISIBLE : 0);
-    result = ::SetWindowLong(hwnd, GWL_STYLE, style) != 0;
-    if (!result)
-    {
-        return false;
-    }
+    ::SetWindowLong(hwnd, GWL_STYLE, style);
 
     MONITORINFO monitorInfo = { sizeof(monitorInfo) };
     HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-    result = ::GetMonitorInfo(monitor, &monitorInfo) == TRUE;
-    if (!result)
-    {
-        return false;
-    }
+    ::GetMonitorInfo(monitor, &monitorInfo);
 
-    return ::SetWindowPos(hwnd,
-                          HWND_TOP,
-                          monitorInfo.rcMonitor.left,
-                          monitorInfo.rcMonitor.top,
-                          monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
-                          monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
-                          SWP_FRAMECHANGED | SWP_NOOWNERZORDER) == TRUE;
+    ::SetWindowPos(hwnd,
+                   HWND_TOP,
+                   monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.top,
+                   monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                   SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
 }
 
-bool WindowBackend::SetWindowedMode()
+void WindowBackend::SetWindowedMode()
 {
-    bool result = ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle) != 0;
-    if (!result)
-    {
-        return false;
-    }
-
-    result = ::SetWindowPlacement(hwnd, &windowPlacement) == TRUE;
-    if (!result)
-    {
-        return false;
-    }
+    ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+    ::SetWindowPlacement(hwnd, &windowPlacement);
 
     UINT flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
-    return ::SetWindowPos(hwnd,
-                          nullptr,
-                          0, 0, 0, 0,
-                          flags) == TRUE;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, flags);
 }
 
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
@@ -247,7 +220,7 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         // on win32 surfaceWidth/surfaceHeight is same as window width/height
         float32 surfaceWidth = width;
         float32 surfaceHeight = height;
-        Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
     }
@@ -626,7 +599,7 @@ LRESULT WindowBackend::OnCreate()
     float32 surfaceHeight = height;
     float32 dpi = GetDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, Fullscreen::Off));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }

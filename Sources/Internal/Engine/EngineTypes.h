@@ -17,12 +17,12 @@ enum class eEngineRunMode : int32
 
 /**
     \ingroup engine
-    Windows fullscreen switching
+    Constants that name fullscreen modes.
 */
-enum class Fullscreen
+enum class eFullscreen : uint32
 {
-    On = 0, //<! True full screen mode
-    Off, //<! Windowed mode
+    On = 0, //<! Full screen mode on
+    Off, //<! Full screen mode off (windowed mode)
 };
 
 /**

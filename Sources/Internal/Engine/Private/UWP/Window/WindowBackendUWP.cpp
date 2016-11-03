@@ -42,7 +42,7 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetFullscreen(Fullscreen newMode)
+void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     // Fullscreen mode cannot be changed on phones
     if (IsWindowsPhone())

@@ -54,7 +54,7 @@ void Window::SetTitle(const String& title)
     }
 }
 
-void Window::SetFullscreen(Fullscreen newMode)
+void Window::SetFullscreen(eFullscreen newMode)
 {
     // Window's fullscreen mode cannot be changed in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode() && newMode != fullscreenMode)
@@ -167,8 +167,6 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
 
-    dpi = e.sizeEvent.dpi;
-    fullscreenMode = e.sizeEvent.fullscreen;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -202,7 +200,6 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
     {
         Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
 
-        fullscreenMode = e.sizeEvent.fullscreen;
         MergeSizeChangedEvents(e);
         sizeEventsMerged = true;
 
@@ -240,6 +237,8 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     height = compressedSize.height;
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
+    dpi = compressedSize.dpi;
+    fullscreenMode = compressedSize.fullscreen;
 
     Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
 }

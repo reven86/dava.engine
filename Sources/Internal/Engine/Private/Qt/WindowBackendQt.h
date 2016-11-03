@@ -44,7 +44,7 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
-    void SetFullscreen(Fullscreen newMode);
+    void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -61,7 +61,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
-    void DoSetFullscreen(Fullscreen newMode);
+    void DoSetFullscreen(eFullscreen newMode);
 
     // RenderWidget::Delegate
     void OnCreated() override;

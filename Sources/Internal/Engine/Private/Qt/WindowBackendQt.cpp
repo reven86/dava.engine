@@ -218,7 +218,7 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetFullscreen(Fullscreen newMode)
+void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
@@ -305,7 +305,7 @@ void WindowBackend::OnCreated()
     float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, Fullscreen::Off));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -343,7 +343,7 @@ void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
     float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    Fullscreen fullscreen = isFullScreen ? Fullscreen::On : Fullscreen::Off;
+    eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, fullscreen));
 }
 
@@ -506,7 +506,7 @@ void WindowBackend::DoSetTitle(const char8* title)
     renderWidget->setWindowTitle(title);
 }
 
-void WindowBackend::DoSetFullscreen(Fullscreen newMode)
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
     QQuickWindow* quickWindow = renderWidget->quickWindow();
     if (quickWindow == nullptr)
@@ -514,7 +514,7 @@ void WindowBackend::DoSetFullscreen(Fullscreen newMode)
         return;
     }
 
-    if (newMode == Fullscreen::On)
+    if (newMode == eFullscreen::On)
     {
         quickWindow->showFullScreen();
     }

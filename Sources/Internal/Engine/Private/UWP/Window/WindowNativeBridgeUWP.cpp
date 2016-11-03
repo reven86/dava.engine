@@ -44,7 +44,7 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
     float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
     float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
     float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
-    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    eFullscreen fullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfW, surfH, dpi, fullscreen));
 
     xamlWindow->Activate();
@@ -121,10 +121,10 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
-void WindowNativeBridge::SetFullscreen(Fullscreen newMode)
+void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
 {
     using ::Windows::UI::ViewManagement::ApplicationView;
-    bool isFullscreenRequested = newMode == Fullscreen::On;
+    bool isFullscreenRequested = newMode == eFullscreen::On;
 
     ApplicationView ^ view = ApplicationView::GetForCurrentView();
     if (isFullscreenRequested == view->IsFullScreenMode)
@@ -215,20 +215,22 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
     float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
     float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
     bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
-    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, fullscreen));
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
+    using Windows::UI::ViewManagement::ApplicationView;
+
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 surfW = w * xamlSwapChainPanel->CompositionScaleX;
     float32 surfH = h * xamlSwapChainPanel->CompositionScaleY;
     float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
-    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
-    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    bool isFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));

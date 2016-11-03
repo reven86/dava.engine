@@ -36,7 +36,7 @@ struct UIDispatcherEvent final
 
     struct SetFullscreenEvent
     {
-        Fullscreen mode;
+        eFullscreen mode;
     };
 
     UIDispatcherEvent() = default;
@@ -57,7 +57,7 @@ struct UIDispatcherEvent final
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
-    static UIDispatcherEvent CreateSetFullscreenEvent(Fullscreen mode);
+    static UIDispatcherEvent CreateSetFullscreenEvent(eFullscreen mode);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 

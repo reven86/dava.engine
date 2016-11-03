@@ -39,7 +39,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
-    void SetFullscreen(Fullscreen newMode);
+    void SetFullscreen(eFullscreen newMode);
     float32 GetDpi();
 
     void TriggerPlatformEvents();

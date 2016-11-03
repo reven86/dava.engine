@@ -211,10 +211,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        primaryWindow->SetFullscreen(Fullscreen::Off);
+        primaryWindow->SetFullscreen(eFullscreen::Off);
         break;
     case 1:
-        primaryWindow->SetFullscreen(Fullscreen::On);
+        primaryWindow->SetFullscreen(eFullscreen::On);
         break;
     case 99:
         UpdateMode();
@@ -312,10 +312,10 @@ void FullscreenTest::UpdateMode()
 {
     switch (primaryWindow->GetFullscreen())
     {
-    case Fullscreen::Off:
+    case eFullscreen::Off:
         currentModeText->SetText(L"Windowed");
         break;
-    case Fullscreen::On:
+    case eFullscreen::On:
         currentModeText->SetText(L"Fullscreen");
         break;
     default:
