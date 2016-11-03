@@ -62,28 +62,33 @@ bool TriggerAction(QAction* action)
     return enabled;
 }
 
-Qt::ShortcutContext GetContext(QShortcut* shortcut)
+bool CheckContext(QShortcut* shortcut)
 {
-    return shortcut->context();
-}
-
-Qt::ShortcutContext GetContext(QAction* action)
-{
-    return action->shortcutContext();
-}
-
-template <typename T>
-bool CheckContext(T* action)
-{
-    Qt::ShortcutContext context = GetContext(action);
-    QWidget* parentWidget = action->parentWidget();
-    switch (context)
+    Qt::ShortcutContext context = shortcut->context();
+    if (context != Qt::WidgetShortcut)
     {
-    case Qt::WidgetShortcut:
-        return parentWidget->hasFocus();
-    default:
         return true;
     }
+    return shortcut->parentWidget()->hasFocus();
+}
+
+bool CheckContext(QAction* action)
+{
+    Qt::ShortcutContext context = action->shortcutContext();
+    if (context != Qt::WidgetShortcut)
+    {
+        return true;
+    }
+
+    QList<QWidget*> associatedWidgets = action->associatedWidgets();
+    for (QWidget* widget : associatedWidgets)
+    {
+        if (widget->hasFocus())
+        {
+            return true;
+        }
+    }
+    return false;
 }
 }
 
