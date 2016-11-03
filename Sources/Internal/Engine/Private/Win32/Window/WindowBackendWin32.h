@@ -95,7 +95,6 @@ private:
     bool closeRequestByApp = false;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
-
     float32 surfaceScale = 1.0f;
 
     const float32 defaultDpi = 96.0f;

@@ -32,6 +32,9 @@ ref struct WindowNativeBridge sealed
     void CloseWindow();
     void SetTitle(const char8* title);
 
+	float32 GetSurfaceScale() const;
+	void SetSurfaceScale(float32 scale);
+
 private:
     void OnTriggerPlatformEvents();
 
@@ -61,6 +64,8 @@ private:
     WindowBackend* windowBackend = nullptr;
     Window* window = nullptr;
     MainDispatcher* mainDispatcher = nullptr;
+
+	float32 surfaceScale = 1.0f;
 
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
