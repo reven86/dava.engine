@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArc/Core/TArcCore.h"
+#include "TArc/Core/Core.h"
 
 #include "UnitTests/TestClass.h"
 
@@ -23,8 +23,8 @@ public:
 
 protected:
     OperationInvoker* GetMockInvoker();
-    DataContext& GetActiveContext();
-    DataContext& GetGlobalContext();
+    DataContext* GetActiveContext();
+    DataContext* GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
 
 protected:

@@ -169,6 +169,8 @@ public:
     virtual QString GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params = DirectoryDialogParams()) = 0;
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
+
+    DAVA_DEPRECATED(virtual QWidget* GetWindow(const WindowKey& windowKey) = 0);
 };
 } // namespace TArc
 } // namespace DAVA

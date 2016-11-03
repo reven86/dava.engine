@@ -1,21 +1,24 @@
 #include "SpritesPacker/SpritesPackerModule.h"
 
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
 #include "Functional/Function.h"
 
 #include "AssetCache/AssetCacheClient.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 
-#include "Main/mainwindow.h"
-#include "Project/ProjectManager.h"
+#include "TArc/DataProcessing/DataContext.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include <QAction>
 #include <QDir>
 
-SpritesPackerModule::SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations_)
+SpritesPackerModule::SpritesPackerModule(DAVA::TArc::UI* ui_)
     : QObject(nullptr)
     , spritesPacker(new SpritesPacker())
-    , globalOperations(globalOperations_)
+    , ui(ui_)
 {
     qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
@@ -34,29 +37,11 @@ SpritesPackerModule::~SpritesPackerModule()
     DAVA::JobManager::Instance()->WaitWorkerJobs();
 }
 
-QAction* SpritesPackerModule::GetReloadAction() const
-{
-    return reloadSpritesAction;
-}
-
-void SpritesPackerModule::SetAction(QAction* reloadSpritesAction_)
-{
-    if (reloadSpritesAction != nullptr)
-    {
-        disconnect(reloadSpritesAction, &QAction::triggered, this, &SpritesPackerModule::RepackWithDialog);
-    }
-
-    reloadSpritesAction = reloadSpritesAction_;
-
-    if (reloadSpritesAction != nullptr)
-    {
-        connect(reloadSpritesAction, &QAction::triggered, this, &SpritesPackerModule::RepackWithDialog);
-    }
-}
-
 void SpritesPackerModule::RepackWithDialog()
 {
-    SetupSpritesPacker(ProjectManager::Instance()->GetProjectPath());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    SetupSpritesPacker(data->GetProjectPath());
 
     DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::ConnectCacheClient));
 
@@ -70,11 +55,10 @@ void SpritesPackerModule::RepackWithDialog()
 void SpritesPackerModule::RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
 {
     SetupSpritesPacker(projectPath);
+    CreateWaitDialog(projectPath);
 
     DAVA::Function<void()> fn = DAVA::Bind(&SpritesPackerModule::ProcessSilentPacking, this, true, false, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
     DAVA::JobManager::Instance()->CreateWorkerJob(fn);
-
-    CreateWaitDialog(projectPath);
 }
 
 void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
@@ -98,18 +82,21 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
 
 void SpritesPackerModule::ShowPackerDialog()
 {
-    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), globalOperations->GetGlobalParentWidget());
+    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), ui->GetWindow(DAVA::TArc::WindowKey(REGlobal::MainWindowName)));
     dialogReloadSprites.exec();
 }
 
 void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
 {
-    globalOperations->ShowWaitDialog("Sprites Reloading", DAVA::String("Reloading Particles for ") + projectPath.GetAbsolutePathname());
+    DAVA::TArc::WaitDialogParams params;
+    params.message = QString::fromStdString(DAVA::String("Reloading Particles for ") + projectPath.GetAbsolutePathname());
+    params.needProgressBar = false;
+    waitDialogHandle = ui->ShowWaitDialog(DAVA::TArc::WindowKey(REGlobal::MainWindowName), params);
 }
 
 void SpritesPackerModule::CloseWaitDialog()
 {
-    globalOperations->HideWaitDialog();
+    waitDialogHandle.reset();
 }
 
 void SpritesPackerModule::ReloadObjects()

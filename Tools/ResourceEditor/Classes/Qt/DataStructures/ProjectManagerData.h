@@ -3,6 +3,13 @@
 #include "TArc/DataProcessing/DataNode.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
+#include "FileSystem/FilePath.h"
+
+#include <QString>
+#include <QVector>
+
+class ProjectStructure;
+class SpritesPackerModule;
 class ProjectManagerData : public DAVA::TArc::DataNode
 {
 public:
@@ -20,6 +27,8 @@ public:
     };
 
     ProjectManagerData();
+    ProjectManagerData(const ProjectManagerData& other) = delete;
+    ~ProjectManagerData();
 
     bool IsOpened() const;
 
@@ -33,24 +42,29 @@ public:
     const QVector<AvailableMaterialTemplate>& GetAvailableMaterialTemplates() const;
     const QVector<AvailableMaterialQuality>& GetAvailableMaterialQualities() const;
 
-    DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
+    static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
     const ProjectStructure* GetDataSourceSceneFiles() const;
+    DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
+
+    void SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn);
+
+public:
+    static const DAVA::String ProjectPathProperty;
 
 private:
     friend class ProjectManagerModule;
-    DAVA::TArc::PropertiesItem properties;
-
     std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
     DAVA::FilePath projectPath;
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
+    DAVA::Function<bool()> closeProjectPredicate;
 
-    DAVA_VIRTUAL_REFLECTION(ProjectManagerData)
+    DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<ProjectManagerData>::Begin()
-        .Field("ProjectPath", &ProjectManagerData::GetProjectPath, nullptr)
+        .Field(ProjectPathProperty.c_str(), &ProjectManagerData::GetProjectPath, nullptr)
         .End();
     }
 };

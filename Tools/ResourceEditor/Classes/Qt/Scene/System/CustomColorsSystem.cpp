@@ -12,7 +12,6 @@
 #include "Scene/SceneSignals.h"
 #include "Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
-#include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 
 #include "Classes/Qt/Application/REGlobal.h"
@@ -465,7 +464,10 @@ DAVA::String CustomColorsSystem::GetRelativePathToProjectPath(const DAVA::FilePa
     if (absolutePath.IsEmpty())
         return DAVA::String();
 
-    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    return absolutePath.GetRelativePathname(data->GetProjectPath());
 }
 
 DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::String& relativePath)
@@ -473,7 +475,9 @@ DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::St
     if (relativePath.empty())
         return DAVA::FilePath();
 
-    return ProjectManager::Instance()->GetProjectPath() + relativePath;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetProjectPath() + relativePath;
 }
 
 DAVA::int32 CustomColorsSystem::GetBrushSize()

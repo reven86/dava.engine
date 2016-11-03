@@ -13,9 +13,10 @@ namespace DataWrapperDetail
 Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
 {
     Reflection ret;
-    if (context.HasData(type))
+    DataNode* node = context.GetData(type);
+    if (node != nullptr)
     {
-        ret = Reflection::Create(&context.GetData(type));
+        ret = Reflection::Create(node);
     }
 
     return ret;
@@ -55,6 +56,11 @@ DataWrapper& DataWrapper::operator=(DataWrapper&& other)
     impl = std::move(other.impl);
 
     return *this;
+}
+
+bool DataWrapper::operator==(const DataWrapper& other) const
+{
+    return other.impl == impl;
 }
 
 void DataWrapper::SetContext(DataContext* context)
@@ -107,6 +113,11 @@ void DataWrapper::RemoveListener(DataListener* listener)
     impl->listeners.erase(listener);
 }
 
+bool DataWrapper::IsActive() const
+{
+    return !impl.unique();
+}
+
 void DataWrapper::Sync(bool notifyListeners)
 {
     DVASSERT(impl != nullptr);
@@ -148,7 +159,7 @@ void DataWrapper::Sync(bool notifyListeners)
                 }
                 catch (const DAVA::Exception& e)
                 {
-                    DAVA::Logger::Error("DataWrapper::Sync: %s", e.what());
+                    DAVA::Logger::Debug("DataWrapper::Sync: %s", e.what());
                 }
                 if (!valuesEqual)
                 {

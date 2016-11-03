@@ -55,6 +55,7 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
 
     QJsonValue ToValue(const QString& value);
     QJsonValue ToValue(const QByteArray& value);
+    QJsonValue ToValue(const DAVA::FilePath& value);
 
     template <typename T>
     T Get(const QString& key, const T& defaultValue);
@@ -67,6 +68,7 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
 
     QString FromValue(const QJsonValue& value, const QString& defaultValue);
     QByteArray FromValue(const QJsonValue& value, const QByteArray& defaultValue);
+    DAVA::FilePath FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue);
 
     void SaveToParent();
 
@@ -154,6 +156,11 @@ QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
     return QJsonValue(QString(value.toBase64()));
 }
 
+QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
+{
+    return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
+}
+
 template <typename T>
 T PropertiesItem::Impl::Get(const QString& key, const T& defaultValue)
 {
@@ -195,6 +202,18 @@ QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteA
     if (value.isString())
     {
         return QByteArray::fromBase64(value.toString().toUtf8());
+    }
+    else
+    {
+        return defaultValue;
+    }
+}
+
+DAVA::FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue)
+{
+    if (value.isString())
+    {
+        return DAVA::FilePath(value.toString().toStdString());
     }
     else
     {
@@ -319,7 +338,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         } \
         catch (const DAVA::Exception& exception) \
         { \
-            Logger::Error("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
+            Logger::Debug("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
     }
 
@@ -334,7 +353,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         } \
         catch (const DAVA::Exception& exception) \
         { \
-            Logger::Error("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
+            Logger::Debug("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
         return retVal; \
     }
@@ -346,7 +365,8 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     METHOD(value, type, float32, key) \
     METHOD(value, type, float64, key) \
     METHOD(value, type, QString, key) \
-    METHOD(value, type, QByteArray, key)
+    METHOD(value, type, QByteArray, key) \
+    METHOD(value, type, DAVA::FilePath, key)
 
 void PropertiesItem::Set(const String& key, const Any& value)
 {
@@ -368,7 +388,6 @@ Any PropertiesItem::Get(const String& key, const Any& defaultValue, const Type* 
     DVASSERT(!defaultValue.IsEmpty());
     QString keyStr = QString::fromStdString(key);
     ENUM_TYPES(LOAD_IF_ACCEPTABLE, defaultValue, type, keyStr);
-    Logger::Error("PropertiesHolder::Load: Can not load value for type %s by key %s", type->GetName(), key.c_str());
     return Any();
 }
 

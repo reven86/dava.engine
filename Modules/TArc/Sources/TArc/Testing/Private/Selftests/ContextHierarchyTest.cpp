@@ -40,22 +40,22 @@ DAVA_TARC_TESTCLASS(ContextHierarchyTest)
 
     DAVA_TEST (GlobalContexHasDataTest)
     {
-        DAVA::TArc::DataContext& ctx = GetGlobalContext();
-        TEST_VERIFY(ctx.HasData<GlobalContextData>() == false);
-        TEST_VERIFY(ctx.HasData<SharedData>() == false);
+        DAVA::TArc::DataContext* ctx = GetGlobalContext();
+        TEST_VERIFY(ctx->GetData<GlobalContextData>() == nullptr);
+        TEST_VERIFY(ctx->GetData<SharedData>() == nullptr);
 
-        ctx.CreateData(std::make_unique<GlobalContextData>());
-        TEST_VERIFY(ctx.HasData<GlobalContextData>() == true);
-        TEST_VERIFY(GetActiveContext().HasData<GlobalContextData>() == true);
+        ctx->CreateData(std::make_unique<GlobalContextData>());
+        TEST_VERIFY(ctx->GetData<GlobalContextData>() != nullptr);
+        TEST_VERIFY(GetActiveContext()->GetData<GlobalContextData>() != nullptr);
     }
 
     DAVA_TEST (GlobalContextAccessThroughActiveTest)
     {
         try
         {
-            GlobalContextData& gd = GetGlobalContext().GetData<GlobalContextData>();
-            GlobalContextData& ad = GetActiveContext().GetData<GlobalContextData>();
-            TEST_VERIFY(&gd == &ad);
+            GlobalContextData* gd = GetGlobalContext()->GetData<GlobalContextData>();
+            GlobalContextData* ad = GetActiveContext()->GetData<GlobalContextData>();
+            TEST_VERIFY(gd == ad);
         }
         catch (std::runtime_error& e)
         {
@@ -65,50 +65,36 @@ DAVA_TARC_TESTCLASS(ContextHierarchyTest)
 
     DAVA_TEST (GlobalContextDeleteThroughActiveTest)
     {
-        DataContext& globalContext = GetGlobalContext();
-        DataContext& activeContext = GetActiveContext();
-        TEST_VERIFY(globalContext.HasData<GlobalContextData>() == true);
-        activeContext.DeleteData<GlobalContextData>();
-        TEST_VERIFY(globalContext.HasData<GlobalContextData>() == false);
-        TEST_VERIFY(activeContext.HasData<GlobalContextData>() == false);
+        DataContext* globalContext = GetGlobalContext();
+        DataContext* activeContext = GetActiveContext();
+        TEST_VERIFY(globalContext->GetData<GlobalContextData>() != nullptr);
+        activeContext->DeleteData<GlobalContextData>();
+        TEST_VERIFY(globalContext->GetData<GlobalContextData>() == nullptr);
+        TEST_VERIFY(activeContext->GetData<GlobalContextData>() == nullptr);
     }
 
     DAVA_TEST (BothContainsDataTest)
     {
-        DataContext& globalContext = GetGlobalContext();
-        globalContext.CreateData(std::make_unique<SharedData>());
+        DataContext* globalContext = GetGlobalContext();
+        globalContext->CreateData(std::make_unique<SharedData>());
 
-        DataContext& activeContext = GetActiveContext();
-        activeContext.CreateData(std::make_unique<SharedData>());
+        DataContext* activeContext = GetActiveContext();
+        activeContext->CreateData(std::make_unique<SharedData>());
 
-        TEST_VERIFY(globalContext.HasData<SharedData>() == true);
-        TEST_VERIFY(activeContext.HasData<SharedData>() == true);
+        TEST_VERIFY(globalContext->GetData<SharedData>() != nullptr);
+        TEST_VERIFY(activeContext->GetData<SharedData>() != nullptr);
 
-        SharedData& gd = globalContext.GetData<SharedData>();
-        SharedData& ad = activeContext.GetData<SharedData>();
-        TEST_VERIFY(&gd != &ad);
+        SharedData* gd = globalContext->GetData<SharedData>();
+        SharedData* ad = activeContext->GetData<SharedData>();
+        TEST_VERIFY(gd != ad);
 
-        activeContext.DeleteData<SharedData>();
-        TEST_VERIFY(globalContext.HasData<SharedData>() == true);
-        TEST_VERIFY(activeContext.HasData<SharedData>() == true);
+        activeContext->DeleteData<SharedData>();
+        TEST_VERIFY(globalContext->GetData<SharedData>() != nullptr);
+        TEST_VERIFY(activeContext->GetData<SharedData>() != nullptr);
 
-        globalContext.DeleteData<SharedData>();
-        TEST_VERIFY(globalContext.HasData<SharedData>() == false);
-        TEST_VERIFY(activeContext.HasData<SharedData>() == false);
-    }
-
-    DAVA_TEST (ExceptionOnGetDataTest)
-    {
-        try
-        {
-            GetGlobalContext().GetData<SharedData>();
-        }
-        catch (std::runtime_error& /*e*/)
-        {
-            return;
-        }
-
-        TEST_VERIFY_WITH_MESSAGE(false, "Exception was not throwed");
+        globalContext->DeleteData<SharedData>();
+        TEST_VERIFY(globalContext->GetData<SharedData>() == nullptr);
+        TEST_VERIFY(activeContext->GetData<SharedData>() == nullptr);
     }
 }
 ;

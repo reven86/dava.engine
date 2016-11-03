@@ -6,7 +6,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Settings/SettingsManager.h"
@@ -255,10 +254,10 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
     }
 
     const QVector<ProjectManagerData::AvailableMaterialTemplate>* materialTemplates = 0;
-    DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
-    if (ctx.HasData<ProjectManagerData>())
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data != nullptr)
     {
-        materialTemplates = &ctx.GetData<ProjectManagerData>().GetAvailableMaterialTemplates();
+        materialTemplates = &data->GetAvailableMaterialTemplates();
     }
 
     DAVA::FastName textureNames[] = {
@@ -363,9 +362,12 @@ void SceneValidator::ValidateLandscape(DAVA::Landscape* landscape)
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), DAVA::String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
-        DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
-        DVASSERT(ctx.HasData<ProjectManagerData>());
-        DAVA::String path = landscape->GetHeightmapPathname().GetRelativePathname(ctx.GetData<ProjectManagerData>().GetDataSourcePath());
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DAVA::String path = landscape->GetHeightmapPathname().GetAbsolutePathname();
+        if (data != nullptr)
+        {
+            path = landscape->GetHeightmapPathname().GetRelativePathname(data->GetDataSourcePath());
+        }
         PushLogMessage(nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }
 }

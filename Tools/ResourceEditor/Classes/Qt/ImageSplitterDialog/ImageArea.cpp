@@ -4,14 +4,18 @@
 
 #include "TextureBrowser/TextureConvertor.h"
 #include "SizeDialog.h"
-#include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 #include "Settings/SettingsManager.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "ImageTools/ImageTools.h"
 
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
 #include "QtTools/FileDialogs/FileDialog.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -61,7 +65,9 @@ void ImageArea::ConnectSignals()
 
 DAVA::String ImageArea::GetDefaultPath() const
 {
-    return ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetProjectPath().GetAbsolutePathname();
 }
 
 void ImageArea::mousePressEvent(QMouseEvent* ev)

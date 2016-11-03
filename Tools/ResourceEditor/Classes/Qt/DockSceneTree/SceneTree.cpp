@@ -15,7 +15,6 @@
 #include "Deprecated/SceneValidator.h"
 #include "Main/Guards.h"
 #include "Main/QTUtils.h"
-#include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
@@ -31,20 +30,38 @@
 // commands
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/ConvertToShadowCommand.h"
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "FileSystem/VariantType.h"
-
-#include "QtTools/Updaters/LazyUpdater.h"
-#include "QtTools/WidgetHelpers/SharedIcon.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 
-#include "Actions/SaveEntityAsAction.h"
+#include "Classes/Qt/Actions/SaveEntityAsAction.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "QtTools/Updaters/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
+#include "FileSystem/VariantType.h"
 
 namespace SceneTreeDetails
 {
 QString GetParticlesConfigPath()
 {
-    return ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data == nullptr)
+        return QString("");
+
+    return QString::fromStdString(data->GetParticlesConfigPath().GetAbsolutePathname());
+}
+
+DAVA::FilePath GetDataSourcePath()
+{
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data == nullptr)
+        return DAVA::FilePath();
+
+    return data->GetDataSourcePath();
 }
 
 void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, DAVA::ParticleEmitter* emitter,
@@ -56,7 +73,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
     if (askFileName)
     {
         DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
+        QString particlesPath = defaultPath.IsEmpty() ? GetParticlesConfigPath() : QString::fromStdString(defaultPath.GetAbsolutePathname());
 
         DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
 
@@ -349,7 +366,7 @@ private:
         DAVA::FilePath scenePath = scene->GetScenePath().GetDirectory();
         if (!DAVA::FileSystem::Instance()->Exists(scenePath) || !scene->IsLoaded())
         {
-            scenePath = ProjectManager::Instance()->GetDataSourcePath();
+            scenePath = SceneTreeDetails::GetDataSourcePath();
         }
 
         QString baseDir(scenePath.GetDirectory().GetAbsolutePathname().c_str());
@@ -448,7 +465,7 @@ private:
                 }
                 else
                 {
-                    ownerPath = ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname();
+                    ownerPath = SceneTreeDetails::GetDataSourcePath().GetAbsolutePathname();
                 }
             }
 

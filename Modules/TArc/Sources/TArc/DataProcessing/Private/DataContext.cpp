@@ -30,18 +30,7 @@ void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
     dataMap.emplace(std::make_pair(type, node.release()));
 }
 
-bool DataContext::HasData(const ReflectedType* type) const
-{
-    bool result = dataMap.count(type) > 0;
-    if (result == false && parentContext != nullptr)
-    {
-        result = parentContext->HasData(type);
-    }
-
-    return result;
-}
-
-DataNode& DataContext::GetData(const ReflectedType* type) const
+DataNode* DataContext::GetData(const ReflectedType* type) const
 {
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())
@@ -50,10 +39,10 @@ DataNode& DataContext::GetData(const ReflectedType* type) const
         {
             return parentContext->GetData(type);
         }
-        throw std::runtime_error(Format("Data with type %s doesn't exist", type->GetPermanentName().c_str()));
+        return nullptr;
     }
 
-    return *iter->second;
+    return iter->second;
 }
 
 void DataContext::DeleteData(const ReflectedType* type)

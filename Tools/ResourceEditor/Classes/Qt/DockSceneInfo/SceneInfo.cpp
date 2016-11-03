@@ -1,21 +1,23 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Project/ProjectManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Scene/SceneSignals.h"
 #include "Qt/Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Scene/System/EditorStatisticsSystem.h"
 #include "Qt/Scene/System/EditorVegetationSystem.h"
+#include "Qt/Application/REGlobal.h"
+#include "Qt/DataStructures/ProjectManagerData.h"
 
 #include "ImageTools/ImageTools.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
-
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include <QHeaderView>
 #include <QTimer>
@@ -254,7 +256,10 @@ void SceneInfo::RefreshLODInfoForSelection()
 
 uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
 {
-    String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    String projectPath = data->GetProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
 
     eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());

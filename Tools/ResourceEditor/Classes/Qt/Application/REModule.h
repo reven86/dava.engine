@@ -2,9 +2,12 @@
 
 #include "TArc/Core/ControllerModule.h"
 
+#include "TArc/DataProcessing/DataListener.h"
+#include "TArc/DataProcessing/DataWrapper.h"
+
 class TextureCache;
 class ResourceEditorLauncher;
-class REModule : public DAVA::TArc::ControllerModule
+class REModule : public DAVA::TArc::ControllerModule, private DAVA::TArc::DataListener
 {
 public:
     ~REModule();
@@ -22,4 +25,8 @@ protected:
 
 private:
     void UnpackHelpDoc();
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+
+private:
+    DAVA::TArc::DataWrapper launchDataWrapper;
 };

@@ -2,7 +2,11 @@
 #include "Render/Texture.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
-#include "Project/ProjectManager.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
 #include "Render/Texture.h"
 
 void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::FilePath>& faceNames)
@@ -24,7 +28,9 @@ DAVA::FilePath CubemapUtils::GetDialogSavedPath(const DAVA::String& key, const D
     DAVA::FilePath path = settinsValue.GetType() == DAVA::VariantType::TYPE_STRING ? settinsValue.AsString() : settinsValue.AsFilePath();
 
     DAVA::FilePath defaultPath(defaultValue);
-    DAVA::FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::FilePath projectPath = data->GetProjectPath();
     bool isInProject = DAVA::FilePath::ContainPath(path, projectPath);
 
     if (!DAVA::FileSystem::Instance()->Exists(path) || !isInProject)

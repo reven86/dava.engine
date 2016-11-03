@@ -1,5 +1,5 @@
 #include "TArc/Core/BaseApplication.h"
-#include "TArc/Core/TArcCore.h"
+#include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestCore.h"
 #include "QtHelpers/RunGuard.h"
 
@@ -42,7 +42,7 @@ int BaseApplication::RunImpl()
 
         EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
-        Init(*engineContext);
+        Init(engineContext);
 
         TestCore testCore(e);
         return e.Run();
@@ -58,7 +58,7 @@ int BaseApplication::RunImpl()
     }
 }
 
-void BaseApplication::Init(EngineContext& /*engineContext*/)
+void BaseApplication::Init(EngineContext* /*engineContext*/)
 {
 }
 

@@ -1,6 +1,7 @@
 #include "../ProjectManagerData.h"
 
 #include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "SpritesPacker/SpritesPackerModule.h"
 
 namespace ProjectManagerDataDetails
 {
@@ -11,11 +12,18 @@ const char* PARTICLE_DATA_PATH = "Data/Gfx/Particles/";
 const char* WORKSPACE_PATH = "~doc:/ResourceEditor/";
 }
 
+void ProjectManagerData::SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn)
+{
+    closeProjectPredicate = fn;
+}
+
+const DAVA::String ProjectManagerData::ProjectPathProperty = DAVA::String("ProjectPath");
+
 ProjectManagerData::ProjectManagerData()
 {
-    DAVA::Vector<DAVA::String> extensions = { "sc2" };
-    dataSourceSceneFiles.reset(new ProjectStructure(extensions));
 }
+
+ProjectManagerData::~ProjectManagerData() = default;
 
 bool ProjectManagerData::IsOpened() const
 {
@@ -77,4 +85,9 @@ DAVA::FilePath ProjectManagerData::CreateProjectPathFromPath(const DAVA::FilePat
 const ProjectStructure* ProjectManagerData::GetDataSourceSceneFiles() const
 {
     return dataSourceSceneFiles.get();
+}
+
+const SpritesPackerModule* ProjectManagerData::GetSpritesModules() const
+{
+    return spritesPacker.get();
 }

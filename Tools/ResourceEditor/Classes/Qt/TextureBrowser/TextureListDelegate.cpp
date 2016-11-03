@@ -4,6 +4,21 @@
 #include "TextureCache.h"
 #include "TextureConvertor.h"
 #include "TextureBrowser.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
+#include "Main/QtUtils.h"
+
+#include "Preset.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Utils.h"
+#include "QtTools/Utils/Themes/Themes.h"
+
+#include "QtHelpers/HelperFunctions.h"
+
 #include <QPainter>
 #include <QFileInfo>
 #include <QEvent>
@@ -11,16 +26,6 @@
 #include <QMenu>
 #include <QToolTip>
 #include <QAbstractItemView>
-
-#include "Main/QtUtils.h"
-
-#include "Project/ProjectManager.h"
-#include "Preset.h"
-#include "QtTools/WidgetHelpers/SharedIcon.h"
-#include "QtTools/Utils/Utils.h"
-#include "QtTools/Utils/Themes/Themes.h"
-
-#include "QtHelpers/HelperFunctions.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -246,10 +251,14 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
             infoText += "\nData size: ";
             infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
 
-            auto dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            if (data)
+            {
+                DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
 
-            infoText += "\nPath: ";
-            infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
+                infoText += "\nPath: ";
+                infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
+            }
 
             return infoText;
         }

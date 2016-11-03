@@ -3,12 +3,16 @@
 #include "CubemapEditor/CubemapUtils.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+
 #include "ui_cubemapeditordialog.h"
-#include "Project/ProjectManager.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "ImageTools/ImageTools.h"
 #include "QtTools/FileDialogs/FileDialog.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include <QMouseEvent>
 #include <QMessageBox>
@@ -18,10 +22,8 @@ using namespace DAVA;
 const String CUBEMAP_LAST_FACE_DIR_KEY = "cubemap_last_face_dir";
 
 CubemapEditorDialog::CubemapEditorDialog(QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    ui(new Ui::CubemapEditorDialog)
+    : QDialog(parent)
+    , ui(new Ui::CubemapEditorDialog)
 {
     ui->setupUi(this);
 
@@ -73,8 +75,10 @@ void CubemapEditorDialog::ConnectSignals()
 
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
     FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
-                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+                                                            data->GetDataSourcePath().GetAbsolutePathname());
 
     QString fileName = FileDialog::getOpenFileName(this,
                                                    tr("Open Cubemap Face Image"),

@@ -118,33 +118,33 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         DataContext::ContextID id = mng.CreateContext();
         TEST_VERIFY(id == newContext);
 
-        TEST_VERIFY(accessor.HasActiveContext() == false);
+        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
 
         mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.HasActiveContext() == true);
-        TEST_VERIFY(accessor.GetActiveContext().GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext).GetID() == newContext);
+        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
 
         // activate already active context
         mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.HasActiveContext() == true);
-        TEST_VERIFY(accessor.GetActiveContext().GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext).GetID() == newContext);
+        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
 
         // deactivate context test
         mng.ActivateContext(DataContext::Empty);
-        TEST_VERIFY(accessor.HasActiveContext() == false);
+        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
 
         mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.HasActiveContext() == true);
-        TEST_VERIFY(accessor.GetActiveContext().GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext).GetID() == newContext);
+        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
 
         mng.ActivateContext(newContext);
-        TEST_VERIFY(accessor.GetActiveContext().GetID() == newContext);
+        TEST_VERIFY(accessor.GetActiveContext()->GetID() == newContext);
 
         mng.DeleteContext(newContext);
-        TEST_VERIFY(accessor.HasActiveContext() == false);
+        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
     }
 
     DAVA_TEST (DeleteContextTest)
@@ -191,32 +191,12 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (GetInvalidContextTest)
     {
-        bool exeptionCatched = false;
-        try
-        {
-            TestControllerModule::instance->GetCtxAccessor().GetContext(1);
-        }
-        catch (std::runtime_error& /*e*/)
-        {
-            exeptionCatched = true;
-        }
-
-        TEST_VERIFY(exeptionCatched == true);
+        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetContext(1) == nullptr);
     }
 
     DAVA_TEST (GetActiveInvalidContextTest)
     {
-        bool exeptionCatched = false;
-        try
-        {
-            TestControllerModule::instance->GetCtxAccessor().GetActiveContext();
-        }
-        catch (std::runtime_error& /*e*/)
-        {
-            exeptionCatched = true;
-        }
-
-        TEST_VERIFY(exeptionCatched == true);
+        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetActiveContext() == nullptr);
     }
 
     DataContext::ContextID undeletedContext = DataContext::Empty;

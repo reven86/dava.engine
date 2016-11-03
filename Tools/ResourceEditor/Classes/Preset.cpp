@@ -12,8 +12,6 @@
 
 #include "QtTools/FileDialogs/FileDialog.h"
 
-#include "Project/ProjectManager.h"
-
 #include "Base/GlobalEnum.h"
 
 namespace Preset
@@ -100,9 +98,9 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
 FilePath CreatePresetFolderPathname(const String& folder)
 {
-    DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
-    DVASSERT(ctx.HasData<ProjectManagerData>());
-    const FilePath& projectPath = ctx.GetData<ProjectManagerData>().GetProjectPath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    const FilePath& projectPath = data->GetProjectPath();
     FilePath folderPath = projectPath + folder;
     folderPath.MakeDirectoryPathname();
     return folderPath;

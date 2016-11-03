@@ -1,33 +1,15 @@
 #include "Classes/Qt/Application/REApplication.h"
 #include "Classes/Qt/Application/REModule.h"
 #include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/Application/ProjectManagerModule.h"
+#include "Classes/Qt/Application/InitModule.h"
+#include "Classes/Qt/Application/LaunchModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Preferences/PreferencesStorage.h"
 #include "Deprecated/EditorConfig.h"
-
-#ifdef __DAVAENGINE_BEAST__
-#include "BeastProxyImpl.h"
-#else
-#include "Beast/BeastProxy.h"
-#endif //__DAVAENGINE_BEAST__
-
-#include "TArc/Core/TArcCore.h"
-
-#include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-#include "Particles/ParticleEmitter.h"
-#include "Engine/EngineContext.h"
-#include "FileSystem/KeyedArchive.h"
-#include "Render/RHI/rhi_Type.h"
-#include "Core/PerformanceSettings.h"
-#include "Base/BaseTypes.h"
-
-#include <QDir>
-#include <QFileInfo>
-#include <QCryptographicHash>
 
 #include "CommandLine/BeastCommandLineTool.h"
 #include "CommandLine/ConsoleHelpTool.h"
@@ -40,6 +22,28 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/SceneExporterTool.h"
+
+#ifdef __DAVAENGINE_BEAST__
+#include "BeastProxyImpl.h"
+#else
+#include "Beast/BeastProxy.h"
+#endif //__DAVAENGINE_BEAST__
+
+#include "TArc/Core/Core.h"
+
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Particles/ParticleEmitter.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Core/PerformanceSettings.h"
+#include "Base/BaseTypes.h"
+
+#include <QDir>
+#include <QFileInfo>
+#include <QCryptographicHash>
 
 namespace REApplicationDetail
 {
@@ -100,7 +104,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::EngineContext& engineContext)
+void REApplication::Init(DAVA::EngineContext* engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -114,31 +118,38 @@ void REApplication::Init(DAVA::EngineContext& engineContext)
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-    engineContext.logger->SetLogFilename("ResEditor.txt");
+    engineContext->logger->SetLogFilename("ResEditor.txt");
 
-    config = new EditorConfig();
+    if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
+    {
+        new EditorConfig();
+        new SceneValidator();
+    }
+
     settingsManager = new SettingsManager();
-    sceneValidator = new SceneValidator();
     beastProxy = new BEAST_PROXY_TYPE();
 
     const char* settingsPath = "ResourceEditorSettings.archive";
-    DAVA::FilePath localPrefrencesPath(engineContext.fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
+    DAVA::FilePath localPrefrencesPath(engineContext->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
     SettingsManager::UpdateGPUSettings();
 
-    engineContext.logger->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-    engineContext.virtualCoordSystem->EnableReloadResourceOnResize(false);
-    engineContext.performanceSettings->SetPsPerformanceMinFPS(5.0f);
-    engineContext.performanceSettings->SetPsPerformanceMaxFPS(10.0f);
+    engineContext->logger->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
+    engineContext->virtualCoordSystem->EnableReloadResourceOnResize(false);
+    engineContext->performanceSettings->SetPsPerformanceMinFPS(5.0f);
+    engineContext->performanceSettings->SetPsPerformanceMaxFPS(10.0f);
 }
 
 void REApplication::Cleanup()
 {
     REGlobal::InitTArcCore(nullptr);
+    if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
+    {
+        EditorConfig::Instance()->Release();
+        SceneValidator::Instance()->Release();
+    }
     DAVA::SafeRelease(beastProxy);
-    DAVA::SafeRelease(config);
     DAVA::SafeRelease(settingsManager);
-    DAVA::SafeRelease(sceneValidator);
 
     VisibilityCheckSystem::ReleaseCubemapRenderTargets();
 
@@ -163,7 +174,10 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    tarcCore->CreateModule<InitModule>();
     tarcCore->CreateModule<REModule>();
+    tarcCore->CreateModule<ProjectManagerModule>();
+    tarcCore->CreateModule<LaunchModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

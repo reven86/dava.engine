@@ -23,12 +23,16 @@ public:
     DataWrapper(DataWrapper&& other);
     DataWrapper& operator=(DataWrapper&& other);
 
+    bool operator==(const DataWrapper& other) const;
+
     bool HasData() const;
     void AddListener(DataListener* listener);
     void RemoveListener(DataListener* listener);
 
     template <typename T>
     DataEditor<T> CreateEditor();
+
+    bool IsActive() const;
 
 private:
     friend class Core;

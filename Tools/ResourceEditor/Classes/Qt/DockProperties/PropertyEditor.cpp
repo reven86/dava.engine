@@ -33,11 +33,11 @@
 #include "Commands2/ConvertPathCommands.h"
 #include "Commands2/ConvertToBillboardCommand.h"
 
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
+#include "Qt/Settings/SettingsManager.h"
 #include "PropertyEditorStateHelper.h"
-#include "Qt/Project/ProjectManager.h"
 
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
@@ -50,6 +50,9 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
@@ -1608,8 +1611,11 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
 
 QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
 {
-    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
-    DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
+    DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+
     if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();

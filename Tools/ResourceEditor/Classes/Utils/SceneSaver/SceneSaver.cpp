@@ -3,10 +3,10 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Scene/SceneHelper.h"
-#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 #include "Main/QtUtils.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
 #include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
@@ -350,7 +350,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     if (pathname.empty())
         return;
 
-    FilePath projectPath = ProjectManager::CreateProjectPathFromPath(sceneFolder);
+    FilePath projectPath = ProjectManagerData::CreateProjectPathFromPath(sceneFolder);
     if (projectPath.IsEmpty())
     {
         Logger::Error("Can't copy custom colors texture (%s)", pathname.c_str());
@@ -361,7 +361,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     sceneUtils.AddFile(texPathname);
 
     FilePath newTexPathname = sceneUtils.GetNewFilePath(texPathname);
-    FilePath newProjectPathname = ProjectManager::CreateProjectPathFromPath(sceneUtils.dataFolder);
+    FilePath newProjectPathname = ProjectManagerData::CreateProjectPathFromPath(sceneUtils.dataFolder);
     if (newProjectPathname.IsEmpty())
     {
         Logger::Error("Can't save custom colors texture (%s)", pathname.c_str());

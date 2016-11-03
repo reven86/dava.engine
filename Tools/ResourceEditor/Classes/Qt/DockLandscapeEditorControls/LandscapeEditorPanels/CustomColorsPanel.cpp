@@ -3,12 +3,13 @@
 #include "Scene/SceneEditor2.h"
 #include "Tools/SliderWidget/SliderWidget.h"
 #include "Deprecated/EditorConfig.h"
-#include "Project/ProjectManager.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
 #include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/RECommonData.h"
 
 #include <QLayout>
 #include <QComboBox>
@@ -115,7 +116,8 @@ void CustomColorsPanel::InitUI()
 
 void CustomColorsPanel::ConnectToSignals()
 {
-    connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(ProjectOpened(const QString&)));
+    sharedDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<RECommonData>());
+    sharedDataWrapper.AddListener(this);
 
     connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
             this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
@@ -128,11 +130,6 @@ void CustomColorsPanel::ConnectToSignals()
     connect(buttonLoadTexture, SIGNAL(clicked()), this, SLOT(LoadTexture()));
 }
 
-void CustomColorsPanel::ProjectOpened(const QString& path)
-{
-    InitColors();
-}
-
 void CustomColorsPanel::InitColors()
 {
     comboColor->clear();
@@ -141,8 +138,13 @@ void CustomColorsPanel::InitColors()
     iconSize = iconSize.expandedTo(QSize(100, 0));
     comboColor->setIconSize(iconSize);
 
-    DAVA::Vector<DAVA::Color> customColors = EditorConfig::Instance()->GetColorPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_COLORS);
-    DAVA::Vector<DAVA::String> customColorsDescription = EditorConfig::Instance()->GetComboPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_DESCRIPTION);
+    RECommonData* data = REGlobal::GetDataNode<RECommonData>();
+    DVASSERT(data != nullptr);
+
+    EditorConfig* config = data->GetEditorConfig();
+
+    DAVA::Vector<DAVA::Color> customColors = config->GetColorPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_COLORS);
+    DAVA::Vector<DAVA::String> customColorsDescription = config->GetComboPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_DESCRIPTION);
     for (size_t i = 0; i < customColors.size(); ++i)
     {
         QColor color = QColor::fromRgbF(customColors[i].r, customColors[i].g, customColors[i].b, customColors[i].a);
@@ -173,6 +175,13 @@ DAVA::int32 CustomColorsPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
     return uiValue;
 }
 // end of convert functions ==========================
+
+void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+{
+    RECommonData* data = REGlobal::GetDataNode<RECommonData>();
+    DVASSERT(data);
+    InitColors();
+}
 
 void CustomColorsPanel::SetBrushSize(int brushSize)
 {

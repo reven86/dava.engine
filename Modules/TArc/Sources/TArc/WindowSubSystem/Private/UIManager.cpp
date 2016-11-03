@@ -19,6 +19,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QToolButton>
+#include <QUrlQuery>
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -123,7 +124,57 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
         currentLevelMenu = menu;
     }
 
-    currentLevelMenu->addAction(action);
+    QUrlQuery query(url.query());
+
+    QString itemName = query.queryItemValue("itemName");
+    QString insertionMethod = query.queryItemValue("eInsertionMethod");
+
+    bool convertionSuccessed = false;
+    DAVA::uint32 insertionMethodValue = insertionMethod.toInt(&convertionSuccessed);
+    if (convertionSuccessed == false)
+    {
+        insertionMethodValue = static_cast<DAVA::uint32>(MenuInsertionParams::eInsertionMethod::AfterItem);
+    }
+
+    insertionMethodValue = DAVA::Min(insertionMethodValue, static_cast<DAVA::uint32>(MenuInsertionParams::eInsertionMethod::AfterItem));
+
+    MenuInsertionParams::eInsertionMethod method = static_cast<MenuInsertionParams::eInsertionMethod>(insertionMethodValue);
+
+    QAction* beforeAction = nullptr;
+    if (itemName.isEmpty())
+    {
+        if (method == MenuInsertionParams::eInsertionMethod::BeforeItem)
+        {
+            currentLevelMenu->actions().at(0);
+        }
+    }
+    else
+    {
+        QList<QAction*> actions = currentLevelMenu->actions();
+        foreach (QAction* action, actions)
+        {
+            if (action->objectName() == itemName)
+            {
+                beforeAction = action;
+                break;
+            }
+        }
+
+        if (method == MenuInsertionParams::eInsertionMethod::AfterItem)
+        {
+            QList<QAction*> actions = currentLevelMenu->actions();
+            beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
+        }
+    }
+
+    if (beforeAction == nullptr)
+    {
+        currentLevelMenu->addAction(action);
+    }
+    else
+    {
+        currentLevelMenu->insertAction(beforeAction, action);
+    }
 }
 
 void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
@@ -459,6 +510,11 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
     dlg->Show();
     return std::move(dlg);
+}
+
+QWidget* UIManager::GetWindow(const WindowKey& windowKey)
+{
+    return impl->FindOrCreateWindow(windowKey).window;
 }
 
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)

@@ -38,7 +38,7 @@ protected:
 private:
     void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
     void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
-    void Init(DAVA::EngineContext& engineContext) override;
+    void Init(DAVA::EngineContext* engineContext) override;
     void Cleanup() override;
 
     bool AllowMultipleInstances() const override;
@@ -49,8 +49,6 @@ private:
 
 private:
     // singletons. In future we probably will try to move them into special module, or completely decompose
-    EditorConfig* config = nullptr;
     SettingsManager* settingsManager = nullptr;
-    SceneValidator* sceneValidator = nullptr;
     BEAST_PROXY_TYPE* beastProxy = nullptr;
 };

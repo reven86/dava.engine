@@ -65,8 +65,8 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
         if (rootNode)
         {
             const DAVA::Vector<DAVA::YamlNode*>& yamlNodes = rootNode->AsVector();
-            DAVA::int32 propertiesCount = yamlNodes.size();
-            for (DAVA::int32 i = 0; i < propertiesCount; ++i)
+            size_t propertiesCount = yamlNodes.size();
+            for (size_t i = 0; i < propertiesCount; ++i)
             {
                 DAVA::YamlNode* propertyNode = yamlNodes[i];
                 if (propertyNode)
@@ -82,9 +82,9 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                         if (type)
                         {
                             bool isOk = true;
-                            for (DAVA::uint32 n = 0; n < propertyNames.size(); ++n)
+                            for (const DAVA::String& propertyName : propertyNames)
                             {
-                                if (propertyNames[n] == nameStr)
+                                if (propertyName == nameStr)
                                 {
                                     isOk = false;
                                     DAVA::Logger::Error("EditorConfig::ParseConfig %s ERROR property %d property %s already exists", filePath.GetAbsolutePathname().c_str(), i, nameStr.c_str());
@@ -152,10 +152,9 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                                     if (comboNode)
                                     {
                                         const DAVA::Vector<DAVA::YamlNode*>& comboValueNodes = comboNode->AsVector();
-                                        DAVA::int32 comboValuesCount = comboValueNodes.size();
-                                        for (DAVA::int32 i = 0; i < comboValuesCount; ++i)
+                                        for (const DAVA::YamlNode* comboValueNode : comboValueNodes)
                                         {
-                                            properties[nameStr]->comboValues.push_back(comboValueNodes[i]->AsString());
+                                            properties[nameStr]->comboValues.push_back(comboValueNode->AsString());
                                         }
                                     }
                                 }
@@ -173,10 +172,8 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                                     if (colorListNode)
                                     {
                                         const DAVA::Vector<DAVA::YamlNode*>& colorListNodes = colorListNode->AsVector();
-                                        DAVA::int32 colorListValuesCount = colorListNodes.size();
-                                        for (DAVA::int32 i = 0; i < colorListValuesCount; ++i)
+                                        for (const DAVA::YamlNode* colorNode : colorListNodes)
                                         {
-                                            const DAVA::YamlNode* colorNode = colorListNodes[i];
                                             if (!colorNode || colorNode->GetCount() != 4)
                                                 continue;
 

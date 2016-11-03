@@ -52,11 +52,11 @@ public:
         AddModule(new T(std::forward<Args>(args)...));
     }
 
-    DAVA_DEPRECATED(EngineContext& GetEngineContext());
+    DAVA_DEPRECATED(EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
 
 private:
-    // in testing enviroment Core shouldn't connect to Engine signals.
+    // in testing environment Core shouldn't connect to Engine signals.
     // TArcTestClass wrap signals and call Core method directly
     Core(Engine& engine, bool connectSignals);
     bool IsConsoleMode() const;
@@ -74,8 +74,8 @@ private:
     bool HasControllerModule() const;
 
     OperationInvoker* GetMockInvoker();
-    DataContext& GetActiveContext();
-    DataContext& GetGlobalContext();
+    DataContext* GetActiveContext();
+    DataContext* GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
 
 private:

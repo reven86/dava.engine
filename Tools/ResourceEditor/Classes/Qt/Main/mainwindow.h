@@ -9,6 +9,9 @@
 #include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
+#include "TArc/DataProcessing/DataListener.h"
+#include "TArc/DataProcessing/DataWrapper.h"
+
 #include "QtTools/Utils/ShortcutChecker.h"
 
 #include "DAVAEngine.h"
@@ -37,7 +40,7 @@ namespace DAVA
 class RenderWidget;
 }
 
-class QtMainWindow : public QMainWindow, public GlobalOperations
+class QtMainWindow : public QMainWindow, public GlobalOperations, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -88,8 +91,6 @@ public:
 
     // qt actions slots
 public slots:
-    void OnProjectOpen();
-    void OnProjectClose();
     void OnSceneNew();
     void OnSceneOpen();
     void OnSceneOpenQuickly();
@@ -98,7 +99,6 @@ public slots:
     void OnSceneSaveToFolder();
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
-    void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
@@ -204,7 +204,7 @@ public slots:
 
     void OnSnapCameraToLandscape(bool);
 
-    void SetupTitle();
+    void SetupTitle(const DAVA::String& projectPath);
 
     void RestartParticleEffects();
     bool SetVisibilityToolEnabledIfPossible(bool);
@@ -241,9 +241,6 @@ protected:
     void SaveAllSceneEmitters(SceneEditor2* scene) const;
 
 private slots:
-    void ProjectOpened(const QString& path);
-    void ProjectClosed();
-
     void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -301,6 +298,8 @@ private:
     bool IsSavingAllowed();
     // <--
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+
     //Need for any debug functionality
     QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
@@ -308,19 +307,19 @@ private:
     QPointer<DeviceListController> deviceListController;
 
     RecentMenuItems recentFiles;
-    RecentMenuItems recentProjects;
 
 #if defined(NEW_PROPERTY_PANEL)
     wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
-    std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
 
 #if defined(__DAVAENGINE_MACOS__)
     ShortcutChecker shortcutChecker;
 #endif
+
+    DAVA::TArc::DataWrapper projectDataWrapper;
 
 private:
     struct EmitterDescriptor

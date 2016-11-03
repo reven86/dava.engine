@@ -1,4 +1,4 @@
-#include "TArc/Core/TArcCore.h"
+#include "TArc/Core/Core.h"
 #include "TArc/Core/ControllerModule.h"
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Core/ConsoleModule.h"
@@ -7,6 +7,7 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
@@ -19,6 +20,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 #include "Debug/DVAssert.h"
+#include "Utils/Utils.h"
 
 #include <QApplication>
 #include <QOffscreenSurface>
@@ -66,7 +68,7 @@ public:
 
     virtual void OnLoopStarted()
     {
-        FileSystem* fileSystem = GetEngineContext().fileSystem;
+        FileSystem* fileSystem = GetEngineContext()->fileSystem;
         DVASSERT(fileSystem != nullptr);
         propertiesHolder.reset(new PropertiesHolder("TArcProperties", fileSystem->GetCurrentDocumentsDirectory()));
     }
@@ -80,10 +82,17 @@ public:
 
     virtual void OnFrame(DAVA::float32 delta)
     {
-        for (DataWrapper& wrapper : wrappers)
+        if (isInFrame)
         {
-            wrapper.Sync(true);
+            return;
         }
+
+        isInFrame = true;
+        SCOPE_EXIT
+        {
+            isInFrame = false;
+        };
+        delayedExecutor.DelayedExecute(DAVA::Function<void(void)>(this, &Core::Impl::SyncWrappers));
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -98,12 +107,12 @@ public:
         }
     }
 
-    DataContext& GetGlobalContext() override
+    DataContext* GetGlobalContext() override
     {
-        return *globalContext;
+        return globalContext.get();
     }
 
-    DataContext& GetContext(DataContext::ContextID contextID) override
+    DataContext* GetContext(DataContext::ContextID contextID) override
     {
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
                                  {
@@ -112,25 +121,15 @@ public:
 
         if (iter == contexts.end())
         {
-            throw std::runtime_error(Format("There is no context with contextID %d at the moment", contextID));
+            return nullptr;
         }
 
-        return **iter;
+        return iter->get();
     }
 
-    DataContext& GetActiveContext() override
+    DataContext* GetActiveContext() override
     {
-        if (activeContext == nullptr)
-        {
-            throw std::runtime_error("There is no active context at the moment");
-        }
-
-        return *activeContext;
-    }
-
-    bool HasActiveContext() const override
-    {
-        return activeContext != nullptr;
+        return activeContext;
     }
 
     DataWrapper CreateWrapper(const ReflectedType* type) override
@@ -155,11 +154,11 @@ public:
         return propertiesHolder->CreateSubHolder(nodeName);
     }
 
-    EngineContext& GetEngineContext() override
+    EngineContext* GetEngineContext() override
     {
         EngineContext* engineContext = engine.GetContext();
         DVASSERT(engineContext);
-        return *engineContext;
+        return engineContext;
     }
 
 protected:
@@ -172,6 +171,26 @@ protected:
         }
     }
 
+    void SyncWrappers()
+    {
+        size_t index = 0;
+        while (index < wrappers.size())
+        {
+            if (!wrappers[index].IsActive())
+            {
+                DAVA::RemoveExchangingWithLast(wrappers, index);
+            }
+            else
+            {
+                ++index;
+            }
+        }
+        for (DataWrapper& wrapper : wrappers)
+        {
+            wrapper.Sync(true);
+        }
+    }
+
 protected:
     Engine& engine;
     Core* core;
@@ -180,8 +199,10 @@ protected:
     Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
     Vector<DataWrapper> wrappers;
+    bool isInFrame = false;
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
+    QtDelayedExecutor delayedExecutor;
 };
 
 class Core::ConsoleImpl : public Core::Impl
@@ -675,7 +696,7 @@ Core::Core(Engine& engine, bool connectSignals)
 
 Core::~Core() = default;
 
-EngineContext& Core::GetEngineContext()
+EngineContext* Core::GetEngineContext()
 {
     return impl->GetEngineContext();
 }
@@ -740,13 +761,13 @@ OperationInvoker* Core::GetMockInvoker()
     return nullptr;
 }
 
-DataContext& Core::GetActiveContext()
+DataContext* Core::GetActiveContext()
 {
     DVASSERT(impl);
     return impl->GetActiveContext();
 }
 
-DataContext& Core::GetGlobalContext()
+DataContext* Core::GetGlobalContext()
 {
     DVASSERT(impl);
     return impl->GetGlobalContext();

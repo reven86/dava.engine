@@ -9,7 +9,6 @@
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
-#include "Project/ProjectManager.h"
 #include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/Utils/RenderContextGuard.h"

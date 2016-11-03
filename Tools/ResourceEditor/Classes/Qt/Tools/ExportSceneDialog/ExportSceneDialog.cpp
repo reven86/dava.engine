@@ -4,7 +4,6 @@
 #include "Classes/Qt/Application/REGlobal.h"
 #include "Classes/Qt//DataStructures/ProjectManagerData.h"
 
-#include "Project/ProjectManager.h"
 #include "Settings/SettingsManager.h"
 #include "TextureCompression/TextureConverter.h"
 
@@ -138,9 +137,9 @@ void ExportSceneDialog::SetupUI()
 
 void ExportSceneDialog::InitializeValues()
 {
-    DAVA::TArc::DataContext& ctx = REGlobal::GetGlobalContext();
-    DVASSERT(ctx.HasData<ProjectManagerData>());
-    DAVA::String path = ctx.GetData<ProjectManagerData>().GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::String path = data->GetProjectPath().GetAbsolutePathname();
     projectPathBrowser->SetPath(QString::fromStdString(path + "Data/3d/"));
 
     for (DAVA::int32 gpu = DAVA::GPU_POWERVR_IOS; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)

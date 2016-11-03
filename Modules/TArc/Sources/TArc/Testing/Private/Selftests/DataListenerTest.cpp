@@ -33,11 +33,11 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     DAVA_TEST (EmptyDataNodeTest)
     {
         using namespace ::testing;
-        DAVA::TArc::DataContext& ctx = GetActiveContext();
+        DAVA::TArc::DataContext* ctx = GetActiveContext();
 
-        TEST_VERIFY(ctx.HasData<DataListenerNode>() == false);
-        ctx.CreateData(std::make_unique<DataListenerNode>());
-        TEST_VERIFY(ctx.HasData<DataListenerNode>() == true);
+        TEST_VERIFY(ctx->GetData<DataListenerNode>() == nullptr);
+        ctx->CreateData(std::make_unique<DataListenerNode>());
+        TEST_VERIFY(ctx->GetData<DataListenerNode>() != nullptr);
 
         activeWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
         activeWrapper.AddListener(&listener);
@@ -57,9 +57,9 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     {
         using namespace ::testing;
 
-        DAVA::TArc::DataContext& ctx = GetActiveContext();
-        TEST_VERIFY(ctx.HasData<DataListenerNode>() == true);
-        ctx.GetData<DataListenerNode>().dummyIntField = 1;
+        DAVA::TArc::DataContext* ctx = GetActiveContext();
+        TEST_VERIFY(ctx->GetData<DataListenerNode>() != nullptr);
+        ctx->GetData<DataListenerNode>()->dummyIntField = 1;
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
         EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
@@ -70,7 +70,7 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     {
         using namespace ::testing;
 
-        TEST_VERIFY(GetActiveContext().HasData<DataListenerNode>() == true);
+        TEST_VERIFY(GetActiveContext()->GetData<DataListenerNode>() != nullptr);
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
         EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyFloatField" }));
         EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField", "dummyFloatField" }));
@@ -82,13 +82,13 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     DAVA_TEST (DataNodeDeletingTest)
     {
         using namespace ::testing;
-        DAVA::TArc::DataContext& ctx = GetActiveContext();
-        ctx.DeleteData<DataListenerNode>();
+        DAVA::TArc::DataContext* ctx = GetActiveContext();
+        ctx->DeleteData<DataListenerNode>();
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
         EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
         EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
-        TEST_VERIFY(ctx.HasData<DataListenerNode>() == false);
+        TEST_VERIFY(ctx->GetData<DataListenerNode>() == nullptr);
     }
 
     DAVA::TArc::MockListener listener;

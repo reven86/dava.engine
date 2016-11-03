@@ -22,21 +22,13 @@ public:
     void CreateData(std::unique_ptr<DataNode>&& node);
 
     template <typename T>
-    bool HasData() const;
-
-    template <typename T>
-    T& GetData() const; // throw std::runtime_exception if T not exists
+    T* GetData() const; // returns nullptr if T not exists
 
     template <typename T>
     void DeleteData();
 
-    bool HasData(const ReflectedType* type) const;
-    DataNode& GetData(const ReflectedType* type) const; // throw std::runtime_exception if T not exists
+    DataNode* GetData(const ReflectedType* type) const; // returns nullptr if T not exists
     void DeleteData(const ReflectedType* type);
-
-    /*void RegisterAction(int id, const Function<void(const Any& args)>& action);
-    void UnregisterAction(int id);
-    void CallAction(int id, const Any& args);*/
 
     using ContextID = uint64;
     ContextID GetID() const;

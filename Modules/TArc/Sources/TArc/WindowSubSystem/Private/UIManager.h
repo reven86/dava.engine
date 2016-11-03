@@ -37,6 +37,7 @@ public:
     QString GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params) override;
 
     std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) override;
+    DAVA_DEPRECATED(QWidget* GetWindow(const WindowKey& windowKey) override);
 
     void InjectWindow(const WindowKey& windowKey, QMainWindow* window);
 

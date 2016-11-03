@@ -4,9 +4,11 @@
 
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
+#include "TArc/DataProcessing/DataContext.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QHBoxLayout>
@@ -515,7 +517,9 @@ void EmitterLayerWidget::OnSpriteBtn()
     QString startPath;
     if (layer->spritePath.IsEmpty())
     {
-        startPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesDataPath().GetAbsolutePathname());
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+        startPath = QString::fromStdString(data->GetParticlesDataPath().GetAbsolutePathname());
     }
     else
     {
@@ -1004,7 +1008,9 @@ void EmitterLayerWidget::OnSpritePathChanged(const QString& text)
 
 void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 {
-    const DAVA::FilePath& particlesDataPath = ProjectManager::Instance()->GetParticlesDataPath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    const DAVA::FilePath& particlesDataPath = data->GetParticlesDataPath();
     const DAVA::FilePath spritePath = text.toStdString();
     const DAVA::String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
 

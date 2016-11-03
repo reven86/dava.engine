@@ -130,12 +130,12 @@ OperationInvoker* TestClass::GetMockInvoker()
     return core->GetMockInvoker();
 }
 
-DataContext& TestClass::GetActiveContext()
+DataContext* TestClass::GetActiveContext()
 {
     return core->GetActiveContext();
 }
 
-DataContext& TestClass::GetGlobalContext()
+DataContext* TestClass::GetGlobalContext()
 {
     return core->GetGlobalContext();
 }

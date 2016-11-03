@@ -12,7 +12,6 @@
 #include "Classes/Qt/Main/QtUtils.h"
 #include "Classes/Qt/Main/Request.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
-#include "Classes/Qt/Project/ProjectManager.h"
 #include "Classes/Qt/QualitySwitcher/QualitySwitcher.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "Classes/Qt/Scene/LandscapeThumbnails.h"
@@ -179,7 +178,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
-    , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
+//, recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
@@ -187,9 +186,11 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , shortcutChecker(this)
 #endif
 {
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper.AddListener(this);
+
     ActiveSceneHolder::Init();
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
-    spritesPacker = std::make_unique<SpritesPackerModule>(globalOperations);
 
     errorLoggerOutput = new ErrorDialogOutput(globalOperations);
     DAVA::Logger::AddCustomOutput(errorLoggerOutput);
@@ -197,19 +198,14 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     new LandscapeEditorShortcutManager(this);
     PathDescriptor::InitializePathDescriptors();
 
-    new ProjectManager();
     ui->setupUi(this);
     SetupWidget();
 
-    recentFiles.SetMenu(ui->menuFile);
-    recentProjects.SetMenu(ui->menuRecentProjects);
-
-    spritesPacker->SetAction(ui->actionReloadSprites);
-    ProjectManager::Instance()->SetSpritesPacker(spritesPacker.get());
+    recentFiles.SetMenu(ui->File);
+    // @TODO
+    //recentProjects.SetMenu(ui->menuRecentProjects);
 
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
-
-    SetupTitle();
 
     qApp->installEventFilter(this);
 
@@ -233,8 +229,6 @@ QtMainWindow::QtMainWindow(QWidget* parent)
 
     beastWaitDialog = new QtWaitDialog(this);
 
-    connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(ProjectOpened(const QString&)));
-    connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
     connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &QtMainWindow::SceneCommandExecuted);
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &QtMainWindow::SceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &QtMainWindow::SceneDeactivated);
@@ -286,7 +280,6 @@ QtMainWindow::~QtMainWindow()
     TextureBrowser::Instance()->Release();
     MaterialEditor::Instance()->Release();
 
-    ProjectManager::Instance()->Release();
     LandscapeEditorShortcutManager::Instance()->Release();
 
     std::static_pointer_cast<MainWindowDetails::GlobalOperationsProxy>(globalOperations)->Reset();
@@ -355,7 +348,9 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2* scene)
     DAVA::FilePath saveAsPath = scene->GetScenePath();
     if (!DAVA::FileSystem::Instance()->Exists(saveAsPath))
     {
-        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+        DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
         saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
     }
 
@@ -394,7 +389,9 @@ QString GetSaveFolderForEmitters()
     QString particlesPath;
     if (defaultPath.IsEmpty())
     {
-        particlesPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname());
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+        particlesPath = QString::fromStdString(data->GetParticlesConfigPath().GetAbsolutePathname());
     }
     else
     {
@@ -610,15 +607,15 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void QtMainWindow::SetupTitle()
+void QtMainWindow::SetupTitle(const DAVA::String& projectPath)
 {
     DAVA::String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
                                       static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
 
-    if (ProjectManager::Instance()->IsOpened())
+    if (!projectPath.empty())
     {
         title += " | Project - ";
-        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+        title += projectPath;
     }
 
     setWindowTitle(QString::fromStdString(title));
@@ -639,7 +636,8 @@ void QtMainWindow::SetupMainMenu()
     ui->menuDockWindows->addAction(dockConsole->toggleViewAction());
 
     recentFiles.InitMenuItems();
-    recentProjects.InitMenuItems();
+    // @TODO
+    //recentProjects.InitMenuItems();
 }
 
 void QtMainWindow::SetupThemeActions()
@@ -798,9 +796,6 @@ void QtMainWindow::SetupDocks()
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo, SLOT(UpdateInfoByTimer()));
     QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo, SLOT(TexturesReloaded()));
 
-    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
-    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
-
     ui->libraryWidget->Init(globalOperations);
     // Run Action Event dock
     {
@@ -834,14 +829,12 @@ void QtMainWindow::SetupDocks()
 void QtMainWindow::SetupActions()
 {
     // scene file actions
-    QObject::connect(ui->actionOpenProject, &QAction::triggered, this, &QtMainWindow::OnProjectOpen);
-    QObject::connect(ui->actionCloseProject, &QAction::triggered, this, &QtMainWindow::OnProjectClose);
     QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
 
     QAction* actionOpenSceneQuickly = FindFileDialog::CreateFindInFilesAction(this);
     actionOpenSceneQuickly->setIcon(SharedIcon(":/QtIcons/openscene.png"));
     actionOpenSceneQuickly->setText("Open Scene Quickly");
-    ui->menuFile->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
+    ui->File->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
     QObject::connect(actionOpenSceneQuickly, &QAction::triggered, this, &QtMainWindow::OnSceneOpenQuickly);
 
     QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
@@ -850,8 +843,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionOnlyOriginalTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolder);
     QObject::connect(ui->actionWithCompressedTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolderCompressed);
 
-    QObject::connect(ui->menuFile, &QMenu::triggered, this, &QtMainWindow::OnRecentFilesTriggered);
-    QObject::connect(ui->menuRecentProjects, &QMenu::triggered, this, &QtMainWindow::OnRecentProjectsTriggered);
+    QObject::connect(ui->File, &QMenu::triggered, this, &QtMainWindow::OnRecentFilesTriggered);
 
     // export
     QObject::connect(ui->actionExport, &QAction::triggered, this, &QtMainWindow::ExportTriggered);
@@ -1060,20 +1052,6 @@ void QtMainWindow::SetupShortCuts()
 // Scene signals
 // ###################################################################################################
 
-void QtMainWindow::ProjectOpened(const QString& path)
-{
-    EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->GetProjectPath() + "EditorConfig.yaml");
-
-    EnableProjectActions(true);
-    SetupTitle();
-}
-
-void QtMainWindow::ProjectClosed()
-{
-    EnableProjectActions(false);
-    SetupTitle();
-}
-
 void QtMainWindow::SceneActivated(SceneEditor2* scene)
 {
     scene->ActivateCommandStack();
@@ -1131,7 +1109,6 @@ void QtMainWindow::EnableProjectActions(bool enable)
     ui->actionCubemapEditor->setEnabled(enable);
     ui->actionImageSplitter->setEnabled(enable);
     ui->dockLibrary->setEnabled(enable);
-    ui->actionCloseProject->setEnabled(enable);
 
     recentFiles.EnableMenuItems(enable);
 }
@@ -1182,9 +1159,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
-
-    QAction* actionReloadSprites = spritesPacker->GetReloadAction();
-    actionReloadSprites->setEnabled(enable);
 
     ui->actionSetLightViewMode->setEnabled(enable);
 
@@ -1293,34 +1267,11 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommandNoti
 // Mainwindow Qt actions
 // ###################################################################################################
 
-void QtMainWindow::OnProjectOpen()
-{
-    DAVA::FilePath incomePath = ProjectManager::Instance()->ProjectOpenDialog();
-    OpenProject(incomePath);
-}
-
-void QtMainWindow::OpenProject(const DAVA::FilePath& projectPath)
-{
-    if (!projectPath.IsEmpty() &&
-        ProjectManager::Instance()->GetProjectPath() != projectPath &&
-        ui->sceneTabWidget->CloseAllTabs(false))
-    {
-        ProjectManager::Instance()->OpenProject(projectPath);
-        recentProjects.Add(projectPath.GetAbsolutePathname());
-    }
-}
-
-void QtMainWindow::OnProjectClose()
-{
-    if (ui->sceneTabWidget->CloseAllTabs(false))
-    {
-        ProjectManager::Instance()->CloseProject();
-    }
-}
-
 void QtMainWindow::OnSceneNew()
 {
-    if (ProjectManager::Instance()->IsOpened())
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    if (data->IsOpened())
     {
         ui->sceneTabWidget->OpenTab();
     }
@@ -1328,13 +1279,17 @@ void QtMainWindow::OnSceneNew()
 
 void QtMainWindow::OnSceneOpen()
 {
-    QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    QString path = FileDialog::getOpenFileName(this, "Open scene file", data->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
     OpenScene(path);
 }
 
 void QtMainWindow::OnSceneOpenQuickly()
 {
-    QString path = FindFileDialog::GetFilePath(ProjectManager::Instance()->GetDataSourceSceneFiles(), "sc2", this);
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    QString path = FindFileDialog::GetFilePath(data->GetDataSourceSceneFiles(), "sc2", this);
     if (!path.isEmpty())
     {
         OpenScene(path);
@@ -1501,7 +1456,9 @@ void QtMainWindow::ExportTriggered()
 
         WaitStart("Export", "Please wait...");
 
-        const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+        const DAVA::FilePath& projectPath = data->GetProjectPath();
         DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
 
         SceneExporter::Params exportingParams;
@@ -1535,15 +1492,6 @@ void QtMainWindow::OnRecentFilesTriggered(QAction* recentAction)
     if (!path.empty())
     {
         OpenScene(QString::fromStdString(path));
-    }
-}
-
-void QtMainWindow::OnRecentProjectsTriggered(QAction* recentAction)
-{
-    DAVA::String path = recentProjects.GetItem(recentAction);
-    if (!path.empty())
-    {
-        OpenProject(path);
     }
 }
 
@@ -2011,7 +1959,9 @@ void QtMainWindow::On2DCameraDialog()
 
 void QtMainWindow::On2DSpriteDialog()
 {
-    DAVA::FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::FilePath projectPath = data->GetProjectPath();
     projectPath += "Data/Gfx/";
 
     QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
@@ -2234,8 +2184,10 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
     DAVA::FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
     if (pathToSave.IsEmpty())
     {
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
         QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-                                                           ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(),
+                                                           data->GetDataSourcePath().GetAbsolutePathname().c_str(),
                                                            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if (selectedPath.isEmpty())
@@ -2542,7 +2494,9 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
         return false;
     }
 
-    DAVA::String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::String pathToSave = selectedPathname.GetRelativePathname(data->GetProjectPath().GetAbsolutePathname());
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, pathToSave);
 
     return true;
@@ -2790,6 +2744,35 @@ bool QtMainWindow::IsSavingAllowed()
     return true;
 }
 
+void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+{
+    DVASSERT(projectDataWrapper == wrapper);
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+
+    // empty fields mean that ProjectManagerData was just added
+    // this means that there is a first call
+    if (data != nullptr && fields.empty())
+    {
+        const SpritesPackerModule* spritesPacker = data->GetSpritesModules();
+        QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
+        QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
+
+        data->SetCloseProjectPredicateFunction(DAVA::Bind(&SceneTabWidget::CloseAllTabs, ui->sceneTabWidget, false));
+    }
+
+    if (data && !data->GetProjectPath().IsEmpty())
+    {
+        EnableProjectActions(true);
+        SetupTitle(data->GetProjectPath().GetAbsolutePathname());
+    }
+    else
+    {
+        ui->sceneTabWidget->CloseAllTabs(false);
+        EnableProjectActions(false);
+        SetupTitle(DAVA::String());
+    }
+}
+
 void QtMainWindow::OnObjectsTypeChanged(QAction* action)
 {
     SceneEditor2* scene = GetCurrentScene();
@@ -2834,7 +2817,9 @@ bool QtMainWindow::OpenScene(const QString& path)
 
     if (!path.isEmpty())
     {
-        DAVA::FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+        DAVA::FilePath projectPath(data->GetProjectPath());
         DAVA::FilePath argumentPath(path.toStdString());
 
         if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
@@ -3404,8 +3389,9 @@ void QtMainWindow::UpdateLandscapeRenderMode()
 
 bool QtMainWindow::ParticlesArePacking() const
 {
-    DVASSERT(spritesPacker);
-    return spritesPacker->IsRunning();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetSpritesModules()->IsRunning();
 }
 
 void QtMainWindow::CallAction(ID id, DAVA::Any&& args)

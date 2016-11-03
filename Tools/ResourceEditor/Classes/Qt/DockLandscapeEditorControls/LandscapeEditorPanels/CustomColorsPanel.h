@@ -5,11 +5,14 @@
 #include "DAVAEngine.h"
 #include "Main/Request.h"
 
+#include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/DataProcessing/DataListener.h"
+
 class QComboBox;
 class QPushButton;
 class SliderWidget;
 
-class CustomColorsPanel : public LandscapeEditorBasePanel
+class CustomColorsPanel : public LandscapeEditorBasePanel, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -20,8 +23,6 @@ public:
     explicit CustomColorsPanel(QWidget* parent = 0);
 
 private slots:
-    void ProjectOpened(const QString& path);
-
     void SetBrushSize(int brushSize);
     void SetColor(int color);
     bool SaveTexture();
@@ -57,11 +58,14 @@ private:
     DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
     DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+
 private:
     QComboBox* comboColor = nullptr;
     SliderWidget* sliderWidgetBrushSize = nullptr;
     QPushButton* buttonSaveTexture = nullptr;
     QPushButton* buttonLoadTexture = nullptr;
+    DAVA::TArc::DataWrapper sharedDataWrapper;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

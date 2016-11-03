@@ -15,7 +15,6 @@
 
 #include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"
@@ -411,8 +410,10 @@ private:
         QtPropertyDataInspDynamic* dynamicData = dynamic_cast<QtPropertyDataInspDynamic*>(data);
         if (dynamicData)
         {
-            QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
-            DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            DVASSERT(data != nullptr);
+            QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
+            DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
 
             // calculate appropriate default path
             if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
@@ -599,15 +600,18 @@ void MaterialEditor::initTemplates()
     {
         QStandardItemModel* templatesModel = new QStandardItemModel(this);
 
-        const QVector<ProjectManager::AvailableMaterialTemplate>* templates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data != nullptr);
+
+        const QVector<ProjectManagerData::AvailableMaterialTemplate>& templates = data->GetAvailableMaterialTemplates();
         QStandardItem* emptyItem = new QStandardItem(QString());
         templatesModel->appendRow(emptyItem);
 
-        for (int i = 0; i < templates->size(); ++i)
+        for (int i = 0; i < templates.size(); ++i)
         {
             QStandardItem* item = new QStandardItem();
-            item->setText(templates->at(i).name);
-            item->setData(templates->at(i).path, Qt::UserRole);
+            item->setText(templates.at(i).name);
+            item->setData(templates.at(i).path, Qt::UserRole);
             templatesModel->appendRow(item);
         }
 
@@ -1169,11 +1173,14 @@ void MaterialEditor::OnMaterialSave(bool checked)
 
         if (!outputFile.isEmpty() && (nullptr != activeScene))
         {
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            DVASSERT(data != nullptr);
+
             lastSavePath = outputFile.toLatin1().data();
 
             DAVA::SerializationContext materialContext;
             materialContext.SetScene(activeScene);
-            materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
+            materialContext.SetScenePath(data->GetProjectPath());
             materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
 
             DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());

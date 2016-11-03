@@ -222,7 +222,7 @@
    <property name="path" stdset="0">
     <string/>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="File">
     <property name="title">
      <string>File</string>
     </property>
@@ -412,7 +412,6 @@
      <addaction name="actionReleaseCurrentFrame"/>
     </widget>
     <addaction name="actionEnableCameraLight"/>
-    <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
@@ -470,7 +469,7 @@
     <addaction name="actionToggleUseInstancing"/>
     <addaction name="menuCrash_Produce"/>
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="File"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuQuality"/>
@@ -797,7 +796,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionReloadSprites"/>
    <addaction name="actionReloadShader"/>
    <addaction name="actionConvertModifiedTextures"/>
   </widget>
@@ -1508,15 +1506,6 @@
    </property>
    <property name="text">
     <string>Cubemap Editor</string>
-   </property>
-  </action>
-  <action name="actionReloadSprites">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/refresh_particle.png</normaloff>:/QtIcons/refresh_particle.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Sprites</string>
    </property>
   </action>
   <action name="actionSaveHeightmapToPNG">
