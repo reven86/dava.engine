@@ -6,10 +6,14 @@
 #include "DAVAConfig.h"
 #include "Debug/Replay.h"
 
+#if defined(__DAVAENGINE_APPLE__)
+#include "mach/mach_time.h"
+#endif
+
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_APPLE__)
 static mach_timebase_info_data_t timebase;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 

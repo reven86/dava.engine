@@ -1,12 +1,6 @@
 #pragma once
 
-#if defined(__DAVAENGINE_APPLE__)
-    #include <AvailabilityMacros.h>
-    #include <TargetConditionals.h>
-    #include <mach/mach.h>
-    #include <mach/mach_time.h>
-    #include <unistd.h>
-#endif
+#include "DAVAConfig.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
     #define WIN32_LEAN_AND_MEAN
