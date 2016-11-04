@@ -7,6 +7,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Input/InputSystem.h"
 #include "Platform/TemplateMacOS/MouseDeviceMacOS.h"
+#include "UI/UIEvent.h"
 
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"

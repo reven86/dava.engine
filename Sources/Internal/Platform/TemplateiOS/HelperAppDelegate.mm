@@ -78,8 +78,8 @@ public:
             }
         }
 
-        DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-        DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+        DAVA::UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(width, height);
+        DAVA::UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(physicalWidth, physicalHeight);
 
         rendererParams.window = [renderView layer];
         rendererParams.width = physicalWidth;

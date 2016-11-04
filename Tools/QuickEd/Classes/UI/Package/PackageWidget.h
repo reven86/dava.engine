@@ -100,6 +100,7 @@ private:
 
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
+    //source indexes
     std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
 };
