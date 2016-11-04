@@ -7,6 +7,7 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
+#include "TArc/Utils/RhiEmptyFrame.h"
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
