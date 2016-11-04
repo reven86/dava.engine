@@ -2537,12 +2537,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
                 GL_CALL(glValidateProgram(program));
                 GL_CALL(glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus));
                 GL_CALL(glGetProgramInfoLog(program, 2048, &validateLogLength, validateLog));
-                #if __DAVAENGINE_DEBUG__
-                if (validateLogLength > 1)
-                {
-                    DAVA::Logger::Info("Program validation log:\n%s", validateLog);
-                }
-                #endif
                 GL_CALL(glUseProgram(currentProgram));
             #endif
             }
