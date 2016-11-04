@@ -20,7 +20,6 @@
 
 //#define LOCALIZATION_DEBUG // enable graphic debugging info for displaying of text
 
-
 // This flag allow to enable profiling stats
 //#define __DAVAENGINE_ENABLE_DEBUG_STATS__
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
