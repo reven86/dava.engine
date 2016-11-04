@@ -3,7 +3,6 @@
 #include "Logger/Logger.h"
 
 #include "QtTools/Utils/DavaQtKeyboard.h"
-#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QObject>
 #include <QKeyEvent>
@@ -99,7 +98,6 @@ bool CheckContext(QAction* action)
 
 ShortcutChecker::ShortcutChecker(QObject* shortcutsContainer_)
     : shortcutsContainer(shortcutsContainer_)
-    , delayedExecutor(new QtDelayedExecutor(nullptr))
 {
     keyTranslateTable[1049] = 81;
     keyTranslateTable[1062] = 87;
@@ -136,8 +134,6 @@ ShortcutChecker::ShortcutChecker(QObject* shortcutsContainer_)
     keyTranslateTable[1070] = 46;
     keyTranslateTable[46] = 47;
 }
-
-ShortcutChecker::~ShortcutChecker() = default;
 
 bool ShortcutChecker::TryCallShortcut(QKeyEvent* e)
 {
@@ -185,18 +181,17 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
                 }
                 if (ShortcutCheckerDetail::CanCallShortcut(action))
                 {
-                    //when we call action and return true - event passed next to QtGuiApplication and call same actions in QWidget, which have the focus
-                    //so if action will copy data to the clipboard by Ctrl+C - then this shortcut will be passed to a focus widget and this widget will rewrite clipboard
-                    delayedExecutor->DelayedExecute([action]() {
-                        ShortcutCheckerDetail::CallShortcut(action);
-                    });
                     lastInputSequence = inputSequence;
                     lastShortcutTimestamp = event->timestamp();
                     // In corev2 we have additional delay on input event handling.
                     // All events from RenderWidget are pushed into queue, and core handle them on every frame.
                     // So we should wait at least 1 frame. Better 2 frames.
-                    QTimer::singleShot(30, []()
+                    QTimer::singleShot(30, [action]()
                                        {
+                                           //when we call action and return true - event passed next to QtGuiApplication and call same actions in QWidget, which have the focus
+                                           //so if action will copy data to the clipboard by Ctrl+C - then this shortcut will be passed to a focus widget and this widget will rewrite clipboard
+                                           ShortcutCheckerDetail::CallShortcut(action);
+
                                            // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
                                            // to fix this we will clear keyboard state in Dava if we found shortcut
                                            DAVA::DavaQtKeyboard::ClearAllKeys();

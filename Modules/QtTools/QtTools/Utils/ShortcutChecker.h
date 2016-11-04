@@ -8,13 +8,11 @@
 
 class QObject;
 class QKeyEvent;
-class QtDelayedExecutor;
 
 class ShortcutChecker
 {
 public:
     ShortcutChecker(QObject* shortcutsContainer);
-    ~ShortcutChecker();
 
     bool TryCallShortcut(QKeyEvent* event);
 
@@ -28,5 +26,4 @@ private:
 
     QKeySequence lastInputSequence;
     DAVA::uint64 lastShortcutTimestamp = 0;
-    std::unique_ptr<QtDelayedExecutor> delayedExecutor;
 };
