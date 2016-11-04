@@ -13,5 +13,11 @@ void DataListener::InitListener(const DataWrapper& wrapper)
 {
     holder = wrapper;
 }
+
+void DataListener::Clear()
+{
+    holder = DataWrapper();
+}
+
 } // namespace TArc
 } // namespace DAVA

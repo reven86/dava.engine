@@ -194,5 +194,6 @@ void REModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA:
     REModuleDetail::REGlobalData* globalData = ctx->GetData<REModuleDetail::REGlobalData>();
     globalData->mainWindow->OnSceneNew();
 
+    launchDataWrapper.RemoveListener(this);
     launchDataWrapper = DAVA::TArc::DataWrapper();
 }

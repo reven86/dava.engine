@@ -17,6 +17,7 @@ public:
 private:
     friend class DataWrapper;
     void InitListener(const DataWrapper& wrapper);
+    void Clear();
 
 private:
     DataWrapper holder;

@@ -42,4 +42,6 @@ void LaunchModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const D
         return;
 
     ctx->GetData<LaunchModuleData>()->launchFinished = true;
+    projectDataWrapper.RemoveListener(this);
+    projectDataWrapper = DAVA::TArc::DataWrapper();
 }

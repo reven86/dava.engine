@@ -30,6 +30,7 @@ struct DataWrapper::Impl
     Vector<Any> cachedValues;
 
     Set<DataListener*> listeners;
+    Set<DataListener*> listenersToRemove;
 };
 
 DataWrapper::DataWrapper(const ReflectedType* type)
@@ -109,8 +110,7 @@ void DataWrapper::RemoveListener(DataListener* listener)
         return;
     }
 
-    DVASSERT(listener != nullptr);
-    impl->listeners.erase(listener);
+    impl->listenersToRemove.insert(listener);
 }
 
 bool DataWrapper::IsActive() const
@@ -182,6 +182,13 @@ void DataWrapper::Sync(bool notifyListeners)
             NotifyListeners(notifyListeners);
         }
     }
+
+    for (DataListener* listener : impl->listenersToRemove)
+    {
+        listener->Clear();
+        impl->listeners.erase(listener);
+    }
+    impl->listenersToRemove.clear();
 }
 
 void DataWrapper::SyncWithEditor(const Reflection& etalonData)
