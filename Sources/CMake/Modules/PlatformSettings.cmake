@@ -209,7 +209,8 @@ elseif( WARNINGS_AS_ERRORS )
 -Wno-unused-local-typedef \
 -Wno-nullable-to-nonnull-conversion \
 -Wno-super-class-method-mismatch \
--Wno-nonnull")
+-Wno-nonnull \
+-Wno-gnu-zero-variadic-macro-arguments")
 
 
     if( ANDROID )

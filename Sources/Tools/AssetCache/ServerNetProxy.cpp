@@ -65,7 +65,6 @@ void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packet
             }
             case PACKET_CLEAR_REQUEST:
             {
-                ClearRequestPacket* p = static_cast<ClearRequestPacket*>(packet.get());
                 listener->OnClearCache(channel);
                 return;
             }
@@ -77,7 +76,6 @@ void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packet
             }
             case PACKET_STATUS_REQUEST:
             {
-                StatusRequestPacket* p = static_cast<StatusRequestPacket*>(packet.get());
                 listener->OnStatusRequested(channel);
                 return;
             }

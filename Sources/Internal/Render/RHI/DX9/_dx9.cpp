@@ -1,11 +1,12 @@
 #include "_dx9.h"
+#include "Concurrency/Mutex.h"
 
-    #pragma warning(disable : 7 193 271 304 791)
-    #include <d3d9.h>
-    #pragma warning(default : 7 193 271 304 791)
-    #include <stdio.h>
+#pragma warning(disable : 7 193 271 304 791)
+#include <d3d9.h>
+#pragma warning(default : 7 193 271 304 791)
+#include <stdio.h>
 
-    #include "../rhi_Public.h"
+#include "../rhi_Public.h"
 
 //==============================================================================
 
@@ -19,16 +20,9 @@ UINT _D3D9_Adapter = D3DADAPTER_DEFAULT;
 
 InitParam _DX9_InitParam;
 D3DPRESENT_PARAMETERS _DX9_PresentParam;
+DAVA::Mutex _DX9_ResetParamsMutex;
 
-void (*_End_Frame)() = nullptr;
-}
-
-//==============================================================================
-//
-//  publics:
-
-const char*
-D3D9ErrorText(HRESULT hr)
+const char* D3D9ErrorText(HRESULT hr)
 {
     switch (hr)
     {
@@ -120,12 +114,9 @@ D3D9ErrorText(HRESULT hr)
     return text;
 }
 
-namespace rhi
-{
 //------------------------------------------------------------------------------
 
-D3DFORMAT
-DX9_TextureFormat(TextureFormat format)
+D3DFORMAT DX9_TextureFormat(TextureFormat format)
 {
     switch (format)
     {
