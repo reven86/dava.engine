@@ -165,10 +165,11 @@ void GameCore::OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::floa
     int32 width = int32(window->GetSize().dx);
     int32 height = int32(window->GetSize().dy);
 
-    UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
-    UIControlSystem::Instance()->vcs->SetProportionsIsFixed(false);
-    UIControlSystem::Instance()->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
-    UIControlSystem::Instance()->vcs->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
+    EngineContext* context = engine.GetContext();
+    context->uiControlSystem->vcs->SetVirtualScreenSize(width, height);
+    context->uiControlSystem->vcs->SetProportionsIsFixed(false);
+    context->uiControlSystem->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    context->uiControlSystem->vcs->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
 #endif
 }
 
