@@ -94,9 +94,9 @@ static Handle gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 
 static void gles2_RenderPass_Begin(Handle pass)
 {
-    }
+}
 
-    static void gles2_RenderPass_End(Handle pass)
+static void gles2_RenderPass_End(Handle pass)
 {
 }
 
@@ -293,7 +293,7 @@ static void gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depth
 
 static void gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-// NOTE: expected to be called BEFORE SetFragmentTexture
+    // NOTE: expected to be called BEFORE SetFragmentTexture
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
@@ -515,12 +515,12 @@ void CommandBufferGLES2_t::Execute()
 
     sync = InvalidHandle;
 
-//unsigned    cmd_cnt=0;
-//unsigned    dip_cnt=0;
-//unsigned    stcb_cnt=0;
-//unsigned    sttx_cnt=0;
+    //unsigned    cmd_cnt=0;
+    //unsigned    dip_cnt=0;
+    //unsigned    stcb_cnt=0;
+    //unsigned    sttx_cnt=0;
 
-    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)     
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
         const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
         switch (SoftwareCommandType(cmd->type))
@@ -812,10 +812,10 @@ void CommandBufferGLES2_t::Execute()
 
         case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-//++stcb_cnt;
-unsigned buf_i = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->bufIndex;
-const void* inst = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->inst;
-Handle buf = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buffer;
+            //++stcb_cnt;
+            unsigned buf_i = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buffer;
             vp_const[buf_i] = buf;
             vp_const_data[buf_i] = inst;
         }
@@ -823,10 +823,10 @@ Handle buf = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buff
 
         case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-//++stcb_cnt;
-unsigned buf_i = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->bufIndex;
-const void* inst = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->inst;
-Handle buf = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->buffer;
+            //++stcb_cnt;
+            unsigned buf_i = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->buffer;
             fp_const[buf_i] = buf;
             fp_const_data[buf_i] = inst;
         }
@@ -834,9 +834,9 @@ Handle buf = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->bu
 
         case CMD_SET_FRAGMENT_TEXTURE:
         {
-//++sttx_cnt;
-Handle tex = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->tex;
-unsigned unit_i = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->unitIndex;
+            //++sttx_cnt;
+            Handle tex = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->unitIndex;
             TextureGLES2::SetToRHI(tex, unit_i, tex_unit_0);
             StatSet::IncStat(stat_SET_TEX, 1);
         }
@@ -844,9 +844,9 @@ unsigned unit_i = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->unitI
 
         case CMD_SET_VERTEX_TEXTURE:
         {
-//++sttx_cnt;
-Handle tex = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->tex;
-unsigned unit_i = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->unitIndex;
+            //++sttx_cnt;
+            Handle tex = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->unitIndex;
 
             TextureGLES2::SetToRHI(tex, unit_i, DAVA::InvalidIndex);
             StatSet::IncStat(stat_SET_TEX, 1);
@@ -1124,7 +1124,7 @@ unsigned unit_i = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->unitInd
         c += cmd->size;
     }
 
-//Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
+    //Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
 }
 
 //------------------------------------------------------------------------------
@@ -1134,27 +1134,27 @@ static void _GLES2_RejectFrame(const CommonImpl::Frame& frame)
     if (frame.sync != InvalidHandle)
     {
         SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(frame.sync);
+        s->is_signaled = true;
+        s->is_used = true;
+    }
+    for (Handle p : frame.pass)
+    {
+        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(p);
+
+        for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+        {
+            CommandBufferGLES2_t* cc = CommandBufferPoolGLES2::Get(*c);
+            if (cc->sync != InvalidHandle)
+            {
+                SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(cc->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
-            for (Handle p : frame.pass)
-            {
-                RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(p);
-
-                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
-                {
-                    CommandBufferGLES2_t* cc = CommandBufferPoolGLES2::Get(*c);
-                    if (cc->sync != InvalidHandle)
-                    {
-                        SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(cc->sync);
-                        s->is_signaled = true;
-                        s->is_used = true;
-                    }
-                    cc->curUsedSize = 0;
-                    CommandBufferPoolGLES2::Free(*c);
-                }
-                RenderPassPoolGLES2::Free(p);
+            cc->curUsedSize = 0;
+            CommandBufferPoolGLES2::Free(*c);
         }
+        RenderPassPoolGLES2::Free(p);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1169,24 +1169,24 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     for (Handle p : frame.pass)
     {
         RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(p);
-            bool do_add = true;
+        bool do_add = true;
 
-            for (unsigned i = 0; i != pass.size(); ++i)
+        for (unsigned i = 0; i != pass.size(); ++i)
+        {
+            if (pp->priority > pass[i]->priority)
             {
-                if (pp->priority > pass[i]->priority)
-                {
-                    pass.insert(pass.begin() + i, 1, pp);
-                    do_add = false;
-                    break;
-                }
+                pass.insert(pass.begin() + i, 1, pp);
+                do_add = false;
+                break;
             }
-            if (do_add)
-                pass.push_back(pp);
         }
+        if (do_add)
+            pass.push_back(pp);
+    }
 
-        frame_n = frame.frameNumber;
+    frame_n = frame.frameNumber;
 
-        if (frame.sync != InvalidHandle)
+    if (frame.sync != InvalidHandle)
     {
         SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(frame.sync);
         sync->frame = frame_n;
@@ -1194,93 +1194,93 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_used = true;
     }
 
-        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-        for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
-        {
-            RenderPassGLES2_t* pp = *p;
-
-            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
-            {
-                Handle cb_h = pp->cmdBuf[b];
-                CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
-
-                cb->Execute();
-
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
-
-                    sync->frame = frame_n;
-                    sync->is_signaled = false;
-                    sync->is_used = true;
-                }
-
-                CommandBufferPoolGLES2::Free(cb_h);
-            }
-        }
-        Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-
-        for (Handle p : frame.pass)
-            RenderPassPoolGLES2::Free(p);
-
-        //update sync objects
-        _GLES2_SyncObjectsSync.Lock();
-        for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
-        {
-            if (s->is_used && (frame_n - s->frame >= 2))
-                s->is_signaled = true;
-        }
-        _GLES2_SyncObjectsSync.Unlock();
-    }
-
-    bool _GLES2_PresentBuffer()
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
+    for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
-        bool success = true;
-        if (!_GLES2_Context) //this is special case when rendering is done inside other app render loop (eg: QT loop in ResEditor)
-            return true;
+        RenderPassGLES2_t* pp = *p;
 
-    // do swap-buffers
+        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+        {
+            Handle cb_h = pp->cmdBuf[b];
+            CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+
+            cb->Execute();
+
+            if (cb->sync != InvalidHandle)
+            {
+                SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
+
+                sync->frame = frame_n;
+                sync->is_signaled = false;
+                sync->is_used = true;
+            }
+
+            CommandBufferPoolGLES2::Free(cb_h);
+        }
+    }
+    Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
+
+    for (Handle p : frame.pass)
+        RenderPassPoolGLES2::Free(p);
+
+    //update sync objects
+    _GLES2_SyncObjectsSync.Lock();
+    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
+    {
+        if (s->is_used && (frame_n - s->frame >= 2))
+            s->is_signaled = true;
+    }
+    _GLES2_SyncObjectsSync.Unlock();
+}
+
+bool _GLES2_PresentBuffer()
+{
+    bool success = true;
+    if (!_GLES2_Context) //this is special case when rendering is done inside other app render loop (eg: QT loop in ResEditor)
+        return true;
+
+// do swap-buffers
 #if defined(__DAVAENGINE_WIN32__)
-        win32_gl_end_frame();
+    win32_gl_end_frame();
 #elif defined(__DAVAENGINE_MACOS__)
-        macos_gl_end_frame();
+    macos_gl_end_frame();
 #elif defined(__DAVAENGINE_IPHONE__)
-        ios_gl_end_frame();
+    ios_gl_end_frame();
 #elif defined(__DAVAENGINE_ANDROID__)
-        success = android_gl_end_frame();        
+    success = android_gl_end_frame();        
     #endif
 
-        return success;
-    }
+    return success;
+}
 
-    void _GLES2_ResetBlock()
-        {
+void _GLES2_ResetBlock()
+{
 #if defined(__DAVAENGINE_ANDROID__)
 
-            TextureGLES2::ReCreateAll();
-            VertexBufferGLES2::ReCreateAll();
-            IndexBufferGLES2::ReCreateAll();
+    TextureGLES2::ReCreateAll();
+    VertexBufferGLES2::ReCreateAll();
+    IndexBufferGLES2::ReCreateAll();
 
-            // update sync-objects, as pre-reset state is not actual anymore, also resolve constant reset causing already executed frame being never synced
+    // update sync-objects, as pre-reset state is not actual anymore, also resolve constant reset causing already executed frame being never synced
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
         if (s->is_used)
             s->is_signaled = true;
     }
 #endif
-        }
+}
 
-        void _GLES2_FinishFrame()
-        {
-            ProgGLES2::InvalidateAllConstBufferInstances();
-                }
-
-//------------------------------------------------------------------------------
+void _GLES2_FinishFrame()
+{
+    ProgGLES2::InvalidateAllConstBufferInstances();
+}
 
 //------------------------------------------------------------------------------
 
-                static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
-    {
+//------------------------------------------------------------------------------
+
+static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
+{
     DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
 
     int err = GL_NO_ERROR;
@@ -1732,7 +1732,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool forceImmediate)
     cmd.cmdCount = cmdCount;
     cmd.forceImmediate = forceImmediate;
     RenderLoop::IssueImmediateCommand(&cmd);
-    }
+}
 
 namespace CommandBufferGLES2
 {
