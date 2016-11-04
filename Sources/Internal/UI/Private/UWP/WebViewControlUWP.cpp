@@ -171,6 +171,9 @@ WebViewControl::~WebViewControl()
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
 #endif
+        nativeWebView->NavigationStarting -= tokenNavigationStarting;
+        nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+
         nativeWebView = nullptr;
     }
 }
@@ -369,8 +372,8 @@ void WebViewControl::InstallEventHandlers()
         if (auto self = self_weak.lock())
             OnNavigationCompleted(sender, args);
     });
-    nativeWebView->NavigationStarting += navigationStarting;
-    nativeWebView->NavigationCompleted += navigationCompleted;
+    tokenNavigationStarting = nativeWebView->NavigationStarting += navigationStarting;
+    tokenNavigationCompleted = nativeWebView->NavigationCompleted += navigationCompleted;
     // clang-format on
 }
 
