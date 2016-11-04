@@ -26,8 +26,8 @@ static rhi::HSamplerState fontSamplerState;
 static rhi::HTextureSet fontTextureSet;
 static rhi::HTexture fontTexture;
 
-static TrackedObject* trackedObject = nullptr;
-static uint32 inputHandlerToken = 0;
+static DAVA::TrackedObject* trackedObject = nullptr;
+static DAVA::uint32 inputHandlerToken = 0;
 
 static DAVA::Size2i framebufferSize = { 0, 0 };
 
@@ -439,7 +439,7 @@ bool OnInput(UIEvent* input)
 
     ImGuiIO& io = ImGui::GetIO();
 
-    VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
+    DAVA::VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     Vector2 physPoint = vcs->ConvertVirtualToPhysical(vcs->ConvertInputToVirtual(input->physPoint));
 #if defined(__DAVAENGINE_COREV2__)
     int32 mouseButton = (input->device == DAVA::eInputDevices::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
