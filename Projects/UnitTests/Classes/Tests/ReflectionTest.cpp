@@ -368,7 +368,7 @@ DAVA_TESTCLASS (ReflectionTest)
     DAVA_TEST (DumpTest)
     {
         TestBaseClass t;
-        DAVA::Reflection t_ref = DAVA::Reflection::Create(&t);
+        DAVA::Reflection t_ref = DAVA::Reflection::Create(t);
 
         std::ostringstream dumpOutput;
         t_ref.Dump(dumpOutput);
@@ -391,18 +391,17 @@ DAVA_TESTCLASS (ReflectionTest)
     template <typename T>
     void DoTypeNameTest(const char* permName)
     {
-        const DAVA::ReflectedType* rtype0 = DAVA::ReflectedType::Get<T>();
+        const DAVA::ReflectedType* rtype0 = DAVA::ReflectedTypeDB::Get<T>();
         TEST_VERIFY(nullptr != rtype0);
-        TEST_VERIFY(rtype0->GetPermanentName() == permName);
-        TEST_VERIFY(rtype0->GetRttiType() == DAVA::RttiType::Instance<T>());
+        TEST_VERIFY(rtype0->rttiType == DAVA::RttiType::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByRttiType(DAVA::RttiType::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedTypeDB::GetByRttiType(DAVA::RttiType::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
-        const DAVA::ReflectedType* rtype2 = DAVA::ReflectedType::GetByRttiName(typeid(T).name());
+        const DAVA::ReflectedType* rtype2 = DAVA::ReflectedTypeDB::GetByRttiName(typeid(T).name());
         TEST_VERIFY(rtype2 == rtype0);
 
-        const DAVA::ReflectedType* rtype3 = DAVA::ReflectedType::GetByPermanentName(permName);
+        const DAVA::ReflectedType* rtype3 = DAVA::ReflectedTypeDB::GetByPermanentName(permName);
         TEST_VERIFY(rtype3 == rtype0);
     }
 
@@ -416,7 +415,7 @@ DAVA_TESTCLASS (ReflectionTest)
     DAVA_TEST (FieldsAndMethods)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t);
+        DAVA::Reflection r = DAVA::Reflection::Create(t);
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
@@ -424,7 +423,7 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(r.GetMethod("BaseMe").IsValid());
 
         BaseOnlyReflection b;
-        r = DAVA::Reflection::Create(&b);
+        r = DAVA::Reflection::Create(b);
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
@@ -432,10 +431,11 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(r.GetMethod("BaseMe").IsValid());
     }
 
+#ifdef __REFLECTION_FEATURE__
     template <typename T, typename... Args>
     void DoCtorTest(Args... args)
     {
-        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<T>();
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<T>();
         const DAVA::CtorWrapper* ctor = rtype->GetCtor(DAVA::AnyFn::Params::FromArgs<Args...>());
 
         TEST_VERIFY(nullptr != ctor);
@@ -465,7 +465,6 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
 
-#ifdef __REFLECTION_FEATURE__
         TEST_VERIFY(nullptr != rtype);
         if (nullptr != rtype)
         {
@@ -512,7 +511,6 @@ DAVA_TESTCLASS (ReflectionTest)
                 TEST_VERIFY(!obj.IsValid());
             }
         }
-#endif
 
         //         rtype = DAVA::ReflectedType::Get<StructPtr>();
         //         TEST_VERIFY(nullptr != rtype->GetCtor());
@@ -523,6 +521,8 @@ DAVA_TESTCLASS (ReflectionTest)
         //         rtype = DAVA::ReflectedType::Get<BaseBase>();
         //         TEST_VERIFY(nullptr != rtype->GetCtor());
     }
+
+#endif
 
     template <typename T, typename G, typename S>
     void DoValueSetGetTest(DAVA::Reflection ref, const G& realGetter, const S& realSetter, const T& v1, const T& v2)
@@ -564,7 +564,7 @@ DAVA_TESTCLASS (ReflectionTest)
     DAVA_TEST (ValueSetGet)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t);
+        DAVA::Reflection r = DAVA::Reflection::Create(t);
 
         // static get/set
         auto realStaticGetter = []() { return TestBaseClass::staticInt; };
@@ -585,7 +585,7 @@ DAVA_TESTCLASS (ReflectionTest)
     DAVA_TEST (ValueFnSetGet)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t);
+        DAVA::Reflection r = DAVA::Reflection::Create(t);
 
         // static get/set
         auto realStaticGetter = DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn);
@@ -612,7 +612,7 @@ DAVA_TESTCLASS (ReflectionTest)
     DAVA_TEST (ValueSetGetByPointer)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t);
+        DAVA::Reflection r = DAVA::Reflection::Create(t);
 
         SimpleStruct s1;
         SimpleStruct s2;

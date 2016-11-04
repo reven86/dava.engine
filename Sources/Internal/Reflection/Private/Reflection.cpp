@@ -262,7 +262,7 @@ Reflection::Reflection(const ReflectedObject& object_, const ReflectedType* obje
 {
     if (nullptr != objectType)
     {
-        structureWrapper = objectType->structureWrapper;
+        structureWrapper = objectType->structureWrapper.get();
     }
 
     if (nullptr != objectMeta)

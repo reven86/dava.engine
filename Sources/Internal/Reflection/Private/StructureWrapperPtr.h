@@ -23,7 +23,7 @@ public:
         return StructureWrapperDefault::HasFields(obj, vw);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
@@ -62,7 +62,7 @@ public:
         return StructureWrapperDefault::HasMethods(obj, vw);
     }
 
-    Reflection::Method GetMethod(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    AnyFn GetMethod(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
@@ -98,7 +98,7 @@ protected:
         if (derefObj.IsValid())
         {
             T* ptr = derefObj.GetPtr<T>();
-            sw = ReflectedType::GetByPointer(ptr)->structureWrapper.get();
+            sw = ReflectedTypeDB::GetByPointer(ptr)->structureWrapper.get();
         }
 
         return sw;

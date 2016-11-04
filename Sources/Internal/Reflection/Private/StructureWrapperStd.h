@@ -17,7 +17,7 @@ public:
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<size_t>())
         {
@@ -28,11 +28,11 @@ public:
             if (it != c->end())
             {
                 V* v = &(*it);
-                return Reflection::Field::Create(key, v);
+                return Reflection::Create(v);
             }
         }
 
-        return Reflection::Field();
+        return Reflection();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -46,7 +46,7 @@ public:
         for (auto& it : *c)
         {
             V* v = &it;
-            ret.emplace_back(Reflection::Field::Create(Any(i++), v));
+            ret.emplace_back({ Any(i++), Reflection::Create(v) });
         }
 
         return ret;
@@ -65,7 +65,7 @@ public:
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<K>())
         {
@@ -78,11 +78,11 @@ public:
                 // std::set values shouldn't be modified
                 // so get const pointer on value
                 const K* v = &(*it);
-                return Reflection::Field::Create(key, v);
+                return Reflection::Create(v);
             }
         }
 
-        return Reflection::Field();
+        return Reflection();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -99,7 +99,7 @@ public:
             // std::set values shouldn't be modified
             // so get const pointer on value
             const K* v = &(*it);
-            ret.emplace_back(Reflection::Field::Create(Any(*v), v));
+            ret.emplace_back({ Any(*v), Reflection::Create(v) });
         }
 
         return ret;
@@ -119,7 +119,7 @@ public:
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<K>())
         {
@@ -129,11 +129,11 @@ public:
             if (c->count(k) > 0)
             {
                 V* v = &c->at(k);
-                return Reflection::Field::Create(key, v);
+                return Reflection::Create(v);
             }
         }
 
-        return Reflection::Field();
+        return Reflection();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -146,7 +146,7 @@ public:
         for (auto& pair : *c)
         {
             V* v = &(pair.second);
-            ret.emplace_back(Reflection::Field::Create(Any(pair.first), v));
+            ret.emplace_back({ Any(pair.first), Reflection::Create(v) });
         }
 
         return ret;

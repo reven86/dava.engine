@@ -4,6 +4,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/RttiType.h"
+#include "Base/RttiInheritance.h"
 #include "Base/Exception.h"
 #include "Base/Private/AutoStorage.h"
 

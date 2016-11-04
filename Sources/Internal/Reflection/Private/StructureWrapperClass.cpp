@@ -58,8 +58,7 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
         {
             if (it->first == name)
             {
-                ret = Reflection(vw->GetValueObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
-
+                ret = Reflection(vw->GetValueObject(object), it->second.type, it->second.meta.get(), it->second.vw.get());
                 break;
             }
         }
@@ -110,7 +109,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
         Reflection::Field rf;
 
         rf.key = it.first;
-        rf.ref = Reflection(vw->GetValueObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
+        rf.ref = Reflection(vw->GetValueObject(object), it.second.type, it.second.meta.get(), it.second.vw.get());
 
         ret.emplace_back(std::move(rf));
     }

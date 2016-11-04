@@ -93,13 +93,4 @@ Reflection Reflection::Create(T& object, const ReflectedMeta* objectMeta)
     const ReflectedType* objectType = ReflectedTypeDB::GetByPointer(&object);
     return Reflection(ReflectedObject(&object), objectType, objectMeta, &objectValueWrapper);
 }
-
-template <typename T>
-static Reflection Reflection::Create(T* object, const ReflectedMeta* objectMeta)
-{
-    static ValueWrapperDefault<T*> objectValueWrapper;
-
-    const ReflectedType* objectType = ReflectedTypeDB::GetByPointer(&object);
-    return Reflection(ReflectedObject(&object), objectType, objectMeta, &objectValueWrapper);
-}
 } // namespace DAVA

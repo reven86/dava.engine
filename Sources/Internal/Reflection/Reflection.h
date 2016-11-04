@@ -75,9 +75,6 @@ public:
     template <typename T>
     static Reflection Create(T& object, const ReflectedMeta* objectMeta = nullptr);
 
-    template <typename T>
-    static Reflection Create(T* object, const ReflectedMeta* objectMeta = nullptr);
-
 private:
     ReflectedObject object;
     const ReflectedMeta* objectMeta = nullptr;

@@ -30,7 +30,7 @@ const ReflectedType* GetVirtualReflectedType(const T* ptr)
 template <typename T>
 const ReflectedType* GetByThisPointer(const T* this_)
 {
-    return ReflectedType::Get<T>();
+    return ReflectedTypeDB::Get<T>();
 }
 
 template <typename T>
@@ -76,7 +76,7 @@ public:
 template <typename T>
 ReflectedType* ReflectedTypeDB::CreateStatic()
 {
-    static ReflectedType ret;
+    static ReflectedType ret(nullptr);
     return &ret;
 }
 
@@ -133,7 +133,7 @@ const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
         ret = ReflectedTypeDBDetail::GetVirtualReflectedType(ptr);
         if (nullptr == ret)
         {
-            ret = ReflectedType::Edit<T>();
+            ret = ReflectedTypeDB::Edit<T>();
         }
     }
 
@@ -144,7 +144,7 @@ template <typename T, typename... Bases>
 void ReflectedTypeDB::RegisterBases()
 {
     RttiInheritance::RegisterBases<T, Bases...>();
-    bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
+    bool basesUnpack[] = { false, ReflectedTypeDB::Edit<Bases>() != nullptr... };
 }
 
 #ifdef __REFLECTION_FEATURE__

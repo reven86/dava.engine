@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import Tkinter
 import tkFont
 import sys
@@ -13,24 +15,30 @@ cmake_platforms = [
     {
         "active" : 1,
         "name" : "Win",
+        "os" : "nt",
         "generator" : "Visual Studio 12 2013"
     },
     {
-        "name" : "Win x64 (Tools)",
+        "name" : "Win x64",
+        "os" : "nt",
         "generator" : "Visual Studio 12 2013 Win64"
     },
     {
-        "name" : "WinUPW",
+        "name" : "Win10",
         "generator" : "Visual Studio 14 2015",
+        "os" : "nt",
         "toolchain" : "Sources/CMake/Toolchains/win_uap.toolchain.cmake"
     },
     {
+        "active" : 1,
         "name" : "OSX",
+        "os" : "posix",
         "generator" : "Xcode",
     },
     {
         "name" : "iOS",
         "generator" : "Xcode",
+        "os" : "posix",
         "toolchain" : "Sources/CMake/Toolchains/ios.toolchain.cmake"
     },
     {
@@ -76,7 +84,7 @@ def CmdSel():
     cmake_command = CreateCmakeCmd()
     textcmd.configure(state="normal")
     textcmd.delete(1.0, "end")
-    textcmd.insert("end", cmake_command)
+    textcmd.insert(1.0, cmake_command)
     textcmd.configure(state="disabled")
 
 def CmdRun():
@@ -100,13 +108,22 @@ for pl_i, pl_setting in enumerate(cmake_platforms):
     pl_radiobtn = Tkinter.Radiobutton(tk, text=pl_setting["name"], variable=var_platform, command=CmdSel, value=pl_i)
     pl_radiobtn.grid(row=pl_row, column=0, sticky="W")
 
-    if "active" in pl_setting:
-        if pl_setting["active"] == 1:
-            var_platform.set(pl_i)
+    enabled = True
 
     if "enabled" in pl_setting:
         if pl_setting["enabled"] == 0:
-            pl_radiobtn.config(state="disabled")
+            enabled = False
+
+    if "os" in pl_setting:
+        if pl_setting["os"] != os.name:
+            enabled = False
+
+    if not enabled:
+        pl_radiobtn.config(state="disabled")
+    else:
+        if "active" in pl_setting:
+            if pl_setting["active"] == 1:
+                var_platform.set(pl_i)
 
     pl_row = pl_row + 1
 
@@ -114,9 +131,9 @@ Tkinter.Checkbutton(tk, text="Unity", variable=var_unity, command=CmdSel).grid(r
 Tkinter.Checkbutton(tk, text="Deploy", variable=var_deploy, command=CmdSel).grid(row=1, column=1, sticky="W")
 Tkinter.Checkbutton(tk, text="CoreV2", variable=var_coreV2, command=CmdSel).grid(row=2, column=1, sticky="W")
 
-textcmd = Tkinter.Text(tk, width=50, height=5, state="disabled", bg=tk.cget("bg"), font=tkFont.Font(root=tk, family="Courier", size=8))
+textfnt = tkFont.Font(root=tk, family="Arial", size=9)
+textcmd = Tkinter.Text(tk, width=50, height=5, state="disabled", bg=tk.cget("bg"), font=textfnt)
 textcmd.grid(row=10, columnspan=2, sticky="W")
-textcmd.insert(Tkinter.INSERT, "")
 
 run_btn = Tkinter.Button(tk, text="Run", width=10, bd=1, command=CmdRun)
 run_btn.grid(row=12, column=1, sticky="E")

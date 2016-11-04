@@ -49,7 +49,7 @@ public:
     void AddField(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
     {
         ClassField clField;
-        clField.type = ReflectedType::Get<T>();
+        clField.type = ReflectedTypeDB::Get<T>();
         clField.vw = std::move(vw);
         fields.emplace_back(std::make_pair(fieldName, std::move(clField)));
     }
@@ -84,7 +84,7 @@ private:
     {
         static inline const ReflectedType* Get()
         {
-            return ReflectedType::Get<std::nullptr_t>();
+            return ReflectedTypeDB::Get<std::nullptr_t>();
         }
     };
 
@@ -93,7 +93,7 @@ private:
     {
         static inline const ReflectedType* Get()
         {
-            return ReflectedType::Get<T>();
+            return ReflectedTypeDB::Get<T>();
         }
     };
 
@@ -102,7 +102,7 @@ private:
     {
         static inline const ReflectedType* Get()
         {
-            return ReflectedType::Get<T>();
+            return ReflectedTypeDB::Get<T>();
         }
     };
 
