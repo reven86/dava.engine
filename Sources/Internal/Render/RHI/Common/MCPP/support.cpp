@@ -2910,43 +2910,6 @@ const char* text)
             c = *cp++ & UCHARMAX; /* Macro parameter number   */
             mcpp_fprintf(MCPP_DBG, "<%d>", c);
             break;
-        case MAC_INF:
-            goto no_magic;
-            /* Macro informations inserted by -K option */
-            c2 = *cp++ & UCHARMAX;
-            if (option_flags.v || c2 == MAC_CALL_START || c2 == MAC_ARG_START)
-            {
-                c = ((*cp++ & UCHARMAX) - 1) * UCHARMAX;
-                c += (*cp++ & UCHARMAX) - 1;
-            }
-            switch (c2)
-            {
-            case MAC_CALL_START:
-                mcpp_fprintf(MCPP_DBG, "<MAC%d>", c);
-                break;
-            case MAC_CALL_END:
-                if (option_flags.v)
-                    mcpp_fprintf(MCPP_DBG, "<MAC_END%d>", c);
-                else
-                    chr = "<MAC_END>";
-                break;
-            case MAC_ARG_START:
-                c1 = *cp++ & UCHARMAX;
-                mcpp_fprintf(MCPP_DBG, "<MAC%d:ARG%d>", c, c1 - 1);
-                break;
-            case MAC_ARG_END:
-                if (option_flags.v)
-                {
-                    c1 = *cp++ & UCHARMAX;
-                    mcpp_fprintf(MCPP_DBG, "<ARG_END%d-%d>", c, c1 - 1);
-                }
-                else
-                {
-                    chr = "<ARG_END>";
-                }
-                break;
-            }
-            break;
         case DEF_MAGIC:
             if (standard)
             {
@@ -2993,7 +2956,6 @@ const char* text)
                 break;
             } /* Else fall through    */
         default:
-        no_magic:
             if (c < ' ')
                 mcpp_fprintf(MCPP_DBG, "<^%c>", c + '@');
             else
