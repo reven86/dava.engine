@@ -238,7 +238,7 @@ void HoodSystem::ResetModifValues()
     scaleHood.modifScale = 0;
 }
 
-void HoodSystem::Process(float timeElapsed)
+void HoodSystem::Process(DAVA::float32 timeElapsed)
 {
     if (!IsLocked() && !lockedScale)
     {
