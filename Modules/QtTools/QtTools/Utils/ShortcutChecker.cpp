@@ -10,6 +10,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QTimer>
+#include <QPointer>
 
 namespace ShortcutCheckerDetail
 {
@@ -186,11 +187,15 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
                     // In corev2 we have additional delay on input event handling.
                     // All events from RenderWidget are pushed into queue, and core handle them on every frame.
                     // So we should wait at least 1 frame. Better 2 frames.
-                    QTimer::singleShot(30, [action]()
+                    QPointer<T> safeActionPointer(action);
+                    QTimer::singleShot(30, [safeActionPointer]()
                                        {
                                            //when we call action and return true - event passed next to QtGuiApplication and call same actions in QWidget, which have the focus
                                            //so if action will copy data to the clipboard by Ctrl+C - then this shortcut will be passed to a focus widget and this widget will rewrite clipboard
-                                           ShortcutCheckerDetail::CallShortcut(action);
+                                           if (!safeActionPointer.isNull())
+                                           {
+                                               ShortcutCheckerDetail::CallShortcut(safeActionPointer.data());
+                                           }
 
                                            // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
                                            // to fix this we will clear keyboard state in Dava if we found shortcut
