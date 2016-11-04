@@ -50,7 +50,7 @@ public:
     void SetVisible(bool visible);
     bool IsVisible() const;
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
 private:
