@@ -68,6 +68,13 @@ public:
         return AddConnection(nullptr, Func(fn), tid);
     }
 
+    template <typename Obj, typename Fn>
+    SigConnectionID Connect(Obj* obj, const Fn& fn, ThreadIDType tid = {})
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(TrackedObject::Cast(obj), Func(fn), tid);
+    }
+
     template <typename Obj, typename Cls>
     SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
