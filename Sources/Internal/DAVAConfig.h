@@ -20,9 +20,6 @@
 
 //#define LOCALIZATION_DEBUG // enable graphic debugging info for displaying of text
 
-//#define __DAVAENGINE_RENDER_AUTOCONFIG__	// it will use DAVANENGINE_OPENGL for MacOS / iPhone, and
-//#define __DAVAENGINE_DIRECTX9__
-#define __DAVAENGINE_OPENGL__
 
 // This flag allow to enable profiling stats
 //#define __DAVAENGINE_ENABLE_DEBUG_STATS__

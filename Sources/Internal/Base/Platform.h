@@ -17,6 +17,7 @@
     #undef Yield
     #undef ERROR
     #undef DELETE
+    #undef CopyFile
 
     #if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     #elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
