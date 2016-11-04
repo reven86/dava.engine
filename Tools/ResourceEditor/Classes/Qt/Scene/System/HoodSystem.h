@@ -51,7 +51,7 @@ public:
     bool IsVisible() const;
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
 
 private:
     void Draw();
