@@ -16,6 +16,7 @@ class ConfigParser;
 struct AppVersion
 {
     QString id;
+    //can be empty
     QString runPath;
     QString cmd;
     QString url;

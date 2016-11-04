@@ -13,7 +13,7 @@ QString errorsMsg[ERROR_COUNT] = {
     "Network Error",
     "Config parse error",
     "Archive unpacking error",
-    "Application is running. Please, close it",
+    "Application %1 is running. Please, close it.",
     "Updating error",
     "File error",
     "Can not find path"
@@ -40,13 +40,19 @@ void ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
     msgBox.exec();
 }
 
-int ShowRetryDlg(bool canCancel)
+int ShowRetryDlg(const QString& appName, const QString& appPath, bool canCancel)
 {
     QFlags<QMessageBox::StandardButton> buts = QMessageBox::Retry;
     if (canCancel)
         buts |= QMessageBox::Cancel;
 
-    QMessageBox msgBox(QMessageBox::Critical, "Error", errorsMsg[ERROR_IS_RUNNING], buts);
+    QString message = errorsMsg[ERROR_IS_RUNNING].arg(appName);
+
+    if (!appPath.isEmpty())
+    {
+        message += "\n" + appPath;
+    }
+    QMessageBox msgBox(QMessageBox::Critical, "Error", message, buts);
     msgBox.exec();
     return msgBox.result();
 }

@@ -10,6 +10,7 @@
 #include <QQueue>
 
 class FileManager;
+struct AppVersion;
 class ApplicationManager : public QObject
 {
     Q_OBJECT
@@ -35,6 +36,8 @@ public:
 
     QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
     FileManager* GetFileManager() const;
+
+    static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
 public slots:
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);

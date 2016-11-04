@@ -147,6 +147,28 @@ FileManager* ApplicationManager::GetFileManager() const
     return fileManager;
 }
 
+QString ApplicationManager::GetLocalAppPath(const AppVersion* version, const QString& appID)
+{
+    Q_ASSERT(!appID.isEmpty());
+    if (version == nullptr)
+    {
+        return QString();
+    }
+    QString runPath = version->runPath;
+    if (runPath.isEmpty())
+    {
+        QString correctID = ApplicationManagerDetails::RemoveWhitespace(appID);
+#ifdef Q_OS_WIN
+        runPath = correctID + ".exe";
+#elif defined(Q_OS_MAC)
+        runPath = correctID + ".app";
+#else
+#error "unsupported platform"
+#endif //platform
+    }
+    return runPath;
+}
+
 bool ApplicationManager::ShouldShowNews()
 {
     return remoteConfig.GetNewsID() != localConfig.GetNewsID();
@@ -162,10 +184,11 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     //check self-update
     if (remoteConfig.GetLauncherVersion() != localConfig.GetLauncherVersion())
     {
-        AppVersion version;
-        version.id = remoteConfig.GetLauncherVersion();
-        version.url = remoteConfig.GetLauncherURL();
-        tasks.push_back(UpdateTask("", "", version, true));
+        AppVersion newVersion;
+        newVersion.id = remoteConfig.GetLauncherVersion();
+        newVersion.url = remoteConfig.GetLauncherURL();
+
+        tasks.push_back(UpdateTask("", "", nullptr, newVersion, true));
 
         return;
     }
@@ -191,7 +214,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
                 Application* localApp = localConfig.GetApplication(branch->id, app->id);
                 AppVersion* localAppVersion = localApp->GetVersion(0);
                 if (localAppVersion->id != appVersion->id)
-                    tasks.push_back(UpdateTask(branch->id, app->id, *appVersion));
+                    tasks.push_back(UpdateTask(branch->id, app->id, localAppVersion, *appVersion));
             }
         }
     }
@@ -201,7 +224,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     {
         Branch* branch = localConfig.GetBranch(i);
         if (!remoteConfig.GetBranch(branch->id))
-            tasks.push_back(UpdateTask(branch->id, "", AppVersion(), false, true));
+            tasks.push_back(UpdateTask(branch->id, "", nullptr, AppVersion(), false, true));
     }
 }
 
@@ -238,18 +261,7 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
         return "";
     }
     QString runPath = GetApplicationDirectory(branchID, appID);
-    QString localAppPath = version->runPath;
-    if (localAppPath.isEmpty())
-    {
-        QString localAppID = ApplicationManagerDetails::RemoveWhitespace(appID);
-#ifdef Q_OS_WIN
-        localAppPath = localAppID + ".exe";
-#elif defined(Q_OS_MAC)
-        localAppPath = localAppID + ".app";
-#else
-#error "unsupported platform"
-#endif //platform
-    }
+    QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
     if (!QFile::exists(runPath))
     {
@@ -292,7 +304,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         {
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessenger::ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(appID, runPath, true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }
@@ -332,7 +344,7 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
             }
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessenger::ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(app->id, runPath, true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }

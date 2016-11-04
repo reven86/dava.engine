@@ -135,7 +135,7 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            currentDownload = networkManager->get(QNetworkRequest(QUrl(task.version.url)));
+            currentDownload = networkManager->get(QNetworkRequest(QUrl(task.newVersion.url)));
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
             connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
@@ -202,10 +202,13 @@ void UpdateDialog::DownloadFinished()
     const UpdateTask& task = tasks.head();
 
     QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
-    QString runPath = appDir + task.version.runPath;
-    while (ProcessHelper::IsProcessRuning(runPath))
-        ErrorMessenger::ShowRetryDlg(false);
-
+    if (task.currentVersion != nullptr)
+    {
+        QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
+        QString runPath = appDir + localAppPath;
+        while (ProcessHelper::IsProcessRuning(runPath))
+            ErrorMessenger::ShowRetryDlg(task.appID, runPath, false);
+    }
     FileManager::DeleteDirectory(appDir);
 
     UpdateLastLogValue(tr("Download Complete!"));
@@ -217,7 +220,7 @@ void UpdateDialog::DownloadFinished()
     if (ListArchive(filePath, files)
         && UnpackArchive(filePath, appDir, files))
     {
-        emit AppInstalled(task.branchID, task.appID, task.version);
+        emit AppInstalled(task.branchID, task.appID, task.newVersion);
         UpdateLastLogValue("Unpack Complete!");
         CompleteLog();
     }

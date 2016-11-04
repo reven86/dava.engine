@@ -171,14 +171,16 @@ void MainWindow::OnInstallAll()
 {
     QQueue<UpdateTask> tasks;
     ConfigParser* remoteConfig = appManager->GetRemoteConfig();
+    ConfigParser* localConfig = appManager->GetLocalConfig();
     for (int i = 0, count = ui->tableWidget->rowCount(); i < count; ++i)
     {
         QString appID, insVersionID, avVersionID;
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
-        AppVersion* version = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
-        if (version != nullptr)
+        AppVersion* currentVersion = localConfig->GetAppVersion(selectedBranchID, appID, insVersionID);
+        AppVersion* newVersion = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
+        if (newVersion != nullptr)
         {
-            tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+            tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
         }
     }
 
@@ -216,14 +218,15 @@ void MainWindow::OnInstall(int rowNumber)
     QString appID, insVersionID, avVersionID;
     GetTableApplicationIDs(rowNumber, appID, insVersionID, avVersionID);
 
-    AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
-    if (version == nullptr)
+    AppVersion* newVersion = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
+    if (newVersion == nullptr)
     {
         Q_ASSERT(false);
         return;
     }
+    AppVersion* currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);
     QQueue<UpdateTask> tasks;
-    tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+    tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
 
     ShowUpdateDialog(tasks);
 
@@ -445,7 +448,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         if (tasks.front().isSelfUpdate)
         {
             FileManager* fileManager = appManager->GetFileManager();
-            SelfUpdater updater(fileManager, tasks.front().version.url, this);
+            SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)
