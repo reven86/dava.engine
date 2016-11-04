@@ -76,8 +76,6 @@ static int do_sizeof(void);
 /* Evaluate sizeof (type)       */
 static int look_type(int typecode);
 /* Look for type of the name    */
-static void dump_val(const char* msg, const VAL_SIGN* valp);
-/* Print value of an operand    */
 
 /* For debug and error messages.    */
 static const char* const opname[OP_END + 1] = {
@@ -1593,8 +1591,10 @@ int op)
     return v1;
 }
 
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4146)
+#endif
 static expr_t eval_unsigned(
 VAL_SIGN** valpp,
 uexpr_t v1u,
@@ -1721,7 +1721,9 @@ int op)
     *valpp = valp;
     return v1;
 }
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 static void overflow(
 const char* op_name,

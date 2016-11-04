@@ -1280,8 +1280,10 @@ char** token_p /* Address of preceding token pointer   */
     return out;
 }
 
+#if defined(_MSC_VER)
 #pragma warning(push) 
 #pragma warning(disable : 4018)
+#endif
 static const char* remove_magics(
 const char* argp, /* The argument list    */
 int from_last /* token is the last or first?  */
@@ -1596,6 +1598,9 @@ int from_last /* token is the last or first?  */
 
     return arg_p;
 }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #if DEBUG_MACRO_ANN
 static void chk_symmetry(
