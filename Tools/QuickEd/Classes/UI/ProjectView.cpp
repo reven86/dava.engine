@@ -4,9 +4,9 @@
 
 #include <QComboBox>
 
-MainWindow::ProjectView::ProjectView(MainWindow* aMainWindow)
-    : QObject(aMainWindow)
-    , mainWindow(aMainWindow)
+MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
+    : QObject(mainWindow_)
+    , mainWindow(mainWindow_)
 {
     InitPluginsToolBar();
     SetProjectActionsEnabled(false);

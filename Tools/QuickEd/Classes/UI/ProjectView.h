@@ -9,7 +9,7 @@ class MainWindow::ProjectView : public QObject
 {
     Q_OBJECT
 public:
-    ProjectView(MainWindow* aMainWindow);
+    ProjectView(MainWindow* mainWindow);
 
     void SetProjectPath(const QString& projectPath);
     void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);

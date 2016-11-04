@@ -10,11 +10,11 @@
 
 using namespace DAVA;
 
-DialogConfigurePreset::DialogConfigurePreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetNameArg, QWidget* parent)
+DialogConfigurePreset::DialogConfigurePreset(EditorFontSystem* editorFontSystem_, const QString& originalPresetName_, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogConfigurePreset())
-    , originalPresetName(originalPresetNameArg)
-    , editorFontSystem(aEditorFontSystem)
+    , originalPresetName(originalPresetName_)
+    , editorFontSystem(editorFontSystem_)
 {
     ui->setupUi(this);
     ui->pushButton_resetLocale->setIcon(QIcon(":/Icons/edit_undo.png"));

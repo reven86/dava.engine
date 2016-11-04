@@ -46,11 +46,6 @@ private slots:
     void OnShowHelp();
 
 private:
-    static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path, MainWindow* mainWindow);
-    static std::tuple<QString, DAVA::ResultList> CreateNewProject();
-
-    static DAVA::Result CreateProjectStructure(const QString& projectFilePath);
-
     void OpenProject(const QString& path);
     bool CloseProject();
 

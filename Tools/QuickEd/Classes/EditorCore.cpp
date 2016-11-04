@@ -46,6 +46,139 @@ void InitPVRTexTool()
 #endif
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 }
+
+std::tuple<std::unique_ptr<Project>, ResultList> CreateProject(const QString& path, MainWindow* mainWindow)
+{
+    ResultList resultList;
+
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
+    {
+        QString message = QObject::tr("%1 does not exist.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    if (!fileInfo.isFile())
+    {
+        QString message = QObject::tr("%1 is not a file.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    ProjectProperties properties;
+    std::tie(resultList, properties) = Project::ParseProjectPropertiesFromFile(path);
+    if (!resultList.IsSuccess())
+    {
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    return std::make_tuple(std::make_unique<Project>(mainWindow->GetProjectView(), properties), resultList);
+}
+
+DAVA::Result CreateProjectStructure(const QString& projectFilePath)
+{
+    QDir projectDir(QFileInfo(projectFilePath).absolutePath());
+
+    ProjectProperties defaultSettings = ProjectProperties::Default();
+
+    QString resourceDirectory = QString::fromStdString(defaultSettings.GetResourceDirectory().relative);
+    if (!projectDir.mkpath(resourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
+    }
+
+    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.GetIntermediateResourceDirectory().relative);
+    if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
+    }
+
+    QDir resourceDir(projectDir.absolutePath() + resourceDirectory);
+
+    QString gfxDirectory = QString::fromStdString(defaultSettings.GetGfxDirectories().front().directory.relative);
+    if (!resourceDir.mkpath(gfxDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create gfx directory %1.").arg(gfxDirectory).toStdString());
+    }
+
+    QString uiDirectory = QString::fromStdString(defaultSettings.GetUiDirectory().relative);
+    if (!resourceDir.mkpath(uiDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(uiDirectory).toStdString());
+    }
+
+    QString textsDirectory = QString::fromStdString(defaultSettings.GetTextsDirectory().relative);
+    if (!resourceDir.mkpath(textsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(textsDirectory).toStdString());
+    }
+
+    QString fontsDirectory = QString::fromStdString(defaultSettings.GetFontsDirectory().relative);
+    if (!resourceDir.mkpath(fontsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts directory %1.").arg(fontsDirectory).toStdString());
+    }
+
+    QString fontsConfigDirectory = QString::fromStdString(defaultSettings.GetFontsConfigsDirectory().relative);
+    if (!resourceDir.mkpath(fontsConfigDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
+    }
+
+    QDir textsDir(resourceDir.absolutePath() + textsDirectory);
+    QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml"));
+    if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
+    }
+    defaultLanguageTextFile.close();
+
+    QDir fontsConfigDir(resourceDir.absolutePath() + fontsConfigDirectory);
+    QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName())));
+    if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create localization file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
+    }
+    defaultFontsConfigFile.close();
+
+    defaultSettings.SetProjectFile(projectFilePath.toStdString());
+    if (!Project::EmitProjectPropertiesToFile(defaultSettings))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create project file %1.").arg(projectFilePath).toStdString());
+    }
+
+    return Result();
+}
+
+std::tuple<QString, DAVA::ResultList> CreateNewProject()
+{
+    DAVA::ResultList resultList;
+
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), QObject::tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
+    {
+        return std::make_tuple(QString(), resultList);
+    }
+
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = QString::fromStdString(ProjectProperties::GetProjectFileName());
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        resultList.AddResult(Result::RESULT_FAILURE, QObject::tr("Project file exists!").toStdString());
+        return std::make_tuple(QString(), resultList);
+    }
+
+    Result result = CreateProjectStructure(fullProjectFilePath);
+    if (result.type != Result::RESULT_SUCCESS)
+    {
+        resultList.AddResult(result);
+        return std::make_tuple(QString(), resultList);
+    }
+
+    return std::make_tuple(fullProjectFilePath, resultList);
+}
 };
 
 REGISTER_PREFERENCES_ON_START(EditorCore,
@@ -157,7 +290,7 @@ void EditorCore::OpenProject(const QString& path)
     ResultList resultList;
     std::unique_ptr<Project> newProject;
 
-    std::tie(newProject, resultList) = CreateProject(path, mainWindow.get());
+    std::tie(newProject, resultList) = EditorCoreDetails::CreateProject(path, mainWindow.get());
 
     if (newProject.get())
     {
@@ -178,139 +311,6 @@ void EditorCore::OpenProject(const QString& path)
     }
 
     mainWindow->ShowResultList(tr("Error while loading project"), resultList);
-}
-
-std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const QString& path, MainWindow* mainWindow)
-{
-    ResultList resultList;
-
-    QFileInfo fileInfo(path);
-    if (!fileInfo.exists())
-    {
-        QString message = tr("%1 does not exist.").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-        return std::make_tuple(nullptr, resultList);
-    }
-
-    if (!fileInfo.isFile())
-    {
-        QString message = tr("%1 is not a file.").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-        return std::make_tuple(nullptr, resultList);
-    }
-
-    ProjectProperties properties;
-    std::tie(resultList, properties) = Project::ParseProjectPropertiesFromFile(path);
-    if (!resultList.IsSuccess())
-    {
-        return std::make_tuple(nullptr, resultList);
-    }
-
-    return std::make_tuple(std::make_unique<Project>(mainWindow->GetProjectView(), properties), resultList);
-}
-
-std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
-{
-    DAVA::ResultList resultList;
-
-    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
-    if (projectDirPath.isEmpty())
-    {
-        return std::make_tuple(QString(), resultList);
-    }
-
-    QDir projectDir(projectDirPath);
-    const QString projectFileName = QString::fromStdString(ProjectProperties::GetProjectFileName());
-    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
-    if (QFile::exists(fullProjectFilePath))
-    {
-        resultList.AddResult(Result::RESULT_FAILURE, String("Project file exists!"));
-        return std::make_tuple(QString(), resultList);
-    }
-
-    Result result = CreateProjectStructure(fullProjectFilePath);
-    if (result.type != Result::RESULT_SUCCESS)
-    {
-        resultList.AddResult(result);
-        return std::make_tuple(QString(), resultList);
-    }
-
-    return std::make_tuple(fullProjectFilePath, resultList);
-}
-
-DAVA::Result EditorCore::CreateProjectStructure(const QString& projectFilePath)
-{
-    QDir projectDir(QFileInfo(projectFilePath).absolutePath());
-
-    ProjectProperties defaultSettings = ProjectProperties::Default();
-
-    QString resourceDirectory = QString::fromStdString(defaultSettings.GetResourceDirectory().relative);
-    if (!projectDir.mkpath(resourceDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
-    }
-
-    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.GetIntermediateResourceDirectory().relative);
-    if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
-    }
-
-    QDir resourceDir(projectDir.absolutePath() + resourceDirectory);
-
-    QString gfxDirectory = QString::fromStdString(defaultSettings.GetGfxDirectories().front().directory.relative);
-    if (!resourceDir.mkpath(gfxDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create gfx directory %1.").arg(gfxDirectory).toStdString());
-    }
-
-    QString uiDirectory = QString::fromStdString(defaultSettings.GetUiDirectory().relative);
-    if (!resourceDir.mkpath(uiDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create UI directory %1.").arg(uiDirectory).toStdString());
-    }
-
-    QString textsDirectory = QString::fromStdString(defaultSettings.GetTextsDirectory().relative);
-    if (!resourceDir.mkpath(textsDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create UI directory %1.").arg(textsDirectory).toStdString());
-    }
-
-    QString fontsDirectory = QString::fromStdString(defaultSettings.GetFontsDirectory().relative);
-    if (!resourceDir.mkpath(fontsDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create fonts directory %1.").arg(fontsDirectory).toStdString());
-    }
-
-    QString fontsConfigDirectory = QString::fromStdString(defaultSettings.GetFontsConfigsDirectory().relative);
-    if (!resourceDir.mkpath(fontsConfigDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
-    }
-
-    QDir textsDir(resourceDir.absolutePath() + textsDirectory);
-    QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml"));
-    if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
-    }
-    defaultLanguageTextFile.close();
-
-    QDir fontsConfigDir(resourceDir.absolutePath() + fontsConfigDirectory);
-    QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName())));
-    if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create localization file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
-    }
-    defaultFontsConfigFile.close();
-
-    defaultSettings.SetProjectFile(projectFilePath.toStdString());
-    if (!Project::EmitProjectPropertiesToFile(defaultSettings))
-    {
-        return Result(Result::RESULT_ERROR, QString("Can not create project file %1.").arg(projectFilePath).toStdString());
-    }
-
-    return Result();
 }
 
 void EditorCore::OnCloseProject()
@@ -456,7 +456,7 @@ void EditorCore::OnNewProject()
     ResultList resultList;
     QString newProjectPath;
 
-    std::tie(newProjectPath, resultList) = CreateNewProject();
+    std::tie(newProjectPath, resultList) = EditorCoreDetails::CreateNewProject();
 
     if (!newProjectPath.isEmpty())
     {

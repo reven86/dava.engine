@@ -8,16 +8,16 @@
 
 using namespace DAVA;
 
-DialogAddPreset::DialogAddPreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetNameArg, QWidget* parent)
+DialogAddPreset::DialogAddPreset(EditorFontSystem* editorFontSystem_, const QString& originalPresetName_, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogAddPreset())
-    , editorFontSystem(aEditorFontSystem)
+    , editorFontSystem(editorFontSystem_)
 {
     ui->setupUi(this);
     ui->comboBox_baseFontPresetName->addItem("");
     ui->comboBox_baseFontPresetName->addItems(editorFontSystem->GetDefaultPresetNames());
-    ui->comboBox_baseFontPresetName->setCurrentText(originalPresetNameArg);
-    ui->lineEdit_newFontPresetName->setText(originalPresetNameArg);
+    ui->comboBox_baseFontPresetName->setCurrentText(originalPresetName_);
+    ui->lineEdit_newFontPresetName->setText(originalPresetName_);
 
     ui->lineEdit_newFontPresetName->setCompleter(new QCompleter(editorFontSystem->GetDefaultPresetNames(), ui->lineEdit_newFontPresetName));
 

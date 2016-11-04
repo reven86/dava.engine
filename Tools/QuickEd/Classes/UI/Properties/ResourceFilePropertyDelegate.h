@@ -7,7 +7,7 @@ class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit ResourceFilePropertyDelegate(const QString& extension, const QString& aResourceSubDir, PropertiesTreeItemDelegate* delegate);
+    explicit ResourceFilePropertyDelegate(const QString& extension, const QString& resourceSubDir, PropertiesTreeItemDelegate* delegate);
     ~ResourceFilePropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index) override;

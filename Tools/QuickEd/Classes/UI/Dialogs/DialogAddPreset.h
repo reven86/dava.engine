@@ -13,7 +13,7 @@ class DialogAddPreset : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogAddPreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
+    explicit DialogAddPreset(EditorFontSystem* editorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
     ~DialogAddPreset();
 
     QString GetPresetName() const;

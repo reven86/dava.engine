@@ -9,9 +9,9 @@
 
 #include "ui_mainwindow.h"
 
-MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* aMainWindow)
-    : QObject(aMainWindow)
-    , mainWindow(aMainWindow)
+MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
+    : QObject(mainWindow_)
+    , mainWindow(mainWindow_)
 {
     SetDocumentActionsEnabled(false);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->previewWidget, &PreviewWidget::OnDocumentChanged);

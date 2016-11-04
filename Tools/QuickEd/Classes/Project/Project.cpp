@@ -27,17 +27,17 @@
 
 using namespace DAVA;
 
-Project::Project(MainWindow::ProjectView* aView, const ProjectProperties& aSettings)
+Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& properties_)
     : QObject(nullptr)
-    , view(aView)
+    , view(view_)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
     , projectStructure(new ProjectStructure(QStringList() << "yaml"))
-    , properties(aSettings)
-    , projectDirectory(QString::fromStdString(aSettings.GetProjectDirectory().GetStringValue()))
-    , projectName(QString::fromStdString(aSettings.GetProjectFile().GetFilename()))
+    , properties(properties_)
+    , projectDirectory(QString::fromStdString(properties_.GetProjectDirectory().GetStringValue()))
+    , projectName(QString::fromStdString(properties_.GetProjectFile().GetFilename()))
 {
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
@@ -111,7 +111,6 @@ Project::~Project()
 Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
 {
     return properties.GetLibraryPackages();
-    //return properties.libraryPackages;
 }
 
 std::tuple<ResultList, ProjectProperties> Project::ParseProjectPropertiesFromFile(const QString& projectFile)

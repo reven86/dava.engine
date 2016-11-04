@@ -37,7 +37,7 @@ public:
     static const QString& Get3dFileExtension();
     static const QString& GetUiFileExtension();
 
-    Project(MainWindow::ProjectView* aView, const ProjectProperties& aSettings);
+    Project(MainWindow::ProjectView* view, const ProjectProperties& properties);
     ~Project();
 
     void SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient);

@@ -115,7 +115,8 @@ void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
 
     std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(QDir(directory));
 
-    watcher->addPaths(subDirectories << directory);
+    subDirectories << directory;
+    watcher->addPaths(subDirectories);
     projectFiles += filesInDirectory;
 }
 

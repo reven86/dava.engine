@@ -76,16 +76,16 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void MainWindow::SetEditorTitle(const QString& aEditorTitle)
+void MainWindow::SetEditorTitle(const QString& editorTitle_)
 {
-    editorTitle = aEditorTitle;
+    editorTitle = editorTitle_;
 
     UpdateWindowTitle();
 }
 
-void MainWindow::SetProjectPath(const QString& aProjectPath)
+void MainWindow::SetProjectPath(const QString& projectPath_)
 {
-    projectPath = aProjectPath;
+    projectPath = projectPath_;
 
     UpdateWindowTitle();
 }

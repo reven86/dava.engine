@@ -18,7 +18,7 @@ class DialogConfigurePreset : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogConfigurePreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
+    explicit DialogConfigurePreset(EditorFontSystem* editorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
     ~DialogConfigurePreset();
 private slots:
     void initPreset();

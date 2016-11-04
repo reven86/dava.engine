@@ -9,7 +9,7 @@ class MainWindow::DocumentGroupView : public QObject
 {
     Q_OBJECT
 public:
-    DocumentGroupView(MainWindow* aMainWindow);
+    DocumentGroupView(MainWindow* mainWindow);
 
     void SetDocumentActionsEnabled(bool enabled);
 

@@ -19,7 +19,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , commandStack(new CommandStack())
-    , fileSystemWatcher(new QFileSystemWatcher(this))
+    , fileSystemWatcher(new QFileSystemWatcher())
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
