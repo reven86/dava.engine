@@ -20,6 +20,8 @@
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/RenderHelper.h"
+#include "UI/UIControlSystem.h"
+
 #include "Render/Renderer.h"
 #include "Debug/DVAssert.h"
 
@@ -249,12 +251,13 @@ public:
         Renderer::Initialize(renderer, rendererParams);
 
         EngineContext* engineContext = engine.GetContext();
-        engineContext->virtualCoordSystem->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->SetVirtualScreenSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-        engineContext->virtualCoordSystem->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
-        engineContext->virtualCoordSystem->ScreenSizeChanged();
+        VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
+        vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
+        vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
+        vcs->SetVirtualScreenSize(rendererParams.width, rendererParams.height);
+        vcs->UnregisterAllAvailableResourceSizes();
+        vcs->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
+        vcs->ScreenSizeChanged();
 
         Texture::SetGPULoadingOrder({ GPU_ORIGIN });
 

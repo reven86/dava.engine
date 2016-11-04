@@ -1998,8 +1998,8 @@ void QtMainWindow::On2DCameraDialog()
         DAVA::ScopedPtr<DAVA::Entity> sceneNode(new DAVA::Entity());
         DAVA::ScopedPtr<DAVA::Camera> camera(new DAVA::Camera());
 
-        DAVA::float32 w = DAVA::VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
-        DAVA::float32 h = DAVA::VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
+        DAVA::float32 w = DAVA::UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx;
+        DAVA::float32 h = DAVA::UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy;
         DAVA::float32 aspect = w / h;
         camera->SetupOrtho(w, aspect, 1, 1000);
         camera->SetPosition(DAVA::Vector3(0, 0, -10000));
