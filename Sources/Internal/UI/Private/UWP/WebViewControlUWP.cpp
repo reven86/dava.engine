@@ -161,6 +161,9 @@ WebViewControl::~WebViewControl()
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
+        nativeWebView->NavigationStarting -= tokenNavigationStarting;
+        nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+
 #if defined(__DAVAENGINE_COREV2__)
         WindowNativeService* nservice = window->GetNativeService();
         window->RunAsyncOnUIThread([p, nservice]() {
@@ -171,9 +174,6 @@ WebViewControl::~WebViewControl()
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
 #endif
-        nativeWebView->NavigationStarting -= tokenNavigationStarting;
-        nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
-
         nativeWebView = nullptr;
     }
 }
