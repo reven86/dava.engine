@@ -291,15 +291,7 @@ struct UIManager::Impl : public QObject
         if (iter == windows.end())
         {
             QMainWindow* window = new QMainWindow();
-            window->installEventFilter(this);
-
-            FastName appId = windowKey.GetAppID();
-            window->setWindowTitle(appId.c_str());
-            window->setObjectName(appId.c_str());
-
-            PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
-            window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::geometryKey));
-            window->restoreState(ph.Get<QByteArray>(UIManagerDetail::stateKey));
+            InitNewWindow(windowKey, window);
 
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
@@ -309,6 +301,19 @@ struct UIManager::Impl : public QObject
         }
 
         return iter->second;
+    }
+
+    void InitNewWindow(const WindowKey& windowKey, QMainWindow* window)
+    {
+        window->installEventFilter(this);
+
+        FastName appId = windowKey.GetAppID();
+        window->setWindowTitle(appId.c_str());
+        window->setObjectName(appId.c_str());
+
+        PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
+        window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::geometryKey));
+        window->restoreState(ph.Get<QByteArray>(UIManagerDetail::stateKey));
     }
 
 protected:
@@ -480,6 +485,16 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
 
     QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message, Convert(params.buttons));
     return Convert(resultButton);
+}
+
+void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)
+{
+    UIManagerDetail::MainWindowInfo windowInfo;
+    windowInfo.window = window;
+    windowInfo.menuBar = window->findChild<QMenuBar*>();
+    impl->InitNewWindow(windowKey, window);
+    impl->windows.emplace(windowKey, windowInfo);
+    window->show();
 }
 
 } // namespace TArc
