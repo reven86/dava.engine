@@ -162,14 +162,13 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 void GameCore::OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    uint32 width = window->GetWidth();
-    uint32 height = window->GetHeight();
+    int32 width = int32(window->GetSize().dx);
+    int32 height = int32(window->GetSize().dy);
 
-    EngineContext* context = engine.GetContext();
-    context->virtualCoordSystem->SetVirtualScreenSize(width, height);
-    context->virtualCoordSystem->SetProportionsIsFixed(false);
-    context->virtualCoordSystem->RegisterAvailableResourceSize(width, height, "Gfx");
-    context->virtualCoordSystem->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
+    UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
+    UIControlSystem::Instance()->vcs->SetProportionsIsFixed(false);
+    UIControlSystem::Instance()->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    UIControlSystem::Instance()->vcs->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
 #endif
 }
 
