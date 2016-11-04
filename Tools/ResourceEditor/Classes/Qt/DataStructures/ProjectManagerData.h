@@ -10,6 +10,7 @@
 
 class ProjectStructure;
 class SpritesPackerModule;
+class EditorConfig;
 class ProjectManagerData : public DAVA::TArc::DataNode
 {
 public:
@@ -44,6 +45,7 @@ public:
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
     const ProjectStructure* GetDataSourceSceneFiles() const;
+    const EditorConfig* GetEditorConfig() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
     void SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn);
@@ -55,6 +57,7 @@ private:
     friend class ProjectManagerModule;
     std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
+    std::unique_ptr<EditorConfig> editorConfig;
 
     DAVA::FilePath projectPath;
     QVector<AvailableMaterialTemplate> templates;

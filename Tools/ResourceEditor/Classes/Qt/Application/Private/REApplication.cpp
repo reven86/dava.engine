@@ -119,12 +119,6 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
     engineContext->logger->SetLogFilename("ResEditor.txt");
-
-    if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
-    {
-        new EditorConfig();
-    }
-
     settingsManager = new SettingsManager();
     beastProxy = new BEAST_PROXY_TYPE();
 
@@ -142,10 +136,6 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
 void REApplication::Cleanup()
 {
     REGlobal::InitTArcCore(nullptr);
-    if (isConsoleMode || (cmdLine.size() > 1 && cmdLine[1] == "--selftest"))
-    {
-        EditorConfig::Instance()->Release();
-    }
     DAVA::SafeRelease(beastProxy);
     DAVA::SafeRelease(settingsManager);
 

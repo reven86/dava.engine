@@ -1,6 +1,9 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
+
 #include "Render/Texture.h"
 #include "Render/Material/NMaterial.h"
 
@@ -115,7 +118,10 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     viewport.x = viewport.y = 0;
     viewport.width = viewport.height = size;
 
-    Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data);
+
+    Vector<Color> customColors = data->GetEditorConfig()->GetColorPropertyValues("LandscapeCustomColors");
     if (customColors.empty())
     {
         RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);

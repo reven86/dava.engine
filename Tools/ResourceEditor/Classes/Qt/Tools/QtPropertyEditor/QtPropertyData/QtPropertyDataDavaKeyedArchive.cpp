@@ -6,6 +6,11 @@
 #include "Deprecated/EditorConfig.h"
 #include "Commands2/RECommandIDs.h"
 
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 #include <QSet>
 #include <QMenu>
 #include <QGridLayout>
@@ -13,8 +18,6 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QKeyEvent>
-
-#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* _archive)
     : QtPropertyData(name)
@@ -312,7 +315,11 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive* _arch, int de
     grLayout->addWidget(new QLabel("Value type:", this), ++row, 0, 1, 1);
     grLayout->addWidget(valueWidget, row, 1, 1, 2);
 
-    const DAVA::Vector<DAVA::String>& presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data);
+
+    const EditorConfig* editorConfig = data->GetEditorConfig();
+    const DAVA::Vector<DAVA::String>& presetValues = editorConfig->GetProjectPropertyNames();
     if (presetValues.size() > 0)
     {
         presetWidget = new QComboBox(this);
@@ -320,7 +327,7 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive* _arch, int de
         presetWidget->addItem("None", DAVA::VariantType::TYPE_NONE);
         for (size_t i = 0; i < presetValues.size(); ++i)
         {
-            presetWidget->addItem(presetValues[i].c_str(), EditorConfig::Instance()->GetPropertyValueType(presetValues[i]));
+            presetWidget->addItem(presetValues[i].c_str(), editorConfig->GetPropertyValueType(presetValues[i]));
         }
 
         grLayout->addWidget(new QLabel("Preset:", this), ++row, 0, 1, 1);
@@ -416,7 +423,9 @@ void KeyedArchiveItemWidget::OkKeyPressed()
 
             if (DAVA::VariantType::TYPE_NONE != presetType)
             {
-                DAVA::VariantType presetValue = *(EditorConfig::Instance()->GetPropertyDefaultValue(key));
+                ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+                DVASSERT(data);
+                DAVA::VariantType presetValue = *(data->GetEditorConfig()->GetPropertyDefaultValue(key));
                 emit ValueReady(key, presetValue);
             }
             else

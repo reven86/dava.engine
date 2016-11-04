@@ -1,5 +1,6 @@
-#include "../ProjectManagerData.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
+#include "Classes/Deprecated/EditorConfig.h"
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 #include "SpritesPacker/SpritesPackerModule.h"
 
@@ -85,6 +86,11 @@ DAVA::FilePath ProjectManagerData::CreateProjectPathFromPath(const DAVA::FilePat
 const ProjectStructure* ProjectManagerData::GetDataSourceSceneFiles() const
 {
     return dataSourceSceneFiles.get();
+}
+
+const EditorConfig* ProjectManagerData::GetEditorConfig() const
+{
+    return editorConfig.get();
 }
 
 const SpritesPackerModule* ProjectManagerData::GetSpritesModules() const

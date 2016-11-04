@@ -274,7 +274,13 @@ void CustomColorsSystem::SetBrushSize(DAVA::int32 brushSize, bool updateDrawSyst
 
 void CustomColorsSystem::SetColor(DAVA::int32 colorIndex)
 {
-    DAVA::Vector<DAVA::Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data == nullptr)
+    {
+        return;
+    }
+
+    DAVA::Vector<DAVA::Color> customColors = data->GetEditorConfig()->GetColorPropertyValues("LandscapeCustomColors");
     if (colorIndex >= 0 && colorIndex < static_cast<DAVA::int32>(customColors.size()))
     {
         drawColor = customColors[colorIndex];

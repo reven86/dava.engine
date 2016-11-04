@@ -1,5 +1,7 @@
 #include "QtPropertyDataKeyedArchiveMember.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 #include "Deprecated/EditorConfig.h"
 #include "Main/QtUtils.h"
 #include "QtTools/Utils/Utils.h"
@@ -31,12 +33,16 @@ void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
 {
     const int valueType = archive->GetVariant(key)->GetType();
 
-    const int presetValueType = EditorConfig::Instance()->GetPropertyValueType(key);
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data);
+
+    const EditorConfig* editorConfig = data->GetEditorConfig();
+    const int presetValueType = editorConfig->GetPropertyValueType(key);
     if (presetValueType != DAVA::VariantType::TYPE_NONE)
     {
         if (valueType == presetValueType)
         {
-            const DAVA::Vector<DAVA::String>& allowedValues = EditorConfig::Instance()->GetComboPropertyValues(key);
+            const DAVA::Vector<DAVA::String>& allowedValues = editorConfig->GetComboPropertyValues(key);
             if (allowedValues.size() > 0)
             {
                 for (size_t i = 0; i < allowedValues.size(); ++i)
@@ -46,7 +52,7 @@ void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
             }
             else
             {
-                const DAVA::Vector<DAVA::Color>& allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
+                const DAVA::Vector<DAVA::Color>& allowedColors = editorConfig->GetColorPropertyValues(key);
                 for (size_t i = 0; i < allowedColors.size(); ++i)
                 {
                     AddAllowedValue(DAVA::VariantType((int)i), ColorToQColor(allowedColors[i]));

@@ -65,7 +65,7 @@ private:
     SliderWidget* sliderWidgetBrushSize = nullptr;
     QPushButton* buttonSaveTexture = nullptr;
     QPushButton* buttonLoadTexture = nullptr;
-    DAVA::TArc::DataWrapper sharedDataWrapper;
+    DAVA::TArc::DataWrapper projectDataWrapper;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

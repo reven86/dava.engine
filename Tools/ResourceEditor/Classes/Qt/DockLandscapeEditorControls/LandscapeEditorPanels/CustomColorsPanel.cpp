@@ -9,7 +9,7 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/RECommonData.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
 #include <QLayout>
 #include <QComboBox>
@@ -116,8 +116,8 @@ void CustomColorsPanel::InitUI()
 
 void CustomColorsPanel::ConnectToSignals()
 {
-    sharedDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<RECommonData>());
-    sharedDataWrapper.AddListener(this);
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper.AddListener(this);
 
     connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
             this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
@@ -138,10 +138,10 @@ void CustomColorsPanel::InitColors()
     iconSize = iconSize.expandedTo(QSize(100, 0));
     comboColor->setIconSize(iconSize);
 
-    RECommonData* data = REGlobal::GetDataNode<RECommonData>();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
 
-    EditorConfig* config = data->GetEditorConfig();
+    const EditorConfig* config = data->GetEditorConfig();
 
     DAVA::Vector<DAVA::Color> customColors = config->GetColorPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_COLORS);
     DAVA::Vector<DAVA::String> customColorsDescription = config->GetComboPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_DESCRIPTION);
@@ -178,7 +178,7 @@ DAVA::int32 CustomColorsPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 
 void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
 {
-    RECommonData* data = REGlobal::GetDataNode<RECommonData>();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data);
     InitColors();
 }

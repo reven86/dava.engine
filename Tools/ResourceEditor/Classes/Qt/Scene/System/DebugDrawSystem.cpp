@@ -1,5 +1,7 @@
 #include "Scene/System/DebugDrawSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/Application/REGlobal.h"
 #include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -31,7 +33,9 @@ void DebugDrawSystem::SetRequestedObjectType(ResourceEditor::eSceneObjectType _o
 
     if (ResourceEditor::ESOT_NONE != objectType)
     {
-        const Vector<Color>& colors = EditorConfig::Instance()->GetColorPropertyValues("CollisionTypeColor");
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(data);
+        const Vector<Color>& colors = data->GetEditorConfig()->GetColorPropertyValues("CollisionTypeColor");
         if ((uint32)objectType < (uint32)colors.size())
         {
             objectTypeColor = colors[objectType];

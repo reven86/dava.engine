@@ -6,6 +6,7 @@
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/Main/QtUtils.h"
+#include "Deprecated/EditorConfig.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
@@ -51,6 +52,7 @@ void ProjectManagerModule::PostInit()
     DAVA::Vector<DAVA::String> extensions = { "sc2" };
     data->dataSourceSceneFiles.reset(new ProjectStructure(extensions));
     data->spritesPacker.reset(new SpritesPackerModule(&GetUI()));
+    data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
 
     CreateActions();
@@ -170,6 +172,8 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     {
         data->dataSourceSceneFiles->SetProjectDirectory(data->GetDataSourcePath());
     }
+
+    data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
 
     AddRecentProject(incomePath);
 
