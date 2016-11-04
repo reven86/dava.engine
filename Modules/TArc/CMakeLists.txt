@@ -2,9 +2,9 @@ set(NAME_MODULE TArc)
 
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
-set(HPP_FILES_RECURSE *.h *.hpp)
-set(CPP_FILES_RECURSE *.cpp)
-set(CPP_FILES_RECURSE_MACOS *.mm)
+set(HPP_FILES_RECURSE Sources/*.h Sources/*.hpp)
+set(CPP_FILES_RECURSE Sources/*.cpp)
+set(CPP_FILES_RECURSE_MACOS Sources/*.mm)
 set(CUSTOM_PACK_1 "Selftests")
 
 set(TArcRootDir "${CMAKE_CURRENT_SOURCE_DIR}")

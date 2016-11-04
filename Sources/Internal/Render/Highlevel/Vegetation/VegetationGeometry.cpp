@@ -24,13 +24,11 @@ void VegetationGeometry::CustomGeometryLayerData::BuildBBox()
 }
 
 VegetationGeometry::CustomGeometryEntityData::CustomGeometryEntityData()
-    : material(NULL)
 {
 }
 
 VegetationGeometry::CustomGeometryEntityData::CustomGeometryEntityData(const CustomGeometryEntityData& src)
 {
-    material = NULL;
     SetMaterial(src.material);
 
     lods = src.lods;
@@ -618,9 +616,7 @@ void VegetationGeometry::InitCustomGeometry(const VegetationGeometryDataPtr& geo
             Vector<Vector3>& srcPositions = geometryData->GetPositions(layerIndex, lodIndex);
             Vector<Vector2>& srcTexCoords = geometryData->GetTextureCoords(layerIndex, lodIndex);
             Vector<Vector3>& srcNormals = geometryData->GetNormals(layerIndex, lodIndex);
-            ;
             Vector<VegetationIndex>& srcIndices = geometryData->GetIndices(layerIndex, lodIndex);
-            ;
 
             size_t posCount = srcPositions.size();
             for (size_t posIndex = 0; posIndex < posCount; ++posIndex)

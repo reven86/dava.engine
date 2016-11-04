@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 #include "rhi_DX9.h"
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"

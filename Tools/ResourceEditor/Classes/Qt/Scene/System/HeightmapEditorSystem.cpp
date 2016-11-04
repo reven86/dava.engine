@@ -95,16 +95,16 @@ void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
+bool HeightmapEditorSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -128,13 +128,13 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
                     {
                         copyPasteFrom = GetHeightmapPositionFromCursor();
                         copyPasteTo = DAVA::Vector2(-1.f, -1.f);
-                        return;
+                        return false;
                     }
                     else
                     {
                         if (copyPasteFrom == DAVA::Vector2(-1.f, -1.f))
                         {
-                            return;
+                            return false;
                         }
                         copyPasteTo = GetHeightmapPositionFromCursor();
                         StoreOriginalHeightmap();
@@ -165,6 +165,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void HeightmapEditorSystem::FinishEditing(bool applyModification)

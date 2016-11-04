@@ -1,5 +1,6 @@
 #include "UITextFieldStb.h"
 
+#include "Engine/EngineTypes.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
@@ -665,12 +666,12 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     bool textCanChanged = false;
     WideString prevText(text);
 
-    const KeyboardDevice& kDevice = InputSystem::Instance()->GetKeyboard();
-    bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
 #if defined(__DAVAENGINE_COREV2__)
-    bool isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
-    bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
-    bool isCmd = kDevice.IsKeyPressed(Key::LCMD) || kDevice.IsKeyPressed(Key::RCMD);
+    eModifierKeys modifiers = currentInput->modifiers;
+    bool isAlt = (modifiers & eModifierKeys::ALT) == eModifierKeys::ALT;
+#else
+    uint32 modifiers = currentInput->modifiers;
+    bool isAlt = (modifiers & UIEvent::Modifier::ALT_DOWN) == UIEvent::Modifier::ALT_DOWN;
 #endif
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
@@ -694,27 +695,13 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else
         {
-            uint32 mod = currentInput->modifiers;
-#if defined(__DAVAENGINE_COREV2__)
-            mod |= isShift ? UIEvent::SHIFT_DOWN : 0;
-            mod |= isCtrl ? UIEvent::CONTROL_DOWN : 0;
-            mod |= isAlt ? UIEvent::ALT_DOWN : 0;
-            mod |= isCmd ? UIEvent::COMMAND_DOWN : 0;
-#endif
-            textCanChanged = stb->SendKey(currentInput->key, mod);
+            textCanChanged = stb->SendKey(currentInput->key, modifiers);
         }
     }
     if (currentInput->phase == UIEvent::Phase::CHAR ||
         currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
-        uint32 mod = currentInput->modifiers;
-#if defined(__DAVAENGINE_COREV2__)
-        mod |= isShift ? UIEvent::SHIFT_DOWN : 0;
-        mod |= isCtrl ? UIEvent::CONTROL_DOWN : 0;
-        mod |= isAlt ? UIEvent::ALT_DOWN : 0;
-        mod |= isCmd ? UIEvent::COMMAND_DOWN : 0;
-#endif
-        textCanChanged = stb->SendKeyChar(currentInput->keyChar, mod);
+        textCanChanged = stb->SendKeyChar(currentInput->keyChar, modifiers);
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
     {

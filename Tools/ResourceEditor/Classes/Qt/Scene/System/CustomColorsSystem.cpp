@@ -134,16 +134,16 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void CustomColorsSystem::Input(DAVA::UIEvent* event)
+bool CustomColorsSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -169,6 +169,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void CustomColorsSystem::FinishEditing(bool applyModification)
