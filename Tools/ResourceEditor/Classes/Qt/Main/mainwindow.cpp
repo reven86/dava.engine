@@ -75,6 +75,8 @@
 
 #include "TextureCompression/TextureConverter.h"
 
+#include "TArc/WindowSubSystem/Private/WaitDialog.h"
+
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
@@ -170,7 +172,7 @@ private:
 };
 }
 
-QtMainWindow::QtMainWindow(QWidget* parent)
+QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , waitDialog(nullptr)
@@ -181,7 +183,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
-//, recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
+    , tarcUI(tarcUI_)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
@@ -226,9 +228,6 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     new TextureBrowser(this);
     new MaterialEditor(this);
     new FMODSoundBrowser(this);
-
-    waitDialog = new QtWaitDialog(this);
-    connect(waitDialog, &QtWaitDialog::closed, [this]() { waitDialogClosed.Emit(); });
 
     beastWaitDialog = new QtWaitDialog(this);
 
@@ -551,28 +550,44 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 
 void QtMainWindow::WaitStart(const QString& title, const QString& message, int min /* = 0 */, int max /* = 100 */)
 {
-    waitDialog->SetRange(min, max);
-    waitDialog->Show(title, message, false, false);
+    DVASSERT(waitDialog == nullptr);
+
+    DAVA::TArc::WaitDialogParams params;
+    params.message = message;
+    params.min = min;
+    params.max = max;
+    params.needProgressBar = false;
+    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::WindowKey(REGlobal::MainWindowName), params);
+    DAVA::TArc::WaitDialog* dialog = dynamic_cast<DAVA::TArc::WaitDialog*>(waitDialog.get());
+    dialog->beforeDestroy.Connect([this](DAVA::TArc::WaitHandle* handle)
+                                  {
+                                      if (!IsWaitDialogOnScreen())
+                                      {
+                                          waitDialogClosed.Emit();
+                                      }
+                                  });
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)
 {
+    DVASSERT(waitDialog != nullptr);
     waitDialog->SetMessage(messsage);
 }
 
 void QtMainWindow::WaitSetValue(int value)
 {
-    waitDialog->SetValue(value);
+    DVASSERT(waitDialog != nullptr);
+    waitDialog->SetProgressValue(value);
 }
 
 bool QtMainWindow::IsWaitDialogOnScreen() const
 {
-    return waitDialog->isVisible();
+    return tarcUI->HasActiveWaitDalogues();
 }
 
 void QtMainWindow::WaitStop()
 {
-    waitDialog->Reset();
+    waitDialog.reset();
 }
 
 bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
@@ -639,8 +654,6 @@ void QtMainWindow::SetupMainMenu()
     ui->menuDockWindows->addAction(dockConsole->toggleViewAction());
 
     recentFiles.InitMenuItems();
-    // @TODO
-    //recentProjects.InitMenuItems();
 }
 
 void QtMainWindow::SetupThemeActions()

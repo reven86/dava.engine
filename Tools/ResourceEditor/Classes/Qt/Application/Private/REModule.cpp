@@ -18,11 +18,11 @@ namespace REModuleDetail
 class REGlobalData : public DAVA::TArc::DataNode
 {
 public:
-    REGlobalData()
+    REGlobalData(DAVA::TArc::UI* ui)
         : windowKey(REGlobal::MainWindowName)
     {
         textureCache = new TextureCache();
-        mainWindow = new QtMainWindow();
+        mainWindow = new QtMainWindow(ui);
     }
 
     ~REGlobalData()
@@ -144,7 +144,7 @@ void REModule::PostInit()
 
     using TData = REModuleDetail::REGlobalData;
     DAVA::TArc::DataContext* globalContext = accessor.GetGlobalContext();
-    globalContext->CreateData(std::make_unique<TData>());
+    globalContext->CreateData(std::make_unique<TData>(&GetUI()));
     TData* globalData = globalContext->GetData<TData>();
 
     DAVA::TArc::UIManager& ui = static_cast<DAVA::TArc::UIManager&>(GetUI());

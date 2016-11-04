@@ -448,6 +448,7 @@ struct UIManager::Impl : public QObject
     QtReflectionBridge reflectionBridge;
     PropertiesItem propertiesHolder;
     bool initializationFinished = false;
+    DAVA::Set<WaitHandle*> activeWaitDialogues;
 
     Impl(UIManager::Delegate* delegate, PropertiesItem&& givenPropertiesHolder)
         : managerDelegate(delegate)
@@ -636,8 +637,18 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
+    impl->activeWaitDialogues.insert(dlg.get());
+    dlg->beforeDestroy.Connect([this](WaitHandle* waitHandle)
+                               {
+                                   impl->activeWaitDialogues.erase(waitHandle);
+                               });
     dlg->Show();
     return std::move(dlg);
+}
+
+bool UIManager::HasActiveWaitDalogues() const
+{
+    return !impl->activeWaitDialogues.empty();
 }
 
 QWidget* UIManager::GetWindow(const WindowKey& windowKey)

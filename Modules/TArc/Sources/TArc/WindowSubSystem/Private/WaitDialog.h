@@ -24,6 +24,8 @@ public:
     void SetProgressValue(uint32 progress) override;
     void Update() override;
 
+    DAVA::Signal<WaitHandle*> beforeDestroy;
+
 private:
     QPointer<QDialog> dlg;
     QPointer<QProgressBar> progressBar;

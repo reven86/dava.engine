@@ -43,6 +43,7 @@ WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
 
 WaitDialog::~WaitDialog()
 {
+    beforeDestroy.Emit(this);
     if (dlg != nullptr)
     {
         QMetaObject::invokeMethod(dlg.data(), "close", WaitDialogDetail::GetConnectionType());

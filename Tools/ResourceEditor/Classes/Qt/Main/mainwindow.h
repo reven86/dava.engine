@@ -11,6 +11,7 @@
 
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include "QtTools/Utils/ShortcutChecker.h"
 
@@ -52,7 +53,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(QWidget* parent = 0);
+    explicit QtMainWindow(DAVA::TArc::UI* tarcUI, QWidget* parent = 0);
     ~QtMainWindow();
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
@@ -234,8 +235,6 @@ protected:
 
     static void SetActionCheckedSilently(QAction* action, bool checked);
 
-    void OpenProject(const DAVA::FilePath& projectPath);
-
     void OnSceneSaveAsInternal(bool saveWithCompressed);
 
     void SaveAllSceneEmitters(SceneEditor2* scene) const;
@@ -261,7 +260,6 @@ private slots:
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;
-    QtWaitDialog* waitDialog;
     QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
@@ -319,6 +317,8 @@ private:
     ShortcutChecker shortcutChecker;
 #endif
 
+    DAVA::TArc::UI* tarcUI = nullptr;
+    std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
     DAVA::TArc::DataWrapper projectDataWrapper;
 
 private:
