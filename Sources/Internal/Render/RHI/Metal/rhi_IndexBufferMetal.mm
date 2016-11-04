@@ -1,14 +1,15 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Pool.h"
+#include "rhi_Metal.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+
+#include "_metal.h"
+#include "mem_RemoteHeap.h"
+#include "mem_BufferAllocator.h"
+
 using DAVA::Logger;
-
-    #include "_metal.h"
-    #include "mem_RemoteHeap.h"
-    #include "mem_BufferAllocator.h"
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 

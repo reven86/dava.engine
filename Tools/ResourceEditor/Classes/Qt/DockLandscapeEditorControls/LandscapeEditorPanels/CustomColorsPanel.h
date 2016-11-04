@@ -37,7 +37,7 @@ private slots:
     void NextTexture();
 
 protected:
-    bool GetEditorEnabled();
+    bool GetEditorEnabled() override;
 
     void SetWidgetsState(bool enabled) override;
     void BlockAllSignals(bool block) override;

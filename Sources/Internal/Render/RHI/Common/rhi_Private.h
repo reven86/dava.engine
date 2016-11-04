@@ -1,10 +1,12 @@
 #ifndef __RHI_PRIVATE_H__
 #define __RHI_PRIVATE_H__
 
-    #include "../rhi_Type.h"
+#include "../rhi_Type.h"
+#include "rhi_CommonImpl.h"
 
 namespace rhi
 {
+struct InitParam;
 ////////////////////////////////////////////////////////////////////////////////
 // render-target
 
@@ -141,7 +143,7 @@ namespace SyncObject
 {
 Handle Create();
 void Delete(Handle obj);
-bool IsSygnaled(Handle obj);
+bool IsSignaled(Handle obj);
 }
 
 namespace CommandBuffer
@@ -182,19 +184,33 @@ void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
 
+namespace DispatchPlatform
+{
+void InitContext();
+bool ValidateSurface(); //TODO - may be this should be part of opengl only?
+void FinishRendering(); //perform finalization before going to suspend
+
+void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command); //called from render thread
+
+void FinishFrame(); //this functions is called from main thread
+void ExecuteFrame(const CommonImpl::Frame&); //should also handle command buffer sync here
+void RejectFrame(const CommonImpl::Frame&); //should also handle command buffer sync here
+
+bool PresentBuffer();
+void ResetBlock();
+}
+
+void InitializeImplementation(Api api, const InitParam& param);
+void UninitializeImplementation();
+
 struct RenderDeviceCaps;
 namespace MutableDeviceCaps
 {
 RenderDeviceCaps& Get();
 }
 
-void InitPacketListPool(uint32 maxCount);
-void InitTextreSetPool(uint32 maxCount);
-
 void BeginFreqMeasurement(Handle pqset);
 void EndFreqMeasurement(Handle pqset);
-
-void PresentImpl(Handle sync);
 
 // debug
 
