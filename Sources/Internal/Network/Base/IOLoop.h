@@ -2,6 +2,7 @@
 #define __DAVAENGINE_IOLOOP_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include <libuv/uv.h>
 
 #include "Functional/Function.h"
