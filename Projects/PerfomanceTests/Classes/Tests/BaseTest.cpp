@@ -1,5 +1,4 @@
 #include "BaseTest.h"
-#include "Infrastructure/UI/CustomUI3DView.h"
 #include <UI/Update/UIUpdateComponent.h>
 #include <UI/Update/UICustomUpdateDeltaComponent.h>
 
