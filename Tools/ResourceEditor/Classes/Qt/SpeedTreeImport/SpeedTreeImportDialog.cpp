@@ -84,7 +84,7 @@ void SpeedTreeImportDialog::OnOk()
 
     QMessageBox::information(this, "SpeedTree Import", message, QMessageBox::Ok);
 
-    //open importet trees
+    //open imported trees
     if (ui->checkBox->isChecked())
     {
         for (size_t i = 0; i < outFiles.size(); ++i)

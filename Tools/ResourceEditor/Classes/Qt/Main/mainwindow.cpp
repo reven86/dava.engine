@@ -170,6 +170,11 @@ public:
 private:
     GlobalOperations* globalOperations;
 };
+
+void OpenScene(QtMainWindow* mainWindow, const QString& path)
+{
+    mainWindow->OpenScene(path);
+}
 }
 
 QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
@@ -1957,8 +1962,8 @@ void QtMainWindow::On2DCameraDialog()
         DAVA::ScopedPtr<DAVA::Entity> sceneNode(new DAVA::Entity());
         DAVA::ScopedPtr<DAVA::Camera> camera(new DAVA::Camera());
 
-        DAVA::float32 w = DAVA::VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
-        DAVA::float32 h = DAVA::VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
+        DAVA::float32 w = DAVA::UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx;
+        DAVA::float32 h = DAVA::UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy;
         DAVA::float32 aspect = w / h;
         camera->SetupOrtho(w, aspect, 1, 1000);
         camera->SetPosition(DAVA::Vector3(0, 0, -10000));
@@ -3415,8 +3420,13 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
     switch (id)
     {
     case GlobalOperations::OpenScene:
-        OpenScene(args.Cast<DAVA::String>().c_str());
-        break;
+    {
+        // OpenScene function open WaitDialog and run EventLoop
+        // To avoid embedded DAVA::OnFrame calling we will execute OpenScene inside Qt loop.
+        QString scenePath = QString::fromStdString(args.Cast<DAVA::String>());
+        delayedExecutor.DelayedExecute(DAVA::Bind(&MainWindowDetails::OpenScene, this, scenePath));
+    }
+    break;
     case GlobalOperations::SetNameAsFilter:
         ui->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
         break;

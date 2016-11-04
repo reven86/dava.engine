@@ -14,6 +14,7 @@
 #include "TArc/WindowSubSystem/UI.h"
 
 #include "QtTools/Utils/ShortcutChecker.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "DAVAEngine.h"
 #include "Base/Platform.h"
@@ -320,6 +321,7 @@ private:
     DAVA::TArc::UI* tarcUI = nullptr;
     std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
     DAVA::TArc::DataWrapper projectDataWrapper;
+    QtDelayedExecutor delayedExecutor;
 
 private:
     struct EmitterDescriptor
