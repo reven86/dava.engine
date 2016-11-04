@@ -11,7 +11,7 @@ namespace DAVA
 class ReflectedTypeDB
 {
     template <typename C>
-    friend class ReflectionRegistrator;
+    friend class ReflectionQualifier;
 
 public:
     static ReflectedType* Create(const RttiType* rttiType, const String& permanentName);

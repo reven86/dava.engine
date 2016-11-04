@@ -2,9 +2,9 @@
 
 #include "Base/Platform.h"
 #include "Base/Result.h"
-#include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionQualifier.h"
 
 #ifndef __REFLECTION_FEATURE__
 
@@ -25,7 +25,7 @@ protected:
 
     DAVA_REFLECTION(StructPtr)
     {
-        DAVA::ReflectionRegistrator<StructPtr>::Begin()
+        DAVA::ReflectionQualifier<StructPtr>::Begin()
         .Field("sss", &StructPtr::sss)
         .End();
     }
@@ -85,7 +85,7 @@ struct SimpleStruct
 
     DAVA_REFLECTION(SimpleStruct)
     {
-        DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
+        DAVA::ReflectionQualifier<SimpleStruct>::Begin()
         .Constructor()
         .Constructor<int>()
         .Constructor<int, int>()
@@ -110,7 +110,7 @@ public:
 
     DAVA_VIRTUAL_REFLECTION(BaseBase)
     {
-        DAVA::ReflectionRegistrator<BaseBase>::Begin()
+        DAVA::ReflectionQualifier<BaseBase>::Begin()
         .Field("basebase", &BaseBase::basebase)
         .Method("BaseMe", &BaseBase::BaseMe)
         .End();
@@ -273,7 +273,7 @@ protected:
 
     DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
     {
-        DAVA::ReflectionRegistrator<TestBaseClass>::Begin()
+        DAVA::ReflectionQualifier<TestBaseClass>::Begin()
         .Constructor()
         .Constructor<int, int, int>()
         .Destructor()
@@ -324,7 +324,7 @@ struct BaseOnlyReflection : public BaseBase
 
     DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, BaseBase)
     {
-        DAVA::ReflectionRegistrator<BaseOnlyReflection>::Begin().End();
+        DAVA::ReflectionQualifier<BaseOnlyReflection>::Begin().End();
     }
 };
 

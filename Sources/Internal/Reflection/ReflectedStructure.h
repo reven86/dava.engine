@@ -2,7 +2,8 @@
 
 #include <memory>
 #include "Base/RttiType.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {

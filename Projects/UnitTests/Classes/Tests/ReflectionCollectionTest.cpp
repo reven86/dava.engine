@@ -1,8 +1,8 @@
 #include "Base/Platform.h"
 #include "Base/Result.h"
-#include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionQualifier.h"
 
 #include <functional>
 
@@ -28,7 +28,7 @@ struct RelfCollectionsHolder
 
 DAVA_REFLECTION_IMPL(RelfCollectionsHolder)
 {
-    DAVA::ReflectionRegistrator<RelfCollectionsHolder>::Begin()
+    DAVA::ReflectionQualifier<RelfCollectionsHolder>::Begin()
     .Field("intVector", &RelfCollectionsHolder::intVector)
     .Field("stringVector", &RelfCollectionsHolder::stringVector)
     .Field("intPtrVector", &RelfCollectionsHolder::intPtrVector)
