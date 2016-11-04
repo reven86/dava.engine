@@ -4,6 +4,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
+#include "UI/UIScreen.h"
 
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIModalInputComponent.h"

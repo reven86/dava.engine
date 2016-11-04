@@ -152,7 +152,7 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
 {
-    w->Resize(1024, 768);
+    w->SetSize({ 1024, 768 });
     w->SetTitle("Performance Tests");
 
     // TODO FullScreen
