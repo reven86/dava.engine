@@ -2,6 +2,7 @@
 
 namespace DAVA
 {
+List<std::unique_ptr<ReflectedType>> ReflectedTypeDB::customReflectedTypes;
 UnorderedMap<const RttiType*, ReflectedType*> ReflectedTypeDB::rttiTypeToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rttiNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
@@ -95,8 +96,8 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
 
 ReflectedType* ReflectedTypeDB::Create(const RttiType* rttiType, const String& permanentName)
 {
-    allCustomReflectedTypes.emplace_back(new ReflectedType(rttiType));
-    ReflectedType* ret = allCustomReflectedTypes.back().get();
+    customReflectedTypes.emplace_back(new ReflectedType(rttiType));
+    ReflectedType* ret = customReflectedTypes.back().get();
 
     String rttiName(rttiType->GetName());
 

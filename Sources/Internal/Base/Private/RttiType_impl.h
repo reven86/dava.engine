@@ -138,6 +138,7 @@ void RttiType::Init(RttiType** ptype)
     static const bool needPointer = (!std::is_pointer<T>::value);
 
     rttiType.size = RttiTypeDetail::TypeSize<T>::size;
+    rttiType.name = typeid(T).name();
     rttiType.stdTypeInfo = &typeid(T);
 
     rttiType.flags.set(isConst, std::is_const<T>::value);

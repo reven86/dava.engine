@@ -38,7 +38,7 @@ protected:
     template <typename T>
     static ReflectedType* Edit();
 
-    static List<std::unique_ptr<ReflectedType>> allCustomReflectedTypes;
+    static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
     static UnorderedMap<const RttiType*, ReflectedType*> rttiTypeToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> rttiNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;

@@ -11,7 +11,7 @@
     </Expand>
   </Type>
   <Type Name="DAVA::Any">
-    <DisplayString Condition="type == nullptr">Null</DisplayString>
-    <DisplayString>{anyStorage}, type={type->name, na}</DisplayString>
+    <DisplayString Condition="rttiType == nullptr">Null</DisplayString>
+    <DisplayString>{anyStorage}, type={rttiType->name, na}</DisplayString>
   </Type>
 </AutoVisualizer>
