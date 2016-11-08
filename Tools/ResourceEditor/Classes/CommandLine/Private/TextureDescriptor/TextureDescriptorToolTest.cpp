@@ -1,5 +1,5 @@
 #include "CommandLine/TextureDescriptorTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
@@ -48,7 +48,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
 
         FilePath imagePathname = TDTestDetail::testFolderStr + "123/image.tga";
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
@@ -73,8 +73,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               presetPathname.GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -103,8 +103,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               presetPathname.GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -121,14 +121,14 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             }
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
     DAVA_TEST (ResaveTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
 
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
@@ -147,8 +147,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               texPathname.GetAbsolutePathname(),
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             TEST_VERIFY(descriptor);
@@ -164,13 +164,13 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               FilePath(TDTestDetail::testFolderStr).GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             TEST_VERIFY(descriptor);
         }
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
     void CreateEmptyDescriptorWithImage(const DAVA::FilePath& texturePathname)
@@ -191,7 +191,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
 
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
@@ -224,8 +224,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "-2",
               "-f"
             };
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -277,8 +277,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "RGB565",
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -305,14 +305,14 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
 
             DAVA::FileSystem::Instance()->DeleteDirectoryFiles(texPathname.GetDirectory(), true);
         }
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
     DAVA_TEST (SavePresetTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::CreateTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::CreateTestFolder(TDTestDetail::testFolderStr);
 
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FilePath presetPathname = TDTestDetail::testFolderStr + "preset.yaml";
@@ -335,8 +335,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               presetPathname.GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             ScopedPtr<KeyedArchive> archive(new KeyedArchive());
             TEST_VERIFY(archive->LoadFromYamlFile(presetPathname));
@@ -377,8 +377,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               presetList.GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             ScopedPtr<KeyedArchive> archive(new KeyedArchive());
             TEST_VERIFY(archive->LoadFromYamlFile(presetPathname));
@@ -390,14 +390,14 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             FileSystem::Instance()->DeleteFile(texPathname);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
     DAVA_TEST (SetPresetTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
 
         FilePath imagePathname = TDTestDetail::testFolderStr + "123/image.tga";
         TEST_VERIFY(TDTestDetail::CreateImageFile(imagePathname));
@@ -427,8 +427,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "4"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -461,8 +461,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               presetPathname.GetAbsolutePathname()
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -476,7 +476,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             FileSystem::Instance()->DeleteFile(texPathname);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+        CommandLineModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

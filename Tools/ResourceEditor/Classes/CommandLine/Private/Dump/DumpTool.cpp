@@ -7,8 +7,10 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 
+const DAVA::String DumpTool::Key = "-dump";
+
 DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-dump")
+    : CommandLineModule(commandLine, Key)
 {
     using namespace DAVA;
 
@@ -93,7 +95,7 @@ void DumpTool::BeforeDestroyedInternal()
 
 void DumpTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-dump -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/11-grass/test_scene.sc2 -outfile /Users/Test/dump.txt -links");

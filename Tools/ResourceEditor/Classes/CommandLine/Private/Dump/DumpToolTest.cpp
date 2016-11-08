@@ -1,5 +1,5 @@
 #include "CommandLine/DumpTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
@@ -123,9 +123,9 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -140,12 +140,12 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
           FilePath(DTestDetail::linksStr).GetAbsolutePathname()
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<DumpTool>(cmdLine);
+        CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
         TestLinks();
 
-        REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

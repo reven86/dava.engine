@@ -2,7 +2,7 @@
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FilePath.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
 namespace DAVA
 {
@@ -10,10 +10,12 @@ class Scene;
 class StaticOcclusionBuildSystem;
 }
 
-class StaticOcclusionTool : public REConsoleModuleCommon
+class StaticOcclusionTool : public CommandLineModule
 {
 public:
     StaticOcclusionTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 protected:
     bool PostInitInternal() override;

@@ -1,23 +1,22 @@
 #pragma once
 
-#include "CommandLine/CommandLineTool.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class SceneValidationTool : public CommandLineTool
+class SceneValidationTool : public CommandLineModule
 {
 public:
-    SceneValidationTool();
+    SceneValidationTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
-    void ConvertOptionsToParamsInternal() override;
-    bool InitializeInternal() override;
-    void ProcessInternal() override;
-    DAVA::FilePath GetQualityConfigPath() const override;
+    bool PostInitInternal() override;
+    eFrameResult OnFrameInternal() override;
 
-    void SetValidationOptionsTo(bool newValue);
-    bool AreValidationOptionsOff() const;
+    void SetAllValidationOptionsTo(bool newValue);
 
-    FilePath scenePath;
-    FilePath scenesListPath;
+    DAVA::FilePath scenePath;
+    DAVA::FilePath scenesListPath;
 
     bool validateMatrices = false;
     bool validateSameNames = false;
@@ -25,5 +24,5 @@ private:
     bool validateTexturesRelevance = false;
     bool validateMaterialGroups = false;
 
-    FilePath qualityConfigPath;
+    DAVA::FilePath qualityConfigPath;
 };

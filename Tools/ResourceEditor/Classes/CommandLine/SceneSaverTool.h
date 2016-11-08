@@ -1,10 +1,12 @@
 #pragma once
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
-class SceneSaverTool : public REConsoleModuleCommon
+#include "CommandLine/Private/CommandLineModule.h"
+class SceneSaverTool : public CommandLineModule
 {
 public:
     SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
     bool PostInitInternal() override;

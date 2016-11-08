@@ -10,8 +10,8 @@ namespace DAVA
 class FilePath;
 };
 
-class REConsoleModuleCommon;
-class REConsoleModuleTestUtils
+class CommandLineModule;
+class CommandLineModuleTestUtils
 {
 public:
     class TextureLoadingGuard final
@@ -27,10 +27,10 @@ public:
 
     static std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
 
-    static void ExecuteModule(REConsoleModuleCommon* module);
-    static void InitModule(REConsoleModuleCommon* module);
-    static bool ProcessModule(REConsoleModuleCommon* module);
-    static void FinalizeModule(REConsoleModuleCommon* module);
+    static void ExecuteModule(CommandLineModule* module);
+    static void InitModule(CommandLineModule* module);
+    static bool ProcessModule(CommandLineModule* module);
+    static void FinalizeModule(CommandLineModule* module);
 
     static void CreateTestFolder(const DAVA::FilePath& folder);
     static void ClearTestFolder(const DAVA::FilePath& folder);

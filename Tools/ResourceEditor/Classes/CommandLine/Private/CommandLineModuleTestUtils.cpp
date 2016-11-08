@@ -1,5 +1,5 @@
-﻿#include "CommandLine/Private/REConsoleModuleTestUtils.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+﻿#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
@@ -417,7 +417,7 @@ Entity* CreateStaticOcclusionEntity(const FilePath& scenePathname)
 }
 }
 
-class REConsoleModuleTestUtils::TextureLoadingGuard::Impl final
+class CommandLineModuleTestUtils::TextureLoadingGuard::Impl final
 {
 public:
     Impl(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
@@ -435,19 +435,19 @@ private:
     DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
 };
 
-REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
-    : impl(new REConsoleModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
+CommandLineModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+    : impl(new CommandLineModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
 {
 }
 
-REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
+CommandLineModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
 
-std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> CommandLineModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
     return std::make_unique<TextureLoadingGuard>(newLoadingOrder);
 }
 
-void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
+void CommandLineModuleTestUtils::ExecuteModule(CommandLineModule* module)
 {
     DVASSERT(module != nullptr);
 
@@ -461,29 +461,29 @@ void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
     FinalizeModule(module);
 }
 
-void REConsoleModuleTestUtils::InitModule(REConsoleModuleCommon* module)
+void CommandLineModuleTestUtils::InitModule(CommandLineModule* module)
 {
     module->PostInit();
 }
 
-bool REConsoleModuleTestUtils::ProcessModule(REConsoleModuleCommon* module)
+bool CommandLineModuleTestUtils::ProcessModule(CommandLineModule* module)
 {
-    bool completed = (module->OnFrame() == REConsoleModuleCommon::eFrameResult::FINISHED);
+    bool completed = (module->OnFrame() == CommandLineModule::eFrameResult::FINISHED);
     return completed;
 }
 
-void REConsoleModuleTestUtils::FinalizeModule(REConsoleModuleCommon* module)
+void CommandLineModuleTestUtils::FinalizeModule(CommandLineModule* module)
 {
     module->BeforeDestroyed();
 }
 
-void REConsoleModuleTestUtils::CreateTestFolder(const DAVA::FilePath& folder)
+void CommandLineModuleTestUtils::CreateTestFolder(const DAVA::FilePath& folder)
 {
     ClearTestFolder(folder); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
     DAVA::FileSystem::Instance()->CreateDirectory(folder, true);
 }
 
-void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
+void CommandLineModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -491,7 +491,7 @@ void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
     DAVA::FileSystem::Instance()->DeleteDirectory(folder, true);
 }
 
-void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
+void CommandLineModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
 {
     ClearTestFolder(projectPathname); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
 
@@ -504,7 +504,7 @@ void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath&
     DAVA::FileSystem::Instance()->CopyFile("~res:/quality.template.yaml", dataPath + "quality.yaml", true);
 }
 
-void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
+void CommandLineModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
 {
     using namespace DAVA;
 

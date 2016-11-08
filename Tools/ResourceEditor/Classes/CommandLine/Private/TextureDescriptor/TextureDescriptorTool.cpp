@@ -35,8 +35,10 @@ DAVA::Vector<DAVA::FilePath> LoadPathesFromFile(const DAVA::FilePath& filePath)
 }
 }
 
+const DAVA::String TextureDescriptorTool::Key = "-texdescriptor";
+
 TextureDescriptorTool::TextureDescriptorTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-texdescriptor")
+    : CommandLineModule(commandLine, Key)
 {
     using namespace DAVA;
 
@@ -274,7 +276,7 @@ DAVA::TArc::ConsoleModule::eFrameResult TextureDescriptorTool::OnFrameInternal()
 
 void TextureDescriptorTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-texdescriptor -create -folder /Users/SmokeTest/DataSource/3d/Maps/images/");

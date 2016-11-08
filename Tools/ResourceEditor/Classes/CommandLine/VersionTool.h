@@ -1,11 +1,13 @@
 #pragma once
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class VersionTool : public REConsoleModuleCommon
+class VersionTool : public CommandLineModule
 {
 public:
     VersionTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 protected:
     eFrameResult OnFrameInternal() override;

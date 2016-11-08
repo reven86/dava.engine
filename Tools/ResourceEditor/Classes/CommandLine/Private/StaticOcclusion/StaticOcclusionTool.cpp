@@ -12,8 +12,10 @@
 #include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
+const DAVA::String StaticOcclusionTool::Key = "-staticocclusion";
+
 StaticOcclusionTool::StaticOcclusionTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-staticocclusion")
+    : CommandLineModule(commandLine, Key)
     , scene(nullptr)
 {
     using namespace DAVA;
@@ -119,7 +121,7 @@ void StaticOcclusionTool::BeforeDestroyedInternal()
 
 void StaticOcclusionTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-staticocclusion -build -processfile /Users/Test/DataSource/3d/Maps/scene.sc2");

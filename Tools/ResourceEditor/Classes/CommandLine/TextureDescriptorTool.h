@@ -2,12 +2,14 @@
 
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class TextureDescriptorTool : public REConsoleModuleCommon
+class TextureDescriptorTool : public CommandLineModule
 {
 public:
     TextureDescriptorTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
     bool PostInitInternal() override;

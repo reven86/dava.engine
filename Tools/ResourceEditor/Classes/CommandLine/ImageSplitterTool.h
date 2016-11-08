@@ -1,11 +1,13 @@
 #pragma once
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class ImageSplitterTool : public REConsoleModuleCommon
+class ImageSplitterTool : public CommandLineModule
 {
 public:
     ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 protected:
     bool PostInitInternal() override;

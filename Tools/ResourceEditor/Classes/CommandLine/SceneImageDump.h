@@ -1,17 +1,19 @@
 #pragma once
 
 #include "Render/RenderBase.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
 namespace DAVA
 {
 class Camera;
 }
 
-class SceneImageDump : public REConsoleModuleCommon
+class SceneImageDump : public CommandLineModule
 {
 public:
     SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 protected:
     bool PostInitInternal() override;

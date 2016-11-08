@@ -167,52 +167,56 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
     DVASSERT(cmdLine.size() > 1);
 
-    DAVA::String command = cmdLine[1];
-    if (command == "-help")
+    DAVA::String toolKey = cmdLine[1];
+    if (toolKey == ConsoleHelpTool::Key)
     {
         tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
     }
-    else if (command == "-version")
+    else if (toolKey == VersionTool::Key)
     {
         tarcCore->CreateModule<VersionTool>(cmdLine);
     }
 #if defined(__DAVAENGINE_BEAST__)
-    else if (command == "-beast")
+    else if (toolKey == BeastCommandLineTool::Key)
     {
         tarcCore->CreateModule<BeastCommandLineTool>(cmdLine);
     }
 #endif //#if defined (__DAVAENGINE_BEAST__)
-    else if (command == "-dump")
+    else if (toolKey == DumpTool::Key)
     {
         tarcCore->CreateModule<DumpTool>(cmdLine);
     }
-    else if (command == "-sceneimagedump")
+    else if (toolKey == SceneImageDump::Key)
     {
         tarcCore->CreateModule<SceneImageDump>(cmdLine);
     }
-    else if (command == "-staticocclusion")
+    else if (toolKey == StaticOcclusionTool::Key)
     {
         tarcCore->CreateModule<StaticOcclusionTool>(cmdLine);
     }
-    else if (command == "-imagesplitter")
+    else if (toolKey == ImageSplitterTool::Key)
     {
         tarcCore->CreateModule<ImageSplitterTool>(cmdLine);
     }
-    else if (command == "-texdescriptor")
+    else if (toolKey == TextureDescriptorTool::Key)
     {
         tarcCore->CreateModule<TextureDescriptorTool>(cmdLine);
     }
-    else if (command == "-sceneexporter")
+    else if (toolKey == SceneExporterTool::Key)
     {
         tarcCore->CreateModule<SceneExporterTool>(cmdLine);
     }
-    else if (command == "-scenesaver")
+    else if (toolKey == SceneSaverTool::Key)
     {
         tarcCore->CreateModule<SceneSaverTool>(cmdLine);
     }
+    else if (toolKey == SceneExporterTool::Key)
+    {
+        tarcCore->CreateModule<SceneExporterTool>(cmdLine);
+    }
     else
     {
-        DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
+        DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", toolKey.c_str());
         tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
     }
 }

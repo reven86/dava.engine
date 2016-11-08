@@ -1,5 +1,5 @@
 #include "CommandLine/ImageSplitterTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Render/Image/Image.h"
@@ -28,7 +28,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         const uint8 b = Random::Instance()->Rand(255);
         const uint8 a = Random::Instance()->Rand(255);
 
-        REConsoleModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
+        CommandLineModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
 
         ScopedPtr<Image> rgbaImage(Image::Create(ISTTestDetail::width, ISTTestDetail::height, PixelFormat::FORMAT_RGBA8888));
         for (uint32 pixelPos = 0; pixelPos < rgbaImage->dataSize; pixelPos += 4)
@@ -51,8 +51,8 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
           FilePath(ISTTestDetail::rgbaImagePathname).GetAbsolutePathname()
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<ImageSplitterTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<ImageSplitterTool>(cmdLine);
+        CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
         auto testChannel = [](const String& channelName, uint8 channelValue)
         {
@@ -86,7 +86,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         TEST_VERIFY(testChannel("b.png", b));
         TEST_VERIFY(testChannel("a.png", a));
 
-        REConsoleModuleTestUtils::ClearTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
+        CommandLineModuleTestUtils::ClearTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
     }
 
     DAVA_TEST (MergeTest)
@@ -98,7 +98,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         const uint8 b = Random::Instance()->Rand(255);
         const uint8 a = Random::Instance()->Rand(255);
 
-        REConsoleModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
+        CommandLineModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
 
         auto createChannel = [](const String& channelName, uint8 channelValue)
         {
@@ -130,8 +130,8 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
           FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory().GetAbsolutePathname()
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<ImageSplitterTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<ImageSplitterTool>(cmdLine);
+        CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
         ScopedPtr<Image> rgbaImage(ImageSystem::LoadSingleMip(ISTTestDetail::rgbaImagePathname));
         if (rgbaImage)
@@ -151,7 +151,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
             TEST_VERIFY(false);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
+        CommandLineModuleTestUtils::ClearTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

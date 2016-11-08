@@ -110,8 +110,10 @@ bool CollectObjectFromFileList(const DAVA::FilePath& fileListPath, const DAVA::F
 }
 }
 
+const DAVA::String SceneExporterTool::Key = "-sceneexporter";
+
 SceneExporterTool::SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-sceneexporter")
+    : CommandLineModule(commandLine, Key)
 {
     using namespace DAVA;
 
@@ -315,7 +317,7 @@ void SceneExporterTool::BeforeDestroyedInternal()
 
 void SceneExporterTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-sceneexporter -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfile Maps/scene.sc2 -gpu mali -qualitycfgpath Users/SmokeTest/Data/quality.yaml");

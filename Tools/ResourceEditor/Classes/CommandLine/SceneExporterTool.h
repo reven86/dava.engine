@@ -5,12 +5,14 @@
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class SceneExporterTool : public REConsoleModuleCommon
+class SceneExporterTool : public CommandLineModule
 {
 public:
     SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
     bool PostInitInternal() override;

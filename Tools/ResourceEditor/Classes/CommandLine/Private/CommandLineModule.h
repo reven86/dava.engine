@@ -7,12 +7,12 @@
 
 #include "TArcCore/ConsoleModule.h"
 
-class REConsoleModuleCommon : public DAVA::TArc::ConsoleModule
+class CommandLineModule : public DAVA::TArc::ConsoleModule
 {
-    friend class REConsoleModuleTestUtils;
+    friend class CommandLineModuleTestUtils;
 
 public:
-    REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);
+    CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);
 
 protected:
     void PostInit() override;

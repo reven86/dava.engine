@@ -1,12 +1,14 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
-class DumpTool : public REConsoleModuleCommon
+class DumpTool : public CommandLineModule
 {
 public:
     DumpTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
     bool PostInitInternal() override;

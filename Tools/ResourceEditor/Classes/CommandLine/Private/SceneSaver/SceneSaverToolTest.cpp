@@ -1,5 +1,5 @@
 #include "CommandLine/SceneSaverTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileList.h"
@@ -67,12 +67,12 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
         {
-            REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::newProjectStr);
+            CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::newProjectStr);
             FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
             FilePath newDataSourcePath = SSTestDetail::newProjectStr + "DataSource/3d/";
 
@@ -92,24 +92,24 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
               "-copyconverted"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneSaverTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
+            CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::newScenePathnameStr));
 
-            REConsoleModuleTestUtils::ClearTestFolder(SSTestDetail::newProjectStr);
+            CommandLineModuleTestUtils::ClearTestFolder(SSTestDetail::newProjectStr);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
     }
 
     DAVA_TEST (ResaveSceneTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
         FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
 
@@ -124,21 +124,21 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
           FilePath(SSTestDetail::scenePathnameStr).GetRelativePathname(dataSourcePath),
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
+        CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::scenePathnameStr));
 
-        REConsoleModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
     }
 
     DAVA_TEST (ResaveYamlTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
         FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
 
@@ -152,12 +152,12 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
           FilePath(SSTestDetail::projectStr).GetAbsolutePathname() + "Data/",
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
+        CommandLineModuleTestUtils::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "Data/quality.yaml"));
 
-        REConsoleModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

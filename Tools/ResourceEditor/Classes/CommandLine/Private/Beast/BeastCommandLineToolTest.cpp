@@ -2,7 +2,7 @@
 
 #if defined(__DAVAENGINE_BEAST__)
 
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
@@ -79,7 +79,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     }
 
     DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
-    std::unique_ptr<REConsoleModuleCommon> tool;
+    std::unique_ptr<CommandLineModule> tool;
     bool testCompleted = false;
 
     DAVA_TEST (BeastTest)
@@ -89,8 +89,8 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         gpuLoadingOrder = DAVA::Texture::GetGPULoadingOrder();
         Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
 
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
+        CommandLineModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -103,14 +103,14 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         };
 
         tool.reset(new BeastCommandLineTool(cmdLine));
-        REConsoleModuleTestUtils::InitModule(tool.get());
+        CommandLineModuleTestUtils::InitModule(tool.get());
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
     {
         if (tool)
         {
-            testCompleted = REConsoleModuleTestUtils::ProcessModule(tool.get());
+            testCompleted = CommandLineModuleTestUtils::ProcessModule(tool.get());
         }
     }
 
@@ -118,10 +118,10 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     {
         if (testCompleted && tool)
         {
-            REConsoleModuleTestUtils::FinalizeModule(tool.get());
+            CommandLineModuleTestUtils::FinalizeModule(tool.get());
 
             TestScene();
-            REConsoleModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
+            CommandLineModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
             DAVA::Texture::SetGPULoadingOrder(gpuLoadingOrder);
         }
 

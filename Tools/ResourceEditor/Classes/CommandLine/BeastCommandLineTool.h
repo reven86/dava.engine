@@ -3,14 +3,16 @@
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "FileSystem/FilePath.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 
 class SceneEditor2;
 class BeastRunner;
-class BeastCommandLineTool : public REConsoleModuleCommon
+class BeastCommandLineTool : public CommandLineModule
 {
 public:
     BeastCommandLineTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+    static const DAVA::String Key;
 
 private:
     bool PostInitInternal() override;

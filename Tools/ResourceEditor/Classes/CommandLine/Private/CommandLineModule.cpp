@@ -1,9 +1,9 @@
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/Private/CommandLineModule.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
 
-namespace REConsoleModuleCommonDetail
+namespace CommandLineModuleDetail
 {
 void SetupLogger(const DAVA::String& logLevelString)
 {
@@ -29,7 +29,7 @@ void SetupLogger(const DAVA::String& logLevelString)
 }
 }
 
-REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
+CommandLineModule::CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
     : commandLine(commandLine_)
     , options(moduleName)
 {
@@ -41,13 +41,13 @@ REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& c
     options.AddOption("-teamcity", DAVA::VariantType(false), "Enable extra output in teamcity format");
 }
 
-void REConsoleModuleCommon::PostInit()
+void CommandLineModule::PostInit()
 {
     isInitialized = options.Parse(commandLine);
     if (isInitialized)
     {
         DAVA::String logLevel = options.GetOption("-log").AsString();
-        REConsoleModuleCommonDetail::SetupLogger(logLevel);
+        CommandLineModuleDetail::SetupLogger(logLevel);
 
         DAVA::FilePath logFile = options.GetOption("-logfile").AsString();
         if (logFile.IsEmpty() == false)
@@ -64,7 +64,7 @@ void REConsoleModuleCommon::PostInit()
     }
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
+DAVA::TArc::ConsoleModule::eFrameResult CommandLineModule::OnFrame()
 {
     bool showHelp = options.GetOption("-h").AsBool();
     if (showHelp || isInitialized == false)
@@ -80,29 +80,29 @@ DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-void REConsoleModuleCommon::BeforeDestroyed()
+void CommandLineModule::BeforeDestroyed()
 {
     BeforeDestroyedInternal();
 }
 
-bool REConsoleModuleCommon::PostInitInternal()
+bool CommandLineModule::PostInitInternal()
 {
     //base implementation is empty
     return true;
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrameInternal()
+DAVA::TArc::ConsoleModule::eFrameResult CommandLineModule::OnFrameInternal()
 {
     //base implementation is empty
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-void REConsoleModuleCommon::BeforeDestroyedInternal()
+void CommandLineModule::BeforeDestroyedInternal()
 {
     //base implementation is empty
 }
 
-void REConsoleModuleCommon::ShowHelpInternal()
+void CommandLineModule::ShowHelpInternal()
 {
     DAVA::String usage = options.GetUsageString();
     DAVA::Logger::Info("\nDetails:\n%s", usage.c_str());

@@ -1,8 +1,10 @@
 #include "CommandLine/ConsoleHelpTool.h"
 #include "Logger/Logger.h"
 
+const DAVA::String ConsoleHelpTool::Key = "-help";
+
 ConsoleHelpTool::ConsoleHelpTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-help")
+    : CommandLineModule(commandLine, Key)
 {
 }
 
@@ -31,5 +33,5 @@ void ConsoleHelpTool::ShowHelpInternal()
 
     DAVA::Logger::Info("\nSee \'ResourceEditor <command> -h\' to read about a specific command.");
 
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 }

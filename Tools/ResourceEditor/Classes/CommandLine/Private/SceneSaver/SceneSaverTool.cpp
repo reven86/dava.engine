@@ -3,8 +3,10 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "Utils/SceneSaver/SceneSaver.h"
 
+const DAVA::String SceneSaverTool::Key = "-scenesaver";
+
 SceneSaverTool::SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-scenesaver")
+    : CommandLineModule(commandLine, Key)
 {
     using namespace DAVA;
 
@@ -127,7 +129,7 @@ void SceneSaverTool::BeforeDestroyedInternal()
 
 void SceneSaverTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-scenesaver -save -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/NewProject/Data/3d/ -processfile Maps/scene.sc2 -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
