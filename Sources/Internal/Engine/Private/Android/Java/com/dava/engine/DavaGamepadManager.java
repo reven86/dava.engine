@@ -23,6 +23,7 @@ import java.util.List;
 
     Source of inspiration is SDL library.
 */
+/* uncomment after multidex enabled
 final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
 {
     // Gamepad device description 
@@ -43,6 +44,8 @@ final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
         MotionEvent.AXIS_RX,
         MotionEvent.AXIS_RY,
         MotionEvent.AXIS_RZ,
+        MotionEvent.AXIS_HAT_X,
+        MotionEvent.AXIS_HAT_Y,
         MotionEvent.AXIS_LTRIGGER,
         MotionEvent.AXIS_RTRIGGER,
         MotionEvent.AXIS_BRAKE,
@@ -169,3 +172,4 @@ final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
         return false;
     }
 }
+*/

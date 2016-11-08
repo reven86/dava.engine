@@ -25,13 +25,13 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
 
 Window::~Window() = default;
 
-void Window::Resize(float32 w, float32 h)
+void Window::SetSize(Size2f sz)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        windowBackend->Resize(w, h);
+        windowBackend->Resize(sz.dx, sz.dy);
     }
 }
 
@@ -125,8 +125,11 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::KEY_CHAR:
         HandleKeyChar(e);
         break;
-    case MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED:
+    case MainDispatcherEvent::WINDOW_SIZE_CHANGED:
         HandleSizeChanged(e);
+        break;
+    case MainDispatcherEvent::WINDOW_DPI_CHANGED:
+        HandleDpiChanged(e);
         break;
     case MainDispatcherEvent::WINDOW_FOCUS_CHANGED:
         HandleFocusChanged(e);
@@ -147,29 +150,28 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
 
 void Window::FinishEventHandlingOnCurrentFrame()
 {
-    sizeEventHandled = false;
+    sizeEventsMerged = false;
     windowBackend->TriggerPlatformEvents();
 }
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    CompressSizeChangedEvents(e);
-    sizeEventHandled = true;
+    Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
 
-    Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+    dpi = e.sizeEvent.dpi;
+    MergeSizeChangedEvents(e);
+    sizeEventsMerged = true;
 
     engineBackend->InitRenderer(this);
 
     EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
-    virtualCoordSystem = context->virtualCoordSystem;
-    virtualCoordSystem->EnableReloadResourceOnResize(true);
 
     UpdateVirtualCoordinatesSystem();
 
     engineBackend->OnWindowCreated(this);
-    sizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
+    sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
@@ -180,30 +182,36 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
-    virtualCoordSystem = nullptr;
 
     engineBackend->DeinitRender(this);
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    if (!sizeEventHandled)
+    if (!sizeEventsMerged)
     {
-        CompressSizeChangedEvents(e);
-        sizeEventHandled = true;
+        Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
 
-        Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+        MergeSizeChangedEvents(e);
+        sizeEventsMerged = true;
 
         engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
         if (windowBackend->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
-            sizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
+
+            sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
         }
     }
 }
 
-void Window::CompressSizeChangedEvents(const Private::MainDispatcherEvent& e)
+void Window::HandleDpiChanged(const Private::MainDispatcherEvent& e)
+{
+    dpi = e.dpiEvent.dpi;
+    dpiChanged.Emit(this, dpi);
+}
+
+void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
 {
     // Look into dispatcher queue and compress size events into one event to allow:
     //  - single render init/reset call during one frame
@@ -211,34 +219,35 @@ void Window::CompressSizeChangedEvents(const Private::MainDispatcherEvent& e)
     using Private::MainDispatcherEvent;
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
     mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
-        if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED)
+        if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
         {
-            compressedSize.width = e.sizeEvent.width;
-            compressedSize.height = e.sizeEvent.height;
-            compressedSize.scaleX = e.sizeEvent.scaleX;
-            compressedSize.scaleY = e.sizeEvent.scaleY;
+            compressedSize = e.sizeEvent;
         }
     });
 
     width = compressedSize.width;
     height = compressedSize.height;
-    scaleX = compressedSize.scaleX;
-    scaleY = compressedSize.scaleY;
+    surfaceWidth = compressedSize.surfaceWidth;
+    surfaceHeight = compressedSize.surfaceHeight;
+
+    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
 {
     int32 w = static_cast<int32>(width);
     int32 h = static_cast<int32>(height);
-    int32 physW = static_cast<int32>(GetRenderSurfaceWidth());
-    int32 physH = static_cast<int32>(GetRenderSurfaceHeight());
 
-    virtualCoordSystem->SetInputScreenAreaSize(w, h);
-    virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
-    virtualCoordSystem->SetVirtualScreenSize(w, h);
-    virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-    virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
-    virtualCoordSystem->ScreenSizeChanged();
+    Size2f surfSize = GetSurfaceSize();
+
+    int32 sw = static_cast<int32>(surfSize.dx);
+    int32 sh = static_cast<int32>(surfSize.dy);
+
+    uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
+    uiControlSystem->vcs->SetPhysicalScreenSize(sw, sh);
+    uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
+    uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
+    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)

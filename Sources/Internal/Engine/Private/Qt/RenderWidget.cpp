@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 
 #if defined(__DAVAENGINE_QT__)
 
@@ -126,9 +127,8 @@ void RenderWidget::OnSceneGraphInvalidated()
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
-    widgetDelegate->OnResized(size.width(), size.height(), dpi);
+    widgetDelegate->OnResized(size.width(), size.height());
     emit Resized(size.width(), size.height());
 }
 

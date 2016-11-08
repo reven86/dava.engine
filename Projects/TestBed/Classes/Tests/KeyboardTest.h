@@ -53,6 +53,8 @@ private:
     DAVA::uint32 numMouseMove = 0;
     DAVA::uint32 numMouseDown = 0;
     DAVA::uint32 numMouseUp = 0;
+    DAVA::uint32 numMouseDblUp = 0;
+    DAVA::uint32 numMouseDblDown = 0;
     DAVA::uint32 numMouseWheel = 0;
     DAVA::uint32 numMouseCancel = 0;
     wchar_t lastMouseKey = L'\0';

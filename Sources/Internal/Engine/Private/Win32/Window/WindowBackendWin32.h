@@ -69,6 +69,7 @@ private:
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
     LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
+    LRESULT OnDpiChanged(RECT* suggestedRect);
     LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
     LRESULT OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y);
@@ -90,6 +91,8 @@ private:
     static eMouseButtons GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed);
     static eMouseButtons GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
 
+    float32 GetDpi() const;
+
 private:
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
@@ -102,11 +105,14 @@ private:
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
-    int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
-    int32 height = 0;
+    int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
+    int32 lastHeight = 0;
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
+
+    const float32 defaultDpi = 96.0f;
+    float32 dpi = defaultDpi;
     Vector<TOUCHINPUT> touchInput;
 
     static bool windowClassRegistered;

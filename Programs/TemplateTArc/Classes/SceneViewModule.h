@@ -28,7 +28,7 @@ protected:
 private:
     void SetupRenderWidget();
     void SetupActions();
-    void OnWindowResized(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
+    void OnWindowResized(DAVA::Window* w, DAVA::Size2f size, DAVA::Size2f surfaceSize);
 
     void OpenScene();
     void OpenScene(const DAVA::String& scenePath);

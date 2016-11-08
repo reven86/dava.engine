@@ -60,14 +60,15 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceI
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.sizeEvent.width = width;
-    e.sizeEvent.height = height;
-    e.sizeEvent.scaleX = scaleX;
-    e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.width = w;
+    e.sizeEvent.height = h;
+    e.sizeEvent.surfaceWidth = surfaceW;
+    e.sizeEvent.surfaceHeight = surfaceH;
+    e.sizeEvent.dpi = dpi;
     return e;
 }
 
@@ -78,14 +79,15 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH)
 {
-    MainDispatcherEvent e(WINDOW_SIZE_SCALE_CHANGED, window);
+    MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.sizeEvent.width = width;
-    e.sizeEvent.height = height;
-    e.sizeEvent.scaleX = scaleX;
-    e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.width = w;
+    e.sizeEvent.height = h;
+    e.sizeEvent.surfaceWidth = surfaceW;
+    e.sizeEvent.surfaceHeight = surfaceH;
+    e.sizeEvent.dpi = 0.0f;
     return e;
 }
 
@@ -102,6 +104,14 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Wind
     MainDispatcherEvent e(WINDOW_VISIBILITY_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.stateEvent.state = visibilityState;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateWindowDpiChangedEvent(Window* window, float32 dpi)
+{
+    MainDispatcherEvent e(WINDOW_DPI_CHANGED, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.dpiEvent.dpi = dpi;
     return e;
 }
 

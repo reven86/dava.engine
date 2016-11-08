@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Math/Rect.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
@@ -63,8 +63,8 @@ JNIEnv* JniExtension::GetEnvironment() const
 
 Rect JniExtension::V2P(const Rect& srcRect) const
 {
-    Vector2 offset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(srcRect);
+    Vector2 offset = UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(srcRect);
 
     rect += offset;
     return rect;

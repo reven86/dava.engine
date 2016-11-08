@@ -38,6 +38,8 @@ struct AMotionEvent
         AXIS_RX = 0x0C,
         AXIS_RY = 0x0D,
         AXIS_RZ = 0x0E,
+        AXIS_HAT_X = 0x0F,
+        AXIS_HAT_Y = 0x10,
         AXIS_LTRIGGER = 0x11,
         AXIS_RTRIGGER = 0x12,
         AXIS_GAS = 0x16,

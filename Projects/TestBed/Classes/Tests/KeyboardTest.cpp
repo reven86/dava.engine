@@ -169,6 +169,8 @@ void KeyboardTest::ResetCounters()
     numMouseUp = 0;
     numMouseWheel = 0;
     numMouseCancel = 0;
+    numMouseDblUp = 0;
+    numMouseDblDown = 0;
     lastMouseKey = L'\0';
     lastMouseX = 0;
     lastMouseY = 0;
@@ -274,6 +276,11 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
+
+            if (currentInput->tapCount > 1)
+            {
+                numMouseDblDown++;
+            }
         }
         if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
@@ -320,6 +327,11 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
+
+            if (currentInput->tapCount > 1)
+            {
+                numMouseDblUp++;
+            }
         }
         if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
@@ -406,6 +418,8 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
                 << L"Mv: " << numMouseMove << L"\n"
                 << L"Dn: " << numMouseDown << L"\n"
                 << L"Up: " << numMouseUp << L"\n"
+                << L"DblDn: " << numMouseDblDown << L"\n"
+                << L"DblUp: " << numMouseDblUp << L"\n"
                 << L"Whl: " << numMouseWheel << L"\n"
                 << L"Cncl: " << numMouseCancel << L"\n"
                 << L"Btn: " << lastMouseKey << L"\n"
