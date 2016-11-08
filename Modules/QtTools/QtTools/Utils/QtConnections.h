@@ -1,5 +1,4 @@
-#ifndef __QTTOOLS_QTCONNECTIONS_H__
-#define __QTTOOLS_QTCONNECTIONS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -28,5 +27,3 @@ public:
 private:
     DAVA::Vector<QMetaObject::Connection> connections;
 };
-
-#endif // __QTTOOLS_QTCONNECTIONS_H__

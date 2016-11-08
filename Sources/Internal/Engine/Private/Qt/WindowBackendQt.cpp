@@ -13,6 +13,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
 
+#include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
 
 #include "Input/InputSystem.h"

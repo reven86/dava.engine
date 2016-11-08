@@ -18,9 +18,9 @@ public:
 protected:
     KeyeadArchiveSetValueCommand* lastCommand;
 
-    virtual void SetValueInternal(const QVariant& value);
-    virtual bool UpdateValueInternal();
-    virtual bool EditorDoneInternal(QWidget* editor);
+    void SetValueInternal(const QVariant& value) override;
+    bool UpdateValueInternal() override;
+    bool EditorDoneInternal(QWidget* editor) override;
 
     std::unique_ptr<DAVA::Command> CreateLastCommand() const override;
 
