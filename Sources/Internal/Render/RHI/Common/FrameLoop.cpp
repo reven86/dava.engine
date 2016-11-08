@@ -130,8 +130,8 @@ void SetFramePerfQueries(Handle startQuery, Handle endQuery)
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     CommonImpl::Frame& frame = frames[frameToBuild % framePoolSize];
-    frame.perfQuery0 = startQuery;
-    frame.perfQuery1 = endQuery;
+    frame.perfQueryStart = startQuery;
+    frame.perfQueryEnd = endQuery;
 }
 }
 }

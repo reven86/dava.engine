@@ -54,7 +54,7 @@ const char* RHI_EXECUTE_IMMEDIATE_CMDS = "rhi::ExecuteImmidiateCmds";
 const char* RHI_WAIT_IMMEDIATE_CMDS = "rhi::WaitImmediateCmd";
 const char* RHI_WAIT_FRAME_EXECUTION = "rhi::WaitFrameExecution";
 const char* RHI_CMD_BUFFER_EXECUTE = "rhi::cb::Execute";
-const char* RHI_WAIT_FRAME_CONSTRACTION = "rhi::WaitFrameConstruction";
+const char* RHI_WAIT_FRAME_CONSTRUCTION = "rhi::WaitFrameConstruction";
 const char* RHI_PROCESS_SCHEDULED_DELETE = "rhi::ProcessScheduledDelete";
 };
 

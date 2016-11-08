@@ -48,7 +48,7 @@ namespace PerfQueryDX9
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void IssueTimestamp(Handle handle);
+void IssueTimestampQuery(Handle handle);
 void BeginMeasurment();
 void EndMeasurment();
 

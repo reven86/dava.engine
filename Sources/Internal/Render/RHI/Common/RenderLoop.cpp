@@ -116,7 +116,7 @@ static void RenderFunc()
         }
         bool frameReady = false;
         {
-            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRACTION);
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRUCTION);
 
             while ((!frameReady) && (!resetPending))
             {

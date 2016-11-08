@@ -13,8 +13,8 @@ struct ProfilerGPUDetails;
 
 /**
     \ingroup profilers
-    \brief   Profiler allows measure executing time of render-commands on hardware.
-    \details Profiler allows measure executing time of render-commands on hardware.
+    \brief   Profiler allows to measure execution time of render-commands on hardware.
+    \details Profiler allows to measure execution time of render-commands on hardware.
              Using this profiler you can mark 'rhi::Packet', 'rhi::RenderPassDescriptor' or 'DAVA::RenderBatch' to trace how much time took executing corresponding render-commands.
              Same information you can receive about whole frame using 'FrameInfo'.
              Identification of markers become by string-name.
@@ -76,7 +76,7 @@ public:
     Vector<TraceEvent> GetTrace();
 
     /**
-        Add marker to track render-commands executing. Use DAVA_PROFILER_GPU_* defines insted direct call.
+        Add marker to track render-commands execution. Use DAVA_PROFILER_GPU_* defines insted direct call.
 
         \param[out] query0 PerfQuery to retrieve start timestamp
         \param[out] query1 PerfQuery to retrieve end timestamp

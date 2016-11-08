@@ -17,7 +17,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "Debug/ProfilerMarkerNames.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif

@@ -61,7 +61,7 @@ static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, Prof
                                                FastName(ProfilerCPUMarkerName::SCENE_DRAW),
                                                FastName(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS),
                                                FastName(ProfilerCPUMarkerName::RHI_PRESENT),
-                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRACTION),
+                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_CONSTRUCTION),
                                                FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
                                                FastName(ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
                                                FastName(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME),
@@ -785,12 +785,10 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
     const int32 chart0x = chartRect.x;
     const int32 chart0y = chartRect.y + chartRect.dy;
 
-#define CHART_VALUE_HEIGHT(value) int32(value* valuescale)
-
     MarkerHistory::HistoryArray::const_iterator it = history.cbegin();
     int32 px = 0;
-    int32 py = CHART_VALUE_HEIGHT(it->accurate);
-    int32 pfy = CHART_VALUE_HEIGHT(it->filtered);
+    int32 py = int32(valuescale * it->accurate);
+    int32 pfy = int32(valuescale * it->filtered);
     ++it;
 
     int32 index = 1;
@@ -798,8 +796,8 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
     for (; it != hend; ++it, ++index)
     {
         int32 x = int32(index * chartstep);
-        int32 y = CHART_VALUE_HEIGHT(it->accurate);
-        int32 fy = CHART_VALUE_HEIGHT(it->filtered);
+        int32 y = int32(valuescale * it->accurate);
+        int32 fy = int32(valuescale * it->filtered);
 
         DbgDraw::Line2D(chart0x + px, chart0y - py, chart0x + x, chart0y - y, CHART_COLOR);
         DbgDraw::Line2D(chart0x + px, chart0y - pfy, chart0x + x, chart0y - fy, CHART_FILTERED_COLOR);
@@ -808,8 +806,6 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
         py = y;
         pfy = fy;
     }
-
-#undef CHART_VALUE_HEIGHT
 
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 

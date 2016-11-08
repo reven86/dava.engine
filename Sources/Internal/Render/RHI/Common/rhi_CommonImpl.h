@@ -8,8 +8,8 @@ namespace CommonImpl
 struct Frame
 {
     Handle sync = InvalidHandle;
-    Handle perfQuery0 = InvalidHandle;
-    Handle perfQuery1 = InvalidHandle;
+    Handle perfQueryStart = InvalidHandle;
+    Handle perfQueryEnd = InvalidHandle;
     std::vector<Handle> pass;
     uint32 frameNumber = 0;
     bool readyToExecute = false;

@@ -13,8 +13,8 @@ class ProfilerRingArray;
 
 /**
     \ingroup profilers
-    \brief   Profiler allows measure executing time of code-blocks from any threads.
-    \details Profiler allows measure executing time of code-blocks from any threads. It's cheap in performance. If profiler not started - it's almost free.
+    \brief   Profiler allows to measure execution time of code-blocks from any thread.
+    \details Profiler allows to measure execution time of code-blocks from any thread. It's cheap in performance. If profiler not started - it's almost free.
              To use this profiler, at first, you should place counters in interesting code blocks using set of DAVA_PROFILER_CPU_SCOPE defines listed below.
              Than you just start profiler. After that you can dump counted info or build trace to view it in Chromium Trace Viewer.
             

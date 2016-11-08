@@ -40,13 +40,13 @@ void ReleaseQueryPool();
 
 namespace PerfQueryDX11
 {
-void IssueTimestamp(Handle handle, ID3D11DeviceContext* context);
+void IssueTimestampQuery(Handle handle, ID3D11DeviceContext* context);
 void BeginMeasurment(ID3D11DeviceContext* context);
 void EndMeasurment(ID3D11DeviceContext* context);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 void DeferredPerfQueriesIssued(const std::vector<Handle>& queries);
-void IssueTimestampDeferred(Handle handle, ID3D11DeviceContext* context);
+void IssueTimestampQueryDeferred(Handle handle, ID3D11DeviceContext* context);
 #endif
 
 void SetupDispatch(Dispatch* dispatch);

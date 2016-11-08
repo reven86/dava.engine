@@ -107,8 +107,8 @@ class RenderPassDX11_t
 public:
     std::vector<Handle> cmdBuf;
     int priority;
-    Handle perfQuery0;
-    Handle perfQuery1;
+    Handle perfQueryStart;
+    Handle perfQueryEnd;
 };
 
 struct SyncObjectDX11_t
@@ -211,8 +211,8 @@ static Handle dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
-    pass->perfQuery0 = passDesc.perfQueryStart;
-    pass->perfQuery1 = passDesc.perfQueryEnd;
+    pass->perfQueryStart = passDesc.perfQueryStart;
+    pass->perfQueryEnd = passDesc.perfQueryEnd;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
@@ -530,7 +530,7 @@ dx11_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle perfQuery)
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    PerfQueryDX11::IssueTimestampDeferred(perfQuery, cb->context);
+    PerfQueryDX11::IssueTimestampQueryDeferred(perfQuery, cb->context);
     cb->deferredPerfQueries.push_back(perfQuery);
 #else
     SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
@@ -830,8 +830,8 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     PerfQueryDX11::ObtainPerfQueryMeasurment(_D3D11_ImmediateContext);
     PerfQueryDX11::BeginMeasurment(_D3D11_ImmediateContext);
 
-    if (frame.perfQuery0 != InvalidHandle)
-        PerfQueryDX11::IssueTimestamp(frame.perfQuery0, _D3D11_ImmediateContext);
+    if (frame.perfQueryStart != InvalidHandle)
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryStart, _D3D11_ImmediateContext);
 
     Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
 
@@ -850,8 +850,8 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     {
         RenderPassDX11_t* pp = *p;
 
-        if (pp->perfQuery0 != InvalidHandle)
-            PerfQueryDX11::IssueTimestamp(pp->perfQuery0, _D3D11_ImmediateContext);
+        if (pp->perfQueryStart != InvalidHandle)
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryStart, _D3D11_ImmediateContext);
 
         for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
         {
@@ -874,15 +874,15 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             CommandBufferPoolDX11::Free(cb_h);
         }
 
-        if (pp->perfQuery1 != InvalidHandle)
-            PerfQueryDX11::IssueTimestamp(pp->perfQuery1, _D3D11_ImmediateContext);
+        if (pp->perfQueryEnd != InvalidHandle)
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryEnd, _D3D11_ImmediateContext);
     }
 
     for (Handle p : frame.pass)
         RenderPassPoolDX11::Free(p);
 
-    if (frame.perfQuery1 != InvalidHandle)
-        PerfQueryDX11::IssueTimestamp(frame.perfQuery1, _D3D11_ImmediateContext);
+    if (frame.perfQueryEnd != InvalidHandle)
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryEnd, _D3D11_ImmediateContext);
 
     _DX11_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
@@ -941,10 +941,9 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (DeviceCaps().isPerfQuerySupported)
             {
                 ID3D11Query *tsQuery = nullptr, *fqQuery = nullptr;
-                D3D11_QUERY_DESC desc;
 
+                D3D11_QUERY_DESC desc = {};
                 desc.Query = D3D11_QUERY_TIMESTAMP;
-                desc.MiscFlags = 0;
                 _D3D11_Device->CreateQuery(&desc, &tsQuery);
 
                 desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
@@ -1294,7 +1293,7 @@ void CommandBufferDX11_t::Execute()
         case CMD_ISSUE_TIMESTAMP_QUERY:
         {
             Handle perfQuery = ((SWCommand_IssueTimestamptQuery*)cmd)->perfQuery;
-            PerfQueryDX11::IssueTimestamp(perfQuery, _D3D11_ImmediateContext);
+            PerfQueryDX11::IssueTimestampQuery(perfQuery, _D3D11_ImmediateContext);
         }
         break;
 

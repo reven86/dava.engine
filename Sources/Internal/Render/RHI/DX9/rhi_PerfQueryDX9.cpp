@@ -18,8 +18,6 @@ public:
     struct Desc
     {
     };
-    PerfQueryDX9_t() = default;
-    ~PerfQueryDX9_t() = default;
 
     IDirect3DQuery9* query = nullptr;
     uint64 timestamp = 0;
@@ -130,7 +128,7 @@ static uint64 dx9_PerfQuery_Value(Handle handle)
 
 namespace PerfQueryDX9
 {
-void IssueTimestamp(Handle handle)
+void IssueTimestampQuery(Handle handle)
 {
     DVASSERT(currentPerfQueryFrameDX9);
 
@@ -258,11 +256,8 @@ void ReleaseAll()
 
 void ObtainPerfQueryMeasurment()
 {
-    DAVA::List<PerfQueryFrameDX9*>::iterator fit = pendingPerfQueryFrameDX9.begin();
-    while (fit != pendingPerfQueryFrameDX9.end())
+    for (PerfQueryFrameDX9* frame : pendingPerfQueryFrameDX9)
     {
-        PerfQueryFrameDX9* frame = *fit;
-
         if (!frame->freq)
         {
             bool disjoint = false;
@@ -311,13 +306,11 @@ void ObtainPerfQueryMeasurment()
                 ++qit;
             }
         }
-
-        ++fit;
     }
 
     DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
 
-    fit = pendingPerfQueryFrameDX9.begin();
+    DAVA::List<PerfQueryFrameDX9*>::iterator fit = pendingPerfQueryFrameDX9.begin();
     while (fit != pendingPerfQueryFrameDX9.end())
     {
         PerfQueryFrameDX9* frame = *fit;

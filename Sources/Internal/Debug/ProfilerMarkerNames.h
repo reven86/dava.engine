@@ -53,7 +53,7 @@ extern const char* RHI_EXECUTE_IMMEDIATE_CMDS;
 extern const char* RHI_WAIT_IMMEDIATE_CMDS;
 extern const char* RHI_WAIT_FRAME_EXECUTION;
 extern const char* RHI_CMD_BUFFER_EXECUTE;
-extern const char* RHI_WAIT_FRAME_CONSTRACTION;
+extern const char* RHI_WAIT_FRAME_CONSTRUCTION;
 extern const char* RHI_PROCESS_SCHEDULED_DELETE;
 };
 

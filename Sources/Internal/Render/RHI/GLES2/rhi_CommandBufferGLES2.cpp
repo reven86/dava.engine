@@ -34,8 +34,8 @@ struct RenderPassGLES2_t
 {
     std::vector<Handle> cmdBuf;
     int priority;
-    Handle perfQuery0;
-    Handle perfQuery1;
+    Handle perfQueryStart;
+    Handle perfQueryEnd;
     bool skipPerfQueries;
 };
 
@@ -81,8 +81,8 @@ static Handle gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passConf.priority;
-    pass->perfQuery0 = passConf.perfQueryStart;
-    pass->perfQuery1 = passConf.perfQueryEnd;
+    pass->perfQueryStart = passConf.perfQueryStart;
+    pass->perfQueryEnd = passConf.perfQueryEnd;
     pass->skipPerfQueries = false;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
@@ -252,8 +252,7 @@ static void gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     cmd->objectIndex = objectIndex;
 }
 
-static void
-gles2_CommandBuffer_IssueTimestamp(Handle cmdBuf, Handle query)
+static void gles2_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle query)
 {
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     cb->skipPassPerfQueries = !_GLES2_TimeStampQuerySupported;
@@ -1193,8 +1192,8 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     std::vector<RenderPassGLES2_t*> pass;
     unsigned frame_n = 0;
-    Handle framePerfQuery0 = InvalidHandle;
-    Handle framePerfQuery1 = InvalidHandle;
+    Handle framePerfQueryStart = InvalidHandle;
+    Handle framePerfQueryEnd = InvalidHandle;
     bool skipFramePerfQueries = false;
 
     for (Handle p : frame.pass)
@@ -1221,14 +1220,14 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                 pp->skipPerfQueries |= CommandBufferPoolGLES2::Get(pp->cmdBuf[b])->skipPassPerfQueries;
             }
 
-            skipFramePerfQueries |= (pp->perfQuery0 != InvalidHandle) || pp->skipPerfQueries;
-            skipFramePerfQueries |= (pp->perfQuery1 != InvalidHandle) || pp->skipPerfQueries;
+            skipFramePerfQueries |= (pp->perfQueryStart != InvalidHandle) || pp->skipPerfQueries;
+            skipFramePerfQueries |= (pp->perfQueryEnd != InvalidHandle) || pp->skipPerfQueries;
         }
     }
 
     frame_n = frame.frameNumber;
-    framePerfQuery0 = frame.perfQuery0;
-    framePerfQuery1 = frame.perfQuery1;
+    framePerfQueryStart = frame.perfQueryStart;
+    framePerfQueryEnd = frame.perfQueryEnd;
 
     if (frame.sync != InvalidHandle)
     {
@@ -1240,20 +1239,20 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     if (skipFramePerfQueries)
     {
-        if (framePerfQuery0 != InvalidHandle)
-            PerfQueryGLES2::SkipQuery(framePerfQuery0);
-        if (framePerfQuery1 != InvalidHandle)
-            PerfQueryGLES2::SkipQuery(framePerfQuery1);
+        if (framePerfQueryStart != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQueryStart);
+        if (framePerfQueryEnd != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQueryEnd);
 
-        framePerfQuery0 = InvalidHandle;
-        framePerfQuery1 = InvalidHandle;
+        framePerfQueryStart = InvalidHandle;
+        framePerfQueryEnd = InvalidHandle;
     }
 
     PerfQueryGLES2::ObtainPerfQueryResults();
 
-    if (framePerfQuery0 != InvalidHandle)
+    if (framePerfQueryStart != InvalidHandle)
     {
-        PerfQueryGLES2::IssueQuery(framePerfQuery0);
+        PerfQueryGLES2::IssueQuery(framePerfQueryStart);
     }
 
     Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
@@ -1266,12 +1265,12 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            if (pp->perfQuery0 != InvalidHandle)
+            if (pp->perfQueryStart != InvalidHandle)
             {
                 if (pp->skipPerfQueries)
-                    PerfQueryGLES2::SkipQuery(pp->perfQuery0);
+                    PerfQueryGLES2::SkipQuery(pp->perfQueryStart);
                 else
-                    PerfQueryGLES2::IssueQuery(pp->perfQuery0);
+                    PerfQueryGLES2::IssueQuery(pp->perfQueryStart);
             }
 
             cb->Execute();
@@ -1287,20 +1286,20 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
             CommandBufferPoolGLES2::Free(cb_h);
 
-            if (pp->perfQuery1 != InvalidHandle)
+            if (pp->perfQueryEnd != InvalidHandle)
             {
                 if (pp->skipPerfQueries)
-                    PerfQueryGLES2::SkipQuery(pp->perfQuery1);
+                    PerfQueryGLES2::SkipQuery(pp->perfQueryEnd);
                 else
-                    PerfQueryGLES2::IssueQuery(pp->perfQuery1);
+                    PerfQueryGLES2::IssueQuery(pp->perfQueryEnd);
             }
         }
     }
     Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
 
-    if (framePerfQuery1 != InvalidHandle)
+    if (framePerfQueryEnd != InvalidHandle)
     {
-        PerfQueryGLES2::IssueQuery(framePerfQuery1);
+        PerfQueryGLES2::IssueQuery(framePerfQueryEnd);
     }
 
     for (Handle p : frame.pass)
@@ -1875,7 +1874,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetIndices = &gles2_CommandBuffer_SetIndices;
     dispatch->impl_CommandBuffer_SetQueryBuffer = &gles2_CommandBuffer_SetQueryBuffer;
     dispatch->impl_CommandBuffer_SetQueryIndex = &gles2_CommandBuffer_SetQueryIndex;
-    dispatch->impl_CommandBuffer_IssueTimestampQuery = &gles2_CommandBuffer_IssueTimestamp;
+    dispatch->impl_CommandBuffer_IssueTimestampQuery = &gles2_CommandBuffer_IssueTimestampQuery;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &gles2_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture = &gles2_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState = &gles2_CommandBuffer_SetDepthStencilState;
