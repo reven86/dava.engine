@@ -6,6 +6,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Infrastructure/TestListScreen.h"
+#include "Tests/YamlFilesTest.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
 #include "Tests/SpeedLoadImagesTest.h"

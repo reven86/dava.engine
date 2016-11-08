@@ -176,9 +176,9 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
     for (YamlNode* styleSheetNode : styleSheetMap)
     {
-        const MultiMap<String, YamlNode*>& styleSheet = styleSheetNode->AsMap();
+        const Vector<std::pair<String, YamlNode*>>& styleSheet = styleSheetNode->AsMap();
 
-        auto propertiesSectionIter = styleSheet.find("properties");
+        auto propertiesSectionIter = YamlNode::FindInMap(styleSheet, "properties");
 
         if (propertiesSectionIter != styleSheet.end())
         {
@@ -238,7 +238,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
             }
 
             Vector<String> selectorList;
-            Split(styleSheet.find("selector")->second->AsString(), ",", selectorList);
+            Split(YamlNode::FindInMap(styleSheet, "selector")->second->AsString(), ",", selectorList);
             Vector<UIStyleSheetSelectorChain> selectorChains;
             selectorChains.reserve(selectorList.size());
 

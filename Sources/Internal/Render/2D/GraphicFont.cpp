@@ -150,9 +150,9 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
     if (distanceFieldFont)
         this->isDistanceFieldFont = distanceFieldFont->AsBool();
 
-    const MultiMap<String, YamlNode*> charsMap = charsNode->AsMap();
-    MultiMap<String, YamlNode*>::const_iterator charsMapEnd = charsMap.end();
-    for (MultiMap<String, YamlNode*>::const_iterator iter = charsMap.begin(); iter != charsMapEnd; ++iter)
+    const Vector<std::pair<String, YamlNode*>> charsMap = charsNode->AsMap();
+    auto charsMapEnd = charsMap.end();
+    for (auto iter = charsMap.begin(); iter != charsMapEnd; ++iter)
     {
         char16 charId = atoi(iter->first.c_str());
         CharDescription charDescription;
@@ -172,7 +172,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
     const YamlNode* kerningNode = configNode->Get("kerning");
     if (kerningNode)
     {
-        const MultiMap<String, YamlNode*> kerningMap = kerningNode->AsMap();
+        const Vector<std::pair<String, YamlNode*>> kerningMap = kerningNode->AsMap();
         for (auto iter = kerningMap.begin(); iter != kerningMap.end(); ++iter)
         {
             int32 charId = atoi(iter->first.c_str());
@@ -180,7 +180,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
             if (charIter == chars.end())
                 continue;
 
-            const MultiMap<String, YamlNode*> charKerningMap = iter->second->AsMap();
+            const Vector<std::pair<String, YamlNode*>> charKerningMap = iter->second->AsMap();
             for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
                 int32 secondCharId = atoi(i->first.c_str());

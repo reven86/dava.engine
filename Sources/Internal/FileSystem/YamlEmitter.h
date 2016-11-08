@@ -41,7 +41,6 @@ private:
     bool EmitScalar(yaml_emitter_t* emitter, const String& value, int32 scalarStyle /*yaml_scalar_style_t*/);
     bool EmitYamlNode(yaml_emitter_t* emitter, const YamlNode* node);
     bool EmitUnorderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode);
-    bool EmitOrderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode);
 };
 };
 #endif // __DAVAENGINE_YAML_EMITTER_H__

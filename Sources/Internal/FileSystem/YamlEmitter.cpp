@@ -85,7 +85,7 @@ bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* no
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
     if (!outFile)
     {
-        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
+        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output %s", outFileName.GetStringValue().c_str(), strerror(errno));
         return false;
     }
 
@@ -192,8 +192,7 @@ bool YamlEmitter::EmitYamlNode(yaml_emitter_t* emitter, const YamlNode* node)
         if (!EmitMappingStart(emitter, GetYamlMappingStyle(node->GetMapRepresentation())))
             return false;
 
-        bool res = node->GetMapOrderRepresentation() ? EmitOrderedMap(emitter, node) : EmitUnorderedMap(emitter, node);
-        if (!res)
+        if (!EmitUnorderedMap(emitter, node))
             return false;
 
         if (!EmitMappingEnd(emitter))
@@ -306,21 +305,6 @@ bool YamlEmitter::EmitUnorderedMap(yaml_emitter_t* emitter, const YamlNode* mapN
         if (!EmitScalar(emitter, mapNode->GetItemKeyName(i), GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))
             return false;
         if (!EmitYamlNode(emitter, mapNode->Get(i)))
-            return false;
-    }
-    return true;
-}
-
-bool YamlEmitter::EmitOrderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode)
-{
-    const MultiMap<String, YamlNode*>& map = mapNode->AsMap();
-    MultiMap<String, YamlNode*>::const_iterator iter = map.begin();
-    MultiMap<String, YamlNode*>::const_iterator end = map.end();
-    for (; iter != end; ++iter)
-    {
-        if (!EmitScalar(emitter, iter->first, GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))
-            return false;
-        if (!EmitYamlNode(emitter, iter->second))
             return false;
     }
     return true;
