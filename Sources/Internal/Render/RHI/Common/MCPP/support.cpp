@@ -2888,7 +2888,7 @@ const char* text)
 {
     const char* cp;
     const char* chr;
-    int c, c1, c2;
+    int c;
 
     if (why != NULL)
         mcpp_fprintf(MCPP_DBG, " (%s)", why);
