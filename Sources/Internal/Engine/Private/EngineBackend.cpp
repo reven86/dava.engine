@@ -243,6 +243,9 @@ void EngineBackend::OnEngineCleanup()
 
     if (!IsConsoleMode())
     {
+        if (ImGui::IsInitialized())
+            ImGui::Uninitialize();
+
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
     }
