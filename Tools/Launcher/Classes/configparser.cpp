@@ -443,7 +443,8 @@ bool ConfigParser::Parse(const QByteArray& configData)
     }
     catch (YAML::Exception& e)
     {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+        QString errorMessage = QObject::tr("Can not parse config file.\nError text: %1").arg(e.msg.c_str());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, errorMessage);
         return false;
     }
     return true;
