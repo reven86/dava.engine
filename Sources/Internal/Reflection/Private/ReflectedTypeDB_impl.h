@@ -147,21 +147,4 @@ void ReflectedTypeDB::RegisterBases()
     bool basesUnpack[] = { false, ReflectedTypeDB::Edit<Bases>() != nullptr... };
 }
 
-#ifdef __REFLECTION_FEATURE__
-inline const RttiType* ReflectedType::GetRttiType() const
-{
-    return rttiType;
-}
-
-inline const String& ReflectedType::GetPermanentName() const
-{
-    return permanentName;
-}
-
-inline const String& ReflectedType::GetRttiName() const
-{
-    return rttiName;
-}
-#endif
-
 } // namespace DAVA

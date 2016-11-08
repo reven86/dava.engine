@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-template <typename C, typename GetT, typename SetT>
+template <typename GetT, typename SetT, typename C>
 class ValueWrapperClassFn : public ValueWrapper
 {
     using Getter = Function<GetT(C*)>;

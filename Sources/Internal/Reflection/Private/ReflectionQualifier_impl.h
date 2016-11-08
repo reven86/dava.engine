@@ -6,6 +6,15 @@
 
 namespace DAVA
 {
+namespace ReflectionQualifierDetail
+{
+template <typename T>
+struct FnReturnTypeToReflectedType
+{
+    using type = typename std::conditional<std::is_pointer<T>::value, typename std::remove_pointer<T>::type, typename std::conditional<std::is_reference<T>::value, typename std::remove_reference<T>::type, std::nullptr_t>::type>::type;
+};
+}
+
 template <typename C>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Begin()
 {
@@ -16,6 +25,8 @@ ReflectionQualifier<C>& ReflectionQualifier<C>::Begin()
         rq.structure = new ReflectedStructure();
     }
 
+    rq.lastMeta = &rq.structure->meta;
+
     return rq;
 }
 
@@ -23,7 +34,6 @@ template <typename C>
 template <typename... Args>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Constructor()
 {
-    ReflectedType* type = ReflectedTypeDB::Edit<C>();
     structure->ctors.emplace_back(new CtorWrapperDefault<C, Args...>());
     return *this;
 }
@@ -31,8 +41,23 @@ ReflectionQualifier<C>& ReflectionQualifier<C>::Constructor()
 template <typename C>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Destructor()
 {
-    ReflectedType* type = ReflectedTypeDB::Edit<C>();
     structure->dtors.emplace_back(new DtorWrapperDefault<C>());
+    return *this;
+}
+
+template <typename C>
+template <typename T>
+ReflectionQualifier<C>& ReflectionQualifier<C>::AddField(const char* name, ValueWrapper* vw)
+{
+    ReflectedStructure::Field* f = new ReflectedStructure::Field();
+
+    f->name = name;
+    f->valueWrapper.reset(vw);
+    f->reflectedType = ReflectedTypeDB::Get<T>();
+    lastMeta = &f->meta;
+
+    structure->fields.emplace_back(f);
+
     return *this;
 }
 
@@ -40,47 +65,51 @@ template <typename C>
 template <typename T>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, T* field)
 {
-    auto valueWrapper = std::make_unique<ValueWrapperStatic<T>>(field);
-    //sw->AddField<T>(name, std::move(valueWrapper));
-    return *this;
+    return AddField<T>(name, new ValueWrapperStatic<T>(field));
 }
 
 template <typename C>
 template <typename T>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, T C::*field)
 {
-    auto valueWrapper = std::make_unique<ValueWrapperClass<T, C>>(field);
-    //sw->AddField<T>(name, std::move(valueWrapper));
-    return *this;
+    return AddField<T>(name, new ValueWrapperClass<T, C>(field));
 }
 
 template <typename C>
 template <typename GetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (*getter)(), std::nullptr_t)
 {
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
-    using SetFn = void (*)(SetT);
 
-    return Field(name, getter, static_cast<SetFn>(nullptr));
+    return AddField<T>(name, new ValueWrapperStaticFnPtr<GetT, SetT>(getter, nullptr));
 }
 
 template <typename C>
 template <typename GetT, typename SetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (*getter)(), void (*setter)(SetT))
 {
-    auto valueWrapper = std::make_unique<ValueWrapperStaticFnPtr<GetT, SetT>>(getter, setter);
-    //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
-    return *this;
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
+    return AddField<T>(name, new ValueWrapperStaticFnPtr<GetT, SetT>(getter, setter));
 }
 
 template <typename C>
 template <typename GetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (C::*getter)(), std::nullptr_t)
 {
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
-    using SetFn = void (C::*)(SetT);
 
-    return Field(name, getter, static_cast<SetFn>(nullptr));
+    return AddField<T>(name, new ValueWrapperClassFnPtr<GetT, SetT, C>(getter, nullptr));
+}
+
+template <typename C>
+template <typename GetT, typename SetT>
+ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (C::*getter)(), void (C::*setter)(SetT))
+{
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
+
+    return AddField<T>(name, new ValueWrapperClassFnPtr<GetT, SetT, C>(getter, setter));
 }
 
 template <typename C>
@@ -104,57 +133,57 @@ ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (C:
 }
 
 template <typename C>
-template <typename GetT, typename SetT>
-ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, GetT (C::*getter)(), void (C::*setter)(SetT))
-{
-    auto valueWrapper = std::make_unique<ValueWrapperClassFnPtr<GetT, SetT, C>>(getter, setter);
-    //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
-    return *this;
-}
-
-template <typename C>
 template <typename GetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, const Function<GetT()>& getter, std::nullptr_t)
 {
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
-    using SetFn = Function<void(SetT)>;
 
-    return Field(name, getter, SetFn());
+    return AddField<T>(name, new ValueWrapperStaticFn<GetT, SetT>(getter, nullptr));
 }
 
 template <typename C>
 template <typename GetT, typename SetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, const Function<GetT()>& getter, const Function<void(SetT)>& setter)
 {
-    auto valueWrapper = std::make_unique<ValueWrapperStaticFn<GetT, SetT>>(getter, setter);
-    //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
-    return *this;
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
+
+    return AddField<T>(name, new ValueWrapperStaticFn<GetT, SetT>(getter, setter));
 }
 
 template <typename C>
 template <typename GetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, const Function<GetT(C*)>& getter, std::nullptr_t)
 {
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
-    using SetFn = Function<void(C*, SetT)>;
 
-    return Field(name, getter, SetFn());
+    return AddField<T>(name, new ValueWrapperClassFn<GetT, SetT, C>(getter, nullptr));
 }
 
 template <typename C>
 template <typename GetT, typename SetT>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Field(const char* name, const Function<GetT(C*)>& getter, const Function<void(C*, SetT)>& setter)
 {
-    auto valueWrapper = std::make_unique<ValueWrapperClassFn<C, GetT, SetT>>(getter, setter);
-    //sw->AddFieldFn<GetT>(name, std::move(valueWrapper));
-    return *this;
+    using T = typename ReflectionQualifierDetail::FnReturnTypeToReflectedType<GetT>::type;
+
+    return AddField<T>(name, new ValueWrapperClassFn<GetT, SetT, C>(getter, setter));
 }
 
 template <typename C>
 template <typename Mt>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Method(const char* name, const Mt& method)
 {
-    //sw->AddMethod(name, method);
+    MethodWrapper* methodWrapper = new MethodWrapper();
+    methodWrapper->method = AnyFn(method);
+
+    ReflectedStructure::Method* m = new ReflectedStructure::Method();
+    m->name = name;
+    m->methodWrapper.reset(methodWrapper);
+
+    lastMeta = &m->meta;
+    structure->methods.emplace_back(m);
+
     return *this;
 }
 
@@ -163,22 +192,25 @@ void ReflectionQualifier<C>::End()
 {
     if (nullptr != structure)
     {
-        // override children for class C in appropriate ReflectedType
         ReflectedType* type = ReflectedTypeDB::Edit<C>();
-        type->structure.reset(structure);
-        structure = nullptr;
 
-        // TODO:
-        // ...
-        // Add class wrapper
-        // ...
+        type->structure.reset(structure);
+        type->structureWrapper.reset(new StructureWrapperClass(RttiType::Instance<C>(), structure));
+
+        structure = nullptr;
     }
+
+    lastMeta = nullptr;
 }
 
 template <typename C>
 ReflectionQualifier<C>& ReflectionQualifier<C>::operator[](ReflectedMeta&& meta)
 {
-    //sw->AddMeta(std::move(meta));
+    if (nullptr != lastMeta)
+    {
+        lastMeta->reset(new ReflectedMeta(std::move(meta)));
+    }
+
     return *this;
 }
 

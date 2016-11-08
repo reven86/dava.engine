@@ -94,6 +94,25 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
     return ret;
 }
 
+Vector<std::pair<const ReflectedType*, RttiInheritance::CastOP>> ReflectedTypeDB::GetRttiTypeHierarchy(const RttiType* rttiType)
+{
+    Vector<std::pair<const ReflectedType*, RttiInheritance::CastOP>> ret;
+
+    ret.emplace_back(GetByRttiType(rttiType), nullptr);
+
+    const RttiInheritance* inheritance = rttiType->GetInheritance();
+    if (nullptr != inheritance)
+    {
+        auto& baseMap = inheritance->GetBaseTypes();
+        for (auto& base : baseMap)
+        {
+            ret.emplace_back(GetByRttiType(base.first), base.second);
+        }
+    }
+
+    return ret;
+}
+
 ReflectedType* ReflectedTypeDB::Create(const RttiType* rttiType, const String& permanentName)
 {
     customReflectedTypes.emplace_back(new ReflectedType(rttiType));

@@ -25,6 +25,7 @@ public:
 
 class MethodWrapper
 {
+public:
     AnyFn method;
 };
 

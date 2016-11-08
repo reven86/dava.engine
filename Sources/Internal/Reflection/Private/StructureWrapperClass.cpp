@@ -1,3 +1,17 @@
+#include "Reflection/Private/StructureWrapperClass.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedTypeDB.h"
+#include "Reflection/ReflectedObject.h"
+
+namespace DAVA
+{
+StructureWrapperClass::StructureWrapperClass(const RttiType* classType, const ReflectedStructure* classStructure)
+{
+    auto hierarchy = ReflectedTypeDB::GetRttiTypeHierarchy(classType);
+}
+} //namespace DAVA
+
+/*
 #include "Base/Platform.h"
 
 #include "Reflection/Private/StructureWrapperClass.h"
@@ -215,7 +229,6 @@ void StructureWrapperClass::InitBaseClasses() const
     {
         basesInitialized = true;
 
-        /*
         const RttiInheritance* ti = thisType->GetInheritance();
         if (nullptr != ti)
         {
@@ -232,7 +245,6 @@ void StructureWrapperClass::InitBaseClasses() const
                 bases.emplace_back(std::move(classBase));
             }
         }
-        */
     }
 }
 
@@ -245,3 +257,4 @@ ReflectedObject StructureWrapperClass::ClassBase::GetBaseObject(const ReflectedO
 }
 
 } // namespace DAVA
+*/

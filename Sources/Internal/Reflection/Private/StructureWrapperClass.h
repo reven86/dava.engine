@@ -1,42 +1,17 @@
 #pragma once
-#include "Base/BaseTypes.h"
+
+#include "Base/RttiType.h"
 #include "Base/RttiInheritance.h"
-#include "Reflection/Reflection.h"
-#include "Reflection/Wrappers.h"
-#include "Reflection/ReflectedMeta.h"
-#include "Reflection/ReflectedType.h"
 #include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {
-class StructureWrapperClass : public StructureWrapper
+class StructureWrapperClass final : public StructureWrapperDefault
 {
 public:
-    struct ClassBase
-    {
-        const RttiType* type;
-        const ReflectedType* refType;
+    StructureWrapperClass(const RttiType* classType, const ReflectedStructure* classStructure);
 
-        RttiInheritance::CastOP castToBaseOP;
-        ReflectedObject GetBaseObject(const ReflectedObject& obj) const;
-    };
-
-    struct ClassField
-    {
-        DAVA_DEPRECATED(ClassField()) = default; // visual studio 2013 require this
-        DAVA_DEPRECATED(ClassField(ClassField&& cf)) // visual studio 2013 require this
-        : vw(std::move(cf.vw)), meta(std::move(cf.meta)), type(std::move(cf.type))
-        {
-        }
-
-        const ReflectedType* type;
-
-        std::unique_ptr<ValueWrapper> vw;
-        std::unique_ptr<ReflectedMeta> meta;
-    };
-
-    StructureWrapperClass(const RttiType*);
-
+    /*
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
     Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
@@ -44,6 +19,18 @@ public:
     bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
     AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
     Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    */
+
+    /*
+     
+     struct ClassBase
+     {
+     const RttiType* type;
+     const ReflectedType* refType;
+     
+     RttiInheritance::CastOP castToBaseOP;
+     ReflectedObject GetBaseObject(const ReflectedObject& obj) const;
+     };
 
     template <typename T>
     void AddField(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
@@ -77,8 +64,18 @@ public:
             clsFiled.meta = std::make_unique<ReflectedMeta>(std::move(meta));
         }
     }
+    */
 
 private:
+    struct FieldCacheEntry
+    {
+        const ReflectedStructure::Field* field;
+        RttiInheritance::CastOP castToBaseOP;
+    };
+
+    Vector<FieldCacheEntry> fieldsCache;
+
+    /*
     template <typename T>
     struct FnRetTypeToFieldType
     {
@@ -115,6 +112,7 @@ private:
     mutable Vector<ClassBase> bases;
 
     void InitBaseClasses() const;
+     */
 };
 
 } // namespace DAVA

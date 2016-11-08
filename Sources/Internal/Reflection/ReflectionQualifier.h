@@ -70,15 +70,20 @@ public:
     ReflectionQualifier& Field(const char* name, const Function<GetT(C*)>& getter, const Function<void(C*, SetT)>& setter);
 
     template <typename Mt>
-    ReflectionQualifier& Method(const char* name, const Mt& method)
+    ReflectionQualifier& Method(const char* name, const Mt& method);
 
     void End();
 
-    ReflectionQualifier& operator[](ReflectedMeta&& meta)
+    ReflectionQualifier& operator[](ReflectedMeta&& meta);
 
-    private :
+private:
     ReflectionQualifier() = default;
     ReflectedStructure* structure = nullptr;
+
+    std::unique_ptr<ReflectedMeta>* lastMeta;
+
+    template <typename T>
+    ReflectionQualifier& AddField(const char* name, ValueWrapper* vw);
 };
 
 } // namespace DAVA
