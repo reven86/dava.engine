@@ -20,6 +20,7 @@
 #include "Debug/Replay.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Engine/DeviceManager.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Input/InputSystem.h"
@@ -72,6 +73,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+    context->deviceManager = new DeviceManager(this);
 }
 
 EngineBackend::~EngineBackend()
@@ -752,6 +754,7 @@ void EngineBackend::DestroySubsystems()
     context->fileSystem->Release();
     context->systemTimer->Release();
 
+    delete context->deviceManager;
     context->logger->Release();
 }
 
