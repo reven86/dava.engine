@@ -10,6 +10,7 @@
 #include "Classes/Beast/BeastProxy.h"
 
 #include "QtTools/Utils/ShortcutChecker.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "DAVAEngine.h"
 #include "Base/Platform.h"
@@ -83,6 +84,8 @@ public:
     bool IsWaitDialogVisible() const override;
     void HideWaitDialog() override;
     void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
+
+    void CloseAllScenes();
 
     // qt actions slots
 public slots:
@@ -210,7 +213,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    void closeEvent(QCloseEvent* event);
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
@@ -320,6 +322,8 @@ private:
 #if defined(__DAVAENGINE_MACOS__)
     ShortcutChecker shortcutChecker;
 #endif
+
+    QtDelayedExecutor delayedExecutor;
 
 private:
     struct EmitterDescriptor

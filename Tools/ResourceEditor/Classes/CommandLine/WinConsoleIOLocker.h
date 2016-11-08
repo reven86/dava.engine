@@ -1,5 +1,4 @@
-#ifndef __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
-#define __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
@@ -22,5 +21,3 @@ private:
 };
 
 #endif //#if defined(__DAVAENGINE_WIN32__)
-
-#endif // __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__

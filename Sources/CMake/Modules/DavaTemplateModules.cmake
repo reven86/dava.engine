@@ -249,7 +249,8 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+    foreach( VALUE ${MAIN_MODULE_VALUES}
+                                         TARGET_MODULES_LIST 
                                          QT_DEPLOY_LIST_VALUE 
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
