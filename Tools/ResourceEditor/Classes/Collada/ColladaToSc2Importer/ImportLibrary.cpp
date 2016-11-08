@@ -19,7 +19,7 @@
 #include "Collada/ColladaSceneNode.h"
 #include "Collada/ColladaScene.h"
 #include "FileSystem/FileSystem.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "Collada/ColladaToSc2Importer/ImportSettings.h"
 #include "Collada/ColladaToSc2Importer/ImportLibrary.h"
