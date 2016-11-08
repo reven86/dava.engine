@@ -147,7 +147,7 @@ void ProfilerOverlay::AddInterestMarkers(const Vector<FastName>& markers)
     interestMarkers.insert(interestMarkers.end(), markers.begin(), markers.end());
 }
 
-const Vector<FastName> ProfilerOverlay::GetInterestMarkers() const
+const Vector<FastName>& ProfilerOverlay::GetInterestMarkers() const
 {
     return interestMarkers;
 }
@@ -402,11 +402,8 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, Trace
         }
     }
 
-    uint64 eventStart, eventDuration;
-    uint32 eventColor;
-    int32 eventDepth;
-
     Vector<std::pair<uint64, uint64>> timestampsStack; //<start ts, end ts>
+    timestampsStack.reserve(32);
     for (const TraceEvent& e : events)
     {
         MarkerHistory& history = markersHistory[e.name];
@@ -458,11 +455,11 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, Trace
         switch (e.phase)
         {
         case TraceEvent::PHASE_DURATION:
-            timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, e.timestamp + e.duration));
+            timestampsStack.emplace_back(e.timestamp, e.timestamp + e.duration);
             break;
 
         case TraceEvent::PHASE_BEGIN:
-            timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, 0));
+            timestampsStack.emplace_back(e.timestamp, 0);
             break;
 
         case TraceEvent::PHASE_END:
@@ -477,10 +474,10 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, Trace
         {
             DVASSERT(!timestampsStack.empty());
 
-            eventStart = timestampsStack.back().first - events.front().timestamp;
-            eventDuration = timestampsStack.back().second - timestampsStack.back().first;
-            eventColor = markersColor[e.name];
-            eventDepth = int32(timestampsStack.size()) - 1;
+            uint64 eventStart = timestampsStack.back().first - events.front().timestamp;
+            uint64 eventDuration = timestampsStack.back().second - timestampsStack.back().first;
+            uint32 eventColor = markersColor[e.name];
+            int32 eventDepth = int32(timestampsStack.size()) - 1;
 
             trace->rects.push_back({ eventStart, eventDuration, eventColor, eventDepth, e.name });
         }

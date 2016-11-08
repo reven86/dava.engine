@@ -12,16 +12,15 @@ class ProfilerCPU;
 class ProfilerGPU;
 /**
     \ingroup profilers
-    \brief   Overlay display debug information retrieved from 'ProfilerCPU' and 'ProfilerGPU'.
-    \details Overlay display debug information retrieved from 'ProfilerCPU' and 'ProfilerGPU'. To display overlay just call 'SetEnabled'. If overlay disabled - it's almost free.
+             Overlay display debug information retrieved from `ProfilerCPU` and `ProfilerGPU`. To display overlay just call `SetEnabled`. If overlay disabled - it's almost free.
              Overlay store history from 10 frames. You can select frames after pause overlay-updating.
-             Also Overlay store history for 120 values of interest markers. You can modify list of these markers using 'ClearInterestMarkers' and 'AddInterestMarker(s)'.
+             Also Overlay store history for 120 values of interest markers. You can modify list of these markers using `ClearInterestMarkers` and `AddInterestMarker(s)`.
              To control overlay you can use keyboard shortcuts or touches.
-             To enable touches and keyboard shortcuts you should call 'SetInputEnabled'. If input enabled, overlay intercept on input from engine.
+             To enable touches and keyboard shortcuts you should call `SetInputEnabled`. If input enabled, overlay intercept on input from engine.
              Keyboard shortcuts:
-               - Ctrl + F12   -- Enable/Disable overlay. Equals 'SetEnabled'
+               - Ctrl + F12   -- Enable/Disable overlay. Equals `SetEnabled`
                - Ctrl + F11   -- Pause/Unpause information update.
-               - Ctrl + F10   -- Switch scale of overlay (x1/x2). Useful for High-DPI displays. Equals 'SetScale'
+               - Ctrl + F10   -- Switch scale of overlay (x1/x2). Useful for High-DPI displays. Equals `SetScale`
                - Ctrl + F9    -- Show/Hide charts of interested markers history.
                - Ctrl + Left  -- Select previous frame from history.
                - Ctrl + Right -- Select next frame from history.
@@ -29,8 +28,8 @@ class ProfilerGPU;
                - Ctrl + Down  -- Select previous marker from active (focused) trace.
                - Ctrl + Tab   -- Switch focus between CPU and GPU traces.
 
-            You can set to overlay your own 'ProfilerCPU' to display info. Call 'SetCPUProfiler' and pass to it root counter name. This name will be used to retrieve one counter for one frame.
-            Default cpu-profiler is 'ProfilerCPU::globalProfiler' with root counter 'ENGINE_ON_FRAME'.
+            You can set to overlay your own `ProfilerCPU` to display info. Call `SetCPUProfiler` and pass to it root counter name. This name will be used to retrieve one counter for one frame.
+            Default cpu-profiler is `ProfilerCPU::globalProfiler` with root counter `ENGINE_ON_FRAME`.
 */
 class ProfilerOverlay
 {
@@ -45,73 +44,67 @@ public:
     void SetEnabled(bool enabled);
 
     /**
-        \return Is overlay enabled
+        Returns is overlay enabled
     */
     bool IsEnabled();
 
     /**
-        Enable/Disable overlay input.
+        Enable/Disable overlay input
     */
     void SetInputEnabled(bool enabled);
 
     /**
-        \return Is overlay input enabled
+        Returns is overlay input enabled
     */
     bool IsInputEnabled();
 
     /**
-        Set draw scale. Useful for High-DPI displays.
-        \param[in] scale Scale
+        Set draw `scale`. Useful for High-DPI displays
     */
     void SetDrawScace(float32 scale);
 
     /**
-        \return draw scale
+        Return draw scale
     */
     float32 GetDrawScale() const;
 
     /**
-        Frame separator. You should call this method once per-frame and before 'rhi::Present()'.
+        Frame separator. You should call this method once per-frame and before `rhi::Present()`
     */
     void OnFrameEnd();
 
     /**
-        Input events processing. 
-        \return 'true' if input processed and 'false' otherwise
+        Input events processing. Return `true` if input processed and `false` otherwise
     */
     bool OnInput(UIEvent* input);
 
     /**
-        Change cpu-profiler to displaying their counter information.
-        \param[in] profiler CPU-profiler
-        \param[in] rootCounterName Name of root counter
+        Change `cpuProfiler` to displaying their counters information. `rootCounterName` is used as top of trace
     */
-    void SetCPUProfiler(ProfilerCPU* profiler, const char* rootCounterName);
+    void SetCPUProfiler(ProfilerCPU* cpuProfiler, const char* rootCounterName);
 
     /**
-        Clear list of interest markers.
+        Clear list of interest markers
     */
     void ClearInterestMarkers();
 
     /**
-        Add name to list of interested markers.
-        \param[in] name Marker name
+        Add `name` to list of interested markers
     */
     void AddInterestMarker(const FastName& name);
 
     /**
-        Add vector names to list of interested markers.
-        \param[in] markers Vector of marker names
+        Add `names` to list of interested markers
     */
-    void AddInterestMarkers(const Vector<FastName>& markers);
+    void AddInterestMarkers(const Vector<FastName>& names);
 
     /**
-        \return List of interest markers
+        Return list of interest markers
     */
-    const Vector<FastName> GetInterestMarkers() const;
+    const Vector<FastName>& GetInterestMarkers() const;
 
     /**
-        \return List of avaliable markers
+        Return list of available markers
     */
     Vector<FastName> GetAvalibleMarkers() const;
 

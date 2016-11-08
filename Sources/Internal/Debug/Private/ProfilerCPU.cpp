@@ -295,9 +295,10 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 desired
         }
     }
 
-    trace.reserve(countersCount);
     if (found)
     {
+        trace.reserve(countersCount);
+
         uint64 threadID = it->threadID;
         uint64 counterEndTime = it->endTime;
         for (; it != begin; --it)

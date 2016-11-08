@@ -13,10 +13,9 @@ struct ProfilerGPUDetails;
 
 /**
     \ingroup profilers
-    \brief   Profiler allows to measure execution time of render-commands on hardware.
-    \details Profiler allows to measure execution time of render-commands on hardware.
-             Using this profiler you can mark 'rhi::Packet', 'rhi::RenderPassDescriptor' or 'DAVA::RenderBatch' to trace how much time took executing corresponding render-commands.
-             Same information you can receive about whole frame using 'FrameInfo'.
+             Profiler allows to measure execution time of render-commands on hardware.
+             Using this profiler you can mark `rhi::Packet`, `rhi::RenderPassDescriptor` or `DAVA::RenderBatch` to trace how much time took executing corresponding render-commands.
+             Same information you can receive about whole frame using `FrameInfo`.
              Identification of markers become by string-name.
 
              To mark packet, render-pass or render-batch use special defines:
@@ -44,8 +43,7 @@ public:
         Vector<MarkerInfo> markers; ///< Marker that was added in this frame
 
         /**
-            Build trace of frame
-            \return Vector of trace events
+            Build and return trace of frame
         */
         Vector<TraceEvent> GetTrace() const;
     };
@@ -53,34 +51,27 @@ public:
     static ProfilerGPU* const globalProfiler; ///< Global Engine Profiler
 
     /**
-        Return information about executed frames on GPU. Index counting from the end. Index equals zero means executed last frame, index equal one - penultimate frame, etc.
-        \param[in] index Frame index from the end 
-        \return frame information about requested frame
+        Return information about executed frame on GPU with adjusted `index`. Index counted from the end. Index equals zero means executed last frame, index equal one - penultimate frame, etc.
     */
     const FrameInfo& GetFrame(uint32 index = 0) const;
 
     /**
-        \return count of available executed frames
+        Return count of available executed frames
     */
     uint32 GetFramesCount() const;
 
     /**
-        Frame separator. You should call this method once per-frame and before 'rhi::Present()'.
+        Frame separator. You should call this method once per-frame and before `rhi::Present()`
     */
     void OnFrameEnd();
 
     /**
-        Build trace of all available frames. Trace can be dumped to JSON Chromium Trace Viewer format.
-        \return Vector of trace events
+        Build and return trace of all available frames. Trace can be dumped to JSON Chromium Trace Viewer format
     */
     Vector<TraceEvent> GetTrace();
 
     /**
-        Add marker to track render-commands execution. Use DAVA_PROFILER_GPU_* defines insted direct call.
-
-        \param[out] query0 PerfQuery to retrieve start timestamp
-        \param[out] query1 PerfQuery to retrieve end timestamp
-        \param[in] markerName Marker name
+        Add marker to track render-commands execution. Use DAVA_PROFILER_GPU_* defines insted direct call
     */
     void AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName);
 
@@ -95,13 +86,12 @@ public:
     void Stop();
 
     /**
-        \return Is time measuring started
+        Returns is time measuring started
     */
     bool IsStarted();
 
 protected:
     ProfilerGPU(uint32 framesCount = 180);
-    ~ProfilerGPU();
 
     struct PerfQueryPair
     {

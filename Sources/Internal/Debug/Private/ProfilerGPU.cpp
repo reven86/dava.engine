@@ -39,6 +39,7 @@ void ProfilerGPU::PerfQueryPair::GetTimestamps(uint64& t0, uint64& t1)
 Vector<TraceEvent> ProfilerGPU::FrameInfo::GetTrace() const
 {
     Vector<const ProfilerGPU::MarkerInfo*> sortedMarkers;
+    sortedMarkers.reserve(markers.size());
     for (const ProfilerGPU::MarkerInfo& m : markers)
         sortedMarkers.push_back(&m);
 
@@ -47,6 +48,8 @@ Vector<TraceEvent> ProfilerGPU::FrameInfo::GetTrace() const
     });
 
     Vector<TraceEvent> trace;
+    trace.reserve(sortedMarkers.size() + 1);
+
     if (startTime && endTime)
         trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION, { { TRACE_ARG_FRAME, frameIndex } } });
 
@@ -70,10 +73,6 @@ ProfilerGPU::ProfilerGPU(uint32 framesInfoCount)
     : framesInfo(RingArray<FrameInfo>(framesInfoCount))
 {
     DVASSERT(framesInfoCount && "Should be > 0");
-}
-
-ProfilerGPU::~ProfilerGPU()
-{
 }
 
 const ProfilerGPU::FrameInfo& ProfilerGPU::GetFrame(uint32 index) const
@@ -218,17 +217,20 @@ bool ProfilerGPU::IsStarted()
 ProfilerGPU::PerfQueryPair ProfilerGPU::GetPerfQueryPair()
 {
     PerfQueryPair p;
-    for (rhi::HPerfQuery& q : p.query)
+
+    if (rhi::DeviceCaps().isPerfQuerySupported)
     {
-        if (!queryPool.empty())
+        for (rhi::HPerfQuery& q : p.query)
         {
-            q = queryPool.back();
-            queryPool.pop_back();
-        }
-        else
-        {
-            if (rhi::DeviceCaps().isPerfQuerySupported)
+            if (!queryPool.empty())
+            {
+                q = queryPool.back();
+                queryPool.pop_back();
+            }
+            else
+            {
                 q = rhi::CreatePerfQuery();
+            }
         }
     }
 
