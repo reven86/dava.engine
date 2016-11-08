@@ -62,7 +62,7 @@ bool ApiIsSupported(Api api)
 
     case RHI_DX11:
     {
-        #if defined(__DAVAENGINE_WINDOWS__)
+        #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         supported = true;
         #endif
     }
@@ -70,7 +70,7 @@ bool ApiIsSupported(Api api)
 
     case RHI_METAL:
     {
-         #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
+        #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
         supported = rhi_MetalIsSupported();
         #endif
     }
