@@ -4,7 +4,7 @@
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/EditorConfig.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"

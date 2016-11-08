@@ -131,7 +131,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         TEST_VERIFY(accessor.GetActiveContext().GetID() == undeletedContext);
         TEST_VERIFY(accessor.GetContext(newContext).GetID() == newContext);
 
-        // unactivate context test
+        // deactivate context test
         mng.ActivateContext(DataContext::Empty);
         TEST_VERIFY(accessor.HasActiveContext() == false);
 
