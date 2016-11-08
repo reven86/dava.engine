@@ -19,7 +19,7 @@ class ProfilerRingArray;
             
              Any counter has string-name that must be passed to define and will be displayed in dump or trace. Time-measuring occurs in microseconds.
 
-             Profiler is using ring array for counters so you are limited by count passed to ctor. If it's necessary to store counters data for later usage it later you can use snapshots.
+             Profiler is using ring array for counters so you are limited by count passed to ctor. If it's necessary to store counters data for later usage you can use snapshots.
              Snapshot - it just a copy of internal ring buffer. To make snapshot you have to stop profiler because it can be used by other thread.
              After snapshot was made you can dump counted info or build JSON-trace from it. Remember, that dumping or building trace is more expensive in performance than making snapshot.
             
@@ -33,7 +33,8 @@ class ProfilerRingArray;
               - DAVA_PROFILER_CPU_SCOPE_CUSTOM(name, profiler)                          -- Add counter with to custom profiler.
               - DAVA_PROFILER_CPU_SCOPE_CUSTOM_WITH_FRAME_INDEX(name, profiler, index)  -- Mark counter by frame index and add to custom profiler.
 
-             Frame index from counter later can be viewed in TraceEvent args. Name on argument is `TRACE_ARG_FRAME`. For more information about trace events arguments see `TraceEvent`.
+             Defines *_WITH_FRAME_INDEX mark counters by frame index. Frame index can be viewed later in TraceEvent args. Name of argument is `TRACE_ARG_FRAME`. 
+             For more information about trace events arguments see `TraceEvent`.
 
              Dump and trace considers hierarchy of counters. It's means that if counter A started after counter B and completed before B is completed (counters A and B placed in the same thread),
              in this case counter A became child of B. And dump of any counter include all child counters. So, dump represents as tree like call-tree. For example:
