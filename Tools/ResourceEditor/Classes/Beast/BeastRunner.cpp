@@ -1,14 +1,16 @@
 #include "BeastRunner.h"
+
+#if defined(__DAVAENGINE_BEAST__)
+
 #include "Scene/SceneEditor2.h"
 #include "Main/mainwindow.h"
 #include "Beast/BeastProxy.h"
 #include "Beast/LightmapsPacker.h"
 #include "Settings/SettingsManager.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 
 #include "DAVAEngine.h"
 
-#if defined(__DAVAENGINE_BEAST__)
 
 #include "SceneParser.h"
 
@@ -31,10 +33,8 @@ BeastRunner::~BeastRunner()
     BeastProxy::Instance()->SafeDeleteManager(&beastManager);
 }
 
-void BeastRunner::Run()
+void BeastRunner::RunUIMode()
 {
-    bool cancelledManually = false;
-
     if (waitDialog != nullptr)
     {
         waitDialog->Show("Beast process", "Starting Beast", true, true);
@@ -59,11 +59,6 @@ void BeastRunner::Run()
             cancelledManually |= waitDialog->WasCanceled();
         }
 
-        // if waitDialog is nullptr, it means that we are working in console mode
-        if (waitDialog == nullptr)
-        {
-            RenderObjectsFlusher::Flush();
-        }
         Sleep(15);
     }
 
@@ -72,7 +67,7 @@ void BeastRunner::Run()
         waitDialog->EnableCancel(false);
     }
 
-    Finish(cancelledManually | BeastProxy::Instance()->WasCancelled(beastManager));
+    Finish(cancelledManually || BeastProxy::Instance()->WasCancelled(beastManager));
 
     if (waitDialog != nullptr)
     {
