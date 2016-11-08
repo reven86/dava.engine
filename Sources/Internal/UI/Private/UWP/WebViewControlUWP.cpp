@@ -161,21 +161,15 @@ WebViewControl::~WebViewControl()
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
-        Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-        Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
 
 #if defined(__DAVAENGINE_COREV2__)
         WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
+        window->RunAsyncOnUIThread([p, nservice]() {
             nservice->RemoveXamlControl(p);
         });
 #else
-        core->RunOnUIThread([p, tokenNS, tokenNC]() {
+        core->RunOnUIThread([p]() {
             // We don't need blocking call here
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
 #endif
@@ -185,8 +179,29 @@ WebViewControl::~WebViewControl()
 
 void WebViewControl::OwnerIsDying()
 {
+    using ::Windows::UI::Xaml::Controls::WebView;
+
     uiWebView = nullptr;
     webViewDelegate = nullptr;
+
+    // Compiler complains of capturing nativeWebView data member in lambda
+    WebView ^ p = nativeWebView;
+    Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
+    Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+
+#if defined(__DAVAENGINE_COREV2__)
+    WindowNativeService* nservice = window->GetNativeService();
+    window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
+        p->NavigationStarting -= tokenNS;
+        p->NavigationCompleted -= tokenNC;
+    });
+#else
+    core->RunOnUIThread([p, tokenNS, tokenNC]() {
+        // We don't need blocking call here
+        p->NavigationStarting -= tokenNS;
+        p->NavigationCompleted -= tokenNC;
+    });
+#endif
 }
 
 void WebViewControl::Initialize(const Rect& rect)
