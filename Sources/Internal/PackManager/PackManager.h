@@ -9,11 +9,11 @@ namespace DAVA
 /**
  Interface for requesting packs from server.
 
- tipical workflow:
+ Topical work flow:
  1. connect to state change signal and to request update signal
  2. call Initialize to connect to server, wait for state become `Pack::Status::Ready`
- 3. request pack from server or mount local automaticaly on request
- 4. findout which pack has file by filePath
+ 3. request pack from server or mount local automatically on request
+ 4. find out which pack has file by filePath
 
  example:
  ```
@@ -26,7 +26,7 @@ namespace DAVA
  String urlToServerSuperpack = "http://server.net/superpack.dvpk";
  IPackManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
- hints.dbInMemory = true; // load DB in memory for perfomance
+ hints.dbInMemory = true; // load DB in memory for performance
 
  pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, hints);
 
@@ -42,7 +42,7 @@ public:
     {
         Starting, //!< before any initialization code state
         LoadingRequestAskFooter, //!< connect to server superpack.dvpk for footer block
-        LoadingRequestGetFooter, //!< download footer and parse it, findout filetable block size and position
+        LoadingRequestGetFooter, //!< download footer and parse it, find out filetable block size and position
         LoadingRequestAskFileTable, //!< start loading filetable block from superpack.dvpk
         LoadingRequestGetFileTable, //!< download filetable and fill info about every file on server superpack.dvpk
         CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalDB if match
@@ -53,7 +53,7 @@ public:
         LoadingPacksDataFromLocalDB, //!< open local DB and build pack index for all packs
         MountingDownloadedPacks, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
-        Offline //!< server not acceseble, retry initialization after Hints::retryConnectMilliseconds
+        Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
     };
 
     static const String& ToString(InitState state);
@@ -113,7 +113,7 @@ public:
      Proxy interface to easily check pack request progress
      to use it interface, for download progress you need to
      connect to `requestProgressChanged` signal and then
-     call `RequestPack`. Also you can find reques by pack name
+     call `RequestPack`. Also you can find requires by pack name
      with `FindRequest`.
     */
     class IRequest
@@ -123,19 +123,19 @@ public:
 
         /** return requested pack name */
         virtual const Pack& GetRootPack() const = 0;
-        /** recalculate fullsize with all dependencies */
+        /** recalculate full size with all dependencies */
         virtual uint64 GetFullSizeWithDependencies() const = 0;
         /** recalculate current downloaded size */
         virtual uint64 GetDownloadedSize() const = 0;
         /** return true in case error loading */
         virtual bool IsError() const = 0;
-        /** return pack during loading which error happend */
+        /** return pack during loading which error happened */
         virtual const Pack& GetErrorPack() const = 0;
         /** detailed error message */
         virtual const String& GetErrorMessage() const = 0;
     };
 
-    /** you have to sibscribe to this signal before call `Initialize` */
+    /** you have to subscribe to this signal before call `Initialize` */
     Signal<IPackManager&> initStateChanged;
     /** signal user about every pack state change */
     Signal<const Pack&> packStateChanged;
@@ -146,7 +146,7 @@ public:
 
     struct Hints
     {
-        uint32 retryConnectMilliseconds = 5000; //!< try to recconect to server if Offline state
+        uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
     };
 
     /**
@@ -179,10 +179,10 @@ public:
     /** return unique pack name or empty string on error */
     virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
 
-    /** thow exception if can't find pack */
+    /** throw exception if can't find pack */
     virtual const Pack& FindPack(const String& packName) const = 0;
 
-    /** thow exception if can't find pack */
+    /** throw exception if can't find pack */
     virtual const Pack& RequestPack(const String& packName) = 0;
 
     /**
@@ -207,7 +207,7 @@ public:
     /**
      Unmount pack and then delete it, throw exception on error,
      then collect from DB all dependent packs and set it's state to
-     `Pack::State::NotRequested`. Normaly you don't need to delete packs
+     `Pack::State::NotRequested`. Normally you don't need to delete packs
      manually
      */
     virtual void DeletePack(const String& packName) = 0;

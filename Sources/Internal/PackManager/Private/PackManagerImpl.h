@@ -59,7 +59,7 @@ public:
     const IRequest* FindRequest(const String& pack) const override;
 
     void SetRequestOrder(const String& packName, float newPriority) override;
-
+    void MountOnePack(const FilePath& filePath);
     uint32 GetPackIndex(const String& packName) const;
     Pack& GetPack(const String& packName);
 
@@ -99,7 +99,9 @@ private:
     void AskDB();
     void GetDB();
     void UnpackingDB();
+    void StoreAllMountedPackNames();
     void DeleteOldPacks();
+    void ReloadState();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
     // helper functions
@@ -142,6 +144,7 @@ private:
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
+    Vector<String> tmpOldMountedPackNames;
 };
 
 } // end namespace DAVA

@@ -252,6 +252,10 @@ bool PackRequest::IsLoadingPackFileFinished()
                     rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
+                FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + currentPack.name + RequestManager::packPostfix;
+
+                FileSystem::Instance()->DeleteFile(packPath);
+
                 Restart();
             }
         }
