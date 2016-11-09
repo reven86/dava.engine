@@ -1,13 +1,14 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "rhi_Metal.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_metal.h"
+#include "_metal.h"
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 

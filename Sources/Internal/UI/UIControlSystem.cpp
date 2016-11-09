@@ -23,6 +23,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "Engine/EngineModule.h"
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {

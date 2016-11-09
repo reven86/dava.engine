@@ -22,7 +22,11 @@ public:
 
     void Process(float32 timeElapsed) override;
 
+#if defined(__DAVAENGINE_COREV2__)
+    bool Input(UIEvent* event) override;
+#else
     void Input(UIEvent* event) override;
+#endif
 
     float32 GetRotationSpeeed() const;
     void SetRotationSpeeed(float32 rotateSpeed);
@@ -47,7 +51,11 @@ private:
 
     float32 rotationSpeed;
 
-    InputCallback* inputCallback;
+#if defined(__DAVAENGINE_COREV2__)
+    uint32 inputHandlerToken = 0;
+#else
+    InputCallback* inputCallback = nullptr;
+#endif
 
     Vector<Entity*> entities;
 
