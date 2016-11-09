@@ -6,7 +6,7 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
 
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include <QHBoxLayout>
 #include <QCompleter>
@@ -22,7 +22,7 @@ REGISTER_PREFERENCES_ON_START(FindFileDialog,
                               PREF_ARG("lastUsedPath", String())
                               )
 
-QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent)
+QString FindFileDialog::GetFilePath(const FileSystemCache* fileSystemCache, const QString& extension, QWidget* parent)
 {
     //Qt::Popup do not prevent us to show another dialog
     static bool shown = false;
@@ -32,7 +32,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
     }
     shown = true;
 
-    FindFileDialog dialog(projectStructure, extension, parent);
+    FindFileDialog dialog(fileSystemCache, extension, parent);
     dialog.setModal(true);
     int retCode = dialog.exec();
 
@@ -65,14 +65,14 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent)
+FindFileDialog::FindFileDialog(const FileSystemCache* projectStructure, const QString& extension, QWidget* parent)
     : QDialog(parent, Qt::Popup)
     , ui(new Ui::FindFileDialog())
 {
     PreferencesStorage::Instance()->RegisterPreferences(this);
     QStringList files = projectStructure->GetFiles(extension);
 
-    QStringList projectDirectories = projectStructure->GetProjectDirectories();
+    QStringList projectDirectories = projectStructure->GetTrackedDirectories();
 
     QString commonParent = projectDirectories.first();
     for (auto it = ++projectDirectories.begin(); it != projectDirectories.end(); ++it)

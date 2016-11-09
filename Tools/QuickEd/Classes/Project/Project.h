@@ -17,7 +17,7 @@ class EditorLocalizationSystem;
 class DocumentGroup;
 class MainWindow;
 class SpritesPacker;
-class ProjectStructure;
+class FileSystemCache;
 
 namespace DAVA
 {
@@ -81,7 +81,7 @@ private:
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
-    std::unique_ptr<ProjectStructure> projectStructure;
+    std::unique_ptr<FileSystemCache> projectStructure;
 };
 
 #endif // QUICKED__PROJECT_H__

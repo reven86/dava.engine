@@ -1,4 +1,4 @@
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
@@ -19,15 +19,15 @@ uint qHash(const QFileInfo& fi, uint seed)
     return qHash(fi.absoluteFilePath().toLower(), seed);
 }
 
-class ProjectStructure::Impl : public QObject
+class FileSystemCache::Impl : public QObject
 {
 public:
     Impl(const QStringList& supportedExtensions);
-    void AddProjectDirectory(const QString& directory);
-    void RemoveProjectDirectory(const QString& directory);
-    void RemoveAllProjectDirectories();
+    void TrackDirectory(const QString& directory);
+    void UntrackDirectory(const QString& directory);
+    void UntrackAllDirectories();
 
-    const QStringList& GetProjectDirectories() const;
+    const QStringList& GetTrackedDirectories() const;
 
     QStringList GetFiles(const QString& extension) const;
 
@@ -40,45 +40,45 @@ private:
     bool ForceRemovePaths(const QStringList& directories);
 
     std::unique_ptr<QFileSystemWatcher> watcher;
-    QSet<QFileInfo> projectFiles;
+    QSet<QFileInfo> files;
 
     QStringList supportedExtensions;
-    QStringList projectDirectories;
+    QStringList directories;
 };
 
-ProjectStructure::ProjectStructure(const QStringList& supportedExtensions)
+FileSystemCache::FileSystemCache(const QStringList& supportedExtensions)
     : impl(new Impl(supportedExtensions))
 {
 }
 
-ProjectStructure::~ProjectStructure() = default;
+FileSystemCache::~FileSystemCache() = default;
 
-void ProjectStructure::AddProjectDirectory(const QString& directory)
+void FileSystemCache::TrackDirectory(const QString& directory)
 {
-    impl->AddProjectDirectory(directory);
+    impl->TrackDirectory(directory);
 }
 
-void ProjectStructure::RemoveProjectDirectory(const QString& directory)
+void FileSystemCache::UntrackDirectory(const QString& directory)
 {
-    impl->RemoveProjectDirectory(directory);
+    impl->UntrackDirectory(directory);
 }
 
-void ProjectStructure::RemoveAllProjectDirectories()
+void FileSystemCache::UntrackAllDirectories()
 {
-    impl->RemoveAllProjectDirectories();
+    impl->UntrackAllDirectories();
 }
 
-const QStringList& ProjectStructure::GetProjectDirectories() const
+const QStringList& FileSystemCache::GetTrackedDirectories() const
 {
-    return impl->GetProjectDirectories();
+    return impl->GetTrackedDirectories();
 }
 
-QStringList ProjectStructure::GetFiles(const QString& extension) const
+QStringList FileSystemCache::GetFiles(const QString& extension) const
 {
     return impl->GetFiles(extension);
 }
 
-ProjectStructure::Impl::Impl(const QStringList& supportedExtensions_)
+FileSystemCache::Impl::Impl(const QStringList& supportedExtensions_)
     : QObject(nullptr)
     , watcher(new QFileSystemWatcher(this))
 {
@@ -90,7 +90,7 @@ ProjectStructure::Impl::Impl(const QStringList& supportedExtensions_)
     }
 }
 
-void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
+void FileSystemCache::Impl::TrackDirectory(const QString& directory)
 {
     DVASSERT(!directory.isEmpty());
     if (directory.isEmpty())
@@ -98,7 +98,7 @@ void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
         return;
     }
 
-    bool alreadyAdded = projectDirectories.contains(directory);
+    bool alreadyAdded = directories.contains(directory);
     DVASSERT(!alreadyAdded);
     if (alreadyAdded)
     {
@@ -108,7 +108,7 @@ void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
     QFileInfo fileInfo(directory);
     DVASSERT(fileInfo.exists() && fileInfo.isDir());
     DVASSERT(!watcher->directories().contains(directory));
-    projectDirectories << directory;
+    directories << directory;
 
     QStringList subDirectories;
     QSet<QFileInfo> filesInDirectory;
@@ -117,10 +117,10 @@ void ProjectStructure::Impl::AddProjectDirectory(const QString& directory)
 
     subDirectories << directory;
     watcher->addPaths(subDirectories);
-    projectFiles += filesInDirectory;
+    files += filesInDirectory;
 }
 
-void ProjectStructure::Impl::RemoveProjectDirectory(const QString& directory)
+void FileSystemCache::Impl::UntrackDirectory(const QString& directory)
 {
     DVASSERT(!directory.isEmpty());
     if (directory.isEmpty())
@@ -128,7 +128,7 @@ void ProjectStructure::Impl::RemoveProjectDirectory(const QString& directory)
         return;
     }
 
-    bool alreadyAdded = projectDirectories.contains(directory);
+    bool alreadyAdded = directories.contains(directory);
     DVASSERT(alreadyAdded);
     if (!alreadyAdded)
     {
@@ -140,57 +140,57 @@ void ProjectStructure::Impl::RemoveProjectDirectory(const QString& directory)
 
     std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(QDir(directory));
 
-    projectDirectories.removeOne(directory);
+    directories.removeOne(directory);
     bool removeResult = ForceRemovePaths(subDirectories << directory);
     DVASSERT(removeResult);
-    projectFiles -= filesInDirectory;
+    files -= filesInDirectory;
 }
 
-void ProjectStructure::Impl::RemoveAllProjectDirectories()
+void FileSystemCache::Impl::UntrackAllDirectories()
 {
     bool removeResult = ForceRemovePaths(watcher->directories());
     DVASSERT(removeResult);
-    projectDirectories.clear();
-    projectFiles.clear();
+    directories.clear();
+    files.clear();
 }
 
-const QStringList& ProjectStructure::Impl::GetProjectDirectories() const
+const QStringList& FileSystemCache::Impl::GetTrackedDirectories() const
 {
-    return projectDirectories;
+    return directories;
 }
 
-QStringList ProjectStructure::Impl::GetFiles(const QString& extension) const
+QStringList FileSystemCache::Impl::GetFiles(const QString& extension) const
 {
-    QStringList files;
-    for (const QFileInfo& fileInfo : projectFiles)
+    QStringList filesList;
+    for (const QFileInfo& fileInfo : files)
     {
         if (fileInfo.suffix().toLower() == extension.toLower())
         {
-            files << fileInfo.absoluteFilePath();
+            filesList << fileInfo.absoluteFilePath();
         }
     }
-    return files;
+    return filesList;
 }
 
-void ProjectStructure::Impl::OnFileChanged(const QString& path)
+void FileSystemCache::Impl::OnFileChanged(const QString& path)
 {
     QFileInfo changedFileInfo(path);
     DVASSERT(changedFileInfo.isFile());
     if (changedFileInfo.exists())
     {
-        projectFiles.insert(changedFileInfo);
+        files.insert(changedFileInfo);
     }
     else
     {
-        projectFiles.remove(changedFileInfo);
+        files.remove(changedFileInfo);
     }
 }
 
-void ProjectStructure::Impl::OnDirChanged(const QString& path)
+void FileSystemCache::Impl::OnDirChanged(const QString& path)
 {
     DVASSERT(watcher != nullptr);
     QDir changedDir(path);
-    QMutableSetIterator<QFileInfo> iter(projectFiles); //TODO check this code
+    QMutableSetIterator<QFileInfo> iter(files); //TODO check this code
     while (iter.hasNext())
     {
         QFileInfo fileInfo = iter.next();
@@ -219,11 +219,11 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
         std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(changedDir);
         watcher->addPaths(subDirectories);
 
-        projectFiles += filesInDirectory;
+        files += filesInDirectory;
     }
 }
 
-std::tuple<QStringList, QSet<QFileInfo>> ProjectStructure::Impl::CollectFilesAndDirectories(const QDir& dir) const
+std::tuple<QStringList, QSet<QFileInfo>> FileSystemCache::Impl::CollectFilesAndDirectories(const QDir& dir) const
 {
     DVASSERT(dir.exists());
 
@@ -251,7 +251,7 @@ std::tuple<QStringList, QSet<QFileInfo>> ProjectStructure::Impl::CollectFilesAnd
     return std::make_tuple(directoriesList, filesList);
 }
 
-bool ProjectStructure::Impl::ForceRemovePaths(const QStringList& directories)
+bool FileSystemCache::Impl::ForceRemovePaths(const QStringList& directories)
 {
     bool result = true;
     for (const QString& directory : directories)

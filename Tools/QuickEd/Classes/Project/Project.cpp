@@ -9,7 +9,7 @@
 #include "UI/ProjectView.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
 
 #include "Engine/Engine.h"
@@ -19,6 +19,7 @@
 #include "FileSystem/YamlParser.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
+#include "Utils/Utils.h"
 
 #include <QDir>
 #include <QApplication>
@@ -34,7 +35,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
-    , projectStructure(new ProjectStructure(QStringList() << "yaml"))
+    , projectStructure(new FileSystemCache(QStringList() << "yaml"))
     , properties(properties_)
     , projectDirectory(QString::fromStdString(properties_.GetProjectDirectory().GetStringValue()))
     , projectName(QString::fromStdString(properties_.GetProjectFile().GetFilename()))
@@ -45,7 +46,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
         FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
     }
 
-    FilePath::AddResourcesFolder(properties.GetIntermediateResourceDirectory().absolute);
+    FilePath::AddResourcesFolder(properties.GetConvertedResourceDirectory().absolute);
     FilePath::AddResourcesFolder(properties.GetResourceDirectory().absolute);
 
     editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory().absolute);
@@ -58,7 +59,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
     uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
 
-    projectStructure->AddProjectDirectory(uiResourcesPath);
+    projectStructure->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
 
     view->SetProjectActionsEnabled(true);
@@ -85,7 +86,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
         QDir gfxDirectory(QString::fromStdString(gfxOptions.directory.absolute.GetStringValue()));
         DVASSERT(gfxDirectory.exists());
 
-        FilePath gfxOutDir = properties.GetIntermediateResourceDirectory().absolute + gfxOptions.directory.relative;
+        FilePath gfxOutDir = properties.GetConvertedResourceDirectory().absolute + gfxOptions.directory.relative;
         QDir gfxOutDirectory(QString::fromStdString(gfxOutDir.GetStringValue()));
 
         spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
@@ -98,14 +99,14 @@ Project::~Project()
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
-    projectStructure->RemoveProjectDirectory(uiResourcesPath);
+    projectStructure->UntrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(QString());
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
     FilePath::RemoveResourcesFolder(properties.GetResourceDirectory().absolute);
     FilePath::RemoveResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
-    FilePath::RemoveResourcesFolder(properties.GetIntermediateResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(properties.GetConvertedResourceDirectory().absolute);
 }
 
 Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const

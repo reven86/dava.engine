@@ -88,7 +88,7 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
         return Result(Result::RESULT_ERROR, QObject::tr("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
     }
 
-    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.GetIntermediateResourceDirectory().relative);
+    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.GetConvertedResourceDirectory().relative);
     if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
     {
         return Result(Result::RESULT_ERROR, QObject::tr("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());

@@ -14,7 +14,6 @@ class QFileSystemModel;
 class QInputDialog;
 class QItemSelection;
 class QMouseEvent;
-class ProjectStructure;
 
 class FileSystemDockWidget : public QDockWidget
 {

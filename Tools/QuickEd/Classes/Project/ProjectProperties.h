@@ -40,7 +40,7 @@ public:
 
     const ResDir& GetResourceDirectory() const;
     const ResDir& GetAdditionalResourceDirectory() const;
-    const ResDir& GetIntermediateResourceDirectory() const;
+    const ResDir& GetConvertedResourceDirectory() const;
 
     const ResDir& GetUiDirectory() const;
     const ResDir& GetFontsDirectory() const;
@@ -66,7 +66,7 @@ private:
 
     ResDir resourceDirectory;
     ResDir additionalResourceDirectory;
-    ResDir intermediateResourceDirectory;
+    ResDir convertedResourceDirectory;
 
     ResDir uiDirectory;
     ResDir fontsDirectory;

@@ -75,7 +75,7 @@ void ProjectProperties::RefreshAbsolutePaths()
         additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
     }
 
-    intermediateResourceDirectory.absolute = projectDirectory + intermediateResourceDirectory.relative;
+    convertedResourceDirectory.absolute = projectDirectory + convertedResourceDirectory.relative;
 
     uiDirectory.absolute = MakeAbsolutePath(uiDirectory.relative);
     fontsDirectory.absolute = MakeAbsolutePath(fontsDirectory.relative);
@@ -98,7 +98,7 @@ ProjectProperties ProjectProperties::Default()
     ProjectProperties properties;
 
     properties.resourceDirectory.relative = "./DataSource/";
-    properties.intermediateResourceDirectory.relative = "./Data/";
+    properties.convertedResourceDirectory.relative = "./Data/";
     properties.gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
     properties.uiDirectory.relative = "./UI/";
     properties.fontsDirectory.relative = "./Fonts/";
@@ -119,9 +119,9 @@ const ProjectProperties::ResDir& ProjectProperties::GetAdditionalResourceDirecto
     return additionalResourceDirectory;
 }
 
-const ProjectProperties::ResDir& ProjectProperties::GetIntermediateResourceDirectory() const
+const ProjectProperties::ResDir& ProjectProperties::GetConvertedResourceDirectory() const
 {
-    return intermediateResourceDirectory;
+    return convertedResourceDirectory;
 }
 
 const ProjectProperties::ResDir& ProjectProperties::GetUiDirectory() const
@@ -214,7 +214,7 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.resourceDirectory.relative.c_str());
+        String message = Format("Data source directory not set. Used default directory: %s.", props.resourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -224,14 +224,14 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
         props.additionalResourceDirectory.relative = additionalResourceDirNode->AsString();
     }
 
-    const YamlNode* intermediateResourceDirNode = projectPropertiesNode->Get("IntermediateResourceDirectory");
-    if (intermediateResourceDirNode != nullptr)
+    const YamlNode* convertedResourceDirNode = projectPropertiesNode->Get("ConvertedResourceDirectory");
+    if (convertedResourceDirNode != nullptr)
     {
-        props.intermediateResourceDirectory.relative = intermediateResourceDirNode->AsString();
+        props.convertedResourceDirectory.relative = convertedResourceDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", props.intermediateResourceDirectory.relative.c_str());
+        String message = Format("Directory for converted sources not set. Used default directory: %s.", props.convertedResourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -340,7 +340,7 @@ RefPtr<YamlNode> ProjectProperties::Emit(const ProjectProperties& props)
         propertiesNode->Add("AdditionalResourceDirectory", props.additionalResourceDirectory.relative);
     }
 
-    propertiesNode->Add("IntermediateResourceDirectory", props.intermediateResourceDirectory.relative);
+    propertiesNode->Add("IntermediateResourceDirectory", props.convertedResourceDirectory.relative);
 
     propertiesNode->Add("UiDirectory", props.uiDirectory.relative);
     propertiesNode->Add("FontsDirectory", props.fontsDirectory.relative);

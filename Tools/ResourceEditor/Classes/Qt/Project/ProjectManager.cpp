@@ -11,14 +11,14 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 
 #include "SpritesPacker/SpritesPackerModule.h"
 
 ProjectManager::ProjectManager()
 {
-    dataSourceSceneFiles.reset(new ProjectStructure(QStringList() << "sc2"));
+    dataSourceSceneFiles.reset(new FileSystemCache(QStringList() << "sc2"));
 }
 
 ProjectManager::~ProjectManager() = default;
@@ -108,7 +108,7 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
 
             if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
             {
-                dataSourceSceneFiles->AddProjectDirectory(QString::fromStdString(dataSourcePath.GetAbsolutePathname()));
+                dataSourceSceneFiles->TrackDirectory(QString::fromStdString(dataSourcePath.GetAbsolutePathname()));
             }
 
             bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
@@ -153,7 +153,7 @@ void ProjectManager::CloseProject()
 {
     if (!projectPath.IsEmpty())
     {
-        dataSourceSceneFiles->RemoveAllProjectDirectories();
+        dataSourceSceneFiles->UntrackAllDirectories();
         DAVA::FilePath::RemoveResourcesFolder(projectPath + "Data/");
 
         projectPath = "";
@@ -250,7 +250,7 @@ DAVA::FilePath ProjectManager::CreateProjectPathFromPath(const DAVA::FilePath& p
     return DAVA::FilePath();
 }
 
-ProjectStructure* ProjectManager::GetDataSourceSceneFiles() const
+FileSystemCache* ProjectManager::GetDataSourceSceneFiles() const
 {
     return dataSourceSceneFiles.get();
 }

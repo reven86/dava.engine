@@ -76,13 +76,12 @@ private:
 
     QStringList recentProjects;
 
-    DAVA::uint32 projectsHistorySize;
+    DAVA::uint32 projectsHistorySize; //maximum size of projects history
 
 public:
     INTROSPECTION(EditorCore,
                   PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_PREFERENCE)
                   PROPERTY("projectsHistory", "ProjectInternal/ProjectsHistory", GetRecentProjectsAsString, SetRecentProjectsFromString, DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                  //maximum size of projects history
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 };

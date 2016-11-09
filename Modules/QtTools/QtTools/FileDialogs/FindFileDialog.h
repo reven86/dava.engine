@@ -12,21 +12,21 @@ namespace Ui
 class FindFileDialog;
 }
 
-class ProjectStructure;
+class FileSystemCache;
 class QCompleter;
 class QAction;
 
 class FindFileDialog : public QDialog, public DAVA::InspBase
 {
 public:
-    static QString GetFilePath(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent);
+    static QString GetFilePath(const FileSystemCache* fileSystemCache, const QString& extension, QWidget* parent);
     static QAction* CreateFindInFilesAction(QWidget* parent);
 
     //destructor is public to resolve warnings in introspection
     ~FindFileDialog();
 
 private:
-    explicit FindFileDialog(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent = nullptr);
+    explicit FindFileDialog(const FileSystemCache* projectStructure, const QString& extension, QWidget* parent = nullptr);
 
     void Init(const QStringList& files);
 
