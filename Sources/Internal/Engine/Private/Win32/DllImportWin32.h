@@ -28,6 +28,8 @@ struct DllImport final
     // Shell scaling functions
     // GetDpiForMonitor is available starting from Windows Vista
     static HRESULT(STDAPICALLTYPE* fnGetDpiForMonitor)(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
+    static HRESULT(STDAPICALLTYPE* fnGetProcessDpiAwareness)(HANDLE hprocess, PROCESS_DPI_AWARENESS* value);
+    static HRESULT(STDAPICALLTYPE* fnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS value);
 };
 
 } // namespace Private

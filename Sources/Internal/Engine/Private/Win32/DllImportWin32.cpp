@@ -12,6 +12,8 @@ BOOL(WINAPI* DllImport::fnEnableMouseInPointer)(BOOL fEnable);
 BOOL(WINAPI* DllImport::fnIsMouseInPointerEnabled)();
 BOOL(WINAPI* DllImport::fnGetPointerInfo)(UINT32 pointerId, POINTER_INFO* pointerInfo);
 HRESULT(STDAPICALLTYPE* DllImport::fnGetDpiForMonitor)(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
+HRESULT(STDAPICALLTYPE* DllImport::fnGetProcessDpiAwareness)(HANDLE hprocess, PROCESS_DPI_AWARENESS *value);
+HRESULT(STDAPICALLTYPE* DllImport::fnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS value);
 // clang-format on
 
 void DllImport::Initialize()
@@ -28,6 +30,8 @@ void DllImport::Initialize()
     if (hshcore != nullptr)
     {
         fnGetDpiForMonitor = reinterpret_cast<decltype(fnGetDpiForMonitor)>(::GetProcAddress(hshcore, "GetDpiForMonitor"));
+        fnGetProcessDpiAwareness = reinterpret_cast<decltype(fnGetProcessDpiAwareness)>(::GetProcAddress(hshcore, "GetProcessDpiAwareness"));
+        fnSetProcessDpiAwareness = reinterpret_cast<decltype(fnSetProcessDpiAwareness)>(::GetProcAddress(hshcore, "SetProcessDpiAwareness"));
     }
 }
 
