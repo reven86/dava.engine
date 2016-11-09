@@ -37,6 +37,9 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow())
     , loggerOutput(new LoggerOutputObject)
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
+#endif //__DAVAENGINE_MACOS__
 {
     ui->setupUi(this);
     DebugTools::ConnectToUI(ui.get());
@@ -69,6 +72,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
+
+    qApp->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -380,6 +385,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
     {
         event->ignore();
     }
+}
+
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == event->type() && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
+    return false;
 }
 
 String MainWindow::GetState() const

@@ -511,7 +511,10 @@ void PackageWidget::OnCut()
 
 void PackageWidget::OnDelete()
 {
-    DVASSERT(!document.isNull());
+    if (document.isNull())
+    {
+        return;
+    }
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
 
     Vector<ControlNode*> controls;

@@ -4,6 +4,10 @@
 #include "Preferences/PreferencesRegistrator.h"
 #include "Functional/SignalBase.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+#include "QtTools/Utils/ShortcutChecker.h"
+#endif //__DAVAENGINE_MACOS__
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QtGui>
@@ -92,6 +96,8 @@ private:
 
     void closeEvent(QCloseEvent* event) override;
 
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::String GetState() const;
     void SetState(const DAVA::String& array);
 
@@ -114,6 +120,11 @@ private:
     const DAVA::InspMember* backgroundIndexMember = nullptr;
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
+
+#if defined(__DAVAENGINE_MACOS__)
+    ShortcutChecker shortcutChecker;
+#endif //__DAVAENGINE_MACOS__
+
     QtDelayedExecutor delayedExecutor;
 
     ProjectView* projectView = nullptr;
