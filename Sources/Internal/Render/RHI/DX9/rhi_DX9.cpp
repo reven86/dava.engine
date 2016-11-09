@@ -195,13 +195,26 @@ void DX9CheckMultisampleSupport()
 
 void dx9_InitCaps()
 {
+    D3DCAPS9 caps;
+    _D3D9_Device->GetDeviceCaps(&caps);
+
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) >= 3);
     MutableDeviceCaps::Get().isInstancingSupported = true;
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
+
+    const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
+    if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
+    {
+        if (found[7] == 'X' && found[8] == '1')
+        {
+            MutableDeviceCaps::Get().isVertexTextureUnitsSupported = false;
+        }
+    }
+
     DX9CheckMultisampleSupport();
 }
 
