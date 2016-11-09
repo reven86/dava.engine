@@ -365,6 +365,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/MemoryManager/*.cpp) \
@@ -429,6 +430,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
+					 $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \

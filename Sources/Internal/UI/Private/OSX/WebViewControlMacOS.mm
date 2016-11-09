@@ -336,10 +336,8 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    DAVA::Rect r = coordSystem->ConvertVirtualToInput(srcRect);
-    DAVA::float32 dy = static_cast<DAVA::float32>(coordSystem->GetInputScreenSize().dy);
+    DAVA::Rect r = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+    DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
     [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)
@@ -352,7 +350,11 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
 
-    if (!isRenderToTexture)
+    if (!isRenderToTexture
+#if defined(__DAVAENGINE_STEAM__)
+        && !overlayVisible
+#endif
+        )
     {
         SetNativeVisible(isVisible);
     }
@@ -361,14 +363,14 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 #if defined(__DAVAENGINE_STEAM__)
 void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
 {
+    overlayVisible = overlayActivated;
     if (overlayActivated)
     {
-        wasVisible = isVisible;
-        SetVisible(false, false);
+        SetNativeVisible(false);
     }
-    else
+    else if (!isRenderToTexture)
     {
-        SetVisible(wasVisible, false);
+        SetNativeVisible(isVisible);
     }
 }
 #endif

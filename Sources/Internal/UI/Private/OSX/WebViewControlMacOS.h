@@ -65,7 +65,7 @@ private:
 
 #if defined(__DAVAENGINE_STEAM__)
     SigConnectionID overlayConnectionId = 0;
-    bool wasVisible = false;
+    bool overlayVisible = false;
     void OnSteamOverlayChanged(bool overlayActivated);
 #endif
 

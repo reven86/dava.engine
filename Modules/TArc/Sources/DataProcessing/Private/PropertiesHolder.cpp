@@ -32,6 +32,7 @@ struct JSONObject
     QString name;
     List<JSONObject*> children;
     QJsonObject jsonObject;
+    bool wasChanged = false;
 };
 }
 
@@ -70,8 +71,6 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     void SaveToParent();
 
     JSONObject* parent = nullptr;
-
-    bool wasChanged = false;
 };
 
 struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
@@ -272,7 +271,7 @@ void PropertiesHolder::Impl::SaveToFile()
 
 void PropertiesItem::Impl::SaveToParent()
 {
-    static_cast<Impl*>(parent)->wasChanged = true;
+    parent->wasChanged = true;
     parent->jsonObject[name] = jsonObject;
 }
 

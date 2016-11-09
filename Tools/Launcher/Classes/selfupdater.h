@@ -6,6 +6,8 @@
 #include <QFile>
 #include <memory>
 
+class FileManager;
+
 namespace Ui
 {
 class SelfUpdater;
@@ -16,7 +18,7 @@ class SelfUpdater final : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelfUpdater(const QString& arcUrl, QWidget* parent = nullptr);
+    explicit SelfUpdater(FileManager* fileManager, const QString& arcUrl, QWidget* parent = nullptr);
     ~SelfUpdater() override;
 
 private slots:
@@ -43,4 +45,5 @@ private:
 
     int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
+    FileManager* fileManager = nullptr;
 };
