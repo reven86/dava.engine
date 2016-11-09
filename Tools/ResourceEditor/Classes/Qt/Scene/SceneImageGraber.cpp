@@ -1,15 +1,18 @@
 #include "SceneImageGraber.h"
 
-#include "Classes/Qt/Main/mainwindow.h"
-#include "Classes/Qt/Scene/SceneTabWidget.h"
-
+#include "Functional/Function.h"
+#include "Job/JobManager.h"
+#include "Math/MathHelpers.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RenderBase.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Functional/Function.h"
-#include "Math/MathHelpers.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+
+#include "Scene3D/Scene.h"
 
 #include <QQuickWindow>
 #include <QImage>
@@ -26,6 +29,7 @@ struct InternalParams
 
 void GrabImage(Params inputParams)
 {
+    DVASSERT(!inputParams.outputFile.IsEmpty());
     InternalParams internalParams;
     internalParams.inputParams = std::move(inputParams);
 
@@ -59,11 +63,6 @@ void GrabImage(Params inputParams)
     DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
                                                 {
                                                     DAVA::FilePath filePath = internalParams.inputParams.outputFile;
-                                                    if (filePath.IsEmpty())
-                                                    {
-                                                        filePath = internalParams.inputParams.scene->GetScenePath().GetDirectory();
-                                                    }
-
                                                     if (filePath.IsDirectoryPathname())
                                                     {
                                                         filePath = DAVA::FilePath(filePath, "GrabbedScene.png");

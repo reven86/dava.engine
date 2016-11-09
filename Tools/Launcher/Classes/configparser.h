@@ -16,6 +16,7 @@ class ConfigParser;
 struct AppVersion
 {
     QString id;
+    //can be empty
     QString runPath;
     QString cmd;
     QString url;
@@ -36,7 +37,7 @@ struct Application
 
     QString id;
 
-    int GetVerionsCount()
+    int GetVerionsCount() const
     {
         return versions.size();
     }
@@ -44,6 +45,12 @@ struct Application
     {
         return &versions[index];
     }
+
+    const AppVersion* GetVersion(int index) const
+    {
+        return &versions[index];
+    }
+
     AppVersion* GetVersion(const QString& versionID);
 
     void RemoveVersion(const QString& versionID);
@@ -65,11 +72,16 @@ struct Branch
 
     QString id;
 
-    int GetAppCount()
+    int GetAppCount() const
     {
         return applications.size();
     }
     Application* GetApplication(int index)
+    {
+        return &applications[index];
+    }
+
+    const Application* GetApplication(int index) const
     {
         return &applications[index];
     }
@@ -88,8 +100,8 @@ public:
     ConfigParser();
     void Clear();
     bool Parse(const QByteArray& data);
-    QByteArray Serialize();
-    void SaveToFile(const QString& filePath);
+    QByteArray Serialize() const;
+    void SaveToFile(const QString& filePath) const;
 
     void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
     void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
@@ -98,8 +110,13 @@ public:
     QString GetBranchID(int index);
 
     Branch* GetBranch(int branchIndex);
+    const Branch* GetBranch(int branchIndex) const;
+
     Branch* GetBranch(const QString& branch);
+    const Branch* GetBranch(const QString& branch) const;
+
     Application* GetApplication(const QString& branch, const QString& appID);
+
     AppVersion* GetAppVersion(const QString& branch, const QString& appID, const QString& ver);
 
     void RemoveBranch(const QString& branchID);
