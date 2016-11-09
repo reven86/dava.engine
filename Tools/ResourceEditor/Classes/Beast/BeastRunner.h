@@ -14,13 +14,13 @@ public:
     BeastRunner(SceneEditor2* scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog);
     ~BeastRunner();
 
-    void Run();
+    void RunUIMode();
 
-private:
     void Start();
     bool Process();
     void Finish(bool canceled);
 
+private:
     void PackLightmaps();
     DAVA::FilePath GetLightmapDirectoryPath();
 
@@ -31,6 +31,8 @@ private:
     DAVA::FilePath outputPath;
     DAVA::uint64 startTime = 0;
     BeastProxy::eBeastMode beastMode = BeastProxy::eBeastMode::MODE_LIGHTMAPS;
+
+    bool cancelledManually = false;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

@@ -1,6 +1,8 @@
 #include "Platform/DPIHelper.h"
 #include "DPIHelperAndroid.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 JniDpiHelper::JniDpiHelper()
@@ -23,3 +25,5 @@ uint32 DPIHelper::GetScreenDPI()
 }
 
 } //namespace DAVA
+
+#endif

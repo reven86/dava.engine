@@ -8,6 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSEvent;
@@ -38,6 +39,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    float32 GetDpi();
 
     void TriggerPlatformEvents();
 
@@ -56,8 +58,17 @@ struct WindowNativeBridge final
 
     void MouseClick(NSEvent* theEvent);
     void MouseMove(NSEvent* theEvent);
+    void MouseEntered(NSEvent* theEvent);
+    void MouseExited(NSEvent* theEvent);
     void MouseWheel(NSEvent* theEvent);
     void KeyEvent(NSEvent* theEvent);
+    void FlagsChanged(NSEvent* theEvent);
+    void MagnifyWithEvent(NSEvent* theEvent);
+    void RotateWithEvent(NSEvent* theEvent);
+    void SwipeWithEvent(NSEvent* theEvent);
+
+    static eModifierKeys GetModifierKeys(NSEvent* theEvent);
+    static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +82,7 @@ struct WindowNativeBridge final
 
     bool isAppHidden = false;
     bool isMiniaturized = false;
+    uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
 };
 
 } // namespace Private
