@@ -216,7 +216,9 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_CREATE, savedInstanceStateBundle);
         savedInstanceStateBundle = null;
 
+/* uncomment after multidex enabled
         registerActivityListener(gamepadManager);
+*/
         registerActivityListener(keyboardState);
     }
     
