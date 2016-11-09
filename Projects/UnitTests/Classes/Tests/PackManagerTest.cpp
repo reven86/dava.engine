@@ -110,9 +110,10 @@ DAVA_TESTCLASS (PackManagerTest)
             GameClient client(packManager);
 
             Logger::Info("wait till packManagerInitialization done");
+
+            size_t oneSecond = 10;
             // wait till initialization done
-            while (packManager.GetInitError() == IPackManager::InitError::AllGood
-                   && packManager.GetInitState() != IPackManager::InitState::Ready)
+            while (!packManager.IsInitialized() && oneSecond-- > 0)
             {
                 Thread::Sleep(100);
 
@@ -125,7 +126,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
-            if (packManager.GetInitError() != IPackManager::InitError::AllGood)
+            if (packManager.GetInitError() != IPackManager::InitError::AllGood || packManager.GetInitState() == IPackManager::InitState::Offline)
             {
                 Logger::Info("can't initialize packManager(remember on build agents network disabled)");
                 return;
