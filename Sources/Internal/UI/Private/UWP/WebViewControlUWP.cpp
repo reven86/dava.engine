@@ -184,24 +184,27 @@ void WebViewControl::OwnerIsDying()
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 
-    // Compiler complains of capturing nativeWebView data member in lambda
-    WebView ^ p = nativeWebView;
-    Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-    Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+    if (nativeWebView != nullptr)
+    {
+        // Compiler complains of capturing nativeWebView data member in lambda
+        WebView ^ p = nativeWebView;
+        Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
+        Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
 
 #if defined(__DAVAENGINE_COREV2__)
-    WindowNativeService* nservice = window->GetNativeService();
-    window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
-        p->NavigationStarting -= tokenNS;
-        p->NavigationCompleted -= tokenNC;
-    });
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
+            p->NavigationStarting -= tokenNS;
+            p->NavigationCompleted -= tokenNC;
+        });
 #else
-    core->RunOnUIThread([p, tokenNS, tokenNC]() {
-        // We don't need blocking call here
-        p->NavigationStarting -= tokenNS;
-        p->NavigationCompleted -= tokenNC;
-    });
+        core->RunOnUIThread([p, tokenNS, tokenNC]() {
+            // We don't need blocking call here
+            p->NavigationStarting -= tokenNS;
+            p->NavigationCompleted -= tokenNC;
+        });
 #endif
+    }
 }
 
 void WebViewControl::Initialize(const Rect& rect)
