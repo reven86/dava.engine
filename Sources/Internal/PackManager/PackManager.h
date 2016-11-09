@@ -113,7 +113,7 @@ public:
      Proxy interface to easily check pack request progress
      to use it interface, for download progress you need to
      connect to `requestProgressChanged` signal and then
-     call `RequestPack`. Also you can find requires by pack name
+     call `RequestPack`. Also you can find request by pack name
      with `FindRequest`.
     */
     class IRequest
