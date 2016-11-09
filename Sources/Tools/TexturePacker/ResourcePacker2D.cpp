@@ -5,6 +5,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Utils/StringUtils.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
@@ -60,6 +61,13 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
     if (FileSystem::Instance()->Exists(inputGfxDirectory) == false)
     {
         AddError(Format("Input folder is not exist: '%s'", inputGfxDirectory.GetStringValue().c_str()));
+        SetRunning(false);
+        return;
+    }
+
+    if (StringUtils::HasWhitespace(texturePostfix))
+    {
+        AddError(Format("Texture name postfix '%s' has whitespaces", texturePostfix.c_str()).c_str());
         SetRunning(false);
         return;
     }
