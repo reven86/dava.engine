@@ -10,6 +10,19 @@ static const String EMPTY_STRING = "";
 static const Vector<YamlNode*> EMPTY_VECTOR;
 static const Vector<std::pair<String, YamlNode*>> EMPTY_MAP = Vector<std::pair<String, YamlNode*>>();
 
+struct EqualToFirst
+{
+    EqualToFirst(const String& strValue)
+        : value(strValue)
+    {
+    }
+    bool operator()(const std::pair<String, YamlNode*>& val)
+    {
+        return val.first == value;
+    }
+    const String& value;
+};
+
 YamlNode* YamlNode::CreateStringNode()
 {
     YamlNode* node = new YamlNode(TYPE_STRING);
@@ -529,9 +542,7 @@ const Vector<YamlNode*>& YamlNode::AsVector() const
 
 Vector<std::pair<String, YamlNode*>>::const_iterator YamlNode::FindInMap(const Vector<std::pair<String, YamlNode*>>& unordered, const String& name)
 {
-    auto it = std::find_if(begin(unordered), end(unordered), [name](std::pair<String, YamlNode*> yamlPair) -> bool {
-        return yamlPair.first == name;
-    });
+    auto it = std::find_if(begin(unordered), end(unordered), EqualToFirst(name));
     return it;
 }
 
@@ -581,25 +592,10 @@ const YamlNode* YamlNode::Get(const String& name) const
     return NULL;
 }
 
-struct EqualToFirst
-{
-    EqualToFirst(const String& strValue)
-        : value(strValue)
-    {
-    }
-    bool operator()(const std::pair<String, YamlNode*>& val)
-    {
-        return val.first == value;
-    }
-    const String& value;
-};
-
 void YamlNode::RemoveNodeFromMap(const String& name)
 {
     DVASSERT(GetType() == TYPE_MAP);
-    auto it = std::find_if(begin(objectMap->unordered), end(objectMap->unordered), [name](std::pair<String, YamlNode*> yamlPair) -> bool {
-        return yamlPair.first == name;
-    });
+    auto it = std::find_if(begin(objectMap->unordered), end(objectMap->unordered), EqualToFirst(name));
     if (it != objectMap->unordered.end())
     {
         SafeRelease(it->second);
@@ -685,7 +681,7 @@ void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rew
         auto it = FindInMap(objectMap->unordered, name);
         if (it != objectMap->unordered.end())
         {
-            DVASSERT_MSG(false, "YamlNode::InternalAddNodeToMap: Unordered_map must have the unique key, \"%s\" is already there!", name.c_str());
+            DVASSERT_MSG(false, Format("YamlNode::InternalAddNodeToMap: Unordered_map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
         }
 #endif
     }
