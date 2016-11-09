@@ -1,6 +1,7 @@
 #include "ImageSplitterDialog/ImageSplitterDialogNormal.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderBase.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "ImageTools/ImageTools.h"
@@ -11,10 +12,8 @@
 #include "ui_ImageSplitterNormal.h"
 
 ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    ui(new Ui::ImageSplitterNormal())
+    : QDialog(parent)
+    , ui(new Ui::ImageSplitterNormal())
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -89,8 +88,8 @@ void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath& pathna
 
 DAVA::Image* ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image* firstImage, DAVA::Image* secondImage)
 {
-    DVASSERT(firstImage->format == FORMAT_RGBA8888);
-    DVASSERT(secondImage->format == FORMAT_RGBA8888);
+    DVASSERT(firstImage->format == DAVA::FORMAT_RGBA8888);
+    DVASSERT(secondImage->format == DAVA::FORMAT_RGBA8888);
 
     auto mergedImage = DAVA::Image::Create(firstImage->width, firstImage->height, DAVA::FORMAT_RGBA8888);
 

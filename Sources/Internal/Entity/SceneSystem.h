@@ -90,9 +90,16 @@ public:
      */
     virtual void Process(float32 timeElapsed);
 
+#if defined(__DAVAENGINE_COREV2__)
+    virtual bool Input(UIEvent* uie)
+    {
+        return false;
+    }
+#else
     virtual void Input(UIEvent* event)
     {
     }
+#endif
 
     virtual void SetLocked(bool locked);
     bool IsLocked() const;

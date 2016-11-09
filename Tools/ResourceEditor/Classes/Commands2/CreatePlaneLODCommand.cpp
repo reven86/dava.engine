@@ -1,11 +1,12 @@
 #include "CreatePlaneLODCommand.h"
-#include "Qt/Scene/SceneHelper.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "Scene/SceneHelper.h"
-#include "Scene3D/Lod/LodComponent.h"
+
 #include "Render/Material/NMaterialNames.h"
+#include "Scene3D/Lod/LodComponent.h"
+
 #include "Commands2/RECommandIDs.h"
+#include "Scene/SceneHelper.h"
+#include "Settings/SettingsManager.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 using namespace DAVA;
 
