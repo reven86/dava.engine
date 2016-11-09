@@ -17,7 +17,7 @@ public:
     void Update();
     bool IsInQueue(const String& packName) const;
     bool Empty() const;
-    unsigned CountRequests() const;
+    size_t CountRequests() const;
     PackRequest& Top();
     PackRequest& Find(const String& packName);
     void Push(const String& packName, float32 priority);

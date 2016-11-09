@@ -74,9 +74,9 @@ bool RequestManager::Empty() const
     return requests.empty();
 }
 
-size_type RequestManager::CountRequests() const
+size_t RequestManager::CountRequests() const
 {
-    return static_cast<size_type>(requests.size());
+    return requests.size();
 }
 
 PackRequest& RequestManager::Top()
