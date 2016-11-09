@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class UIWindow;

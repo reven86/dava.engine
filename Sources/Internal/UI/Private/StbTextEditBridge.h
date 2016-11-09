@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Math/Vector.h"
 #include "Input/KeyboardDevice.h"
 
@@ -73,17 +74,25 @@ public:
     /** Copy class data to correct instance. */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
-    /**
+/**
     Send specified `key` with `modifiers` from UIEvent to STB text edit.
     Return true if content of field has been changed.
     */
+#if defined(__DAVAENGINE_COREV2__)
+    virtual bool SendKey(Key key, eModifierKeys modifiers);
+#else
     virtual bool SendKey(Key key, uint32 modifiers);
+#endif
 
-    /**
+/**
     Send specified `keyChar` with `modifiers` to STB text edit.
     Return true if content of field has been changed.
     */
+#if defined(__DAVAENGINE_COREV2__)
+    virtual bool SendKeyChar(uint32 keyChar, eModifierKeys modifiers);
+#else
     virtual bool SendKeyChar(uint32 keyChar, uint32 modifiers);
+#endif
 
     /**
     Send specified raw `codePoint` to STB text edit.

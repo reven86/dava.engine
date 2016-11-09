@@ -358,7 +358,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 
         RebuildRecentMenu(project->GetProjectsHistory());
         FillComboboxLanguages(project);
-        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
+        setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -367,8 +367,13 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         {
             errors << QString::fromStdString(result.message);
         }
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
-        this->setWindowTitle("QuickEd");
+        QString errorStr = errors.join('\n');
+
+        setWindowTitle("QuickEd");
+
+        delayedExecutor.DelayedExecute([errorStr]() {
+            QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
+        });
     }
 }
 
