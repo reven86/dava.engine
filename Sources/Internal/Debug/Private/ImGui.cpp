@@ -1,9 +1,11 @@
 #include "Base/BaseTypes.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/Engine.h"
 #include "Render/RenderBase.h"
 #include "Render/Renderer.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
+#include "Input/InputSystem.h"
 #include "Debug/Private/ImGui.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/rhi_ShaderCache.h"
@@ -23,6 +25,9 @@ static DAVA::uint32 vertexLayout = 0;
 static rhi::HSamplerState fontSamplerState;
 static rhi::HTextureSet fontTextureSet;
 static rhi::HTexture fontTexture;
+
+static DAVA::TrackedObject* trackedObject = nullptr;
+static DAVA::uint32 inputHandlerToken = 0;
 
 static DAVA::Size2i framebufferSize = { 0, 0 };
 
@@ -241,6 +246,7 @@ using DAVA::Key;
 using DAVA::UIEvent;
 using DAVA::float32;
 using DAVA::Vector2;
+using DAVA::eInputDevices;
 
 void Initialize()
 {
@@ -332,8 +338,21 @@ void Initialize()
         ImGuiImplDetails::pipelineStatePTC = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePTC, 1, &ImGuiImplDetails::constBufferPTC);
     }
+    
+#if defined(__DAVAENGINE_COREV2__)
+    ImGuiImplDetails::trackedObject = new DAVA::TrackedObject();
+    DAVA::Engine::Instance()->beginFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameBegin);
+    DAVA::Engine::Instance()->endFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameEnd);
+
+    ImGuiImplDetails::inputHandlerToken = DAVA::InputSystem::Instance()->AddHandler(eInputDevices::TOUCH_SURFACE | eInputDevices::MOUSE | eInputDevices::KEYBOARD, &OnInput);
+#endif
 
     ImGuiImplDetails::initialized = true;
+}
+
+bool IsInitialized()
+{
+    return ImGuiImplDetails::initialized;
 }
 
 void OnFrameBegin()
@@ -413,14 +432,15 @@ void OnFrameEnd()
         ImGui::Render();
 }
 
-void OnInput(UIEvent* input)
+bool OnInput(UIEvent* input)
 {
     if (!ImGuiImplDetails::initialized)
-        return;
+        return false;
 
     ImGuiIO& io = ImGui::GetIO();
 
-    Vector2 physPoint = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(input->point);
+    DAVA::VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
+    Vector2 physPoint = vcs->ConvertVirtualToPhysical(vcs->ConvertInputToVirtual(input->physPoint));
 #if defined(__DAVAENGINE_COREV2__)
     int32 mouseButton = (input->device == DAVA::eInputDevices::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
 #else
@@ -469,6 +489,8 @@ void OnInput(UIEvent* input)
     default:
         break;
     }
+
+    return false;
 }
 
 void Uninitialize()
@@ -484,6 +506,13 @@ void Uninitialize()
         rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPTC);
 
         ImGui::Shutdown();
+
+#if defined(__DAVAENGINE_COREV2__)
+        DAVA::InputSystem::Instance()->RemoveHandler(ImGuiImplDetails::inputHandlerToken);
+        ImGuiImplDetails::inputHandlerToken = 0;
+
+        SafeDelete(ImGuiImplDetails::trackedObject);
+#endif
 
         ImGuiImplDetails::initialized = false;
     }
