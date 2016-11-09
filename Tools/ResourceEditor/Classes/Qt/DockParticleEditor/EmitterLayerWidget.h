@@ -33,7 +33,7 @@ public:
     };
     void Update(bool updateMinimized);
 
-    virtual bool eventFilter(QObject*, QEvent*);
+    bool eventFilter(QObject*, QEvent*) override;
 
     void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
     void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;

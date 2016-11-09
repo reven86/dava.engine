@@ -1,6 +1,7 @@
 #include "ImageSplitterDialog/ImageSplitterDialogNormal.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderBase.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "ImageTools/ImageTools.h"
@@ -11,10 +12,8 @@
 #include "ui_ImageSplitterNormal.h"
 
 ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    ui(new Ui::ImageSplitterNormal())
+    : QDialog(parent)
+    , ui(new Ui::ImageSplitterNormal())
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);

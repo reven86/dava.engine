@@ -49,6 +49,8 @@ public:
         AddModule(new T(std::forward<Args>(args)...));
     }
 
+    DAVA_DEPRECATED(EngineContext& GetEngineContext());
+
 private:
     // in testing enviroment Core shouldn't connect to Engine signals.
     // TArcTestClass wrap signals and call Core method directly
