@@ -1,16 +1,18 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
+#include "ui_mainwindow.h"
 
 #include "Base/Introspection.h"
 #include "Logger/Logger.h"
 #include "Render/RenderBase.h"
-#include "ui_mainwindow.h"
 
 #include "Preferences/PreferencesRegistrator.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "QtTools/Utils/ShortcutChecker.h"
 #endif //__DAVAENGINE_MACOS__
+
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QtGui>
 #include <QtWidgets>
@@ -111,9 +113,12 @@ private:
     const DAVA::InspMember* backgroundIndexMember = nullptr;
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
+
 #if defined(__DAVAENGINE_MACOS__)
     ShortcutChecker shortcutChecker;
 #endif //__DAVAENGINE_MACOS__
+
+    QtDelayedExecutor delayedExecutor;
 
 public:
     INTROSPECTION(MainWindow,
@@ -123,5 +128,3 @@ public:
                   PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };
-
-#endif // MAINWINDOW_H
