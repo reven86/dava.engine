@@ -8,7 +8,6 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
-set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
@@ -28,8 +27,11 @@ endif()
 # to force defines into DavaFramework project
 
 add_definitions       (
+-D__DAVAENGINE_COREV2__
+-D__DAVAENGINE_QT__
 -DDISABLE_NATIVE_WEBVIEW
 -DDISABLE_NATIVE_TEXTFIELD
+-DDISABLE_NATIVE_MOVIEVIEW
 -DQT_QML_DEBUG_NO_WARNING
 )
 
@@ -37,9 +39,16 @@ if (UVR_DEV)
     add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
-find_package( QT5 REQUIRED)
+set ( DAVA_COREV2 1 )
+set ( DAVA_PLATFORM_QT 1 )
+set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
+
+find_package( QT5 REQUIRED )
+find_package( QtHelpers REQUIRED )
 find_package( DavaFramework REQUIRED )
-find_package( DavaTools  REQUIRED )
+find_package( DavaTools REQUIRED )
+find_package( QtTools REQUIRED )
+find_package( TArc REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )

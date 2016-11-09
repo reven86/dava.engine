@@ -305,36 +305,6 @@ void PackManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vecto
     }
 }
 
-static void ListPacksInDirAndCopyIfNecessary(const FilePath& copyToDir, const FilePath& fromDir, bool copy, Set<FilePath>& resultSet)
-{
-    ScopedPtr<FileList> common(new FileList(fromDir));
-    for (uint32 i = 0u; i < common->GetCount(); ++i)
-    {
-        FilePath path = common->GetPathname(i);
-        if (path.GetExtension() == RequestManager::packPostfix)
-        {
-            if (copy)
-            {
-                FilePath docPath(copyToDir + "/" + path.GetFilename());
-                if (!FileSystem::Instance()->Exists(docPath))
-                {
-                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
-                    if (!result)
-                    {
-                        Logger::Error("can't copy pack from assets to pack dir");
-                        DAVA_THROW(DAVA::Exception, "can't copy pack from assets to pack dir");
-                    }
-                }
-                resultSet.insert(docPath);
-            }
-            else
-            {
-                resultSet.insert(path);
-            }
-        }
-    }
-};
-
 void PackManagerImpl::AskFooter()
 {
     //Logger::FrameworkDebug("pack manager ask_footer");

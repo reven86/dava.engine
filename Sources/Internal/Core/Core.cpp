@@ -20,7 +20,7 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
@@ -239,6 +239,8 @@ void Core::CreateSingletons()
     new VersionInfo();
 
     new VirtualCoordinatesSystem();
+    UIControlSystem::Instance()->vcs = VirtualCoordinatesSystem::Instance();
+
     new RenderSystem2D();
 
 #if defined __DAVAENGINE_IPHONE__
@@ -266,8 +268,6 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-
-    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -275,7 +275,6 @@ void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
-
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
         rendererParams.threadedRenderEnabled = true;
@@ -296,6 +295,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -307,7 +310,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -332,7 +334,6 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
@@ -559,9 +560,9 @@ void Core::SystemAppStarted()
 {
     Logger::Info("Core::SystemAppStarted in");
 
-    if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+    if (UIControlSystem::Instance()->vcs->WasScreenSizeChanged())
     {
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        UIControlSystem::Instance()->vcs->ScreenSizeChanged();
         /*  Question to Hottych: Does it really necessary here?
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
@@ -629,7 +630,6 @@ void Core::SystemProcessFrame()
 
     if (!isActive)
     {
-        LCP;
         return;
     }
 
@@ -641,7 +641,7 @@ void Core::SystemProcessFrame()
 
 #if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
-        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* vsc = UIControlSystem::Instance()->vcs;
         if (vsc->WasScreenSizeChanged())
         {
             vsc->ScreenSizeChanged();
@@ -836,7 +836,7 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     rendererParams.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
     rendererParams.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(static_cast<int32>(rendererParams.width), static_cast<int32>(rendererParams.height));
     virtSystem->EnableReloadResourceOnResize(true);
@@ -882,7 +882,7 @@ void Core::ApplyWindowSize()
         params.window = screenMetrics.nativeView;
         Renderer::Reset(params);
 
-        VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
         virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
         virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
         virtSystem->ScreenSizeChanged();
@@ -959,11 +959,6 @@ Analytics::Core& Core::GetAnalyticsCore() const
 {
     DVASSERT(analyticsCore);
     return *analyticsCore;
-}
-
-const ModuleManager& Core::GetModuleManager() const
-{
-    return moduleManager;
 }
 
 } // namespace DAVA

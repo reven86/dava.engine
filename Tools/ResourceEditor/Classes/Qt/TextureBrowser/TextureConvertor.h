@@ -56,17 +56,13 @@ private:
     bool waitingComletion;
     QString waitStatusText;
 
-    QFutureWatcher<TextureInfo> thumbnailWatcher;
-    QFutureWatcher<TextureInfo> originalWatcher;
-    QFutureWatcher<TextureInfo> convertedWatcher;
-
     JobStack jobStackThumbnail;
     JobStack jobStackOriginal;
     JobStack jobStackConverted;
 
-    JobItem* curJobThumbnail;
-    JobItem* curJobOriginal;
-    JobItem* curJobConverted;
+    JobWatcher watcherThumbnail;
+    JobWatcher watcherOriginal;
+    JobWatcher watcherConverted;
 
     QtWaitDialog* waitDialog;
 
@@ -74,16 +70,16 @@ private:
     void jobRunNextOriginal();
     void jobRunNextThumbnail();
 
-    TextureInfo GetThumbnailThread(JobItem* item);
-    TextureInfo GetOriginalThread(JobItem* item);
-    TextureInfo GetConvertedThread(JobItem* item);
+    TextureInfo GetThumbnailThread(const JobItem* item);
+    TextureInfo GetOriginalThread(const JobItem* item);
+    TextureInfo GetConvertedThread(const JobItem* item);
+
+    void ThreadThumbnailFinished(const TextureInfo& info, const JobItem* item);
+    void ThreadOriginalFinished(const TextureInfo& info, const JobItem* item);
+    void ThreadConvertedFinished(const TextureInfo& info, const JobItem* item);
 
 private slots:
-
     void waitCanceled();
-    void threadThumbnailFinished();
-    void threadOriginalFinished();
-    void threadConvertedFinished();
 };
 
 #endif // __TEXTURE_CONVERTOR_H__

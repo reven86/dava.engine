@@ -1,6 +1,7 @@
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/Private/Android/MovieViewControlAndroid.h"
+#include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -84,7 +85,7 @@ void MovieViewControl::SetRect(const Rect& rect)
 {
     if (javaMovieView != nullptr)
     {
-        Rect rc = JNI::V2I(rect);
+        Rect rc = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
         rc.dx = std::max(0.0f, rc.dx);
         rc.dy = std::max(0.0f, rc.dy);
 
@@ -166,7 +167,7 @@ void MovieViewControl::Update()
 
 namespace DAVA
 {
-JniMovieViewControl::JniMovieViewControl(uint32 id)
+JniMovieViewControl::JniMovieViewControl(uintptr_t id)
     : jniMovieViewControl("com/dava/framework/JNIMovieViewControl")
 {
     this->id = id;
@@ -185,7 +186,7 @@ JniMovieViewControl::JniMovieViewControl(uint32 id)
 
 void JniMovieViewControl::Initialize(const Rect& _rect)
 {
-    Rect rect = JNI::V2I(_rect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(_rect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -200,7 +201,7 @@ void JniMovieViewControl::Uninitialize()
 
 void JniMovieViewControl::SetRect(const Rect& _rect)
 {
-    Rect rect = JNI::V2I(_rect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(_rect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -250,7 +251,7 @@ bool JniMovieViewControl::IsPlaying() const
 
 MovieViewControl::MovieViewControl()
     :
-    jniMovieViewControl((uint32) this)
+    jniMovieViewControl(reinterpret_cast<uintptr_t>(this))
 {
 }
 

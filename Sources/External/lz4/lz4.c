@@ -51,6 +51,12 @@
 #define HEAPMODE 0
 
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+
 /**************************************
    CPU Feature Detection
 **************************************/
@@ -878,3 +884,8 @@ int LZ4_decompress_fast(const char* source, char* dest, int outputSize)
 
 int LZ4_uncompress (const char* source, char* dest, int outputSize) { return LZ4_decompress_fast(source, dest, outputSize); }
 int LZ4_uncompress_unknownOutputSize (const char* source, char* dest, int isize, int maxOutputSize) { return LZ4_decompress_safe(source, dest, isize, maxOutputSize); }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
