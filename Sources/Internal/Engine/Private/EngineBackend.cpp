@@ -716,8 +716,8 @@ void EngineBackend::DestroySubsystems()
         delete context->inputSystem;
     }
 
-    context->fontManager->Release();
     context->uiControlSystem->Release();
+    context->fontManager->Release();
     context->animationManager->Release();
     context->renderSystem2D->Release();
     context->performanceSettings->Release();
