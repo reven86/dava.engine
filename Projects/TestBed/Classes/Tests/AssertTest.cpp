@@ -2,7 +2,6 @@
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
-#include "UI/Update/UICustomUpdateDeltaComponent.h"
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
