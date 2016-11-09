@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -15,8 +16,11 @@ struct DeviceManagerImpl final
 {
     DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher);
 
+    void UpdateDisplayConfig();
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
+    DisplayInfo displayInfo;
 };
 
 } // namespace Private

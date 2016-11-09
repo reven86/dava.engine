@@ -133,6 +133,11 @@ void PlatformCore::OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ /*gamepa
     dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
+void PlatformCore::OnDpiChanged()
+{
+    engineBackend->UpdateDisplayConfig();
+}
+
 void PlatformCore::GameThread()
 {
     Vector<String> cmdline = engineBackend->GetCommandLine();

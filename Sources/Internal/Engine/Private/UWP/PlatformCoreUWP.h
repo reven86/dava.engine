@@ -35,6 +35,7 @@ public:
     void OnBackPressed();
     void OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ gamepad);
     void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
+    void OnDpiChanged();
 
 private:
     void GameThread();
