@@ -1009,11 +1009,8 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     for (UIComponent* srcComponent : srcControl->components)
     {
         UIComponent* dest = srcComponent->Clone();
-        if (dest)
-        {
-            AddComponent(dest);
-            SafeRelease(dest);
-        }
+        AddComponent(dest);
+        SafeRelease(dest);
     }
 
     RemoveAllControls();
@@ -2198,17 +2195,6 @@ void UIControl::AddComponent(UIComponent* component)
         UIControlSystem::Instance()->RegisterComponent(this, component);
     }
     SetLayoutDirty();
-}
-
-UIComponent* UIControl::AddComponent(uint32 componentType)
-{
-    UIComponent* c = UIComponent::CreateByType(componentType);
-    if (c)
-    {
-        AddComponent(c);
-        c->Release(); // refCount was increased in AddComponent
-    }
-    return c;
 }
 
 void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
