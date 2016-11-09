@@ -239,8 +239,6 @@ void EngineBackend::OnEngineCleanup()
 {
     engine->cleanup.Emit();
 
-    DestroySubsystems();
-
     if (!IsConsoleMode())
     {
         if (ImGui::IsInitialized())
@@ -249,6 +247,8 @@ void EngineBackend::OnEngineCleanup()
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
     }
+
+    DestroySubsystems();
 
     delete context;
     delete dispatcher;
@@ -705,8 +705,11 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
+    context->analyticsCore = nullptr;
+
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
+    context->moduleManager = nullptr;
 
     if (context->jobManager != nullptr)
     {
@@ -720,7 +723,9 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
+
         delete context->inputSystem;
+        context->inputSystem = nullptr;
     }
 
     context->fontManager->Release();
@@ -742,7 +747,10 @@ void EngineBackend::DestroySubsystems()
     if (context->soundSystem != nullptr)
         context->soundSystem->Release();
     if (context->packManager != nullptr)
+    {
         delete context->packManager;
+        context->packManager = nullptr;
+    }
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown

@@ -271,7 +271,7 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    const WideString& fileName = filePath.GetNativeAbsolutePathname();
+    const auto& fileName = filePath.GetNativeAbsolutePathname();
     int res = FileAPI::RemoveFile(fileName.c_str());
     if (res == 0)
     {
