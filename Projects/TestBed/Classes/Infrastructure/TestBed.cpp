@@ -176,7 +176,15 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
+// clang-format off
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__) || \
+      defined(__DAVAENGINE_IPHONE__) || \
+      defined(__DAVAENGINE_WIN_UAP__)
     nativeDelegate.reset();
+#endif
+    // clang-format on
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)
