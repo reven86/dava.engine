@@ -13,6 +13,7 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/UIControlSystem.h"
 #include "UI/UIWebView.h"
 #include "Platform/Steam.h"
 
@@ -336,8 +337,8 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    DAVA::Rect r = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
-    DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+    float32 dy = static_cast<float32>(UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
     [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)
