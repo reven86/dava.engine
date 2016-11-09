@@ -570,10 +570,13 @@ const String& YamlNode::GetItemKeyName(uint32 index) const
 const YamlNode* YamlNode::Get(const String& name) const
 {
     //DVASSERT(GetType() == TYPE_MAP);
-    auto it = FindInMap(objectMap->unordered, name);
-    if (it != objectMap->unordered.end())
+    if (GetType() == TYPE_MAP)
     {
-        return it->second;
+        auto it = FindInMap(objectMap->unordered, name);
+        if (it != objectMap->unordered.end())
+        {
+            return it->second;
+        }
     }
     return NULL;
 }
