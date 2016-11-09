@@ -18,6 +18,7 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
+#include "Debug/Private/ImGui.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
@@ -244,6 +245,9 @@ void EngineBackend::OnEngineCleanup()
 
     if (!IsConsoleMode())
     {
+        if (ImGui::IsInitialized())
+            ImGui::Uninitialize();
+
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
     }
@@ -585,6 +589,9 @@ void EngineBackend::InitRenderer(Window* w)
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
+
+    if (options->GetBool("init_imgui"))
+        ImGui::Initialize();
 }
 
 void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
