@@ -26,8 +26,6 @@ public:
     static const ReflectedType* GetByRttiName(const String& rttiName);
     static const ReflectedType* GetByPermanentName(const String& permanentName);
 
-    static Vector<std::pair<const ReflectedType*, RttiInheritance::CastOP>> GetRttiTypeHierarchy(const RttiType* rttiType);
-
     template <typename T, typename... Bases>
     static void RegisterBases();
 

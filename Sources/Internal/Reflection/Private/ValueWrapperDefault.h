@@ -6,7 +6,7 @@ namespace DAVA
 template <typename T>
 class ValueWrapperDefault : public ValueWrapper
 {
-    static const bool is_const = std::is_const<T>::value;
+    static const bool is_const = std::is_const<typename std::remove_pointer<T>::type>::value;
 
 public:
     ValueWrapperDefault() = default;

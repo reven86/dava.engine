@@ -6,14 +6,25 @@
 
 namespace DAVA
 {
-inline const RttiInheritance::InheritanceMap& RttiInheritance::GetBaseTypes() const
+namespace RttiInheritanceDetail
 {
-    return baseTypes;
+template <typename From, typename To>
+void* CastFromTo(void* p)
+{
+    From* from = static_cast<From*>(p);
+    To* to = static_cast<To*>(from);
+    return to;
+}
+} // RttiInheritanceDetail
+
+inline const Vector<RttiInheritance::Info>& RttiInheritance::GetBaseTypes() const
+{
+    return baseTypesInfo;
 }
 
-inline const RttiInheritance::InheritanceMap& RttiInheritance::GetDerivedTypes() const
+inline const Vector<RttiInheritance::Info>& RttiInheritance::GetDerivedTypes() const
 {
-    return derivedTypes;
+    return derivedTypesInfo;
 }
 
 template <typename T, typename... Bases>
@@ -38,7 +49,7 @@ bool RttiInheritance::AddBaseType()
     }
 
     const RttiType* base = RttiType::Instance<B>();
-    inheritance->baseTypes.emplace(RttiType::Instance<B>(), &RttiTypeDetail::CastFromTo<T, B>);
+    inheritance->baseTypesInfo.push_back({ base, &RttiInheritanceDetail::CastFromTo<T, B> });
     return true;
 }
 
@@ -55,7 +66,7 @@ bool RttiInheritance::AddDerivedType()
     }
 
     const RttiType* derived = RttiType::Instance<D>();
-    inheritance->derivedTypes.emplace(derived, &RttiTypeDetail::CastFromTo<T, D>);
+    inheritance->derivedTypesInfo.push_back({ derived, &RttiInheritanceDetail::CastFromTo<T, D> });
     return true;
 }
 } // namespace DAVA

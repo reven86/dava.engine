@@ -195,7 +195,7 @@ void ReflectionQualifier<C>::End()
         ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
         type->structure.reset(structure);
-        type->structureWrapper.reset(new StructureWrapperClass(RttiType::Instance<C>(), structure));
+        type->structureWrapper.reset(new StructureWrapperClass(type));
 
         structure = nullptr;
     }

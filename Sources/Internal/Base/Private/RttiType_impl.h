@@ -6,6 +6,48 @@
 
 namespace DAVA
 {
+namespace RttiTypeDetail
+{
+template <typename T>
+struct TypeSize
+{
+    static const size_t size = sizeof(T);
+};
+
+template <>
+struct TypeSize<void>
+{
+    static const size_t size = 0;
+};
+
+template <>
+struct TypeSize<const void>
+{
+    static const size_t size = 0;
+};
+
+template <typename T>
+const RttiType* GetTypeIfTrue(std::false_type)
+{
+    return nullptr;
+}
+
+template <typename T>
+const RttiType* GetTypeIfTrue(std::true_type)
+{
+    return RttiType::Instance<T>();
+}
+
+template <typename T>
+struct TypeHolder
+{
+    static const RttiType* rttiType;
+};
+
+template <typename T>
+const RttiType* TypeHolder<T>::rttiType = nullptr;
+} // namespace TypeDetails
+
 inline size_t RttiType::GetSize() const
 {
     return size;
@@ -70,57 +112,6 @@ inline const RttiType* RttiType::Pointer() const
 {
     return pointerType;
 }
-
-namespace RttiTypeDetail
-{
-template <typename T>
-struct TypeSize
-{
-    static const size_t size = sizeof(T);
-};
-
-template <>
-struct TypeSize<void>
-{
-    static const size_t size = 0;
-};
-
-template <>
-struct TypeSize<const void>
-{
-    static const size_t size = 0;
-};
-
-template <typename T>
-const RttiType* GetTypeIfTrue(std::false_type)
-{
-    return nullptr;
-}
-
-template <typename T>
-const RttiType* GetTypeIfTrue(std::true_type)
-{
-    return RttiType::Instance<T>();
-}
-
-template <typename From, typename To>
-void* CastFromTo(void* p)
-{
-    From* from = static_cast<From*>(p);
-    To* to = static_cast<To*>(from);
-    return to;
-}
-
-template <typename T>
-struct TypeHolder
-{
-    static const RttiType* rttiType;
-};
-
-template <typename T>
-const RttiType* TypeHolder<T>::rttiType = nullptr;
-
-} // namespace TypeDetails
 
 template <typename T>
 void RttiType::Init(RttiType** ptype)

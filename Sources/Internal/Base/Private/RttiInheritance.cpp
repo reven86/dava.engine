@@ -2,137 +2,85 @@
 
 namespace DAVA
 {
-bool RttiInheritance::CanDownCast(const RttiType* from, const RttiType* to)
+const RttiInheritance::Info* RttiInheritance::SearchInfo(const RttiType* from, const RttiType* to, RttiInheritance::Direction direction)
 {
     if (from->IsPointer() && to->IsPointer())
     {
-        to = to->Deref();
-        from = from->Deref();
-
-        const RttiInheritance* fti = from->GetInheritance();
-        if (nullptr != fti)
+        const RttiType* to_ = to->Deref();
+        const RttiType* from_ = from->Deref();
+        const RttiInheritance* inheritance = from_->GetInheritance();
+        if (nullptr != inheritance)
         {
-            auto it = fti->GetBaseTypes().find(to);
-            if (it != fti->GetBaseTypes().end())
+            Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
+
+            if (direction == Direction::Up)
             {
-                return true;
+                typesInfo = &inheritance->derivedTypesInfo;
             }
-            else
+
+            for (Info& info : *typesInfo)
             {
-                for (auto& base : fti->GetBaseTypes())
+                if (info.type == to_)
                 {
-                    if (CanDownCast(base.first->Pointer(), to->Pointer()))
-                    {
-                        return true;
-                    }
+                    return &info;
+                }
+            }
+
+            for (Info& info : *typesInfo)
+            {
+                const RttiInheritance::Info* ret = SearchInfo(info.type->Pointer(), to, direction);
+                if (nullptr != ret)
+                {
+                    return ret;
                 }
             }
         }
     }
 
-    return false;
+    return nullptr;
 }
 
 bool RttiInheritance::CanUpCast(const RttiType* from, const RttiType* to)
 {
-    if (from->IsPointer() && to->IsPointer())
-    {
-        to = to->Deref();
-        from = from->Deref();
+    return (nullptr != RttiInheritance::SearchInfo(from, to, Direction::Down));
+}
 
-        const RttiInheritance* fti = from->GetInheritance();
-        if (nullptr != fti)
-        {
-            auto it = fti->GetDerivedTypes().find(to);
-            if (it != fti->GetDerivedTypes().end())
-            {
-                return true;
-            }
-            else
-            {
-                for (auto& derived : fti->GetDerivedTypes())
-                {
-                    if (CanUpCast(derived.first->Pointer(), to->Pointer()))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-
-    return false;
+bool RttiInheritance::CanDownCast(const RttiType* from, const RttiType* to)
+{
+    return (nullptr != RttiInheritance::SearchInfo(from, to, Direction::Up));
 }
 
 bool RttiInheritance::CanCast(const RttiType* from, const RttiType* to)
 {
-    return CanDownCast(from, to) || CanUpCast(from, to);
+    return (CanUpCast(from, to) || CanDownCast(from, to));
 }
 
 bool RttiInheritance::DownCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)
 {
-    if (from->IsPointer() && to->IsPointer())
-    {
-        to = to->Deref();
-        from = from->Deref();
+    bool ret = false;
 
-        const RttiInheritance* fti = from->GetInheritance();
-        if (nullptr != fti)
-        {
-            auto it = fti->GetBaseTypes().find(to);
-            if (it != fti->GetBaseTypes().end())
-            {
-                *outPtr = it->second(inPtr);
-                return true;
-            }
-            else
-            {
-                for (auto& base : fti->GetBaseTypes())
-                {
-                    void* baseInPtr = base.second(inPtr);
-                    if (DownCast(base.first->Pointer(), baseInPtr, to->Pointer(), outPtr))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
+    const Info* info = RttiInheritance::SearchInfo(from, to, Direction::Down);
+    if (nullptr != info)
+    {
+        *outPtr = info->castOP(inPtr);
+        ret = true;
     }
 
-    return false;
+    return ret;
 }
 
 bool RttiInheritance::UpCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)
 {
-    if (from->IsPointer() && to->IsPointer())
-    {
-        to = to->Deref();
-        from = from->Deref();
+    bool ret = false;
 
-        const RttiInheritance* fti = from->GetInheritance();
-        if (nullptr != fti)
-        {
-            auto it = fti->GetDerivedTypes().find(to);
-            if (it != fti->GetDerivedTypes().end())
-            {
-                *outPtr = it->second(inPtr);
-                return true;
-            }
-            else
-            {
-                for (auto& derived : fti->GetDerivedTypes())
-                {
-                    void* derivedInPtr = derived.second(inPtr);
-                    if (UpCast(derived.first->Pointer(), derivedInPtr, to->Pointer(), outPtr))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
+    const Info* info = RttiInheritance::SearchInfo(from, to, Direction::Up);
+    if (nullptr != info)
+    {
+        *outPtr = info->castOP(inPtr);
+        ret = true;
     }
 
-    return false;
+    return ret;
 }
 
 bool RttiInheritance::Cast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)

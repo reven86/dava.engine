@@ -8,10 +8,15 @@ class RttiInheritance final
 {
 public:
     using CastOP = void* (*)(void*);
-    using InheritanceMap = UnorderedMap<const RttiType*, CastOP>;
 
-    const InheritanceMap& GetBaseTypes() const;
-    const InheritanceMap& GetDerivedTypes() const;
+    struct Info
+    {
+        const RttiType* type;
+        CastOP castOP;
+    };
+
+    const Vector<Info>& GetBaseTypes() const;
+    const Vector<Info>& GetDerivedTypes() const;
 
     template <typename T, typename... Bases>
     static void RegisterBases();
@@ -25,8 +30,16 @@ public:
     static bool Cast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr);
 
 private:
-    mutable InheritanceMap baseTypes;
-    mutable InheritanceMap derivedTypes;
+    enum class Direction
+    {
+        Up,
+        Down
+    };
+
+    mutable Vector<Info> baseTypesInfo;
+    mutable Vector<Info> derivedTypesInfo;
+
+    static const Info* SearchInfo(const RttiType* from, const RttiType* to, Direction direction);
 
     template <typename T, typename B>
     static bool AddBaseType();
