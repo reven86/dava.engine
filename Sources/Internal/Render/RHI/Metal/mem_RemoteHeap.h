@@ -9,7 +9,8 @@
 //
 //  externals:
 
-    #include <vector>
+#include <vector>
+#include "../Common/rhi_Utils.h"
 
 //==============================================================================
 //

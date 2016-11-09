@@ -9,7 +9,8 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSDictionary;
-@class FrameTimer;
+@class ObjectiveCInterop;
+@class NotificationBridge;
 @class UILocalNotification;
 
 namespace DAVA
@@ -40,10 +41,13 @@ struct CoreNativeBridge final
     void ApplicationDidReceiveMemoryWarning();
     void ApplicationDidReceiveLocalNotification(UILocalNotification* notification);
 
+    void GameControllerDidConnected();
+    void GameControllerDidDisconnected();
+
     PlatformCore* core = nullptr;
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* mainDispatcher = nullptr;
-    FrameTimer* frameTimer = nullptr;
+    ObjectiveCInterop* objcInterop = nullptr;
 };
 
 } // namespace Private

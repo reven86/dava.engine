@@ -15,9 +15,10 @@
 
 #import <UIKit/UIKit.h>
 
-// Wrapper over CADisplayLink to connect Objective-C's CADisplayLink object to
-// C++ class CoreNativeBridge
-@interface FrameTimer : NSObject
+// Objective-C class used for interoperation between Objective-C and C++.
+// CADisplayLink, NSNotificationCenter, etc expect Objective-C selectors to notify about events
+// so this class installs Objective-C handlers which transfer control into C++ class.
+@interface ObjectiveCInterop : NSObject
 {
     DAVA::Private::CoreNativeBridge* bridge;
     CADisplayLink* displayLink;
@@ -25,13 +26,13 @@
 }
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
-- (void)set:(DAVA::int32)interval;
-- (void)cancel;
-- (void)timerFired:(CADisplayLink*)dispLink;
+- (void)setDisplayLinkInterval:(DAVA::int32)interval;
+- (void)cancelDisplayLink;
+- (void)enableGameControllerObserver:(BOOL)enable;
 
 @end
 
-@implementation FrameTimer
+@implementation ObjectiveCInterop
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge
 {
@@ -40,13 +41,13 @@
     {
         bridge = nativeBridge;
         curInterval = 1;
-        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(timerFired:)];
+        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkTimerFired:)];
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
     return self;
 }
 
-- (void)set:(DAVA::int32)interval
+- (void)setDisplayLinkInterval:(DAVA::int32)interval
 {
     if (interval <= 0)
     {
@@ -59,14 +60,43 @@
     }
 }
 
-- (void)cancel
+- (void)cancelDisplayLink
 {
     [displayLink invalidate];
 }
 
-- (void)timerFired:(CADisplayLink*)dispLink
+- (void)displayLinkTimerFired:(CADisplayLink*)dispLink
 {
     bridge->OnFrameTimer();
+}
+
+- (void)enableGameControllerObserver:(BOOL)enable
+{
+    if (enable)
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(gameControllerDidConnected)
+                                                     name:@"GCControllerDidConnectNotification"
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(gameControllerDidDisconnected)
+                                                     name:@"GCControllerDidDisconnectNotification"
+                                                   object:nil];
+    }
+    else
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
+}
+
+- (void)gameControllerDidConnected
+{
+    bridge->GameControllerDidConnected();
+}
+
+- (void)gameControllerDidDisconnected
+{
+    bridge->GameControllerDidDisconnected();
 }
 
 @end
@@ -109,7 +139,7 @@ void CoreNativeBridge::OnFrameTimer()
     }
 
     int32 interval = static_cast<int32>(60.0 / fps + 0.5);
-    [frameTimer set:interval];
+    [objcInterop setDisplayLinkInterval:interval];
 }
 
 bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
@@ -127,8 +157,10 @@ bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* la
     WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create();
 
-    frameTimer = [[FrameTimer alloc] init:this];
-    [frameTimer set:1];
+    objcInterop = [[ObjectiveCInterop alloc] init:this];
+    [objcInterop setDisplayLinkInterval:1];
+
+    [objcInterop enableGameControllerObserver:YES];
     return true;
 }
 
@@ -162,7 +194,8 @@ void CoreNativeBridge::ApplicationWillTerminate()
 {
     Logger::FrameworkDebug("******** applicationWillTerminate");
 
-    [frameTimer cancel];
+    [objcInterop cancelDisplayLink];
+    [objcInterop enableGameControllerObserver:NO];
 
     engineBackend->OnGameLoopStopped();
     engineBackend->OnEngineCleanup();
@@ -171,6 +204,16 @@ void CoreNativeBridge::ApplicationWillTerminate()
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
 {
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
+}
+
+void CoreNativeBridge::GameControllerDidConnected()
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(0));
+}
+
+void CoreNativeBridge::GameControllerDidDisconnected()
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
 void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UILocalNotification* notification)

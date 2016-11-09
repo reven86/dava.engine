@@ -11,9 +11,7 @@ namespace DAVA
     
 class ModuleManager;
 
-namespace Test
-{
-    
+  
 class SampleModule : public IModule
 {
 public:
@@ -29,15 +27,13 @@ public:
         return statusList;
     }
     
-private:
-    SampleModule();
-    friend ModuleManager;
+    SampleModule(Engine* engine);
     
     void Init() override;
     void Shutdown() override;
     
+private:
     Vector<eStatus> statusList;
 };
     
-};
 };

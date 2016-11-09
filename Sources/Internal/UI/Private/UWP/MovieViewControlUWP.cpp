@@ -8,8 +8,7 @@
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
 #include "Engine/WindowNativeService.h"
@@ -391,23 +390,8 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
 
 Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-// 2. map physical to window
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 void MovieViewControl::TellPlayingStatus(bool playing)

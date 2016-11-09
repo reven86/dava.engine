@@ -27,15 +27,18 @@ public:
     String GetHTTPProxyHost();
     String GetHTTPNonProxyHosts();
     int GetHTTPProxyPort();
-    DeviceInfo::ScreenInfo& GetScreenInfo();
     int GetZBufferSize();
     eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
     String GetCarrierName();
+
+#if !defined(__DAVAENGINE_COREV2__)
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
+#endif
 
 private:
     enum NativeHIDType
@@ -86,7 +89,9 @@ private:
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
     DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN_VALUE;
+#if !defined(__DAVAENGINE_COREV2__)
     DeviceInfo::ScreenInfo screenInfo;
+#endif
     eGPUFamily gpu = GPU_INVALID;
     String platformString;
     String version;

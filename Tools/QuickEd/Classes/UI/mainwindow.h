@@ -1,12 +1,14 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
+#include "ui_mainwindow.h"
 
 #include "Base/Introspection.h"
 #include "Logger/Logger.h"
 #include "Render/RenderBase.h"
-#include "ui_mainwindow.h"
 
 #include "Preferences/PreferencesRegistrator.h"
+
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QtGui>
 #include <QtWidgets>
@@ -105,6 +107,7 @@ private:
     const DAVA::InspMember* backgroundIndexMember = nullptr;
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
+    QtDelayedExecutor delayedExecutor;
 
 public:
     INTROSPECTION(MainWindow,
@@ -114,5 +117,3 @@ public:
                   PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };
-
-#endif // MAINWINDOW_H

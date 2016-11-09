@@ -20,7 +20,6 @@ class DownloadManager;
 
 class InputSystem;
 class UIControlSystem;
-class VirtualCoordinatesSystem;
 
 class SoundSystem;
 class AnimationManager;
@@ -64,7 +63,6 @@ public:
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;

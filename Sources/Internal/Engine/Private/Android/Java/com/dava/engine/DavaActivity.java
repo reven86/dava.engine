@@ -39,6 +39,9 @@ public final class DavaActivity extends Activity
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
+/* uncomment after multidex enabled
+    protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
+*/
     // List of class instances loaded from boot_classes files on startup
     protected List<Object> bootstrapObjects = new LinkedList<Object>();
 
@@ -67,7 +70,12 @@ public final class DavaActivity extends Activity
     {
         return activitySingleton.commandHandler;
     }
-
+/* uncomment after multidex enabled
+    public static DavaGamepadManager gamepadManager()
+    {
+        return activitySingleton.gamepadManager;
+    }
+*/
     @Override
     public void onNewIntent(Intent intent)
     {
@@ -318,6 +326,9 @@ public final class DavaActivity extends Activity
                 isPaused = false;
                 nativeOnResume();
                 primarySurfaceView.handleResume();
+/* uncomment after multidex enabled
+                gamepadManager.onResume();
+*/
             }
         }
     }
@@ -328,6 +339,9 @@ public final class DavaActivity extends Activity
         {
             isPaused = true;
             primarySurfaceView.handlePause();
+/* uncomment after multidex enabled
+            gamepadManager.onPause();
+*/
             nativeOnPause();
         }
     }
