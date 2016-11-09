@@ -11,7 +11,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Private/OsX/DeviceManagerImplMac.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "Engine/Private/iOS/DeviceManagerImplIos.h
+#include "Engine/Private/iOS/DeviceManagerImplIos.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Engine/Private/Android/DeviceManagerImplAndroid.h"
 #else
