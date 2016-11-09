@@ -15,6 +15,8 @@ struct DeviceManagerImpl final
 {
     DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher);
 
+    void UpdateDisplayConfig();
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
 };

@@ -17,6 +17,10 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 {
 }
 
+void DeviceManagerImpl::UpdateDisplayConfig()
+{
+}
+
 } // namespace Private
 } // namespace DAVA
 

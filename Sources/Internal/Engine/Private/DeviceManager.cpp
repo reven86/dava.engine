@@ -13,7 +13,7 @@
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Engine/Private/iOS/DeviceManagerImplIos.h
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Engine/Private/Android/DeviceManagerImplAndroid.h
+#include "Engine/Private/Android/DeviceManagerImplAndroid.h"
 #else
 #error "DeviceManager: unknown platform"
 #endif

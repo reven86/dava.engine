@@ -1,4 +1,4 @@
-#include "Engine/Private/Win32/DeviceManagerImplWin32.h"
+#include "Engine/Private/Qt/DeviceManagerImplQt.h"
 
 #if defined(__DAVAENGINE_QT__)
 
@@ -12,6 +12,10 @@ namespace Private
 DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher)
     : deviceManager(devManager)
     , mainDispatcher(dispatcher)
+{
+}
+
+void DeviceManagerImpl::UpdateDisplayConfig()
 {
 }
 
