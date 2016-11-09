@@ -4,6 +4,8 @@
 #include "Preferences/PreferencesRegistrator.h"
 #include "Functional/SignalBase.h"
 
+#include "QtTools/Utils/QtDelayedExecutor.h"
+
 #include <QtGui>
 #include <QtWidgets>
 
@@ -112,6 +114,7 @@ private:
     const DAVA::InspMember* backgroundIndexMember = nullptr;
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
+    QtDelayedExecutor delayedExecutor;
 
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;

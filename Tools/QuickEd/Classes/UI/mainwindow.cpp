@@ -295,7 +295,11 @@ void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& re
 
     if (!errors.empty())
     {
-        QMessageBox::warning(qApp->activeWindow(), title, errors.join('\n'));
+        QString errorStr = errors.join('\n');
+
+        delayedExecutor.DelayedExecute([errorStr]() {
+            QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
+        });
     }
 }
 

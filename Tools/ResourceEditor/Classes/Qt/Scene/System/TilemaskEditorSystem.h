@@ -27,7 +27,7 @@ public:
     bool DisableLandscapeEdititing();
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
     void Draw();
 
     void SetBrushSize(DAVA::int32 brushSize);

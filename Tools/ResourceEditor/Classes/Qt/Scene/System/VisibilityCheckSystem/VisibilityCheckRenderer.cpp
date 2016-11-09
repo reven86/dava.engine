@@ -2,6 +2,7 @@
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 const DAVA::FastName MaterialParamCubemap("cubemap");
 const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");
@@ -411,7 +412,7 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* re
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
     DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
-    DAVA::Rect dstRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(DAVA::Rect(0.0f, height, width, -height));
+    DAVA::Rect dstRect = DAVA::UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(DAVA::Rect(0.0f, height, width, -height));
 
     if (frameFixed)
     {

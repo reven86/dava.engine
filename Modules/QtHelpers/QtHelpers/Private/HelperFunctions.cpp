@@ -7,7 +7,7 @@
 
 namespace QtHelpers
 {
-void QtHelpers::ShowInOSFileManager(const QString& path)
+void ShowInOSFileManager(const QString& path)
 {
 #if defined(Q_OS_MAC)
     QStringList args;
