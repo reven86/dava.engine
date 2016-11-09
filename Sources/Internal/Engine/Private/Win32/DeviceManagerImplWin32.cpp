@@ -6,15 +6,100 @@
 
 #include "Engine/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/Win32/DllImportWin32.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
 namespace Private
 {
+struct DeviceManagerImpl::DisplayInfoRange
+{
+    DisplayInfo* begin;
+    DisplayInfo* end;
+    DisplayInfo* cur;
+};
+
 DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher)
     : deviceManager(devManager)
     , mainDispatcher(dispatcher)
 {
+    size_t count = ::GetSystemMetrics(SM_CMONITORS);
+    deviceManager->displays.resize(count);
+
+    DisplayInfoRange range;
+    range.begin = &deviceManager->displays[0];
+    range.cur = range.begin;
+    range.end = range.begin + count;
+    count = GetDisplays(&range);
+    deviceManager->displays.resize(count);
+}
+
+void DeviceManagerImpl::UpdateDisplayConfig()
+{
+    size_t count = ::GetSystemMetrics(SM_CMONITORS);
+
+    DisplayInfoRange range;
+    range.begin = new DisplayInfo[count];
+    range.cur = range.begin;
+    range.end = range.begin + count;
+    count = GetDisplays(&range);
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateDisplayConfigChangedEvent(range.begin, count));
+}
+
+size_t DeviceManagerImpl::GetDisplays(DisplayInfoRange* range)
+{
+    ::EnumDisplayMonitors(nullptr, nullptr, &DisplayEnumProc, reinterpret_cast<LPARAM>(range));
+
+    size_t count = range->cur - range->begin;
+    if (DllImport::fnGetDpiForMonitor == nullptr)
+    {
+        HDC screen = ::GetDC(nullptr);
+        float32 dpiX = static_cast<float32>(::GetDeviceCaps(screen, LOGPIXELSX));
+        float32 dpiY = static_cast<float32>(::GetDeviceCaps(screen, LOGPIXELSY));
+        ::ReleaseDC(NULL, nullptr);
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            range->begin[i].dpiX = dpiX;
+            range->begin[i].dpiY = dpiY;
+        }
+    }
+    return count;
+}
+
+BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPRECT rc, LPARAM lparam)
+{
+    DisplayInfoRange* range = reinterpret_cast<DisplayInfoRange*>(lparam);
+    if (range->cur < range->end)
+    {
+        MONITORINFOEXW mi;
+        mi.cbSize = sizeof(mi);
+        ::GetMonitorInfoW(hmonitor, reinterpret_cast<LPMONITORINFO>(&mi));
+
+        DisplayInfo* di = range->cur;
+        di->systemId = reinterpret_cast<uintptr_t>(hmonitor);
+        di->rect.x = static_cast<float32>(mi.rcMonitor.left);
+        di->rect.y = static_cast<float32>(mi.rcMonitor.top);
+        di->rect.dx = static_cast<float32>(mi.rcMonitor.right - mi.rcMonitor.left);
+        di->rect.dy = static_cast<float32>(mi.rcMonitor.bottom - mi.rcMonitor.top);
+        di->primary = (mi.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY;
+        di->name = UTF8Utils::MakeUTF8String(mi.szDevice);
+
+        UINT dpiX = 0;
+        UINT dpiY = 0;
+        if (DllImport::fnGetDpiForMonitor != nullptr)
+        {
+            DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+            di->dpiX = static_cast<float32>(dpiX);
+            di->dpiY = static_cast<float32>(dpiY);
+        }
+
+        range->cur += 1;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 } // namespace Private

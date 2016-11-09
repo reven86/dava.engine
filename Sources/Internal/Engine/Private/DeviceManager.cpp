@@ -1,5 +1,6 @@
 #include "Engine/DeviceManager.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 
 #if defined(__DAVAENGINE_QT__)
 #include "Engine/Private/Qt/DeviceManagerImplQt.h"
@@ -26,8 +27,26 @@ DeviceManager::DeviceManager(Private::EngineBackend* engineBackend)
 
 DeviceManager::~DeviceManager() = default;
 
+void DeviceManager::UpdateDisplayConfig()
+{
+    impl->UpdateDisplayConfig();
+}
+
 void DeviceManager::HandleEvent(const Private::MainDispatcherEvent& e)
 {
+    using Private::MainDispatcherEvent;
+    if (e.type == MainDispatcherEvent::DISPLAY_CONFIG_CHANGED)
+    {
+        size_t count = e.displayConfigEvent.count;
+        DisplayInfo* displayInfo = e.displayConfigEvent.displayInfo;
+
+        displays.resize(count);
+        std::move(displayInfo, displayInfo + count, begin(displays));
+
+        delete[] displayInfo;
+
+        displayConfigChanged.Emit();
+    }
 }
 
 } // namespace DAVA

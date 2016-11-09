@@ -5,13 +5,18 @@
 
 namespace DAVA
 {
+/**
+    \ingroup device_manager
+    Struct which describes display device.
+*/
 struct DisplayInfo
 {
     uintptr_t systemId = 0;
-    Rect rect;
-    float32 dpiX = 0.f;
-    float32 dpiY = 0.f;
-    String name;
+    Rect rect; //<! Display rect in raw (physical) pixels
+    float32 dpiX = 0.f; //!< Raw dots per inch along X-axis of display
+    float32 dpiY = 0.f; //!< Raw dots per inch along Y-axis of display
+    bool primary = false; //!< Is display primary
+    String name; //<! Display name as seen by system
 };
 
 } // namespace DAVA

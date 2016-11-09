@@ -48,6 +48,16 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadMotionEvent(uint32 deviceI
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count)
+{
+    DVASSERT(displayInfo != nullptr && count > 0);
+
+    MainDispatcherEvent e(DISPLAY_CONFIG_CHANGED);
+    e.displayConfigEvent.displayInfo = displayInfo;
+    e.displayConfigEvent.count = count;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button)
 {
     DVASSERT(gamepadButtonEventType == GAMEPAD_BUTTON_DOWN || gamepadButtonEventType == GAMEPAD_BUTTON_UP);

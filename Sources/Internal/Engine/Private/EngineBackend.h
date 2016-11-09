@@ -74,6 +74,8 @@ public:
     void ResetRenderer(Window* w, bool resetToNull);
     void DeinitRender(Window* w);
 
+    void UpdateDisplayConfig();
+
 private:
     void RunConsole();
 

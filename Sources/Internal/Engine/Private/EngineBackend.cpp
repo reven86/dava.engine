@@ -425,6 +425,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::GAMEPAD_REMOVED:
         context->inputSystem->HandleGamepadRemoved(e);
         break;
+    case MainDispatcherEvent::DISPLAY_CONFIG_CHANGED:
+        context->deviceManager->HandleEvent(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -613,6 +616,11 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 
 void EngineBackend::DeinitRender(Window* w)
 {
+}
+
+void EngineBackend::UpdateDisplayConfig()
+{
+    context->deviceManager->UpdateDisplayConfig();
 }
 
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)

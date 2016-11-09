@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
+#include "Engine/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -15,7 +16,14 @@ namespace Private
 {
 struct DeviceManagerImpl final
 {
+    struct DisplayInfoRange;
+
     DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher);
+
+    void UpdateDisplayConfig();
+    size_t GetDisplays(DisplayInfoRange* range);
+
+    static BOOL CALLBACK DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPRECT rc, LPARAM lparam);
 
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;

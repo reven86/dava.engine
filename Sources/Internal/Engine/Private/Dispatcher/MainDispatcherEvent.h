@@ -6,6 +6,7 @@
 #include "Functional/Function.h"
 
 #include "Engine/EngineTypes.h"
+#include "Engine/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -54,6 +55,8 @@ struct MainDispatcherEvent final
 
         GAMEPAD_ADDED,
         GAMEPAD_REMOVED,
+
+        DISPLAY_CONFIG_CHANGED,
     };
 
     /// Parameter for APP_TERMINATE event
@@ -167,6 +170,14 @@ struct MainDispatcherEvent final
         bool isRepeated;
     };
 
+    // Parameter for DISPLAY_CONFIG_CHANGED event
+    // Handler is responsible for freeing displayInfo (delete[] displayInfo)
+    struct DisplayConfigEvent
+    {
+        DisplayInfo* displayInfo;
+        size_t count;
+    };
+
     MainDispatcherEvent() = default;
     MainDispatcherEvent(eType type)
         : type(type)
@@ -198,6 +209,7 @@ struct MainDispatcherEvent final
         TrackpadGestureEvent trackpadGestureEvent;
         GamepadEvent gamepadEvent;
         KeyEvent keyEvent;
+        DisplayConfigEvent displayConfigEvent;
     };
 
     template <typename F>
@@ -210,6 +222,8 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateGamepadRemovedEvent(uint32 deviceId);
     static MainDispatcherEvent CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value);
     static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button);
+
+    static MainDispatcherEvent CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count);
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);

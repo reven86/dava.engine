@@ -4,41 +4,59 @@
 #include "Engine/DeviceManagerTypes.h"
 #include "Functional/Signal.h"
 
+#include "Engine/Private/EnginePrivateFwd.h"
+
+/**
+    \defgroup device_manager Device Manager
+*/
+
 namespace DAVA
 {
 namespace Private
 {
-class EngineBackend;
 struct DeviceManagerImpl;
-struct MainDispatcherEvent;
 }
 
 /**
-    \ingroup device_manager Device Manager
+    \ingroup device_manager
+
+    Class which keeps current device configuration, listens device addition, removal or devices' properties changes.
+    Application can subscribe to appropriate signals to receive notification about configuration changes.
+
+    \todo For now only `DeviceManager` observes only display devices, further add other devices (input, storage, maybe network).
 */
 class DeviceManager final
 {
-public:
+private:
     DeviceManager(Private::EngineBackend* engineBackend);
     ~DeviceManager();
 
+public:
+    /** Get primary display as reported by system */
     const DisplayInfo& GetPrimaryDisplay() const;
+
+    /** Get displays which are available now */
     const Vector<DisplayInfo>& GetDisplays() const;
+
+    /** Get total display count */
     size_t GetDisplayCount() const;
 
-    Signal<> displayConfigChanged;
+    Signal<> displayConfigChanged; //<! Emited when display has been added/removed or properties of any display has changed
 
 private:
+    void UpdateDisplayConfig();
     void HandleEvent(const Private::MainDispatcherEvent& e);
 
     Vector<DisplayInfo> displays;
     std::unique_ptr<Private::DeviceManagerImpl> impl;
 
+    friend class Private::EngineBackend;
     friend struct Private::DeviceManagerImpl;
 };
 
 inline const DisplayInfo& DeviceManager::GetPrimaryDisplay() const
 {
+    // DeviceManagerImpl always places primary display as first element
     return displays[0];
 }
 
