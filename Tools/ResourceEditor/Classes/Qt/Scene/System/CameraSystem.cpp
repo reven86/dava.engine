@@ -261,11 +261,12 @@ void SceneCameraSystem::Process(float timeElapsed)
     MoveAnimate(timeElapsed);
 }
 
-void SceneCameraSystem::Input(DAVA::UIEvent* event)
+bool SceneCameraSystem::Input(DAVA::UIEvent* event)
 {
     switch (event->phase)
     {
     case DAVA::UIEvent::Phase::KEY_DOWN:
+    case DAVA::UIEvent::Phase::KEY_DOWN_REPEAT:
         OnKeyboardInput(event);
         break;
     case DAVA::UIEvent::Phase::WHEEL:
@@ -274,6 +275,7 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
     default:
         break;
     }
+    return false;
 }
 
 void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)

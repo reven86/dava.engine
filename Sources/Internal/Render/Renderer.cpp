@@ -31,18 +31,11 @@ RenderStats stats;
 rhi::ResetParam resetParams;
 }
 
-static Mutex renderCmdExecSync;
-
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!initialized);
 
     api = _api;
-
-    if (nullptr == params.FrameCommandExecutionSync)
-    {
-        params.FrameCommandExecutionSync = &renderCmdExecSync;
-    }
 
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();

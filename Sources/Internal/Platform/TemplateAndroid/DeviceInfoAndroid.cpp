@@ -30,8 +30,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
     getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
-    getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
-    getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
     getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
 }
 
@@ -105,10 +103,12 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
     return static_cast<int32>(getHTTPProxyPort());
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     return screenInfo;
 }
+#endif
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
@@ -170,19 +170,15 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return l;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
     screenInfo.scale = 1;
-#else
-    screenInfo.width = getDefaultDisplayWidth();
-    screenInfo.height = getDefaultDisplayHeight();
-    screenInfo.scale = 1;
-#endif
 }
+#endif
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {

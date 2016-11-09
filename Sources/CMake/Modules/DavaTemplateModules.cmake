@@ -153,11 +153,14 @@ macro( modules_tree_info )
                 append_property( MODULES_INITIALIZATION_HPP ${FILE} ) 
             endif()
         endforeach() 
+        
+        list( APPEND MODULES_CODE  "set( MODULE_TYPE_${NAME_MODULE} ${MODULE_TYPE} )\n" )            
 
         if( MODULE_INITIALIZATION_NAMESPACE )
             list( APPEND MODULES_CODE  "set( MODULE_INITIALIZATION_NAMESPACE_${NAME_MODULE} ${MODULE_INITIALIZATION_NAMESPACE} )\n" )
-            append_property( MODULES_CODE ${MODULES_CODE} ) 
         endif()
+
+        append_property( MODULES_CODE ${MODULES_CODE} ) 
 
     endif()
 
@@ -204,7 +207,7 @@ macro( generated_initialization_module_code )
             string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
         endif()
 
-        list( APPEND INIT_POINTERS "    struct ModuleManager::PointersToModules\n    {\n" )
+        list( APPEND INIT_POINTERS "struct ModuleManager::PointersToModules\n{\n" )
         foreach( ITEM ${MODULES_INITIALIZATION} )
             set( NAMESPACE_PREFIX )
             if( MODULE_INITIALIZATION_NAMESPACE_${ITEM} )
@@ -212,18 +215,19 @@ macro( generated_initialization_module_code )
 
             endif()
 
-            list( APPEND INIT_POINTERS "        ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
-
-            list( APPEND GET_MODULE_CODE "    template <>\n    ${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
-            list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_${ITEM}\;\n    }\n" )
-
-            list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}()\;\n" )
-            list( APPEND INIT_CODE "        modules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
-            list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n\n" )
+            if( ${MODULE_TYPE_${ITEM}} STREQUAL "INLINE" OR ${MODULE_TYPE_${ITEM}} STREQUAL "STATIC" )
+                list( APPEND INIT_POINTERS "    ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
+				list( APPEND GET_MODULE_CODE "template <>\n${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
+				list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
+				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
+				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
+            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
+            endif()
+              
         endforeach()
-        list( APPEND INIT_POINTERS "    }\;\n" )
+        list( APPEND INIT_POINTERS "}\;\n" )
 
-        foreach( TYPE_VALUE  INIT_POINTERS INIT_CODE GET_MODULE_CODE )
+        foreach( TYPE_VALUE  INIT_POINTERS GET_MODULE_CODE CTOR_CODE )
             foreach( ITEM ${${TYPE_VALUE}} )
                 set( IMODULE_${TYPE_VALUE} "${IMODULE_${TYPE_VALUE}}${ITEM}")
             endforeach()
@@ -245,7 +249,8 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+    foreach( VALUE ${MAIN_MODULE_VALUES}
+                                         TARGET_MODULES_LIST 
                                          QT_DEPLOY_LIST_VALUE 
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
@@ -303,6 +308,7 @@ macro( setup_main_module )
         if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
             modules_tree_info_execute()
             generated_initialization_module_code()
+			set( ROOT_NAME_MODULE ${NAME_MODULE} )
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
@@ -541,9 +547,9 @@ macro( setup_main_module )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-                load_property( PROPERTY_LIST TARGET_MODULES_LIST )
-                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
-                add_definitions( -DDAVA_MODULE_EXPORTS )                
+				list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${ROOT_NAME_MODULE} )  
+                load_property( PROPERTY_LIST TARGET_MODULES_LIST )    
+                add_definitions( -DDAVA_IMPLEMENT_DYNAMIC_MODULE )                
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

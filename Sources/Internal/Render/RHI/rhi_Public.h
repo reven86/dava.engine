@@ -1,7 +1,7 @@
 #ifndef __RHI_PUBLIC_H__
 #define __RHI_PUBLIC_H__
 
-    #include "rhi_Type.h"
+#include "rhi_Type.h"
 
 namespace DAVA
 {
@@ -13,8 +13,7 @@ namespace rhi
 ////////////////////////////////////////////////////////////////////////////////
 // base operation
 
-struct
-InitParam
+struct InitParam
 {
     uint32 width;
     uint32 height;
@@ -26,7 +25,6 @@ InitParam
     uint32 threadedRenderEnabled : 1;
     uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
-    DAVA::Mutex* FrameCommandExecutionSync;
 
     uint32 maxIndexBufferCount;
     uint32 maxVertexBufferCount;
@@ -58,7 +56,6 @@ InitParam
         , threadedRenderEnabled(false)
         , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
-        , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
         , maxVertexBufferCount(0)
         , maxConstBufferCount(0)
@@ -75,8 +72,7 @@ InitParam
     }
 };
 
-struct
-ResetParam
+struct ResetParam
 {
     uint32 width;
     uint32 height;
@@ -153,14 +149,15 @@ const RenderDeviceCaps& DeviceCaps();
 void SuspendRendering();
 void ResumeRendering();
 
+//notify rendering backend that some explicit code can do some rendering not using rhi and thus leave rendering api in different state
+//eg: QT in RE/QuickEd do some opengl calls itself, thus values cached in rhi backend not correspond with actual state of opengl and should be invalidated
 void InvalidateCache();
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
 
 template <ResourceType T>
-class
-ResourceHandle
+class ResourceHandle
 {
 public:
     ResourceHandle()
@@ -253,10 +250,10 @@ HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
 void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate = false);
 
 HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 HConstBuffer CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount);
 bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount);
@@ -278,19 +275,12 @@ void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace fac
 
 bool NeedRestoreTexture(HTexture tex);
 
-struct
-TextureSetDescriptor
+struct TextureSetDescriptor
 {
-    uint32 fragmentTextureCount;
+    uint32 fragmentTextureCount = 0;
+    uint32 vertexTextureCount = 0;
     HTexture fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    uint32 vertexTextureCount;
     HTexture vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
-
-    TextureSetDescriptor()
-        : fragmentTextureCount(0)
-        , vertexTextureCount(0)
-    {
-    }
 };
 
 HTextureSet AcquireTextureSet(const TextureSetDescriptor& desc);
@@ -343,8 +333,7 @@ bool NeedInvertProjection(const RenderPassConfig& passDesc);
 ////////////////////////////////////////////////////////////////////////////////
 // rendering
 
-struct
-Packet
+struct Packet
 {
     enum
     {
@@ -405,6 +394,9 @@ void BeginPacketList(HPacketList packetList);
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount);
 void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
+
+uint32 NativeColorRGBA(float r, float g, float b, float a = 1.0f);
+uint32 NativeColorRGBA(uint32 color); //0xAABBGGRR to api-native;
 
 } // namespace rhi
 
