@@ -47,6 +47,9 @@ public:
     //external
     void SetExtertnalValue(const String& name, float32 value);
 
+    void SetInheritControlTransform(bool inherit);
+    bool GetInheritControlTransform() const;
+
 protected:
     void LoadEffect(const FilePath& path);
     void UnloadEffect();
@@ -82,6 +85,7 @@ private:
     float32 delayedActionTime;
     bool delayedDeleteAllParticles;
     bool needHandleAutoStart;
+    bool inheritControlTransform;
 
     static Camera* defaultCamera;
 
@@ -90,6 +94,7 @@ public:
                          PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("InheritControlTransform", "InheritControlTransform", GetInheritControlTransform, SetInheritControlTransform, I_SAVE | I_VIEW | I_EDIT)
                          );
 };
 };
