@@ -206,7 +206,9 @@ void TestBed::OnError()
 void TestBed::RegisterTests()
 {
     new CoreV2Test(*this);
+#if defined(__DAVAENGINE_WINDOWS__)
     new DeviceManagerTest(*this);
+#endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
     new UIScrollViewTest(*this);

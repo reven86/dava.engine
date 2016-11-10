@@ -126,7 +126,7 @@ void DeviceManagerTest::OnDisplayClick(DAVA::BaseObject*, void* args, void*)
 {
     const Vector<DisplayInfo>& displays = deviceManager->GetDisplays();
     int i = static_cast<int>(reinterpret_cast<intptr_t>(args));
-    if (0 <= i && i < displays.size())
+    if (0 <= i && i < static_cast<int>(displays.size()))
     {
         StringStream ss;
         ss << displays[i].name;
