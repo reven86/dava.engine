@@ -573,7 +573,8 @@ bool RenderPassMetal_t::Initialize()
 
         encoder = nil;
 
-        cb->encoder = [_Metal_currentCommandBuffer renderCommandEncoderWithDescriptor:desc];
+        buf = [_Metal_DefCmdQueue commandBuffer];
+        cb->encoder = [buf renderCommandEncoderWithDescriptor:desc];
         [cb->encoder retain];
 
         cb->rt = desc.colorAttachments[0].texture;
@@ -587,7 +588,8 @@ bool RenderPassMetal_t::Initialize()
     }
     else
     {
-        encoder = [_Metal_currentCommandBuffer parallelRenderCommandEncoderWithDescriptor:desc];
+        buf = [_Metal_DefCmdQueue commandBuffer];
+        encoder = [buf parallelRenderCommandEncoderWithDescriptor:desc];
         [encoder retain];
 
         for (unsigned i = 0; i != cmdBuf.size(); ++i)
@@ -1581,16 +1583,17 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             _Metal_currentCommandBuffer = pass->buf;
     } 
 #else
-    _Metal_currentCommandBuffer = [_Metal_DefCmdQueue commandBuffer];
-    [_Metal_currentCommandBuffer retain];
+//_Metal_currentCommandBuffer = [_Metal_DefCmdQueue commandBuffer];
+//[_Metal_currentCommandBuffer retain];
 #endif
 
 //execute software command buffers
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     bool initOk = true;
-    for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    //for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    for (int32 i = 0, sz = pass.size(); i < sz; ++i)
     {
-        RenderPassMetal_t* rp = *p;
+        RenderPassMetal_t* rp = pass[i];
         initOk &= rp->Initialize();
         if (!initOk)
             break;
@@ -1604,13 +1607,33 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         }
         if (rp->encoder)
             [rp->encoder endEncoding];
+
+        if (i == (sz - 1))
+        {
+            //present drawable adds completion handler that calls actual present
+            [rp->buf presentDrawable:_Metal_currentDrawable];
+
+            unsigned frame_n = frame.frameNumber;
+            if (syncObject != InvalidHandle)
+            {
+                [rp->buf addCompletedHandler:^(id<MTLCommandBuffer> cb)
+                                             {
+                                               MTL_TRACE("  .frame %u complete", frame_n);
+                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
+                                               SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
+                                               sync->is_signaled = true;
+                                             }];
+            }
+        }
+        [rp->buf commit];
+        //_Metal_currentCommandBuffer = rp->buf;
     }
 
     if (!initOk)
     {
         //for some reason when device is locked receive nil in drawable even before getting notification - check this case and do nothing to prevent crashes
         Metal_RejectFrame(frame);
-        [_Metal_currentCommandBuffer release];
+        //[_Metal_currentCommandBuffer release];
         return;
     }         
     #endif
@@ -1621,25 +1644,11 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         MTL_TRACE("  -mtl.present-drawable %p", (void*)(_Metal_currentDrawable));
         MTL_TRACE("   drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
 
-        //present drawable adds completion handler that calls actual present
-        [_Metal_currentCommandBuffer presentDrawable:_Metal_currentDrawable];
-
-        unsigned frame_n = frame.frameNumber;
-        if (syncObject != InvalidHandle)
-        {
-            [_Metal_currentCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
-                                                             {
-                                                               MTL_TRACE("  .frame %u complete", frame_n);
-                                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
-                                                               SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
-                                                               sync->is_signaled = true;
-                                                             }];
-        }
     }
 
 //commit all work here
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    [_Metal_currentCommandBuffer commit];
+//[_Metal_currentCommandBuffer commit];
     #else
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
@@ -1685,7 +1694,7 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     //release frame stuff
     [_Metal_currentDrawable release];
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    [_Metal_currentCommandBuffer release];
+//[_Metal_currentCommandBuffer release];
     #endif
     _Metal_currentCommandBuffer = nil;
     _Metal_currentDrawable = nil;

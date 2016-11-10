@@ -373,7 +373,7 @@ void Initialize(Api api, const InitParam& param)
     int32 bindToProcessor = -1;
     uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
     if (api == RHI_METAL)
-        renderTreadFrameCount = 0; //no render thread for metal yet
+        renderTreadFrameCount = 2; //no render thread for metal yet
     if (api == RHI_DX11)
     {
         bindToProcessor = 1;
