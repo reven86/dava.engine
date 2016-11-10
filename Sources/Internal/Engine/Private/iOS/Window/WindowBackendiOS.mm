@@ -102,7 +102,7 @@ float32 WindowBackend::WindowBackend::GetSurfaceScale() const
     return [bridge->renderView surfaceScale];
 }
 
-void WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
@@ -111,6 +111,8 @@ void WindowBackend::SetSurfaceScale(float32 scale)
     CGSize size = [bridge->renderView frame].size;
     CGSize surfaceSize = [bridge->renderView surfaceSize];
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height));
+    
+    return true;
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)

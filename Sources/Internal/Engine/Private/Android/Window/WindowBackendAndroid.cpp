@@ -150,7 +150,7 @@ float32 WindowBackend::GetSurfaceScale() const
     return surfaceScale;
 }
 
-void WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
@@ -158,10 +158,12 @@ void WindowBackend::SetSurfaceScale(float32 scale)
     {
         setScale(surfaceView, scale);
         surfaceScale = scale;
+        return true;
     }
     catch (const JNI::Exception& e)
     {
         Logger::Error("[WindowBackend::SetSurfaceScale] failed to set scale %f: %s", scale, e.what());
+        return false;
     }
 }
 
