@@ -382,7 +382,7 @@ void TexturePacker::SetAlgorithms(const Vector<PackingAlgorithm>& algorithms)
     packAlgorithms = algorithms;
 }
 
-void TexturePacker::SetTexturePostfix(String postfix)
+void TexturePacker::SetTexturePostfix(const String& postfix)
 {
     texturePostfix = postfix;
 }

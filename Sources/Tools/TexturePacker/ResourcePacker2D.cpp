@@ -558,7 +558,7 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
     cacheItemDescription.comment = comment;
 }
 
-void ResourcePacker2D::SetTexturePostfix(String postfix)
+void ResourcePacker2D::SetTexturePostfix(const String& postfix)
 {
     texturePostfix = postfix;
 }

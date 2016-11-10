@@ -58,7 +58,7 @@ public:
     void SetMaxTextureSize(uint32 maxTextureSize);
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
     void SetAlgorithms(const Vector<PackingAlgorithm>& algorithms);
-    void SetTexturePostfix(String postfix);
+    void SetTexturePostfix(const String& postfix);
 
     // set visible 1 pixel border for each texture
     void SetTwoSideMargin(bool val = true)

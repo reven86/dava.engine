@@ -32,7 +32,7 @@ public:
     bool IsRunning() const;
 
     void SetCacheClient(AssetCacheClient* cacheClient, const String& comment);
-    void SetTexturePostfix(String postfix);
+    void SetTexturePostfix(const String& postfix);
 
     void PackResources(const Vector<eGPUFamily>& forGPUs);
 
