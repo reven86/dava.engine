@@ -7,6 +7,7 @@
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
 #import <QuartzCore/CAEAGLLayer.h>
+#import <QuartzCore/CAMetalLayer.h>
 
 @implementation RenderView
 
