@@ -20,7 +20,6 @@ class DownloadManager;
 
 class InputSystem;
 class UIControlSystem;
-class VirtualCoordinatesSystem;
 
 class SoundSystem;
 class AnimationManager;
@@ -36,6 +35,11 @@ class ModuleManager;
 namespace Net
 {
 class NetCore;
+}
+
+namespace Analytics
+{
+class Core;
 }
 
 class EngineContext final
@@ -59,7 +63,6 @@ public:
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;
@@ -69,6 +72,8 @@ public:
 
     ModuleManager* moduleManager = nullptr;
     IPackManager* packManager = nullptr;
+    Analytics::Core* analyticsCore = nullptr;
+
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif

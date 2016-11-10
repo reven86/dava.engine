@@ -1,4 +1,6 @@
 #include "UI/UIControl.h"
+
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
@@ -11,10 +13,10 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 
 #include "Components/UIComponent.h"
@@ -1188,14 +1190,14 @@ void UIControl::DrawPivotPoint(const Rect& drawRect)
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {
     Vector2 point = _point;
-
+#if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
-        const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
         point.y = virtScreenSize.dy / 2.f;
     }
-
+#endif // !defined(__DAVAENGINE_COREV2__)
     const UIGeometricData& gd = GetGeometricData();
     Rect rect = gd.GetUnrotatedRect();
     if (expandWithFocus)
@@ -1378,15 +1380,17 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                     if (totalTouches == 0)
                     {
-                        if (IsPointInside(currentInput->point, true))
+                        bool isPointInside = IsPointInside(currentInput->point, true);
+                        eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
+
+                        Analytics::EmitUIEvent(this, event, currentInput);
+                        PerformEventWithData(event, currentInput);
+
+                        if (isPointInside)
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                             UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
-                        else
-                        {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                        }
+
                         controlState &= ~STATE_PRESSED_INSIDE;
                         controlState &= ~STATE_PRESSED_OUTSIDE;
                         controlState |= STATE_NORMAL;
@@ -1560,9 +1564,9 @@ void UIControl::SystemVisible()
     }
 
     ChangeViewState(eViewState::VISIBLE);
+    UIControlSystem::Instance()->RegisterVisibleControl(this);
 
     SetStyleSheetDirty();
-    UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
     auto it = children.begin();
@@ -1614,8 +1618,7 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
-
-    UIControlSystem::Instance()->OnControlInvisible(this);
+    UIControlSystem::Instance()->UnregisterVisibleControl(this);
     OnInvisible();
 }
 
@@ -1636,6 +1639,7 @@ void UIControl::SystemActive()
     }
 
     ChangeViewState(eViewState::ACTIVE);
+    UIControlSystem::Instance()->RegisterControl(this);
 
     OnActive();
 
@@ -1686,6 +1690,7 @@ void UIControl::SystemInactive()
     }
 
     ChangeViewState(eViewState::INACTIVE);
+    UIControlSystem::Instance()->UnregisterControl(this);
 
     OnInactive();
 }
@@ -2211,6 +2216,10 @@ void UIControl::AddComponent(UIComponent* component)
     });
     UpdateFamily();
 
+    if (viewState >= eViewState::ACTIVE)
+    {
+        UIControlSystem::Instance()->RegisterComponent(this, component);
+    }
     SetLayoutDirty();
 }
 
@@ -2230,6 +2239,11 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
         components.insert(components.begin() + insertIndex, SafeRetain(component));
 
         UpdateFamily();
+
+        if (viewState >= eViewState::ACTIVE)
+        {
+            UIControlSystem::Instance()->RegisterComponent(this, component);
+        }
 
         SetLayoutDirty();
     }
@@ -2292,11 +2306,17 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
 {
     if (it != components.end())
     {
-        UIComponent* c = *it;
+        UIComponent* component = *it;
+
+        if (viewState >= eViewState::ACTIVE)
+        {
+            UIControlSystem::Instance()->UnregisterComponent(this, component);
+        }
+
         components.erase(it);
         UpdateFamily();
-        c->SetControl(nullptr);
-        SafeRelease(c);
+        component->SetControl(nullptr);
+        SafeRelease(component);
 
         SetLayoutDirty();
     }

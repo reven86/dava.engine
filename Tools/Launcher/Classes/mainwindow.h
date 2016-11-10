@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "applicationmanager.h"
 #include "buttonswidget.h"
@@ -12,6 +11,8 @@
 
 class BranchesListModel;
 class QSortFilterProxyModel;
+class FileManager;
+class ConfigDownloader;
 
 namespace Ui
 {
@@ -26,7 +27,7 @@ public:
     explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 
-public slots:
+private slots:
     void OnRefreshClicked();
     void OnListItemClicked(QModelIndex);
 
@@ -42,6 +43,8 @@ public slots:
     void OnlinkClicked(QUrl url);
 
     void NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
+
+    void OpenPreferencesEditor();
 
 private:
     void CheckUpdates();
@@ -64,7 +67,7 @@ private:
     ApplicationManager* appManager = nullptr;
 
     FileDownloader* newsDownloader = nullptr;
-
+    ConfigDownloader* configDownloader = nullptr;
     QPersistentModelIndex selectedListItem;
     QString selectedBranchID;
 
@@ -72,5 +75,3 @@ private:
     BranchesListModel* listModel = nullptr;
     QSortFilterProxyModel* filterModel = nullptr;
 };
-
-#endif // MAINWINDOW_H

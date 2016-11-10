@@ -10,6 +10,7 @@
 #include "Classes/Beast/BeastProxy.h"
 
 #include "QtTools/Utils/ShortcutChecker.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "DAVAEngine.h"
 #include "Base/Platform.h"
@@ -31,6 +32,12 @@ class PropertyPanel;
 class DeviceListController;
 class SpritesPackerModule;
 class ErrorDialogOutput;
+
+namespace DAVA
+{
+class RenderWidget;
+}
+
 class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
@@ -46,8 +53,8 @@ public:
     explicit QtMainWindow(QWidget* parent = 0);
     ~QtMainWindow();
 
-    Ui::MainWindow* GetUI();
-    SceneTabWidget* GetSceneWidget();
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnRenderingInitialized();
     SceneEditor2* GetCurrentScene();
 
     bool OpenScene(const QString& path);
@@ -77,6 +84,8 @@ public:
     bool IsWaitDialogVisible() const override;
     void HideWaitDialog() override;
     void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
+
+    void CloseAllScenes();
 
     // qt actions slots
 public slots:
@@ -108,6 +117,8 @@ public slots:
     void OnReleaseVisibilityFrame();
 
     void OnEnableDisableShadows(bool enable);
+
+    void EnableSounds(bool enable);
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);
@@ -202,7 +213,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    void closeEvent(QCloseEvent* event);
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
@@ -312,6 +322,8 @@ private:
 #if defined(__DAVAENGINE_MACOS__)
     ShortcutChecker shortcutChecker;
 #endif
+
+    QtDelayedExecutor delayedExecutor;
 
 private:
     struct EmitterDescriptor

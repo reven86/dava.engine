@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
+#include <Input/MouseDevice.h>
 
 using namespace DAVA;
 
@@ -10,6 +11,9 @@ FullscreenTest::FullscreenTest(TestBed& app)
     : BaseScreen(app, "FullscreenTest")
     , primaryWindow(app.GetEngine().PrimaryWindow())
 {
+    Window* primWind = Engine::Instance()->PrimaryWindow();
+    cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+    cursorVisible = primWind->GetCursorVisibility();
 }
 
 void FullscreenTest::LoadResources()
@@ -61,7 +65,7 @@ void FullscreenTest::LoadResources()
     // pinning mode
     btn.reset(new UIButton(Rect(10, 110, 300, 20)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mouse Capute: Frame");
+    btn->SetStateText(0xFF, L"Mouse Visibility: false");
     btn->SetDebugDraw(true);
     btn->SetTag(0);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -69,7 +73,7 @@ void FullscreenTest::LoadResources()
 
     btn.reset(new UIButton(Rect(10, 135, 300, 20)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mouse Capute: Pining");
+    btn->SetStateText(0xFF, L"Mouse Capture Mode: Pinning");
     btn->SetDebugDraw(true);
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -106,7 +110,7 @@ void FullscreenTest::LoadResources()
     currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
-    currentScaleText->SetText(Format(L"%f", primaryWindow->GetUserScale()));
+    currentScaleText->SetText(Format(L"%f", primaryWindow->GetSurfaceScale()));
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -118,7 +122,7 @@ void FullscreenTest::LoadResources()
     scene->LoadScene("~res:/3d/Objects/monkey.sc2");
 
     ScopedPtr<Camera> camera(new Camera());
-    VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
     camera->SetLeft(Vector3(1, 0, 0));
@@ -222,7 +226,7 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul < 2.0f)
     {
         mul += 0.1f;
@@ -231,13 +235,13 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul > 0.2f)
     {
         mul -= 0.1f;
@@ -246,7 +250,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
@@ -289,16 +293,22 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
 void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = static_cast<UIButton*>(sender);
+    Window* primWind = Engine::Instance()->PrimaryWindow();
     switch (btn->GetTag())
     {
     case 0:
-        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::FRAME);
+    {
+        primWind->SetCursorVisibility(false);
+        cursorVisible = primWind->GetCursorVisibility();
         break;
-
+    }
     case 1:
-        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
+    {
+        primWind->SetCursorCapture(eCursorCapture::PINNING);
+        primWind->SetCursorVisibility(false);
+        cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
         break;
-
+    }
     default:
         break;
     }
@@ -326,34 +336,51 @@ void FullscreenTest::UpdateMode()
     //     break;
     // }
     //
-    // eCaptureMode captureMode = InputSystem::Instance()->GetMouseDevice().GetMode();
-    // switch (captureMode)
-    // {
-    // case eCaptureMode::OFF:
-    //     pinningText->SetText(L"Mouse capture mode: OFF");
-    //     pinningMousePosText->SetVisibilityFlag(false);
-    //     break;
-    //
-    // case eCaptureMode::FRAME:
-    //     pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
-    //     pinningMousePosText->SetVisibilityFlag(true);
-    //     break;
-    //
-    // case eCaptureMode::PINING:
-    //     pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
-    //     pinningMousePosText->SetVisibilityFlag(true);
-    //     break;
-    // }
+    WideString outStr;
+    if (cursorCaptured)
+    {
+        outStr += L"Mouse Capture Mode = PINNING";
+        outStr += L"\n";
+        outStr += L"Mouse visibility = false";
+        outStr += L"\n";
+        outStr += L"press Middle Mouse Button to turn off";
+        pinningMousePosText->SetVisibilityFlag(true);
+    }
+    else
+    {
+        outStr += L"Mouse Capture Mode mode: OFF";
+        outStr += L"\n";
+        if (cursorVisible)
+        {
+            outStr += L"Mouse visibility = true";
+            pinningMousePosText->SetVisibilityFlag(false);
+        }
+        else
+        {
+            outStr += L"Mouse visibility = false";
+            outStr += L"\n";
+            outStr += L"press Middle Mouse Button to turn off";
+            pinningMousePosText->SetVisibilityFlag(true);
+        }
+    }
+    pinningText->SetText(outStr.c_str());
 }
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-    if ((InputSystem::Instance()->GetMouseDevice().GetMode() != eCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    if (currentInput->device == eInputDevices::MOUSE)
     {
+        Window* primWind = Engine::Instance()->PrimaryWindow();
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
-            InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::OFF);
+            if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
+            {
+                primWind->SetCursorCapture(eCursorCapture::OFF);
+                cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+                primWind->SetCursorVisibility(true);
+                cursorVisible = primWind->GetCursorVisibility();
+            }
             break;
 
         case UIEvent::Phase::MOVE:

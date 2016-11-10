@@ -1,7 +1,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Commands2/Base/RECommandStack.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
@@ -10,9 +10,9 @@
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
+#include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
 #include "Scene3D/Entity.h"
@@ -138,8 +138,8 @@ SceneEditor2::SceneEditor2()
 
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
     }
 
     selectionSystem->AddDelegate(modifSystem);

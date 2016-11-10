@@ -5,19 +5,25 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/UISystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
+#include "UI/UIScreenTransition.h"
+#include "UI/UIEvent.h"
+#include "UI/UIPopup.h"
 #include "Debug/CPUProfiler.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "Engine/EngineModule.h"
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {
@@ -29,9 +35,18 @@ UIControlSystem::UIControlSystem()
     baseGeometricData.scale = Vector2(1.0f, 1.0f);
     baseGeometricData.angle = 0;
 
-    layoutSystem = new UILayoutSystem();
-    styleSheetSystem = new UIStyleSheetSystem();
-    inputSystem = new UIInputSystem();
+    AddSystem(std::make_unique<UIInputSystem>());
+    AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIStyleSheetSystem>());
+
+    inputSystem = GetSystem<UIInputSystem>();
+    layoutSystem = GetSystem<UILayoutSystem>();
+    styleSheetSystem = GetSystem<UIStyleSheetSystem>();
+
+#if defined(__DAVAENGINE_COREV2__)
+    vcs = new VirtualCoordinatesSystem();
+    vcs->EnableReloadResourceOnResize(true);
+#endif
 
     screenshoter = new UIScreenshoter();
 
@@ -41,6 +56,7 @@ UIControlSystem::UIControlSystem()
     popupContainer->InvokeActive(UIControl::eViewState::VISIBLE);
     inputSystem->SetPopupContainer(popupContainer.Get());
 
+#if !defined(__DAVAENGINE_COREV2__)
     // calculate default radius
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
@@ -59,6 +75,10 @@ UIControlSystem::UIControlSystem()
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+    doubleClickPhysSquare = defaultDoubleClickRadiusSquared;
+#else
+    SetDoubleTapSettings(0.5f, 0.5f);
+#endif
 
     ui3DViewCount = 0;
 }
@@ -77,10 +97,13 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
-    SafeDelete(styleSheetSystem);
-    SafeDelete(layoutSystem);
-    SafeDelete(inputSystem);
+    inputSystem = nullptr;
+    styleSheetSystem = nullptr;
+    layoutSystem = nullptr;
+
+    systems.clear();
     SafeDelete(screenshoter);
+    SafeDelete(vcs);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
@@ -302,6 +325,11 @@ void UIControlSystem::Update()
 
     float32 timeElapsed = SystemTimer::FrameDelta();
 
+    for (auto& system : systems)
+    {
+        system->Process(timeElapsed);
+    }
+
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
         if (currentScreenTransition)
@@ -359,7 +387,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 {
     inputCounter = 0;
 
-    newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
+    newEvent->point = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(newEvent->physPoint);
     newEvent->tapCount = CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())
@@ -372,8 +400,10 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         return;
     }
 
+#if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
         return;
+#endif // !defined(__DAVAENGINE_COREV2__)
 
     if (frameSkip <= 0)
     {
@@ -486,16 +516,6 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
     GetFocusSystem()->SetFocusedControl(newFocused);
 }
 
-void UIControlSystem::OnControlVisible(UIControl* control)
-{
-    inputSystem->OnControlVisible(control);
-}
-
-void UIControlSystem::OnControlInvisible(UIControl* control)
-{
-    inputSystem->OnControlInvisible(control);
-}
-
 UIControl* UIControlSystem::GetFocusedControl() const
 {
     return GetFocusSystem()->GetFocusedControl();
@@ -569,7 +589,13 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
-        if (point.SquareLength() < doubleClickRadiusSquared)
+        
+#if defined(__DAVAENGINE_COREV2__)
+        float32 dpi = Engine::Instance()->PrimaryWindow()->GetDPI();
+        float32 doubleClickPhysSquare = doubleClickInchSquare * (dpi * dpi);
+#endif
+
+        if (point.SquareLength() <= doubleClickPhysSquare)
         {
             return true;
         }
@@ -579,12 +605,14 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
-    int32 tapCount = 0;
-    // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
+    int32 tapCount = 1;
+
+    // Observe double click:
+    // doubleClickTime - interval between newEvent and lastEvent,
+    // doubleClickPhysSquare - square for double click in physical pixels
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
         DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
-        tapCount = 1;
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
@@ -638,6 +666,90 @@ bool UIControlSystem::IsHostControl(const UIControl* control) const
     return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
 }
 
+void UIControlSystem::RegisterControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->RegisterControl(control);
+    }
+}
+
+void UIControlSystem::UnregisterControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->UnregisterControl(control);
+    }
+}
+
+void UIControlSystem::RegisterVisibleControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->OnControlVisible(control);
+    }
+}
+
+void UIControlSystem::UnregisterVisibleControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->OnControlInvisible(control);
+    }
+}
+
+void UIControlSystem::RegisterComponent(UIControl* control, UIComponent* component)
+{
+    for (auto& system : systems)
+    {
+        system->RegisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::UnregisterComponent(UIControl* control, UIComponent* component)
+{
+    for (auto& system : systems)
+    {
+        system->UnregisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::AddSystem(std::unique_ptr<UISystem> system, const UISystem* insertBeforeSystem)
+{
+    if (insertBeforeSystem)
+    {
+        auto insertIt = std::find_if(systems.begin(), systems.end(),
+                                     [insertBeforeSystem](const std::unique_ptr<UISystem>& systemPtr)
+                                     {
+                                         return systemPtr.get() == insertBeforeSystem;
+                                     });
+        DVASSERT(insertIt != systems.end());
+        systems.insert(insertIt, std::move(system));
+    }
+    else
+    {
+        systems.push_back(std::move(system));
+    }
+}
+
+std::unique_ptr<UISystem> UIControlSystem::RemoveSystem(const UISystem* system)
+{
+    auto it = std::find_if(systems.begin(), systems.end(),
+                           [system](const std::unique_ptr<UISystem>& systemPtr)
+                           {
+                               return systemPtr.get() == system;
+                           });
+
+    if (it != systems.end())
+    {
+        std::unique_ptr<UISystem> systemPtr(it->release());
+        systems.erase(it);
+        return systemPtr;
+    }
+
+    return nullptr;
+}
+
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
@@ -675,16 +787,12 @@ void UIControlSystem::SetUseClearPass(bool useClearPass)
     needClearMainPass = useClearPass;
 }
 
-void UIControlSystem::SetDefaultTapCountSettings()
+void UIControlSystem::SetDoubleTapSettings(float32 time, float32 inch)
 {
-    doubleClickTime = defaultDoubleClickTime;
-    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
-}
-
-void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
-{
-    DVASSERT((time > 0.f) && (inch > 0.f));
+    DVASSERT((time > 0.0f) && (inch > 0.0f));
     doubleClickTime = time;
+
+#if !defined(__DAVAENGINE_COREV2__)
     // calculate pixels from inch
     float32 dpi = static_cast<float32>(DPIHelper::GetScreenDPI());
     if (DeviceInfo::GetScreenInfo().scale != 0.f)
@@ -692,8 +800,11 @@ void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
         // to look the same on all devices
         dpi /= DeviceInfo::GetScreenInfo().scale;
     }
-    doubleClickRadiusSquared = inch * dpi;
-    doubleClickRadiusSquared *= doubleClickRadiusSquared;
+    doubleClickPhysSquare = inch * dpi;
+    doubleClickPhysSquare *= doubleClickPhysSquare;
+#else
+    doubleClickInchSquare = inch * inch;
+#endif
 }
 
 void UIControlSystem::UI3DViewAdded()

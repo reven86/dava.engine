@@ -17,6 +17,9 @@ void macos_gl_init(const rhi::InitParam& params)
 void macos_gl_reset(const rhi::ResetParam& params)
 {
     _GLES2_Native_Window = params.window;
+    _GLES2_DefaultFrameBuffer_Width = params.width;
+    _GLES2_DefaultFrameBuffer_Height = params.height;
+
     _GLES2_Context = [static_cast<NSOpenGLView*>(_GLES2_Native_Window) openGLContext];
 
     GLint swapInt = params.vsyncEnabled ? 1 : 0;

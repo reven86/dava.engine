@@ -1,12 +1,13 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_GLES2.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
+#include "rhi_GLES2.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_gl.h"
+#include "_gl.h"
 
 namespace rhi
 {
@@ -41,6 +42,7 @@ RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descr
 
 IndexBufferGLES2_t::IndexBufferGLES2_t()
     : size(0)
+    , usage(GL_STATIC_DRAW)
     , uid(0)
     , isMapped(0)
     , updatePending(0)

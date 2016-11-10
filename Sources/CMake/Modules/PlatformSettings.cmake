@@ -142,11 +142,13 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
-if ( MACOS )
-        set(LOCAL_DISABLED_WARNINGS "-Werror")
-endif ()
 
-    set(LOCAL_DISABLED_WARNINGS "-Weverything \
+    if( ANDROID )
+        set( LOCAL_DISABLED_WARNINGS "-Werror " ) 
+    endif()
+
+    set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS}\
+-Weverything \
 -Wno-c++98-compat-pedantic \
 -Wno-newline-eof \
 -Wno-gnu-anonymous-struct \
@@ -201,7 +203,8 @@ endif ()
 -Wno-unused-local-typedef \
 -Wno-nullable-to-nonnull-conversion \
 -Wno-super-class-method-mismatch \
--Wno-nonnull")
+-Wno-nonnull \
+-Wno-gnu-zero-variadic-macro-arguments")
 
 
     if( ANDROID )

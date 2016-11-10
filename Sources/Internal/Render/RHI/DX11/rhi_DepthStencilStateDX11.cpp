@@ -20,6 +20,7 @@ DepthStencilStateDX11_t
 
     DepthStencilStateDX11_t()
         : state(nullptr)
+        , stencilRef(0)
     {
     }
 };
@@ -127,9 +128,8 @@ dx11_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
     ds_desc.BackFace.StencilPassOp = _StencilOpDX11(StencilOperation(desc.stencilBack.depthStencilPassOperation));
     ds_desc.BackFace.StencilFunc = _CmpFuncDX11(CmpFunc(desc.stencilBack.func));
 
-    HRESULT hr = _D3D11_Device->CreateDepthStencilState(&ds_desc, &(state->state));
-    CHECK_HR(hr)
-
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilState(&ds_desc, &(state->state)), hr);
     if (SUCCEEDED(hr))
     {
         state->stencilRef = desc.stencilFront.refValue;

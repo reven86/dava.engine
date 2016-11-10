@@ -1,17 +1,19 @@
 #include "../Common/rhi_Private.h"
-    #include "../rhi_ShaderCache.h"
-    #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
+#include "../rhi_ShaderCache.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 
-    #include "rhi_ProgGLES2.h"
-    #include "rhi_GLES2.h"
-    
-    #include "Logger/Logger.h"
-    #include "FileSystem/File.h"
-    #include "FileSystem/FileSystem.h"
+#include "rhi_ProgGLES2.h"
+#include "rhi_GLES2.h"
+
+#include "Debug/CPUProfiler.h"
+#include "Logger/Logger.h"
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
-    #include "_gl.h"
+#include "_gl.h"
 
 #define SAVE_GLES_SHADERS 0
 
@@ -44,6 +46,7 @@ VertexDeclGLES2
 
     VertexDeclGLES2()
         : elemCount(0)
+        , streamCount(0)
         , vattrInited(false)
     {
         memset(stride, 0, sizeof(stride));
@@ -259,7 +262,7 @@ VertexDeclGLES2
                     vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
+                if (DeviceCaps().isInstancingSupported && (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor))
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
@@ -312,7 +315,7 @@ VertexDeclGLES2
         void* offset;
     };
 
-    Elem elem[VATTR_COUNT];
+    Elem elem[VATTR_COUNT]; //-V730_NOINIT
     unsigned elemCount;
     unsigned stride[MAX_VERTEX_STREAM_COUNT];
     unsigned streamCount;

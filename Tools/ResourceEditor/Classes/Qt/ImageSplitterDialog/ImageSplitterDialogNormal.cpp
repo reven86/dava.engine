@@ -1,6 +1,7 @@
 #include "ImageSplitterDialog/ImageSplitterDialogNormal.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderBase.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "ImageTools/ImageTools.h"
@@ -11,10 +12,8 @@
 #include "ui_ImageSplitterNormal.h"
 
 ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    ui(new Ui::ImageSplitterNormal())
+    : QDialog(parent)
+    , ui(new Ui::ImageSplitterNormal())
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -89,15 +88,18 @@ void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath& pathna
 
 DAVA::Image* ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image* firstImage, DAVA::Image* secondImage)
 {
+    DVASSERT(firstImage->format == DAVA::FORMAT_RGBA8888);
+    DVASSERT(secondImage->format == DAVA::FORMAT_RGBA8888);
+
     auto mergedImage = DAVA::Image::Create(firstImage->width, firstImage->height, DAVA::FORMAT_RGBA8888);
 
     DAVA::uint32 size = firstImage->width * firstImage->height;
-    auto pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
-    DVASSERT(CHANNELS_COUNT == pixelSize);
+    static const DAVA::uint32 bytesInPixel = 4;
+    DVASSERT(CHANNELS_COUNT == bytesInPixel);
 
     for (DAVA::uint32 i = 0; i < size; ++i)
     {
-        DAVA::uint32 offset = i * pixelSize;
+        DAVA::uint32 offset = i * bytesInPixel;
 
         mergedImage->data[offset + RED] = firstImage->data[offset + RED];
         mergedImage->data[offset + GREEN] = firstImage->data[offset + GREEN];

@@ -152,7 +152,7 @@ private:
     FilePath storePath;
     String downloadUrl;
     long operationTimeout; // curl use long (sizeof(long) == 8 on macos)
-    RawTimer inactivityConnectionTimer;
+    RawTimer inactivityConnectionTimer; //-V730_NOINIT
     uint64 remoteFileSize;
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;

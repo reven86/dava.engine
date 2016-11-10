@@ -335,17 +335,42 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
     return 0;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     return screenInfo;
 }
+
+void DeviceInfoPrivate::InitializeScreenInfo()
+{
+    //detecting physical screen size and initing core system with this size
+    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
+    screenInfo.width = [mainScreen bounds].size.width;
+    screenInfo.height = [mainScreen bounds].size.height;
+    screenInfo.scale = 1;
+
+    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
+    {
+        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
+        }
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
+        }
+    }
+}
+    
+#endif
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
     return 24;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_POWERVR_IOS;
 }
@@ -391,27 +416,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
-}
-
-void DeviceInfoPrivate::InitializeScreenInfo()
-{
-    //detecting physical screen size and initing core system with this size
-    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
-    screenInfo.width = [mainScreen bounds].size.width;
-    screenInfo.height = [mainScreen bounds].size.height;
-    screenInfo.scale = 1;
-
-    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
-    {
-        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
-        {
-            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
-        }
-        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
-        {
-            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
-        }
-    }
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

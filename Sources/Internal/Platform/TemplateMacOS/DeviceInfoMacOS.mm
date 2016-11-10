@@ -145,17 +145,28 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
     return 0;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     return screenInfo;
 }
+
+void DeviceInfoPrivate::InitializeScreenInfo()
+{
+    screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+    screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+    screenInfo.scale = [[NSScreen mainScreen] backingScaleFactor];
+}
+
+#endif
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
     return 24;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_DX11;
 }
@@ -200,13 +211,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
-}
-
-void DeviceInfoPrivate::InitializeScreenInfo()
-{
-    screenInfo.width = [[NSScreen mainScreen] frame].size.width;
-    screenInfo.height = [[NSScreen mainScreen] frame].size.height;
-    screenInfo.scale = [[NSScreen mainScreen] backingScaleFactor];
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

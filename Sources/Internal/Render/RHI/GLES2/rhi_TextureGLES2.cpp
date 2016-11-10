@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 #include "../Common/rhi_FormatConversion.h"
 #include "../rhi_Public.h"
 #include "rhi_GLES2.h"
@@ -341,8 +342,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_Texture_Delete(Handle tex)
+static void gles2_Texture_Delete(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
     self->Destroy();
@@ -351,8 +351,7 @@ gles2_Texture_Delete(Handle tex)
 
 //------------------------------------------------------------------------------
 
-static Handle
-gles2_Texture_Create(const Texture::Descriptor& desc)
+static Handle gles2_Texture_Create(const Texture::Descriptor& desc)
 {
     Handle handle = TextureGLES2Pool::Alloc();
     TextureGLES2_t* tex = TextureGLES2Pool::Get(handle);
@@ -368,8 +367,7 @@ gles2_Texture_Create(const Texture::Descriptor& desc)
 
 //------------------------------------------------------------------------------
 
-static void*
-gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
+static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
     void* data = nullptr;
@@ -768,7 +766,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         _GLES2_LastSetTex0Target = target;
     }
 
-    if (_CurSamplerState && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
+    if ((self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
     {
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMinMipFilterGLES2(TextureFilter(sampler->minFilter), TextureMipFilter(sampler->mipFilter))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));

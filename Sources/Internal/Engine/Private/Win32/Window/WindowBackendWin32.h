@@ -11,8 +11,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <bitset>
+
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/EngineTypes.h"
 
 namespace rhi
 {
@@ -49,33 +53,63 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
+
 private:
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
+    void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetCursorCapture(eCursorCapture mode);
+    void DoSetCursorVisibility(bool visible);
+    void UpdateClipCursor();
+    void HandleWindowFocusChanging(bool focusState);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
-    LRESULT OnSize(int resizingType, int width, int height);
+    LRESULT OnSize(int32 resizingType, int32 width, int32 height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
-    LRESULT OnSetKillFocus(bool hasFocus);
-    LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
-    LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
-    LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
+    LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
+    LRESULT OnDpiChanged(RECT* suggestedRect);
+    LRESULT OnActivate(WPARAM wparam);
+    LRESULT OnMouseMoveEvent(int32 x, int32 y);
+    LRESULT OnMouseMoveRelativeEvent(int x, int y);
+    LRESULT OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y);
+    LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
+    LRESULT OnCaptureChanged();
+    LRESULT OnTouch(uint32 ntouch, HTOUCHINPUT htouch);
+    LRESULT OnPointerClick(uint32 pointerId, int32 x, int32 y);
+    LRESULT OnPointerUpdate(uint32 pointerId, int32 x, int32 y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
+    LRESULT OnSetCursor(LPARAM lparam);
     bool OnClose();
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
+    static eModifierKeys GetModifierKeys();
+    static eInputDevices GetInputEventSourceLegacy(LPARAM messageExtraInfo);
+    static eMouseButtons GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed);
+    static eMouseButtons GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
+
+    float32 GetDpi() const;
 
 private:
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    bool mouseVisible = true;
+    HCURSOR defaultCursor = nullptr;
+    POINT lastCursorPosition;
+
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
@@ -85,10 +119,19 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool hasFocus = false;
+
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
-    int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
-    int32 height = 0;
+    int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
+    int32 lastHeight = 0;
+    int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
+    int32 lastMouseMoveY = -1; // spurious mouse move events
+    uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
+
+    const float32 defaultDpi = 96.0f;
+    float32 dpi = defaultDpi;
+    Vector<TOUCHINPUT> touchInput;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];

@@ -7,6 +7,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #import <AppKit/NSOpenGL.h>
+#import <AppKit/NSTrackingArea.h>
 #import <OpenGL/OpenGL.h>
 
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
@@ -40,6 +41,21 @@
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     // Enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
+
+    // Prepare tracking area to receive messages:
+    //  - mouseEntered and mouseExited, used with mouse capture handling
+    //  - mouseMoved which is delivered only when cursor inside active window
+    // clang-format off
+    NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                    NSTrackingActiveInKeyWindow |
+                                    NSTrackingInVisibleRect |
+                                    NSTrackingMouseMoved;
+    // clang-format on
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                                options:options
+                                                  owner:self
+                                               userInfo:nil];
+    [self addTrackingArea:trackingArea];
     return self;
 }
 
@@ -82,6 +98,16 @@
     bridge->MouseMove(theEvent);
 }
 
+- (void)mouseEntered:(NSEvent*)theEvent
+{
+    bridge->MouseEntered(theEvent);
+}
+
+- (void)mouseExited:(NSEvent*)theEvent
+{
+    bridge->MouseExited(theEvent);
+}
+
 - (void)scrollWheel:(NSEvent*)theEvent
 {
     bridge->MouseWheel(theEvent);
@@ -99,6 +125,7 @@
 
 - (void)mouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent
@@ -113,6 +140,7 @@
 
 - (void)rightMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)otherMouseDown:(NSEvent*)theEvent
@@ -127,6 +155,7 @@
 
 - (void)otherMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)keyDown:(NSEvent*)theEvent
@@ -141,6 +170,22 @@
 
 - (void)flagsChanged:(NSEvent*)theEvent
 {
+    bridge->FlagsChanged(theEvent);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)theEvent
+{
+    bridge->MagnifyWithEvent(theEvent);
+}
+
+- (void)rotateWithEvent:(NSEvent*)theEvent
+{
+    bridge->RotateWithEvent(theEvent);
+}
+
+- (void)swipeWithEvent:(NSEvent*)theEvent
+{
+    bridge->SwipeWithEvent(theEvent);
 }
 
 @end

@@ -37,6 +37,8 @@ public:
 
     std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) override;
 
+    void InjectWindow(const WindowKey& windowKey, QMainWindow* window);
+
 private:
     QWidget* LoadView(const QString& name, const QString& resourceName, DataWrapper&& data);
 

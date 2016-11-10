@@ -131,7 +131,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         TEST_VERIFY(accessor.GetActiveContext().GetID() == undeletedContext);
         TEST_VERIFY(accessor.GetContext(newContext).GetID() == newContext);
 
-        // unactivate context test
+        // deactivate context test
         mng.ActivateContext(DataContext::Empty);
         TEST_VERIFY(accessor.HasActiveContext() == false);
 
@@ -166,7 +166,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetContextMng().DeleteContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -181,7 +181,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetContextMng().ActivateContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -196,7 +196,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetCtxAccessor().GetContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -211,7 +211,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetCtxAccessor().GetActiveContext();
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }

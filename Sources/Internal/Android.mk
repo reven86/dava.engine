@@ -254,6 +254,7 @@ DV_LOCAL_EXPORT_LDFLAGS := -fuse-ld=bfd
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := libc++abi
 DV_LOCAL_STATIC_LIBRARIES += liblz4
+DV_LOCAL_STATIC_LIBRARIES += libimgui
 
 ifeq ($(APP_STL), c++_shared)
 DV_LOCAL_SHARED_LIBRARIES += cxx-shared-prebuild
@@ -338,6 +339,8 @@ LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
                      $(wildcard $(LOCAL_PATH)/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Analytics/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Analytics/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
@@ -362,6 +365,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/MemoryManager/*.cpp) \
@@ -426,6 +430,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
+					 $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
@@ -458,6 +463,7 @@ include $(BUILD_STATIC_LIBRARY)
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
 $(call import-add-path,$(DAVA_ROOT)/../External/lz4)
+$(call import-add-path,$(DAVA_ROOT)/../External/imgui)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -468,4 +474,5 @@ endif
 endif
 
 $(call import-module,lz4)
+$(call import-module,imgui)
 $(call import-module,android/cpufeatures)

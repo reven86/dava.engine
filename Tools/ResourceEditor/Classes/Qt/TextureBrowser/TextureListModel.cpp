@@ -288,5 +288,10 @@ bool SortFnByDataSize::operator()(const DAVA::TextureDescriptor* t1, const DAVA:
     DAVA::Texture* tx1 = model->getTexture(t1);
     DAVA::Texture* tx2 = model->getTexture(t2);
 
-    return (tx1->width * tx1->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx1->GetFormat())) < (tx2->width * tx2->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx2->GetFormat()));
+    DAVA::PixelFormat f1 = tx1->GetFormat();
+    DAVA::PixelFormat f2 = tx2->GetFormat();
+
+    DAVA::uint32 tx1Size = (f1 != DAVA::PixelFormat::FORMAT_INVALID) ? DAVA::ImageUtils::GetSizeInBytes(tx1->width, tx1->height, f1) : 0;
+    DAVA::uint32 tx2Size = (f2 != DAVA::PixelFormat::FORMAT_INVALID) ? DAVA::ImageUtils::GetSizeInBytes(tx2->width, tx2->height, f2) : 0;
+    return tx1Size < tx2Size;
 }

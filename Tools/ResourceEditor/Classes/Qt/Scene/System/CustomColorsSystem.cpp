@@ -3,6 +3,7 @@
 #include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
@@ -133,16 +134,16 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void CustomColorsSystem::Input(DAVA::UIEvent* event)
+bool CustomColorsSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -168,6 +169,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void CustomColorsSystem::FinishEditing(bool applyModification)
@@ -249,7 +251,7 @@ void CustomColorsSystem::AddRectToAccumulator(const DAVA::Rect& rect)
 DAVA::Rect CustomColorsSystem::GetUpdatedRect()
 {
     DAVA::Rect r = updatedRectAccumulator;
-    drawSystem->ClampToTexture(DAVA::Landscape::TEXTURE_COLOR, r);
+    drawSystem->ClampToTexture(LandscapeProxy::LANDSCAPE_TEXTURE_TOOL, r);
 
     return r;
 }

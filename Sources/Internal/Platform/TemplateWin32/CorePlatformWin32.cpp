@@ -15,7 +15,6 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Debug/CPUProfiler.h"
@@ -277,8 +276,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         Logger::Info("system not supported touch input");
     }
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
     return true;
 }
@@ -476,8 +475,8 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
 
         Logger::FrameworkDebug("[CoreWin32Platform] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
     }
     return true;
 }
@@ -914,8 +913,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     const UINT WM_ACTIVATE_POSTED = WM_USER + 12;
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-
     RECT rect;
 
     // win32 app don't have ui-scaling option,
@@ -949,6 +946,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break
     case WM_KEYUP:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -977,6 +976,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break;
     case WM_KEYDOWN:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -1076,12 +1077,18 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_NCACTIVATE:
+    {
         // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
         // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
         // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
         // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
-        keyboard.ClearAllKeys();
+        InputSystem* inputSystem = InputSystem::Instance();
+        if (inputSystem != nullptr)
+        {
+            inputSystem->GetKeyboard().ClearAllKeys();
+        }
         break;
+    }
 
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:
