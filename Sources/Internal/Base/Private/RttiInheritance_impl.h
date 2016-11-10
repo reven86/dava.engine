@@ -27,6 +27,28 @@ inline const Vector<RttiInheritance::Info>& RttiInheritance::GetDerivedTypes() c
     return derivedTypesInfo;
 }
 
+inline bool RttiInheritance::CanUpCast(const RttiType* from, const RttiType* to)
+{
+    void* out = nullptr;
+    return TryCast(from, to, CastType::UpCast, nullptr, &out);
+}
+
+inline bool RttiInheritance::CanDownCast(const RttiType* from, const RttiType* to)
+{
+    void* out = nullptr;
+    return TryCast(from, to, CastType::DownCast, nullptr, &out);
+}
+
+inline bool RttiInheritance::UpCast(const RttiType* from, const RttiType* to, void* inPtr, void** outPtr)
+{
+    return TryCast(from, to, CastType::UpCast, inPtr, outPtr);
+}
+
+inline bool RttiInheritance::DownCast(const RttiType* from, const RttiType* to, void* inPtr, void** outPtr)
+{
+    return TryCast(from, to, CastType::DownCast, inPtr, outPtr);
+}
+
 template <typename T, typename... Bases>
 void RttiInheritance::RegisterBases()
 {

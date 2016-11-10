@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Reflection/Reflection.h"
-
+#ifndef __DAVA_Reflection__
+#error Don't include this file directly, instead use #include "Reflection/Reflection.h"
+#else
 namespace DAVA
 {
 class StructureWrapper
@@ -34,3 +35,5 @@ template <typename T>
 struct StructureWrapperCreator;
 
 } // namespace DAVA
+
+#endif

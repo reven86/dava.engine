@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Base/BaseTypes.h"
 #include "Base/RttiType.h"
 
@@ -25,21 +26,21 @@ public:
     static bool CanDownCast(const RttiType* from, const RttiType* to);
     static bool CanCast(const RttiType* from, const RttiType* to);
 
-    static bool UpCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr);
-    static bool DownCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr);
-    static bool Cast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr);
+    static bool UpCast(const RttiType* from, const RttiType* to, void* inPtr, void** outPtr);
+    static bool DownCast(const RttiType* from, const RttiType* to, void* inPtr, void** outPtr);
+    static bool Cast(const RttiType* from, const RttiType* to, void* inPtr, void** outPtr);
 
 private:
-    enum class Direction
+    enum class CastType
     {
-        Up,
-        Down
+        UpCast, //!< from class to derived class
+        DownCast //!< from class to base class
     };
 
     mutable Vector<Info> baseTypesInfo;
     mutable Vector<Info> derivedTypesInfo;
 
-    static const Info* SearchInfo(const RttiType* from, const RttiType* to, Direction direction);
+    static bool TryCast(const RttiType* from, const RttiType* to, CastType castType, void* inPtr, void** outPtr);
 
     template <typename T, typename B>
     static bool AddBaseType();

@@ -49,17 +49,18 @@ template <typename C>
 template <typename T>
 ReflectionQualifier<C>& ReflectionQualifier<C>::AddField(const char* name, ValueWrapper* vw)
 {
-    ReflectedType* reflectedType = ReflectedTypeDB::Edit<T>();
-    if (nullptr == reflectedType->structureWrapper)
-    {
-        using DecayT = RttiType::DecayT<T>;
-        reflectedType->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
-    }
+    //    ReflectedType* reflectedType = ReflectedTypeDB::Edit<T>();
+    //     if (nullptr == reflectedType->structureWrapper)
+    //     {
+    //         using DecayT = RttiType::DecayT<T>;
+    //         reflectedType->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
+    //     }
 
     ReflectedStructure::Field* f = new ReflectedStructure::Field();
     f->name = name;
     f->valueWrapper.reset(vw);
-    f->reflectedType = reflectedType;
+    f->reflectedType = ReflectedTypeDB::Get<T>();
+    ;
     lastMeta = &f->meta;
 
     structure->fields.emplace_back(f);
@@ -181,7 +182,7 @@ template <typename Mt>
 ReflectionQualifier<C>& ReflectionQualifier<C>::Method(const char* name, const Mt& method)
 {
     MethodWrapper* methodWrapper = new MethodWrapper();
-    methodWrapper->method = AnyFn(method);
+    methodWrapper->anyFn = AnyFn(method);
 
     ReflectedStructure::Method* m = new ReflectedStructure::Method();
     m->name = name;

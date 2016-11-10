@@ -30,6 +30,7 @@ private:
     struct MethodCacheEntry
     {
         const ReflectedStructure::Method* method;
+        RttiInheritance::CastOP castToBaseOP;
     };
 
     Vector<FieldCacheEntry> fieldsCache;
@@ -38,6 +39,7 @@ private:
     Map<String, size_t> methodsNameIndexes;
 
     void FillCache(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP);
+    void FillCacheEntry(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP);
     Reflection CreateFieldReflection(const ReflectedObject& object, const ValueWrapper* vw, const FieldCacheEntry& entry) const;
 };
 

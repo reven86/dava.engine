@@ -1,3 +1,4 @@
+#include "Reflection/Reflection.h"
 #include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA

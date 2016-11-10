@@ -8,7 +8,6 @@
 #include "Reflection/ReflectedMeta.h"
 #include "Reflection/ReflectedObject.h"
 #include "Reflection/ReflectedType.h"
-#include "Reflection/ReflectedTypeDB.h"
 
 // TODO: usage comments
 #define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
@@ -73,7 +72,7 @@ public:
     const Meta* GetMeta() const;
 
     template <typename T>
-    static Reflection Create(T& object, const ReflectedMeta* objectMeta = nullptr);
+    static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
 
 private:
     ReflectedObject object;
@@ -100,4 +99,7 @@ struct Reflection::Method
 } // namespace DAVA
 
 #define __DAVA_Reflection__
+#include "Reflection/Wrappers.h"
+#include "Reflection/WrappersRuntime.h"
+#include "ReflectedTypeDB.h"
 #include "Reflection/Private/Reflection_impl.h"

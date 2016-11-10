@@ -4,6 +4,10 @@
 #include "Reflection/ReflectedTypeDB.h"
 #endif
 
+#include "Reflection/Private/StructureWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperPtr.h"
+#include "Reflection/Private/StructureWrapperStd.h"
+
 namespace DAVA
 {
 namespace ReflectedTypeDBDetail
@@ -89,9 +93,9 @@ ReflectedType* ReflectedTypeDB::Edit()
     if (nullptr == ret->rttiType)
     {
         ret->rttiType = RttiType::Instance<DecayT>();
+        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
 
         //         ret->structure.reset(new Refle)
-        //         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
         //         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
         //        broken on vs 2013!
         //        TODO: fix

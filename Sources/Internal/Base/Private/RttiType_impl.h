@@ -100,7 +100,10 @@ inline bool RttiType::IsEnum() const
 
 inline const RttiType* RttiType::Decay() const
 {
-    return decayType;
+    if (nullptr != decayType)
+        return decayType;
+
+    return this;
 }
 
 inline const RttiType* RttiType::Deref() const

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __DAVA_Reflection__
+#error Don't include this file directly, instead use #include "Reflection/Reflection.h"
+#else
+
 #include "Base/BaseTypes.h"
 #include "Base/RttiType.h"
 #include "Base/RttiInheritance.h"
@@ -47,3 +51,4 @@ protected:
 
 #define __DAVA_ReflectedTypeDB__
 #include "Reflection/Private/ReflectedTypeDB_impl.h"
+#endif

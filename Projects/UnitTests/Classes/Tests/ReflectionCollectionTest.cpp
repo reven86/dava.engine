@@ -195,7 +195,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testStringData), std::end(testStringData), [&holder](const DAVA::String& v) { holder.stringVector.push_back(v); });
         holder.intPtrVector = &holder.intVector;
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         CollectionTestHelper<int>(r.GetField("intPtrVector"), holder.intVector.begin(), holder.intVector.end());
         CollectionTestHelper<DAVA::String>(r.GetField("stringVector"), holder.stringVector.begin(), holder.stringVector.end());
 
@@ -210,7 +210,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         RelfCollectionsHolder holder;
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intList.push_back(v); });
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         DAVA::Reflection listField = r.GetField("intList");
         CollectionTestHelper<int>(listField, holder.intList.begin(), holder.intList.end());
         AddInsertRemoveTest(listField, holder.intList.begin(), holder.intList.end());
@@ -222,7 +222,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         RelfCollectionsHolder holder;
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.mapColl.emplace(v, v + 10); });
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         DAVA::Reflection mapField = r.GetField("mapColl");
         CollectionMapTestHelper<int, int>(mapField, holder.mapColl.begin(), holder.mapColl.end());
         AddInsertRemoveMapTest(mapField, holder.mapColl.begin(), holder.mapColl.end());
@@ -235,7 +235,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         RelfCollectionsHolder holder;
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.unorderMap.emplace(v, v + 10); });
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         DAVA::Reflection mapField = r.GetField("unorderMap");
         CollectionMapTestHelper<int, int>(mapField, holder.unorderMap.begin(), holder.unorderMap.end());
         AddInsertRemoveMapTest(mapField, holder.unorderMap.begin(), holder.unorderMap.end());
@@ -248,7 +248,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         RelfCollectionsHolder holder;
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intSet.emplace(v); });
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         DAVA::Reflection setField = r.GetField("intSet");
         CollectionSetTestHelper<int>(setField, holder.intSet.begin(), holder.intSet.end());
         AddInsertRemoveSetTest(setField, holder.intSet.begin(), holder.intSet.end());
@@ -261,7 +261,7 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         RelfCollectionsHolder holder;
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intUnorderSet.emplace(v); });
 
-        DAVA::Reflection r = DAVA::Reflection::Create(holder);
+        DAVA::Reflection r = DAVA::Reflection::Create(&holder);
         DAVA::Reflection setField = r.GetField("intUnorderSet");
         CollectionSetTestHelper<int>(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
         AddInsertRemoveSetTest(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());

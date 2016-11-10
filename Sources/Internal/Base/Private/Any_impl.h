@@ -150,7 +150,7 @@ T Any::Cast() const
 }
 
 template <typename T>
-T Any::Cast(T&& defaultValue) const
+T Any::Cast(const T& defaultValue) const
 {
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
@@ -161,7 +161,7 @@ T Any::Cast(T&& defaultValue) const
     }
     catch (const Exception&)
     {
-        return T(std::forward<T>(defaultValue));
+        return defaultValue;
     }
 }
 

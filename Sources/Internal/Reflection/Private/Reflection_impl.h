@@ -86,11 +86,16 @@ inline const Meta* Reflection::GetMeta() const
 }
 
 template <typename T>
-Reflection Reflection::Create(T& object, const ReflectedMeta* objectMeta)
+Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 {
-    static ValueWrapperDefault<T> objectValueWrapper;
+    if (nullptr != objectPtr)
+    {
+        static ValueWrapperDefault<T> objectValueWrapper;
 
-    const ReflectedType* objectType = ReflectedTypeDB::GetByPointer(&object);
-    return Reflection(ReflectedObject(&object), objectType, objectMeta, &objectValueWrapper);
+        const ReflectedType* objectType = ReflectedTypeDB::GetByPointer(objectPtr);
+        return Reflection(ReflectedObject(objectPtr), objectType, objectMeta, &objectValueWrapper);
+    }
+
+    return Reflection();
 }
 } // namespace DAVA

@@ -33,7 +33,7 @@ struct AnyCast<T*>
         void* inPtr = any.Get<void*>();
         void* outPtr = nullptr;
 
-        if (RttiInheritance::Cast(any.GetRttiType(), inPtr, RttiType::Instance<P>(), &outPtr))
+        if (RttiInheritance::Cast(any.GetRttiType(), RttiType::Instance<P>(), inPtr, &outPtr))
         {
             return static_cast<T*>(outPtr);
         }

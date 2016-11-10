@@ -274,11 +274,11 @@ Reflection::Reflection(const ReflectedObject& object_, const ReflectedType* obje
         }
     }
 
-    if (nullptr == structureWrapper)
-    {
-        static StructureWrapperDefault emptyStructureWrapper;
-        structureWrapper = &emptyStructureWrapper;
-    }
+    //     if (nullptr == structureWrapper)
+    //     {
+    //         static StructureWrapperDefault emptyStructureWrapper;
+    //         structureWrapper = &emptyStructureWrapper;
+    //     }
 }
 
 bool Reflection::HasFields() const

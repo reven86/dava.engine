@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 
@@ -26,7 +25,7 @@ public:
 class MethodWrapper
 {
 public:
-    AnyFn method;
+    AnyFn anyFn;
 };
 
 class EnumWrapper

@@ -1,13 +1,15 @@
 #include "Reflection/Private/StructureWrapperClass.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/ReflectedTypeDB.h"
-#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
 StructureWrapperClass::StructureWrapperClass(const ReflectedType* reflectedType)
 {
     FillCache(reflectedType, nullptr);
+}
+
+void StructureWrapperClass::FillCache(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP)
+{
+    FillCacheEntry(reflectedType, castOP);
 
     const RttiInheritance* inheritance = reflectedType->rttiType->GetInheritance();
     if (NULL != inheritance)
@@ -16,8 +18,36 @@ StructureWrapperClass::StructureWrapperClass(const ReflectedType* reflectedType)
         for (auto& baseInfo : baseTypesInfo)
         {
             const ReflectedType* baseReflectedType = ReflectedTypeDB::GetByRttiType(baseInfo.type);
-            FillCache(baseReflectedType, baseInfo.castOP);
+
+            if (nullptr != castOP)
+            {
+                RttiInheritance::CastOP baseCastOP = baseInfo.castOP;
+                FillCache(baseReflectedType, [castOP, baseCastOP](void*) -> void* { return })
+            }
+            else
+            {
+                FillCache(baseReflectedType, baseInfo.castOP);
+            }
         }
+    }
+}
+
+void StructureWrapperClass::FillCacheEntry(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP)
+{
+    const ReflectedStructure* structure = reflectedType->structure.get();
+
+    for (auto& f : structure->fields)
+    {
+        const ReflectedStructure::Field* field = f.get();
+        fieldsCache.push_back({ field, castOP });
+        fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
+    }
+
+    for (auto& m : structure->methods)
+    {
+        const ReflectedStructure::Method* method = m.get();
+        methodsCache.push_back({ method, castOP });
+        methodsNameIndexes[method->name] = methodsCache.size() - 1;
     }
 }
 
@@ -33,6 +63,12 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
     if (!fieldsCache.empty())
     {
         String name = key.Cast<String>(String());
+
+        if (name.empty())
+        {
+            name = key.Cast<const char*>("");
+        }
+
         if (!name.empty())
         {
             auto it = fieldsNameIndexes.find(name);
@@ -66,31 +102,21 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Valu
 
 AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
+    String name = key.Cast<String>(String());
+    if (!name.empty())
+    {
+        auto it = methodsNameIndexes.find(name);
+        if (it != methodsNameIndexes.end())
+        {
+            return methodsCache[it->second].method->methodWrapper->anyFn.BindThis(object.GetVoidPtr());
+        }
+    }
     return AnyFn();
 }
 
 Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     return Vector<Reflection::Method>();
-}
-
-void StructureWrapperClass::FillCache(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP)
-{
-    const ReflectedStructure* structure = reflectedType->structure.get();
-
-    for (auto& f : structure->fields)
-    {
-        const ReflectedStructure::Field* field = f.get();
-        fieldsCache.push_back({ field, castOP });
-        fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
-    }
-
-    for (auto& m : structure->methods)
-    {
-        const ReflectedStructure::Method* method = m.get();
-        methodsCache.push_back({ method });
-        methodsNameIndexes[method->name] = methodsCache.size() - 1;
-    }
 }
 
 Reflection StructureWrapperClass::CreateFieldReflection(const ReflectedObject& object, const ValueWrapper* vw, const FieldCacheEntry& entry) const
