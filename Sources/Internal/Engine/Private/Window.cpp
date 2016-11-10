@@ -21,6 +21,11 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
+    // TODO: Add platfom's caps check
+    //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))
+    {
+        cursorVisible = true;
+    }
 }
 
 Window::~Window() = default;
@@ -88,6 +93,44 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
     windowBackend->InitCustomRenderParams(params);
 }
 
+void Window::SetCursorCapture(eCursorCapture mode)
+{
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+    {
+        //for now, eCursorCapture::FRAME not supported
+        if (eCursorCapture::FRAME != mode)
+        {
+            if (cursorCapture != mode)
+            {
+                cursorCapture = mode;
+                windowBackend->SetCursorCapture(mode);
+            }
+        }
+    }
+}
+
+eCursorCapture Window::GetCursorCapture() const
+{
+    return cursorCapture;
+}
+
+void Window::SetCursorVisibility(bool visible)
+{
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
+    {
+        if (cursorVisible != visible)
+        {
+            cursorVisible = visible;
+            windowBackend->SetCursorVisibility(visible);
+        }
+    }
+}
+
+bool Window::GetCursorVisibility() const
+{
+    return cursorVisible;
+}
+
 void Window::Update(float32 frameDelta)
 {
     uiControlSystem->Update();
@@ -105,6 +148,17 @@ void Window::Draw()
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
+    if (MainDispatcherEvent::IsInputEvent(e.type))
+    {
+        if (!hasFocus)
+        {
+            return; // if no focus - skip all input events
+        }
+        if (HandleInputActivation(e))
+        {
+            return;
+        }
+    }
     switch (e.type)
     {
     case MainDispatcherEvent::MOUSE_MOVE:
@@ -152,6 +206,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
+    case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
+        HandleCursorCaptuleLost(e);
+        break;
     default:
         break;
     }
@@ -192,6 +249,12 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+}
+
+void Window::HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e)
+{
+    // If the native window loses the cursor capture, restore it and visibility when input activated.
+    waitInputActivation = true;
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
@@ -260,13 +323,50 @@ void Window::UpdateVirtualCoordinatesSystem()
     uiControlSystem->vcs->ScreenSizeChanged();
 }
 
+bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
+{
+    using Private::MainDispatcherEvent;
+    // If the pinning mode was activated from mouse button(MOUSE_BUTTON_DOWN), skip the first mouse button event(MOUSE_BUTTON_UP).
+    if (skipFirstMouseUpEventBeforeCursorCapture)
+    {
+        skipFirstMouseUpEventBeforeCursorCapture = false;
+        return true;
+    }
+    // Restore the cursor capture and cursor visibility.
+    if (waitInputActivation)
+    {
+        if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
+        {
+            skipFirstMouseUpEventBeforeCursorCapture = true;
+        }
+        else if (MainDispatcherEvent::MOUSE_MOVE == e.type)
+        {
+            return true;
+        }
+        waitInputActivation = false;
+        windowBackend->SetCursorCapture(cursorCapture);
+        windowBackend->SetCursorVisibility(cursorVisible);
+        return true;
+    }
+    return false;
+}
+
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
     inputSystem->GetKeyboard().ClearAllKeys();
-
     hasFocus = e.stateEvent.state != 0;
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+    {
+        // When the native window loses focus, it restores the original cursor capture and visibility.
+        // After the window gives the focus back, set the current visibility state, if not set pinning mode.
+        // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
+        if (hasFocus && !waitInputActivation)
+        {
+            windowBackend->SetCursorVisibility(cursorVisible);
+        }
+    }
     focusChanged.Emit(this, hasFocus);
 }
 
@@ -285,7 +385,8 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
+    uie.isRelative = e.mouseEvent.isRelative;
+    uie.physPoint = e.mouseEvent.isRelative ? Vector2(0.f, 0.f) : Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = button;
@@ -302,6 +403,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
+    uie.isRelative = e.mouseEvent.isRelative;
     uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
@@ -315,6 +417,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
+    uie.isRelative = e.mouseEvent.isRelative;
     uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = eMouseButtons::NONE;

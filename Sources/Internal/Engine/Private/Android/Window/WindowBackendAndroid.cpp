@@ -195,6 +195,16 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
     return object;
 }
 
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)

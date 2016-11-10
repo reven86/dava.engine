@@ -125,6 +125,12 @@ void WindowNativeBridge::WindowDidBecomeKey()
 void WindowNativeBridge::WindowDidResignKey()
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        SetCursorCapture(eCursorCapture::OFF);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+    }
+    SetCursorVisibility(true);
     if (isAppHidden)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
@@ -210,28 +216,31 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
         float32 x = pt.x;
         float32 y = sz.height - pt.y;
         eModifierKeys modifierKeys = GetModifierKeys(theEvent);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, false));
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, isRelative));
     }
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
+    if (mouseMoveSkipCount)
+    {
+        mouseMoveSkipCount--;
+        return;
+    }
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
-
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
 
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
-}
-
-void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
-{
-}
-
-void WindowNativeBridge::MouseExited(NSEvent* theEvent)
-{
+    if (isRelative)
+    {
+        x = [theEvent deltaX];
+        y = [theEvent deltaY];
+    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, isRelative));
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -270,7 +279,8 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         deltaY *= scrollK;
     }
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
+    bool isRelative = captureMode == eCursorCapture::PINNING;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -406,6 +416,101 @@ eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)
     return eMouseButtons::NONE;
 }
 
+void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
+{
+    if (!mouseVisible)
+    {
+        SetSystemCursorVisible(false);
+    }
+    if (eCursorCapture::PINNING == captureMode)
+    {
+        SetSystemCursorCapture(true);
+    }
+}
+
+void WindowNativeBridge::MouseExited(NSEvent* theEvent)
+{
+    if (!mouseVisible)
+    {
+        SetSystemCursorVisible(true);
+    }
+    if (eCursorCapture::PINNING == captureMode)
+    {
+        SetSystemCursorCapture(false);
+    }
+}
+
+void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
+{
+    if (captureMode != mode)
+    {
+        captureMode = mode;
+        switch (mode)
+        {
+        case eCursorCapture::FRAME:
+            //not implemented
+            break;
+        case eCursorCapture::PINNING:
+        {
+            SetSystemCursorCapture(true);
+            break;
+        }
+        case eCursorCapture::OFF:
+        {
+            SetSystemCursorCapture(false);
+            break;
+        }
+        }
+    }
+}
+
+void WindowNativeBridge::SetSystemCursorVisible(bool visible)
+{
+    static bool mouseVisibleState = true;
+    if (mouseVisibleState != visible)
+    {
+        mouseVisibleState = visible;
+        if (visible)
+        {
+            [NSCursor unhide];
+        }
+        else
+        {
+            [NSCursor hide];
+        }
+    }
+}
+
+void WindowNativeBridge::SetSystemCursorCapture(bool capture)
+{
+    if (capture)
+    {
+        CGAssociateMouseAndMouseCursorPosition(false);
+        // set cursor in window center
+        NSRect windowRect = [nswindow frame];
+        NSRect screenRect = [[NSScreen mainScreen] frame];
+        // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
+        windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
+        CGPoint cursorpos;
+        cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
+        cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
+        CGWarpMouseCursorPosition(cursorpos);
+        mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+    }
+    else
+    {
+        CGAssociateMouseAndMouseCursorPosition(true);
+    }
+}
+
+void WindowNativeBridge::SetCursorVisibility(bool visible)
+{
+    if (mouseVisible != visible)
+    {
+        mouseVisible = visible;
+        SetSystemCursorVisible(visible);
+    }
+}
 } // namespace Private
 } // namespace DAVA
 

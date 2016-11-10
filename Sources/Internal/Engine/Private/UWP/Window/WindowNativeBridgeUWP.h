@@ -36,6 +36,8 @@ ref struct WindowNativeBridge sealed
     void CloseWindow();
     void SetTitle(const char8* title);
     void SetFullscreen(eFullscreen newMode);
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
 
 private:
     void OnTriggerPlatformEvents();
@@ -53,6 +55,7 @@ private:
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     eModifierKeys GetModifierKeys() const;
     static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
@@ -82,9 +85,16 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;
 
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
+
+    ::Windows::UI::Core::CoreCursor ^ defaultCursor = ref new ::Windows::UI::Core::CoreCursor(::Windows::UI::Core::CoreCursorType::Arrow, 0);
+    bool mouseVisible = true;
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    uint32 mouseMoveSkipCount = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 
 inline void* WindowNativeBridge::GetHandle() const

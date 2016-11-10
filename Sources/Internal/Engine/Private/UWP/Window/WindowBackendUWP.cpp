@@ -110,6 +110,12 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        bridge->SetCursorCapture(e.setCursorCaptureEvent.mode);
+        break;
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
+        bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
     default:
         break;
     }
@@ -118,6 +124,16 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 bool WindowBackend::IsWindowsPhone() const
 {
     return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
 } // namespace Private

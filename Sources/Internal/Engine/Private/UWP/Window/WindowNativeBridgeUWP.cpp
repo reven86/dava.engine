@@ -142,6 +142,49 @@ void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
     }
 }
 
+void WindowNativeBridge::SetCursorVisibility(bool visible)
+{
+    if (mouseVisible != visible)
+    {
+        using ::Windows::UI::Core::CoreCursor;
+        using ::Windows::UI::Core::CoreCursorType;
+        using ::Windows::UI::Core::CoreWindow;
+        mouseVisible = visible;
+        if (visible)
+        {
+            CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
+        }
+        else
+        {
+            CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        }
+    }
+}
+
+void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
+{
+    if (captureMode != mode)
+    {
+        using namespace ::Windows::Devices::Input;
+        using namespace ::Windows::Foundation;
+        captureMode = mode;
+        switch (captureMode)
+        {
+        case DAVA::eCursorCapture::OFF:
+            MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+            break;
+        case DAVA::eCursorCapture::FRAME:
+            // now, not implemented
+            break;
+        case DAVA::eCursorCapture::PINNING:
+            tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+            // after enabled Pinning mode, skip move events, large x, y delta
+            mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+            break;
+        }
+    }
+}
+
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     windowBackend->ProcessPlatformEvents();
@@ -152,6 +195,15 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     using namespace ::Windows::UI::Core;
     bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    if (!hasFocus)
+    {
+        if (captureMode == eCursorCapture::PINNING)
+        {
+            SetCursorCapture(eCursorCapture::OFF);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+        }
+        SetCursorVisibility(true);
+    }
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
@@ -252,7 +304,8 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     {
         bool isPressed = false;
         eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_DOWN, button, x, y, 1, modifierKeys, false));
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_DOWN, button, x, y, 1, modifierKeys, isRelative));
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -277,7 +330,8 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     {
         bool isPressed = false;
         eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, false));
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, isRelative));
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -334,7 +388,20 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
         std::swap(deltaX, deltaY);
     }
     eModifierKeys modifierKeys = GetModifierKeys();
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
+}
+
+void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
+{
+    if (mouseMoveSkipCount)
+    {
+        mouseMoveSkipCount--;
+        return;
+    }
+    float32 x = static_cast<float32>(args->MouseDelta.X);
+    float32 y = static_cast<float32>(args->MouseDelta.Y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, true));
 }
 
 eModifierKeys WindowNativeBridge::GetModifierKeys() const
@@ -466,6 +533,7 @@ void WindowNativeBridge::InstallEventHandlers()
 void WindowNativeBridge::UninstallEventHandlers()
 {
     using namespace ::Windows::UI::Core;
+    using namespace ::Windows::Devices::Input;
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
 
     coreWindow->Activated -= tokenActivated;
@@ -481,6 +549,8 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
+    SetCursorCapture(eCursorCapture::OFF);
+    SetCursorVisibility(true);
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(

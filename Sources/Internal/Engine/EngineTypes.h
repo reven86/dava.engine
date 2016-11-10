@@ -123,4 +123,12 @@ enum class eGamepadProfiles : uint32
     EXTENDED, //!< Two shoulder buttons, two triggers, two thumbsticks, directional pad
 };
 
+/** Cursor capture modes */
+enum class eCursorCapture : int32
+{
+    OFF = 0, //!< Disable any capturing(send absolute xy)
+    FRAME, //!< Capture system cursor into window rect(send absolute xy) */
+    PINNING, //!< Capture system cursor on current position(send xy move delta) */
+};
+
 } // namespace DAVA

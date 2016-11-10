@@ -38,6 +38,20 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetFullscreenEvent(eFullscreen mode)
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateSetCursorCaptureEvent(eCursorCapture mode)
+{
+    UIDispatcherEvent e(SET_CURSOR_CAPTURE);
+    e.setCursorCaptureEvent.mode = mode;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateSetCursorVisibilityEvent(bool visible)
+{
+    UIDispatcherEvent e(SET_CURSOR_VISIBILITY);
+    e.setCursorVisibilityEvent.visible = visible;
+    return e;
+}
+
 UIDispatcherEvent UIDispatcherEvent::CreateFunctorEvent(const Function<void()>& functor)
 {
     UIDispatcherEvent e(FUNCTOR);

@@ -21,6 +21,8 @@ struct UIDispatcherEvent final
         SET_TITLE,
         SET_FULLSCREEN,
         FUNCTOR,
+        SET_CURSOR_CAPTURE,
+        SET_CURSOR_VISIBILITY,
     };
 
     struct ResizeEvent
@@ -39,6 +41,16 @@ struct UIDispatcherEvent final
         eFullscreen mode;
     };
 
+    struct SetCursorCaptureEvent
+    {
+        eCursorCapture mode;
+    };
+
+    struct SetCursorVisibilityEvent
+    {
+        bool visible;
+    };
+
     UIDispatcherEvent() = default;
     UIDispatcherEvent(eType type)
         : type(type)
@@ -52,12 +64,16 @@ struct UIDispatcherEvent final
         ResizeEvent resizeEvent;
         SetTitleEvent setTitleEvent;
         SetFullscreenEvent setFullscreenEvent;
+        SetCursorCaptureEvent setCursorCaptureEvent;
+        SetCursorVisibilityEvent setCursorVisibilityEvent;
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
     static UIDispatcherEvent CreateSetFullscreenEvent(eFullscreen mode);
+    static UIDispatcherEvent CreateSetCursorCaptureEvent(eCursorCapture mode);
+    static UIDispatcherEvent CreateSetCursorVisibilityEvent(bool visible);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 

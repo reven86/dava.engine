@@ -265,6 +265,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    // not implemented
+    // case UIDispatcherEvent::CHANGE_MOUSE_MODE:
     default:
         break;
     }
@@ -573,6 +575,16 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
 }
 
 eModifierKeys WindowBackend::GetModifierKeys() const

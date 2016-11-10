@@ -31,6 +31,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
 #include "Tests/UILoggingTest.h"
+#include "Tests/ImGuiTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -60,6 +61,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
+
+    appOptions->SetBool("init_imgui", true);
 
     eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
     if (cmdline.size() > 1 && cmdline[1] == "--console")
@@ -229,6 +232,7 @@ void TestBed::RegisterTests()
     new PackManagerTest(*this);
     new UILoggingTest(*this);
     new ScriptingTest(*this);
+    new ImGuiTest(*this);
     //$UNITTEST_CTOR
 }
 
