@@ -133,8 +133,8 @@ void DeviceManagerTest::OnDisplayClick(DAVA::BaseObject*, void* args, void*)
         if (displays[i].primary)
             ss << " (primary)";
         ss << std::endl;
-        ss << "dpiX: " << displays[i].dpiX << std::endl;
-        ss << "dpiY: " << displays[i].dpiY << std::endl;
+        ss << "raw dpiX: " << displays[i].rawDpiX << std::endl;
+        ss << "raw dpiY: " << displays[i].rawDpiY << std::endl;
         ss << "origin: " << displays[i].rect.x << ", " << displays[i].rect.y << std::endl;
         ss << "size: " << displays[i].rect.dx << " x " << displays[i].rect.dy;
         uiDisplayDescr->SetText(UTF8Utils::EncodeToWideString(ss.str()));

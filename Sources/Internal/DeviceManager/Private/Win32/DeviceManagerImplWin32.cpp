@@ -62,8 +62,8 @@ size_t DeviceManagerImpl::GetDisplays(DisplayInfoRange* range)
 
         for (size_t i = 0; i < count; ++i)
         {
-            range->begin[i].dpiX = dpiX;
-            range->begin[i].dpiY = dpiY;
+            range->begin[i].rawDpiX = dpiX;
+            range->begin[i].rawDpiY = dpiY;
         }
     }
     return count;
@@ -92,8 +92,8 @@ BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPR
         if (DllImport::fnGetDpiForMonitor != nullptr)
         {
             DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
-            di->dpiX = static_cast<float32>(dpiX);
-            di->dpiY = static_cast<float32>(dpiY);
+            di->rawDpiX = static_cast<float32>(dpiX);
+            di->rawDpiY = static_cast<float32>(dpiY);
         }
 
         range->cur += 1;

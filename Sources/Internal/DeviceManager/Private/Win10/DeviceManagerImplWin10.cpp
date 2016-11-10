@@ -31,8 +31,8 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 
     displayInfo.systemId = 0;
     displayInfo.name = "display"; // Any name as DisplayInformation does not provide display name
-    displayInfo.dpiX = displayInformation->LogicalDpi;
-    displayInfo.dpiY = displayInformation->LogicalDpi;
+    displayInfo.rawDpiX = displayInformation->LogicalDpi;
+    displayInfo.rawDpiY = displayInformation->LogicalDpi;
     displayInfo.rect.x = displayRect.X;
     displayInfo.rect.y = displayRect.Y;
     displayInfo.rect.dx = displayRect.Width * rawPixelsPerViewPixel;
@@ -51,8 +51,8 @@ void DeviceManagerImpl::UpdateDisplayConfig()
     DisplayInfo* di = new DisplayInfo[1];
     *di = displayInfo;
 
-    di->dpiX = displayInformation->LogicalDpi;
-    di->dpiY = displayInformation->LogicalDpi;
+    di->rawDpiX = displayInformation->LogicalDpi;
+    di->rawDpiY = displayInformation->LogicalDpi;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateDisplayConfigChangedEvent(di, 1));
 }
 
