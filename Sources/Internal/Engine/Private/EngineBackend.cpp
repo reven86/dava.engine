@@ -586,6 +586,9 @@ void EngineBackend::InitRenderer(Window* w)
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
+
+    if (options->GetBool("init_imgui"))
+        ImGui::Initialize();
 }
 
 void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
@@ -687,9 +690,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
-
-        if (options->GetBool("init_imgui"))
-            ImGui::Initialize();
     }
     else
     {
