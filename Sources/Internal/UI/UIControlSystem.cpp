@@ -402,8 +402,10 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         return;
     }
 
+#if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
         return;
+#endif // !defined(__DAVAENGINE_COREV2__)
 
     if (ProfilerOverlay::globalProfilerOverlay && ProfilerOverlay::globalProfilerOverlay->OnInput(newEvent))
         return;

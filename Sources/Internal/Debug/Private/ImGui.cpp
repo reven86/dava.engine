@@ -340,11 +340,11 @@ void Initialize()
     }
     
 #if defined(__DAVAENGINE_COREV2__)
-    ImGuiImplDetails::trackedObject = new TrackedObject();
-    Engine::Instance()->beginFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameBegin);
-    Engine::Instance()->endFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameEnd);
+    ImGuiImplDetails::trackedObject = new DAVA::TrackedObject();
+    DAVA::Engine::Instance()->beginFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameBegin);
+    DAVA::Engine::Instance()->endFrame.Connect(ImGuiImplDetails::trackedObject, &OnFrameEnd);
 
-    ImGuiImplDetails::inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevices::TOUCH_SURFACE | eInputDevices::MOUSE | eInputDevices::KEYBOARD, &OnInput);
+    ImGuiImplDetails::inputHandlerToken = DAVA::InputSystem::Instance()->AddHandler(eInputDevices::TOUCH_SURFACE | eInputDevices::MOUSE | eInputDevices::KEYBOARD, &OnInput);
 #endif
 
     ImGuiImplDetails::initialized = true;
@@ -508,7 +508,7 @@ void Uninitialize()
         ImGui::Shutdown();
 
 #if defined(__DAVAENGINE_COREV2__)
-        InputSystem::Instance()->RemoveHandler(ImGuiImplDetails::inputHandlerToken);
+        DAVA::InputSystem::Instance()->RemoveHandler(ImGuiImplDetails::inputHandlerToken);
         ImGuiImplDetails::inputHandlerToken = 0;
 
         SafeDelete(ImGuiImplDetails::trackedObject);

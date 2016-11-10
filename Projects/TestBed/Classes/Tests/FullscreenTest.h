@@ -38,4 +38,7 @@ private:
     DAVA::UIStaticText* currect3dScaleText = nullptr;
     DAVA::UIStaticText* pinningText = nullptr;
     DAVA::UIStaticText* pinningMousePosText = nullptr;
+
+    bool cursorCaptured = false;
+    bool cursorVisible = true;
 };
