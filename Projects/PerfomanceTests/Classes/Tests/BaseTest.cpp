@@ -101,7 +101,7 @@ void BaseTest::UpdateUI()
 }
 
 #if defined(__DAVAENGINE_APPLE__)
-#import <mach/mach.h>
+#include <mach/mach.h>
 #endif
 
 uint32 BaseTest::GetAllocatedMemory()
