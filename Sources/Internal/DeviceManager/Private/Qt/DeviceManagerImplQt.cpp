@@ -1,8 +1,8 @@
-#include "Engine/Private/Qt/DeviceManagerImplQt.h"
+#include "DeviceManager/Private/Qt/DeviceManagerImplQt.h"
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Engine/DeviceManager.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA

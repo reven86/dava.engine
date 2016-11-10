@@ -1,11 +1,9 @@
-#include "Engine/Private/UWP/DeviceManagerImplWin10.h"
+#include "DeviceManager/Private/Win10/DeviceManagerImplWin10.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/DeviceManager.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-
-#include "Logger/Logger.h"
 
 namespace DAVA
 {

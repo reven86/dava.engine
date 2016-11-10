@@ -3,7 +3,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include <Engine/EngineModule.h>
-#include <Engine/DeviceManager.h>
+#include <DeviceManager/DeviceManager.h>
 
 using namespace DAVA;
 
@@ -13,7 +13,6 @@ DeviceManagerTest::DeviceManagerTest(TestBed& app)
     deviceManager = app.GetEngine().GetContext()->deviceManager;
 }
 
-size_t xxxx = 0;
 void DeviceManagerTest::LoadResources()
 {
     BaseScreen::LoadResources();
@@ -60,7 +59,7 @@ void DeviceManagerTest::OnDisplayConfigChanged()
     font->SetSize(10);
 
     const float32 unitLength = 100.f;
-    float32 scale = abs(displays[0].rect.dx);
+    float32 scale = displays[0].rect.dx;
 
     int n = 0;
     Rect total;

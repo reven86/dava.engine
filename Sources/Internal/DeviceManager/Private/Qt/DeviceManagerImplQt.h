@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "DeviceManager/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA

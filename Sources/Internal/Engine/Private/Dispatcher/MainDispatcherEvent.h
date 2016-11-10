@@ -6,7 +6,7 @@
 #include "Functional/Function.h"
 
 #include "Engine/EngineTypes.h"
-#include "Engine/DeviceManagerTypes.h"
+#include "DeviceManager/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA

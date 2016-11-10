@@ -1,10 +1,10 @@
-#include "Engine/Private/Win32/DeviceManagerImplWin32.h"
+#include "DeviceManager/Private/Win32/DeviceManagerImplWin32.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/DeviceManager.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
 #include "Utils/UTF8Utils.h"

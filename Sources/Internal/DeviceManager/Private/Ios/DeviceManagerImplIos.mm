@@ -1,8 +1,8 @@
-#include "Engine/Private/iOS/DeviceManagerImplIos.h"
+#include "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/DeviceManager.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA

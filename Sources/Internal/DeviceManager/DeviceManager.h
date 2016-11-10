@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Engine/DeviceManagerTypes.h"
+#include "DeviceManager/DeviceManagerTypes.h"
 #include "Functional/Signal.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"

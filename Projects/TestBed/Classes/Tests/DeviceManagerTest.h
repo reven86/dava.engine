@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-#include <Engine/DeviceManagerTypes.h>
+#include <DeviceManager/DeviceManagerTypes.h>
 
 namespace DAVA
 {

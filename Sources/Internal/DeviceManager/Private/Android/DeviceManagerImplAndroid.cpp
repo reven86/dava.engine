@@ -1,8 +1,8 @@
-#include "Engine/Private/Android/DeviceManagerImplAndroid.h"
+#include "DeviceManager/Private/Android/DeviceManagerImplAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Engine/DeviceManager.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA
