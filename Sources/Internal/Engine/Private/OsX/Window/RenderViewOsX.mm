@@ -50,7 +50,7 @@
     const NSSize frameSize = [self frame].size;
     const DAVA::float32 resultScale = _backbufferScale * [[NSScreen mainScreen] backingScaleFactor];
 
-    GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
+    const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
     CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
     CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[self openGLContext] CGLContextObj]);
