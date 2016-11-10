@@ -5,8 +5,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
 
 #import <UIKit/UIScreen.h>
 #import <QuartzCore/CAEAGLLayer.h>
