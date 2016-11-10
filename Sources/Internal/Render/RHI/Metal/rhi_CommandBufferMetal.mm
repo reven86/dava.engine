@@ -1585,27 +1585,6 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     [_Metal_currentCommandBuffer retain];
 #endif
 
-    if (pass.size())
-    {
-        MTL_TRACE("  -mtl.present-drawable %p", (void*)(_Metal_currentDrawable));
-        MTL_TRACE("   drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
-
-        //present drawable adds completion handler that calls actual present
-        [_Metal_currentCommandBuffer presentDrawable:_Metal_currentDrawable];
-
-        unsigned frame_n = frame.frameNumber;
-        if (syncObject != InvalidHandle)
-        {
-            [_Metal_currentCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
-                                                             {
-                                                               MTL_TRACE("  .frame %u complete", frame_n);
-                                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
-                                                               SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
-                                                               sync->is_signaled = true;
-                                                             }];
-        }
-    }
-
 //execute software command buffers
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     bool initOk = true;
@@ -1636,9 +1615,31 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     }         
     #endif
 
+    //add completion handler and present handler
+    if (pass.size())
+    {
+        MTL_TRACE("  -mtl.present-drawable %p", (void*)(_Metal_currentDrawable));
+        MTL_TRACE("   drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
+
+        //present drawable adds completion handler that calls actual present
+        [_Metal_currentCommandBuffer presentDrawable:_Metal_currentDrawable];
+
+        unsigned frame_n = frame.frameNumber;
+        if (syncObject != InvalidHandle)
+        {
+            [_Metal_currentCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
+                                                             {
+                                                               MTL_TRACE("  .frame %u complete", frame_n);
+                                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
+                                                               SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
+                                                               sync->is_signaled = true;
+                                                             }];
+        }
+    }
+
 //commit all work here
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    [_Metal_currentCommandBuffer commit];     
+    [_Metal_currentCommandBuffer commit];
     #else
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
