@@ -6,7 +6,11 @@
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
 
+namespace DAVA
+{
 class UICustomUpdateDeltaComponent;
+}
+
 class BaseTest : public BaseScreen
 {
 public:
