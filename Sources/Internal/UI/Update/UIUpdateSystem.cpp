@@ -101,5 +101,4 @@ UIUpdateSystem::UpdateBind::UpdateBind(UIComponent* uc, UICustomUpdateDeltaCompo
     , customDeltaComponent(cdc)
 {
 }
-
 }
