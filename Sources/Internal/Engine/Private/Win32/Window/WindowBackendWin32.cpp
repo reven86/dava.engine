@@ -184,7 +184,6 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-<<<<<<< HEAD
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
     if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
