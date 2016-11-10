@@ -6,6 +6,11 @@
 
 namespace DAVA
 {
+/**
+Component-marker for UIUpdateSystem.
+Temporary component for backward compatibility with existing code.
+**WILL BE REMOVED** after refactoring all `UIControl::Update` logic.
+*/
 class UIUpdateComponent : public UIBaseComponent<UIComponent::UPDATE_COMPONENT>
 {
 public:

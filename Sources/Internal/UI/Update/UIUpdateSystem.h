@@ -9,6 +9,11 @@ class UIControl;
 class UIComponent;
 class UICustomUpdateDeltaComponent;
 
+/**
+Send update events for all visible UIControl with UIUpdateCompoent component.
+Temporary system for backward compatibility with existing code.
+**WILL BE REMOVED** after refactoring all `UIControl::Update` logic.
+*/
 class UIUpdateSystem : public UISystem
 {
 public:
@@ -25,18 +30,10 @@ public:
     void Process(float32 elapsedTime) override;
 
 private:
-    UICustomUpdateDeltaComponent* FindParentComponent(UIControl* ctrl);
-    void UpdateCustomComponentInBinds();
-
     struct UpdateBind
     {
-        UpdateBind(UIComponent* uc, UICustomUpdateDeltaComponent* cdc)
-            : updateComponent(uc)
-            , customDeltaComponent(cdc)
-        {
-        }
-
-        UIComponent* updateComponent = nullptr;
+        UpdateBind(UIComponent* uc, UICustomUpdateDeltaComponent* cdc);
+        const UIComponent* updateComponent = nullptr;
         UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
     };
 

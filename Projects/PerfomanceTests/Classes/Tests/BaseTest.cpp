@@ -34,7 +34,7 @@ void BaseTest::LoadResources()
 
     sceneView = new UI3DView(rect);
     sceneView->SetScene(scene);
-    sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
+    sceneCustomDeltaComponent = sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
 
     AddControl(sceneView);
 
@@ -43,6 +43,7 @@ void BaseTest::LoadResources()
 
 void BaseTest::UnloadResources()
 {
+    sceneCustomDeltaComponent = nullptr;
     SafeRelease(scene);
     SafeRelease(sceneView);
 }
@@ -248,10 +249,9 @@ void BaseTest::Update(float32 timeElapsed)
         PerformTestLogic(currentFrameDelta);
     }
 
-    UICustomUpdateDeltaComponent* sceneComponent = sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
-    if (sceneComponent)
+    if (sceneCustomDeltaComponent)
     {
-        sceneComponent->SetDelta(currentFrameDelta);
+        sceneCustomDeltaComponent->SetDelta(currentFrameDelta);
     }
 }
 

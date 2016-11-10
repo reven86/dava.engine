@@ -6,6 +6,7 @@
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
 
+class UICustomUpdateDeltaComponent;
 class BaseTest : public BaseScreen
 {
 public:
@@ -147,6 +148,8 @@ private:
     UIStaticText* framesRenderedText;
 
     uint32 maxAllocatedMemory;
+
+    UICustomUpdateDeltaComponent* sceneCustomDeltaComponent;
 };
 
 inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const

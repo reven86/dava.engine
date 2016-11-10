@@ -19,18 +19,28 @@ void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* componen
 {
     if (component->GetType() == UIComponent::UPDATE_COMPONENT && control->IsVisible())
     {
-        UICustomUpdateDeltaComponent* customUpdate = FindParentComponent(control);
-        binds.emplace_back(component, customUpdate);
+        UICustomUpdateDeltaComponent* customDeltaComponent = control->GetComponent<UICustomUpdateDeltaComponent>();
+        binds.emplace_back(component, customDeltaComponent);
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
     {
-        UpdateCustomComponentInBinds();
+        UIUpdateComponent* updateComponent = control->GetComponent<UIUpdateComponent>();
+        if (updateComponent)
+        {
+            auto it = std::find_if(binds.begin(), binds.end(), [updateComponent](const UpdateBind& b) {
+                return b.updateComponent == updateComponent;
+            });
+            if (it != binds.end())
+            {
+                it->customDeltaComponent = DynamicTypeCheck<UICustomUpdateDeltaComponent*>(component);
+            }
+        }
     }
 }
 
 void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIComponent::UPDATE_COMPONENT)
+    if (component->GetType() == UIComponent::UPDATE_COMPONENT && control->IsVisible())
     {
         binds.erase(std::remove_if(binds.begin(), binds.end(), [component](const UpdateBind& b)
                                    {
@@ -39,17 +49,23 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT && control->IsVisible())
     {
-        UpdateCustomComponentInBinds();
+        auto it = std::find_if(binds.begin(), binds.end(), [component](const UpdateBind& b) {
+            return b.customDeltaComponent == component;
+        });
+        if (it != binds.end())
+        {
+            it->customDeltaComponent = nullptr;
+        }
     }
 }
 
 void UIUpdateSystem::OnControlVisible(UIControl* control)
 {
-    UICustomUpdateDeltaComponent* customUpdate = FindParentComponent(control);
     UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
     if (component)
     {
-        binds.emplace_back(component, customUpdate);
+        UICustomUpdateDeltaComponent* customDeltaComponent = control->GetComponent<UICustomUpdateDeltaComponent>();
+        binds.emplace_back(component, customDeltaComponent);
     }
 }
 
@@ -63,10 +79,6 @@ void UIUpdateSystem::OnControlInvisible(UIControl* control)
                                        return b.updateComponent == component;
                                    }));
     }
-
-    // If specified control has `UICustomUpdateDeltaComponent` component then
-    // we don't need remove this component from all bind of children because
-    // all children binds will be remove as *invisible*
 }
 
 void UIUpdateSystem::Process(float32 elapsedTime)
@@ -84,29 +96,10 @@ void UIUpdateSystem::Process(float32 elapsedTime)
     }
 }
 
-UICustomUpdateDeltaComponent* UIUpdateSystem::FindParentComponent(UIControl* ctrl)
+UIUpdateSystem::UpdateBind::UpdateBind(UIComponent* uc, UICustomUpdateDeltaComponent* cdc)
+    : updateComponent(uc)
+    , customDeltaComponent(cdc)
 {
-    while (ctrl)
-    {
-        UICustomUpdateDeltaComponent* comp = ctrl->GetComponent<UICustomUpdateDeltaComponent>();
-        if (comp)
-        {
-            return comp;
-        }
-        ctrl = ctrl->GetParent();
-    }
-    return nullptr;
 }
 
-void UIUpdateSystem::UpdateCustomComponentInBinds()
-{
-    // For all binds find near `UICustomUpdateDeltaComponent` set it
-    // to current bind. It is faster that search for all controls children and
-    // check its components because count of binds is much less that count of
-    // controls
-    for (UpdateBind& b : binds)
-    {
-        b.customDeltaComponent = FindParentComponent(b.updateComponent->GetControl());
-    }
-}
 }
