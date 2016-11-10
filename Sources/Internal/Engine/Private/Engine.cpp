@@ -35,7 +35,7 @@ Engine::~Engine()
     EngineSingletonNamespace::engineSingleton = nullptr;
 }
 
-EngineContext* Engine::GetContext() const
+const EngineContext* Engine::GetContext() const
 {
     return engineBackend->GetEngineContext();
 }

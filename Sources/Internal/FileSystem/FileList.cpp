@@ -45,7 +45,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     IPackManager* pm = nullptr;
     Engine* e = Engine::Instance();
     DVASSERT(e != nullptr);
-    EngineContext* context = e->GetContext();
+    const EngineContext* context = e->GetContext();
     DVASSERT(context != nullptr);
     pm = context->packManager;
 #else

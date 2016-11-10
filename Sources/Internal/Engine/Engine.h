@@ -83,7 +83,7 @@ public:
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
 
-    EngineContext* GetContext() const;
+    const EngineContext* GetContext() const;
     NativeService* GetNativeService() const;
     Window* PrimaryWindow() const;
 
