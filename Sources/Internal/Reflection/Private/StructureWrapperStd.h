@@ -46,7 +46,7 @@ public:
         for (auto& it : *c)
         {
             V* v = &it;
-            ret.emplace_back({ Any(i++), Reflection::Create(v) });
+            ret.push_back({ Any(i++), Reflection::Create(v) });
         }
 
         return ret;
@@ -99,7 +99,7 @@ public:
             // std::set values shouldn't be modified
             // so get const pointer on value
             const K* v = &(*it);
-            ret.emplace_back({ Any(*v), Reflection::Create(v) });
+            ret.push_back({ Any(*v), Reflection::Create(v) });
         }
 
         return ret;
@@ -146,7 +146,7 @@ public:
         for (auto& pair : *c)
         {
             V* v = &(pair.second);
-            ret.emplace_back({ Any(pair.first), Reflection::Create(v) });
+            ret.push_back({ Any(pair.first), Reflection::Create(v) });
         }
 
         return ret;

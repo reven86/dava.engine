@@ -117,6 +117,19 @@ public:
     }
 };
 
+class BaseBaseDerived : public BaseBase
+{
+public:
+    DAVA::String s = "BaseBaseDerived";
+
+    DAVA_VIRTUAL_REFLECTION(BaseBaseDerived, BaseBase)
+    {
+        DAVA::ReflectionQualifier<BaseBaseDerived>::Begin()
+        .Field("s", &BaseBaseDerived::s)
+        .End();
+    }
+};
+
 template <typename T>
 struct ValueRange
 {
@@ -270,6 +283,7 @@ protected:
     std::vector<std::string> strVec;
     std::vector<SimpleStruct*> simVec;
     StructPtr* sptr = nullptr;
+    BaseBase* basePtr = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
     {
@@ -293,6 +307,7 @@ protected:
         .Field("strVec", &TestBaseClass::strVec)
         .Field("simVec", &TestBaseClass::simVec)
         .Field("sptr", &TestBaseClass::sptr)
+        .Field("basePtr", &TestBaseClass::basePtr)
         .Field("StaticIntFn", &TestBaseClass::GetStaticIntFn, &TestBaseClass::SetStaticIntFn)
         .Field("StaticIntFnFn", DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn), DAVA::MakeFunction(&TestBaseClass::SetStaticIntFn))
         .Field("StaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
@@ -356,11 +371,14 @@ TestBaseClass::TestBaseClass()
 
     simple = &sss;
     sptr = new StructPtr();
+
+    basePtr = new BaseBaseDerived();
 }
 
 TestBaseClass::~TestBaseClass()
 {
     sptr->Release();
+    delete basePtr;
 }
 
 DAVA_TESTCLASS (ReflectionTest)

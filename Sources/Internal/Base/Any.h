@@ -87,6 +87,9 @@ public:
     template <typename T>
     T Cast() const;
 
+    template <typename T>
+    T Cast(T&& defaultValue) const;
+
     /// \brief  Loads value into Any from specified memory location with specified Type. Loading can be done only from
     ///         types for which Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on source memory, from where value should be loaded.

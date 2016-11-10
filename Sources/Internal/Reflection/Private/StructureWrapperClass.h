@@ -29,7 +29,7 @@ private:
 
     struct MethodCacheEntry
     {
-        // TODO:
+        const ReflectedStructure::Method* method;
     };
 
     Vector<FieldCacheEntry> fieldsCache;

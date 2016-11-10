@@ -32,20 +32,10 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
 
     if (!fieldsCache.empty())
     {
-        String name;
-
-        if (key.CanGet<String>())
-        {
-            name = key.Get<String>();
-        }
-        else if (key.CanGet<const char*>())
-        {
-            name = key.Get<const char*>();
-        }
-
+        String name = key.Cast<String>(String());
         if (!name.empty())
         {
-            auto& it = fieldsNameIndexes.find(name);
+            auto it = fieldsNameIndexes.find(name);
             if (it != fieldsNameIndexes.end())
             {
                 ret = CreateFieldReflection(object, vw, fieldsCache[it->second]);
@@ -71,7 +61,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
 
 bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
-    return false;
+    return !methodsCache.empty();
 }
 
 AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
@@ -93,6 +83,13 @@ void StructureWrapperClass::FillCache(const ReflectedType* reflectedType, RttiIn
         const ReflectedStructure::Field* field = f.get();
         fieldsCache.push_back({ field, castOP });
         fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
+    }
+
+    for (auto& m : structure->methods)
+    {
+        const ReflectedStructure::Method* method = m.get();
+        methodsCache.push_back({ method });
+        methodsNameIndexes[method->name] = methodsCache.size() - 1;
     }
 }
 

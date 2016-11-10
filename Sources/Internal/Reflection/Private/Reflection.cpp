@@ -5,6 +5,7 @@
 #include "Reflection/Reflection.h"
 #include "Reflection/Wrappers.h"
 #include "Reflection/WrappersRuntime.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {
@@ -271,6 +272,12 @@ Reflection::Reflection(const ReflectedObject& object_, const ReflectedType* obje
         {
             structureWrapper = objectMeta->GetMeta<StructureWrapper>();
         }
+    }
+
+    if (nullptr == structureWrapper)
+    {
+        static StructureWrapperDefault emptyStructureWrapper;
+        structureWrapper = &emptyStructureWrapper;
     }
 }
 

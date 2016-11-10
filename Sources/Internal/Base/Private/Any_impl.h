@@ -148,4 +148,21 @@ T Any::Cast() const
 
     return AnyCast<T>::Cast(*this);
 }
+
+template <typename T>
+T Any::Cast(T&& defaultValue) const
+{
+    if (CanGet<T>())
+        return anyStorage.GetAuto<T>();
+
+    try
+    {
+        return AnyCast<T>::Cast(*this);
+    }
+    catch (const Exception&)
+    {
+        return T(std::forward<T>(defaultValue));
+    }
+}
+
 } // namespace DAVA
