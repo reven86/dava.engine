@@ -122,12 +122,12 @@ float32 WindowBackend::GetSurfaceScale() const
 
 bool WindowBackend::SetSurfaceScale(float32 scale)
 {
-	rhi::Api graphicsApi = Renderer::GetAPI();
-	if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
-	{
-		Logger::Instance()->Debug(Format("SetSurfaceScale: scaling is not supported on current graphics API").c_str());
-		return false;
-	}
+    rhi::Api graphicsApi = Renderer::GetAPI();
+    if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
+    {
+        Logger::Instance()->Debug(Format("SetSurfaceScale: scaling is not supported on current graphics API").c_str());
+        return false;
+    }
 
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
@@ -137,7 +137,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     float32 surfaceHeight = lastHeight * surfaceScale;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight));
 
-	return true;
+    return true;
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)

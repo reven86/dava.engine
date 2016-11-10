@@ -130,7 +130,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     [bridge->nswindow setContentView:bridge->renderView];
 
     bridge->WindowDidResize();
-    
+
     return true;
 }
 

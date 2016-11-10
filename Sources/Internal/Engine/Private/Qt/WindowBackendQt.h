@@ -53,8 +53,8 @@ public:
 
     void TriggerPlatformEvents();
 
-	float32 GetSurfaceScale() const;
-	bool SetSurfaceScale(float32 scale);
+    float32 GetSurfaceScale() const;
+    bool SetSurfaceScale(float32 scale);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

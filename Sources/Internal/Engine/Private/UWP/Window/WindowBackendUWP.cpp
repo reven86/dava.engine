@@ -72,16 +72,16 @@ void WindowBackend::ProcessPlatformEvents()
 
 float32 WindowBackend::GetSurfaceScale() const
 {
-	return bridge->GetSurfaceScale();
+    return bridge->GetSurfaceScale();
 }
 
 bool WindowBackend::SetSurfaceScale(float32 scale)
 {
-	DVASSERT(scale > 0.0f && scale <= 1.0f);
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-	RunAsyncOnUIThread([this, scale]() { bridge->SetSurfaceScale(scale); });
+    RunAsyncOnUIThread([this, scale]() { bridge->SetSurfaceScale(scale); });
 
-	return true;
+    return true;
 }
 
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)

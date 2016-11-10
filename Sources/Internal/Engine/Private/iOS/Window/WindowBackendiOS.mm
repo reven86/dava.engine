@@ -111,7 +111,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     CGSize size = [bridge->renderView frame].size;
     CGSize surfaceSize = [bridge->renderView surfaceSize];
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height));
-    
+
     return true;
 }
 

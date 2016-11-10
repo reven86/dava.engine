@@ -239,13 +239,13 @@ void WindowBackend::TriggerPlatformEvents()
 
 float32 WindowBackend::GetSurfaceScale() const
 {
-	return 1.0f;
+    return 1.0f;
 }
 
 bool WindowBackend::SetSurfaceScale(float32 scale)
 {
-	// Not supported natively on OpenGL
-	return false;
+    // Not supported natively on OpenGL
+    return false;
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
