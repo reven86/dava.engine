@@ -10,6 +10,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QTimer>
+#include <QPointer>
 
 namespace ShortcutCheckerDetail
 {
@@ -46,17 +47,53 @@ bool SkipMatchedShortcut(const QAction* action, const QKeyEvent* event)
     return false;
 }
 
-void TriggerAction(QShortcut* shortcut)
+bool CanCallShortcut(QShortcut* shortcut)
+{
+    return true;
+}
+
+bool CanCallShortcut(QAction* action)
+{
+    return action->isEnabled();
+}
+
+void CallShortcut(QShortcut* shortcut)
 {
     shortcut->activated();
 }
 
-void TriggerAction(QAction* action)
+void CallShortcut(QAction* action)
 {
-    if (action->isEnabled())
+    action->trigger();
+}
+
+bool CheckContext(QShortcut* shortcut)
+{
+    Qt::ShortcutContext context = shortcut->context();
+    if (context != Qt::WidgetShortcut)
     {
-        action->trigger();
+        return true;
     }
+    return shortcut->parentWidget()->hasFocus();
+}
+
+bool CheckContext(QAction* action)
+{
+    Qt::ShortcutContext context = action->shortcutContext();
+    if (context != Qt::WidgetShortcut)
+    {
+        return true;
+    }
+
+    QList<QWidget*> associatedWidgets = action->associatedWidgets();
+    for (QWidget* widget : associatedWidgets)
+    {
+        if (widget->hasFocus())
+        {
+            return true;
+        }
+    }
+    return false;
 }
 }
 
@@ -139,23 +176,36 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
         {
             if (seq.matches(inputSequence) == QKeySequence::ExactMatch && !ShortcutCheckerDetail::SkipMatchedShortcut(action, event))
             {
-                lastInputSequence = inputSequence;
-                lastShortcutTimestamp = event->timestamp();
-                ShortcutCheckerDetail::TriggerAction(action);
-                // In corev2 we have additional delay on input event handling.
-                // All events from RenderWidget are pushed into queue, and core handle them on every frame.
-                // So we should wait at least 1 frame. Better 2 frames.
-                QTimer::singleShot(30, []()
-                                   {
-                                       // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
-                                       // to fix this we will clear keyboard state in Dava if we found shortcut
-                                       DAVA::DavaQtKeyboard::ClearAllKeys();
-                                   });
-                event->accept();
-                return true;
+                if (ShortcutCheckerDetail::CheckContext(action) == false)
+                {
+                    continue;
+                }
+                if (ShortcutCheckerDetail::CanCallShortcut(action))
+                {
+                    lastInputSequence = inputSequence;
+                    lastShortcutTimestamp = event->timestamp();
+                    // In corev2 we have additional delay on input event handling.
+                    // All events from RenderWidget are pushed into queue, and core handle them on every frame.
+                    // So we should wait at least 1 frame. Better 2 frames.
+                    QPointer<T> safeActionPointer(action);
+                    QTimer::singleShot(30, [safeActionPointer]()
+                                       {
+                                           //when we call action and return true - event passed next to QtGuiApplication and call same actions in QWidget, which have the focus
+                                           //so if action will copy data to the clipboard by Ctrl+C - then this shortcut will be passed to a focus widget and this widget will rewrite clipboard
+                                           if (!safeActionPointer.isNull())
+                                           {
+                                               ShortcutCheckerDetail::CallShortcut(safeActionPointer.data());
+                                           }
+
+                                           // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
+                                           // to fix this we will clear keyboard state in Dava if we found shortcut
+                                           DAVA::DavaQtKeyboard::ClearAllKeys();
+                                       });
+                    event->accept();
+                    return true;
+                }
             }
         }
     }
-
     return false;
 }

@@ -898,16 +898,19 @@ void Sprite::ReloadExistingTextures(eGPUFamily gpu)
     //this function need to be sure that textures really would reload
     for (int32 i = 0; i < textureCount; ++i)
     {
-        if (textures[i] && !textures[i]->GetPathname().IsEmpty())
+        if (textures[i])
         {
-            if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
+            if (!textures[i]->GetPathname().IsEmpty())
             {
-                textures[i]->ReloadAs(gpu);
+                if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
+                {
+                    textures[i]->ReloadAs(gpu);
+                }
             }
-        }
-        else
-        {
-            Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
+            else if (!textures[i]->IsPinkPlaceholder())
+            {
+                Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
+            }
         }
     }
 }

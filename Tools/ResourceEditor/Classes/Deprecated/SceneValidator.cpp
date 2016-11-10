@@ -12,7 +12,7 @@
 #include "Settings/SettingsManager.h"
 #include "StringConstants.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"

@@ -97,6 +97,16 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not supported
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not supported
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)

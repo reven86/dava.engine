@@ -2,6 +2,7 @@
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 const DAVA::FastName MaterialParamCubemap("cubemap");
 const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");

@@ -13,6 +13,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
 
+#include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
 
 #include "Input/InputSystem.h"
@@ -256,6 +257,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    // not implemented
+    // case UIDispatcherEvent::CHANGE_MOUSE_MODE:
     default:
         break;
     }
@@ -545,6 +548,16 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
 }
 
 eModifierKeys WindowBackend::GetModifierKeys() const

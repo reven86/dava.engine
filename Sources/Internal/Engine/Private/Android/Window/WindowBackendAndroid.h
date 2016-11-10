@@ -12,6 +12,7 @@
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/EngineTypes.h"
 
 #include <android/native_window_jni.h>
 
@@ -49,6 +50,8 @@ public:
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
     // These methods are public intentionally as they are accessed from
     // extern "C" functions which are invoked by java
     void OnResume();
