@@ -1,5 +1,8 @@
-#include "CommandLine/SceneValidation/SceneValidationTool.h"
+#include "CommandLine/SceneValidationTool.h"
 #include "Qt/Scene/Validation/SceneValidation.h"
+#include "Qt/Scene/Validation/ValidationOutput.h"
+#include "Qt/Project/ConsoleProject.h"
+#include "Qt/Project/ProjectManager.h"
 #include "CommandLine/Private/OptionName.h"
 #include "Utils/StringUtils.h"
 
@@ -36,18 +39,18 @@ const DAVA::String SceneValidationTool::Key = "-scenevalidation";
 SceneValidationTool::SceneValidationTool(const DAVA::Vector<DAVA::String>& commandLine)
     : CommandLineModule(commandLine, Key)
 {
-    options.AddOption(OptionName::Scene, VariantType(String("")), "Path to validated scene");
-    options.AddOption(OptionName::SceneList, VariantType(String("")), "Path to file with the list of validated scenes");
-    options.AddOption(OptionName::Validate, VariantType(String("all")), "Validation options: all, matrices, sameNames, collisionTypes, texturesRelevance, materialGroups", true);
+    options.AddOption(OptionName::Scene, DAVA::VariantType(DAVA::String("")), "Path to validated scene");
+    options.AddOption(OptionName::SceneList, DAVA::VariantType(DAVA::String("")), "Path to file with the list of validated scenes");
+    options.AddOption(OptionName::Validate, DAVA::VariantType(DAVA::String("all")), "Validation options: all, matrices, sameNames, collisionTypes, texturesRelevance, materialGroups", true);
 }
 
-void SceneValidationTool::SetAllValidationOptionsTo(bool newValue)
+void SceneValidationTool::EnableAllValidations()
 {
-    validateMatrices = newValue;
-    validateSameNames = newValue;
-    validateCollisionTypes = newValue;
-    validateTexturesRelevance = newValue;
-    validateMaterialGroups = newValue;
+    validateMatrices = true;
+    validateSameNames = true;
+    validateCollisionTypes = true;
+    validateTexturesRelevance = true;
+    validateMaterialGroups = true;
 }
 
 bool SceneValidationTool::PostInitInternal()
@@ -75,10 +78,10 @@ bool SceneValidationTool::PostInitInternal()
 
     for (uint32 n = 0; n < validationOptionsCount; ++n)
     {
-        String option = options.GetOption(OptionName::Validate, n).AsString();
+        DAVA::String option = options.GetOption(OptionName::Validate, n).AsString();
         if (option == "all")
         {
-            SetAllValidationOptionsTo(true);
+            EnableAllValidations();
             break;
         }
         else if (option == "matrices")
@@ -113,6 +116,8 @@ bool SceneValidationTool::PostInitInternal()
 
 DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
 {
+    using namespace DAVA;
+
     Vector<FilePath> scenePathes;
     if (!scenesListPath.IsEmpty())
     {
@@ -123,23 +128,50 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         scenePathes.push_back(scenePath);
     }
 
+    new ConsoleProject;
+    SCOPE_EXIT
+    {
+        ConsoleProject::Instance()->Release();
+    };
+
     for (const FilePath& scenePath : scenePathes)
     {
-        ScopedPtr<SceneEditor2> scene(new SceneEditor2());
+        ConsoleProject::Instance()->OpenProject(ProjectManager::CreateProjectPathFromPath(scenePath));
+
+        ScopedPtr<Scene> scene(new Scene);
         if (SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePath))
         {
             Logger::Info("Validating scene '%s'", scenePath.GetAbsolutePathname().c_str());
 
             if (validateMatrices)
-                SceneValidation::ValidateMatrices(scene);
+            {
+                SceneValidation::LogValidationOutput output("Validating matrices");
+                SceneValidation::ValidateMatrices(scene, &output);
+            }
+
             if (validateSameNames)
-                SceneValidation::ValidateSameNames(scene);
+            {
+                SceneValidation::LogValidationOutput output("Validating same names");
+                SceneValidation::ValidateSameNames(scene, &output);
+            }
+
             if (validateCollisionTypes)
-                SceneValidation::ValidateCollisionProperties(scene);
+            {
+                SceneValidation::LogValidationOutput output("Validating collision types");
+                SceneValidation::ValidateCollisionProperties(scene, &output);
+            }
+
             if (validateTexturesRelevance)
-                SceneValidation::ValidateTexturesRelevance(scene);
+            {
+                SceneValidation::LogValidationOutput output("Validating textures relevance");
+                SceneValidation::ValidateTexturesRelevance(scene, &output);
+            }
+
             if (validateMaterialGroups)
-                SceneValidation::ValidateMaterialsGroups(scene);
+            {
+                SceneValidation::LogValidationOutput output("Validating material groups");
+                SceneValidation::ValidateMaterialsGroups(scene, &output);
+            }
         }
         else
         {

@@ -7,6 +7,7 @@
 
 #include "Main/QtUtils.h"
 #include "Project/ProjectManager.h"
+#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Settings/SettingsManager.h"
@@ -251,11 +252,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
         materials.erase(globalMaterial);
     }
 
-    const QVector<ProjectManager::AvailableMaterialTemplate>* materialTemplates = 0;
-    if (ProjectManager::Instance() != nullptr)
-    {
-        materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
-    }
+    const DAVA::Vector<MaterialTemplateInfo>& materialTemplates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
 
     DAVA::FastName textureNames[] = {
         DAVA::NMaterialTextureName::TEXTURE_ALBEDO,
@@ -321,13 +318,14 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
             }
         }
 
-        if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+        const FastName& fxName = (*it)->GetEffectiveFXName();
+        if (fxName.IsValid() && !materialTemplates.empty() && fxName != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
             // ShadowVolume material is non-assignable and it's okey
             bool templateFound = false;
-            for (int i = 0; i < materialTemplates->size(); ++i)
+            for (const MaterialTemplateInfo& materialTemplate : materialTemplates)
             {
-                if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
+                if (0 == materialTemplate.path.compare(fxName.c_str()))
                 {
                     templateFound = true;
                     break;

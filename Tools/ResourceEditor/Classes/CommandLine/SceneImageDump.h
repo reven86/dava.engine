@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Render/RenderBase.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 namespace DAVA
 {

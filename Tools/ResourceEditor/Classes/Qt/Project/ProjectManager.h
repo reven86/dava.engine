@@ -15,13 +15,6 @@ class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
     Q_OBJECT
 
 public:
-    struct AvailableMaterialTemplate
-    {
-        QString name;
-        QString path;
-        QVector<QString> qualities;
-    };
-
     ProjectManager();
     ~ProjectManager();
 
@@ -34,8 +27,6 @@ public:
 
     const DAVA::FilePath& GetWorkspacePath() const;
 
-    const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
-
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
 
     void SetSpritesPacker(SpritesPackerModule* spritesPacker);
@@ -46,7 +37,7 @@ public:
     void OpenLastProject();
     void CloseProject();
 
-    ProjectStructure* GetDataSourceSceneFiles() const;
+    const ProjectStructure* GetDataSourceSceneFiles() const;
 
 signals:
     void ProjectOpened(const QString& path);
@@ -57,9 +48,7 @@ public slots:
     void OnSpritesReloaded();
 
 private:
-    void LoadProjectSettings();
-    void LoadMaterialsSettings();
-
+    void LoadEditorConfig();
     void UpdateInternalValues();
 
     std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
@@ -69,8 +58,6 @@ private:
     DAVA::FilePath particlesConfigPath;
     DAVA::FilePath particlesDataPath;
     DAVA::FilePath workspacePath;
-
-    QVector<AvailableMaterialTemplate> templates;
 
     SpritesPackerModule* spritesPacker = nullptr;
 };

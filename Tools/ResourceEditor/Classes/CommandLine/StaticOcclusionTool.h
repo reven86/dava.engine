@@ -2,7 +2,7 @@
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FilePath.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 namespace DAVA
 {

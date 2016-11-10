@@ -36,6 +36,7 @@
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
 
 #include "Base/Introspection.h"
 
@@ -599,15 +600,15 @@ void MaterialEditor::initTemplates()
     {
         QStandardItemModel* templatesModel = new QStandardItemModel(this);
 
-        const QVector<ProjectManager::AvailableMaterialTemplate>* templates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+        const DAVA::Vector<MaterialTemplateInfo>& templates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
         QStandardItem* emptyItem = new QStandardItem(QString());
         templatesModel->appendRow(emptyItem);
 
-        for (int i = 0; i < templates->size(); ++i)
+        for (const MaterialTemplateInfo& t : templates)
         {
             QStandardItem* item = new QStandardItem();
-            item->setText(templates->at(i).name);
-            item->setData(templates->at(i).path, Qt::UserRole);
+            item->setText(t.name.c_str());
+            item->setData(t.path.c_str(), Qt::UserRole);
             templatesModel->appendRow(item);
         }
 

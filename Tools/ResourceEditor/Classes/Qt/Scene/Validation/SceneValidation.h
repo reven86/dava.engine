@@ -1,13 +1,17 @@
 #pragma once
 
+#include "Base/Result.h"
+
 namespace SceneValidation
 {
+class ValidationOutput;
+
 /**
     For all parent models (i.e. models at which `scene` entities are referenced with "referenceToOwner" property)
     function checks whether local & world matrices are identity.
     If any validation check is failing, logger warning is emmited
 */
-void ValidateMatrices(SceneEditor2* scene);
+void ValidateMatrices(Scene* scene, ValidationOutput* output);
 
 /**
     For all `scene` entities with same names function does following checks:
@@ -21,24 +25,24 @@ void ValidateMatrices(SceneEditor2* scene);
        Effects are considered to be equal when all corresponding effect entities have same names
     If any validation check is failing, logger warning is emmited
 */
-void ValidateSameNames(SceneEditor2* scene);
+void ValidateSameNames(Scene*, ValidationOutput* output);
 
 /**
     For all `scene` entities that have "CollisionType" property specifed, "MaterialKind" or "FallType" properties are also should be specifed.
     Except for entites that have "CollisionType" = "Water".
     If any validation check is failing, logger warning is emmited
 */
-void ValidateCollisionProperties(SceneEditor2* scene);
+void ValidateCollisionProperties(Scene* scene, ValidationOutput* output);
 
 /**
     For all `scene` textures that have any converted textures, function checks whether converted textures are relevant, i.e. recompression is not needed
     If any validation check is failing, logger warning is emmited
 */
-void ValidateTexturesRelevance(SceneEditor2* scene);
+void ValidateTexturesRelevance(Scene* scene, ValidationOutput* output);
 
 /**
     For all `scene` materials that have multi-quality material template, function checks whether quality group is specified.
     If any validation check is failing, logger warning is emmited
 */
-void ValidateMaterialsGroups(SceneEditor2* scene);
+void ValidateMaterialsGroups(Scene* scene, ValidationOutput* output);
 };

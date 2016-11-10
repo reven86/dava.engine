@@ -5,7 +5,7 @@
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class SceneExporterTool : public CommandLineModule
 {

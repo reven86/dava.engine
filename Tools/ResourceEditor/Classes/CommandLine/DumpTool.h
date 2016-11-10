@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class DumpTool : public CommandLineModule
 {

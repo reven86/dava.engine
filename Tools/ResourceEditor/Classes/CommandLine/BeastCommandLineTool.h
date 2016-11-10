@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "FileSystem/FilePath.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class SceneEditor2;
 class BeastRunner;

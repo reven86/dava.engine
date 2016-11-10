@@ -1,6 +1,7 @@
 #include "SceneValidationDialog.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "SceneValidation.h"
 
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_SceneValidationDialog.h"
@@ -50,41 +51,40 @@ void SceneValidationDialog::SaveOptions()
     SettingsManager::SetValue(Settings::Internal_Validate_ShowConsole, VariantType(ui->showConsoleCheckBox->isChecked()));
 }
 
-void SceneValidationDialog::DoMatrices()
-{
-    SceneValidation::ValidateMatrices(scene);
-}
-
 void SceneValidationDialog::Validate()
 {
     DVASSERT(Thread::IsMainThread());
 
-    //ui->validateButton->setEnabled(false);
+    ui->validateButton->setEnabled(false);
 
     if (ui->matriciesCheckBox->isChecked())
     {
-        //JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &SceneValidationDialog::DoMatrices));
-        SceneValidation::ValidateMatrices(scene);
+        SceneValidation::LogValidationOutput output("Validating matrices");
+        SceneValidation::ValidateMatrices(scene, &output);
     }
 
     if (ui->sameNamesCheckBox->isChecked())
     {
-        SceneValidation::ValidateSameNames(scene);
+        SceneValidation::LogValidationOutput output("Validating same names");
+        SceneValidation::ValidateSameNames(scene, &output);
     }
 
     if (ui->collisionsCheckBox->isChecked())
     {
-        SceneValidation::ValidateCollisionProperties(scene);
+        SceneValidation::LogValidationOutput output("Validating collision types");
+        SceneValidation::ValidateCollisionProperties(scene, &output);
     }
 
     if (ui->relevanceCheckBox->isChecked())
     {
-        SceneValidation::ValidateTexturesRelevance(scene);
+        SceneValidation::LogValidationOutput output("Validating textures relevance");
+        SceneValidation::ValidateTexturesRelevance(scene, &output);
     }
 
     if (ui->materialGroupsCheckBox->isChecked())
     {
-        SceneValidation::ValidateMaterialsGroups(scene);
+        SceneValidation::LogValidationOutput output("Validating material groups");
+        SceneValidation::ValidateMaterialsGroups(scene, &output);
     }
 
     ui->validateButton->setEnabled(true);
@@ -140,4 +140,5 @@ void SceneValidationDialog::ShowConsole(bool checked)
 void SceneValidationDialog::closeEvent(QCloseEvent* event)
 {
     SaveOptions();
+    event->accept();
 }

@@ -1,5 +1,5 @@
 ﻿#include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 

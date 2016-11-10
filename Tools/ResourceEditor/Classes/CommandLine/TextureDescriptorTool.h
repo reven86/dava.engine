@@ -2,7 +2,7 @@
 
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class TextureDescriptorTool : public CommandLineModule
 {

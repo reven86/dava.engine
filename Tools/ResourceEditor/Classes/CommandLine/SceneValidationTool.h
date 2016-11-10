@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class SceneValidationTool : public CommandLineModule
 {
@@ -13,7 +13,7 @@ private:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
 
-    void SetAllValidationOptionsTo(bool newValue);
+    void EnableAllValidations();
 
     DAVA::FilePath scenePath;
     DAVA::FilePath scenesListPath;

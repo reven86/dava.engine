@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base/Introspection.h"
-#include "SceneValidation.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 PUSH_QT_WARNING_SUPRESSOR

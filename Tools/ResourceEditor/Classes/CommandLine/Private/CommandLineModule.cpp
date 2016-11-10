@@ -1,4 +1,4 @@
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"

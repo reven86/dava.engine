@@ -7,19 +7,18 @@
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ProjectInformation/ProjectStructure.h"
-
+#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
 
 #include "SpritesPacker/SpritesPackerModule.h"
 
 ProjectManager::ProjectManager()
 {
-    DAVA::Vector<DAVA::String> extensions = { "sc2" };
-    dataSourceSceneFiles.reset(new ProjectStructure(extensions));
+    DAVA::Vector<DAVA::String> sceneFileExtensions = { "sc2" };
+    dataSourceSceneFiles.reset(new ProjectStructure(sceneFileExtensions));
 }
 
 ProjectManager::~ProjectManager() = default;
@@ -52,11 +51,6 @@ const DAVA::FilePath& ProjectManager::GetParticlesDataPath() const
 const DAVA::FilePath& ProjectManager::GetWorkspacePath() const
 {
     return workspacePath;
-}
-
-const QVector<ProjectManager::AvailableMaterialTemplate>* ProjectManager::GetAvailableMaterialTemplates() const
-{
-    return &templates;
 }
 
 DAVA::FilePath ProjectManager::ProjectOpenDialog() const
@@ -92,13 +86,13 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
             SettingsManager::SetValue(Settings::Internal_LastProjectPath, DAVA::VariantType(projectPath));
 
             UpdateInternalValues();
-            LoadProjectSettings();
-            LoadMaterialsSettings();
+            LoadEditorConfig();
 
             DAVA::FileSystem::Instance()->CreateDirectory(workspacePath, true);
 
             SceneValidator::Instance()->SetPathForChecking(projectPath);
 
+            MaterialTemplatesInfo::Instance()->Load("~res:/Materials/assignable.yaml");
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
@@ -166,82 +160,9 @@ void ProjectManager::OnSpritesReloaded()
     emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
 }
 
-void ProjectManager::LoadProjectSettings()
+void ProjectManager::LoadEditorConfig()
 {
     EditorConfig::Instance()->ParseConfig(projectPath + "EditorConfig.yaml");
-}
-
-QVector<QString> LoadMaterialQualities(FilePath fxPath)
-{
-    QVector<QString> qualities;
-    YamlParser* parser = YamlParser::Create(fxPath);
-    if (parser)
-    {
-        YamlNode* rootNode = parser->GetRootNode();
-        if (rootNode)
-        {
-            const YamlNode* materialTemplateNode = rootNode->Get("MaterialTemplate");
-            if (materialTemplateNode)
-            {
-                static const char* QUALITIES[] = { "LOW", "MEDIUM", "HIGH", "ULTRA_HIGH" };
-                for (const char* quality : QUALITIES)
-                {
-                    const YamlNode* qualityNode = materialTemplateNode->Get(quality);
-                    if (qualityNode)
-                    {
-                        qualities.append(quality);
-                    }
-                }
-            }
-        }
-    }
-
-    return qualities;
-}
-
-void ProjectManager::LoadMaterialsSettings()
-{
-    templates.clear();
-
-    // parse available material templates
-    const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
-    if (DAVA::FileSystem::Instance()->Exists(materialsListPath))
-    {
-        DAVA::ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
-        DAVA::YamlNode* rootNode = parser->GetRootNode();
-
-        if (nullptr != rootNode)
-        {
-            DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
-
-            for (DAVA::uint32 i = 0; i < rootNode->GetCount(); ++i)
-            {
-                const DAVA::YamlNode* templateNode = rootNode->Get(i);
-                if (nullptr != templateNode)
-                {
-                    const DAVA::YamlNode* name = templateNode->Get("name");
-                    const DAVA::YamlNode* path = templateNode->Get("path");
-
-                    if (nullptr != name && nullptr != path &&
-                        name->GetType() == DAVA::YamlNode::TYPE_STRING &&
-                        path->GetType() == DAVA::YamlNode::TYPE_STRING)
-                    {
-                        const DAVA::FilePath templatePath = materialsListDir + path->AsString();
-                        if (DAVA::FileSystem::Instance()->Exists(templatePath))
-                        {
-                            AvailableMaterialTemplate amt;
-
-                            amt.name = name->AsString().c_str();
-                            amt.path = templatePath.GetFrameworkPath().c_str();
-                            amt.qualities = LoadMaterialQualities(templatePath);
-
-                            templates.append(amt);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 void ProjectManager::UpdateInternalValues()
@@ -274,7 +195,7 @@ DAVA::FilePath ProjectManager::CreateProjectPathFromPath(const DAVA::FilePath& p
     return DAVA::FilePath();
 }
 
-ProjectStructure* ProjectManager::GetDataSourceSceneFiles() const
+const ProjectStructure* ProjectManager::GetDataSourceSceneFiles() const
 {
     return dataSourceSceneFiles.get();
 }

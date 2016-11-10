@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommandLine/Private/CommandLineModule.h"
+#include "CommandLine/CommandLineModule.h"
 
 class ConsoleHelpTool : public CommandLineModule
 {
