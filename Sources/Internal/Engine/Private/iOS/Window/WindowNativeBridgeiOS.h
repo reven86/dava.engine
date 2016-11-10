@@ -35,7 +35,7 @@ namespace Private
 // WindowNativeBridge is friend of iOS's WindowBackend
 struct WindowNativeBridge final
 {
-    WindowNativeBridge(WindowBackend* windowBackend);
+    WindowNativeBridge(WindowBackend* windowBackend, const KeyedArchive* engineOptions);
     ~WindowNativeBridge();
 
     void* GetHandle() const;
@@ -73,6 +73,8 @@ struct WindowNativeBridge final
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;
+
+    const KeyedArchive* engineOptions = nullptr;
 };
 
 } // namespace Private

@@ -22,7 +22,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , bridge(new WindowNativeBridge(this))
+    , bridge(new WindowNativeBridge(this, engineBackend->GetOptions()))
     , nativeService(new WindowNativeService(bridge.get()))
 {
 }

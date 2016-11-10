@@ -10,11 +10,6 @@
 
 @implementation RenderView
 
-+ (Class)layerClass
-{
-    return [CAEAGLLayer class];
-}
-
 - (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 {
     self = [super initWithFrame:frame];
@@ -49,6 +44,30 @@
     [self touchesEnded:touches withEvent:event];
 }
 
+@end
+
+///////////////////////////////////////////////////////////////////////
+//////Metal View
+
+@implementation RenderViewMetal
++ (Class)layerClass
+{
+#if !(TARGET_IPHONE_SIMULATOR == 1)
+    return [CAMetalLayer class];
+#else
+    return [CALayer class];
+#endif
+}
+@end
+
+///////////////////////////////////////////////////////////////////////
+//////OpenGL View
+
+@implementation RenderViewGL
++ (Class)layerClass
+{
+    return [CAEAGLLayer class];
+}
 @end
 
 #endif // __DAVAENGINE_IPHONE__
