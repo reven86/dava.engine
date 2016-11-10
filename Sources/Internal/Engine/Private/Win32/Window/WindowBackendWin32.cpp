@@ -709,6 +709,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
         lresult = OnDpiChanged(suggestedRect);
     }
+    else if (message == WM_DISPLAYCHANGE)
+    {
+        engineBackend->UpdateDisplayConfig();
+    }
     else
     {
         isHandled = false;

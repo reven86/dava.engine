@@ -75,7 +75,7 @@ namespace DAVA
 {
 namespace Private
 {
-extern int StartUWPApplication(const Vector<String>& cmdargs);
+extern int StartUWPApplication(Vector<String> cmdargs);
 } // namespace Private
 } // namespace DAVA
 
@@ -84,9 +84,7 @@ extern int StartUWPApplication(const Vector<String>& cmdargs);
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
-
-    Vector<String> cmdargs = Private::GetCommandArgs();
-    return DAVA::Private::StartUWPApplication(cmdargs);
+    return Private::StartUWPApplication(Private::GetCommandArgs());
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)

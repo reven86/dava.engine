@@ -32,6 +32,8 @@ class IPackManager;
 class AssetsManagerAndroid;
 class ModuleManager;
 
+class DeviceManager;
+
 namespace Net
 {
 class NetCore;
@@ -77,6 +79,8 @@ public:
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif
+
+    DeviceManager* deviceManager = nullptr;
 };
 
 } // namespace DAVA

@@ -29,6 +29,17 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     , nativeService(new NativeService(this))
 {
     DllImport::Initialize();
+
+    // Enable per monitor dpi awareness if by some reason it has not been set in manifest file
+    if (DllImport::fnGetProcessDpiAwareness != nullptr)
+    {
+        PROCESS_DPI_AWARENESS dpiAwareLevel;
+        HRESULT hr = DllImport::fnGetProcessDpiAwareness(nullptr, &dpiAwareLevel);
+        if (hr == S_OK && dpiAwareLevel != PROCESS_PER_MONITOR_DPI_AWARE)
+        {
+            DllImport::fnSetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        }
+    }
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 

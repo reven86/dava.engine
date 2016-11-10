@@ -14,19 +14,18 @@ namespace DAVA
 namespace Private
 {
 
-int StartUWPApplication(const Vector<String>& cmdargs)
+int StartUWPApplication(Vector<String> cmdargs)
 {
     using namespace ::Windows::UI::Xaml;
-    auto appStartCallback = ref new ApplicationInitializationCallback([cmdargs](ApplicationInitializationCallbackParams^) {
-        ref new DAVA::Private::UWPApplication(cmdargs);
+    auto appStartCallback = ref new ApplicationInitializationCallback([cmdargs=std::move(cmdargs)](ApplicationInitializationCallbackParams^) {
+        ref new DAVA::Private::UWPApplication(std::move(cmdargs));
     });
     Application::Start(appStartCallback);
     return 0;
 }
 
-UWPApplication::UWPApplication(const Vector<String>& cmdargs)
-    : engineBackend(new EngineBackend(cmdargs))
-    , core(engineBackend->GetPlatformCore())
+UWPApplication::UWPApplication(Vector<String> cmdargs)
+    : commandArgs(std::move(cmdargs))
 {
 }
 
@@ -43,6 +42,14 @@ void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActiv
 
 void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args)
 {
+    if (engineBackend == nullptr)
+    {
+        // Create EngineBackend when application has entered thread where Universal Applications live (so called UI-thread).
+        // Reason: Win10 platform implementation can access WinRT API when initializing EngineBackend (DeviceManager, etc).
+        engineBackend.reset(new EngineBackend(commandArgs));
+        core = engineBackend->GetPlatformCore();
+        commandArgs.clear();
+    }
     core->OnWindowCreated(args->Window);
 }
 
@@ -83,6 +90,11 @@ void UWPApplication::OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gam
     core->OnGamepadRemoved(gamepad);
 }
 
+void UWPApplication::OnDpiChanged(::Windows::Graphics::Display::DisplayInformation^ sender, ::Platform::Object^ args)
+{
+    core->OnDpiChanged();
+}
+
 void UWPApplication::InstallEventHandlers()
 {
     using namespace ::Platform;
@@ -91,6 +103,7 @@ void UWPApplication::InstallEventHandlers()
     using namespace ::Windows::UI::Core;
     using namespace ::Windows::Gaming::Input;
     using namespace ::Windows::Phone::UI::Input;
+    using namespace ::Windows::Graphics::Display;
     using ::Windows::Foundation::Metadata::ApiInformation;
 
     Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
@@ -105,6 +118,9 @@ void UWPApplication::InstallEventHandlers()
 
     Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadAdded);
     Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadRemoved);
+
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    displayInformation->DpiChanged += ref new TypedEventHandler<DisplayInformation^, Object^>(this, &UWPApplication::OnDpiChanged);
 }
 
 } // namespace Private

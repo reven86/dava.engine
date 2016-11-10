@@ -31,6 +31,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
 #include "Tests/UILoggingTest.h"
+#include "Tests/DeviceManagerTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -205,6 +206,9 @@ void TestBed::OnError()
 void TestBed::RegisterTests()
 {
     new CoreV2Test(*this);
+#if defined(__DAVAENGINE_WINDOWS__)
+    new DeviceManagerTest(*this);
+#endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
     new UIScrollViewTest(*this);

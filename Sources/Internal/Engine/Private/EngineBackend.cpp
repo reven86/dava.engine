@@ -18,6 +18,7 @@
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
+#include "DeviceManager/DeviceManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
@@ -72,6 +73,9 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+
+    // TODO: consider another way of DeviceManager initialization, as console apps possibly do not need DeviceManager
+    context->deviceManager = new DeviceManager(this);
 }
 
 EngineBackend::~EngineBackend()
@@ -423,6 +427,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::GAMEPAD_REMOVED:
         context->inputSystem->HandleGamepadRemoved(e);
         break;
+    case MainDispatcherEvent::DISPLAY_CONFIG_CHANGED:
+        context->deviceManager->HandleEvent(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -613,6 +620,11 @@ void EngineBackend::DeinitRender(Window* w)
 {
 }
 
+void EngineBackend::UpdateDisplayConfig()
+{
+    context->deviceManager->UpdateDisplayConfig();
+}
+
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 {
     context->allocatorFactory = new AllocatorFactory();
@@ -752,6 +764,7 @@ void EngineBackend::DestroySubsystems()
     context->fileSystem->Release();
     context->systemTimer->Release();
 
+    delete context->deviceManager;
     context->logger->Release();
 }
 

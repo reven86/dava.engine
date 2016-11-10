@@ -17,7 +17,7 @@ namespace Private
 ref class UWPApplication sealed : public ::Windows::UI::Xaml::Application
 {
 internal:
-    UWPApplication(const Vector<String>& cmdargs);
+    UWPApplication(Vector<String> cmdargs);
 
 protected:
     // ::Windows::UI::Xaml::Application overriden methods
@@ -36,11 +36,14 @@ private:
     void OnGamepadAdded(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
     void OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
 
+    void OnDpiChanged(::Windows::Graphics::Display::DisplayInformation^ sender, ::Platform::Object^ args);
+
     void InstallEventHandlers();
 
 private:
     std::unique_ptr<EngineBackend> engineBackend;
     PlatformCore* core = nullptr;
+    Vector<String> commandArgs;
 };
 
 // clang-format on
