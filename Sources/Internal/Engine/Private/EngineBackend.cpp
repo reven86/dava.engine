@@ -239,13 +239,13 @@ void EngineBackend::OnEngineCleanup()
 {
     engine->cleanup.Emit();
 
+    if (ImGui::IsInitialized())
+        ImGui::Uninitialize();
+
     DestroySubsystems();
 
     if (!IsConsoleMode())
     {
-        if (ImGui::IsInitialized())
-            ImGui::Uninitialize();
-
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
     }
@@ -586,9 +586,6 @@ void EngineBackend::InitRenderer(Window* w)
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
-
-    if (options->GetBool("init_imgui"))
-        ImGui::Initialize();
 }
 
 void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
@@ -690,6 +687,9 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
+
+        if (options->GetBool("init_imgui"))
+            ImGui::Initialize();
     }
     else
     {
