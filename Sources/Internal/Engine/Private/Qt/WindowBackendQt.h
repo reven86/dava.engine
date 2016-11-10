@@ -53,6 +53,9 @@ public:
 
     void TriggerPlatformEvents();
 
+	float32 GetSurfaceScale() const;
+	bool SetSurfaceScale(float32 scale);
+
 private:
     void UIEventHandler(const UIDispatcherEvent& e);
     void DoResizeWindow(float32 width, float32 height);
