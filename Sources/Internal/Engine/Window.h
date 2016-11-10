@@ -44,7 +44,7 @@ public:
     /** 
         Returns dots-per-inch for a monitor, where the window is placed. 
         
-        \remark Use `Window::dpiChanged` signal to know, when window was placed on another monitor with different dpi.
+        \remark Use `Window::dpiChanged` signal to know, when the window was placed on another monitor with different dpi.
     */
     float32 GetDPI() const;
 
