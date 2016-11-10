@@ -11,6 +11,8 @@
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 
+#include "Render/RHI/rhi_Public.h"
+
 #import <sys/utsname.h>
 #import <UIKit/UIKit.h>
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
