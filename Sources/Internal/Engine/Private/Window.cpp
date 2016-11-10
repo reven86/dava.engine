@@ -457,11 +457,10 @@ bool Window::SetSurfaceScale(float32 scale)
     if (FLOAT_EQUAL(currentScale, scale))
     {
         Logger::Instance()->Debug(Format("Window::SetSurfaceScale: specified scale (%f) is the same as the current one, ignoring", scale).c_str());
-        return false;
+        return true;
     }
 
-    windowBackend->SetSurfaceScale(scale);
-    return true;
+    return windowBackend->SetSurfaceScale(scale);
 }
 
 } // namespace DAVA

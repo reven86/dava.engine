@@ -130,6 +130,7 @@ void WindowNativeBridge::SetSurfaceScale(float32 scale)
 
 	mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH));
 }
+
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     windowBackend->ProcessPlatformEvents();

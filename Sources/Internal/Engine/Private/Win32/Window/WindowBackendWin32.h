@@ -50,7 +50,7 @@ public:
     void ProcessPlatformEvents();
 
     float32 GetSurfaceScale() const;
-    void SetSurfaceScale(float32 scale);
+    bool SetSurfaceScale(float32 scale);
 
 private:
     void DoResizeWindow(float32 width, float32 height);
