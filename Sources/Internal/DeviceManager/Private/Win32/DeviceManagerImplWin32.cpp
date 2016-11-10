@@ -91,7 +91,7 @@ BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPR
         UINT dpiY = 0;
         if (DllImport::fnGetDpiForMonitor != nullptr)
         {
-            DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+            DllImport::fnGetDpiForMonitor(hmonitor, MDT_RAW_DPI, &dpiX, &dpiY);
             di->rawDpiX = static_cast<float32>(dpiX);
             di->rawDpiY = static_cast<float32>(dpiY);
         }

@@ -73,6 +73,8 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+
+    // TODO: consider another way of DeviceManager initialization, as console apps possibly do not need DeviceManager
     context->deviceManager = new DeviceManager(this);
 }
 

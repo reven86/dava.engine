@@ -13,7 +13,7 @@ namespace Private
 // Application cannot enumerate all available displays, it only has access to current display window is on.
 // Also DisplayInformation provides display size only early on application start, further calls will return
 // only window dimension. As a result DeviceManagerImpl reads all display information one time on initialization,
-// and when display properties change (only DisplayInformation::LogicalDpi are supported) update only dpi
+// and when display properties change (only DisplayInformation::LogicalDpi are supported) update only raw dpi
 // providing cached display size.
 
 DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher)
@@ -31,8 +31,8 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 
     displayInfo.systemId = 0;
     displayInfo.name = "display"; // Any name as DisplayInformation does not provide display name
-    displayInfo.rawDpiX = displayInformation->LogicalDpi;
-    displayInfo.rawDpiY = displayInformation->LogicalDpi;
+    displayInfo.rawDpiX = displayInformation->RawDpiX;
+    displayInfo.rawDpiY = displayInformation->RawDpiY;
     displayInfo.rect.x = displayRect.X;
     displayInfo.rect.y = displayRect.Y;
     displayInfo.rect.dx = displayRect.Width * rawPixelsPerViewPixel;
@@ -48,12 +48,15 @@ void DeviceManagerImpl::UpdateDisplayConfig()
 
     DisplayInformation ^ displayInformation = DisplayInformation::GetForCurrentView();
 
-    DisplayInfo* di = new DisplayInfo[1];
-    *di = displayInfo;
+    if (displayInfo.rawDpiX != displayInformation->RawDpiX || displayInfo.rawDpiY != displayInformation->RawDpiY)
+    {
+        displayInfo.rawDpiX = displayInformation->RawDpiX;
+        displayInfo.rawDpiY = displayInformation->RawDpiY;
 
-    di->rawDpiX = displayInformation->LogicalDpi;
-    di->rawDpiY = displayInformation->LogicalDpi;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateDisplayConfigChangedEvent(di, 1));
+        DisplayInfo* di = new DisplayInfo[1];
+        *di = displayInfo;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateDisplayConfigChangedEvent(di, 1));
+    }
 }
 
 } // namespace Private
