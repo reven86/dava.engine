@@ -20,7 +20,7 @@ struct DeviceManagerImpl;
 /**
     \ingroup device_manager
 
-    Class which keeps current device configuration, listens device addition, removal or devices' properties changes.
+    Class which keeps current device configuration, listens for device addition, removal or devices' properties changes.
     Application can subscribe to appropriate signals to receive notification about configuration changes.
 
     \todo For now only `DeviceManager` observes only display devices, further add other devices (input, storage, maybe network).
