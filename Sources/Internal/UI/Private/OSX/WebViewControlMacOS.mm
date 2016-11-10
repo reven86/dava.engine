@@ -13,6 +13,8 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/UIControlSystem.h"
+
 #include "UI/UIWebView.h"
 #include "Platform/Steam.h"
 
