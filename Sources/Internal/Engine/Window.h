@@ -42,16 +42,16 @@ public:
     bool HasFocus() const;
 
     /** 
-        Returns dots-per-inch for a monitor, where that window is placed. 
+        Returns dots-per-inch for a monitor, where the window is placed. 
         
-        \remark Use `Window::dpiChanged` signal to know, when window was placed on other monitor with other dpi.
+        \remark Use `Window::dpiChanged` signal to know, when window was placed on another monitor with different dpi.
     */
     float32 GetDPI() const;
 
     /** 
         Returns size of the window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
-        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
+        if the window was created on a system with high-dpi support (e.g. OSX or Windows 10).
 
         \remark Use `GetSurfaceSize()` to get rendering surface size in pixels.
         \remark Use `Window::sizeChanged` signal to know, when window size was changed.
@@ -59,11 +59,11 @@ public:
     Size2f GetSize() const;
 
     /** 
-        Sets the size of a window's client area. 
+        Sets the size of the window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
-        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
+        if the windows was created on a system with high-dpi support (e.g. OSX or Windows 10).
         On some platforms (iOS, Android or Win10 Phone) there is no real window system and
-        as a consequence window size can't be changes, so this function will have no effect.
+        as a consequence window size can't be changed, so this function will have no effect.
 
         \remark Use `Window::sizeChanged` signal to know, when window size was changed.
     */
@@ -104,8 +104,8 @@ public:
     /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        The Window keeps the last mode, and itself releases or captures cursor if need(when it loses or receives focus).
-        If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
+        The Window keeps the last mode, and releases or captures a cursor by itself if needed (when it loses or receives focus).
+        If the last mode is pinning, it will set after any keyboard event (mouse wheel too) or mouse press event inside client area.
     */
     void SetCursorCapture(eCursorCapture mode);
 
@@ -115,7 +115,7 @@ public:
     /** Set cursor visibility for current Window.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        The Window keeps the last state, and itself shows or hides cursor if need(when it loses or receives focus).
+        The Window keeps the last state, and shows or hides a cursor by itself if needed (when it loses or receives focus).
     */
     void SetCursorVisibility(bool visible);
 
@@ -194,8 +194,6 @@ private:
     float32 height = 0.0f; //!< Window client area height.
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
-
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
 
 inline bool Window::IsPrimary() const

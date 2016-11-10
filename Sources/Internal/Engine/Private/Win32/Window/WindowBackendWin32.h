@@ -128,13 +128,12 @@ private:
     bool closeRequestByApp = false;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
-<<<<<<< HEAD
+
     float32 surfaceScale = 1.0f;
-=======
+
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
->>>>>>> development
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;

@@ -131,8 +131,8 @@ void WindowNativeBridge::SetSurfaceScale(float32 scale)
 
     const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    const float32 surfaceWidth = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
-    const float32 surfaceHeight = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
+    const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
+    const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
 }
@@ -390,7 +390,7 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     }
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, true));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, GetModifierKeys(), true));
 }
 
 eModifierKeys WindowNativeBridge::GetModifierKeys() const
