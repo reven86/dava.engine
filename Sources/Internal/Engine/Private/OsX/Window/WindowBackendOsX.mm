@@ -119,7 +119,7 @@ float32 WindowBackend::GetSurfaceScale() const
     return [bridge->renderView backbufferScale];
 }
 
-void WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
@@ -130,6 +130,8 @@ void WindowBackend::SetSurfaceScale(float32 scale)
     [bridge->nswindow setContentView:bridge->renderView];
 
     bridge->WindowDidResize();
+    
+    return true;
 }
 
 } // namespace Private

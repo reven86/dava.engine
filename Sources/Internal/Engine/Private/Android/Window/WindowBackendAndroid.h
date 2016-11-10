@@ -45,7 +45,7 @@ public:
     void TriggerPlatformEvents();
 
     float32 GetSurfaceScale() const;
-    void SetSurfaceScale(float32 scale);
+    bool SetSurfaceScale(float32 scale);
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 

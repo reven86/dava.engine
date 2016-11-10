@@ -34,7 +34,6 @@
 
 - (void)setSurfaceScale:(DAVA::float32)surfaceScale
 {
-    // TODO: test with metal
     [self setContentScaleFactor:[[UIScreen mainScreen] scale] * surfaceScale];
 }
 
