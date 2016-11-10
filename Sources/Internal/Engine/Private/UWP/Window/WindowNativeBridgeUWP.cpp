@@ -123,12 +123,12 @@ void WindowNativeBridge::SetSurfaceScale(float32 scale)
 {
     surfaceScale = scale;
 
-    float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
-    float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
-    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
+    const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
+    const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
+    const float32 surfaceWidth = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
+    const float32 surfaceHeight = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
 }
 
 void WindowNativeBridge::OnTriggerPlatformEvents()

@@ -122,7 +122,7 @@ float32 WindowBackend::GetSurfaceScale() const
 
 bool WindowBackend::SetSurfaceScale(float32 scale)
 {
-    rhi::Api graphicsApi = Renderer::GetAPI();
+    const rhi::Api graphicsApi = Renderer::GetAPI();
     if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
     {
         Logger::Instance()->Debug(Format("SetSurfaceScale: scaling is not supported on current graphics API").c_str());
@@ -133,8 +133,8 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 
     surfaceScale = scale;
 
-    float32 surfaceWidth = lastWidth * surfaceScale;
-    float32 surfaceHeight = lastHeight * surfaceScale;
+    const float32 surfaceWidth = lastWidth * surfaceScale;
+    const float32 surfaceHeight = lastHeight * surfaceScale;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight));
 
     return true;
