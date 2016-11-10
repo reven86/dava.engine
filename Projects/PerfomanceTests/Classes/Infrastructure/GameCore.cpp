@@ -23,6 +23,7 @@ GameCore::GameCore(DAVA::Engine& e)
 
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
     engine.suspended.Connect(this, &GameCore::OnSuspend);
     engine.resumed.Connect(this, &GameCore::OnResume);
     engine.beginFrame.Connect(this, &GameCore::BeginFrame);
@@ -155,15 +156,17 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     w->SetSize({ 1024, 768 });
     w->SetTitle("Performance Tests");
 
+    w->sizeChanged.Connect(this, &GameCore::OnWindowResized);
+
     // TODO FullScreen
     //w->SetFullScreen(false);
 }
 
-void GameCore::OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void GameCore::OnWindowResized(DAVA::Window* window, DAVA::Size2f size, DAVA::Size2f surfaceSize)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    int32 width = int32(window->GetSize().dx);
-    int32 height = int32(window->GetSize().dy);
+    int32 width = int32(size.dx);
+    int32 height = int32(size.dy);
 
     EngineContext* context = engine.GetContext();
     context->uiControlSystem->vcs->SetVirtualScreenSize(width, height);

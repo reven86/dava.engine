@@ -8,6 +8,7 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "FileSystem/KeyedArchive.h"
 
 @class UIWindow;
 @class UIView;

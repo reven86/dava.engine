@@ -9,12 +9,14 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
+#include "Functional/SignalBase.h"
+
 namespace DAVA
 {
 class Engine;
 }
 
-class GameCore
+class GameCore : public DAVA::TrackedObject
 {
 public:
     GameCore(DAVA::Engine& e);
@@ -27,8 +29,7 @@ public:
     void OnAppStarted();
     void OnAppFinished();
     void OnWindowCreated(DAVA::Window* w);
-    void OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h,
-                         DAVA::float32 scaleX, DAVA::float32 scaleY);
+    void OnWindowResized(DAVA::Window* window, DAVA::Size2f size, DAVA::Size2f surfaceSize);
 
     void OnSuspend();
     void OnResume();
