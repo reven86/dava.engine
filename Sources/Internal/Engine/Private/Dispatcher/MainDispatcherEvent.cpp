@@ -9,6 +9,11 @@ namespace DAVA
 {
 namespace Private
 {
+bool MainDispatcherEvent::IsInputEvent(eType type)
+{
+    return (FIRST_INPUT_EVENT <= type && type <= LAST_INPUT_EVENT);
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateAppTerminateEvent(bool triggeredBySystem)
 {
     MainDispatcherEvent e(APP_TERMINATE);
@@ -228,6 +233,12 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSwipeGestureEvent(Window* w
     e.trackpadGestureEvent.deltaX = deltaX;
     e.trackpadGestureEvent.deltaY = deltaY;
     e.trackpadGestureEvent.modifierKeys = modifierKeys;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCaptureLostEvent(Window* window)
+{
+    MainDispatcherEvent e(WINDOW_CAPTURE_LOST, window);
     return e;
 }
 

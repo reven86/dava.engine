@@ -24,8 +24,10 @@ struct MainDispatcherEvent final
         WINDOW_VISIBILITY_CHANGED,
         WINDOW_SIZE_CHANGED,
         WINDOW_DPI_CHANGED,
+        WINDOW_CAPTURE_LOST,
 
-        MOUSE_BUTTON_DOWN,
+        FIRST_INPUT_EVENT,
+        MOUSE_BUTTON_DOWN = FIRST_INPUT_EVENT,
         MOUSE_BUTTON_UP,
         MOUSE_WHEEL,
         MOUSE_MOVE,
@@ -43,6 +45,7 @@ struct MainDispatcherEvent final
         KEY_DOWN,
         KEY_UP,
         KEY_CHAR,
+        LAST_INPUT_EVENT = KEY_CHAR,
 
         FUNCTOR,
 
@@ -58,6 +61,8 @@ struct MainDispatcherEvent final
 
         DISPLAY_CONFIG_CHANGED,
     };
+
+    static bool IsInputEvent(eType type);
 
     /// Parameter for APP_TERMINATE event
     struct AppTerminateEvent
@@ -240,6 +245,7 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMagnificationGestureEvent(Window* window, float32 magnification, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys);
+    static MainDispatcherEvent CreateWindowCaptureLostEvent(Window* window);
 };
 
 template <typename F>
