@@ -10,6 +10,7 @@
 namespace DAVA
 {
 class UIControl;
+class Window;
 /**
 \ingroup controlsystem
 \brief User input representation.
@@ -161,6 +162,7 @@ public:
     uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 #if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
     eInputDevices device = eInputDevices::UNKNOWN;
     eModifierKeys modifiers = eModifierKeys::NONE;
 #else

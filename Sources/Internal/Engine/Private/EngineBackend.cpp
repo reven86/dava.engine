@@ -156,8 +156,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     context->fileSystem->SetDefaultDocumentsDirectory();
     context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
-    context->uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
-    context->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
 
     isInitialized = true;
@@ -243,16 +241,13 @@ void EngineBackend::OnEngineCleanup()
 {
     engine->cleanup.Emit();
 
+    if (ImGui::IsInitialized())
+        ImGui::Uninitialize();
+
     DestroySubsystems();
 
-    if (!IsConsoleMode())
-    {
-        if (ImGui::IsInitialized())
-            ImGui::Uninitialize();
-
-        if (Renderer::IsInitialized())
-            Renderer::Uninitialize();
-    }
+    if (Renderer::IsInitialized())
+        Renderer::Uninitialize();
 
     delete context;
     delete dispatcher;
@@ -509,6 +504,7 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
 void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = primaryWindow;
     uie.key = Key::BACK;
     uie.phase = UIEvent::Phase::KEY_UP;
     uie.device = eInputDevices::KEYBOARD;

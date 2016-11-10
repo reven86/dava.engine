@@ -64,6 +64,7 @@ public:
     VersionInfo* versionInfo = nullptr;
 
     InputSystem* inputSystem = nullptr;
+    // TODO: move UI control system to Window
     UIControlSystem* uiControlSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;

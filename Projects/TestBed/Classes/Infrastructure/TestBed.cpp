@@ -114,8 +114,6 @@ TestBed::TestBed(Engine& engine)
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->SetSize({ 1024.f, 768.f });
-
-        engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
     }
 }
 
@@ -157,6 +155,8 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
+
+    w->GetUIControlSystem()->SetClearColor(Color::Black);
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);

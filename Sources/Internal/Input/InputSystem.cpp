@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -16,8 +16,7 @@ InputSystem* InputSystem::Instance()
 }
 
 InputSystem::InputSystem(Engine* engine)
-    : uiControlSystem(engine->GetContext()->uiControlSystem)
-    , keyboard(new KeyboardDevice())
+    : keyboard(new KeyboardDevice())
     , gamepad(new GamepadDevice(this))
 {
     engine->update.Connect(MakeFunction(this, &InputSystem::Update));
@@ -86,8 +85,9 @@ void InputSystem::HandleInputEvent(UIEvent* uie)
             }
         }
     }
-    if (!handled && uiControlSystem != nullptr)
+    if (!handled && uie->window != nullptr)
     {
+        UIControlSystem* uiControlSystem = uie->window->GetUIControlSystem();
         uiControlSystem->OnInput(uie);
     }
 }

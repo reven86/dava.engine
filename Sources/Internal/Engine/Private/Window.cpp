@@ -40,6 +40,23 @@ void Window::SetSize(Size2f sz)
     }
 }
 
+void Window::SetVirtualSize(float32 w, float32 h)
+{
+    uiControlSystem->vcs->SetVirtualScreenSize(static_cast<int32>(w), static_cast<int32>(h));
+}
+
+Size2f Window::GetVirtualSize() const
+{
+    Size2i sz = uiControlSystem->vcs->GetVirtualScreenSize();
+    return Size2f(static_cast<float32>(sz.dx), static_cast<float32>(sz.dy));
+}
+
+Rect Window::GetVirtualRect() const
+{
+    Size2f sz = GetVirtualSize();
+    return Rect(0, 0, sz.dx, sz.dy);
+}
+
 void Window::Close()
 {
     // Window cannot be close in embedded mode as window lifetime
@@ -221,9 +238,12 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     engineBackend->InitRenderer(this);
 
-    EngineContext* context = engineBackend->GetEngineContext();
+    const EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
+
+    uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
+    uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
 
     UpdateVirtualCoordinatesSystem();
 
@@ -374,6 +394,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     eMouseButtons button = e.mouseEvent.button;
 
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.isRelative = e.mouseEvent.isRelative;
     uie.physPoint = e.mouseEvent.isRelative ? Vector2(0.f, 0.f) : Vector2(e.mouseEvent.x, e.mouseEvent.y);
@@ -391,6 +412,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.isRelative = e.mouseEvent.isRelative;
@@ -405,6 +427,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.isRelative = e.mouseEvent.isRelative;
@@ -440,6 +463,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     bool pressed = e.type == Private::MainDispatcherEvent::TOUCH_DOWN;
 
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = eInputDevices::TOUCH_SURFACE;
@@ -453,6 +477,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
 void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::DRAG;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = eInputDevices::TOUCH_SURFACE;
@@ -466,6 +491,7 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
     uie.device = eInputDevices::TOUCH_PAD;
@@ -485,6 +511,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent uie;
+    uie.window = e.window;
     uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
     uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
@@ -513,6 +540,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
     uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
     uie.device = eInputDevices::KEYBOARD;

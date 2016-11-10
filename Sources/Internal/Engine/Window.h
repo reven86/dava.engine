@@ -6,6 +6,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
+#include "Math/Math2D.h"
+#include "Math/Rect.h"
 #include "Math/Vector.h"
 
 #include "Engine/EngineTypes.h"
@@ -42,14 +44,14 @@ public:
     bool HasFocus() const;
 
     /** 
-        Returns dots-per-inch for a monitor, where that window is placed. 
+        Return dots-per-inch for a monitor, where that window is placed. 
         
         \remark Use `Window::dpiChanged` signal to know, when window was placed on other monitor with other dpi.
     */
     float32 GetDPI() const;
 
     /** 
-        Returns size of the window's client area. 
+        Return size of the window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
         if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
 
@@ -59,7 +61,7 @@ public:
     Size2f GetSize() const;
 
     /** 
-        Sets the size of a window's client area. 
+        Set the size of a window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
         if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
         On some platforms (iOS, Android or Win10 Phone) there is no real window system and
@@ -70,7 +72,7 @@ public:
     void SetSize(Size2f size);
 
     /**
-         Returns size of the window's rendering surface in pixels.
+         Return size of the window's rendering surface in pixels.
          Surface size is in raw pixels.
 
          \remark Use `Window::sizeChanged` signal to know, when window surface size was changed.
@@ -79,7 +81,7 @@ public:
     Size2f GetSurfaceSize() const;
 
     /** 
-        Returns window rendering surface scale. 
+        Return window rendering surface scale. 
         By default it is 1.0f unit user changes it with `SetSurfaceScale()` method.
     */
     float32 GetSurfaceScale() const;
@@ -91,6 +93,19 @@ public:
         \remark This should be used by user to tune rendering surface size for performance reason.
     */
     bool SetSurfaceScale(float32 scale);
+
+    /**
+        Set rendering surface virtual size.
+
+        Virtual size is specified in application-defined units and used to draw UI controls.
+    */
+    void SetVirtualSize(float32 w, float32 h);
+
+    /** Get rendering surface virtual size. */
+    Size2f GetVirtualSize() const;
+
+    /** Get rendering surface virtual rect where origin is always (0,0) */
+    Rect GetVirtualRect() const;
 
     void Close();
     void SetTitle(const String& title);
@@ -121,6 +136,9 @@ public:
 
     /** Get cursor visibility.*/
     bool GetCursorVisibility() const;
+
+    /** Get Window's UIControlSystem */
+    UIControlSystem* GetUIControlSystem() const;
 
 public:
     // Signals
@@ -230,6 +248,11 @@ inline Size2f Window::GetSurfaceSize() const
 inline float32 Window::GetSurfaceScale() const
 {
     return surfaceScale;
+}
+
+inline UIControlSystem* Window::GetUIControlSystem() const
+{
+    return uiControlSystem;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

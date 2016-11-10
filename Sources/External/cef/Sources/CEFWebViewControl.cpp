@@ -89,7 +89,12 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 void CEFWebViewControl::Deinitialize()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    Engine::Instance()->PrimaryWindow()->sizeChanged.Disconnect(onWindowSizeChangedId);
+    // TODO: Deinitialize is called when UIScreen with webview is destroyed. Singletons are deleted at the end of life and if app is closing when UIScreen with webview active, window is null
+    Window* primaryWindow = Engine::Instance()->PrimaryWindow();
+    if (primaryWindow != nullptr)
+    {
+        primaryWindow->sizeChanged.Disconnect(onWindowSizeChangedId);
+    }
 #endif
 
     // Close browser and release object
