@@ -10,6 +10,8 @@
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
+namespace rhi
+{
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
 id<MTLTexture> _Metal_DefFrameBuf = nil;
@@ -18,10 +20,8 @@ id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
 
-DAVA::Atomic<bool> _Metal_Suspended(false);
+InitParam _Metal_InitParam;
 
-namespace rhi
-{
 Dispatch DispatchMetal = { 0 };
 
 //------------------------------------------------------------------------------
@@ -74,15 +74,13 @@ metal_TextureFormatSupported(TextureFormat format, ProgType)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Uninitialize()
+static void metal_Uninitialize()
 {
 }
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Reset(const ResetParam& param)
+static void metal_Reset(const ResetParam& param)
 {
     if (_Metal_DefDepthBuf)
     {
@@ -105,8 +103,7 @@ metal_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static bool
-metal_NeedRestoreResources()
+static bool metal_NeedRestoreResources()
 {
     static bool lastNeedRestore = false;
     bool needRestore = TextureMetal::NeedRestoreCount();
@@ -124,28 +121,7 @@ metal_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Suspend()
-{
-    _Metal_Suspended.Set(true);
-    DAVA::Logger::Info("mtl.render-suspended");
-}
-
-//------------------------------------------------------------------------------
-
-static void
-metal_Resume()
-{
-    //    TextureMetal::MarkAllNeedRestore();
-    //TextureMetal::ReCreateAll();
-    _Metal_Suspended.Set(false);
-    DAVA::Logger::Info("mtl.render-resumed");
-}
-
-//------------------------------------------------------------------------------
-
-bool
-rhi_MetalIsSupported()
+bool rhi_MetalIsSupported()
 {
     if (!_Metal_Device)
     {
@@ -161,11 +137,9 @@ rhi_MetalIsSupported()
     //    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
 }
 
-//------------------------------------------------------------------------------
-
-void metal_Initialize(const InitParam& param)
+void Metal_InitContext()
 {
-    _Metal_Layer = (CAMetalLayer*)param.window;
+    _Metal_Layer = static_cast<CAMetalLayer*>(_Metal_InitParam.window);
     [_Metal_Layer retain];
 
     if (!_Metal_Device)
@@ -177,14 +151,14 @@ void metal_Initialize(const InitParam& param)
     _Metal_Layer.device = _Metal_Device;
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _Metal_Layer.framebufferOnly = YES;
-    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
+    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)_Metal_InitParam.width, (CGFloat)_Metal_InitParam.height);
 
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer
 
-    int w = param.width;
-    int h = param.height;
+    int w = _Metal_InitParam.width;
+    int h = _Metal_InitParam.height;
 
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
@@ -200,7 +174,17 @@ void metal_Initialize(const InitParam& param)
     depth_desc.depthWriteEnabled = YES;
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
+}
+bool Metal_CheckSurface()
+{
+    return true;
+}
 
+//------------------------------------------------------------------------------
+
+void metal_Initialize(const InitParam& param)
+{
+    _Metal_InitParam = param;
     int ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
@@ -236,8 +220,9 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
-    DispatchMetal.impl_ResumeRendering = &metal_Resume;
-    DispatchMetal.impl_SuspendRendering = &metal_Suspend;
+
+    DispatchMetal.impl_InitContext = &Metal_InitContext;
+    DispatchMetal.impl_ValidateSurface = &Metal_CheckSurface;
 
     SetDispatchTable(DispatchMetal);
 

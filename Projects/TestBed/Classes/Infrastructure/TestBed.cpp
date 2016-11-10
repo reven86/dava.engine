@@ -26,10 +26,12 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/ScriptingTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
 #include "Tests/UILoggingTest.h"
+#include "Tests/ImGuiTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -59,6 +61,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
+
+    appOptions->SetBool("init_imgui", true);
 
     eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
     if (cmdline.size() > 1 && cmdline[1] == "--console")
@@ -152,11 +156,6 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
-    w->SetSize({ 1024, 768 });
-    w->SetTitle("TestBed");
-
-    // TODO FullScreen
-    //w->SetFullScreen(false);
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
@@ -232,6 +231,8 @@ void TestBed::RegisterTests()
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
     new UILoggingTest(*this);
+    new ScriptingTest(*this);
+    new ImGuiTest(*this);
     //$UNITTEST_CTOR
 }
 

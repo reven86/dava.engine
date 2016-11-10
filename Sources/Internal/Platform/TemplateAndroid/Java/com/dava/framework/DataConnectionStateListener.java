@@ -47,6 +47,10 @@ public class DataConnectionStateListener extends PhoneStateListener {
         {
             manager = (TelephonyManager)DavaActivity.instance().getSystemService(Context.TELEPHONY_SERVICE);
         }
-        return manager.getSimOperatorName();
+        if (manager != null)
+        {
+            return manager.getSimOperatorName();
+        }
+        return "";
     }
 }

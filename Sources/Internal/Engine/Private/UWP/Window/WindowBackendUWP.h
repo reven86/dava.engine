@@ -8,6 +8,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/EngineTypes.h"
 
 namespace rhi
 {
@@ -43,6 +44,9 @@ public:
     bool SetSurfaceScale(float32 scale);
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
+
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

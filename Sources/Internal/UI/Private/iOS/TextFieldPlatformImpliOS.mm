@@ -366,7 +366,7 @@ void TextFieldPlatformImpl::HideField()
 void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffset)
 {
     Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(virtualRect);
-    [bridge->textFieldHolder->textCtrl setFrame:CGRectMake(r.x, r.y, r.dx, r.dy)];
+    [bridge->textFieldHolder->textCtrl setFrame:CGRectMake(r.x + xOffset, r.y, r.dx, r.dy)];
 }
 
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)

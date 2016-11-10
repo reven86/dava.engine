@@ -13,6 +13,7 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -1189,14 +1190,14 @@ void UIControl::DrawPivotPoint(const Rect& drawRect)
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {
     Vector2 point = _point;
-
+#if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
         point.y = virtScreenSize.dy / 2.f;
     }
-
+#endif // !defined(__DAVAENGINE_COREV2__)
     const UIGeometricData& gd = GetGeometricData();
     Rect rect = gd.GetUnrotatedRect();
     if (expandWithFocus)

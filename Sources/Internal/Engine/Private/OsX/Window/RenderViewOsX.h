@@ -12,6 +12,8 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class NSTrackingArea;
+
 // Subclass of NSOpenGLView
 // Responsibilities:
 //  - OpenGL-related tasks
@@ -19,6 +21,7 @@
 @interface RenderView : NSOpenGLView
 {
     DAVA::Private::WindowNativeBridge* bridge;
+    NSTrackingArea* trackingArea;
 }
 
 @property DAVA::float32 backbufferScale;

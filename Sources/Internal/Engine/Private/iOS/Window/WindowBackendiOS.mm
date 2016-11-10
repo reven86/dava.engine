@@ -115,6 +115,16 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     return true;
 }
 
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not supported
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not supported
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)

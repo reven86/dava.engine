@@ -3,9 +3,11 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Exception.h"
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 

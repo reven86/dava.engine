@@ -2,12 +2,13 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
+#include <bitset>
+
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
 
-#include "UI/UIEvent.h"
-
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -100,6 +101,27 @@ public:
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
+    /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        The Window keeps the last mode, and itself releases or captures cursor if need(when it loses or receives focus).
+        If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
+    */
+    void SetCursorCapture(eCursorCapture mode);
+
+    /** Get cursor capture mode.*/
+    eCursorCapture GetCursorCapture() const;
+
+    /** Set cursor visibility for current Window.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        The Window keeps the last state, and itself shows or hides cursor if need(when it loses or receives focus).
+    */
+    void SetCursorVisibility(bool visible);
+
+    /** Get cursor visibility.*/
+    bool GetCursorVisibility() const;
+
 public:
     // Signals
     Signal<Window*, bool> visibilityChanged;
@@ -129,6 +151,7 @@ private:
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
+    void HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
@@ -138,12 +161,13 @@ private:
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
     void HandleTouchClick(const Private::MainDispatcherEvent& e);
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
+    void HandleTrackpadGesture(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
+    bool HandleInputActivation(const Private::MainDispatcherEvent& e);
 
     void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
-    void ClearMouseButtons();
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
@@ -158,6 +182,13 @@ private:
     bool hasFocus = false;
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
 
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
+    eCursorCapture cursorCapture = eCursorCapture::OFF;
+    bool cursorVisible = false;
+    bool waitInputActivation = false;
+    bool skipFirstMouseUpEventBeforeCursorCapture = false;
     float32 dpi = 0.0f; //!< Window DPI
     float32 width = 0.0f; //!< Window client area width.
     float32 height = 0.0f; //!< Window client area height.

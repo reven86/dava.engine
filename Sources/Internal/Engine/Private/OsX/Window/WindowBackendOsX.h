@@ -12,6 +12,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/EngineTypes.h"
 
 namespace rhi
 {
@@ -46,6 +47,9 @@ public:
 
     float32 GetSurfaceScale() const;
     bool SetSurfaceScale(float32 scale);
+
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

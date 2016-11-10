@@ -98,10 +98,8 @@ static const Array<const char8*, 5> logLevelString
 };
 
 Logger::Logger()
-    :
-    logLevel{ LEVEL_FRAMEWORK }
-    ,
-    consoleModeEnabled{ false }
+    : logLevel{ LEVEL_FRAMEWORK }
+    , consoleModeEnabled{ false }
 {
     SetLogFilename(String());
 }

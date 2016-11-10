@@ -8,6 +8,8 @@
 
 #include "Engine/EngineModule.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceStub : public MouseDeviceInterface
@@ -145,13 +147,21 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
     }
     if (context->deferredCapture)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (event->device != eInputDevices::MOUSE && context->focused)
+#else
         if (event->device != UIEvent::Device::MOUSE && context->focused)
+#endif
         {
             SetSystemMode(eCaptureMode::PINING);
             context->deferredCapture = false;
             return false;
         }
+#if defined(__DAVAENGINE_COREV2__)
+        else if ((event->device == eInputDevices::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
+#else
         else if ((event->device == UIEvent::Device::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
+#endif
         {
             bool inRect = true;
 #if defined(__DAVAENGINE_COREV2__)
@@ -182,3 +192,5 @@ void MouseDevice::SetSystemMode(eCaptureMode sysMode)
 }
 
 } // namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
