@@ -183,7 +183,8 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 
     const float32 surfaceWidth = lastWidth * surfaceScale;
     const float32 surfaceHeight = lastHeight * surfaceScale;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight));
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, fullscreen));
 
     return true;
 }
