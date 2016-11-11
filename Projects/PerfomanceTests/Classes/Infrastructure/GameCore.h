@@ -29,7 +29,6 @@ public:
     void OnAppStarted();
     void OnAppFinished();
     void OnWindowCreated(DAVA::Window* w);
-    void OnWindowResized(DAVA::Window* window, DAVA::Size2f size, DAVA::Size2f surfaceSize);
 
     void OnSuspend();
     void OnResume();

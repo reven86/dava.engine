@@ -15,6 +15,9 @@
 
 using namespace DAVA;
 
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 768
+
 GameCore::GameCore(DAVA::Engine& e)
     : engine(e)
 {
@@ -33,6 +36,12 @@ GameCore::GameCore(DAVA::Engine& e)
 
 void GameCore::OnAppStarted()
 {
+    VirtualCoordinatesSystem* vcs = engine.GetContext()->uiControlSystem->vcs;
+    vcs->SetVirtualScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    vcs->SetProportionsIsFixed(false);
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH, SCREEN_HEIGHT, "Gfx");
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "Gfx2");
+
     new GraphicsDetect();
     GraphicsDetect::Instance()->ReloadSettings();
     SoundSystem::Instance()->InitFromQualitySettings();
@@ -153,27 +162,11 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
 {
-    w->SetSize({ 1024, 768 });
+    w->SetSize({ SCREEN_WIDTH, SCREEN_HEIGHT });
     w->SetTitle("Performance Tests");
-
-    w->sizeChanged.Connect(this, &GameCore::OnWindowResized);
 
     // TODO FullScreen
     //w->SetFullScreen(false);
-}
-
-void GameCore::OnWindowResized(DAVA::Window* window, DAVA::Size2f size, DAVA::Size2f surfaceSize)
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    int32 width = int32(size.dx);
-    int32 height = int32(size.dy);
-
-    EngineContext* context = engine.GetContext();
-    context->uiControlSystem->vcs->SetVirtualScreenSize(width, height);
-    context->uiControlSystem->vcs->SetProportionsIsFixed(false);
-    context->uiControlSystem->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
-    context->uiControlSystem->vcs->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
-#endif
 }
 
 void GameCore::Cleanup()
