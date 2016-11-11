@@ -67,6 +67,8 @@ struct SimpleStruct
         .ConstructorByValue<int, int, int>()
         .ConstructorByValue<int, int, int, int>()
         .ConstructorByValue<int, int, int, int, int>()
+        .ConstructorByPointer()
+        .DestructorByPointer()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
         .End();
