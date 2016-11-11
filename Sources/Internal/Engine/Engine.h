@@ -11,8 +11,26 @@
 
 namespace DAVA
 {
-class KeyedArchive;
+/**
+    \ingroup engine
+    Utility function to get engine context.
 
+    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal emited.
+    Another but longer way to get context is to call `Engine::Instance()->GetContext()`.
+*/
+const EngineContext* GetEngineContext();
+
+/**
+    \ingroup engine
+    Utility function to get primary window.
+
+    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal has emited.
+    Return `nullptr` if called before `Engine::Init` or if `Engine` has been initialized with `eEngineRunMode::CONSOLE_MODE` mode.
+    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()`.
+*/
+Window* GetPrimaryWindow();
+
+class KeyedArchive;
 /**
     \ingroup engine
     Core component of dava.engine which manages application's control flow.
@@ -83,8 +101,27 @@ public:
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
 
+    /**
+        Get engine context which holds all DAVA subsystems.
+
+        Subsystems become available after `Engine::Init` call, which subsystems are available depends on
+        Engine's run mode (see `eEngineRunMode`), target platform (android, win32, etc).
+        The following subsystems are available immediately after Engine class creation:
+            - Logger
+            - FileSystem
+            - DeviceManager
+    */
     const EngineContext* GetContext() const;
     NativeService* GetNativeService() const;
+
+    /**
+        Return primary window if any.
+
+        Primary window is non null except in the following cases:
+            - before `Engine::Init` call,
+            - Engine was initialized with `eEngineRunMode::CONSOLE_MODE` mode,
+            - after receiving signal `Engine::windowDestroyed` for primary window.
+    */
     Window* PrimaryWindow() const;
 
     eEngineRunMode GetRunMode() const;

@@ -37,7 +37,7 @@ Engine::~Engine()
 
 const EngineContext* Engine::GetContext() const
 {
-    return engineBackend->GetEngineContext();
+    return engineBackend->GetContext();
 }
 
 NativeService* Engine::GetNativeService() const

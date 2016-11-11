@@ -54,6 +54,16 @@
 
 namespace DAVA
 {
+const EngineContext* GetEngineContext()
+{
+    return Private::EngineBackend::Instance()->GetContext();
+}
+
+Window* GetPrimaryWindow()
+{
+    return Private::EngineBackend::Instance()->GetPrimaryWindow();
+}
+
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;

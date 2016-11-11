@@ -238,7 +238,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     engineBackend->InitRenderer(this);
 
-    const EngineContext* context = engineBackend->GetEngineContext();
+    const EngineContext* context = engineBackend->GetContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
 

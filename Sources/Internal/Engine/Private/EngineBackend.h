@@ -36,7 +36,7 @@ public:
     bool IsEmbeddedGUIMode() const;
     bool IsConsoleMode() const;
 
-    const EngineContext* GetEngineContext() const;
+    const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
@@ -148,7 +148,7 @@ inline bool EngineBackend::IsConsoleMode() const
     return runMode == eEngineRunMode::CONSOLE_MODE;
 }
 
-inline const EngineContext* EngineBackend::GetEngineContext() const
+inline const EngineContext* EngineBackend::GetContext() const
 {
     return context;
 }
