@@ -218,7 +218,7 @@ void ObtainPerfQueryResults()
     {
         uint32 result = GL_FALSE;
 #if defined(__DAVAENGINE_IPHONE__)
-        result = 1;
+        result = GL_TRUE;
 #elif defined(__DAVAENGINE_ANDROID__)
         if (glGetQueryObjectuiv && DeviceCaps().isPerfQuerySupported)
         {
@@ -239,7 +239,7 @@ void ObtainPerfQueryResults()
         }
 #endif
 
-        if (result == GL_TRUE)
+        if (result != GL_FALSE) //some drivers return -1 instead GL_TRUE (1)
         {
             completedQueries.push_back(*it);
             it = pendingQueriesGLES2.erase(it);
