@@ -28,6 +28,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -47,6 +48,7 @@ public:
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);
+    bool IsWindowsPhone() const;
 
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference

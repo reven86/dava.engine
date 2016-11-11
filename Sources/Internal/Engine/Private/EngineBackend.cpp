@@ -545,9 +545,9 @@ void EngineBackend::InitRenderer(Window* w)
 {
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
     DVASSERT(rhi::ApiIsSupported(renderer));
+
     if (!rhi::ApiIsSupported(renderer))
     {
-        // Fall back to GL if given renderer is not supported
         renderer = rhi::RHI_GLES2;
     }
 
