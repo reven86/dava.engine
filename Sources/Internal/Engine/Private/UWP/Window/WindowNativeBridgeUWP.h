@@ -35,6 +35,7 @@ ref struct WindowNativeBridge sealed
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    void SetFullscreen(eFullscreen newMode);
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 

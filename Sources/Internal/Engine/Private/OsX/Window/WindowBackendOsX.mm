@@ -67,6 +67,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -110,6 +115,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        bridge->SetFullscreen(e.setFullscreenEvent.mode);
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

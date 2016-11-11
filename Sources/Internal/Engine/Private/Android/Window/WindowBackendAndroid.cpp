@@ -120,6 +120,11 @@ void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
     // Android windows are always stretched to display size
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on Android
+}
+
 void WindowBackend::Close(bool appIsTerminating)
 {
     if (appIsTerminating)
@@ -186,7 +191,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, eFullscreen::On));
 
     surfaceScale = scale;
 
@@ -291,14 +296,15 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+
         firstTimeSurfaceChanged = false;
     }
     else
     {
     	// Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
     	// To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, eFullscreen::On));
     }
 }
 

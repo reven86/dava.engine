@@ -359,7 +359,7 @@ def get_autotools_macos_env():
     env = os.environ.copy()
     env['CC'] = cc_path
     env['CXX'] = cxx_path
-    env['CFLAGS'] = '-arch x86_64 -arch i386 -pipe -Os -isysroot {}'.format(sysroot_path)
+    env['CFLAGS'] = '-arch x86_64 -arch i386 -pipe -O2 -isysroot {}'.format(sysroot_path)
     env['CXXFLAGS'] = env['CFLAGS']
     env['LDFLAGS'] = '-arch x86_64 -arch i386 -isysroot {}'.format(sysroot_path)
     env['CPP'] = '{} -E'.format(env['CC'])
@@ -377,7 +377,7 @@ def get_autotools_ios_env():
     env = os.environ.copy()
     env['CC'] = cc_path
     env['CXX'] = cxx_path
-    env['CFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -pipe -Os -mios-version-min=6.0 -isysroot {}'.format(sysroot_path)
+    env['CFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -pipe -O2 -mios-version-min=6.0 -isysroot {}'.format(sysroot_path)
     env['CXXFLAGS'] = env['CFLAGS']
     env['LDFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -isysroot {}'.format(sysroot_path)
     env['CPP'] = '{} -E'.format(env['CC'])

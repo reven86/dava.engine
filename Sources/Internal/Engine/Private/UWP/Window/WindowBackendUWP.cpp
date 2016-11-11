@@ -9,6 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -39,6 +40,17 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
 void WindowBackend::SetTitle(const String& title)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    // Fullscreen mode cannot be changed on phones
+    if (IsWindowsPhone())
+    {
+        return;
+    }
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -106,6 +118,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        bridge->SetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
@@ -118,6 +133,11 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     default:
         break;
     }
+}
+
+bool WindowBackend::IsWindowsPhone() const
+{
+    return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

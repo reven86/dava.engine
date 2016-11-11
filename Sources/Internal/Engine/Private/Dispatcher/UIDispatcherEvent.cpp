@@ -31,6 +31,13 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetTitleEvent(const String& title)
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateSetFullscreenEvent(eFullscreen mode)
+{
+    UIDispatcherEvent e(SET_FULLSCREEN);
+    e.setFullscreenEvent.mode = mode;
+    return e;
+}
+
 UIDispatcherEvent UIDispatcherEvent::CreateSetCursorCaptureEvent(eCursorCapture mode)
 {
     UIDispatcherEvent e(SET_CURSOR_CAPTURE);
