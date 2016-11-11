@@ -3,6 +3,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DeviceInfo.h"
@@ -331,7 +332,9 @@ void AutotestingSystem::Update(float32 timeElapsed)
                 AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
             }
             JobManager::Instance()->WaitWorkerJobs();
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+            Engine::Instance()->Quit();
+#else
             Core::Instance()->Quit();
 #endif
         }
@@ -427,7 +430,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->Quit();
+#else
     Core::Instance()->Quit();
 #endif
 }

@@ -12,7 +12,7 @@ namespace DAVA
 {
 InputSystem* InputSystem::Instance()
 {
-    return Engine::Instance()->GetContext()->inputSystem;
+    return GetEngineContext()->inputSystem;
 }
 
 InputSystem::InputSystem(Engine* engine)
