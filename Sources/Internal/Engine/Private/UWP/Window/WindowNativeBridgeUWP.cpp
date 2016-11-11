@@ -135,8 +135,8 @@ void WindowNativeBridge::SetSurfaceScale(float32 scale)
     const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
     const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
 
-	bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
-	eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
 }
