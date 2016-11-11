@@ -1,3 +1,5 @@
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
@@ -50,3 +52,5 @@ void DeviceManager::HandleEvent(const Private::MainDispatcherEvent& e)
 }
 
 } // namespace DAVA
+
+#endif // __DAVAENGINE_COREV2__

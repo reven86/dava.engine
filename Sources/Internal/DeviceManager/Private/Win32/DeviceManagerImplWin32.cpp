@@ -1,3 +1,5 @@
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "DeviceManager/Private/Win32/DeviceManagerImplWin32.h"
 
 #if defined(__DAVAENGINE_QT__)
@@ -106,3 +108,4 @@ BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPR
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN32__
+#endif // __DAVAENGINE_COREV2__

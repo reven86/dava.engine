@@ -1,3 +1,5 @@
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "DeviceManager/Private/Qt/DeviceManagerImplQt.h"
 
 #if defined(__DAVAENGINE_QT__)
@@ -23,3 +25,4 @@ void DeviceManagerImpl::UpdateDisplayConfig()
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
+#endif // __DAVAENGINE_COREV2__

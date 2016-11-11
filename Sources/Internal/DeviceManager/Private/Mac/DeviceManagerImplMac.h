@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_QT__)
@@ -28,3 +30,4 @@ struct DeviceManagerImpl final
 } // namespace DAVA
 
 #endif // __DAVAENGINE_MACOS__
+#endif // __DAVAENGINE_COREV2__

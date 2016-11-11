@@ -1,3 +1,5 @@
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -23,3 +25,4 @@ void DeviceManagerImpl::UpdateDisplayConfig()
 } // namespace DAVA
 
 #endif // __DAVAENGINE_IPHONE__
+#endif // __DAVAENGINE_COREV2__
