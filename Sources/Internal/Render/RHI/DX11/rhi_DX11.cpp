@@ -361,6 +361,15 @@ void dx11_InitCaps()
     {
         // explicitly disable multisampling support on win phones
         MutableDeviceCaps::Get().maxSamples = 1;
+
+        //On some mobile devices DX feature-level is untrue
+        ID3D11Query* freqQuery = nullptr;
+        D3D11_QUERY_DESC desc = {};
+        desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+        _D3D11_Device->CreateQuery(&desc, &freqQuery);
+        MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
+
+        DAVA::SafeRelease(freqQuery);
     }
     else
 #endif
