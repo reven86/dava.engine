@@ -189,11 +189,11 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
+    surfaceScale = scale;
+
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, eFullscreen::On));
-
-    surfaceScale = scale;
 
     return true;
 }
