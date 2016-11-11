@@ -152,6 +152,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     // Workaround to force change backbuffer size
     [bridge->nswindow setContentView:nil];
     [bridge->nswindow setContentView:bridge->renderView];
+    [bridge->nswindow makeFirstResponder:bridge->renderView];
 
     bridge->WindowDidResize();
 

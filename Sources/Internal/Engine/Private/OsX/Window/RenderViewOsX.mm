@@ -64,7 +64,7 @@
 - (void)reshape
 {
     const NSSize frameSize = [self frame].size;
-    const DAVA::float32 resultScale = _backbufferScale * [[NSScreen mainScreen] backingScaleFactor];
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
 
     const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
     CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
@@ -72,28 +72,20 @@
     CGLUpdateContext([[self openGLContext] CGLContextObj]);
 }
 
-- (NSSize)surfaceSize
+- (NSSize)convertSizeToBacking:(NSSize)size
 {
-    GLint customScaleEnabled = 0;
-    CGLIsEnabled([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize, &customScaleEnabled);
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+    size.width *= resultScale;
+    size.height *= resultScale;
+    return size;
+}
 
-    // If SurfaceBackingSize is enabled - calculate custom size
-    // Otherwise it's the same as frontbuffer
-    if (customScaleEnabled)
-    {
-        GLint backingSize[2];
-        CGLGetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
-
-        NSSize result;
-        result.width = backingSize[0];
-        result.height = backingSize[1];
-
-        return result;
-    }
-    else
-    {
-        return [self frame].size;
-    }
+- (NSSize)convertSizeFromBacking:(NSSize)size
+{
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+    size.width /= resultScale;
+    size.height /= resultScale;
+    return size;
 }
 
 - (uint32_t)displayBitsPerPixel:(CGDirectDisplayID)displayId

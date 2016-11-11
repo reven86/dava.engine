@@ -302,8 +302,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     }
     else
     {
-    	// Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
-    	// To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, eFullscreen::On));
     }
 }
