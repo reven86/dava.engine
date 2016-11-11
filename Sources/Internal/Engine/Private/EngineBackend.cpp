@@ -83,7 +83,16 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     DVASSERT(instance == nullptr);
     instance = this;
 
+    // The following subsystems should be created earlier than other:
+    //  - Logger, to log messages on startup
+    //  - FileSystem, to load config files with init options
+    //  - DeviceManager, to check what hatdware is available
     context->logger = new Logger;
+
+    context->fileSystem = new FileSystem;
+    FilePath::InitializeBundleName();
+    context->fileSystem->SetDefaultDocumentsDirectory();
+    context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
     // TODO: consider another way of DeviceManager initialization, as console apps possibly do not need DeviceManager
     context->deviceManager = new DeviceManager(this);
@@ -161,10 +170,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     //  - PackManager
     // Other subsystems are always created
     CreateSubsystems(modules);
-
-    FilePath::InitializeBundleName();
-    context->fileSystem->SetDefaultDocumentsDirectory();
-    context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
     RegisterDAVAClasses();
 
@@ -647,7 +652,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->random = new Random();
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
-    context->fileSystem = new FileSystem();
     context->renderSystem2D = new RenderSystem2D();
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
