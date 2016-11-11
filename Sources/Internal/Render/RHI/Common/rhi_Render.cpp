@@ -372,8 +372,6 @@ void Initialize(Api api, const InitParam& param)
     DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
     int32 bindToProcessor = -1;
     uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
-    if (api == RHI_METAL)
-        renderTreadFrameCount = 2; //no render thread for metal yet
     if (api == RHI_DX11)
     {
         bindToProcessor = 1;

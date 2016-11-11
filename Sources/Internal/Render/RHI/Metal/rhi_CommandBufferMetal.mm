@@ -31,12 +31,11 @@ struct RenderPassMetal_t
 {
     RenderPassConfig cfg;
     MTLRenderPassDescriptor* desc;
-    id<MTLCommandBuffer> buf;
+    id<MTLCommandBuffer> commandBuffer;
     id<MTLParallelRenderCommandEncoder> encoder;
     std::vector<Handle> cmdBuf;
-    int priority;
-    uint32 do_present : 1;
-    uint32 finished : 1;
+    int priority;    
+    
 
 #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     bool Initialize();
@@ -85,8 +84,6 @@ RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, f
 static DAVA::Mutex _Metal_SyncObjectsSync;
 
 id<CAMetalDrawable> _Metal_currentDrawable = nil;
-id<MTLCommandBuffer> _Metal_currentCommandBuffer = nil;
-id<MTLRenderCommandEncoder> _Metal_currentCommandEncoder = nil;
 
 void CommandBufferMetal_t::_ApplyVertexData(unsigned firstVertex)
 {
@@ -565,16 +562,14 @@ bool RenderPassMetal_t::Initialize()
         desc.visibilityResultBuffer = QueryBufferMetal::GetBuffer(cfg.queryBuffer);
     }
 
-    do_present = cfg.colorBuffer[0].texture == InvalidHandle;
-
     if (cmdBuf.size() == 1)
     {
         CommandBufferMetal_t* cb = CommandBufferPoolMetal::Get(cmdBuf[0]);
 
         encoder = nil;
 
-        buf = [_Metal_DefCmdQueue commandBuffer];
-        cb->encoder = [buf renderCommandEncoderWithDescriptor:desc];
+        commandBuffer = [_Metal_DefCmdQueue commandBuffer];
+        cb->encoder = [commandBuffer renderCommandEncoderWithDescriptor:desc];
         [cb->encoder retain];
 
         cb->rt = desc.colorAttachments[0].texture;
@@ -588,8 +583,8 @@ bool RenderPassMetal_t::Initialize()
     }
     else
     {
-        buf = [_Metal_DefCmdQueue commandBuffer];
-        encoder = [buf parallelRenderCommandEncoderWithDescriptor:desc];
+        commandBuffer = [_Metal_DefCmdQueue commandBuffer];
+        encoder = [commandBuffer parallelRenderCommandEncoderWithDescriptor:desc];
         [encoder retain];
 
         for (unsigned i = 0; i != cmdBuf.size(); ++i)
@@ -598,7 +593,7 @@ bool RenderPassMetal_t::Initialize()
 
             cb->encoder = [encoder renderCommandEncoder];
             [cb->encoder retain];
-            cb->buf = buf;
+            cb->buf = commandBuffer;
             cb->rt = desc.colorAttachments[0].texture;
             cb->color_fmt = desc.colorAttachments[0].texture.pixelFormat;
             cb->ds_used = ds_used;
@@ -663,7 +658,8 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passConf.priority;
-    pass->do_present = passConf.colorBuffer[0].texture == InvalidHandle;
+    pass->commandBuffer = [_Metal_DefCmdQueue commandBuffer];
+    [pass->commandBuffer retain];
 
     if (cmdBufCount == 1)
     {
@@ -671,13 +667,11 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         CommandBufferMetal_t* cb = CommandBufferPoolMetal::Get(cb_h);
 
         pass->encoder = nil;
-        pass->buf = [_Metal_DefCmdQueue commandBuffer];
-        [pass->buf retain];
 
-        cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:pass->desc];
+        cb->encoder = [pass->commandBuffer renderCommandEncoderWithDescriptor:pass->desc];
         [cb->encoder retain];
 
-        cb->buf = pass->buf;
+        cb->buf = pass->commandBuffer;
         cb->rt = pass->desc.colorAttachments[0].texture;
         cb->color_fmt = pass->desc.colorAttachments[0].texture.pixelFormat;
         cb->ds_used = ds_used;
@@ -692,9 +686,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
     }
     else
     {
-        pass->buf = [_Metal_DefCmdQueue commandBuffer];
-        [pass->buf retain];
-        pass->encoder = [pass->buf parallelRenderCommandEncoderWithDescriptor:pass->desc];
+        pass->encoder = [pass->commandBuffer parallelRenderCommandEncoderWithDescriptor:pass->desc];
         [pass->encoder retain];
 
         for (unsigned i = 0; i != cmdBufCount; ++i)
@@ -704,7 +696,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 
             cb->encoder = [pass->encoder renderCommandEncoder];
             [cb->encoder retain];
-            cb->buf = pass->buf;
+            cb->buf = pass->commandBuffer;
             cb->rt = pass->desc.colorAttachments[0].texture;
             cb->color_fmt = pass->desc.colorAttachments[0].texture.pixelFormat;
             cb->ds_used = ds_used;
@@ -751,18 +743,12 @@ static void metal_RenderPass_Begin(Handle pass_h)
 {
     MTL_TRACE(" -rp.begin %u", RHI_HANDLE_INDEX(pass_h));
     RenderPassMetal_t* pass = RenderPassPoolMetal::Get(pass_h);
-
-    pass->finished = false;
-    MTL_TRACE("  drawable %p %i", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount]);
 }
 
 static void metal_RenderPass_End(Handle pass_h)
 {
     MTL_TRACE(" -rp.end %u", RHI_HANDLE_INDEX(pass_h));
-    RenderPassMetal_t* pass = RenderPassPoolMetal::Get(pass_h);
-
-    DVASSERT(!pass->finished);
-    pass->finished = true;
+    RenderPassMetal_t* pass = RenderPassPoolMetal::Get(pass_h);    
 
     #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (pass->cmdBuf.size() > 1)
@@ -1497,8 +1483,8 @@ static void Metal_RejectFrame(const CommonImpl::Frame& frame)
 
         rp->desc = nullptr;
 
-        [rp->buf release];
-        rp->buf = nil;
+        [rp->commandBuffer release];
+        rp->commandBuffer = nil;
         [rp->encoder release];
         rp->encoder = nil;
     }
@@ -1540,8 +1526,8 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     MTL_TRACE("--present %u", frame.frameNumber);
         
-#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     //for some reason when device is locked receive nil in drawable even before getting notification - check this case and do nothing to prevent crashes
+#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (_Metal_currentDrawable == nil)
     {
         Metal_RejectFrame(frame);
@@ -1549,9 +1535,7 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     }
 #endif
 
-    // sort cmd-lists by priority
-    // software command buffers are to be executed in priority order
-    // native command buffer are to be committed in priority order
+    // sort cmd-lists by priority - command buffer are to be committed in pass-priority order
     static std::vector<RenderPassMetal_t*> pass;
     Handle syncObject = frame.sync;
     pass.clear();
@@ -1574,87 +1558,53 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             pass.push_back(rp);
     }
 
-//find the last command buffer for native command buffer to add completion handler or create single command buffer for software command buffers to be executed to
-#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
-    {
-        RenderPassMetal_t* pass = *p;
-        if (pass->do_present)
-            _Metal_currentCommandBuffer = pass->buf;
-    } 
-#else
-//_Metal_currentCommandBuffer = [_Metal_DefCmdQueue commandBuffer];
-//[_Metal_currentCommandBuffer retain];
-#endif
-
-//execute software command buffers
-    #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+    // commit everything here - software command buffer are executed priorly
+    // also add completion handlers here as befor rp->Initialize we dont have command buffers / frame drawable, and after committing adding handlers is prohibited
     bool initOk = true;
-    //for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     for (int32 i = 0, sz = pass.size(); i < sz; ++i)
     {
         RenderPassMetal_t* rp = pass[i];
+
+#if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+        //execute software command buffers
         initOk &= rp->Initialize();
         if (!initOk)
             break;
-
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
         {
             Handle cbh = rp->cmdBuf[b];
             CommandBufferMetal_t* cb = CommandBufferPoolMetal::Get(cbh);
-
             cb->Execute();
         }
-        if (rp->encoder)
+        if (rp->encoder != nil)
             [rp->encoder endEncoding];
+#endif
 
         if (i == (sz - 1))
         {
             //present drawable adds completion handler that calls actual present
-            [rp->buf presentDrawable:_Metal_currentDrawable];
-
+            [rp->commandBuffer presentDrawable:_Metal_currentDrawable];
             unsigned frame_n = frame.frameNumber;
             if (syncObject != InvalidHandle)
             {
-                [rp->buf addCompletedHandler:^(id<MTLCommandBuffer> cb)
-                                             {
-                                               MTL_TRACE("  .frame %u complete", frame_n);
-                                               DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
-                                               SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
-                                               sync->is_signaled = true;
-                                             }];
+                [rp->commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
+                                                       {
+                                                         MTL_TRACE("  .frame %u complete", frame_n);
+                                                         DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
+                                                         SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
+                                                         sync->is_signaled = true;
+                                                       }];
             }
         }
-        [rp->buf commit];
-        //_Metal_currentCommandBuffer = rp->buf;
+        [rp->commandBuffer commit];
     }
 
     if (!initOk)
     {
         //for some reason when device is locked receive nil in drawable even before getting notification - check this case and do nothing to prevent crashes
         Metal_RejectFrame(frame);
-        //[_Metal_currentCommandBuffer release];
         return;
-    }         
-    #endif
-
-    //add completion handler and present handler
-    if (pass.size())
-    {
-        MTL_TRACE("  -mtl.present-drawable %p", (void*)(_Metal_currentDrawable));
-        MTL_TRACE("   drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
-
     }
-
-//commit all work here
-    #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-//[_Metal_currentCommandBuffer commit];
-    #else
-    for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
-    {
-        [rp->buf commit];
-    }
-    #endif
 
     //clear passes
     for (RenderPassMetal_t* rp : pass)
@@ -1674,11 +1624,8 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
         rp->desc = nullptr;
 
-#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-
-        [rp->buf release];
-        rp->buf = nil;
-#endif
+        [rp->commandBuffer release];
+        rp->commandBuffer = nil;
         if (rp->encoder != nil)
         {
             [rp->encoder release];
@@ -1693,10 +1640,6 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     //release frame stuff
     [_Metal_currentDrawable release];
-    #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-//[_Metal_currentCommandBuffer release];
-    #endif
-    _Metal_currentCommandBuffer = nil;
     _Metal_currentDrawable = nil;
     _Metal_DefFrameBuf = nil;
 }
