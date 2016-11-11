@@ -562,13 +562,13 @@ bool RenderPassMetal_t::Initialize()
         desc.visibilityResultBuffer = QueryBufferMetal::GetBuffer(cfg.queryBuffer);
     }
 
+    commandBuffer = [_Metal_DefCmdQueue commandBuffer];
+    [commandBuffer retain];
     if (cmdBuf.size() == 1)
     {
         CommandBufferMetal_t* cb = CommandBufferPoolMetal::Get(cmdBuf[0]);
 
         encoder = nil;
-
-        commandBuffer = [_Metal_DefCmdQueue commandBuffer];
         cb->encoder = [commandBuffer renderCommandEncoderWithDescriptor:desc];
         [cb->encoder retain];
 
@@ -583,7 +583,6 @@ bool RenderPassMetal_t::Initialize()
     }
     else
     {
-        commandBuffer = [_Metal_DefCmdQueue commandBuffer];
         encoder = [commandBuffer parallelRenderCommandEncoderWithDescriptor:desc];
         [encoder retain];
 
