@@ -70,7 +70,7 @@ bool ApiIsSupported(Api api)
 
     case RHI_METAL:
     {
-         #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
+        #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
         supported = rhi_MetalIsSupported();
         #endif
     }

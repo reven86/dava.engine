@@ -95,6 +95,15 @@ public:
     void Close();
     void SetTitle(const String& title);
 
+    /** Gets current fullscreen mode */
+    eFullscreen GetFullscreen() const;
+
+    /** 
+        Sets fullscreen mode to window. 
+        Succeed fullscreen mode changing leads to changing of window size.
+    */
+    void SetFullscreen(eFullscreen newMode);
+
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -181,6 +190,7 @@ private:
     bool isVisible = false;
     bool hasFocus = false;
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
+    eFullscreen fullscreenMode;
 
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
@@ -230,6 +240,11 @@ inline Size2f Window::GetSurfaceSize() const
 inline float32 Window::GetSurfaceScale() const
 {
     return surfaceScale;
+}
+
+inline eFullscreen Window::GetFullscreen() const
+{
+    return fullscreenMode;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const
