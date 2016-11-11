@@ -5,6 +5,8 @@
 
 #include "Input/MouseDevice.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceUWP : public MouseDeviceInterface
@@ -19,6 +21,8 @@ private:
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 }
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN_UAP__
 

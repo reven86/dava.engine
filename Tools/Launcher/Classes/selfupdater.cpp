@@ -34,11 +34,12 @@ private:
 };
 }
 
-SelfUpdater::SelfUpdater(const QString& arcUrl, QWidget* parent)
+SelfUpdater::SelfUpdater(FileManager* fileManager_, const QString& arcUrl, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::SelfUpdater)
     , archiveUrl(arcUrl)
     , networkManager(new QNetworkAccessManager(this))
+    , fileManager(fileManager_)
 {
     ui->setupUi(this);
 
@@ -69,18 +70,25 @@ void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
 }
 struct DirCleaner
 {
+    DirCleaner(FileManager* fileManager_)
+        : fileManager(fileManager_)
+    {
+        Q_ASSERT(fileManager != nullptr);
+    }
+
     ~DirCleaner()
     {
-        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
-        FileManager::DeleteDirectory(FileManager::GetSelfUpdateTempDirectory());
+        FileManager::DeleteDirectory(fileManager->GetTempDirectory());
+        FileManager::DeleteDirectory(fileManager->GetSelfUpdateTempDirectory());
     }
+    FileManager* fileManager;
 };
 
 SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
 {
-    QString appDirPath = FileManager::GetLauncherDirectory();
-    QString tempArchiveFilePath = FileManager::GetTempDownloadFilePath();
-    QString selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
+    QString appDirPath = fileManager->GetLauncherDirectory();
+    QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath();
+    QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
     ZipUtils::CompressedFilesAndSizes files;
     SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
@@ -90,11 +98,11 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
         return ARCHIVE_ERROR;
     }
 
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
-    QString tempDir = FileManager::GetTempDirectory(); //create temp directory
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
+    QString tempDir = fileManager->GetTempDirectory(); //create temp directory
     //remove old launcher files except download folder, temp folder and update folder
-    if (FileManager::MoveLauncherRecursively(appDirPath, tempDir)
-        && FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
+    if (fileManager->MoveLauncherRecursively(appDirPath, tempDir)
+        && fileManager->MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
     {
         return NO_ERRORS;
     }
@@ -106,12 +114,12 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
 
 void SelfUpdater::DownloadFinished()
 {
-    DirCleaner raiiDirCleaner;
+    DirCleaner raiiDirCleaner(fileManager);
     if (currentDownload)
     {
         ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-        QString tempArchiveFilePath = FileManager::GetTempDownloadFilePath();
+        QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath();
         UpdateError err = NO_ERRORS;
         //archive file scope. At the end of the scope file will be closed if necessary
         {
