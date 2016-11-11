@@ -107,6 +107,9 @@ public:
     /** Get rendering surface virtual rect where origin is always (0,0) */
     Rect GetVirtualRect() const;
 
+    /** Get rendering surface full virtual rect */
+    Rect GetFullVirtualRect() const;
+
     void Close();
     void SetTitle(const String& title);
 

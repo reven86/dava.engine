@@ -57,6 +57,11 @@ Rect Window::GetVirtualRect() const
     return Rect(0, 0, sz.dx, sz.dy);
 }
 
+Rect Window::GetFullVirtualRect() const
+{
+    return uiControlSystem->vcs->GetFullScreenVirtualRect();
+}
+
 void Window::Close()
 {
     // Window cannot be close in embedded mode as window lifetime
