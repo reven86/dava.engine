@@ -184,17 +184,13 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-    try
-    {
-        setScale(surfaceView, scale);
-        surfaceScale = scale;
-        return true;
-    }
-    catch (const JNI::Exception& e)
-    {
-        Logger::Error("[WindowBackend::SetSurfaceScale] failed to set scale %f: %s", scale, e.what());
-        return false;
-    }
+    const float32 surfaceWidth = windowWidth * scale;
+    const float32 surfaceHeight = windowHeight * scale;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight));
+
+    surfaceScale = scale;
+
+    return true;
 }
 
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
@@ -276,8 +272,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         mainDispatcher->PostEvent(e);
     }
 
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
+    windowWidth = static_cast<float32>(width);
+    windowHeight = static_cast<float32>(height);
+
     if (firstTimeSurfaceChanged)
     {
         uiDispatcher.LinkToCurrentThread();
@@ -287,7 +284,6 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             surfaceViewJavaClass.reset(new JNI::JavaClass("com/dava/engine/DavaSurfaceView"));
             triggerPlatformEvents = surfaceViewJavaClass->GetMethod<void>("triggerPlatformEvents");
             createNativeControl = surfaceViewJavaClass->GetMethod<jobject, jstring, jlong>("createNativeControl");
-            setScale = surfaceViewJavaClass->GetMethod<void, jfloat>("setScale");
         }
         catch (const JNI::Exception& e)
         {
@@ -295,12 +291,14 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfaceWidth, surfaceHeight, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceWidth, surfaceHeight));
+    	// Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+    	// To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale));
     }
 }
 

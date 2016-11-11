@@ -56,21 +56,6 @@ final class DavaSurfaceView extends SurfaceView
 */
     }
     
-    public void setScale(float scale)
-    {
-        final int surfaceWidth = (int)(getWidth() * scale);
-        final int surfaceHeight = (int)(getHeight() * scale);
-        
-        DavaActivity.instance().runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                getHolder().setFixedSize(surfaceWidth, surfaceHeight);
-            }
-        });
-    }
-
     public Object createNativeControl(String className, long backendPointer)
     {
         try {
@@ -178,11 +163,9 @@ final class DavaSurfaceView extends SurfaceView
         }
 
         int dpi = getDpi();
-        int viewWidth = getWidth();
-        int viewHeight = getHeight();
         
-        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", viewWidth, viewHeight, w, h, dpi));
-        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), viewWidth, viewHeight, w, h, dpi);
+        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
+        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
         if (DavaActivity.davaMainThread == null)
         {

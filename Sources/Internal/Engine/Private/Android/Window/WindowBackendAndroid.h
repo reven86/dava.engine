@@ -95,9 +95,10 @@ private:
     std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
     Function<void(jobject)> triggerPlatformEvents;
     Function<jobject(jobject, jstring, jlong)> createNativeControl;
-    Function<void(jobject, jfloat)> setScale;
 
     float32 surfaceScale = 1.0f;
+    float32 windowWidth = 0.0f;
+    float32 windowHeight = 0.0f;
 
     bool firstTimeSurfaceChanged = true;
 
