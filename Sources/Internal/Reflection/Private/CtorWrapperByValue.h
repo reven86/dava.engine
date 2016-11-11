@@ -4,27 +4,23 @@
 namespace DAVA
 {
 template <typename C, typename... Args>
-class CtorWrapperDefault : public CtorWrapper
+class CtorWrapperByValue : public CtorWrapper
 {
 public:
-    CtorWrapperDefault()
+    CtorWrapperByValue()
     {
         argsList.Set<void, Args...>();
+    }
+
+    CtorWrapper::Policy GetCtorPolicy() const override
+    {
+        return CtorWrapper::Policy::ByValue;
     }
 
     const AnyFn::Params& GetInvokeParams() const override
     {
         return argsList;
     };
-
-    // TODO:
-    // Create policy should be added
-    // Policies can be:
-    //      as pointer,
-    //      as value,
-    //      possible as unique_ptr
-    //      or shared_ptr
-    // ...
 
     Any Create() const override
     {
@@ -66,34 +62,10 @@ protected:
     AnyFn::Params argsList;
 
     template <typename... A>
-    Any CreateByValue(A&&... args) const
+    Any CreateImpl(std::true_type, A&&... args) const
     {
         C c(args.template Get<Args>()...);
         return Any(std::move(c));
-    }
-
-    template <typename... A>
-    Any CreateByPointer(A&&... args) const
-    {
-        C* c = new C(args.template Get<Args>()...);
-        return Any(c);
-    }
-
-    template <typename... A>
-    Any CreateImpl(std::true_type, A&&... args) const
-    {
-#ifdef __REFLECTION_FEATURE__
-        switch (policy)
-        {
-        case CtorWrapper::Policy::ByValue:
-            return CreateByValue(std::forward<A>(args)...);
-        case CtorWrapper::Policy::ByPointer:
-            return CreateByPointer(std::forward<A>(args)...);
-        }
-#endif
-        assert(0);
-
-        return Any();
     }
 
     template <typename... A>

@@ -9,11 +9,19 @@ namespace DAVA
 namespace RttiInheritanceDetail
 {
 template <typename From, typename To>
-void* CastFromTo(void* p)
+std::ptrdiff_t GetPtrDiff()
 {
-    From* from = static_cast<From*>(p);
+    From* from = reinterpret_cast<From*>(0xcccccccc);
     To* to = static_cast<To*>(from);
-    return to;
+
+    ptrdiff_t ret = reinterpret_cast<uintptr_t>(to) - reinterpret_cast<uintptr_t>(from);
+
+    if (0 != ret)
+    {
+        printf("1");
+    }
+
+    return ret;
 }
 } // RttiInheritanceDetail
 
@@ -71,7 +79,7 @@ bool RttiInheritance::AddBaseType()
     }
 
     const RttiType* base = RttiType::Instance<B>();
-    inheritance->baseTypesInfo.push_back({ base, &RttiInheritanceDetail::CastFromTo<T, B> });
+    inheritance->baseTypesInfo.push_back({ base, RttiInheritanceDetail::GetPtrDiff<T, B>() });
     return true;
 }
 
@@ -88,7 +96,7 @@ bool RttiInheritance::AddDerivedType()
     }
 
     const RttiType* derived = RttiType::Instance<D>();
-    inheritance->derivedTypesInfo.push_back({ derived, &RttiInheritanceDetail::CastFromTo<T, D> });
+    inheritance->derivedTypesInfo.push_back({ derived, RttiInheritanceDetail::GetPtrDiff<T, D>() });
     return true;
 }
 } // namespace DAVA

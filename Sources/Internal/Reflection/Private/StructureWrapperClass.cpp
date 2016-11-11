@@ -2,51 +2,42 @@
 
 namespace DAVA
 {
-StructureWrapperClass::StructureWrapperClass(const ReflectedType* reflectedType)
+StructureWrapperClass::StructureWrapperClass(const RttiType* rttiType)
 {
-    FillCache(reflectedType, nullptr);
+    FillCache(rttiType);
 }
 
-void StructureWrapperClass::FillCache(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP)
+void StructureWrapperClass::FillCache(const RttiType* rttiType)
 {
-    FillCacheEntry(reflectedType, castOP);
+    FillCacheEntries(rttiType);
 
-    const RttiInheritance* inheritance = reflectedType->rttiType->GetInheritance();
+    const RttiInheritance* inheritance = rttiType->GetInheritance();
     if (NULL != inheritance)
     {
         const Vector<RttiInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
         for (auto& baseInfo : baseTypesInfo)
         {
-            const ReflectedType* baseReflectedType = ReflectedTypeDB::GetByRttiType(baseInfo.type);
-
-            if (nullptr != castOP)
-            {
-                RttiInheritance::CastOP baseCastOP = baseInfo.castOP;
-                FillCache(baseReflectedType, [castOP, baseCastOP](void*) -> void* { return })
-            }
-            else
-            {
-                FillCache(baseReflectedType, baseInfo.castOP);
-            }
+            FillCache(baseInfo.type);
         }
     }
 }
 
-void StructureWrapperClass::FillCacheEntry(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP)
+void StructureWrapperClass::FillCacheEntries(const RttiType* rttiType)
 {
-    const ReflectedStructure* structure = reflectedType->structure.get();
+    const ReflectedType* reflectedType = ReflectedTypeDB::GetByRttiType(rttiType);
+    const ReflectedStructure* structure = reflectedType->GetStrucutre();
 
     for (auto& f : structure->fields)
     {
         const ReflectedStructure::Field* field = f.get();
-        fieldsCache.push_back({ field, castOP });
+        fieldsCache.push_back(field);
         fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
     }
 
     for (auto& m : structure->methods)
     {
         const ReflectedStructure::Method* method = m.get();
-        methodsCache.push_back({ method, castOP });
+        methodsCache.push_back(method);
         methodsNameIndexes[method->name] = methodsCache.size() - 1;
     }
 }
@@ -58,8 +49,6 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Value
 
 Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
-    Reflection ret;
-
     if (!fieldsCache.empty())
     {
         String name = key.Cast<String>(String());
@@ -74,12 +63,13 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
             auto it = fieldsNameIndexes.find(name);
             if (it != fieldsNameIndexes.end())
             {
-                ret = CreateFieldReflection(object, vw, fieldsCache[it->second]);
+                const ReflectedStructure::Field* field = fieldsCache[it->second];
+                return Reflection(vw->GetValueObject(object), field->reflectedType, field->meta.get(), field->valueWrapper.get());
             }
         }
     }
 
-    return ret;
+    return Reflection();
 }
 
 Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw) const
@@ -87,9 +77,9 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     Vector<Reflection::Field> ret;
 
     ret.reserve(fieldsCache.size());
-    for (auto& fieldEntry : fieldsCache)
+    for (auto field : fieldsCache)
     {
-        ret.push_back({ DAVA::Any(fieldEntry.field->name), CreateFieldReflection(object, vw, fieldEntry) });
+        ret.push_back({ DAVA::Any(field->name), Reflection(vw->GetValueObject(object), field->reflectedType, field->meta.get(), field->valueWrapper.get()) });
     }
 
     return ret;
@@ -108,7 +98,7 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
         auto it = methodsNameIndexes.find(name);
         if (it != methodsNameIndexes.end())
         {
-            return methodsCache[it->second].method->methodWrapper->anyFn.BindThis(object.GetVoidPtr());
+            return methodsCache[it->second]->methodWrapper->anyFn.BindThis(object.GetVoidPtr());
         }
     }
     return AnyFn();
@@ -117,24 +107,6 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
 Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     return Vector<Reflection::Method>();
-}
-
-Reflection StructureWrapperClass::CreateFieldReflection(const ReflectedObject& object, const ValueWrapper* vw, const FieldCacheEntry& entry) const
-{
-    ReflectedObject fieldClassObject = object;
-
-    const ReflectedStructure::Field* field = entry.field;
-    const RttiInheritance::CastOP castToBaseOP = entry.castToBaseOP;
-
-    if (nullptr != castToBaseOP)
-    {
-        void* derVoidPtr = fieldClassObject.GetVoidPtr();
-        void* baseVoidPtr = (*castToBaseOP)(derVoidPtr);
-
-        fieldClassObject = ReflectedObject(derVoidPtr, field->reflectedType->rttiType->Pointer());
-    }
-
-    return Reflection(vw->GetValueObject(object), field->reflectedType, field->meta.get(), field->valueWrapper.get());
 }
 
 } //namespace DAVA

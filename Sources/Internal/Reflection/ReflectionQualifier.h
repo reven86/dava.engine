@@ -11,8 +11,9 @@
 #include "Reflection/Private/ValueWrapperStatic.h"
 #include "Reflection/Private/ValueWrapperStaticFn.h"
 #include "Reflection/Private/ValueWrapperStaticFnPtr.h"
-#include "Reflection/Private/CtorWrapperDefault.h"
-#include "Reflection/Private/DtorWrapperDefault.h"
+#include "Reflection/Private/CtorWrapperByValue.h"
+#include "Reflection/Private/CtorWrapperByPointer.h"
+#include "Reflection/Private/DtorWrapperByPointer.h"
 #include "Reflection/Private/StructureWrapperClass.h"
 #include "Reflection/Private/StructureWrapperPtr.h"
 #include "Reflection/Private/StructureWrapperStd.h"
@@ -29,9 +30,15 @@ public:
     static ReflectionQualifier& Begin();
 
     template <typename... Args>
-    ReflectionQualifier& Constructor();
+    ReflectionQualifier& ConstructorByValue();
 
-    ReflectionQualifier& Destructor();
+    template <typename... Args>
+    ReflectionQualifier& ConstructorByPointer();
+
+    template <typename... Args>
+    ReflectionQualifier& ConstructorByPointer(C* (*fn)(Args...));
+
+    ReflectionQualifier& DestructorByPointer();
 
     template <typename T>
     ReflectionQualifier& Field(const char* name, T* field);

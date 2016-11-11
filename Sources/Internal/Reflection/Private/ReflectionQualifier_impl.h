@@ -32,16 +32,32 @@ ReflectionQualifier<C>& ReflectionQualifier<C>::Begin()
 
 template <typename C>
 template <typename... Args>
-ReflectionQualifier<C>& ReflectionQualifier<C>::Constructor()
+ReflectionQualifier<C>& ReflectionQualifier<C>::ConstructorByValue()
 {
-    structure->ctors.emplace_back(new CtorWrapperDefault<C, Args...>());
+    structure->ctors.emplace_back(new CtorWrapperByValue<C, Args...>());
     return *this;
 }
 
 template <typename C>
-ReflectionQualifier<C>& ReflectionQualifier<C>::Destructor()
+template <typename... Args>
+ReflectionQualifier<C>& ReflectionQualifier<C>::ConstructorByPointer()
 {
-    structure->dtors.emplace_back(new DtorWrapperDefault<C>());
+    structure->ctors.emplace_back(new CtorWrapperByPointer<C, Args...>());
+    return *this;
+}
+
+template <typename C>
+template <typename... Args>
+ReflectionQualifier<C>& ReflectionQualifier<C>::ConstructorByPointer(C* (*fn)(Args...))
+{
+    structure->ctors.emplace_back(new CtorWrapperByPointer<C, Args...>(fn));
+    return *this;
+}
+
+template <typename C>
+ReflectionQualifier<C>& ReflectionQualifier<C>::DestructorByPointer()
+{
+    structure->dtor.reset(new DtorWrapperByPointer<C>());
     return *this;
 }
 
@@ -49,20 +65,12 @@ template <typename C>
 template <typename T>
 ReflectionQualifier<C>& ReflectionQualifier<C>::AddField(const char* name, ValueWrapper* vw)
 {
-    //    ReflectedType* reflectedType = ReflectedTypeDB::Edit<T>();
-    //     if (nullptr == reflectedType->structureWrapper)
-    //     {
-    //         using DecayT = RttiType::DecayT<T>;
-    //         reflectedType->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
-    //     }
-
     ReflectedStructure::Field* f = new ReflectedStructure::Field();
     f->name = name;
     f->valueWrapper.reset(vw);
     f->reflectedType = ReflectedTypeDB::Get<T>();
-    ;
-    lastMeta = &f->meta;
 
+    lastMeta = &f->meta;
     structure->fields.emplace_back(f);
 
     return *this;
@@ -202,7 +210,7 @@ void ReflectionQualifier<C>::End()
         ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
         type->structure.reset(structure);
-        type->structureWrapper.reset(new StructureWrapperClass(type));
+        type->structureWrapper.reset(new StructureWrapperClass(RttiType::Instance<C>()));
 
         structure = nullptr;
     }

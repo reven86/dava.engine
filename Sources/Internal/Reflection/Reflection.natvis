@@ -3,4 +3,7 @@
   <Type Name="DAVA::ReflectedObject">
     <DisplayString>{{ptr={ptr}, type={type->name, na}}}</DisplayString>
   </Type>
+  <Type Name="DAVA::ReflectedType">
+    <DisplayString>{{type={rttiType->name, na}, name={permanentName}}}</DisplayString>
+  </Type>
 </AutoVisualizer>

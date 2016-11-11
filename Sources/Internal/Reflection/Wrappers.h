@@ -36,10 +36,17 @@ class EnumWrapper
 class CtorWrapper
 {
 public:
+    enum class Policy
+    {
+        ByValue,
+        ByPointer
+    };
+
     CtorWrapper() = default;
     CtorWrapper(const CtorWrapper&) = delete;
     virtual ~CtorWrapper() = default;
 
+    virtual Policy GetCtorPolicy() const = 0;
     virtual const AnyFn::Params& GetInvokeParams() const = 0;
 
     virtual Any Create() const = 0;

@@ -8,12 +8,10 @@ namespace DAVA
 class RttiInheritance final
 {
 public:
-    using CastOP = void* (*)(void*);
-
     struct Info
     {
         const RttiType* type;
-        CastOP castOP;
+        std::ptrdiff_t ptrDiff;
     };
 
     const Vector<Info>& GetBaseTypes() const;

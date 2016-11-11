@@ -4,39 +4,45 @@ namespace DAVA
 {
 bool RttiInheritance::TryCast(const RttiType* from, const RttiType* to, CastType castType, void* inPtr, void** outPtr)
 {
-    if (from->IsPointer() && to->IsPointer())
+    if (to == from)
     {
-        const RttiType* to_ = to->Deref()->Decay();
-        const RttiType* from_ = from->Deref()->Decay();
+        *outPtr = inPtr;
+        return true;
+    }
 
-        if (to_ == from_)
+    to = to->IsPointer() ? to->Deref()->Decay() : to->Decay();
+    from = from->IsPointer() ? from->Deref()->Decay() : from->Decay();
+
+    if (to == from)
+    {
+        *outPtr = inPtr;
+        return true;
+    }
+
+    const RttiInheritance* inheritance = from->GetInheritance();
+    if (nullptr != inheritance)
+    {
+        Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
+
+        if (castType == CastType::UpCast)
         {
-            *outPtr = inPtr;
-            return true;
+            typesInfo = &inheritance->derivedTypesInfo;
         }
 
-        const RttiInheritance* inheritance = from_->GetInheritance();
-        if (nullptr != inheritance)
+        for (Info& info : *typesInfo)
         {
-            Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
-
-            if (castType == CastType::UpCast)
+            if (info.type == to)
             {
-                typesInfo = &inheritance->derivedTypesInfo;
+                *outPtr = OffsetPointer<void*>(inPtr, info.ptrDiff);
+                return true;
             }
+        }
 
-            for (Info& info : *typesInfo)
+        for (Info& info : *typesInfo)
+        {
+            if (TryCast(info.type, to, castType, OffsetPointer<void*>(inPtr, info.ptrDiff), outPtr))
             {
-                if (info.type == to_)
-                {
-                    *outPtr = (*info.castOP)(inPtr);
-                    return true;
-                }
-            }
-
-            for (Info& info : *typesInfo)
-            {
-                return TryCast(info.type->Pointer(), to, castType, (*info.castOP)(inPtr), outPtr);
+                return true;
             }
         }
     }

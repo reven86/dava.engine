@@ -21,6 +21,11 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::false_type)
 template <typename T>
 const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
 {
+    static_assert(std::is_convertible<const T*, const ReflectedBase*>::value,
+                  "T* can't be converted to ReflectedBase*. "
+                  "It seems that there is inheritance Diamond Problem. "
+                  "Try to use virtual inheritance!");
+
     return static_cast<const ReflectedBase*>(ptr)->GetReflectedType();
 }
 
@@ -74,7 +79,6 @@ public:
         RunImpl(std::integral_constant<bool, CheckType::value>());
     }
 };
-
 } // namespace ReflectedTypeDBDetail
 
 template <typename T>
@@ -94,23 +98,6 @@ ReflectedType* ReflectedTypeDB::Edit()
     {
         ret->rttiType = RttiType::Instance<DecayT>();
         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
-
-        //         ret->structure.reset(new Refle)
-        //         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
-        //        broken on vs 2013!
-        //        TODO: fix
-        //        ...
-        //
-        //        static const bool isDfConstructible = std::is_default_constructible<DecayT>::value;
-        //        static const bool isCpConstructible = std::is_copy_constructible<DecayT>::value;
-        //        static const bool isMvConstructible = std::is_move_constructible<DecayT>::value;
-        //        static const bool hasDefaultCtor = isDfConstructible && (isCpConstructible || isMvConstructible);
-        //
-        //         CtorWrapper* defaultCtor = ReflectionDetail::GetDefaultCtor<T>(std::integral_constant<bool, hasDefaultCtor>());
-        //         if (nullptr != defaultCtor)
-        //         {
-        //             ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
-        //         }
 
         rttiTypeToReflectedTypeMap[ret->rttiType] = ret;
         rttiNameToReflectedTypeMap[String(ret->rttiType->GetName())] = ret;

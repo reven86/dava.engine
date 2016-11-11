@@ -4,6 +4,7 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/RttiType.h"
+#include "Debug/DVAssert.h"
 
 #include "Reflection/ReflectedMeta.h"
 #include "Reflection/ReflectedObject.h"

@@ -4,7 +4,7 @@
 namespace DAVA
 {
 template <typename C>
-class DtorWrapperDefault : public DtorWrapper
+class DtorWrapperByPointer : public DtorWrapper
 {
 public:
     void Destroy(ReflectedObject&& object) const override

@@ -14,7 +14,7 @@ public:
     bool HasFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->HasFields(derefObj, &ptrVW);
@@ -27,7 +27,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetField(derefObj, &ptrVW, key);
@@ -40,7 +40,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetFields(derefObj, &ptrVW);
@@ -53,7 +53,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->HasMethods(derefObj, &ptrVW);
@@ -66,7 +66,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetMethod(derefObj, &ptrVW, key);
@@ -79,7 +79,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetInternalWrapper(derefObj);
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetMethods(derefObj, &ptrVW);
@@ -91,14 +91,18 @@ public:
 protected:
     ValueWrapperDefault<T*> ptrVW;
 
-    const StructureWrapper* GetInternalWrapper(const ReflectedObject& derefObj) const
+    const StructureWrapper* AppyInternalWrapper(ReflectedObject& derefObj) const
     {
         const StructureWrapper* sw = nullptr;
 
         if (derefObj.IsValid())
         {
             T* ptr = derefObj.GetPtr<T>();
-            sw = ReflectedTypeDB::GetByPointer(ptr)->structureWrapper.get();
+
+            const ReflectedType* reflectedType = ReflectedTypeDB::GetByPointer(ptr);
+
+            derefObj = ReflectedObject(ptr, reflectedType->GetRttiType()->Pointer());
+            sw = reflectedType->GetStrucutreWrapper();
         }
 
         return sw;

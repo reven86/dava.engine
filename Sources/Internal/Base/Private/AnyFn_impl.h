@@ -303,6 +303,15 @@ AnyFn::Params& AnyFn::Params::Set()
     return SetArgs<Args...>();
 }
 
+template <typename Ret, typename... Args>
+bool AnyFn::Params::ArePassing() const
+{
+    // TODO:
+    // ...
+
+    return false;
+}
+
 template <typename... Args>
 AnyFn::Params& AnyFn::Params::SetArgs()
 {

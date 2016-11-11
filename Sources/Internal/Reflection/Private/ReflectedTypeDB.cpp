@@ -20,40 +20,6 @@ void ReflectedTypeDBB : SetPermanentName(const String& name) const
     rt->permanentName = name;
     rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
-
-const CtorWrapper* ReflectedType::GetCtor(const AnyFn::Params& params) const
-{
-    const CtorWrapper* ret = nullptr;
-
-    for (auto& it : ctorWrappers)
-    {
-        if (it->GetInvokeParams() == params)
-        {
-            ret = it.get();
-            break;
-        }
-    }
-
-    return ret;
-}
-
-Vector<const CtorWrapper*> ReflectedType::GetCtors() const
-{
-    Vector<const CtorWrapper*> ret;
-
-    ret.reserve(ctorWrappers.size());
-    for (auto& it : ctorWrappers)
-    {
-        ret.push_back(it.get());
-    }
-
-    return ret;
-}
-
-const DtorWrapper* ReflectedType::GetDtor() const
-{
-    return dtorWrapper.get();
-}
 #endif
 
 const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* rttiType)
@@ -102,8 +68,8 @@ ReflectedType* ReflectedTypeDB::Create(const RttiType* rttiType, const String& p
 
     String rttiName(rttiType->GetName());
 
-    assert(rttiTypeToReflectedTypeMap.count(rttiType) == 0 && "ReflectedType with specified RttiType already exists");
-    assert(rttiNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
+    DVASSERT(rttiTypeToReflectedTypeMap.count(rttiType) == 0 && "ReflectedType with specified RttiType already exists");
+    DVASSERT(rttiNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
 
     rttiTypeToReflectedTypeMap[rttiType] = ret;
     rttiNameToReflectedTypeMap[rttiName] = ret;
@@ -117,9 +83,9 @@ void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, 
 {
     ReflectedType* rt = const_cast<ReflectedType*>(reflectedType);
 
-    assert(rt != nullptr);
-    assert(rt->permanentName.empty() && "Name is already set");
-    assert(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
+    DVASSERT(rt != nullptr);
+    DVASSERT(rt->permanentName.empty() && "Name is already set");
+    DVASSERT(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
 
     rt->permanentName = permanentName;
     permanentNameToReflectedTypeMap[permanentName] = rt;

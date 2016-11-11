@@ -35,10 +35,11 @@ public:
 
     std::unique_ptr<ReflectedMeta> meta;
 
-    Vector<std::unique_ptr<CtorWrapper>> ctors;
-    Vector<std::unique_ptr<DtorWrapper>> dtors;
     Vector<std::unique_ptr<Field>> fields;
     Vector<std::unique_ptr<Method>> methods;
     Vector<std::unique_ptr<Enum>> enums;
+
+    Vector<std::unique_ptr<CtorWrapper>> ctors;
+    std::unique_ptr<DtorWrapper> dtor;
 };
 } // namespace DAVA

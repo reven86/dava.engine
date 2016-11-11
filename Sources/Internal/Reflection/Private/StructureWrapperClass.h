@@ -10,7 +10,7 @@ namespace DAVA
 class StructureWrapperClass final : public StructureWrapperDefault
 {
 public:
-    StructureWrapperClass(const ReflectedType* reflectedType);
+    StructureWrapperClass(const RttiType* rttiType);
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
@@ -21,26 +21,13 @@ public:
     Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
 
 private:
-    struct FieldCacheEntry
-    {
-        const ReflectedStructure::Field* field;
-        RttiInheritance::CastOP castToBaseOP;
-    };
-
-    struct MethodCacheEntry
-    {
-        const ReflectedStructure::Method* method;
-        RttiInheritance::CastOP castToBaseOP;
-    };
-
-    Vector<FieldCacheEntry> fieldsCache;
-    Vector<MethodCacheEntry> methodsCache;
+    Vector<const ReflectedStructure::Field*> fieldsCache;
+    Vector<const ReflectedStructure::Method*> methodsCache;
     Map<String, size_t> fieldsNameIndexes;
     Map<String, size_t> methodsNameIndexes;
 
-    void FillCache(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP);
-    void FillCacheEntry(const ReflectedType* reflectedType, RttiInheritance::CastOP castOP);
-    Reflection CreateFieldReflection(const ReflectedObject& object, const ValueWrapper* vw, const FieldCacheEntry& entry) const;
+    void FillCache(const RttiType* rttiType);
+    void FillCacheEntries(const RttiType* rttiType);
 };
 
 } // namespace DAVA

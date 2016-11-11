@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 #include "Base/RttiType.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -53,8 +54,8 @@ inline ReflectedObject::ReflectedObject(void* ptr_, const RttiType* type_)
     : ptr(ptr_)
     , type(type_)
 {
-    assert(nullptr != type_);
-    assert(type_->IsPointer());
+    DVASSERT(nullptr != type_);
+    DVASSERT(type_->IsPointer());
 }
 
 inline const RttiType* ReflectedObject::GetType() const
@@ -72,9 +73,17 @@ inline T* ReflectedObject::GetPtr() const
 {
     const RttiType* reqType = RttiType::Instance<T*>();
 
-    assert(reqType == type || reqType->Decay() == type || RttiInheritance::CanCast(reqType, type));
+    if (reqType == type || reqType->Decay() == type)
+    {
+        return static_cast<T*>(ptr);
+    }
 
-    return static_cast<T*>(ptr);
+    void* ret = nullptr;
+    bool canDownCast = RttiInheritance::DownCast(type, reqType, ptr, &ret);
+
+    DVASSERT(canDownCast);
+
+    return static_cast<T*>(ret);
 }
 
 inline void* ReflectedObject::GetVoidPtr() const
