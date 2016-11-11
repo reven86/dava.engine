@@ -276,6 +276,35 @@ static void gles_check_GL_extensions()
         }
     }
 
+#ifdef __DAVAENGINE_ANDROID__
+    if (_GLES2_TimeStampQuerySupported)
+    {
+        //some driver returns available timestamp-query extension but not implement it
+
+        GLuint query = 0;
+        if (glGenQueries)
+            GL_CALL(glGenQueries(1, &query));
+
+        if (query)
+        {
+            GLuint64 ts = 0;
+
+            if (glQueryCounter)
+                GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+
+            GL_CALL(glFinish());
+
+            if (glGetQueryObjectui64v)
+                GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &ts));
+
+            if (glDeleteQueries)
+                GL_CALL(glDeleteQueries(1, &query));
+
+            MutableDeviceCaps::Get().isPerfQuerySupported = _GLES2_TimeStampQuerySupported = (ts != 0);
+        }
+    }
+#endif
+
     bool runningOnTegra = false;
     bool runningOnMali = false;
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));

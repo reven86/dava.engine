@@ -1808,6 +1808,8 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                     if (glQueryCounter)
                         GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
 
+                    GL_CALL(glFinish());
+
                     if (glGetQueryObjectui64v)
                         GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
 
