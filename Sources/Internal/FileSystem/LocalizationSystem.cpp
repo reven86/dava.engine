@@ -53,14 +53,24 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
 
-#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
     String locale = GetDeviceLocale();
+    if (locale.empty())
+    {
+        DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
+        locale = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
+    }
     SetCurrentLocale(locale);
-#else
-    DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
-    String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
-    SetCurrentLocale(loc);
-#endif
+}
+
+String LocalizationSystem::GetDeviceLocale(void) const
+{
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
 }
 
 void LocalizationSystem::Init()
