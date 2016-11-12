@@ -68,6 +68,16 @@
     bridge->WindowWillClose();
 }
 
+- (void)windowWillEnterFullScreen:(NSNotification*)notification
+{
+    bridge->WindowWillEnterFullScreen();
+}
+
+- (void)windowWillExitFullScreen:(NSNotification*)notification
+{
+    bridge->WindowWillExitFullScreen();
+}
+
 @end
 
 #endif // __DAVAENGINE_MACOS__

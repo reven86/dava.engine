@@ -33,6 +33,9 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    ::memset(&windowPlacement, 0, sizeof(windowPlacement));
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
@@ -55,7 +58,7 @@ bool WindowBackend::Create(float32 width, float32 height)
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"DAVA_WINDOW",
-                                    windowStyle,
+                                    windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
                                     w,
@@ -93,6 +96,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -109,6 +117,45 @@ void WindowBackend::TriggerPlatformEvents()
     {
         ::PostMessage(hwnd, WM_TRIGGER_EVENTS, 0, 0);
     }
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
+}
+
+LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
+{
+    uint16 hittest = LOWORD(lparam);
+    if (hittest == HTCLIENT)
+    {
+        if (mouseVisible)
+        {
+            ::SetCursor(defaultCursor);
+        }
+        else
+        {
+            ::SetCursor(nullptr);
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void WindowBackend::SetCursorInCenter()
+{
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    POINT point;
+    point.x = ((clientRect.left + clientRect.right) / 2);
+    point.y = ((clientRect.bottom + clientRect.top) / 2);
+    ::ClientToScreen(hwnd, &point);
+    ::SetCursorPos(point.x, point.y);
 }
 
 void WindowBackend::ProcessPlatformEvents()
@@ -137,10 +184,124 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
+{
+    if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
+    {
+        return;
+    }
+
+    // Changing of fullscreen mode leads to size changing, so set mode before it applying
+    if (newMode == eFullscreen::On)
+    {
+        isFullscreen = true;
+        SetFullscreenMode();
+    }
+    else
+    {
+        isFullscreen = false;
+        SetWindowedMode();
+    }
+}
+
+void WindowBackend::SetFullscreenMode()
+{
+    // Get window placement which is needed for back to windowed mode
+    ::GetWindowPlacement(hwnd, &windowPlacement);
+
+    // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+    // If it's not yet visible, the style should not be modified
+    // since ShowWindow(..., SW_SHOW) will occur later
+    uint32 style = fullscreenStyle | (::IsWindowVisible(hwnd) == TRUE ? WS_VISIBLE : 0);
+    ::SetWindowLong(hwnd, GWL_STYLE, style);
+
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+    HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    ::GetMonitorInfo(monitor, &monitorInfo);
+
+    ::SetWindowPos(hwnd,
+                   HWND_TOP,
+                   monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.top,
+                   monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                   SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void WindowBackend::SetWindowedMode()
+{
+    ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+    ::SetWindowPlacement(hwnd, &windowPlacement);
+
+    UINT flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, flags);
+}
+
+void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
+{
+    if (captureMode != mode)
+    {
+        captureMode = mode;
+        switch (mode)
+        {
+        case eCursorCapture::FRAME:
+            //not implemented
+            break;
+        case eCursorCapture::PINNING:
+        {
+            POINT p;
+            ::GetCursorPos(&p);
+            lastCursorPosition.x = p.x;
+            lastCursorPosition.y = p.y;
+            SetCursorInCenter();
+            break;
+        }
+        case eCursorCapture::OFF:
+        {
+            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+            break;
+        }
+        }
+        UpdateClipCursor();
+    }
+}
+
+void WindowBackend::UpdateClipCursor()
+{
+    ::ClipCursor(nullptr);
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        RECT rect;
+        ::GetClientRect(hwnd, &rect);
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect));
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect) + 1);
+        ::ClipCursor(&rect);
+    }
+}
+
+void WindowBackend::HandleWindowFocusChanging(bool focusState)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
+    if (!focusState)
+    {
+        if (captureMode != eCursorCapture::OFF)
+        {
+            DoSetCursorCapture(eCursorCapture::OFF);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+        }
+        DoSetCursorVisibility(true);
+    }
+}
+
+void WindowBackend::DoSetCursorVisibility(bool visible)
+{
+    mouseVisible = visible;
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
+    ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
 
     *w = rc.right - rc.left;
     *h = rc.bottom - rc.top;
@@ -160,8 +321,9 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         // on win32 surfaceWidth/surfaceHeight is same as window width/height
         float32 surfaceWidth = width;
         float32 surfaceHeight = height;
+        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
     }
 }
 
@@ -179,8 +341,17 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        DoSetCursorCapture(e.setCursorCaptureEvent.mode);
+        break;
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
+        DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:
         break;
@@ -189,9 +360,15 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 
 LRESULT WindowBackend::OnSize(int32 resizingType, int32 width, int32 height)
 {
+    UpdateClipCursor();
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
+        if (hasFocus)
+        {
+            hasFocus = false;
+            HandleWindowFocusChanging(hasFocus);
+        }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
     }
@@ -255,14 +432,51 @@ LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
     return 0;
 }
 
-LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
+LRESULT WindowBackend::OnActivate(WPARAM wparam)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    bool newFocus = (LOWORD(wparam) != WA_INACTIVE);
+    if (hasFocus != newFocus)
+    {
+        hasFocus = newFocus;
+        if (hasFocus && isMinimized)
+        {
+            isMinimized = false;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        }
+        HandleWindowFocusChanging(hasFocus);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseMoveRelativeEvent(int x, int y)
+{
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    int clientCenterX((clientRect.left + clientRect.right) / 2);
+    int clientCenterY((clientRect.bottom + clientRect.top) / 2);
+    int deltaX = x - clientCenterX;
+    int deltaY = y - clientCenterY;
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (deltaX != 0 || deltaY != 0)
+    {
+        SetCursorInCenter();
+        x = deltaX;
+        y = deltaY;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(deltaX), static_cast<float32>(deltaY), modifierKeys, true));
+    }
+    else
+    {
+        // skip mouse moveEvent, which generate SetCursorPos
+    }
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
 {
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        return OnMouseMoveRelativeEvent(x, y);
+    }
     // Windows generates WM_MOUSEMOVE event for primary touch point so check and process
     // mouse move only from mouse device. Also skip spurious move events as described in:
     // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
@@ -287,7 +501,8 @@ LRESULT WindowBackend::OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, in
     float32 vy = static_cast<float32>(y);
     float32 vdeltaX = static_cast<float32>(deltaX);
     float32 vdeltaY = static_cast<float32>(deltaY);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, vdeltaX, vdeltaY, modifierKeys, false));
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, vdeltaX, vdeltaY, modifierKeys, isRelative));
     return 0;
 }
 
@@ -337,7 +552,8 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
             float32 vx = static_cast<float32>(x);
             float32 vy = static_cast<float32>(y);
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+            bool isRelative = (captureMode == eCursorCapture::PINNING);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
 
             bool setCapture = newMouseButtonsState != 0 && mouseButtonsState == 0;
             mouseButtonsState = newMouseButtonsState;
@@ -478,6 +694,10 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
         }
+        if (captureMode == eCursorCapture::PINNING)
+        {
+            return OnMouseMoveRelativeEvent(x, y);
+        }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
     }
     else if (pointerInfo.pointerType == PT_TOUCH)
@@ -535,7 +755,7 @@ LRESULT WindowBackend::OnCreate()
     float32 surfaceHeight = height;
     float32 dpi = GetDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
@@ -565,7 +785,11 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
 {
     // Intentionally use 'if' instead of 'switch'
     LRESULT lresult = 0;
-    if (message == WM_SIZE)
+    if (message == WM_ACTIVATE)
+    {
+        lresult = OnActivate(wparam);
+    }
+    else if (message == WM_SIZE)
     {
         int32 w = GET_X_LPARAM(lparam);
         int32 h = GET_Y_LPARAM(lparam);
@@ -580,10 +804,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         MINMAXINFO* minMaxInfo = reinterpret_cast<MINMAXINFO*>(lparam);
         lresult = OnGetMinMaxInfo(minMaxInfo);
     }
-    else if (message == WM_SETFOCUS || message == WM_KILLFOCUS)
-    {
-        lresult = OnSetKillFocus(message == WM_SETFOCUS);
-    }
     else if (message == WM_ENTERSIZEMOVE)
     {
         lresult = OnEnterSizeMove();
@@ -591,6 +811,11 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_EXITSIZEMOVE)
     {
         lresult = OnExitSizeMove();
+    }
+    else if (message == WM_SETCURSOR)
+    {
+        lresult = OnSetCursor(lparam);
+        isHandled = false;
     }
     else if (message == WM_POINTERDOWN || message == WM_POINTERUP)
     {
@@ -764,7 +989,7 @@ bool WindowBackend::RegisterWindowClass()
         wcex.cbWndExtra = sizeof(void*); // Reserve room to store 'this' pointer
         wcex.hInstance = PlatformCore::Win32AppInstance();
         wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wcex.hCursor = nullptr;
         wcex.hbrBackground = nullptr;
         wcex.lpszMenuName = nullptr;
         wcex.lpszClassName = windowClassName;
