@@ -9,6 +9,7 @@
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
+#include "Core/Core.h"
 
 namespace DAVA
 {
