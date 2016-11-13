@@ -53,6 +53,11 @@ void PackageSerializer::SerializePackage(PackageNode* package)
         controls.push_back(package->GetPackageControlsNode()->Get(i));
     }
 
+    for (int32 i = 0; i < package->GetPrototypes()->GetCount(); i++)
+    {
+        prototypes.push_back(package->GetPrototypes()->Get(i));
+    }
+
     package->Accept(this);
     importedPackages.clear();
     controls.clear();
@@ -103,6 +108,14 @@ void PackageSerializer::VisitPackage(PackageNode* node)
         for (StyleSheetNode* style : styles)
             style->Accept(this);
         EndMap();
+    }
+
+    if (!prototypes.empty())
+    {
+        BeginArray("Prototypes");
+        for (ControlNode* control : prototypes)
+            control->Accept(this);
+        EndArray();
     }
 
     if (!controls.empty())

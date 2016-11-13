@@ -35,7 +35,7 @@ private:
 
     void Init(const DAVA::Vector<DAVA::FilePath>& files);
 
-    bool eventFilter(QObject* obj, QEvent* event);
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
     std::unique_ptr<Ui::FindFileDialog> ui;
 

@@ -25,7 +25,8 @@ PackageNode::PackageNode(const FilePath& aPath)
 {
     name = path.GetBasename();
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this);
+    packageControlsNode = new PackageControlsNode(this, false);
+    prototypes = new PackageControlsNode(this, true);
     styleSheets = new StyleSheetsNode(this);
     packageContext = new UIControlPackageContext();
 }
@@ -37,6 +38,9 @@ PackageNode::~PackageNode()
 
     packageControlsNode->SetParent(nullptr);
     SafeRelease(packageControlsNode);
+
+    prototypes->SetParent(nullptr);
+    SafeRelease(prototypes);
 
     styleSheets->SetParent(nullptr);
     SafeRelease(styleSheets);
@@ -58,6 +62,9 @@ PackageBaseNode* PackageNode::Get(int index) const
 
     case SECTION_STYLES:
         return styleSheets;
+
+    case SECTION_PROTOTYPES:
+        return prototypes;
 
     case SECTION_CONTROLS:
         return packageControlsNode;
@@ -124,6 +131,11 @@ ImportedPackagesNode* PackageNode::GetImportedPackagesNode() const
 PackageControlsNode* PackageNode::GetPackageControlsNode() const
 {
     return packageControlsNode;
+}
+
+PackageControlsNode* PackageNode::GetPrototypes() const
+{
+    return prototypes;
 }
 
 StyleSheetsNode* PackageNode::GetStyleSheets() const

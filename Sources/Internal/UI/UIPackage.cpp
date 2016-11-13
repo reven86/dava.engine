@@ -15,10 +15,55 @@ UIPackage::~UIPackage()
 {
     for (UIControl* control : controls)
         control->Release();
-
     controls.clear();
 
+    for (UIControl* prototype : prototypes)
+        prototype->Release();
+    prototypes.clear();
+
     SafeRelease(controlPackageContext);
+}
+
+const Vector<UIControl*>& UIPackage::GetPrototypes() const
+{
+    return prototypes;
+}
+
+UIControl* UIPackage::GetPrototype(const String& name) const
+{
+    return GetPrototype(FastName(name));
+}
+
+UIControl* UIPackage::GetPrototype(const FastName& name) const
+{
+    for (UIControl* prototype : prototypes)
+    {
+        if (prototype->GetName() == name)
+            return prototype;
+    }
+
+    return nullptr;
+}
+
+void UIPackage::AddPrototype(UIControl* control)
+{
+    control->SetPackageContext(controlPackageContext);
+    prototypes.push_back(SafeRetain(control));
+}
+
+void UIPackage::RemovePrototype(UIControl* control)
+{
+    Vector<UIControl*>::iterator iter = std::find(prototypes.begin(), prototypes.end(), control);
+    if (iter != prototypes.end())
+    {
+        SafeRelease(*iter);
+        prototypes.erase(iter);
+    }
+}
+
+const Vector<UIControl*>& UIPackage::GetControls() const
+{
+    return controls;
 }
 
 int32 UIPackage::GetControlsCount() const
@@ -83,23 +128,4 @@ RefPtr<UIPackage> UIPackage::Clone() const
     return package;
 }
 
-Vector<UIControl*>::const_iterator UIPackage::begin() const
-{
-    return controls.begin();
-}
-
-Vector<UIControl*>::const_iterator UIPackage::end() const
-{
-    return controls.end();
-}
-
-Vector<UIControl*>::iterator UIPackage::begin()
-{
-    return controls.begin();
-}
-
-Vector<UIControl*>::iterator UIPackage::end()
-{
-    return controls.end();
-}
 }

@@ -5,6 +5,7 @@
 
 #include "PackageNode.h"
 #include "PackageVisitor.h"
+#include "PrototypeNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
 using namespace DAVA;

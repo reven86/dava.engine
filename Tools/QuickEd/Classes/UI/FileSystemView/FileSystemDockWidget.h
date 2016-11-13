@@ -45,6 +45,7 @@ private slots:
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void OnDirectoryLoaded();
+    void OnFixPrototypes();
 
 private:
     void RefreshActions();
@@ -71,6 +72,7 @@ private:
     QAction* copyInternalPathToFileAction = nullptr;
 
     QAction* findInFilesAction = nullptr;
+    QAction* fixPrototypesAction = nullptr;
 
     QPoint menuInvokePos = QPoint(-1, -1);
 

@@ -17,7 +17,7 @@ class PackageNode;
 class PackageControlsNode : public ControlsContainerNode
 {
 public:
-    PackageControlsNode(PackageNode* parent);
+    PackageControlsNode(PackageNode* parent, bool prototypes);
     virtual ~PackageControlsNode();
 
     void Add(ControlNode* node) override;
@@ -48,6 +48,7 @@ public:
 
 private:
     DAVA::Vector<ControlNode*> nodes;
+    bool prototypes = false; // TODO: fixme
 };
 
 #endif // __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__

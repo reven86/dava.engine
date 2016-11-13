@@ -11,6 +11,7 @@ class UIControlPackageContext;
 
 class PackageNode;
 class RootProperty;
+class PrototypeNode;
 
 class ControlNode : public ControlsContainerNode
 {
@@ -22,7 +23,7 @@ public:
         CREATED_FROM_PROTOTYPE_CHILD
     };
 
-private:
+protected:
     ControlNode(DAVA::UIControl* control, bool recursively);
     ControlNode(ControlNode* node, eCreationType creationType);
     virtual ~ControlNode();

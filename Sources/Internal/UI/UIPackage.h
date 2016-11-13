@@ -12,7 +12,7 @@ class UIControlPackageContext;
 class UIPackage : public BaseObject
 {
 public:
-    static const int32 CURRENT_VERSION = 5;
+    static const int32 CURRENT_VERSION = 6;
 
     UIPackage();
 
@@ -20,7 +20,14 @@ protected:
     ~UIPackage();
 
 public:
+    const Vector<UIControl*>& GetPrototypes() const;
+    UIControl* GetPrototype(const String& name) const;
+    UIControl* GetPrototype(const FastName& name) const;
+    void AddPrototype(UIControl* prototype);
+    void RemovePrototype(UIControl* control);
+
     int32 GetControlsCount() const;
+    const Vector<UIControl*>& GetControls() const;
     UIControl* GetControl(int32 index) const;
     UIControl* GetControl(const String& name) const;
     UIControl* GetControl(const FastName& name) const;
@@ -44,13 +51,8 @@ public:
 
     RefPtr<UIPackage> Clone() const;
 
-    Vector<UIControl*>::const_iterator begin() const;
-    Vector<UIControl*>::const_iterator end() const;
-
-    Vector<UIControl*>::iterator begin();
-    Vector<UIControl*>::iterator end();
-
 private:
+    Vector<UIControl*> prototypes;
     Vector<UIControl*> controls;
 
     UIControlPackageContext* controlPackageContext;

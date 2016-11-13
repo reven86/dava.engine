@@ -40,9 +40,9 @@ private:
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();
-    void AddControl(ControlNode* node, QStandardItem* rootItem, bool haveToMakeInstance);
-    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool haveToMakeInstance);
-    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool haveToMakeInstance);
+    void AddControl(ControlNode* node, QStandardItem* rootItem, bool makePrototype);
+    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool makePrototype);
+    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool makePrototype);
 
     //Package Signals
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;

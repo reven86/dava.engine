@@ -50,6 +50,7 @@ public:
 
     ImportedPackagesNode* GetImportedPackagesNode() const;
     PackageControlsNode* GetPackageControlsNode() const;
+    PackageControlsNode* GetPrototypes() const;
     StyleSheetsNode* GetStyleSheets() const;
 
     PackageNode* FindImportedPackage(const DAVA::FilePath& path) const;
@@ -102,8 +103,9 @@ private:
     {
         SECTION_IMPORTED_PACKAGES = 0,
         SECTION_STYLES = 1,
-        SECTION_CONTROLS = 2,
-        SECTION_COUNT = 3
+        SECTION_PROTOTYPES = 2,
+        SECTION_CONTROLS = 3,
+        SECTION_COUNT = 4
     };
 
     DAVA::FilePath path;
@@ -111,6 +113,7 @@ private:
 
     ImportedPackagesNode* importedPackagesNode = nullptr;
     PackageControlsNode* packageControlsNode = nullptr;
+    PackageControlsNode* prototypes = nullptr;
     StyleSheetsNode* styleSheets = nullptr;
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;

@@ -197,18 +197,18 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const String& pack
 
     if (packageName.empty())
     {
-        prototype = package->GetControl(prototypeName);
+        prototype = package->GetPrototype(prototypeName);
         if (!prototype)
         {
             if (loader->LoadControlByName(prototypeName, this))
-                prototype = package->GetControl(prototypeName);
+                prototype = package->GetPrototype(prototypeName);
         }
     }
     else
     {
         UIPackage* importedPackage = FindImportedPackageByName(packageName);
         if (importedPackage)
-            prototype = importedPackage->GetControl(prototypeName);
+            prototype = importedPackage->GetPrototype(prototypeName);
     }
 
     DVASSERT(prototype != nullptr);
@@ -252,22 +252,35 @@ UIControl* DefaultUIPackageBuilder::BeginUnknownControl(const YamlNode* node)
     return nullptr;
 }
 
-void DefaultUIPackageBuilder::EndControl(bool isRoot)
+void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlDescr* lastDescr = controlsStack.back();
     controlsStack.pop_back();
     if (lastDescr->addToParent)
     {
-        if (controlsStack.empty() || isRoot)
+        switch (controlPlace)
+        {
+        case AbstractUIPackageBuilder::TO_PROTOTYPES:
+        {
+            UIControl* control = lastDescr->control.Get();
+            UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
+            package->AddPrototype(control);
+            break;
+        }
+
+        case AbstractUIPackageBuilder::TO_CONTROLS:
         {
             UIControl* control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
         }
-        else
+
+        case AbstractUIPackageBuilder::TO_OTHER_CONTROL:
         {
+            DVASSERT(!controlsStack.empty());
             UIControl* control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
+        }
         }
     }
     SafeDelete(lastDescr);

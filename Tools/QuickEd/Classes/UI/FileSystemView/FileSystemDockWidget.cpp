@@ -119,6 +119,10 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     connect(findInFilesAction, &QAction::triggered, this, &FileSystemDockWidget::FindInFiles);
     addAction(findInFilesAction);
 
+    fixPrototypesAction = new QAction(tr("Fix Prototypes"), this);
+    connect(fixPrototypesAction, &QAction::triggered, this, &FileSystemDockWidget::OnFixPrototypes);
+    ui->treeView->addAction(fixPrototypesAction);
+
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
@@ -465,5 +469,69 @@ void FileSystemDockWidget::ShowAndSelectFile(const QString& filePath)
         {
             OnDirectoryLoaded();
         }
+    }
+}
+
+#include "Model/QuickEdPackageBuilder.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/YamlPackageSerializer.h"
+#include "UI/UIPackageLoader.h"
+
+void FileSystemDockWidget::OnFixPrototypes()
+{
+    using namespace DAVA;
+
+    Vector<FilePath> files = projectStructure->GetFiles("yaml");
+    int index = 0;
+    for (FilePath& path : files)
+    {
+        index++;
+        int pct = (index * 100) / files.size();
+        if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 &&
+            path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
+        {
+            QuickEdPackageBuilder builder(false);
+            Logger::Debug(">> (%d) %s", pct, path.GetFrameworkPath().c_str());
+            if (UIPackageLoader().LoadPackage(path, &builder))
+            {
+                Logger::Debug("  [loaded]");
+                RefPtr<PackageNode> pack = builder.BuildPackage();
+                if (pack.Valid())
+                {
+                    Logger::Debug("  controls: %d", pack->GetPackageControlsNode()->GetCount());
+                }
+            }
+            else
+            {
+                DVASSERT(false);
+                Logger::Debug("  [failed]");
+            }
+        }
+    }
+
+    Logger::Debug("!!!! PROTOTYPES");
+    index = 0;
+    for (auto it : QuickEdPackageBuilder::replaces)
+    {
+        index++;
+        int pct = (index * 100) / files.size();
+        Logger::Debug("REPLACING (%d): %s", pct, it.first.c_str());
+        QuickEdPackageBuilder builder(true);
+        if (UIPackageLoader().LoadPackage(it.first, &builder))
+        {
+            RefPtr<PackageNode> pack = builder.BuildPackage();
+            if (pack.Valid())
+            {
+                YamlPackageSerializer serializer;
+                serializer.SerializePackage(pack.Get());
+                serializer.WriteToFile(pack->GetPath());
+            }
+        }
+
+        //        for (auto it2 : it.second)
+        //        {
+        //            Logger::Debug("  PR: %s", it2.c_str());
+        //        }
     }
 }
