@@ -3,11 +3,10 @@
 #include "UI/UIControl.h"
 #include "Core/Core.h"
 #include "Render/RenderHelper.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
-#include "Utils/StringFormat.h"
 
 #include <limits>
 
@@ -233,7 +232,7 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
     }
     break;
     default:
-        DVASSERT(false, Format("Unknown colorInheritType: %d", colorInheritType).c_str());
+        DVASSERT(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
         break;
     }
 }

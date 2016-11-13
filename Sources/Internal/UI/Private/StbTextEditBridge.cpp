@@ -227,9 +227,31 @@ void StbTextEditBridge::CopyStbStateFrom(const StbTextEditBridge& c)
     Memcpy(stb_state, c.stb_state, sizeof(StbState));
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+bool StbTextEditBridge::SendKey(Key key, eModifierKeys modifiers)
+#else
 bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
+#endif
 {
-    uint32 code = K_VKEY | uint32(key);
+    uint32 code = K_VKEY | static_cast<uint32>(key);
+#if defined(__DAVAENGINE_COREV2__)
+    if ((modifiers & eModifierKeys::CONTROL) != eModifierKeys::NONE)
+    {
+        code |= K_CTRL;
+    }
+    if ((modifiers & eModifierKeys::ALT) != eModifierKeys::NONE)
+    {
+        code |= K_ALT;
+    }
+    if ((modifiers & eModifierKeys::SHIFT) != eModifierKeys::NONE)
+    {
+        code |= K_SHIFT;
+    }
+    if ((modifiers & eModifierKeys::COMMAND) != eModifierKeys::NONE)
+    {
+        code |= K_CMD;
+    }
+#else
     if (modifiers & UIEvent::CONTROL_DOWN)
     {
         code |= K_CTRL;
@@ -246,6 +268,7 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     {
         code |= K_CMD;
     }
+#endif
 
     switch (code)
     {
@@ -273,9 +296,17 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     }
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+bool StbTextEditBridge::SendKeyChar(uint32 keyChar, eModifierKeys modifiers)
+#else
 bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
+#endif
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if ((modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
+#else
     if ((modifiers & (UIEvent::CONTROL_DOWN | UIEvent::COMMAND_DOWN)))
+#endif
     {
         // Skip chars with Ctrl or Command modifiers
         return false;

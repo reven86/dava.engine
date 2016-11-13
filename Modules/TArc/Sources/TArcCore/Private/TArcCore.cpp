@@ -7,16 +7,21 @@
 #include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
+#include "TArcUtils/RhiEmptyFrame.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/NativeService.h"
-
 #include "Engine/EngineContext.h"
+
 #include "Functional/Function.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/RenderHelper.h"
+#include "UI/UIControlSystem.h"
+
 #include "Render/Renderer.h"
 #include "Debug/DVAssert.h"
 
@@ -221,20 +226,22 @@ public:
         rendererParams.acquireContextFunc = []() {};
         rendererParams.releaseContextFunc = []() {};
 
-        rendererParams.maxIndexBufferCount = 0;
-        rendererParams.maxVertexBufferCount = 0;
-        rendererParams.maxConstBufferCount = 0;
-        rendererParams.maxTextureCount = 0;
+        const DAVA::KeyedArchive* options = engine.GetOptions();
 
-        rendererParams.maxTextureSetCount = 0;
-        rendererParams.maxSamplerStateCount = 0;
-        rendererParams.maxPipelineStateCount = 0;
-        rendererParams.maxDepthStencilStateCount = 0;
-        rendererParams.maxRenderPassCount = 0;
-        rendererParams.maxCommandBuffer = 0;
-        rendererParams.maxPacketListCount = 0;
+        rendererParams.maxIndexBufferCount = options->GetInt32("max_index_buffer_count");
+        rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
+        rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
+        rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
 
-        rendererParams.shaderConstRingBufferSize = 0;
+        rendererParams.maxTextureSetCount = options->GetInt32("max_texture_set_count");
+        rendererParams.maxSamplerStateCount = options->GetInt32("max_sampler_state_count");
+        rendererParams.maxPipelineStateCount = options->GetInt32("max_pipeline_state_count");
+        rendererParams.maxDepthStencilStateCount = options->GetInt32("max_depthstencil_state_count");
+        rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
+        rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
+        rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
+
+        rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
         rendererParams.window = nullptr;
         rendererParams.width = 1024;
@@ -244,12 +251,13 @@ public:
         Renderer::Initialize(renderer, rendererParams);
 
         EngineContext* engineContext = engine.GetContext();
-        engineContext->virtualCoordSystem->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->SetVirtualScreenSize(rendererParams.width, rendererParams.height);
-        engineContext->virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-        engineContext->virtualCoordSystem->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
-        engineContext->virtualCoordSystem->ScreenSizeChanged();
+        VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
+        vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
+        vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
+        vcs->SetVirtualScreenSize(rendererParams.width, rendererParams.height);
+        vcs->UnregisterAllAvailableResourceSizes();
+        vcs->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
+        vcs->ScreenSizeChanged();
 
         Texture::SetGPULoadingOrder({ GPU_ORIGIN });
 
@@ -259,6 +267,7 @@ public:
             module->Init(this);
         }
 
+        RhiEmptyFrame frame;
         for (std::unique_ptr<ConsoleModule>& module : modules)
         {
             module->PostInit();
@@ -269,17 +278,19 @@ public:
     {
         context->makeCurrent(surface);
         Impl::OnFrame(delta);
-        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
         {
-            modules.front()->BeforeDestroyed();
-            modules.pop_front();
-        }
+            RhiEmptyFrame frame;
+            if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
+            {
+                modules.front()->BeforeDestroyed();
+                modules.pop_front();
+            }
 
-        if (modules.empty() == true)
-        {
-            engine.Quit(0);
+            if (modules.empty() == true)
+            {
+                engine.Quit(0);
+            }
         }
-
         context->swapBuffers(surface);
     }
 
@@ -366,6 +377,7 @@ public:
     {
 #if defined(__DAVAENGINE_MACOS__)
         MakeAppForeground();
+        FixOSXFonts();
 #endif
         DVASSERT(engine.IsConsoleMode() == false);
     }
@@ -395,7 +407,7 @@ public:
 
         engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
-        DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
+        DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->Init(this, uiManager.get());
@@ -407,6 +419,9 @@ public:
         }
 
         uiManager->InitializationFinished();
+#if defined(__DAVAENGINE_MACOS__)
+        RestoreMenuBar();
+#endif
     }
 
     void OnFrame(DAVA::float32 delta) override
@@ -574,7 +589,12 @@ public:
     {
         DVASSERT(controllerModule != nullptr);
         bool result = true;
-        if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        QCloseEvent closeEvent;
+        if (controllerModule->ControlWindowClosing(key, &closeEvent))
+        {
+            result = closeEvent.isAccepted();
+        }
+        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
         {
             ModalMessageParams params;
             params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
@@ -659,6 +679,11 @@ Core::Core(Engine& engine, bool connectSignals)
 }
 
 Core::~Core() = default;
+
+EngineContext& Core::GetEngineContext()
+{
+    return impl->GetEngineContext();
+}
 
 bool Core::IsConsoleMode() const
 {

@@ -15,7 +15,7 @@
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #endif
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
@@ -583,24 +583,8 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
-#else
-    // 2. map physical to window
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 void WebViewControl::RenderToTexture()

@@ -36,18 +36,20 @@ public:
         bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
         if (isConsoleMode == true && isConsoleModule == false)
         {
-            DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
+            DVASSERT(false, "In console mode module should be Derived from ConsoleModule");
             return;
         }
 
         if (isConsoleMode == false && isConsoleModule == true)
         {
-            DVASSERT_MSG(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
+            DVASSERT(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
             return;
         }
 
         AddModule(new T(std::forward<Args>(args)...));
     }
+
+    DAVA_DEPRECATED(EngineContext& GetEngineContext());
 
 private:
     // in testing enviroment Core shouldn't connect to Engine signals.

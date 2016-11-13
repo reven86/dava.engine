@@ -5,7 +5,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Concurrency/LockGuard.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 
@@ -396,7 +396,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
+            charSizes->push_back(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
 
         charDrawed++;

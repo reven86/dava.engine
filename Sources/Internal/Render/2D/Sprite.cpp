@@ -1,6 +1,5 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
@@ -15,8 +14,8 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
+#include "UI/UIControlSystem.h"
 
 #define NEW_PPA
 
@@ -133,7 +132,7 @@ FilePath Sprite::GetScaledName(const FilePath& spriteName)
     else
         pathname = spriteName.GetAbsolutePathname();
 
-    VirtualCoordinatesSystem* virtualCoordsSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* virtualCoordsSystem = UIControlSystem::Instance()->vcs;
     const String baseGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
     String::size_type pos = pathname.find(baseGfxFolderName);
     if (String::npos != pos)
@@ -198,7 +197,7 @@ void Sprite::InitFromFile(File* file)
     int32 width, height;
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d %d", &width, &height);
-    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
+    size = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
 
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d", &frameCount);
@@ -222,7 +221,7 @@ void Sprite::InitFromFile(File* file)
         sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
         frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
 
-        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
+        Rect rect = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
 
         rectsAndOffsets[i][0] = float32(x);
         rectsAndOffsets[i][1] = float32(y);
@@ -318,7 +317,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
         Vector2 sprSize((float32(width)), (float32(height)));
         if (inVirtualSpace)
         {
-            sprSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(sprSize);
+            sprSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(sprSize);
         }
 
         sprite = Sprite::CreateFromTexture(texture, 0, 0, sprSize.x, sprSize.y, contentScaleIncluded);
@@ -406,14 +405,14 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
     size = Vector2(sprWidth, sprHeight);
     if (!contentScaleIncluded)
     {
-        offset = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(offset);
+        offset = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(offset);
     }
     else
     {
-        size = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(size);
+        size = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(size);
     }
 
-    resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
+    resourceSizeIndex = UIControlSystem::Instance()->vcs->GetBaseResourceIndex();
 
     type = SPRITE_FROM_TEXTURE;
     textureCount = 1;
@@ -446,8 +445,8 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
         float32 x, y, dx, dy, xOff, yOff;
         x = offset.x;
         y = offset.y;
-        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
-        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
+        dx = (targetWidth == -1) ? UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
+        dy = (targetHeight == -1) ? UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
         xOff = 0;
         yOff = 0;
 
@@ -670,8 +669,8 @@ void Sprite::PrepareForNewSize()
 
     String pathname = relativePathname.GetAbsolutePathname();
 
-    int32 pos = int32(pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex())));
-    String scaledName = pathname.substr(0, pos) + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()).length());
+    int32 pos = int32(pathname.find(UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex())));
+    String scaledName = pathname.substr(0, pos) + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetDesirableResourceIndex()) + pathname.substr(pos + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex()).length());
 
     Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());
 
@@ -728,7 +727,7 @@ void Sprite::ValidateForSize()
     for (SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
     {
         Sprite* sp = it->second;
-        if (sp->type == SPRITE_FROM_FILE && VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
+        if (sp->type == SPRITE_FROM_FILE && UIControlSystem::Instance()->vcs->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
         {
             spritesToReload.push_back(sp);
         }
@@ -768,32 +767,32 @@ void Sprite::SetClipPolygon(Polygon2* _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
-    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
-    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
-    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
-    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
-    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
-    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
-    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
+    frameVertices[0][0] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
+    frameVertices[0][1] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
+    frameVertices[0][2] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
+    frameVertices[0][3] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
+    frameVertices[0][4] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
+    frameVertices[0][5] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
+    frameVertices[0][6] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
+    frameVertices[0][7] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
 
-    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][0]);
-    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][1]);
-    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][2]);
-    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][3]);
-    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][4]);
-    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][5]);
-    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][6]);
-    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][7]);
+    frameVertices[0][0] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][0]);
+    frameVertices[0][1] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][1]);
+    frameVertices[0][2] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][2]);
+    frameVertices[0][3] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][3]);
+    frameVertices[0][4] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][4]);
+    frameVertices[0][5] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][5]);
+    frameVertices[0][6] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][6]);
+    frameVertices[0][7] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][7]);
 
-    texCoords[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
-    texCoords[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
-    texCoords[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
-    texCoords[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
-    texCoords[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
-    texCoords[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
-    texCoords[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
-    texCoords[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
+    texCoords[0][0] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
+    texCoords[0][1] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
+    texCoords[0][2] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
+    texCoords[0][3] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
+    texCoords[0][4] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
+    texCoords[0][5] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
+    texCoords[0][6] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
+    texCoords[0][7] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
 }
 
 const FilePath& Sprite::GetRelativePathname() const
@@ -884,11 +883,11 @@ File* Sprite::GetSpriteFile(const FilePath& spriteName, int32& resourceSizeIndex
             return NULL;
         }
 
-        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
+        resourceSizeIndex = UIControlSystem::Instance()->vcs->GetBaseResourceIndex();
     }
     else
     {
-        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex();
+        resourceSizeIndex = UIControlSystem::Instance()->vcs->GetDesirableResourceIndex();
     }
 
     return fp;
@@ -899,16 +898,19 @@ void Sprite::ReloadExistingTextures(eGPUFamily gpu)
     //this function need to be sure that textures really would reload
     for (int32 i = 0; i < textureCount; ++i)
     {
-        if (textures[i] && !textures[i]->GetPathname().IsEmpty())
+        if (textures[i])
         {
-            if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
+            if (!textures[i]->GetPathname().IsEmpty())
             {
-                textures[i]->ReloadAs(gpu);
+                if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
+                {
+                    textures[i]->ReloadAs(gpu);
+                }
             }
-        }
-        else
-        {
-            Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
+            else if (!textures[i]->IsPinkPlaceholder())
+            {
+                Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
+            }
         }
     }
 }

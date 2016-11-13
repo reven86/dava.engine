@@ -1,5 +1,6 @@
 #include "DataProcessing/PropertiesHolder.h"
 #include "FileSystem/FilePath.h"
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
 #include <QVariant>
@@ -32,6 +33,7 @@ struct JSONObject
     QString name;
     List<JSONObject*> children;
     QJsonObject jsonObject;
+    bool wasChanged = false;
 };
 }
 
@@ -70,8 +72,6 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     void SaveToParent();
 
     JSONObject* parent = nullptr;
-
-    bool wasChanged = false;
 };
 
 struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
@@ -114,7 +114,7 @@ PropertiesItem::Impl::Impl(JSONObject* impl_, const String& name_)
 
 PropertiesItem::Impl::~Impl()
 {
-    DVASSERT(parent != nullptr)
+    DVASSERT(parent != nullptr);
     if (wasChanged)
     {
         SaveToParent();
@@ -210,7 +210,7 @@ void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
     QFileInfo fileInfo(dirPathStr);
     if (!fileInfo.isDir())
     {
-        DVASSERT_MSG(false, "Given filePath must be a directory");
+        DVASSERT(false, "Given filePath must be a directory");
         return;
     }
     QString filePathStr = dirPathStr + name;
@@ -246,7 +246,7 @@ void PropertiesHolder::Impl::LoadFromFile()
     }
     else
     {
-        DVASSERT_MSG(false, "Unsupported format of JSON file");
+        DVASSERT(false, "Unsupported format of JSON file");
     }
 }
 
@@ -272,7 +272,7 @@ void PropertiesHolder::Impl::SaveToFile()
 
 void PropertiesItem::Impl::SaveToParent()
 {
-    static_cast<Impl*>(parent)->wasChanged = true;
+    parent->wasChanged = true;
     parent->jsonObject[name] = jsonObject;
 }
 

@@ -26,6 +26,8 @@ SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
+
+    wasLockedInActiveMode = IsLocked();
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -393,11 +395,11 @@ void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
     invalidSelectionBoxes = true;
 }
 
-void SceneSelectionSystem::Input(DAVA::UIEvent* event)
+bool SceneSelectionSystem::Input(DAVA::UIEvent* event)
 {
-    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
+    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::eMouseButtons::LEFT))
     {
-        return;
+        return false;
     }
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
@@ -406,7 +408,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
         {
             if (selectionDelegate->AllowPerformSelectionHavingCurrent(currentSelection) == false)
             {
-                return;
+                return false;
             }
         }
 
@@ -423,13 +425,14 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
     }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if ((event->mouseButton == DAVA::UIEvent::MouseButton::LEFT) && applyOnPhaseEnd)
+        if ((event->mouseButton == DAVA::eMouseButtons::LEFT) && applyOnPhaseEnd)
         {
             FinishSelection();
         }
         applyOnPhaseEnd = false;
         selecting = false;
     }
+    return false;
 }
 
 void SceneSelectionSystem::DrawItem(const DAVA::AABBox3& originalBox, const DAVA::Matrix4& transform, DAVA::int32 drawMode,
@@ -838,11 +841,12 @@ void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
 
 void SceneSelectionSystem::Activate()
 {
-    SetLocked(false);
+    SetLocked(wasLockedInActiveMode);
 }
 
 void SceneSelectionSystem::Deactivate()
 {
+    wasLockedInActiveMode = IsLocked();
     SetLocked(true);
 }
 

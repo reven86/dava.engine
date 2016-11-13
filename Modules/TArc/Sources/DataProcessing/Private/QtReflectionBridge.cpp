@@ -343,7 +343,7 @@ void QtReflected::CallMethod(int id, void** argv)
         //                                  davaArguments[8]);
         break;
     default:
-        DVASSERT_MSG(false, "Qt Reflection bridge support maximum 6 arguments in methods");
+        DVASSERT(false, "Qt Reflection bridge support maximum 6 arguments in methods");
         break;
     }
 
@@ -377,7 +377,7 @@ QVariant QtReflectionBridge::Convert(const Any& value) const
     auto iter = anyToQVariant.find(value.GetType());
     if (iter == anyToQVariant.end())
     {
-        DVASSERT_MSG(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
+        DVASSERT(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
         return QVariant();
     }
 
@@ -389,7 +389,7 @@ Any QtReflectionBridge::Convert(const QVariant& value) const
     auto iter = qvariantToAny.find(value.userType());
     if (iter == qvariantToAny.end())
     {
-        DVASSERT_MSG(false, Format("Converted (QVariant->Any) has not been registered for userType : %d", value.userType()).c_str());
+        DVASSERT(false, Format("Converted (QVariant->Any) has not been registered for userType : %d", value.userType()).c_str());
         return Any();
     }
 

@@ -63,11 +63,23 @@ Landscape::Landscape()
 
     subdivision = new LandscapeSubdivision();
 
-    renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
-    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
-        renderMode = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
-
-    floatHeightTexture = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) ? false : true;
+    renderMode = RENDERMODE_NO_INSTANCING;
+    if (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported)
+    {
+        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING_MORPHING;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING;
+            floatHeightTexture = true;
+        }
+    }
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
