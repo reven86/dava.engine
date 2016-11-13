@@ -17,6 +17,7 @@
 #else
 #endif
 
+#include "Logger/Logger.h"
 #include "Core/Core.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
