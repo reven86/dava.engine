@@ -26,11 +26,13 @@ public:
     void AddPrototype(UIControl* prototype);
     void RemovePrototype(UIControl* control);
 
-    int32 GetControlsCount() const;
     const Vector<UIControl*>& GetControls() const;
-    UIControl* GetControl(int32 index) const;
     UIControl* GetControl(const String& name) const;
     UIControl* GetControl(const FastName& name) const;
+    void AddControl(UIControl* control);
+    void RemoveControl(UIControl* control);
+
+    UIControlPackageContext* GetControlPackageContext();
 
     template <class C>
     C GetControl(const String& name) const
@@ -44,12 +46,17 @@ public:
         return DynamicTypeCheck<C>(GetControl(name));
     }
 
-    void AddControl(UIControl* control);
-    void RemoveControl(UIControl* control);
+    template <class C>
+    C GetPrototype(const String& name) const
+    {
+        return DynamicTypeCheck<C>(GetPrototype(name));
+    }
 
-    UIControlPackageContext* GetControlPackageContext();
-
-    RefPtr<UIPackage> Clone() const;
+    template <class C>
+    C GetPrototype(const FastName& name) const
+    {
+        return DynamicTypeCheck<C>(GetPrototype(name));
+    }
 
 private:
     Vector<UIControl*> prototypes;
@@ -57,5 +64,5 @@ private:
 
     UIControlPackageContext* controlPackageContext;
 };
-};
+}
 #endif // __DAVAENGINE_UI_PACKAGE_H__

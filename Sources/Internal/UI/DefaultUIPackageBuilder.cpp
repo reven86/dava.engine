@@ -260,7 +260,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
     {
         switch (controlPlace)
         {
-        case AbstractUIPackageBuilder::TO_PROTOTYPES:
+        case TO_PROTOTYPES:
         {
             UIControl* control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
@@ -268,19 +268,25 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
 
-        case AbstractUIPackageBuilder::TO_CONTROLS:
+        case TO_CONTROLS:
         {
             UIControl* control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
+            break;
         }
 
-        case AbstractUIPackageBuilder::TO_OTHER_CONTROL:
+        case TO_OTHER_CONTROL:
         {
             DVASSERT(!controlsStack.empty());
             UIControl* control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
+            break;
         }
+
+        default:
+            DVASSERT(false);
+            break;
         }
     }
     SafeDelete(lastDescr);

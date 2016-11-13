@@ -66,11 +66,6 @@ const Vector<UIControl*>& UIPackage::GetControls() const
     return controls;
 }
 
-int32 UIPackage::GetControlsCount() const
-{
-    return static_cast<int32>(controls.size());
-}
-
 UIControl* UIPackage::GetControl(const String& name) const
 {
     return GetControl(FastName(name));
@@ -84,13 +79,13 @@ UIControl* UIPackage::GetControl(const FastName& name) const
             return control;
     }
 
-    return nullptr;
-}
+    for (UIControl* control : prototypes)
+    {
+        if (control->GetName() == name)
+            return control;
+    }
 
-UIControl* UIPackage::GetControl(int32 index) const
-{
-    DVASSERT(0 <= index && index < static_cast<int32>(controls.size()));
-    return controls[index];
+    return nullptr;
 }
 
 void UIPackage::AddControl(UIControl* control)
@@ -113,19 +108,4 @@ UIControlPackageContext* UIPackage::GetControlPackageContext()
 {
     return controlPackageContext;
 }
-
-RefPtr<UIPackage> UIPackage::Clone() const
-{
-    RefPtr<UIPackage> package(new UIPackage());
-
-    package->controls.resize(controls.size());
-
-    std::transform(controls.begin(), controls.end(), package->controls.begin(),
-                   [](UIControl* control) -> UIControl*
-                   {
-                       return control->Clone();
-                   });
-    return package;
-}
-
 }
