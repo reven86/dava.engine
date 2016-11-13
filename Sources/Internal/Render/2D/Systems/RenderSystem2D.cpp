@@ -4,6 +4,8 @@
 #include "UI/UIControlBackground.h"
 #include "UI/UIControlSystem.h"
 
+#include "Logger/Logger.h"
+
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 
@@ -502,8 +504,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     DVASSERT(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
     DVASSERT(batchDesc.material != nullptr, "Incorrect material");
     DVASSERT((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
-                 (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
-                 "Incorrect textureSet or samplerState handle");
+             (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
+             "Incorrect textureSet or samplerState handle");
 
     DVASSERT(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");

@@ -3,6 +3,7 @@
 #define RHI_RESOURCE_INCLUDE_BACKTRACE 0
 
 #include "../rhi_Type.h"
+#include "Utils/StringFormat.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"

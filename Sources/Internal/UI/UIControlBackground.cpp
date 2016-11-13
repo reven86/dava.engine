@@ -1,5 +1,7 @@
 #include "UI/UIControlBackground.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "UI/UIControl.h"
 #include "Core/Core.h"
 #include "Render/RenderHelper.h"
