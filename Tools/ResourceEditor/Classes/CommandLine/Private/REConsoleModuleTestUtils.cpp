@@ -2,6 +2,7 @@
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/StringFormat.h"
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"

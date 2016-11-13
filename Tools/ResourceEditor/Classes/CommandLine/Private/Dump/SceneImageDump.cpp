@@ -3,6 +3,7 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
+#include "Logger/Logger.h"
 #include "Base/ScopedPtr.h"
 #include "Base/BaseTypes.h"
 #include "Render/GPUFamilyDescriptor.h"

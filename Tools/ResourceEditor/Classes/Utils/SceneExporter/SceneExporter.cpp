@@ -16,6 +16,7 @@
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/StringUtils.h"
 #include "Utils/MD5.h"
+#include "Logger/Logger.h"
 
 #include "TextureCompression/TextureConverter.h"
 

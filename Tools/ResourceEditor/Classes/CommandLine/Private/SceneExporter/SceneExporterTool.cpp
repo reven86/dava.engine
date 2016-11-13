@@ -4,6 +4,7 @@
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
+#include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DateTime.h"

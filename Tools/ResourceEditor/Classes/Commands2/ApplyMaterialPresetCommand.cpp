@@ -8,6 +8,7 @@
 #include "Render/Material/NMaterial.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
+#include "Functional/Function.h"
 
 namespace ApplyMaterialPresetDetail
 {

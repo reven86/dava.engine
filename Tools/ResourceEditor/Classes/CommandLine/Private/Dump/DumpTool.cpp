@@ -2,6 +2,7 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Dump/SceneDumper.h"
 
 #include "FileSystem/FilePath.h"

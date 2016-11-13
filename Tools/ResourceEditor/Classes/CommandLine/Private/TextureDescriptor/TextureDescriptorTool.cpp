@@ -1,6 +1,7 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/Private/OptionName.h"
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/StringFormat.h"
 
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"

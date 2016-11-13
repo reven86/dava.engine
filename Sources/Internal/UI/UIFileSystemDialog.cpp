@@ -4,6 +4,7 @@
 #include "UI/UIStaticText.h"
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
