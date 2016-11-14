@@ -46,7 +46,7 @@ extern CoreNativeBridge* coreNativeBridge;
             bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         }
     }
-    return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions) ? YES : NO;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application

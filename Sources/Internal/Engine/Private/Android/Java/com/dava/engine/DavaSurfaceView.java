@@ -2,6 +2,7 @@ package com.dava.engine;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,8 +16,18 @@ import android.util.Log;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Constructor;
 
+/**
+    \ingroup engine
+    DavaSurfaceView provides surface where rendering takes place. This class is tightly coupled with C++ `WindowBackend` class.
+
+    `DavaSurfaceView` does:
+        - implements SurfaceHolder.Callback interface and notifies native code about surface state changing,
+        - elementary input handling and forwards input to native code,
+        - manages native controls: creation, position, removal.
+*/
 final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
+                                       DavaActivity.ActivityListener,
                                        View.OnTouchListener,
 /* uncomment after multidex enabled
                                        View.OnGenericMotionListener,
@@ -54,6 +65,7 @@ final class DavaSurfaceView extends SurfaceView
 /* uncomment after multidex enabled
         setOnGenericMotionListener(this);
 */
+        DavaActivity.instance().registerActivityListener(this);
     }
 
     public Object createNativeControl(String className, long backendPointer)
@@ -101,7 +113,15 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewProcessEvents(windowBackendPointer);
     }
     
-    public void handleResume()
+    // DavaActivity.ActivityListener interface
+    @Override public void onCreate(Bundle savedInstanceState) {}
+    @Override public void onStart() {}
+    @Override public void onRestart() {}
+    @Override public void onStop() {}
+    @Override public void onDestroy() {}
+
+    @Override
+    public void onResume()
     {
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -111,7 +131,8 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnResume(windowBackendPointer);
     }
 
-    public void handlePause()
+    @Override
+    public void onPause()
     {
         nativeSurfaceViewOnPause(windowBackendPointer);
     }
@@ -126,6 +147,7 @@ final class DavaSurfaceView extends SurfaceView
         return dm.densityDpi; 
     }
 
+    // SurfaceHolder.Callback interaface
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -167,7 +189,7 @@ final class DavaSurfaceView extends SurfaceView
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
-        if (DavaActivity.davaMainThread == null)
+        if (!DavaActivity.isNativeThreadRunning())
         {
             // continue initialization of game after creating main window
             DavaActivity.instance().onFinishCreatingMainWindowSurface();

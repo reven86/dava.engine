@@ -18,7 +18,7 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , dispatcher(engineBackend->GetDispatcher())
     , bridge(new CoreNativeBridge(this))
-    , nativeService(new NativeService(this))
+    , nativeService(new NativeService(bridge.get()))
 {
 }
 

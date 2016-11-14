@@ -11,6 +11,14 @@ class WindowNativeService;
 template <typename T>
 class Dispatcher;
 
+#if defined(__DAVAENGINE_MACOS__)
+struct NSApplicationDelegateListener;
+#elif defined(__DAVAENGINE_IPHONE__)
+struct UIApplicationDelegateListener;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+struct XamlApplicationListener;
+#endif
+
 namespace Private
 {
 struct MainDispatcherEvent;

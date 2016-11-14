@@ -12,14 +12,30 @@
 
 namespace DAVA
 {
+/**
+    \ingroup engine_mac
+    NativeService provides access to some macOS platform specific services.
+    
+    NativeService instance is obtained through `Engine::GetNativeService` method.
+*/
 class NativeService final
 {
 public:
-private:
-    NativeService(Private::PlatformCore* c);
+    /**
+        Register a listener to be invoked when `NSApplicationDelegate` lifecycle event occurs.
+        Listener should implement `DAVA::NSApplicationDelegateListener` interface.
+    */
+    void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
+
+    /**
+        Unregister `NSApplicationDelegate` listener.
+    */
+    void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
 
 private:
-    Private::PlatformCore* core = nullptr;
+    NativeService(Private::CoreNativeBridge* bridge_);
+
+    Private::CoreNativeBridge* bridge = nullptr;
 
     // Friends
     friend Private::PlatformCore;

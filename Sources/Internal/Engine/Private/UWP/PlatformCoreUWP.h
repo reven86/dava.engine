@@ -26,7 +26,7 @@ public:
     void Quit();
 
     // Forwarded methods from UWPApplication
-    void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
+    void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs);
     void OnActivated();
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
@@ -36,16 +36,27 @@ public:
     void OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ gamepad);
     void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
 
+    void RegisterXamlApplicationListener(XamlApplicationListener* listener);
+    void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
+
 private:
     void GameThread();
 
-private:
+    enum eNotificationType
+    {
+        ON_LAUNCHED,
+    };
+    void NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1);
+
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
+
+    List<XamlApplicationListener*> xamlApplicationListeners;
+    ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ savedLaunchArgs = nullptr;
 };
 
 inline NativeService* PlatformCore::GetNativeService() const

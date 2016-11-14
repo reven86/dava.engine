@@ -6,14 +6,16 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <Foundation/Foundation.h>
 #include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Window.h"
+#include "Engine/OsX/NSApplicationDelegateListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
-#include "Engine/Private/OsX/AppDelegateOsX.h"
+#import "Engine/Private/OsX/AppDelegateOsX.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -156,6 +158,8 @@ void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notificatio
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1.0 / 60.0];
+
+    NotifyListeners(ON_DID_FINISH_LAUNCHING, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidChangeScreenParameters()
@@ -165,10 +169,12 @@ void CoreNativeBridge::ApplicationDidChangeScreenParameters()
 
 void CoreNativeBridge::ApplicationDidBecomeActive()
 {
+    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidResignActive()
 {
+    NotifyListeners(ON_DID_RESIGN_ACTIVE, nullptr, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidHide()
@@ -204,6 +210,8 @@ bool CoreNativeBridge::ApplicationShouldTerminateAfterLastWindowClosed()
 
 void CoreNativeBridge::ApplicationWillTerminate()
 {
+    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr, nullptr);
+
     [frameTimer cancel];
 
     core->engineBackend->OnGameLoopStopped();
@@ -217,6 +225,60 @@ void CoreNativeBridge::ApplicationWillTerminate()
     std::exit(exitCode);
 }
 
+void CoreNativeBridge::RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    DVASSERT(listener != nullptr);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it == end(appDelegateListeners))
+    {
+        appDelegateListeners.push_back(listener);
+    }
+}
+
+void CoreNativeBridge::UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it != end(appDelegateListeners))
+    {
+        appDelegateListeners.erase(it);
+    }
+}
+
+void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3)
+{
+    for (auto i = begin(appDelegateListeners), e = end(appDelegateListeners); i != e;)
+    {
+        NSApplicationDelegateListener* l = *i;
+        ++i;
+        switch (type)
+        {
+        case ON_DID_FINISH_LAUNCHING:
+            l->applicationDidFinishLaunching(static_cast<NSNotification*>(arg1));
+            break;
+        case ON_DID_BECOME_ACTIVE:
+            l->applicationDidBecomeActive();
+            break;
+        case ON_DID_RESIGN_ACTIVE:
+            l->applicationDidResignActive();
+            break;
+        case ON_WILL_TERMINATE:
+            l->applicationWillTerminate();
+            break;
+        case ON_DID_RECEIVE_REMOTE_NOTIFICATION:
+            l->didReceiveRemoteNotification(static_cast<NSApplication*>(arg1), static_cast<NSDictionary<NSString*, id>*>(arg2));
+            break;
+        case ON_DID_REGISTER_REMOTE_NOTIFICATION:
+            l->didRegisterForRemoteNotificationsWithDeviceToken(static_cast<NSApplication*>(arg1), static_cast<NSData*>(arg2));
+            break;
+        case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
+            l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
 {
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
@@ -228,7 +290,6 @@ void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* no
         core->engineBackend->GetPrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
     }
 }
-
 } // namespace Private
 } // namespace DAVA
 

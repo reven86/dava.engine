@@ -6,13 +6,23 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/PlatformCoreOsX.h"
+#include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
 namespace DAVA
 {
-NativeService::NativeService(Private::PlatformCore* c)
-    : core(c)
+NativeService::NativeService(Private::CoreNativeBridge* bridge_)
+    : bridge(bridge_)
 {
+}
+
+void NativeService::RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    bridge->RegisterNSApplicationDelegateListener(listener);
+}
+
+void NativeService::UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    bridge->UnregisterNSApplicationDelegateListener(listener);
 }
 
 } // namespace DAVA

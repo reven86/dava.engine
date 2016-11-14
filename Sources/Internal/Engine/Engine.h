@@ -84,6 +84,10 @@ public:
     Engine& operator=(const Engine&) = delete;
 
     EngineContext* GetContext() const;
+    /**
+        Get NativeService instance which provides access to some platform specific services.
+        Returned pointer is never null.
+    */
     NativeService* GetNativeService() const;
     Window* PrimaryWindow() const;
 

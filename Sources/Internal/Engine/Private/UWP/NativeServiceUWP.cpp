@@ -12,6 +12,16 @@ NativeService::NativeService(Private::PlatformCore* c)
 {
 }
 
+void NativeService::RegisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    core->RegisterXamlApplicationListener(listener);
+}
+
+void NativeService::UnregisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    core->UnregisterXamlApplicationListener(listener);
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
