@@ -5,6 +5,7 @@
     #include "Debug/DVAssert.h"
     #include "Logger/Logger.h"
 using DAVA::Logger;
+#include "Utils/Utils.h"
 
     #include "_dx9.h"
 
@@ -31,6 +32,7 @@ typedef ResourcePool<QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descr
 RHI_IMPL_POOL(QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
 std::vector<IDirect3DQuery9*> QueryDX9Pool;
+std::vector<QueryBufferDX9_t*> queryBuffers;
 
 #define DX9_MAX_PENDING_QUERIES 256
 
@@ -42,6 +44,8 @@ dx9_QueryBuffer_Create(uint32 maxObjectCount)
     Handle handle = QueryBufferDX9Pool::Alloc();
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
     DVASSERT(buf);
+
+    queryBuffers.push_back(buf);
 
     buf->results.resize(maxObjectCount);
     memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
@@ -57,6 +61,8 @@ dx9_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
     DVASSERT(buf);
+
+    DAVA::FindAndRemoveExchangingWithLast(queryBuffers, buf);
 
     if (buf->pendingQueries.size())
     {
@@ -113,7 +119,7 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
             if (cmd[q].retval == S_OK)
             {
                 if (resultIndex < uint32(buf->results.size()))
-                    buf->results[resultIndex] = results[q];
+                    buf->results[resultIndex] += results[q];
 
                 QueryDX9Pool.push_back(buf->pendingQueries[q].first);
 
@@ -260,6 +266,30 @@ void ReleaseQueryPool()
         cmd.push_back({ DX9Command::RELEASE, { uint64(&iq) } });
     }
     ExecDX9(cmd.data(), uint32(cmd.size()), false);
+
+    QueryDX9Pool.clear();
+}
+
+void ReleaseAll()
+{
+    for (QueryBufferDX9_t* buf : queryBuffers)
+    {
+        memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
+
+        if (buf->pendingQueries.size())
+        {
+            for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
+                QueryDX9Pool.push_back(buf->pendingQueries[q].first);
+
+            buf->pendingQueries.clear();
+        }
+
+        buf->curObjectIndex = DAVA::InvalidIndex;
+        buf->bufferCompleted = true;
+    }
+
+    for (IDirect3DQuery9* iq : QueryDX9Pool)
+        iq->Release();
 
     QueryDX9Pool.clear();
 }

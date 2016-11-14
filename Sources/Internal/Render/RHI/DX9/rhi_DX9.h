@@ -42,6 +42,7 @@ void QueryComplete(Handle buf);
 bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryPool();
+void ReleaseAll();
 }
 
 namespace PerfQueryDX9

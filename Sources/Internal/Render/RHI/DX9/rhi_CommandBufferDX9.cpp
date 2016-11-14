@@ -1139,6 +1139,7 @@ void _DX9_ResetBlock()
     VertexBufferDX9::ReleaseAll();
     IndexBufferDX9::ReleaseAll();
     PerfQueryDX9::ReleaseAll();
+    QueryBufferDX9::ReleaseAll();
 
     for (;;)
     {

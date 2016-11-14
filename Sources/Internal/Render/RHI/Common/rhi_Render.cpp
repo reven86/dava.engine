@@ -300,10 +300,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
             }
         }
 
-        //        if( p->queryIndex != DAVA::InvalidIndex )
-        {
-            rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
-        }
+        rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
 
         if (p->instanceCount)
         {

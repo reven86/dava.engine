@@ -8,6 +8,7 @@
 #include "Render/DynamicBufferAllocator.h"
 
 #include "Render/ShaderCache.h"
+#include "Render/VisibilityQueryResults.h"
 
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -154,6 +155,9 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
     DAVA_PROFILER_GPU_RENDER_PASS(renderPass2DConfig, ProfilerGPUMarkerName::RENDER_PASS_2D);
+#ifdef __DAVAENGINE_RENDERSTATS__
+    renderPass2DConfig.queryBuffer = VisibilityQueryResults::GetQueryBuffer();
+#endif
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
@@ -314,6 +318,26 @@ void RenderSystem2D::Setup2DMatrices()
     //TODO: need to rethink semantic for projection matrix in RenderSystem2D, or maybe need to rethink semantics for DynamicParams
 }
 
+void RenderSystem2D::AddPacket(rhi::Packet& packet)
+{
+    DVASSERT(currentPacketListHandle.IsValid());
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+    ++Renderer::GetRenderStats().packets2d;
+
+#ifdef __DAVAENGINE_RENDERSTATS_ALPHABLEND__
+    if (packet.userFlags & NMaterial::USER_FLAG_ALPHABLEND)
+        packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_ALPHABLEND;
+    else
+        packet.queryIndex = DAVA::InvalidIndex;
+#else
+    packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_UI;
+#endif
+#endif
+
+    rhi::AddPacket(currentPacketListHandle, packet);
+}
+
 void RenderSystem2D::ScreenSizeChanged()
 {
     Matrix4 glTranslate, glScale;
@@ -450,11 +474,7 @@ void RenderSystem2D::Flush()
 
     if (currentPacketListHandle != rhi::InvalidHandle && currentPacket.primitiveCount > 0)
     {
-        rhi::AddPacket(currentPacketListHandle, currentPacket);
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-        ++Renderer::GetRenderStats().packets2d;
-#endif
+        AddPacket(currentPacket);
     }
 
     currentVertexBuffer = nullptr;
@@ -491,11 +511,7 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     }
 
     if (currentPacketListHandle != rhi::InvalidHandle)
-        rhi::AddPacket(currentPacketListHandle, packet);
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-    ++Renderer::GetRenderStats().packets2d;
-#endif
+        AddPacket(packet);
 }
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
@@ -690,12 +706,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         if (currentPacket.primitiveCount > 0)
         {
             if (currentPacketListHandle != rhi::InvalidHandle)
-                rhi::AddPacket(currentPacketListHandle, currentPacket);
-            currentPacket.primitiveCount = 0;
+                AddPacket(currentPacket);
 
-#if defined(__DAVAENGINE_RENDERSTATS__)
-            ++Renderer::GetRenderStats().packets2d;
-#endif
+            currentPacket.primitiveCount = 0;
         }
 
         if (useCustomWorldMatrix)

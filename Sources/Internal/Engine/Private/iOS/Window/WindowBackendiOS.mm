@@ -77,6 +77,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on iOS
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
