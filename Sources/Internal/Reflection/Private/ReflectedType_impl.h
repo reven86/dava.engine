@@ -1,4 +1,6 @@
+#ifndef __DAVA_ReflectedType__
 #include "Reflection/ReflectedType.h"
+#endif
 
 namespace DAVA
 {
