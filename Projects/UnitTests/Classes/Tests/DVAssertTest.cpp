@@ -47,9 +47,9 @@ DAVA_TESTCLASS (DVAssertTestClass)
         TEST_VERIFY(!firstHandlerInvoked);
         TEST_VERIFY(!secondHandlerInvoked);
 
-        // If it fails, both should be called in debug mode
+        // If it fails, both should be called
         DVASSERT(false);
-#if __DAVAENGINE_DEBUG__
+#if defined(__DAVAENGINE_DEBUG__) || defined(__DAVAENGINE_ENABLE_ASSERTS__)
         TEST_VERIFY(firstHandlerInvoked);
         TEST_VERIFY(secondHandlerInvoked);
 #else
@@ -61,7 +61,7 @@ DAVA_TESTCLASS (DVAssertTestClass)
         RemoveHandler(FirstHandler);
         ResetHandlersState();
         DVASSERT(false);
-#if __DAVAENGINE_DEBUG__
+#if defined(__DAVAENGINE_DEBUG__) || defined(__DAVAENGINE_ENABLE_ASSERTS__)
         TEST_VERIFY(!firstHandlerInvoked);
         TEST_VERIFY(secondHandlerInvoked);
 #else
