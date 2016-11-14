@@ -18,10 +18,6 @@
 #include "OpenUDIDMacOS.h"
 #include "Platform/DeviceInfo.h"
 
-#if defined(__DAVAENGINE_STEAM__)
-#include "Platform/Steam.h"
-#endif
-
 namespace DAVA
 {
 String GetSysCtlByName(const String& param)

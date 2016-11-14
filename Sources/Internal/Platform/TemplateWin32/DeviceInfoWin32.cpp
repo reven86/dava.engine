@@ -16,10 +16,6 @@
 
 #include <VersionHelpers.h>
 
-#if defined(__DAVAENGINE_STEAM__)
-#include "Platform/Steam.h"
-#endif
-
 namespace DAVA
 {
 namespace RegistryReader
