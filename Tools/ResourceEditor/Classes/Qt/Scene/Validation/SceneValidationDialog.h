@@ -12,13 +12,18 @@ namespace Ui
 class SceneValidationDialog;
 }
 
+namespace DAVA
+{
+class Scene;
+}
+
 class SceneValidationDialog : public QDialog
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
     POP_QT_WARNING_SUPRESSOR
 public:
-    explicit SceneValidationDialog(SceneEditor2* scene, QWidget* parent = nullptr);
+    explicit SceneValidationDialog(DAVA::Scene* scene, QWidget* parent = nullptr);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -38,6 +43,6 @@ private:
     void DoMatrices();
 
 private:
-    SceneEditor2* scene;
+    DAVA::Scene* scene;
     Ui::SceneValidationDialog* ui;
 };

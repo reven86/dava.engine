@@ -1,5 +1,6 @@
 #include "CommandLine/StaticOcclusionTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -49,7 +50,7 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SOTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SOTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SOTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -63,7 +64,7 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 0);
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<StaticOcclusionTool>(cmdLine);
-        CommandLineModuleTestUtils::ExecuteModule(tool.get());
+        CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 1);
 

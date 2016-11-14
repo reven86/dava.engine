@@ -282,13 +282,18 @@ public:
             RhiEmptyFrame frame;
             if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
             {
+                if (exitCode == 0)
+                {
+                    exitCode = modules.front()->GetExitCode();
+                }
+
                 modules.front()->BeforeDestroyed();
                 modules.pop_front();
             }
 
             if (modules.empty() == true)
             {
-                engine.Quit(0);
+                engine.Quit(exitCode);
             }
         }
         context->swapBuffers(surface);
@@ -367,6 +372,7 @@ private:
     QOpenGLContext* context = nullptr;
     int argc = 0;
     Vector<char*> argv;
+    int exitCode = 0;
 };
 
 class Core::GuiImpl : public Core::Impl, public UIManager::Delegate

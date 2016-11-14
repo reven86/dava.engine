@@ -9,6 +9,9 @@ namespace TArc
 class ContextAccessor;
 class ConsoleModule
 {
+public:
+    int GetExitCode() const;
+
 protected:
     enum class eFrameResult
     {
@@ -21,12 +24,15 @@ protected:
 
     ContextAccessor& GetAccessor();
 
+    void SetExitCode(int);
+
 private:
     friend class Core;
     void Init(ContextAccessor* accessor);
 
 private:
     ContextAccessor* contextAccessor = 0;
+    int exitCode = 0;
 };
 
 inline void ConsoleModule::Init(ContextAccessor* accessor)
@@ -39,6 +45,16 @@ inline ContextAccessor& ConsoleModule::GetAccessor()
 {
     DVASSERT(contextAccessor != nullptr);
     return *contextAccessor;
+}
+
+inline void ConsoleModule::SetExitCode(int code)
+{
+    exitCode = code;
+}
+
+inline int ConsoleModule::GetExitCode() const
+{
+    return exitCode;
 }
 
 } // namespace TArc

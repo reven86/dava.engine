@@ -1,4 +1,9 @@
 #include "Qt/Project/ConsoleProject.h"
+#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
+
+#include "FileSystem/FileSystem.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Sound/SoundSystem.h"
 
 ConsoleProject::~ConsoleProject()
 {
@@ -17,7 +22,6 @@ void ConsoleProject::OpenProject(const DAVA::FilePath& incomePath)
         {
             DAVA::FilePath::AddTopResourcesFolder(projectPath + "Data/");
 
-            EditorConfig::Instance()->ParseConfig(projectPath + "EditorConfig.yaml");
             MaterialTemplatesInfo::Instance()->Load("~res:/Materials/assignable.yaml");
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();

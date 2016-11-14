@@ -1,5 +1,4 @@
 ﻿#include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/CommandLineModule.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
@@ -23,9 +22,9 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 
-#include <memory>
-
-namespace RECMTUDetail
+namespace CommandLineModuleTestUtils
+{
+namespace Detail
 {
 using namespace DAVA;
 
@@ -118,12 +117,14 @@ void CreateR2OCustomProperty(Entity* entity, const FilePath& scenePathname)
     referencePathname.ReplaceBasename(entityName);
     FilePath folderPathname = scenePathname.GetDirectory();
 
+    ScopedPtr<Scene> referenceScene(new Scene);
+    ScopedPtr<Entity> referenceEntity(entity->Clone());
+    referenceScene->AddNode(referenceEntity);
+    referenceScene->SaveScene(referencePathname, false);
+
     CustomPropertiesComponent* cp = new CustomPropertiesComponent();
     cp->GetArchive()->SetString("editor.referenceToOwner", referencePathname.GetAbsolutePathname());
     entity->AddComponent(cp);
-
-    ScopedPtr<Scene> referenceScene(new Scene());
-    referenceScene->SaveScene(referencePathname, false);
 }
 
 Entity* CreateLandscapeEnity(const FilePath& scenePathname)
@@ -134,7 +135,7 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     // create heightmap
     FilePath heightmapPathname = scenePathname;
     heightmapPathname.ReplaceFilename("landscape.heightmap.png");
-    if (CreateHeightmapFile(heightmapPathname, 512u, PixelFormat::FORMAT_A8) == false)
+    if (Detail::CreateHeightmapFile(heightmapPathname, 512u, PixelFormat::FORMAT_A8) == false)
     {
         return nullptr;
     }
@@ -158,7 +159,7 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     {
         FilePath textuePathname = scenePathname;
         textuePathname.ReplaceFilename(fileName);
-        CreateTextureFiles(textuePathname, 2048u, 2048u, PixelFormat::FORMAT_RGBA8888);
+        Detail::CreateTextureFiles(textuePathname, 2048u, 2048u, PixelFormat::FORMAT_RGBA8888);
 
         ScopedPtr<Texture> texture(Texture::CreateFromFile(textuePathname));
         material->AddTexture(slotName, texture);
@@ -174,7 +175,6 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     RenderComponent* rc = new RenderComponent(landscape);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -183,16 +183,15 @@ Entity* CreateWaterEntity(const FilePath& scenePathname)
     Entity* entity = new Entity();
     entity->SetName(FastName("water"));
 
-    ScopedPtr<NMaterial> material(CreateMaterial(FastName("water"), NMaterialName::WATER_ALL_QUALITIES));
+    ScopedPtr<NMaterial> material(Detail::CreateMaterial(FastName("water"), NMaterialName::WATER_ALL_QUALITIES));
     material->SetQualityGroup(FastName("Water"));
-    ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
+    ScopedPtr<PolygonGroup> geometry(Detail::CreatePolygonGroup());
 
     ScopedPtr<Mesh> ro(new Mesh());
     ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -201,15 +200,14 @@ Entity* CreateSkyEntity(const FilePath& scenePathname)
     Entity* entity = new Entity();
     entity->SetName(FastName("sky"));
 
-    ScopedPtr<NMaterial> material(CreateMaterial(FastName("sky"), NMaterialName::SKYOBJECT));
-    ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
+    ScopedPtr<NMaterial> material(Detail::CreateMaterial(FastName("sky"), NMaterialName::SKYOBJECT));
+    ScopedPtr<PolygonGroup> geometry(Detail::CreatePolygonGroup());
 
     ScopedPtr<Mesh> ro(new Mesh());
     ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -222,7 +220,7 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     {
         FilePath textuePathname = scenePathname;
         textuePathname.ReplaceFilename(fileName);
-        CreateTextureFiles(textuePathname, 32u, 32u, PixelFormat::FORMAT_RGBA8888);
+        Detail::CreateTextureFiles(textuePathname, 32u, 32u, PixelFormat::FORMAT_RGBA8888);
 
         ScopedPtr<Texture> texture(Texture::CreateFromFile(textuePathname));
         material->AddTexture(slotName, texture);
@@ -235,9 +233,9 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
         material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
     };
 
-    ScopedPtr<NMaterial> material(CreateMaterial(FastName("box"), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
+    ScopedPtr<NMaterial> material(Detail::CreateMaterial(FastName("box"), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
     setupMaterial(material, "box.tex", NMaterialTextureName::TEXTURE_ALBEDO);
-    ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
+    ScopedPtr<PolygonGroup> geometry(Detail::CreatePolygonGroup());
     ScopedPtr<Mesh> ro(new Mesh());
     ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
@@ -246,10 +244,10 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     auto addGeometry = [&](int lod, int sw)
     {
         String name = Format("box_%d_%d", lod, sw);
-        ScopedPtr<NMaterial> m(CreateMaterial(FastName(name), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
+        ScopedPtr<NMaterial> m(Detail::CreateMaterial(FastName(name), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
         setupMaterial(m, name + ".tex", NMaterialTextureName::TEXTURE_ALBEDO);
 
-        ScopedPtr<PolygonGroup> g(CreatePolygonGroup());
+        ScopedPtr<PolygonGroup> g(Detail::CreatePolygonGroup());
         ScopedPtr<RenderBatch> batch(new RenderBatch());
         batch->SetMaterial(m);
         batch->SetPolygonGroup(g);
@@ -264,7 +262,6 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     entity->AddComponent(new LodComponent());
     entity->AddComponent(new SwitchComponent());
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -289,7 +286,7 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
 
         FilePath texturePathname = scenePathname;
         texturePathname.ReplaceFilename("vegetation.texture.tex");
-        CreateTextureFiles(texturePathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
+        Detail::CreateTextureFiles(texturePathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
         ScopedPtr<Texture> vegetationTexture(Texture::CreateFromFile(texturePathname));
 
         for (uint32 i = 0; i < VEGETATION_ENTITY_LAYER_NAMES.size(); ++i)
@@ -297,13 +294,13 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
             ScopedPtr<Entity> vegetationLayer(new Entity());
             vegetationLayer->SetName(VEGETATION_ENTITY_LAYER_NAMES[i]);
 
-            ScopedPtr<NMaterial> material(CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
+            ScopedPtr<NMaterial> material(Detail::CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
             material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, vegetationTexture);
 
-            ScopedPtr<NMaterial> instanceMaterial(CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
+            ScopedPtr<NMaterial> instanceMaterial(Detail::CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
             instanceMaterial->SetParent(material);
 
-            ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
+            ScopedPtr<PolygonGroup> geometry(Detail::CreatePolygonGroup());
             ScopedPtr<Mesh> ro(new Mesh());
             ro->AddPolygonGroup(geometry, instanceMaterial);
             RenderComponent* rc = new RenderComponent(ro);
@@ -325,13 +322,12 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
 
     FilePath lightmapPathname = scenePathname;
     lightmapPathname.ReplaceFilename("vegetation.lightmap.tex");
-    CreateTextureFiles(lightmapPathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
+    Detail::CreateTextureFiles(lightmapPathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
     ro->SetLightmapAndGenerateDensityMap(lightmapPathname);
 
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -349,7 +345,6 @@ Entity* CreateCameraEntity(const FilePath& scenePathname)
 
     entity->AddComponent(new CameraComponent(camera));
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -400,7 +395,6 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
     setLightProperties(GetOrCreateCustomProperties(skyLightEntity), true);
     entity->AddNode(skyLightEntity);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -412,12 +406,11 @@ Entity* CreateStaticOcclusionEntity(const FilePath& scenePathname)
     StaticOcclusionComponent* so = new StaticOcclusionComponent();
     entity->AddComponent(so);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
-}
+} // namespace Detail
 
-class CommandLineModuleTestUtils::TextureLoadingGuard::Impl final
+class TextureLoadingGuard::Impl final
 {
 public:
     Impl(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
@@ -435,55 +428,25 @@ private:
     DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
 };
 
-CommandLineModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
-    : impl(new CommandLineModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
+TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+    : impl(new TextureLoadingGuard::Impl(newLoadingOrder))
 {
 }
 
-CommandLineModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
+TextureLoadingGuard::~TextureLoadingGuard() = default;
 
-std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> CommandLineModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
     return std::make_unique<TextureLoadingGuard>(newLoadingOrder);
 }
 
-void CommandLineModuleTestUtils::ExecuteModule(CommandLineModule* module)
-{
-    DVASSERT(module != nullptr);
-
-    InitModule(module);
-
-    while (ProcessModule(module) == false)
-    {
-        //module loop
-    }
-
-    FinalizeModule(module);
-}
-
-void CommandLineModuleTestUtils::InitModule(CommandLineModule* module)
-{
-    module->PostInit();
-}
-
-bool CommandLineModuleTestUtils::ProcessModule(CommandLineModule* module)
-{
-    bool completed = (module->OnFrame() == CommandLineModule::eFrameResult::FINISHED);
-    return completed;
-}
-
-void CommandLineModuleTestUtils::FinalizeModule(CommandLineModule* module)
-{
-    module->BeforeDestroyed();
-}
-
-void CommandLineModuleTestUtils::CreateTestFolder(const DAVA::FilePath& folder)
+void CreateTestFolder(const DAVA::FilePath& folder)
 {
     ClearTestFolder(folder); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
     DAVA::FileSystem::Instance()->CreateDirectory(folder, true);
 }
 
-void CommandLineModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
+void ClearTestFolder(const DAVA::FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -491,7 +454,7 @@ void CommandLineModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
     DAVA::FileSystem::Instance()->DeleteDirectory(folder, true);
 }
 
-void CommandLineModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
+void CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
 {
     ClearTestFolder(projectPathname); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
 
@@ -504,41 +467,136 @@ void CommandLineModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePat
     DAVA::FileSystem::Instance()->CopyFile("~res:/quality.template.yaml", dataPath + "quality.yaml", true);
 }
 
-void CommandLineModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
+void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)
 {
-    using namespace DAVA;
+    SceneBuilder builder(scenePathname);
+    builder.AddCamera(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddBox(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddLandscape(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddWater(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddSky(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddVegetation(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddStaticOcclusion(SceneBuilder::WITH_REF_TO_OWNER);
+}
 
+SceneBuilder::SceneBuilder(const FilePath& scenePathname)
+    : scenePathname(scenePathname)
+{
+    CreateScene();
+}
+
+SceneBuilder::~SceneBuilder()
+{
+    SaveScene();
+}
+
+void SceneBuilder::CreateScene()
+{
     FileSystem::Instance()->CreateDirectory(scenePathname.GetDirectory(), false);
+    scene.reset(new Scene);
+}
 
-    ScopedPtr<Scene> scene(new Scene());
-
-    ScopedPtr<Entity> cameraEntity(RECMTUDetail::CreateCameraEntity(scenePathname));
+Entity* SceneBuilder::AddCamera(R2OMode mode)
+{
+    ScopedPtr<Entity> cameraEntity(Detail::CreateCameraEntity(scenePathname));
     scene->AddNode(cameraEntity);
     Camera* camera = GetCamera(cameraEntity);
     scene->SetCurrentCamera(camera);
 
-    ScopedPtr<Entity> landscape(RECMTUDetail::CreateLandscapeEnity(scenePathname));
-    scene->AddNode(landscape);
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(cameraEntity);
+    }
 
-    ScopedPtr<Entity> water(RECMTUDetail::CreateWaterEntity(scenePathname));
-    scene->AddNode(water);
+    return cameraEntity;
+}
 
-    ScopedPtr<Entity> sky(RECMTUDetail::CreateSkyEntity(scenePathname));
-    scene->AddNode(sky);
-
-    ScopedPtr<Entity> box(RECMTUDetail::CreateBoxEntity(scenePathname));
+Entity* SceneBuilder::AddBox(R2OMode mode)
+{
+    ScopedPtr<Entity> box(Detail::CreateBoxEntity(scenePathname));
     scene->AddNode(box);
 
-    ScopedPtr<Entity> vegetation(RECMTUDetail::CreateVegetationEntity(scenePathname));
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(box);
+    }
+
+    return box;
+}
+
+Entity* SceneBuilder::AddLandscape(R2OMode mode)
+{
+    ScopedPtr<Entity> landscape(Detail::CreateLandscapeEnity(scenePathname));
+    scene->AddNode(landscape);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(landscape);
+    }
+
+    return landscape;
+}
+
+Entity* SceneBuilder::AddWater(R2OMode mode)
+{
+    ScopedPtr<Entity> water(Detail::CreateWaterEntity(scenePathname));
+    scene->AddNode(water);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(water);
+    }
+
+    return water;
+}
+
+Entity* SceneBuilder::AddSky(R2OMode mode)
+{
+    ScopedPtr<Entity> sky(Detail::CreateSkyEntity(scenePathname));
+    scene->AddNode(sky);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(sky);
+    }
+
+    return sky;
+}
+
+Entity* SceneBuilder::AddVegetation(R2OMode mode)
+{
+    ScopedPtr<Entity> vegetation(Detail::CreateVegetationEntity(scenePathname));
     scene->AddNode(vegetation);
 
-    ScopedPtr<Entity> lights(RECMTUDetail::CreateLightsEntity(scenePathname));
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(vegetation);
+    }
+
+    return vegetation;
+}
+
+Entity* SceneBuilder::AddStaticOcclusion(R2OMode mode)
+{
+    ScopedPtr<Entity> lights(Detail::CreateLightsEntity(scenePathname));
     scene->AddNode(lights);
 
-    ScopedPtr<Entity> occlusion(RECMTUDetail::CreateStaticOcclusionEntity(scenePathname));
-    scene->AddNode(occlusion);
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(lights);
+    }
 
+    return lights;
+}
+
+void SceneBuilder::AddR2O(Entity* entity)
+{
+    Detail::CreateR2OCustomProperty(entity, scenePathname);
+}
+
+void SceneBuilder::SaveScene()
+{
     scene->Update(0.1f);
-
     scene->SaveScene(scenePathname, false);
+}
 }

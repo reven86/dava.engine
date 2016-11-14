@@ -12,6 +12,7 @@
 #include "Scene/SceneHelper.h"
 #include "Settings/SettingsManager.h"
 #include "StringConstants.h"
+#include "Base/FastName.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
@@ -318,7 +319,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
             }
         }
 
-        const FastName& fxName = (*it)->GetEffectiveFXName();
+        const DAVA::FastName& fxName = (*it)->GetEffectiveFXName();
         if (fxName.IsValid() && !materialTemplates.empty() && fxName != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
             // ShadowVolume material is non-assignable and it's okey

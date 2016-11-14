@@ -1,15 +1,18 @@
-#include "SceneValidationDialog.h"
+#include "Qt/Scene/Validation/SceneValidationDialog.h"
+#include "Qt/Scene/Validation/SceneValidation.h"
+#include "Qt/Scene/Validation/ValidationProgressConsumer.h"
+#include "Qt/Scene/SceneEditor2.h"
+
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "SceneValidation.h"
+
+#include <QCloseEvent>
 
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_SceneValidationDialog.h"
 POP_QT_WARNING_SUPRESSOR
 
-using namespace DAVA;
-
-SceneValidationDialog::SceneValidationDialog(SceneEditor2* scene, QWidget* parent)
+SceneValidationDialog::SceneValidationDialog(DAVA::Scene* scene, QWidget* parent)
     : QDialog(parent)
     , scene(scene)
     , ui(new Ui::SceneValidationDialog)
@@ -42,49 +45,58 @@ void SceneValidationDialog::LoadOptions()
 
 void SceneValidationDialog::SaveOptions()
 {
-    SettingsManager::SetValue(Settings::Internal_Validate_Matrices, VariantType(ui->matriciesCheckBox->isChecked()));
-    SettingsManager::SetValue(Settings::Internal_Validate_SameNames, VariantType(ui->sameNamesCheckBox->isChecked()));
-    SettingsManager::SetValue(Settings::Internal_Validate_CollisionProperties, VariantType(ui->collisionsCheckBox->isChecked()));
-    SettingsManager::SetValue(Settings::Internal_Validate_TexturesRelevance, VariantType(ui->relevanceCheckBox->isChecked()));
-    SettingsManager::SetValue(Settings::Internal_Validate_MaterialGroups, VariantType(ui->materialGroupsCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_Matrices, DAVA::VariantType(ui->matriciesCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_SameNames, DAVA::VariantType(ui->sameNamesCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_CollisionProperties, DAVA::VariantType(ui->collisionsCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_TexturesRelevance, DAVA::VariantType(ui->relevanceCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_MaterialGroups, DAVA::VariantType(ui->materialGroupsCheckBox->isChecked()));
 
-    SettingsManager::SetValue(Settings::Internal_Validate_ShowConsole, VariantType(ui->showConsoleCheckBox->isChecked()));
+    SettingsManager::SetValue(Settings::Internal_Validate_ShowConsole, DAVA::VariantType(ui->showConsoleCheckBox->isChecked()));
 }
 
 void SceneValidationDialog::Validate()
 {
-    DVASSERT(Thread::IsMainThread());
+    using namespace SceneValidation;
+
+    DVASSERT(DAVA::Thread::IsMainThread());
 
     ui->validateButton->setEnabled(false);
 
+    ValidationProgressToLog progressToLog;
+
     if (ui->matriciesCheckBox->isChecked())
     {
-        SceneValidation::LogValidationOutput output("Validating matrices");
-        SceneValidation::ValidateMatrices(scene, &output);
+        ValidationProgress validationProgress;
+        validationProgress.SetProgressConsumer(&progressToLog);
+        ValidateMatrices(scene, validationProgress);
     }
 
     if (ui->sameNamesCheckBox->isChecked())
     {
-        SceneValidation::LogValidationOutput output("Validating same names");
-        SceneValidation::ValidateSameNames(scene, &output);
+        ValidationProgress validationProgress;
+        validationProgress.SetProgressConsumer(&progressToLog);
+        ValidateSameNames(scene, validationProgress);
     }
 
     if (ui->collisionsCheckBox->isChecked())
     {
-        SceneValidation::LogValidationOutput output("Validating collision types");
-        SceneValidation::ValidateCollisionProperties(scene, &output);
+        ValidationProgress validationProgress;
+        validationProgress.SetProgressConsumer(&progressToLog);
+        ValidateCollisionProperties(scene, validationProgress);
     }
 
     if (ui->relevanceCheckBox->isChecked())
     {
-        SceneValidation::LogValidationOutput output("Validating textures relevance");
-        SceneValidation::ValidateTexturesRelevance(scene, &output);
+        ValidationProgress validationProgress;
+        validationProgress.SetProgressConsumer(&progressToLog);
+        ValidateTexturesRelevance(scene, validationProgress);
     }
 
     if (ui->materialGroupsCheckBox->isChecked())
     {
-        SceneValidation::LogValidationOutput output("Validating material groups");
-        SceneValidation::ValidateMaterialsGroups(scene, &output);
+        ValidationProgress validationProgress;
+        validationProgress.SetProgressConsumer(&progressToLog);
+        ValidateMaterialsGroups(scene, validationProgress);
     }
 
     ui->validateButton->setEnabled(true);

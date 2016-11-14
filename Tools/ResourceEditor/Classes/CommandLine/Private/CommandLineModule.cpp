@@ -5,26 +5,24 @@
 
 namespace CommandLineModuleDetail
 {
-void SetupLogger(const DAVA::String& logLevelString)
+void SetupLogger(const DAVA::String& requestedLevelString)
 {
-    DAVA::Vector<DAVA::String> levels =
+    static const DAVA::UnorderedMap<DAVA::String, DAVA::Logger::eLogLevel> levels =
     {
-      "f", // LEVEL_FRAMEWORK
-      "d", // LEVEL_DEBUG
-      "i", // LEVEL_INFO
-      "w", // LEVEL_WARNING
-      "e" // LEVEL_ERROR
+      { "f", DAVA::Logger::eLogLevel::LEVEL_FRAMEWORK },
+      { "d", DAVA::Logger::eLogLevel::LEVEL_DEBUG },
+      { "i", DAVA::Logger::eLogLevel::LEVEL_INFO },
+      { "w", DAVA::Logger::eLogLevel::LEVEL_WARNING },
+      { "e", DAVA::Logger::eLogLevel::LEVEL_ERROR }
     };
 
     DAVA::Logger::eLogLevel requestedLevel = DAVA::Logger::LEVEL_INFO;
-    for (DAVA::uint32 i = 0, count = levels.size(); i < count; ++i)
+    const auto& found = levels.find(requestedLevelString);
+    if (found != levels.end())
     {
-        if (levels[i] == logLevelString)
-        {
-            requestedLevel = static_cast<DAVA::Logger::eLogLevel>(i);
-            break;
-        }
+        requestedLevel = found->second;
     }
+
     DAVA::Logger::Instance()->SetLogLevel(requestedLevel);
 }
 }
@@ -61,6 +59,11 @@ void CommandLineModule::PostInit()
             DAVA::Logger::AddCustomOutput(new DAVA::TeamcityOutput());
         }
         isInitialized = PostInitInternal();
+    }
+
+    if (!isInitialized)
+    {
+        SetExitCode(-1);
     }
 }
 

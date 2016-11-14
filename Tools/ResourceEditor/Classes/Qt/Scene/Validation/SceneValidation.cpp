@@ -1,6 +1,17 @@
-#include "SceneValidation.h"
-#include "ValidationOutput.h"
+#include "Qt/Scene/Validation/SceneValidation.h"
+#include "Qt/Scene/SceneHelper.h"
 #include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
+
+#include "Scene3D/Scene.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+
+#include "Render/Material/NMaterialNames.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/TextureDescriptor.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "FileSystem/FileSystem.h"
 
 namespace SceneValidation
 {
@@ -18,11 +29,10 @@ void CollectEntitiesByName(const Entity* entity, MultiMap<FastName, const Entity
     container.emplace(entity->GetName(), entity);
 }
 
-void CompareCustomProperties(const Entity* entity1, const Entity* entity2, ValidationOutput* output)
+void CompareCustomProperties(const Entity* entity1, const Entity* entity2, ValidationProgress& validationProgress)
 {
     DVASSERT(entity1 != nullptr);
     DVASSERT(entity2 != nullptr);
-    DVASSERT(output);
 
     KeyedArchive* props1 = GetCustomPropertiesArchieve(entity1);
     KeyedArchive* props2 = GetCustomPropertiesArchieve(entity2);
@@ -32,11 +42,11 @@ void CompareCustomProperties(const Entity* entity1, const Entity* entity2, Valid
 
     if (entity1HasCustomProperties != entity2HasCustomProperties)
     {
-        output->ValidationAlert(Format("Entity '%s' (id=%u) %s custom properties while entity '%s' (id=%u) %s",
-                                       entity1->GetName().c_str(), entity1->GetID(),
-                                       (entity1HasCustomProperties ? "has" : "hasn't"),
-                                       entity2->GetName().c_str(), entity2->GetID(),
-                                       (entity2HasCustomProperties ? "has" : "hasn't")));
+        validationProgress.Alerted(Format("Entity '%s' (id=%u) %s custom properties while entity '%s' (id=%u) %s",
+                                          entity1->GetName().c_str(), entity1->GetID(),
+                                          (entity1HasCustomProperties ? "has" : "hasn't"),
+                                          entity2->GetName().c_str(), entity2->GetID(),
+                                          (entity2HasCustomProperties ? "has" : "hasn't")));
     }
     else if (entity1HasCustomProperties && entity2HasCustomProperties)
     {
@@ -49,12 +59,12 @@ void CompareCustomProperties(const Entity* entity1, const Entity* entity2, Valid
 
             if (entity1HasProperty != entity2HasProperty)
             {
-                output->ValidationAlert(Format("Entity '%s' (id=%u) %s property '%s' while entity '%s' (id=%u) %s",
-                                               entity1->GetName().c_str(), entity1->GetID(),
-                                               (entity1HasProperty ? "has" : "hasn't"),
-                                               checkedProperty,
-                                               entity2->GetName().c_str(), entity2->GetID(),
-                                               (entity2HasProperty ? "has" : "hasn't")));
+                validationProgress.Alerted(Format("Entity '%s' (id=%u) %s property '%s' while entity '%s' (id=%u) %s",
+                                                  entity1->GetName().c_str(), entity1->GetID(),
+                                                  (entity1HasProperty ? "has" : "hasn't"),
+                                                  checkedProperty,
+                                                  entity2->GetName().c_str(), entity2->GetID(),
+                                                  (entity2HasProperty ? "has" : "hasn't")));
             }
             else if (entity1HasProperty && entity2HasProperty)
             {
@@ -63,21 +73,20 @@ void CompareCustomProperties(const Entity* entity1, const Entity* entity2, Valid
 
                 if (*entity1Value != *entity2Value)
                 {
-                    output->ValidationAlert(Format("Property '%s' values are different for entity '%s' (id=%u) and entity '%s' (id=%u)",
-                                                   checkedProperty,
-                                                   entity1->GetName().c_str(), entity1->GetID(),
-                                                   entity2->GetName().c_str(), entity2->GetID()));
+                    validationProgress.Alerted(Format("Property '%s' values are different for entity '%s' (id=%u) and entity '%s' (id=%u)",
+                                                      checkedProperty,
+                                                      entity1->GetName().c_str(), entity1->GetID(),
+                                                      entity2->GetName().c_str(), entity2->GetID()));
                 }
             }
         }
     }
 }
 
-void CompareSoundComponents(const Entity* entity1, const Entity* entity2, ValidationOutput* output)
+void CompareSoundComponents(const Entity* entity1, const Entity* entity2, ValidationProgress& validationProgress)
 {
     DVASSERT(entity1 != nullptr);
     DVASSERT(entity2 != nullptr);
-    DVASSERT(output != nullptr);
 
     SoundComponent* soundComponent1 = GetSoundComponent(entity1);
     SoundComponent* soundComponent2 = GetSoundComponent(entity2);
@@ -164,17 +173,16 @@ void CompareSoundComponents(const Entity* entity1, const Entity* entity2, Valida
 
     if (!soundsAreEqual)
     {
-        output->ValidationAlert(Format("Entity '%s' (id=%u) and entity '%s' (id=%u) sound components are different",
-                                       entity1->GetName().c_str(), entity1->GetID(),
-                                       entity2->GetName().c_str(), entity2->GetID()));
+        validationProgress.Alerted(Format("Entity '%s' (id=%u) and entity '%s' (id=%u) sound components are different",
+                                          entity1->GetName().c_str(), entity1->GetID(),
+                                          entity2->GetName().c_str(), entity2->GetID()));
     }
 }
 
-void CompareEffects(const Entity* entity1, const Entity* entity2, ValidationOutput* output)
+void CompareEffects(const Entity* entity1, const Entity* entity2, ValidationProgress& validationProgress)
 {
     DVASSERT(entity1 != nullptr);
     DVASSERT(entity2 != nullptr);
-    DVASSERT(output != nullptr);
 
     bool effectsAreEqual = true;
 
@@ -200,9 +208,9 @@ void CompareEffects(const Entity* entity1, const Entity* entity2, ValidationOutp
     bool vectorsAreDifferent = (firstDiff.first != childEffects1.end());
     if (vectorsAreDifferent)
     {
-        output->ValidationAlert(Format("Entity '%s' (id=%u) and entity '%s' (id=%u) have different effects",
-                                       entity1->GetName().c_str(), entity1->GetID(),
-                                       entity2->GetName().c_str(), entity2->GetID()));
+        validationProgress.Alerted(Format("Entity '%s' (id=%u) and entity '%s' (id=%u) have different effects",
+                                          entity1->GetName().c_str(), entity1->GetID(),
+                                          entity2->GetName().c_str(), entity2->GetID()));
     }
 }
 
@@ -235,12 +243,25 @@ bool IsKnownMaterialQualityGroup(const FastName& materialGroup)
 
 bool IsAssignableMaterialTemplate(const FastName& materialTemplatePath)
 {
-    return materialTemplatePath != DAVA::NMaterialName::SHADOW_VOLUME;
+    return materialTemplatePath != NMaterialName::SHADOW_VOLUME;
 }
 
 int32 GetCollisionTypeID(const char* collisionTypeName)
 {
-    const Vector<String>& collisionTypes = EditorConfig::Instance()->GetComboPropertyValues("CollisionType");
+    // copied from EditorConfig.yaml
+    // temporary. should be replaced after implementaion of resource system or alike
+    static const Vector<String>& collisionTypes = {
+        "No Collision",
+        "Tree",
+        "Bush",
+        "Fragile Proj",
+        "Fragile ^Proj",
+        "Falling",
+        "Building",
+        "Invisible Wall",
+        "SpeedTree",
+        "Water"
+    };
 
     for (int32 i = 0; i < collisionTypes.size(); ++i)
     {
@@ -274,12 +295,11 @@ String MaterialPrettyName(NMaterial* material)
 
 } // namespace Details
 
-void ValidateMatrices(Scene* scene, ValidationOutput* output)
+void ValidateMatrices(Scene* scene, ValidationProgress& validationProgress)
 {
-    DVASSERT(scene);
-    DVASSERT(output);
+    validationProgress.Started("Validating matrices");
 
-    output->ValidationStarted();
+    DVASSERT(scene);
 
     Vector<Entity*> container;
     scene->GetChildEntitiesWithCondition(container, [](Entity* entity)
@@ -304,7 +324,7 @@ void ValidateMatrices(Scene* scene, ValidationOutput* output)
         SceneFileV2::eError result = sourceScene->LoadScene(pathToSourceScene);
         if (result != SceneFileV2::eError::ERROR_NO_ERROR)
         {
-            output->ValidationAlert(Format("Can't load source model %s", pathToSourceScene.c_str()));
+            validationProgress.Alerted(Format("Can't load source model %s", pathToSourceScene.c_str()));
             continue;
         }
 
@@ -315,29 +335,28 @@ void ValidateMatrices(Scene* scene, ValidationOutput* output)
 
             if (localMatrix != Matrix4::IDENTITY)
             {
-                output->ValidationAlert(Format("Source model '%s' local transform is not an identity matrix", pathToSourceScene.c_str()));
+                validationProgress.Alerted(Format("Source model '%s' local transform is not an identity matrix", pathToSourceScene.c_str()));
             }
 
             if (worldMatrix != Matrix4::IDENTITY)
             {
-                output->ValidationAlert(Format("Source model '%s' world transform is not an identity matrix", pathToSourceScene.c_str()));
+                validationProgress.Alerted(Format("Source model '%s' world transform is not an identity matrix", pathToSourceScene.c_str()));
             }
         }
         else
         {
-            output->ValidationAlert(Format("Source model '%s' should have only one child entity, has %i", pathToSourceScene.c_str(), sourceScene->GetChildrenCount()));
+            validationProgress.Alerted(Format("Source model '%s' should have only one child entity, has %i", pathToSourceScene.c_str(), sourceScene->GetChildrenCount()));
         }
     }
 
-    output->ValidationDone();
+    validationProgress.Done();
 }
 
-void ValidateSameNames(Scene* scene, ValidationOutput* output)
+void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
 {
-    DVASSERT(scene);
-    DVASSERT(output);
+    validationProgress.Started("Validating same names");
 
-    output->ValidationStarted();
+    DVASSERT(scene);
 
     MultiMap<FastName, const Entity*> entitiesByName;
     Details::CollectEntitiesByName(scene, entitiesByName);
@@ -355,24 +374,23 @@ void ValidateSameNames(Scene* scene, ValidationOutput* output)
                  rangeNextIter != rangePair.second;
                  ++rangeNextIter)
             {
-                Details::CompareCustomProperties(rangePair.first->second, rangeNextIter->second, output);
-                Details::CompareSoundComponents(rangePair.first->second, rangeNextIter->second, output);
-                Details::CompareEffects(rangePair.first->second, rangeNextIter->second, output);
+                Details::CompareCustomProperties(rangePair.first->second, rangeNextIter->second, validationProgress);
+                Details::CompareSoundComponents(rangePair.first->second, rangeNextIter->second, validationProgress);
+                Details::CompareEffects(rangePair.first->second, rangeNextIter->second, validationProgress);
             }
         }
 
         currentIter = rangePair.second;
     }
 
-    output->ValidationDone();
+    validationProgress.Done();
 }
 
-void ValidateCollisionProperties(Scene* scene, ValidationOutput* output)
+void ValidateCollisionProperties(Scene* scene, ValidationProgress& validationProgress)
 {
-    DVASSERT(scene);
-    DVASSERT(output);
+    validationProgress.Started("Validating collision types");
 
-    output->ValidationStarted();
+    DVASSERT(scene);
 
     int32 collisionTypeWaterId = Details::GetCollisionTypeID("Water");
     int32 collisionTypeSpeedTreeId = Details::GetCollisionTypeID("SpeedTree");
@@ -394,20 +412,19 @@ void ValidateCollisionProperties(Scene* scene, ValidationOutput* output)
             && !props->IsKeyExists("MaterialKind")
             && !props->IsKeyExists("FallType"))
         {
-            output->ValidationAlert(Format("Entity '%s' (id=%u) has 'CollisionType' property but hasn't 'MaterialKind' or 'FallType'",
-                                           entity->GetName().c_str(), entity->GetID()));
+            validationProgress.Alerted(Format("Entity '%s' (id=%u) has 'CollisionType' property but hasn't 'MaterialKind' or 'FallType'",
+                                              entity->GetName().c_str(), entity->GetID()));
         }
     }
 
-    output->ValidationDone();
+    validationProgress.Done();
 }
 
-void ValidateTexturesRelevance(Scene* scene, ValidationOutput* output)
+void ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgress)
 {
-    DVASSERT(scene);
-    DVASSERT(output);
+    validationProgress.Started("Validating textures relevance");
 
-    output->ValidationStarted();
+    DVASSERT(scene);
 
     SceneHelper::TextureCollector collector;
     SceneHelper::EnumerateSceneTextures(scene, collector);
@@ -415,31 +432,30 @@ void ValidateTexturesRelevance(Scene* scene, ValidationOutput* output)
 
     for (const std::pair<FilePath, Texture*>& entry : texturesMap)
     {
-        DAVA::TextureDescriptor* descriptor = entry.second->texDescriptor;
-        if (nullptr != descriptor && DAVA::FileSystem::Instance()->Exists(descriptor->pathname))
+        TextureDescriptor* descriptor = entry.second->texDescriptor;
+        if (nullptr != descriptor && FileSystem::Instance()->Exists(descriptor->pathname))
         {
             for (uint32 i = 0; i < eGPUFamily::GPU_DEVICE_COUNT; ++i)
             {
                 eGPUFamily gpu = static_cast<eGPUFamily>(i);
                 if (descriptor->HasCompressionFor(gpu) && !descriptor->IsCompressedTextureActual(gpu))
                 {
-                    output->ValidationAlert(Format("Texture '%s' compression is not relevant for gpu %s",
-                                                   descriptor->GetSourceTexturePathname().GetFilename().c_str(),
-                                                   GPUFamilyDescriptor::GetGPUName(gpu).c_str()));
+                    validationProgress.Alerted(Format("Texture '%s' compression is not relevant for gpu %s",
+                                                      descriptor->GetSourceTexturePathname().GetFilename().c_str(),
+                                                      GPUFamilyDescriptor::GetGPUName(gpu).c_str()));
                 }
             }
         }
     }
 
-    output->ValidationDone();
+    validationProgress.Done();
 }
 
-void ValidateMaterialsGroups(Scene* scene, ValidationOutput* output)
+void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgress)
 {
-    DVASSERT(scene);
-    DVASSERT(output);
+    validationProgress.Started("Validating material groups");
 
-    output->ValidationStarted();
+    DVASSERT(scene);
 
     Set<NMaterial*> materials;
     SceneHelper::BuildMaterialList(scene, materials);
@@ -449,7 +465,7 @@ void ValidateMaterialsGroups(Scene* scene, ValidationOutput* output)
         materials.erase(globalMaterial);
     }
 
-    const DAVA::Vector<MaterialTemplateInfo>& materialTemplates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
+    const Vector<MaterialTemplateInfo>& materialTemplates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
 
     for (NMaterial* material : materials)
     {
@@ -463,7 +479,7 @@ void ValidateMaterialsGroups(Scene* scene, ValidationOutput* output)
             qualityGroupIsSet = Details::IsKnownMaterialQualityGroup(materialGroup);
             if (!qualityGroupIsSet)
             {
-                output->ValidationAlert(Format("Material %s has unknown quality group '%s'", materialName.c_str(), materialGroup.c_str()));
+                validationProgress.Alerted(Format("Material %s has unknown quality group '%s'", materialName.c_str(), materialGroup.c_str()));
             }
         }
 
@@ -475,16 +491,16 @@ void ValidateMaterialsGroups(Scene* scene, ValidationOutput* output)
             {
                 if (!materialTemplate->qualities.empty() && !qualityGroupIsSet)
                 {
-                    output->ValidationAlert(Format("Group is not selected for material %s with multi-quality template assigned to it", materialName.c_str()));
+                    validationProgress.Alerted(Format("Group is not selected for material %s with multi-quality template assigned to it", materialName.c_str()));
                 }
             }
             else
             {
-                output->ValidationAlert(Format("Material %s has unknown material template %s", materialName.c_str(), materialTemplatePath.c_str()));
+                validationProgress.Alerted(Format("Material %s has unknown material template %s", materialName.c_str(), materialTemplatePath.c_str()));
             }
         }
     }
 
-    output->ValidationDone();
+    validationProgress.Done();
 }
 }

@@ -1,5 +1,6 @@
 #include "CommandLine/DumpTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
@@ -125,7 +126,7 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(DTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -141,7 +142,7 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<DumpTool>(cmdLine);
-        CommandLineModuleTestUtils::ExecuteModule(tool.get());
+        CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
         TestLinks();
 

@@ -1,5 +1,6 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
@@ -74,7 +75,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -104,7 +105,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -148,7 +149,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             TEST_VERIFY(descriptor);
@@ -165,7 +166,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             TEST_VERIFY(descriptor);
@@ -225,7 +226,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "-f"
             };
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -278,7 +279,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -336,7 +337,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             ScopedPtr<KeyedArchive> archive(new KeyedArchive());
             TEST_VERIFY(archive->LoadFromYamlFile(presetPathname));
@@ -378,7 +379,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             ScopedPtr<KeyedArchive> archive(new KeyedArchive());
             TEST_VERIFY(archive->LoadFromYamlFile(presetPathname));
@@ -428,7 +429,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -462,7 +463,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)

@@ -9,7 +9,7 @@
 
 class CommandLineModule : public DAVA::TArc::ConsoleModule
 {
-    friend class CommandLineModuleTestUtils;
+    friend class CommandLineModuleTestExecute;
 
 public:
     CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);

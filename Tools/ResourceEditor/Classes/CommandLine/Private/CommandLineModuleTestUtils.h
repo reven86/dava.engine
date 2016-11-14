@@ -2,6 +2,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
+#include "Scene3D/Scene.h"
+#include "FileSystem/FilePath.h"
 
 #include <memory>
 
@@ -10,14 +12,14 @@ namespace DAVA
 class FilePath;
 };
 
-class CommandLineModule;
-class CommandLineModuleTestUtils
+namespace CommandLineModuleTestUtils
 {
-public:
+using namespace DAVA;
+
     class TextureLoadingGuard final
     {
     public:
-        TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
+        TextureLoadingGuard(const Vector<eGPUFamily>& newLoadingOrder);
         ~TextureLoadingGuard();
 
     private:
@@ -25,16 +27,38 @@ public:
         std::unique_ptr<Impl> impl;
     };
 
-    static std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
+    std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const Vector<eGPUFamily>& newLoadingOrder);
 
-    static void ExecuteModule(CommandLineModule* module);
-    static void InitModule(CommandLineModule* module);
-    static bool ProcessModule(CommandLineModule* module);
-    static void FinalizeModule(CommandLineModule* module);
+    void CreateTestFolder(const FilePath& folder);
+    void ClearTestFolder(const FilePath& folder);
 
-    static void CreateTestFolder(const DAVA::FilePath& folder);
-    static void ClearTestFolder(const DAVA::FilePath& folder);
+    void CreateProjectInfrastructure(const FilePath& projectPathname);
 
-    static void CreateProjectInfrastructure(const DAVA::FilePath& projectPathname);
-    static void CreateScene(const DAVA::FilePath& scenePathname);
+    struct SceneBuilder
+    {
+        explicit SceneBuilder(const FilePath& scenePathname);
+        ~SceneBuilder();
+
+        static void CreateFullScene(const FilePath& scenePathname);
+
+        enum R2OMode
+        {
+            WITH_REF_TO_OWNER,
+            WITHOUT_REF_TO_OWNER
+        };
+
+        void CreateScene();
+        Entity* AddCamera(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddBox(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddLandscape(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddWater(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddSky(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddVegetation(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        Entity* AddStaticOcclusion(R2OMode mode = WITHOUT_REF_TO_OWNER);
+        void AddR2O(Entity*);
+        void SaveScene();
+
+        const FilePath scenePathname;
+        ScopedPtr<Scene> scene = nullptr;
+    };
 };

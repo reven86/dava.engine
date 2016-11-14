@@ -1,5 +1,6 @@
 #include "CommandLine/SceneExporterTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/BaseTypes.h"
 
@@ -85,7 +86,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -109,7 +110,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
             TestExportedTextures(dataPath);
@@ -135,7 +136,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
             TestExportedTextures(dataPath);
@@ -152,7 +153,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -177,7 +178,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));
             TestExportedTextures(dataPath);
@@ -203,7 +204,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             TestExportedTextures(dataPath);
 
@@ -219,7 +220,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -258,7 +259,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
-        CommandLineModuleTestUtils::ExecuteModule(tool.get());
+        CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));

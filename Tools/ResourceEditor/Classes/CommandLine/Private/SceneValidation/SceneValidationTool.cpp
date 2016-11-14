@@ -1,10 +1,15 @@
 #include "CommandLine/SceneValidationTool.h"
 #include "Qt/Scene/Validation/SceneValidation.h"
-#include "Qt/Scene/Validation/ValidationOutput.h"
+#include "Qt/Scene/Validation/ValidationProgressConsumer.h"
 #include "Qt/Project/ConsoleProject.h"
 #include "Qt/Project/ProjectManager.h"
 #include "CommandLine/Private/OptionName.h"
+
+#include "Scene3D/Scene.h"
 #include "Utils/StringUtils.h"
+#include "Base/ScopedPtr.h"
+#include "FileSystem/File.h"
+#include "Logger/Logger.h"
 
 namespace SceneValidationToolDetails
 {
@@ -60,23 +65,24 @@ bool SceneValidationTool::PostInitInternal()
 
     if (scenePath.IsEmpty() && scenesListPath.IsEmpty())
     {
-        Logger::Error("scene or scenesList param should be specified");
+        DAVA::Logger::Error("scene or scenesList param should be specified");
         return false;
     }
 
     if (!scenePath.IsEmpty() && !scenesListPath.IsEmpty())
     {
-        Logger::Error("Both scene and scenesList params should not be specified");
+        DAVA::Logger::Error("Both scene and scenesList params should not be specified");
         return false;
     }
 
-    uint32 validationOptionsCount = options.GetOptionValuesCount(OptionName::Validate);
+    DAVA::uint32 validationOptionsCount = options.GetOptionValuesCount(OptionName::Validate);
     if (validationOptionsCount == 0)
     {
-        Logger::Error("Any validation option should be specified");
+        DAVA::Logger::Error("Any validation option should be specified");
+        return false;
     }
 
-    for (uint32 n = 0; n < validationOptionsCount; ++n)
+    for (DAVA::uint32 n = 0; n < validationOptionsCount; ++n)
     {
         DAVA::String option = options.GetOption(OptionName::Validate, n).AsString();
         if (option == "all")
@@ -106,7 +112,7 @@ bool SceneValidationTool::PostInitInternal()
         }
         else
         {
-            Logger::Error("Undefined validation option: '%s'", option.c_str());
+            DAVA::Logger::Error("Undefined validation option: '%s'", option.c_str());
             return false;
         }
     }
@@ -114,9 +120,18 @@ bool SceneValidationTool::PostInitInternal()
     return true;
 }
 
+void SceneValidationTool::UpdateExitCode(DAVA::Result result)
+{
+    if (GetExitCode() == 0 && result == DAVA::Result::RESULT_FAILURE)
+    {
+        SetExitCode(-1);
+    }
+}
+
 DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
 {
     using namespace DAVA;
+    using namespace SceneValidation;
 
     Vector<FilePath> scenePathes;
     if (!scenesListPath.IsEmpty())
@@ -134,43 +149,55 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         ConsoleProject::Instance()->Release();
     };
 
+    ValidationProgressToLog progressToLog;
+
     for (const FilePath& scenePath : scenePathes)
     {
         ConsoleProject::Instance()->OpenProject(ProjectManager::CreateProjectPathFromPath(scenePath));
 
         ScopedPtr<Scene> scene(new Scene);
-        if (SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePath))
+        if (DAVA::SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePath))
         {
             Logger::Info("Validating scene '%s'", scenePath.GetAbsolutePathname().c_str());
 
             if (validateMatrices)
             {
-                SceneValidation::LogValidationOutput output("Validating matrices");
-                SceneValidation::ValidateMatrices(scene, &output);
+                ValidationProgress validationProgress;
+                validationProgress.SetProgressConsumer(&progressToLog);
+                SceneValidation::ValidateMatrices(scene, validationProgress);
+                UpdateExitCode(validationProgress.GetResult());
             }
 
             if (validateSameNames)
             {
-                SceneValidation::LogValidationOutput output("Validating same names");
-                SceneValidation::ValidateSameNames(scene, &output);
+                ValidationProgress validationProgress;
+                validationProgress.SetProgressConsumer(&progressToLog);
+                SceneValidation::ValidateSameNames(scene, validationProgress);
+                UpdateExitCode(validationProgress.GetResult());
             }
 
             if (validateCollisionTypes)
             {
-                SceneValidation::LogValidationOutput output("Validating collision types");
-                SceneValidation::ValidateCollisionProperties(scene, &output);
+                ValidationProgress validationProgress;
+                validationProgress.SetProgressConsumer(&progressToLog);
+                SceneValidation::ValidateCollisionProperties(scene, validationProgress);
+                UpdateExitCode(validationProgress.GetResult());
             }
 
             if (validateTexturesRelevance)
             {
-                SceneValidation::LogValidationOutput output("Validating textures relevance");
-                SceneValidation::ValidateTexturesRelevance(scene, &output);
+                ValidationProgress validationProgress;
+                validationProgress.SetProgressConsumer(&progressToLog);
+                SceneValidation::ValidateTexturesRelevance(scene, validationProgress);
+                UpdateExitCode(validationProgress.GetResult());
             }
 
             if (validateMaterialGroups)
             {
-                SceneValidation::LogValidationOutput output("Validating material groups");
-                SceneValidation::ValidateMaterialsGroups(scene, &output);
+                ValidationProgress validationProgress;
+                validationProgress.SetProgressConsumer(&progressToLog);
+                SceneValidation::ValidateMaterialsGroups(scene, validationProgress);
+                UpdateExitCode(validationProgress.GetResult());
             }
         }
         else

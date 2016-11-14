@@ -1,5 +1,6 @@
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileList.h"
@@ -69,7 +70,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SSTestDetail::scenePathnameStr);
 
         {
             CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::newProjectStr);
@@ -93,7 +94,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-            CommandLineModuleTestUtils::ExecuteModule(tool.get());
+            CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::newScenePathnameStr));
 
@@ -109,7 +110,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SSTestDetail::scenePathnameStr);
 
         FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
 
@@ -125,7 +126,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        CommandLineModuleTestUtils::ExecuteModule(tool.get());
+        CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::scenePathnameStr));
 
@@ -138,7 +139,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
 
         std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SSTestDetail::scenePathnameStr);
 
         FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
 
@@ -153,7 +154,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        CommandLineModuleTestUtils::ExecuteModule(tool.get());
+        CommandLineModuleTestExecute::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "Data/quality.yaml"));
 

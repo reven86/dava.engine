@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandLine/CommandLineModule.h"
+#include "Qt/Scene/Validation/ValidationProgress.h"
 
 class SceneValidationTool : public CommandLineModule
 {
@@ -13,6 +14,7 @@ private:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
 
+    void UpdateExitCode(DAVA::Result);
     void EnableAllValidations();
 
     DAVA::FilePath scenePath;

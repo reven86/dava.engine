@@ -34,11 +34,11 @@
 #include "CommandLine/SceneImageDump.h"
 #include "CommandLine/StaticOcclusionTool.h"
 #include "CommandLine/VersionTool.h"
-
 #include "CommandLine/ImageSplitterTool.h"
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/SceneExporterTool.h"
+#include "CommandLine/SceneValidationTool.h"s
 
 namespace REApplicationDetail
 {
@@ -213,6 +213,10 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
     else if (toolKey == SceneExporterTool::Key)
     {
         tarcCore->CreateModule<SceneExporterTool>(cmdLine);
+    }
+    else if (toolKey == SceneValidationTool::Key)
+    {
+        tarcCore->CreateModule<SceneValidationTool>(cmdLine);
     }
     else
     {

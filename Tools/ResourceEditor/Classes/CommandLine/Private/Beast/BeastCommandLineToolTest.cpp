@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestExecute.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
@@ -90,7 +91,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
 
         CommandLineModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
-        CommandLineModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(BCLTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -103,14 +104,14 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         };
 
         tool.reset(new BeastCommandLineTool(cmdLine));
-        CommandLineModuleTestUtils::InitModule(tool.get());
+        CommandLineModuleTestExecute::InitModule(tool.get());
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
     {
         if (tool)
         {
-            testCompleted = CommandLineModuleTestUtils::ProcessModule(tool.get());
+            testCompleted = CommandLineModuleTestExecute::ProcessModule(tool.get());
         }
     }
 
@@ -118,7 +119,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     {
         if (testCompleted && tool)
         {
-            CommandLineModuleTestUtils::FinalizeModule(tool.get());
+            CommandLineModuleTestExecute::FinalizeModule(tool.get());
 
             TestScene();
             CommandLineModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
