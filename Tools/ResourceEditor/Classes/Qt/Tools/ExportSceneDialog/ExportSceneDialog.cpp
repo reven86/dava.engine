@@ -2,7 +2,7 @@
 #include "Tools/Widgets/FilePathBrowser.h"
 
 #include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt//DataStructures/ProjectManagerData.h"
+#include "Classes/Qt/DataStructures/ProjectManagerData.h"
 
 #include "Settings/SettingsManager.h"
 #include "TextureCompression/TextureConverter.h"

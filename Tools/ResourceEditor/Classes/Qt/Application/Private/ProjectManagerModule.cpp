@@ -177,7 +177,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
     AddRecentProject(incomePath);
 
-    // TODO remove imperative code that sync state of action
+    // TODO UVR remove imperative code that sync state of action
     if (closeAction)
     {
         closeAction->setEnabled(true);
@@ -213,7 +213,7 @@ void ProjectManagerModule::CloseProject()
         DVASSERT(data->closeProjectPredicate != nullptr);
         if (data->closeProjectPredicate())
         {
-            // TODO remove imperative code that sync state of action
+            // TODO UVR remove imperative code that sync state of action
             if (closeAction)
             {
                 closeAction->setEnabled(false);
@@ -245,7 +245,8 @@ void ProjectManagerModule::LoadMaterialsSettings(ProjectManagerData* data)
 
     // parse available material templates
     const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
-    if (GetAccessor().GetEngineContext()->fileSystem->Exists(materialsListPath))
+    DAVA::FileSystem* fileSystem = GetAccessor().GetEngineContext()->fileSystem;
+    if (fileSystem->Exists(materialsListPath))
     {
         DAVA::ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
         DAVA::YamlNode* rootNode = parser->GetRootNode();
@@ -267,7 +268,7 @@ void ProjectManagerModule::LoadMaterialsSettings(ProjectManagerData* data)
                         path->GetType() == DAVA::YamlNode::TYPE_STRING)
                     {
                         const DAVA::FilePath templatePath = materialsListDir + path->AsString();
-                        if (DAVA::FileSystem::Instance()->Exists(templatePath))
+                        if (fileSystem->Exists(templatePath))
                         {
                             ProjectManagerData::AvailableMaterialTemplate amt;
                             amt.name = name->AsString().c_str();

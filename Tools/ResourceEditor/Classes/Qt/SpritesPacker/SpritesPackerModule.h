@@ -1,5 +1,4 @@
-#ifndef __SPRITES_PACKER_MODULE_H__
-#define __SPRITES_PACKER_MODULE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -61,8 +60,6 @@ private:
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
-    DAVA::TArc::UI* ui;
+    DAVA::TArc::UI* ui = nullptr;
     std::unique_ptr<DAVA::TArc::WaitHandle> waitDialogHandle;
 };
-
-#endif // __SPRITES_PACKER_MODULE_H__

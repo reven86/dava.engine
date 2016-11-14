@@ -36,20 +36,6 @@ String WINDOW_GEOMETRY_KEY("geometry");
 String WINDOW_STATE_KEY("state");
 String FILE_DIR_KEY("fileDialogDir");
 
-InsertionParams::eInsertionMethod GetInsertionMethod(const QString& method)
-{
-    bool convertionSuccessed = false;
-    DAVA::uint32 insertionMethodValue = method.toInt(&convertionSuccessed);
-    if (convertionSuccessed == false)
-    {
-        insertionMethodValue = static_cast<DAVA::uint32>(InsertionParams::eInsertionMethod::AfterItem);
-    }
-
-    insertionMethodValue = DAVA::Min(insertionMethodValue, static_cast<DAVA::uint32>(InsertionParams::eInsertionMethod::AfterItem));
-
-    return static_cast<InsertionParams::eInsertionMethod>(insertionMethodValue);
-}
-
 static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
   std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
@@ -114,6 +100,38 @@ QAction* FindAction(QWidget* w, const QString& actionName)
     return nullptr;
 }
 
+template <typename T>
+void InsertAction(T* container, QAction* action, const InsertionParams& params)
+{
+    QAction* beforeAction = nullptr;
+    if (params.item.isEmpty())
+    {
+        if (params.method == InsertionParams::eInsertionMethod::BeforeItem)
+        {
+            beforeAction = container->actions().at(0);
+        }
+    }
+    else
+    {
+        beforeAction = FindAction(container, params.item);
+        if (params.method == InsertionParams::eInsertionMethod::AfterItem)
+        {
+            QList<QAction*> actions = container->actions();
+            beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
+        }
+    }
+
+    action->setParent(container);
+    if (beforeAction == nullptr)
+    {
+        container->addAction(action);
+    }
+    else
+    {
+        container->insertAction(beforeAction, action);
+    }
+}
+
 void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
 {
     if (windowInfo.menuBar == nullptr)
@@ -158,42 +176,7 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
         currentLevelMenu = menu;
     }
 
-    QUrlQuery query(url.query());
-
-    QString itemName = query.queryItemValue("itemName");
-    InsertionParams::eInsertionMethod method = UIManagerDetail::GetInsertionMethod(query.queryItemValue("eInsertionMethod"));
-
-    QAction* beforeAction = nullptr;
-    if (itemName.isEmpty())
-    {
-        if (method == InsertionParams::eInsertionMethod::BeforeItem)
-        {
-            beforeAction = currentLevelMenu->actions().at(0);
-        }
-    }
-    else
-    {
-        beforeAction = FindAction(currentLevelMenu, itemName);
-        if (method == InsertionParams::eInsertionMethod::AfterItem)
-        {
-            QList<QAction*> actions = currentLevelMenu->actions();
-            beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
-        }
-    }
-
-    if (action->objectName().isEmpty())
-    {
-        action->setObjectName(action->text());
-    }
-    action->setParent(currentLevelMenu);
-    if (beforeAction == nullptr)
-    {
-        currentLevelMenu->addAction(action);
-    }
-    else
-    {
-        currentLevelMenu->insertAction(beforeAction, action);
-    }
+    UIManagerDetail::InsertAction(currentLevelMenu, action, InsertionParams::Create(url));
 }
 
 void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
@@ -207,41 +190,7 @@ void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInf
         windowInfo.window->addToolBar(toolbar);
     }
 
-    QUrlQuery query(url.query());
-    QString itemName = query.queryItemValue("itemName");
-    InsertionParams::eInsertionMethod method = UIManagerDetail::GetInsertionMethod(query.queryItemValue("eInsertionMethod"));
-
-    QAction* beforeAction = nullptr;
-    if (itemName.isEmpty())
-    {
-        if (method == InsertionParams::eInsertionMethod::BeforeItem)
-        {
-            beforeAction = toolbar->actions().at(0);
-        }
-    }
-    else
-    {
-        beforeAction = FindAction(toolbar, itemName);
-        if (method == InsertionParams::eInsertionMethod::AfterItem)
-        {
-            QList<QAction*> actions = toolbar->actions();
-            beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
-        }
-    }
-
-    if (action->objectName().isEmpty())
-    {
-        action->setObjectName(action->text());
-    }
-    action->setParent(toolbar);
-    if (beforeAction == nullptr)
-    {
-        toolbar->addAction(action);
-    }
-    else
-    {
-        toolbar->insertAction(beforeAction, action);
-    }
+    UIManagerDetail::InsertAction(toolbar, action, InsertionParams::Create(url));
 }
 
 void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
@@ -270,6 +219,11 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
 
 void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement, QAction* action)
 {
+    if (action->objectName().isEmpty())
+    {
+        action->setObjectName(action->text());
+    }
+
     for (const QUrl& url : placement.GetUrls())
     {
         QString scheme = url.scheme();

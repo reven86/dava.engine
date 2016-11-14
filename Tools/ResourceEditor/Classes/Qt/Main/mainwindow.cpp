@@ -212,9 +212,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupWidget();
 
     recentFiles.SetMenu(ui->File);
-    // @TODO
-    //recentProjects.SetMenu(ui->menuRecentProjects);
-
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
 
     qApp->installEventFilter(this);
@@ -2781,7 +2778,7 @@ void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const D
         data->SetCloseProjectPredicateFunction(DAVA::Bind(&SceneTabWidget::CloseAllTabs, ui->sceneTabWidget, false));
     }
 
-    if (data && !data->GetProjectPath().IsEmpty())
+    if (data != nullptr && !data->GetProjectPath().IsEmpty())
     {
         EnableProjectActions(true);
         SetupTitle(data->GetProjectPath().GetAbsolutePathname());
