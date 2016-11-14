@@ -22,7 +22,7 @@ public:
         virtual bool OnUserCloseRequest() = 0;
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
-        virtual void OnResized(uint32 width, uint32 height) = 0;
+        virtual void OnResized(uint32 width, uint32 height, bool isFullScreen) = 0;
         virtual void OnVisibilityChanged(bool isVisible) = 0;
 
         virtual void OnMousePressed(QMouseEvent* e) = 0;
