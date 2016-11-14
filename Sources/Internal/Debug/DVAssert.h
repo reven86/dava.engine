@@ -80,6 +80,9 @@ void AddHandler(const Handler handler);
 /** Unregister specified `handler` (in case it has been added before) */
 void RemoveHandler(const Handler handler);
 
+/** Get all currently registred handlers */
+Vector<Handler> GetAllHandlers();
+
 /** Unregister all previously added handlers */
 void RemoveAllHandlers();
 }

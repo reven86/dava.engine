@@ -1,6 +1,7 @@
 #include "UnitTests/UnitTests.h"
 #include "Debug/DVAssert.h"
 
+using namespace DAVA;
 using namespace DAVA::Assert;
 
 static bool firstHandlerInvoked = false;
@@ -30,6 +31,29 @@ static FailBehaviour AssertMessageSavingHandler(const AssertInfo& assertInfo)
     return FailBehaviour::Continue;
 }
 
+// Guard to run test functions without previous handlers and to put them back when testing is over
+class AssertsHandlersGuard final
+{
+public:
+    AssertsHandlersGuard()
+        : previousHandlers(GetAllHandlers())
+    {
+        RemoveAllHandlers();
+    }
+
+    ~AssertsHandlersGuard()
+    {
+        RemoveAllHandlers();
+        for (const Handler& handler : previousHandlers)
+        {
+            AddHandler(handler);
+        }
+    }
+
+private:
+    const Vector<Handler> previousHandlers;
+};
+
 DAVA_TESTCLASS (DVAssertTestClass)
 {
     BEGIN_FILES_COVERED_BY_TESTS()
@@ -39,6 +63,8 @@ DAVA_TESTCLASS (DVAssertTestClass)
 
     DAVA_TEST (AssertTestFunction)
     {
+        AssertsHandlersGuard previousHandlersGuard;
+
         AddHandler(FirstHandler);
         AddHandler(SecondHandler);
 
@@ -70,12 +96,13 @@ DAVA_TESTCLASS (DVAssertTestClass)
 #endif
 
         // Reset
-        RemoveHandler(SecondHandler);
         ResetHandlersState();
     }
 
     DAVA_TEST (AlwaysAssertTestFunction)
     {
+        AssertsHandlersGuard previousHandlersGuard;
+
         AddHandler(FirstHandler);
         AddHandler(SecondHandler);
 
@@ -97,12 +124,13 @@ DAVA_TESTCLASS (DVAssertTestClass)
         TEST_VERIFY(secondHandlerInvoked);
 
         // Reset
-        RemoveHandler(SecondHandler);
         ResetHandlersState();
     }
 
     DAVA_TEST (AssertMessageTestFunction)
     {
+        AssertsHandlersGuard previousHandlersGuard;
+
         AddHandler(AssertMessageSavingHandler);
 
         // Check that message is empty if none was specified
@@ -113,8 +141,5 @@ DAVA_TESTCLASS (DVAssertTestClass)
         DAVA::String message = "such assert, wow";
         DVASSERT_ALWAYS(false, message.c_str());
         TEST_VERIFY(lastHandlerMessage == message);
-
-        // Reset
-        RemoveHandler(AssertMessageSavingHandler);
     }
 };

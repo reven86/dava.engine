@@ -14,6 +14,11 @@ static Vector<Handler> registeredHandlers;
 
 static Mutex registeredHandlersMutex;
 
+Vector<Handler> GetAllHandlers()
+{
+    return registeredHandlers;
+}
+
 void RemoveAllHandlers()
 {
     LockGuard<Mutex> lock(registeredHandlersMutex);
