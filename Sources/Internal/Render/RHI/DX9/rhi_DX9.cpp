@@ -314,9 +314,9 @@ void _InitDX9()
         else
         {
             Logger::Error("Failed to create device: %s", D3D9ErrorText(hr));
-            Logger::Info("Adapter [%u]: %s (%s), driver: %u.%u.%u.%u", _D3D9_Adapter, adapter.info.Description, adapter.info.DeviceName,
-                         HIWORD(adapter.info.DriverVersion.HighPart), LOWORD(adapter.info.DriverVersion.HighPart),
-                         HIWORD(adapter.info.DriverVersion.LowPart), LOWORD(adapter.info.DriverVersion.LowPart));
+            Logger::Error("Adapter [%u]: %s (%s), driver: %u.%u.%u.%u", _D3D9_Adapter, adapter.info.Description, adapter.info.DeviceName,
+                          HIWORD(adapter.info.DriverVersion.HighPart), LOWORD(adapter.info.DriverVersion.HighPart),
+                          HIWORD(adapter.info.DriverVersion.LowPart), LOWORD(adapter.info.DriverVersion.LowPart));
         }
 
         if (adapter.caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
@@ -330,9 +330,9 @@ void _InitDX9()
         Logger::Error("Failed to select adapter for D3D9, selecting from %u adapters: ", adaptersCount);
         for (uint32 i = 0; i < adaptersCount; i++)
         {
-            Logger::Info("%u : %s (%s), driver: %u.%u.%u.%u", i, adapters[i].info.Description, adapters[i].info.DeviceName,
-                         HIWORD(adapters[i].info.DriverVersion.HighPart), LOWORD(adapters[i].info.DriverVersion.HighPart),
-                         HIWORD(adapters[i].info.DriverVersion.LowPart), LOWORD(adapters[i].info.DriverVersion.LowPart));
+            Logger::Error("%u : %s (%s), driver: %u.%u.%u.%u", i, adapters[i].info.Description, adapters[i].info.DeviceName,
+                          HIWORD(adapters[i].info.DriverVersion.HighPart), LOWORD(adapters[i].info.DriverVersion.HighPart),
+                          HIWORD(adapters[i].info.DriverVersion.LowPart), LOWORD(adapters[i].info.DriverVersion.LowPart));
         }
     }
 }
