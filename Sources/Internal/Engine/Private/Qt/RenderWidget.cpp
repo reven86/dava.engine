@@ -77,8 +77,11 @@ void RenderWidget::OnFrame()
     {
         dpi = devicePixelRatio();
 
+        QQuickWindow* qWindow = quickWindow();
+        bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
         QSize size = geometry().size();
-        widgetDelegate->OnResized(size.width(), size.height());
+        widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
     }
 
     DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
