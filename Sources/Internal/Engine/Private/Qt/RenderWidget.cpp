@@ -42,8 +42,6 @@ RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint3
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
-
-    dpi = devicePixelRatio();
 }
 
 RenderWidget::~RenderWidget() = default;
@@ -62,6 +60,8 @@ void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 void RenderWidget::OnCreated()
 {
     widgetDelegate->OnCreated();
+    dpi = devicePixelRatio();
+
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
 }
 
