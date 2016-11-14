@@ -129,6 +129,8 @@ private:
     bool isInPaint = false;
 
     friend class Private::WindowBackend;
+
+    int32 dpi = 0;
 };
 
 } // namespace DAVA

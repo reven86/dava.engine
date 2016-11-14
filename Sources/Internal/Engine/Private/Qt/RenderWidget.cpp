@@ -42,6 +42,8 @@ RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint3
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
+
+    dpi = devicePixelRatio();
 }
 
 RenderWidget::~RenderWidget() = default;
@@ -71,6 +73,14 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
+    if (dpi != devicePixelRatio())
+    {
+        dpi = devicePixelRatio();
+
+        QSize size = geometry().size();
+        widgetDelegate->OnResized(size.width(), size.height());
+    }
+
     DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
     DVASSERT(isInPaint == false);
     isInPaint = true;
