@@ -130,8 +130,9 @@ bool WindowNativeBridge::CreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
+    CGRect viewRect = [renderView bounds];
     float32 dpi = GetDpi(rect, scale);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, rect.size.width * scale, rect.size.height * scale, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, viewRect.size.width * scale, viewRect.size.height * scale, dpi));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }
