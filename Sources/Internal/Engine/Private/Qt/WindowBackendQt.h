@@ -45,6 +45,8 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    void SetFullscreen(eFullscreen newMode);
+
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
@@ -63,13 +65,14 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetFullscreen(eFullscreen newMode);
 
     // RenderWidget::Delegate
     void OnCreated() override;
     bool OnUserCloseRequest() override;
     void OnDestroyed() override;
     void OnFrame() override;
-    void OnResized(uint32 width, uint32 height) override;
+    void OnResized(uint32 width, uint32 height, bool isFullScreen) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;
