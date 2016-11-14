@@ -401,9 +401,11 @@ bool VertexLayout::Load(DAVA::File* in)
 #define READ_CHECK(exp) if (!(exp)) { return false; }
 
     READ_CHECK(in->Read(&_elem_count) == sizeof(_elem_count));
+    READ_CHECK(_elem_count < countof(_elem));
     READ_CHECK(in->Read(&_elem, _elem_count * sizeof(Element)) == _elem_count * sizeof(Element));
 
     READ_CHECK(in->Read(&_stream_count) == sizeof(_stream_count));
+    READ_CHECK(_stream_count < countof(_stream));
     READ_CHECK(in->Read(&_stream, _stream_count * sizeof(Stream)) == _stream_count * sizeof(Stream));
     
 #undef READ_CHECK
