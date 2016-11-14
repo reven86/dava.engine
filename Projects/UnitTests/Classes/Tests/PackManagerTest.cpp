@@ -126,7 +126,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
-            if (packManager.GetInitError() != IPackManager::InitError::AllGood || packManager.GetInitState() == IPackManager::InitState::Offline)
+            if (!packManager.IsInitialized())
             {
                 Logger::Info("can't initialize packManager(remember on build agents network disabled)");
                 return;
