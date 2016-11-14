@@ -709,7 +709,6 @@ String FilePath::GetFrameworkPath() const
     }
 
     // search starting from last added directories
-    const String& start = absolutePathname;
     auto it = std::find_if(rbegin(resourceFolders), rend(resourceFolders),
                            IsPathStartingWith(absolutePathname));
 
