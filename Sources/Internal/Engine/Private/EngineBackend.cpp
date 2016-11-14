@@ -12,6 +12,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
 #include "Core/PerformanceSettings.h"
@@ -724,13 +725,25 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager->InitModules();
 
     context->analyticsCore = new Analytics::Core;
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+    context->autotestingSystem = new AutotestingSystem();
+#endif
 }
 
 void EngineBackend::DestroySubsystems()
 {
+#ifdef __DAVAENGINE_AUTOTESTING__
+    context->autotestingSystem->Release();
+    context->autotestingSystem = nullptr;
+#endif
+
     delete context->analyticsCore;
+    context->analyticsCore = nullptr;
+
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
+    context->moduleManager = nullptr;
 
     if (context->jobManager != nullptr)
     {
@@ -743,30 +756,64 @@ void EngineBackend::DestroySubsystems()
     if (!IsConsoleMode())
     {
         context->localNotificationController->Release();
+        context->localNotificationController = nullptr;
+
         context->uiScreenManager->Release();
+        context->uiScreenManager = nullptr;
+
         delete context->inputSystem;
+        context->inputSystem = nullptr;
     }
 
     context->fontManager->Release();
+    context->fontManager = nullptr;
+
     context->uiControlSystem->Release();
+    context->uiControlSystem = nullptr;
+
     context->animationManager->Release();
+    context->animationManager = nullptr;
+
     context->renderSystem2D->Release();
+    context->renderSystem2D = nullptr;
+
     context->performanceSettings->Release();
+    context->performanceSettings = nullptr;
+
     context->random->Release();
+    context->random = nullptr;
 
     context->allocatorFactory->Release();
+    context->allocatorFactory = nullptr;
+
     context->versionInfo->Release();
+    context->versionInfo = nullptr;
 
     if (context->jobManager != nullptr)
+    {
         context->jobManager->Release();
+        context->jobManager = nullptr;
+    }
     if (context->localizationSystem != nullptr)
+    {
         context->localizationSystem->Release();
+        context->localizationSystem = nullptr;
+    }
     if (context->downloadManager != nullptr)
+    {
         context->downloadManager->Release();
+        context->downloadManager = nullptr;
+    }
     if (context->soundSystem != nullptr)
+    {
         context->soundSystem->Release();
+        context->soundSystem = nullptr;
+    }
     if (context->packManager != nullptr)
+    {
         delete context->packManager;
+        context->packManager = nullptr;
+    }
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
@@ -774,17 +821,25 @@ void EngineBackend::DestroySubsystems()
     {
         context->netCore->Finish(true);
         context->netCore->Release();
+        context->netCore = nullptr;
     }
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager->Release();
+    context->assetsManager = nullptr;
 #endif
 
     context->fileSystem->Release();
+    context->fileSystem = nullptr;
+
     context->systemTimer->Release();
+    context->systemTimer = nullptr;
 
     delete context->deviceManager;
+    context->deviceManager = nullptr;
+
     context->logger->Release();
+    context->logger = nullptr;
 }
 
 } // namespace Private

@@ -253,7 +253,8 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     UpdateVirtualCoordinatesSystem();
 
     engineBackend->OnWindowCreated(this);
-    sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
@@ -289,6 +290,8 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             UpdateVirtualCoordinatesSystem();
 
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            uiControlSystem->vcs->ScreenSizeChanged();
         }
     }
 }
@@ -326,16 +329,11 @@ void Window::UpdateVirtualCoordinatesSystem()
     int32 w = static_cast<int32>(width);
     int32 h = static_cast<int32>(height);
 
-    Size2f surfSize = GetSurfaceSize();
-
-    int32 sw = static_cast<int32>(surfSize.dx);
-    int32 sh = static_cast<int32>(surfSize.dy);
+    int32 sw = static_cast<int32>(surfaceWidth);
+    int32 sh = static_cast<int32>(surfaceHeight);
 
     uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
     uiControlSystem->vcs->SetPhysicalScreenSize(sw, sh);
-    uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
-    uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
-    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)

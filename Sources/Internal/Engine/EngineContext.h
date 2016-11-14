@@ -34,6 +34,8 @@ class ModuleManager;
 
 class DeviceManager;
 
+class AutotestingSystem;
+
 namespace Net
 {
 class NetCore;
@@ -82,6 +84,8 @@ public:
 #endif
 
     DeviceManager* deviceManager = nullptr;
+
+    AutotestingSystem* autotestingSystem = nullptr;
 };
 
 } // namespace DAVA

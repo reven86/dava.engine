@@ -69,7 +69,7 @@ void PlatformCore::Run()
     engineBackend.OnGameLoopStarted();
 
     WindowBackend* primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
-    primaryWindowBackend->Create(640.0f, 480.0f);
+    primaryWindowBackend->Create(1024.0f, 768.0f);
 
     for (;;)
     {

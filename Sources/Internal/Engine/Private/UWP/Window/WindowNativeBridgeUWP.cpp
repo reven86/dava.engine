@@ -26,12 +26,16 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
 void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_)
 {
     using ::Windows::Foundation::Size;
-    using ::Windows::UI::ViewManagement::ApplicationView;
+    using namespace ::Windows::UI::ViewManagement;
 
     DVASSERT(xamlWindow == nullptr);
     DVASSERT(xamlWindow_ != nullptr);
 
     xamlWindow = xamlWindow_;
+
+    // By default window has dimension 1024x768
+    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Size(1024, 768);
+    ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 
     // Limit minimum window size to some reasonable value
     ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
