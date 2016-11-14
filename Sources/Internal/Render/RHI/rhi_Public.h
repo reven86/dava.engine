@@ -364,6 +364,7 @@ struct Packet
     uint32 baseInstance;
     uint32 queryIndex;
     uint32 options;
+    uint32 userFlags; //ignored by RHI
     const char* debugMarker;
 
     Packet()
@@ -383,6 +384,7 @@ struct Packet
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)
         , options(0)
+        , userFlags(0)
         , debugMarker(nullptr)
     {
     }

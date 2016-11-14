@@ -68,6 +68,13 @@ public:
         return AddConnection(nullptr, Func(fn), tid);
     }
 
+    template <typename Obj, typename Fn>
+    DAVA_DEPRECATED(SigConnectionID Connect(Obj* obj, const Fn& fn, ThreadIDType tid = {})) //to Smile: it used in case when we need connect static func and use own TrackedObject (see ImGui.cpp)
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(TrackedObject::Cast(obj), Func(fn), tid);
+    }
+
     template <typename Obj, typename Cls>
     SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {

@@ -18,6 +18,7 @@
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
+#include "Debug/Private/ImGui.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
@@ -237,6 +238,9 @@ void EngineBackend::OnGameLoopStopped()
 void EngineBackend::OnEngineCleanup()
 {
     engine->cleanup.Emit();
+
+    if (ImGui::IsInitialized())
+        ImGui::Uninitialize();
 
     DestroySubsystems();
 
@@ -541,9 +545,9 @@ void EngineBackend::InitRenderer(Window* w)
 {
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
     DVASSERT(rhi::ApiIsSupported(renderer));
+
     if (!rhi::ApiIsSupported(renderer))
     {
-        // Fall back to GL if given renderer is not supported
         renderer = rhi::RHI_GLES2;
     }
 
@@ -582,6 +586,9 @@ void EngineBackend::InitRenderer(Window* w)
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
+
+    if (options->GetBool("init_imgui"))
+        ImGui::Initialize();
 }
 
 void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
