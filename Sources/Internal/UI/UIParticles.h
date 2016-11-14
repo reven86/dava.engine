@@ -85,7 +85,7 @@ private:
     float32 delayedActionTime = 0.f;
     bool delayedDeleteAllParticles = false;
     bool needHandleAutoStart = false;
-    bool inheritControlTransform = false;
+    bool inheritControlTransform = true;
 
     static Camera* defaultCamera;
 
@@ -94,7 +94,6 @@ public:
                          PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("inheritControlTransform", "Inherit Control Transform", GetInheritControlTransform, SetInheritControlTransform, I_SAVE | I_VIEW | I_EDIT)
                          );
 };
 };
