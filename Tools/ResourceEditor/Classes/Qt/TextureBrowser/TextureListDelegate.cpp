@@ -4,8 +4,8 @@
 #include "TextureCache.h"
 #include "TextureConvertor.h"
 #include "TextureBrowser.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "Main/QtUtils.h"
 

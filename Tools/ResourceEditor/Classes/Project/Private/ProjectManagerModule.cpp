@@ -1,7 +1,7 @@
-#include "Classes/Qt/Application/ProjectManagerModule.h"
+#include "Classes/Project/ProjectManagerModule.h"
+#include "Classes/Project/ProjectManagerData.h"
 
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Settings/Settings.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/Settings/SettingsManager.h"

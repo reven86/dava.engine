@@ -1,8 +1,8 @@
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "TArc/DataProcessing/DataContext.h"
 #include "QtTools/FileDialogs/FileDialog.h"

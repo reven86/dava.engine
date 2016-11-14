@@ -1,6 +1,6 @@
 #include "AddSwitchEntityDialog.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
 #include "Main/mainwindow.h"

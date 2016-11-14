@@ -5,8 +5,8 @@
 #include "MaterialFilterModel.h"
 
 #include "Main/QtUtils.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
-#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"

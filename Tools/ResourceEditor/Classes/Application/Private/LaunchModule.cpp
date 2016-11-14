@@ -1,8 +1,8 @@
-#include "Classes/Qt/Application/LaunchModule.h"
+#include "Classes/Application/LaunchModule.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Application/LaunchModuleData.h"
 
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
-#include "Classes/Qt/DataStructures/LaunchModuleData.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 void LaunchModule::OnContextCreated(DAVA::TArc::DataContext& context)
 {

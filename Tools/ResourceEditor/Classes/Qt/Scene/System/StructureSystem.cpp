@@ -2,8 +2,8 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/EntityParentChangeCommand.h"

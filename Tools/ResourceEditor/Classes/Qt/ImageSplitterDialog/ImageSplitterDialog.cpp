@@ -8,8 +8,8 @@
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 
 #include "TArc/DataProcessing/DataContext.h"

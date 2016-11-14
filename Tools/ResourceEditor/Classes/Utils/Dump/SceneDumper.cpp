@@ -1,6 +1,6 @@
 #include "Utils/Dump/SceneDumper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"

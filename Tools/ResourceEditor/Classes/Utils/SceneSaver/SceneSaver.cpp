@@ -6,7 +6,7 @@
 
 #include "StringConstants.h"
 #include "Main/QtUtils.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"

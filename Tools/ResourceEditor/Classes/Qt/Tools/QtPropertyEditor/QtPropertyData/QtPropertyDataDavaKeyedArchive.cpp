@@ -6,8 +6,8 @@
 #include "Deprecated/EditorConfig.h"
 #include "Commands2/RECommandIDs.h"
 
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
-#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 

@@ -6,8 +6,8 @@
 #include "ui_treeimportdialog.h"
 #include "Qt/Main/mainwindow.h"
 #include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "GlobalOperations.h"

@@ -1,6 +1,6 @@
-#include "Classes/Qt/Application/REModule.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/LaunchModuleData.h"
+#include "Classes/Application/REModule.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Application/LaunchModuleData.h"
 
 #include "Main/mainwindow.h"
 #include "TextureCache.h"

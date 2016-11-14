@@ -8,8 +8,8 @@
 #include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include <QLayout>
 #include <QComboBox>

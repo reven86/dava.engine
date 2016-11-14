@@ -1,8 +1,8 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
-#include "Classes/Qt/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 
 #include "Render/Texture.h"
 #include "Render/Material/NMaterial.h"

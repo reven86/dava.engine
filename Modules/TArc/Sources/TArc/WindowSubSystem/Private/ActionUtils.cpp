@@ -1,5 +1,6 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 
+#include "Debug/DVAssert.h"
 #include "Base/BaseTypes.h"
 
 #include <QAction>

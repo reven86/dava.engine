@@ -14,8 +14,8 @@
 #include "Deprecated/EditorConfig.h"
 #include "Main/QtUtils.h"
 
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"

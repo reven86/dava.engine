@@ -1,6 +1,6 @@
 #include "ScenePreviewControl.h"
-#include "Classes/Qt/Application/REGlobal.h"
-#include "Classes/Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Deprecated/ControlsFactory.h"
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/CameraComponent.h"

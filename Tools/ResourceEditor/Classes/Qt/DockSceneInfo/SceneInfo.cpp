@@ -7,8 +7,8 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Scene/System/EditorStatisticsSystem.h"
 #include "Qt/Scene/System/EditorVegetationSystem.h"
-#include "Qt/Application/REGlobal.h"
-#include "Qt/DataStructures/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "ImageTools/ImageTools.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
