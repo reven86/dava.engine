@@ -62,6 +62,13 @@ ReflectionQualifier<C>& ReflectionQualifier<C>::DestructorByPointer()
 }
 
 template <typename C>
+ReflectionQualifier<C>& ReflectionQualifier<C>::DestructorByPointer(void (*fn)(C*))
+{
+    structure->dtor.reset(new DtorWrapperByPointer<C>(fn));
+    return *this;
+}
+
+template <typename C>
 template <typename T>
 ReflectionQualifier<C>& ReflectionQualifier<C>::AddField(const char* name, ValueWrapper* vw)
 {

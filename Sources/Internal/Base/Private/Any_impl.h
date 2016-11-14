@@ -108,6 +108,11 @@ inline const T& Any::Get(const T& defaultValue) const
     return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
 }
 
+inline const void* Any::GetData() const
+{
+    return anyStorage.GetData();
+}
+
 inline void Any::Set(const Any& any)
 {
     anyStorage = any.anyStorage;

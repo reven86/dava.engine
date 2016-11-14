@@ -7,12 +7,22 @@ template <typename C>
 class DtorWrapperByPointer : public DtorWrapper
 {
 public:
+    DtorWrapperByPointer()
+    {
+        destroyer = [](C* c) { delete c; };
+    }
+
+    DtorWrapperByPointer(void (*destroyer_)(C*))
+        : destroyer(destroyer_)
+    {
+    }
+
     void Destroy(ReflectedObject&& object) const override
     {
         if (object.IsValid())
         {
             C* c = object.GetPtr<C>();
-            delete c;
+            (*destroyer)(c);
 
             object = ReflectedObject();
         }
@@ -28,6 +38,9 @@ public:
             object.Clear();
         }
     }
+
+protected:
+    void (*destroyer)(C*);
 };
 
 } // namespace DAVA

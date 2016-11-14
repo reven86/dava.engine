@@ -177,7 +177,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type to count mismatch");
+        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type or count mismatch");
     }
 };
 
@@ -301,15 +301,6 @@ AnyFn::Params& AnyFn::Params::Set()
 {
     retType = RttiType::Instance<Ret>();
     return SetArgs<Args...>();
-}
-
-template <typename Ret, typename... Args>
-bool AnyFn::Params::ArePassing() const
-{
-    // TODO:
-    // ...
-
-    return false;
 }
 
 template <typename... Args>

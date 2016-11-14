@@ -26,7 +26,6 @@ public:
     Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-
         const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -39,7 +38,6 @@ public:
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-
         const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -52,7 +50,6 @@ public:
     bool HasMethods(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-
         const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -65,7 +62,6 @@ public:
     AnyFn GetMethod(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-
         const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -78,7 +74,6 @@ public:
     Vector<Reflection::Method> GetMethods(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-
         const StructureWrapper* sw = AppyInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -86,6 +81,66 @@ public:
         }
 
         return StructureWrapperDefault::GetMethods(obj, vw);
+    }
+
+    const Reflection::FieldsCaps& GetFieldsCaps(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    {
+        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
+        if (nullptr != sw)
+        {
+            return sw->GetFieldsCaps(derefObj, &ptrVW);
+        }
+
+        return StructureWrapperDefault::GetFieldsCaps(obj, vw);
+    }
+
+    Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
+    {
+        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
+        if (nullptr != sw)
+        {
+            return sw->CreateValue(derefObj, &ptrVW);
+        }
+
+        return StructureWrapperDefault::CreateValue(object, vw);
+    }
+
+    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
+    {
+        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
+        if (nullptr != sw)
+        {
+            return sw->AddField(derefObj, &ptrVW, key, value);
+        }
+
+        return StructureWrapperDefault::AddField(object, vw, key, value);
+    }
+
+    bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
+    {
+        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
+        if (nullptr != sw)
+        {
+            return sw->InsertField(derefObj, &ptrVW, beforeKey, key, value);
+        }
+
+        return StructureWrapperDefault::InsertField(object, vw, beforeKey, key, value);
+    }
+
+    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    {
+        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        const StructureWrapper* sw = AppyInternalWrapper(derefObj);
+        if (nullptr != sw)
+        {
+            return sw->RemoveField(derefObj, &ptrVW, key);
+        }
+
+        return StructureWrapperDefault::RemoveField(object, vw, key);
     }
 
 protected:

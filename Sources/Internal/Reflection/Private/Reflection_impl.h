@@ -98,4 +98,21 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
+
+static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr)
+{
+    if (!any.IsEmpty())
+    {
+        const ReflectedType* objectType = ReflectedTypeDB::GetByRttiType(any.GetRttiType());
+        ReflectedObject(any.GetData(), any.GetRttiType());
+
+        // TODO:
+        // ...
+
+        DVASSERT(false);
+    }
+
+    return Reflection();
+}
+
 } // namespace DAVA

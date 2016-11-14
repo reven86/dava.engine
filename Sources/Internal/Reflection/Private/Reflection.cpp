@@ -137,46 +137,26 @@ struct Dumper
         }
     }
 
-    static void PrintHierarhy(std::ostringstream& out, const char* symbols, size_t level, int colWidth, bool isLastRow)
+    static void PrintHierarhy(std::ostringstream& out, size_t level, int colWidth)
     {
-        static const char* defaultSymbols = "    ";
-
-        if (nullptr == symbols)
-        {
-            symbols = defaultSymbols;
-        }
-
         if (level > 0)
         {
-            for (size_t i = 0; i < level - 1; ++i)
+            for (size_t i = 0; i < level; ++i)
             {
                 out << std::setw(colWidth);
-                out << std::left << symbols[1];
-            }
-
-            if (!isLastRow)
-            {
-                out << std::setw(colWidth);
-                out << std::setfill(symbols[0]);
-                out << std::left << symbols[2];
-            }
-            else
-            {
-                out << std::setw(colWidth);
-                out << std::setfill(symbols[0]);
-                out << std::left << symbols[3];
+                out << std::left << ' ';
             }
         }
 
         out << std::setfill(' ');
     }
 
-    static void Dump(std::ostream& out, const Reflection::Field& field, size_t level, size_t maxlevel, bool isLastRow = false)
+    static void Dump(std::ostream& out, const Reflection::Field& field, size_t level, size_t maxlevel)
     {
         if (level <= maxlevel || 0 == maxlevel)
         {
-            const size_t hierarchyColWidth = 4;
-            const size_t nameColWidth = 30;
+            const size_t hierarchyColWidth = 2;
+            const size_t nameColWidth = 40;
             const size_t valueColWidth = 25;
             const size_t typeColWidth = 20;
 
@@ -185,7 +165,7 @@ struct Dumper
             bool hasChildren = field.ref.IsValid() && field.ref.HasFields();
 
             // print hierarchy
-            PrintHierarhy(line, nullptr, level, hierarchyColWidth, isLastRow);
+            PrintHierarhy(line, level, hierarchyColWidth);
 
             // print key
             line << std::setw(nameColWidth - level * hierarchyColWidth) << std::left;
@@ -220,7 +200,7 @@ struct Dumper
             DumpType(line, field.ref);
 
             // endl
-            out << line.str() << std::endl;
+            out << line.str() << "\n";
 
             // children
             if (hasChildren)
@@ -228,9 +208,34 @@ struct Dumper
                 Vector<Reflection::Field> children = field.ref.GetFields();
                 for (size_t i = 0; i < children.size(); ++i)
                 {
-                    bool isLast = (i == (children.size() - 1));
-                    Dump(out, children[i], level + 1, maxlevel, isLast);
+                    Dump(out, children[i], level + 1, maxlevel);
                 }
+            }
+
+            // methods
+            Vector<Reflection::Method> methods = field.ref.GetMethods();
+            for (auto& method : methods)
+            {
+                std::ostringstream methodline;
+                const AnyFn::Params& params = method.fn.GetInvokeParams();
+
+                // print hierarchy
+                PrintHierarhy(methodline, level + 1, hierarchyColWidth);
+                methodline << "{} ";
+                methodline << method.key << "(";
+
+                for (size_t i = 0; i < params.argsType.size(); ++i)
+                {
+                    methodline << params.argsType[i]->GetName();
+                    if (i < (params.argsType.size() - 1))
+                    {
+                        methodline << ", ";
+                    }
+                }
+                methodline << ") -> ";
+                methodline << params.retType->GetName();
+
+                out << methodline.str() << "\n";
             }
         }
     }
@@ -296,24 +301,9 @@ Vector<Reflection::Field> Reflection::GetFields() const
     return structureWrapper->GetFields(object, valueWrapper);
 }
 
-bool Reflection::CanAddFields() const
+const Reflection::FieldsCaps& Reflection::GetFieldsCaps() const
 {
-    return structureWrapper->CanAdd(object, valueWrapper);
-}
-
-bool Reflection::CanInsertFields() const
-{
-    return structureWrapper->CanInsert(object, valueWrapper);
-}
-
-bool Reflection::CanRemoveFields() const
-{
-    return structureWrapper->CanRemove(object, valueWrapper);
-}
-
-bool Reflection::CanCreateFieldValue() const
-{
-    return structureWrapper->CanCreateValue(object, valueWrapper);
+    return structureWrapper->GetFieldsCaps(object, valueWrapper);
 }
 
 Any Reflection::CreateFieldValue() const
@@ -354,30 +344,6 @@ Vector<Reflection::Method> Reflection::GetMethods() const
 void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 {
     ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
-}
-
-void Reflection::DumpMethods(std::ostream& out) const
-{
-    Vector<Method> methods = GetMethods();
-    for (auto& method : methods)
-    {
-        const AnyFn::Params& params = method.fn.GetInvokeParams();
-
-        out << params.retType->GetName() << " ";
-        out << method.key << "(";
-
-        for (size_t i = 0; i < params.argsType.size(); ++i)
-        {
-            out << params.argsType[i]->GetName();
-
-            if (i < (params.argsType.size() - 1))
-            {
-                out << ", ";
-            }
-        }
-
-        out << ");" << std::endl;
-    }
 }
 
 } // namespace DAVA

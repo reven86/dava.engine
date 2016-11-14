@@ -72,12 +72,7 @@ Any ReflectedType::Create(CtorWrapper::Policy policy, Args... args) const
         }
     }
 
-    // TODO:
-    // decide to throw or not to throw exception
-    // ...
-    // Exception("There is no appropriate ctor.");
-
-    return Any();
+    DAVA_THROW(Exception, "There is no appropriate ctor to call it with specified Args...");
 }
 
 } // namespace DAVA

@@ -95,10 +95,12 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
     String name = key.Cast<String>(String());
     if (!name.empty())
     {
+        void* methodThis = vw->GetValueObject(object).GetVoidPtr();
+
         auto it = methodsNameIndexes.find(name);
         if (it != methodsNameIndexes.end())
         {
-            return methodsCache[it->second]->methodWrapper->anyFn.BindThis(object.GetVoidPtr());
+            return methodsCache[it->second]->methodWrapper->anyFn.BindThis(methodThis);
         }
     }
     return AnyFn();
@@ -106,7 +108,17 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
 
 Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
-    return Vector<Reflection::Method>();
+    Vector<Reflection::Method> ret;
+
+    void* methodThis = vw->GetValueObject(object).GetVoidPtr();
+
+    ret.reserve(methodsCache.size());
+    for (auto m : methodsCache)
+    {
+        ret.push_back({ m->name, m->methodWrapper->anyFn.BindThis(methodThis) });
+    }
+
+    return ret;
 }
 
 } //namespace DAVA

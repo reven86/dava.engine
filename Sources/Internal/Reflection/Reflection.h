@@ -30,6 +30,18 @@ public:
     struct Field;
     struct Method;
 
+    struct FieldsCaps
+    {
+        bool add = false;
+        bool insert = false;
+        bool remove = false;
+        bool createValue = false;
+        bool dynamic = false;
+        bool flat = false;
+        const RttiType* flatKeyType = nullptr;
+        const RttiType* flatValueType = nullptr;
+    };
+
     Reflection() = default;
     Reflection(const Reflection&) = default;
     Reflection(const ReflectedObject& object_, const ReflectedType* objectType_, const ReflectedMeta* objectMeta_, const ValueWrapper* valueWrapper_);
@@ -49,22 +61,18 @@ public:
     Reflection GetField(const Any& name) const;
     Vector<Field> GetFields() const;
 
-    bool CanAddFields() const;
-    bool CanInsertFields() const;
-    bool CanRemoveFields() const;
-    bool CanCreateFieldValue() const;
+    const FieldsCaps& GetFieldsCaps() const;
 
-    Any CreateFieldValue() const;
     bool AddField(const Any& key, const Any& value) const;
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
     bool RemoveField(const Any& key) const;
+    Any CreateFieldValue() const;
 
     bool HasMethods() const;
     AnyFn GetMethod(const String& key) const;
     Vector<Method> GetMethods() const;
 
     void Dump(std::ostream& out, size_t deep = 0) const;
-    void DumpMethods(std::ostream& out) const;
 
     template <typename Meta>
     bool HasMeta() const;
@@ -74,6 +82,8 @@ public:
 
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
+
+    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
 
 private:
     ReflectedObject object;

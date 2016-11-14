@@ -31,15 +31,24 @@ const DtorWrapper* ReflectedType::GetDtor() const
 
 bool ReflectedType::HasDtor() const
 {
-    // TODO:
-    // ...
-    return false;
+    return (nullptr != structure->dtor);
 }
 
 bool ReflectedType::Destroy(Any&& any) const
 {
-    // TODO:
-    // ...
-    return false;
+    if (!any.GetRttiType()->IsPointer())
+    {
+        any.Clear();
+        return true;
+    }
+    else
+    {
+        if (nullptr != structure->dtor)
+        {
+            structure->dtor->Destroy(std::move(any));
+        }
+
+        DAVA_THROW(Exception, "There is no appropriate dtor to destroy such object");
+    }
 }
 } // namespace DAVA

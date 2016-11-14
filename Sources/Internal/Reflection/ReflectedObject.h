@@ -19,6 +19,7 @@ public:
     ReflectedObject(const T* ptr);
 
     ReflectedObject(void* ptr, const RttiType* type);
+    ReflectedObject(const void* ptr, const RttiType* type);
 
     bool IsValid() const;
 
@@ -52,6 +53,14 @@ inline ReflectedObject::ReflectedObject(const T* ptr_)
 
 inline ReflectedObject::ReflectedObject(void* ptr_, const RttiType* type_)
     : ptr(ptr_)
+    , type(type_)
+{
+    DVASSERT(nullptr != type_);
+    DVASSERT(type_->IsPointer());
+}
+
+inline ReflectedObject::ReflectedObject(const void* ptr_, const RttiType* type_)
+    : ptr(const_cast<void*>(ptr_))
     , type(type_)
 {
     DVASSERT(nullptr != type_);

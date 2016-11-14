@@ -52,9 +52,6 @@ public:
         Params& SetArgs();
 
         template <typename Ret, typename... Args>
-        bool ArePassing() const;
-
-        template <typename Ret, typename... Args>
         static Params From();
 
         template <typename... Args>

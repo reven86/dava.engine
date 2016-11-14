@@ -108,9 +108,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY(*(std::next(startExpected, i)) == ref.GetField(i).GetValue().Cast<int>());
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(ref.CanInsertFields());
+        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.add);
+        TEST_VERIFY(caps.insert);
+        TEST_VERIFY(caps.remove);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
         TEST_VERIFY(ref.GetField(size_t(5)).GetValue().Cast<int>() == 5);
@@ -136,9 +137,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY(i->second == v);
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(!ref.CanInsertFields());
+        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.add);
+        TEST_VERIFY(!caps.insert);
+        TEST_VERIFY(caps.remove);
 
         TEST_VERIFY(ref.AddField(int(5), int(5)));
         TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
@@ -164,9 +166,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY((*i) == v);
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(!ref.CanInsertFields());
+        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.add);
+        TEST_VERIFY(!caps.insert);
+        TEST_VERIFY(caps.remove);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
         TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);

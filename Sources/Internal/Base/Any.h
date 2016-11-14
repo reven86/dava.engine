@@ -65,6 +65,8 @@ public:
     template <typename T>
     const T& Get(const T& defaultValue) const;
 
+    const void* GetData() const;
+
     void Set(Any&& any);
     void Set(const Any& any);
 

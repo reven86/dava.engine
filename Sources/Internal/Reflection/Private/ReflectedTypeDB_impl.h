@@ -6,7 +6,9 @@
 
 #include "Reflection/Private/StructureWrapperDefault.h"
 #include "Reflection/Private/StructureWrapperPtr.h"
-#include "Reflection/Private/StructureWrapperStd.h"
+#include "Reflection/Private/StructureWrapperStdIdx.h"
+#include "Reflection/Private/StructureWrapperStdMap.h"
+#include "Reflection/Private/StructureWrapperStdSet.h"
 
 namespace DAVA
 {

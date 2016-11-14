@@ -127,6 +127,20 @@ struct D : public AB
     }
 };
 
+struct DHolder : DAVA::ReflectedBase
+{
+    int i;
+    D d;
+
+    DAVA_VIRTUAL_REFLECTION(DHolder)
+    {
+        DAVA::ReflectionQualifier<DHolder>::Begin()
+        .Field("i", &DHolder::i)
+        .Field("d", &DHolder::d)
+        .End();
+    }
+};
+
 template <typename T>
 struct ValueRange
 {
@@ -280,6 +294,7 @@ protected:
     std::vector<SimpleStruct*> simVec;
     D* dptr = nullptr;
     A* aptr = nullptr;
+    DHolder dholder;
 
     DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
     {
@@ -300,6 +315,7 @@ protected:
         .Field("simVec", &ReflectionTestClass::simVec)
         .Field("dptr", &ReflectionTestClass::dptr)
         .Field("aptr", &ReflectionTestClass::aptr)
+        .Field("dholder", &ReflectionTestClass::dholder)
         .Field("StaticIntFn", &ReflectionTestClass::GetStaticIntFn, &ReflectionTestClass::SetStaticIntFn)
         .Field("StaticIntFnFn", DAVA::MakeFunction(&ReflectionTestClass::GetStaticIntFn), DAVA::MakeFunction(&ReflectionTestClass::SetStaticIntFn))
         .Field("StaticCustomFn", &ReflectionTestClass::GetStaticCustomFn, nullptr)
@@ -326,12 +342,29 @@ protected:
 
 struct BaseOnlyReflection : public A
 {
+    static BaseOnlyReflection* Create()
+    {
+        return new BaseOnlyReflection();
+    }
+
+    void Release()
+    {
+        delete this;
+    }
+
     int aaa = 0;
 
     DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, A)
     {
-        DAVA::ReflectionQualifier<BaseOnlyReflection>::Begin().End();
+        DAVA::ReflectionQualifier<BaseOnlyReflection>::Begin()
+        .ConstructorByPointer(&BaseOnlyReflection::Create)
+        .DestructorByPointer()
+        .End();
     }
+
+private:
+    BaseOnlyReflection() = default;
+    ~BaseOnlyReflection() = default;
 };
 
 int ReflectionTestClass::staticInt = 222;
@@ -377,16 +410,6 @@ DAVA_TESTCLASS (ReflectionTest)
 
         t_ref.Dump(dumpOutput);
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
-
-        dumpOutput.clear();
-
-        t_ref.DumpMethods(dumpOutput);
-        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
-
-        const ReflectionTestClass* tptr = &t;
-        DAVA::Reflection t_pref = DAVA::Reflection::Create(tptr);
-
-        TEST_VERIFY(t_pref.IsReadonly());
     }
 
     template <typename T>
@@ -423,13 +446,13 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(r.GetField("a").IsValid());
         TEST_VERIFY(r.GetMethod("Me").IsValid());
 
-        BaseOnlyReflection b;
-        r = DAVA::Reflection::Create(&b);
-
+        BaseOnlyReflection* b = BaseOnlyReflection::Create();
+        r = DAVA::Reflection::Create(b);
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
         TEST_VERIFY(r.GetField("a").IsValid());
         TEST_VERIFY(r.GetMethod("Me").IsValid());
+        b->Release();
 
         A* aptr = new D();
         r = DAVA::Reflection::Create(&aptr);
@@ -449,9 +472,18 @@ DAVA_TESTCLASS (ReflectionTest)
         DAVA::Any b = T(args...);
         TEST_VERIFY(a.Get<T>() == b.Get<T>());
 
+        a.Clear();
+
         // false case, when arguments count doesn't match
-        a = rtype->Create(DAVA::CtorWrapper::Policy::ByValue, "false case");
-        TEST_VERIFY(a.IsEmpty());
+        try
+        {
+            a = rtype->Create(DAVA::CtorWrapper::Policy::ByValue, "false case");
+            TEST_VERIFY(false && "Invoking ctor with bad arguments shouldn't be able");
+        }
+        catch (const DAVA::Exception&)
+        {
+            TEST_VERIFY(a.IsEmpty());
+        }
     }
 
     DAVA_TEST (CtorDtorTest)
@@ -504,6 +536,15 @@ DAVA_TESTCLASS (ReflectionTest)
                 TEST_VERIFY(!obj.IsValid());
             }
         }
+
+        // custom ctor/dtor
+        rtype = DAVA::ReflectedTypeDB::Get<BaseOnlyReflection>();
+
+        DAVA::Any b = rtype->Create(DAVA::CtorWrapper::Policy::ByPointer);
+        TEST_VERIFY(!b.IsEmpty());
+
+        rtype->Destroy(std::move(b));
+        TEST_VERIFY(b.IsEmpty());
 
         //         rtype = DAVA::ReflectedType::Get<StructPtr>();
         //         TEST_VERIFY(nullptr != rtype->GetCtor());
@@ -612,5 +653,8 @@ DAVA_TESTCLASS (ReflectionTest)
         auto realClassGetter = [&t]() { return t.simple; };
         auto realClassSetter = [&t](SimpleStruct* s) { t.simple = s; };
         DoValueSetGetTest(r.GetField("simple"), realClassGetter, realClassSetter, &s1, &s2);
+
+        const ReflectionTestClass* tptr = &t;
+        DAVA::Reflection t_pref = DAVA::Reflection::Create(tptr);
     }
 };

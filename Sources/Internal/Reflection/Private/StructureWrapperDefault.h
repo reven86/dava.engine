@@ -36,24 +36,9 @@ public:
         return Vector<Reflection::Method>();
     }
 
-    bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const override
+    const Reflection::FieldsCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
-        return false;
-    }
-
-    bool CanInsert(const ReflectedObject& object, const ValueWrapper* vw) const override
-    {
-        return false;
-    }
-
-    bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const override
-    {
-        return false;
-    }
-
-    bool CanCreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
-    {
-        return false;
+        return caps;
     }
 
     Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
@@ -75,6 +60,9 @@ public:
     {
         return false;
     }
+
+protected:
+    Reflection::FieldsCaps caps;
 };
 
 template <typename T>

@@ -16,9 +16,9 @@
 #include "Reflection/Private/DtorWrapperByPointer.h"
 #include "Reflection/Private/StructureWrapperClass.h"
 #include "Reflection/Private/StructureWrapperPtr.h"
-#include "Reflection/Private/StructureWrapperStd.h"
-#include "Reflection/Private/StructureEditorWrapperPtr.h"
-#include "Reflection/Private/StructureEditorWrapperStd.h"
+#include "Reflection/Private/StructureWrapperStdIdx.h"
+#include "Reflection/Private/StructureWrapperStdSet.h"
+#include "Reflection/Private/StructureWrapperStdMap.h"
 
 namespace DAVA
 {
@@ -39,6 +39,8 @@ public:
     ReflectionQualifier& ConstructorByPointer(C* (*fn)(Args...));
 
     ReflectionQualifier& DestructorByPointer();
+
+    ReflectionQualifier& DestructorByPointer(void (*fn)(C*));
 
     template <typename T>
     ReflectionQualifier& Field(const char* name, T* field);

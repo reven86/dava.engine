@@ -6,14 +6,15 @@ namespace DAVA
 class ValueWrapperDirect : public ValueWrapper
 {
 public:
-    ValueWrapperDirect(const RttiType* type_)
+    ValueWrapperDirect(const RttiType* type_, bool isConst_ = false)
         : type(type_)
+        , isConst(isConst_ || type->IsConst())
     {
     }
 
     bool IsReadonly() const override
     {
-        return type->IsConst();
+        return isConst;
     }
 
     const RttiType* GetType() const override
@@ -24,10 +25,6 @@ public:
     Any GetValue(const ReflectedObject& object) const override
     {
         Any ret;
-
-        // TODO:
-        // optimize
-        // ...
 
         if (object.IsValid())
         {
@@ -41,10 +38,6 @@ public:
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
         bool ret = false;
-
-        // TODO:
-        // optimize
-        // ...
 
         if (!IsReadonly() && object.IsValid())
         {
@@ -63,6 +56,7 @@ public:
 
 protected:
     const RttiType* type;
+    bool isConst;
 };
 
 } // namespace DAVA
