@@ -128,7 +128,11 @@ void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
     QSize size = e->size();
-    widgetDelegate->OnResized(size.width(), size.height());
+
+    QQuickWindow* qWindow = quickWindow();
+    bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
+    widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
     emit Resized(size.width(), size.height());
 }
 

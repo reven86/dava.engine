@@ -293,6 +293,7 @@ bool dx9_SelectAdapter(DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_proces
 
 void dx9_InitContext()
 {
+    LoadLibrary(L"D3DCompiler_43.dll");
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
     if (_D3D9 == nullptr)

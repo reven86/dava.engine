@@ -36,6 +36,8 @@ public:
 
     inline const Map<uint64, NMaterial*>& GetMaterialInstances() const;
 
+    void PrebuildMaterials(ParticleEffectComponent* component);
+
 protected:
     void RunEffect(ParticleEffectComponent* effect);
     void AddToActive(ParticleEffectComponent* effect);
@@ -59,7 +61,6 @@ private: //materials stuff
     NMaterial* particleBaseMaterial;
     Map<uint64, NMaterial*> materialMap;
     NMaterial* GetMaterial(Texture* texture, bool enableFog, bool enableFrameBlend, eBlending blending);
-    void PrebuildMaterials(ParticleEffectComponent* component);
 
     bool allowLodDegrade;
 
