@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
+#include "rhi_Utils.h"
 
 using DAVA::uint32;
 using DAVA::uint16;
