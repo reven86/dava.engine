@@ -26,6 +26,7 @@ void PrintUsage()
     printf("\t-ip - asset cache ip\n");
     printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
+    printf("\t-postifx - trailing part of texture name\n");
     printf("\t-output - output folder for .../Project/Data/Gfx/\n");
 
     printf("\n");
@@ -141,6 +142,8 @@ void ProcessRecourcePacker(Engine& e)
     {
         Logger::FrameworkDebug("Asset cache will not be used");
     }
+
+    resourcePacker.SetTexturePostfix(CommandLineParser::GetCommandParam("-postfix"));
 
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
     {

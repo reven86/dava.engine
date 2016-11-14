@@ -5,7 +5,6 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
-#include "Input/MouseDevice.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
 
@@ -20,7 +19,6 @@ InputSystem::InputSystem(Engine* engine)
     : uiControlSystem(engine->GetContext()->uiControlSystem)
     , keyboard(new KeyboardDevice())
     , gamepad(new GamepadDevice(this))
-    , mouse(new MouseDevice())
 {
     engine->update.Connect(MakeFunction(this, &InputSystem::Update));
 }

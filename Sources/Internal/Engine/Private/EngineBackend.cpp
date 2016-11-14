@@ -239,16 +239,16 @@ void EngineBackend::OnEngineCleanup()
 {
     engine->cleanup.Emit();
 
+    if (ImGui::IsInitialized())
+        ImGui::Uninitialize();
+
+    DestroySubsystems();
+
     if (!IsConsoleMode())
     {
-        if (ImGui::IsInitialized())
-            ImGui::Uninitialize();
-
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
     }
-
-    DestroySubsystems();
 
     delete context;
     delete dispatcher;
@@ -545,9 +545,9 @@ void EngineBackend::InitRenderer(Window* w)
 {
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
     DVASSERT(rhi::ApiIsSupported(renderer));
+
     if (!rhi::ApiIsSupported(renderer))
     {
-        // Fall back to GL if given renderer is not supported
         renderer = rhi::RHI_GLES2;
     }
 
@@ -705,11 +705,8 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
-    context->analyticsCore = nullptr;
-
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
-    context->moduleManager = nullptr;
 
     if (context->jobManager != nullptr)
     {
@@ -723,9 +720,7 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-
         delete context->inputSystem;
-        context->inputSystem = nullptr;
     }
 
     context->fontManager->Release();
@@ -747,10 +742,7 @@ void EngineBackend::DestroySubsystems()
     if (context->soundSystem != nullptr)
         context->soundSystem->Release();
     if (context->packManager != nullptr)
-    {
         delete context->packManager;
-        context->packManager = nullptr;
-    }
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown

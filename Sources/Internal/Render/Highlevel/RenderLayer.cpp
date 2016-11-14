@@ -2,6 +2,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
+#include "Render/VisibilityQueryResults.h"
 #include "Base/Radix/Radix.h"
 
 namespace DAVA
@@ -85,7 +86,14 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             mat->BindParams(packet);
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
 #ifdef __DAVAENGINE_RENDERSTATS__
+#ifdef __DAVAENGINE_RENDERSTATS_ALPHABLEND__
+            if (packet.userFlags & NMaterial::USER_FLAG_ALPHABLEND)
+                packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_ALPHABLEND;
+            else
+                packet.queryIndex = DAVA::InvalidIndex;
+#else
             packet.queryIndex = layerID;
+#endif
 #endif
             rhi::AddPacket(packetList, packet);
         }

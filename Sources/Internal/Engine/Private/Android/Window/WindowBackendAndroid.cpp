@@ -120,6 +120,11 @@ void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
     // Android windows are always stretched to display size
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on Android
+}
+
 void WindowBackend::Close(bool appIsTerminating)
 {
     if (appIsTerminating)
@@ -188,6 +193,16 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
         Logger::Error("[WindowBackend::CreateNativeControl] failed to create native control %s: %s", controlClassName, e.what());
     }
     return object;
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
@@ -262,12 +277,12 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfaceWidth, surfaceHeight, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceWidth, surfaceHeight));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceWidth, surfaceHeight, eFullscreen::On));
     }
 }
 
