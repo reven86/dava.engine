@@ -87,14 +87,6 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-#if defined(__DAVAENGINE_STEAM__)
-    String locale = Steam::GetLanguage();
-    if (!locale.empty())
-    {
-        return locale;
-    }
-#endif
-
     NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
     NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];

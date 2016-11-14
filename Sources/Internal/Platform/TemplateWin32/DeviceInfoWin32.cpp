@@ -101,14 +101,6 @@ String DeviceInfoPrivate::GetLocale()
 {
     String locale;
 
-#if defined(__DAVAENGINE_STEAM__)
-    locale = Steam::GetLanguage();
-    if (!locale.empty())
-    {
-        return locale;
-    }
-#endif
-
     WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
     int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
     if (0 != size)

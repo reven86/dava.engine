@@ -9,7 +9,13 @@
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/Steam.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#else
 #include "Core/Core.h"
+#endif
 
 namespace DAVA
 {
@@ -28,6 +34,15 @@ const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languag
 };
 
 const char* LocalizationSystem::DEFAULT_LOCALE = "en";
+
+const KeyedArchive* GetOptions()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    return Engine::Instance()->GetOptions();
+#else
+    return Core::Instance()->GetOptions();
+#endif
+}
 
 LocalizationSystem::LocalizationSystem()
 {
@@ -53,12 +68,21 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
+    String locale;
 
-    String locale = GetDeviceLocale();
+#if defined(__DAVAENGINE_STEAM__)
+    locale = Steam::GetLanguage();
+#endif
+
+    if (locale.empty())
+    {
+        locale = GetDeviceLocale();
+    }
+
     if (locale.empty())
     {
         DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
-        locale = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
+        locale = GetOptions()->GetString("locale", DEFAULT_LOCALE);
     }
     SetCurrentLocale(locale);
 }
