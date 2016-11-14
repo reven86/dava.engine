@@ -4,6 +4,7 @@
 
 #include "Logger/Logger.h"
 #include "Core/Core.h"
+#include "FileSystem/LocalizationSystem.h"
 
 #include "steam/steam_api.h"
 
@@ -60,8 +61,8 @@ void Steam::Init()
     }
 
     isInited = true;
-
     steamCallbacks = new SteamCallbacks();
+    LocalizationSystem::Instance()->SetPreferredLocale(GetLanguage());
 }
 
 void Steam::Deinit()

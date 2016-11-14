@@ -95,15 +95,13 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-    String locale;
-
     WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
     int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
+    String locale;
     if (0 != size)
     {
         locale = WStringToString(localeBuffer);
     }
-
     return locale;
 }
 

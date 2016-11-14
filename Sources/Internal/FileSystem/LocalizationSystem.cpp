@@ -9,7 +9,6 @@
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
-#include "Platform/Steam.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
@@ -68,11 +67,7 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
-    String locale;
-
-#if defined(__DAVAENGINE_STEAM__)
-    locale = Steam::GetLanguage();
-#endif
+    String locale = preferredLangId;
 
     if (locale.empty())
     {
@@ -111,6 +106,11 @@ const String& LocalizationSystem::GetCurrentLocale() const
 const FilePath& LocalizationSystem::GetDirectoryPath() const
 {
     return directoryPath;
+}
+
+void LocalizationSystem::SetPreferredLocale(const String& langId)
+{
+    preferredLangId = langId;
 }
 
 void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
