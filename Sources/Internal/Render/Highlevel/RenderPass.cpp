@@ -13,6 +13,7 @@
 #include "Render/Texture.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/VisibilityQueryResults.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -183,26 +184,6 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
     }
 }
 
-#if __DAVAENGINE_RENDERSTATS__
-void RenderPass::ProcessVisibilityQuery()
-{
-    DVASSERT(queryBuffers.size() < 128);
-
-    while (queryBuffers.size() && rhi::QueryBufferIsReady(queryBuffers.front()))
-    {
-        RenderStats& stats = Renderer::GetRenderStats();
-        for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
-        {
-            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front(), i);
-        }
-
-        rhi::DeleteQueryBuffer(queryBuffers.front());
-        queryBuffers.pop_front();
-    }
-}
-#endif
-
 void RenderPass::SetRenderTargetProperties(uint32 width, uint32 height, PixelFormat format)
 {
     renderTargetProperties.width = width;
@@ -240,11 +221,8 @@ bool RenderPass::BeginRenderPass()
 {
     bool success = false;
 
-#if __DAVAENGINE_RENDERSTATS__
-    ProcessVisibilityQuery();
-    rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
-    passConfig.queryBuffer = qBuffer;
-    queryBuffers.push_back(qBuffer);
+#ifdef __DAVAENGINE_RENDERSTATS__
+    passConfig.queryBuffer = VisibilityQueryResults::GetQueryBuffer();
 #endif
 
     DVASSERT(renderTargetProperties.width > 0);

@@ -147,10 +147,21 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
+
     if (activeVariantInstance->wireFrame)
         target.options |= rhi::Packet::OPT_WIREFRAME;
     else
         target.options &= ~rhi::Packet::OPT_WIREFRAME;
+
+    if (activeVariantInstance->alphablend)
+        target.userFlags |= USER_FLAG_ALPHABLEND;
+    else
+        target.userFlags &= ~USER_FLAG_ALPHABLEND;
+
+    if (activeVariantInstance->alphatest)
+        target.userFlags |= USER_FLAG_ALPHATEST;
+    else
+        target.userFlags &= ~USER_FLAG_ALPHATEST;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -767,6 +778,8 @@ void NMaterial::RebuildRenderVariants()
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
         variant->wireFrame = variantDescr.wireframe;
+        variant->alphablend = variantDescr.hasBlend;
+        variant->alphatest = (variantDescr.templateDefines.count(FastName("ALPHATEST")) != 0);
         renderVariants[variantDescr.passName] = variant;
     }
 

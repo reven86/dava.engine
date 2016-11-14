@@ -66,7 +66,6 @@ class RenderVariantInstance
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
     rhi::CullMode cullMode = rhi::CULL_CCW;
-    bool wireFrame = 0;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;
     Vector<rhi::HConstBuffer> fragmentConstBuffers;
@@ -74,6 +73,9 @@ class RenderVariantInstance
     Vector<MaterialBufferBinding*> materialBufferBindings;
 
     uint32 renderLayer = 0;
+    bool wireFrame = false;
+    bool alphablend = false;
+    bool alphatest = false;
 
     RenderVariantInstance() = default;
     RenderVariantInstance(const RenderVariantInstance&) = delete;
@@ -188,6 +190,12 @@ public:
     void PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags);
 
     static const float32 DEFAULT_LIGHTMAP_SIZE;
+
+    enum eUserFlag
+    {
+        USER_FLAG_ALPHABLEND = 1 << 0,
+        USER_FLAG_ALPHATEST = 1 << 1,
+    };
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
