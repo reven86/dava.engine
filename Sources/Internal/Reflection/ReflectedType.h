@@ -3,12 +3,12 @@
 #include <memory>
 #include "Base/BaseTypes.h"
 #include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedStructure.h"
 
 namespace DAVA
 {
 class RttiType;
 class StructureWrapper;
-class ReflectedStructure;
 
 class ReflectedType final
 {
