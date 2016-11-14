@@ -677,6 +677,20 @@ String FilePath::GetSystemPathname(const String& pathname, const ePathType pType
     return NormalizePathname(retPath);
 }
 
+struct IsPathStartingWith
+{
+    const String& start;
+    IsPathStartingWith(const String& p)
+        : start(p)
+    {
+    }
+    bool operator()(const FilePath& p) const
+    {
+        const String& path = p.GetStringValue();
+        return start.find(path) == 0;
+    }
+};
+
 String FilePath::GetFrameworkPath() const
 {
     if (PATH_IN_RESOURCES == pathType)
@@ -695,11 +709,9 @@ String FilePath::GetFrameworkPath() const
     }
 
     // search starting from last added directories
-    auto it = std::find_if(rbegin(resourceFolders), rend(resourceFolders), [this](const FilePath& p)
-                           {
-                               const String& s = p.GetStringValue();
-                               return absolutePathname.find(s) == 0;
-                           });
+    const String& start = absolutePathname;
+    auto it = std::find_if(rbegin(resourceFolders), rend(resourceFolders),
+                           IsPathStartingWith(absolutePathname));
 
     if (it != rend(resourceFolders))
     {
