@@ -12,17 +12,8 @@ Camera* UIParticles::defaultCamera = nullptr;
 
 UIParticles::UIParticles(const Rect& rect)
     : UIControl(rect)
-    , isAutostart(false)
-    , startDelay(0.0f)
-    , effect(nullptr)
-    , system(new ParticleEffectSystem(nullptr, true))
-    , updateTime(0)
-    , delayedActionType(UIParticles::actionNone)
-    , delayedActionTime(0.0f)
-    , delayedDeleteAllParticles(false)
-    , needHandleAutoStart(false)
-    , inheritControlTransform(false)
 {
+    system = new ParticleEffectSystem(nullptr, true);
     if (defaultCamera != nullptr)
     {
         defaultCamera->Retain();

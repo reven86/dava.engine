@@ -73,19 +73,19 @@ protected:
 
 private:
     FilePath effectPath;
-    bool isAutostart;
-    float32 startDelay;
+    bool isAutostart = false;
+    float32 startDelay = 0.f;
 
-    ParticleEffectComponent* effect;
-    ParticleEffectSystem* system;
+    ParticleEffectComponent* effect = nullptr;
+    ParticleEffectSystem* system = nullptr;
     Matrix4 matrix;
-    float32 updateTime;
+    float32 updateTime = 0.f;
 
-    eDelayedActionType delayedActionType;
-    float32 delayedActionTime;
-    bool delayedDeleteAllParticles;
-    bool needHandleAutoStart;
-    bool inheritControlTransform;
+    eDelayedActionType delayedActionType = actionNone;
+    float32 delayedActionTime = 0.f;
+    bool delayedDeleteAllParticles = false;
+    bool needHandleAutoStart = false;
+    bool inheritControlTransform = false;
 
     static Camera* defaultCamera;
 
@@ -94,7 +94,7 @@ public:
                          PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("InheritControlTransform", "InheritControlTransform", GetInheritControlTransform, SetInheritControlTransform, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("inheritControlTransform", "Inherit Control Transform", GetInheritControlTransform, SetInheritControlTransform, I_SAVE | I_VIEW | I_EDIT)
                          );
 };
 };
