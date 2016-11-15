@@ -13,7 +13,8 @@ namespace CommonImpl
 void Frame::Reset()
 {
     sync = InvalidHandle;
-    perfQuerySet = InvalidHandle;
+    perfQueryStart = InvalidHandle;
+    perfQueryEnd = InvalidHandle;
     pass.clear();
     readyToExecute = false;
     discarded = false;

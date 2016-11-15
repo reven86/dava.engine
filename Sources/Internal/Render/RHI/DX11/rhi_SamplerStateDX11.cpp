@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
 #include "Debug/DVAssert.h"
 #include "rhi_DX11.h"
 #include "_dx11.h"
@@ -217,7 +218,7 @@ void SetToRHI(Handle hstate, ID3D11DeviceContext* context)
 
     context->PSSetSamplers(0, state->fragmentSamplerCount, state->fragmentSampler);
 
-    if (state->vertexSamplerCount)
+    if (state->vertexSamplerCount && DeviceCaps().isVertexTextureUnitsSupported)
     {
         context->VSSetSamplers(0, state->vertexSamplerCount, state->vertexSampler);
     }
