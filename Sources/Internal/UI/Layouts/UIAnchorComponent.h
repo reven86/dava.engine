@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_ANCHOR_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include <bitset>
 
 namespace DAVA
 {

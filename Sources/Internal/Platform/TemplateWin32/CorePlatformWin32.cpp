@@ -1,8 +1,8 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
-#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include <shellapi.h>
 #include <thread>
 
