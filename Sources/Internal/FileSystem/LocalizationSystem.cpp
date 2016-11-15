@@ -67,12 +67,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
-    String locale = preferredLangId;
-
-    if (locale.empty())
-    {
-        locale = GetDeviceLocale();
-    }
+    String locale = GetDeviceLocale();
+    ;
 
     if (locale.empty())
     {
@@ -84,6 +80,11 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 
 String LocalizationSystem::GetDeviceLocale(void) const
 {
+    if (!overridenLangId.empty())
+    {
+        return overridenLangId;
+    }
+
     String locale = DeviceInfo::GetLocale();
     String::size_type posEnd = locale.find('-', 2);
     if (String::npos != posEnd)
@@ -108,9 +109,9 @@ const FilePath& LocalizationSystem::GetDirectoryPath() const
     return directoryPath;
 }
 
-void LocalizationSystem::SetPreferredLocale(const String& langId)
+void LocalizationSystem::OverrideDeviceLocale(const String& langId)
 {
-    preferredLangId = langId;
+    overridenLangId = langId;
 }
 
 void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)

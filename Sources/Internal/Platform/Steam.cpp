@@ -62,7 +62,7 @@ void Steam::Init()
 
     isInited = true;
     steamCallbacks = new SteamCallbacks();
-    LocalizationSystem::Instance()->SetPreferredLocale(GetLanguage());
+    LocalizationSystem::Instance()->OverrideDeviceLocale(GetLanguage());
 }
 
 void Steam::Deinit()
