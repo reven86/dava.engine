@@ -11,6 +11,7 @@
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 
+#import <sys/utsname.h>
 #import <UIKit/UIKit.h>
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
 #import "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
@@ -20,6 +21,76 @@ namespace DAVA
 {
 namespace Private
 {
+float32 GetDpi(CGRect rect, float32 scale)
+{
+    enum eIosDpi
+    {
+        IPHONE_3_IPAD_MINI = 163,
+        IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
+        IPAD_1_2 = 132,
+        IPAD_3_4_AIR_AIR2_PRO = 264,
+        IPHONE_6_PLUS = 401,
+        IPHONE_6_PLUS_ZOOM = 461,
+    };
+
+    struct AppleDevice
+    {
+        int minSide;
+        int dpi;
+        const char* machineTag;
+    };
+
+    static AppleDevice listOfAppleDevices[] =
+    {
+      { 320, IPHONE_3_IPAD_MINI, "" },
+      { 640, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "" },
+      { 750, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "" },
+      { 768, IPAD_1_2, "" },
+      { 768, IPHONE_3_IPAD_MINI, "mini" },
+      { 1080, IPHONE_6_PLUS, "" },
+      { 1242, IPHONE_6_PLUS_ZOOM, "" },
+      { 1536, IPAD_3_4_AIR_AIR2_PRO, "" },
+      { 1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini" },
+      { 2048, IPAD_3_4_AIR_AIR2_PRO, "" }
+    };
+
+    float32 dpi = 160 * scale; // default dpi value
+    float32 minSide = std::min(rect.size.width * scale, rect.size.height * scale);
+
+    // find possible device with calculated side
+    List<AppleDevice*> possibleDevices;
+    for (size_t i = 0, sz = std::extent<decltype(listOfAppleDevices)>(); i < sz; ++i)
+    {
+        if (listOfAppleDevices[i].minSide == minSide)
+        {
+            possibleDevices.push_back(&listOfAppleDevices[i]);
+        }
+    }
+
+    struct utsname systemInfo;
+    uname(&systemInfo);
+
+    String thisMachine = systemInfo.machine;
+
+    // search real device from possibles
+    AppleDevice* realDevice = nullptr;
+    for (auto d : possibleDevices)
+    {
+        if (thisMachine.find(d->machineTag) != String::npos)
+        {
+            realDevice = d;
+        }
+    }
+
+    // if found - use real device dpi
+    if (nullptr != realDevice)
+    {
+        dpi = realDevice->dpi;
+    }
+
+    return dpi;
+}
+
 WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
@@ -51,7 +122,8 @@ bool WindowNativeBridge::CreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, scale, scale));
+    float32 dpi = GetDpi(rect, scale);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, rect.size.width * scale, rect.size.height * scale, dpi, eFullscreen::On));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }
@@ -106,12 +178,12 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scale, scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, eFullscreen::On));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -124,7 +196,7 @@ void WindowNativeBridge::TouchesBegan(NSSet* touches)
 
 void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -137,7 +209,7 @@ void WindowNativeBridge::TouchesMoved(NSSet* touches)
 
 void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0.f, 0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0, 0, eModifierKeys::NONE);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];

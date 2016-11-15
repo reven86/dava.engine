@@ -202,33 +202,32 @@ enum VertexDataFrequency
 
 //------------------------------------------------------------------------------
 
-class
-VertexLayout
+class VertexLayout
 {
 public:
     VertexLayout();
     ~VertexLayout();
 
-    unsigned Stride(unsigned stream_i = 0) const;
-    unsigned StreamCount() const;
-    VertexDataFrequency StreamFrequency(unsigned stream_i) const;
-    unsigned ElementCount() const;
+    uint32 Stride(uint32 stream_i = 0) const;
+    uint32 StreamCount() const;
+    VertexDataFrequency StreamFrequency(uint32 stream_i) const;
+    uint32 ElementCount() const;
 
-    unsigned ElementStreamIndex(unsigned elem_i) const;
-    VertexSemantics ElementSemantics(unsigned elem_i) const;
-    unsigned ElementSemanticsIndex(unsigned elem_i) const;
-    VertexDataType ElementDataType(unsigned elem_i) const;
-    unsigned ElementDataCount(unsigned elem_i) const;
-    unsigned ElementOffset(unsigned elem_i) const;
-    unsigned ElementSize(unsigned elem_i) const;
+    uint32 ElementStreamIndex(uint32 elem_i) const;
+    VertexSemantics ElementSemantics(uint32 elem_i) const;
+    uint32 ElementSemanticsIndex(uint32 elem_i) const;
+    VertexDataType ElementDataType(uint32 elem_i) const;
+    uint32 ElementDataCount(uint32 elem_i) const;
+    uint32 ElementOffset(uint32 elem_i) const;
+    uint32 ElementSize(uint32 elem_i) const;
 
     bool operator==(const VertexLayout& vl) const;
     VertexLayout& operator=(const VertexLayout& src);
 
     void Clear();
     void AddStream(VertexDataFrequency freq = VDF_PER_VERTEX);
-    void AddElement(VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
-    void InsertElement(unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
+    void AddElement(VertexSemantics usage, uint32 usage_i, VertexDataType type, uint32 dimension);
+    void InsertElement(uint32 pos, VertexSemantics usage, uint32 usage_i, VertexDataType type, uint32 dimension);
 
     static bool IsCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout);
     static bool MakeCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout);
@@ -437,8 +436,7 @@ enum StoreAction
 
 namespace VertexBuffer
 {
-struct
-Descriptor
+struct Descriptor
 {
     uint32 size;
     Pool pool;
@@ -465,8 +463,7 @@ enum IndexSize
 
 namespace IndexBuffer
 {
-struct
-Descriptor
+struct Descriptor
 {
     uint32 size;
     IndexSize indexSize;
@@ -489,8 +486,7 @@ Descriptor
 
 namespace Texture
 {
-struct
-Descriptor
+struct Descriptor
 {
     TextureType type = TEXTURE_TYPE_2D;
     uint32 width = 0;
@@ -543,8 +539,7 @@ enum ColorMask
     COLORMASK_ALL = COLORMASK_R | COLORMASK_G | COLORMASK_B | COLORMASK_A
 };
 
-struct
-BlendState
+struct BlendState
 {
     struct
     {
@@ -561,7 +556,7 @@ BlendState
 
     BlendState()
     {
-        for (unsigned i = 0; i != MAX_RENDER_TARGET_COUNT; ++i)
+        for (uint32 i = 0; i != MAX_RENDER_TARGET_COUNT; ++i)
         {
             rtBlend[i].writeMask = COLORMASK_ALL;
             rtBlend[i].blendEnabled = false;
@@ -586,8 +581,7 @@ enum BlendOp
 
 namespace PipelineState
 {
-struct
-Descriptor
+struct Descriptor
 {
     VertexLayout vertexLayout;
     DAVA::FastName vprogUid;
@@ -598,8 +592,7 @@ Descriptor
 
 namespace SamplerState
 {
-struct
-Descriptor
+struct Descriptor
 {
     struct
     Sampler
@@ -719,8 +712,7 @@ struct Descriptor
 };
 }
 
-struct
-ProgConstInfo
+struct ProgConstInfo
 {
     DAVA::FastName uid; // name
     uint32 bufferIndex;
@@ -741,8 +733,7 @@ enum CullMode
 ////////////////////////////////////////////////////////////////////////////////
 // viewport
 
-struct
-Viewport
+struct Viewport
 {
     uint32 x = 0;
     uint32 y = 0;
@@ -881,64 +872,16 @@ ScissorRect
     }
 };
 
-//------------------------------------------------------------------------------
-
-uint32 NativeColorRGBA(float r, float g, float b, float a = 1.0f);
-uint32 NativeColorRGBA(uint32 color); //0xAABBGGRR to api-native;
-
 } // namespace rhi
 
 //------------------------------------------------------------------------------
 //
 //
 
-template <typename src, typename dst>
-inline dst
-nonaliased_cast(src x)
-{
-    // (quite a funny way to) ensure types are the same size
-    // commented-out until acceptable way to stop the compiler-spamming is found
-    //    #pragma warning( disable: 177 ) // variable "WrongSizes" was declared but never referenced
-    //    static int  WrongSizes[sizeof(src) == sizeof(dst) ? 1 : -1];
-    //    #pragma warning( default: 177 )
-
-    union {
-        src s;
-        dst d;
-    } tmp;
-
-    tmp.s = x;
-
-    return tmp.d;
-}
-
-#define countof(array) (sizeof(array) / sizeof(array[0]))
-#define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))
-
-inline bool
-IsEmptyString(const char* str)
-{
-    return !(str && str[0] != '\0');
-}
-
-void Trace(const char* format, ...);
-#define LCP Trace("%s : %i\n", __FILE__, __LINE__);
 
 
 
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
-
-#endif
-
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
-
-    #define stricmp _strcmpi
-
-#endif
 
 
 

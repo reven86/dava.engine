@@ -1,9 +1,9 @@
 #ifndef __RHI_SHADERSOURCE_H__
 #define __RHI_SHADERSOURCE_H__
 
-    #include "rhi_Type.h"
-    #include "Base/BaseTypes.h"    
-    #include "Base/FastName.h"
+#include "rhi_Type.h"
+#include "Base/BaseTypes.h"    
+#include "Base/FastName.h"
 
 namespace DAVA
 {

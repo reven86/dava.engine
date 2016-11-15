@@ -1,11 +1,12 @@
 #include "PreProcess.h"
 
-    #include "../rhi_Type.h"
+#include "../rhi_Type.h"
+#include "rhi_Utils.h"
 
-    #include "MCPP/mcpp_lib.h"
+#include "MCPP/mcpp_lib.h"
 
-    #include <stdio.h>
-    #include <stdarg.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 static std::string* _PreprocessedText = nullptr;
 

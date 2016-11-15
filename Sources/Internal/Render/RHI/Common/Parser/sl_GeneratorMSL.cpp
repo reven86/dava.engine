@@ -5,6 +5,7 @@
 #include "sl_Tree.h"
 
 #include "Render/RHI/rhi_Type.h"
+#include "Render/RHI/Common/rhi_Utils.h"
 
 namespace sl
 {

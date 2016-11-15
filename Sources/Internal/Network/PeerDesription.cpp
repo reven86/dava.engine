@@ -21,7 +21,9 @@ PeerDescription::PeerDescription(const NetConfig& config)
     , model(DeviceInfo::GetModel())
     , udid(DeviceInfo::GetUDID())
     , name(UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()))
+#if !defined(__DAVAENGINE_COREV2__)
     , screenInfo(DeviceInfo::GetScreenInfo())
+#endif
     , gpuFamily(DeviceInfo::GetGPUFamily())
     , netConfig(config)
 {
@@ -36,7 +38,11 @@ void PeerDescription::SetNetworkInterfaces(const Vector<IfAddress>& availIfAddr)
 #ifdef __DAVAENGINE_DEBUG__
 void PeerDescription::DumpToStdout() const
 {
+#if !defined(__DAVAENGINE_COREV2__)
     printf("PeerDescription: %s, screen %dx%d, UDID=%s\n", name.c_str(), screenInfo.width, screenInfo.height, udid.c_str());
+#else
+    printf("PeerDescription: %s, UDID=%s\n", name.c_str(), udid.c_str());
+#endif
     printf("  %s %s %s %s\n", manufacturer.c_str(), model.c_str(), platform.c_str(), version.c_str());
     printf("  Network interfaces:\n");
     for (size_t i = 0, n = ifaddr.size(); i < n; ++i)

@@ -1,5 +1,6 @@
-#include "../rhi_ShaderSource.h"
-#include "../rhi_Public.h"
+#include "Render/RHI/rhi_ShaderSource.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/RHI/Common/rhi_Utils.h"
 
 #include "Base/Hash.h"
 //#define PROFILER_ENABLED 1
