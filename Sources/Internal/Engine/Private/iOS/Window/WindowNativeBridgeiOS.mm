@@ -132,7 +132,7 @@ bool WindowNativeBridge::CreateWindow()
 
     CGRect viewRect = [renderView bounds];
     float32 dpi = GetDpi(rect, scale);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, viewRect.size.width * scale, viewRect.size.height * scale, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, viewRect.size.width * scale, viewRect.size.height * scale, dpi, eFullscreen::On));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }
@@ -187,7 +187,7 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, eFullscreen::On));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
