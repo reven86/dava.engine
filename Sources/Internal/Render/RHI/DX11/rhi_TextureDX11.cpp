@@ -1,13 +1,14 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_DX11.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "../Common/rhi_Utils.h"
+#include "rhi_DX11.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_dx11.h"
+#include "_dx11.h"
 
 namespace rhi
 {
@@ -592,7 +593,6 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     UINT fromIndex = D3D11CalcSubresource(0, 0, 1);
     context->ResolveSubresource(toResource, toIndex, fromResource, fromIndex, fromFormat);
 
-    fromResource->Release();
     toResource->Release();
 }
 }

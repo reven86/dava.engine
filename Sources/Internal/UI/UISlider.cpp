@@ -6,8 +6,7 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 namespace DAVA
 {
 // Use these names for children buttons to define UISlider in .yaml
@@ -228,11 +227,11 @@ void UISlider::Draw(const UIGeometricData& geometricData)
     const Rect& aRect = thumbButton->GetGeometricData().GetUnrotatedRect();
     float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
 
-    Rect fullVirtualScreen = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    Rect fullVirtualScreen = UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect();
     float32 screenXMin = fullVirtualScreen.x;
     float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
     float32 screenYMin = 0.f;
-    float32 screenYMax = static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+    float32 screenYMax = static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy);
 
     if (minBackground)
     {

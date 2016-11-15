@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_INPUT_CALLBACK_H__
 #define __DAVAENGINE_INPUT_CALLBACK_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseObject.h"
 
 namespace DAVA
@@ -152,6 +154,5 @@ public:
 };
 };
 
-
-
+#endif // !__DAVAENGINE_COREV2__
 #endif

@@ -2,12 +2,13 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
+#include <bitset>
+
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
 
-#include "UI/UIEvent.h"
-
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -22,8 +23,12 @@ class InputSystem;
 class UIControlSystem;
 class VirtualCoordinatesSystem;
 
+/** Window class. */
 class Window final
 {
+    friend class Private::EngineBackend;
+    friend class Private::PlatformCore;
+
 private:
     Window(Private::EngineBackend* engineBackend, bool primary);
     ~Window();
@@ -36,29 +41,68 @@ public:
     bool IsVisible() const;
     bool HasFocus() const;
 
-    // Window size in logical pixels
-    float32 GetWidth() const;
-    float32 GetHeight() const;
-    // Window's render surface size in pixels
-    float32 GetRenderSurfaceWidth() const;
-    float32 GetRenderSurfaceHeight() const;
+    /** 
+        Returns dots-per-inch for a monitor, where that window is placed. 
+        
+        \remark Use `Window::dpiChanged` signal to know, when window was placed on other monitor with other dpi.
+    */
+    float32 GetDPI() const;
 
-    // Window scale factors
-    float32 GetScaleX() const;
-    float32 GetScaleY() const;
-    // Additional user scale factor
-    float32 GetUserScale() const;
-    // Window's render surface scale factors
-    float32 GetRenderSurfaceScaleX() const;
-    float32 GetRenderSurfaceScaleY() const;
+    /** 
+        Returns size of the window's client area. 
+        Window size in screen coordinates may differ from the size in pixels,
+        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
 
-    Vector2 GetSize() const;
-    Vector2 GetScale() const;
+        \remark Use `GetSurfaceSize()` to get rendering surface size in pixels.
+        \remark Use `Window::sizeChanged` signal to know, when window size was changed.
+    */
+    Size2f GetSize() const;
 
-    void Resize(float32 w, float32 h);
-    void Resize(Vector2 size);
+    /** 
+        Sets the size of a window's client area. 
+        Window size in screen coordinates may differ from the size in pixels,
+        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
+        On some platforms (iOS, Android or Win10 Phone) there is no real window system and
+        as a consequence window size can't be changes, so this function will have no effect.
+
+        \remark Use `Window::sizeChanged` signal to know, when window size was changed.
+    */
+    void SetSize(Size2f size);
+
+    /**
+         Returns size of the window's rendering surface in pixels.
+         Surface size is in raw pixels.
+
+         \remark Use `Window::sizeChanged` signal to know, when window surface size was changed.
+         \remark Use `SetSurfaceScale` to tune surface size.
+    */
+    Size2f GetSurfaceSize() const;
+
+    /** 
+        Returns window rendering surface scale. 
+        By default it is 1.0f unit user changes it with `SetSurfaceScale()` method.
+    */
+    float32 GetSurfaceScale() const;
+
+    /** 
+        Sets window rendering surface scale.
+        Return `true` if scaling was successfully set. Scale value has to be from `0.0f` to `1.0f`.
+        
+        \remark This should be used by user to tune rendering surface size for performance reason.
+    */
+    bool SetSurfaceScale(float32 scale);
+
     void Close();
     void SetTitle(const String& title);
+
+    /** Gets current fullscreen mode */
+    eFullscreen GetFullscreen() const;
+
+    /** 
+        Sets fullscreen mode to window. 
+        Succeed fullscreen mode changing leads to changing of window size.
+    */
+    void SetFullscreen(eFullscreen newMode);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
@@ -66,11 +110,33 @@ public:
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
+    /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        The Window keeps the last mode, and itself releases or captures cursor if need(when it loses or receives focus).
+        If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
+    */
+    void SetCursorCapture(eCursorCapture mode);
+
+    /** Get cursor capture mode.*/
+    eCursorCapture GetCursorCapture() const;
+
+    /** Set cursor visibility for current Window.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        The Window keeps the last state, and itself shows or hides cursor if need(when it loses or receives focus).
+    */
+    void SetCursorVisibility(bool visible);
+
+    /** Get cursor visibility.*/
+    bool GetCursorVisibility() const;
+
 public:
     // Signals
     Signal<Window*, bool> visibilityChanged;
     Signal<Window*, bool> focusChanged;
-    Signal<Window*, float32, float32, float32, float32> sizeScaleChanged;
+    Signal<Window*, float32> dpiChanged;
+    Signal<Window*, Size2f, Size2f> sizeChanged; //<! First Size2f is window size, second Size2f is window surface size
     //Signal<Window*> beginUpdate;
     //Signal<Window*> beginDraw;
     Signal<Window*, float32> update;
@@ -94,7 +160,9 @@ private:
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
+    void HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
+    void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
@@ -102,12 +170,13 @@ private:
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
     void HandleTouchClick(const Private::MainDispatcherEvent& e);
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
+    void HandleTrackpadGesture(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
+    bool HandleInputActivation(const Private::MainDispatcherEvent& e);
 
-    void CompressSizeChangedEvents(const Private::MainDispatcherEvent& e);
+    void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
-    void ClearMouseButtons();
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
@@ -116,23 +185,26 @@ private:
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     bool isPrimary = false;
     bool isVisible = false;
     bool hasFocus = false;
-    float32 width = 0.0f;
-    float32 height = 0.0f;
-    float32 scaleX = 1.0f;
-    float32 scaleY = 1.0f;
-    float32 userScale = 1.0f;
-    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
+    bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
+    eFullscreen fullscreenMode;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
-
-    // Friends
-    friend class Private::EngineBackend;
-    friend class Private::PlatformCore;
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
+    eCursorCapture cursorCapture = eCursorCapture::OFF;
+    bool cursorVisible = false;
+    bool waitInputActivation = false;
+    bool skipFirstMouseUpEventBeforeCursorCapture = false;
+    float32 dpi = 0.0f; //!< Window DPI
+    float32 width = 0.0f; //!< Window client area width.
+    float32 height = 0.0f; //!< Window client area height.
+    float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
+    float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
+    float32 surfaceScale = 1.0f; //!< Window rendering surface scale.
 };
 
 inline bool Window::IsPrimary() const
@@ -150,64 +222,29 @@ inline bool Window::HasFocus() const
     return hasFocus;
 }
 
-inline float32 Window::GetWidth() const
+inline float32 Window::GetDPI() const
 {
-    return width;
+    return dpi;
 }
 
-inline float32 Window::GetHeight() const
+inline Size2f Window::GetSize() const
 {
-    return height;
+    return { width, height };
 }
 
-inline float32 Window::GetRenderSurfaceWidth() const
+inline Size2f Window::GetSurfaceSize() const
 {
-    return width * scaleX * userScale;
+    return { surfaceWidth, surfaceHeight };
 }
 
-inline float32 Window::GetRenderSurfaceHeight() const
+inline float32 Window::GetSurfaceScale() const
 {
-    return height * scaleY * userScale;
+    return surfaceScale;
 }
 
-inline float32 Window::GetScaleX() const
+inline eFullscreen Window::GetFullscreen() const
 {
-    return scaleX;
-}
-
-inline float32 Window::GetScaleY() const
-{
-    return scaleY;
-}
-
-inline float32 Window::GetUserScale() const
-{
-    return userScale;
-}
-
-inline float32 Window::GetRenderSurfaceScaleX() const
-{
-    return scaleX * userScale;
-}
-
-inline float32 Window::GetRenderSurfaceScaleY() const
-{
-    return scaleY * userScale;
-}
-
-inline Vector2 Window::GetSize() const
-{
-    return Vector2(GetWidth(), GetHeight());
-}
-
-inline Vector2 Window::GetScale() const
-{
-    return Vector2(GetScaleX(), GetScaleY());
-}
-
-inline void Window::Resize(Vector2 size)
-{
-    Resize(size.dx, size.dy);
+    return fullscreenMode;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const
