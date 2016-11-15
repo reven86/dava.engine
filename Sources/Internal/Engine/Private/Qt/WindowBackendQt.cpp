@@ -250,7 +250,7 @@ float32 WindowBackend::GetSurfaceScale() const
     return 1.0f;
 }
 
-bool WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(const float32 scale)
 {
     // Not supported natively on OpenGL
     return false;

@@ -187,14 +187,14 @@ float32 WindowBackend::GetSurfaceScale() const
 
 bool WindowBackend::SetSurfaceScale(const float32 scale)
 {
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
     return true;
 }
 
 void WindowBackend::DoSetSurfaceScale(const float32 scale)
 {
-    DVASSERT(scale > 0.0f && scale <= 1.0f);
-
     surfaceScale = scale;
 
     const float32 surfaceWidth = windowWidth * scale;

@@ -171,6 +171,8 @@ float32 WindowBackend::GetSurfaceScale() const
 
 bool WindowBackend::SetSurfaceScale(const float32 scale)
 {
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
     // We'll check it again before actual surface changing
     if (CanChangeSurfaceScale())
     {
@@ -205,17 +207,18 @@ bool WindowBackend::CanChangeSurfaceScale() const
     }
 }
 
-void WindowBackend::DoSetSurfaceScale(float32 scale)
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
 {
-    DVASSERT(scale > 0.0f && scale <= 1.0f);
-
     if (CanChangeSurfaceScale())
     {
+        DVASSERT(hwnd != nullptr);
+        DVASSERT(lastWidth > 0 && lastHeight > 0);
+
         surfaceScale = scale;
 
         const float32 surfaceWidth = lastWidth * surfaceScale;
         const float32 surfaceHeight = lastHeight * surfaceScale;
-        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+        const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, fullscreen));
     }
 }

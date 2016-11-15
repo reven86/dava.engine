@@ -528,7 +528,6 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(renderView != nullptr);
     DVASSERT(nswindow != nullptr);
-    DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     [renderView setBackbufferScale:scale];
 

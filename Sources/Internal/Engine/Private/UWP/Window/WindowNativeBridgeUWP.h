@@ -40,7 +40,7 @@ ref struct WindowNativeBridge sealed
     void SetCursorVisibility(bool visible);
 
     float32 GetSurfaceScale() const;
-    void SetSurfaceScale(float32 scale);
+    void SetSurfaceScale(const float32 scale);
 
 private:
     void OnTriggerPlatformEvents();

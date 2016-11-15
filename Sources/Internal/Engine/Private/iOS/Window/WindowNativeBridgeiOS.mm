@@ -232,10 +232,9 @@ float32 WindowNativeBridge::GetSurfaceScale() const
     }
 }
 
-bool WindowNativeBridge::SetSurfaceScale(float32 scale)
+bool WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(renderView != nullptr);
-    DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     [renderView setSurfaceScale:scale];
 

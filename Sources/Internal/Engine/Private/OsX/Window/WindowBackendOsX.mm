@@ -18,8 +18,6 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
-#include "Engine/Private/OsX/Window/RenderViewOsX.h"
-
 namespace DAVA
 {
 namespace Private
@@ -109,6 +107,8 @@ float32 WindowBackend::GetSurfaceScale() const
 
 bool WindowBackend::SetSurfaceScale(const float32 scale)
 {
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
     return true;
 }
