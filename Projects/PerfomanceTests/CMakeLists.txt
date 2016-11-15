@@ -123,4 +123,9 @@ if( NOT DAVA_MEGASOLUTION )
 
 endif()
 
+if (ANDROID)
+    # Libraries to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;PerformanceTests")
+endif()
+
 setup_main_executable()
