@@ -8,11 +8,9 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <bitset>
 
+#include "Base/Platform.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN32__)
 
-#include <windows.h>
 #include <ShellScalingApi.h>
 
 namespace DAVA

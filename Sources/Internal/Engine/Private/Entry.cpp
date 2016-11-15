@@ -49,8 +49,6 @@ int main(int argc, char* argv[])
 
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include <minwindef.h>
-
 // Win32
 // To use WinMain in static lib with unicode support set entry point to wWinMainCRTStartup:
 //  1. through linker commandline option /ENTRY:wWinMainCRTStartup
@@ -69,8 +67,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
-
-#include <windows.h>
 
 namespace DAVA
 {
