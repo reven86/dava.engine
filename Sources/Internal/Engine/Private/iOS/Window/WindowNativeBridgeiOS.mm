@@ -220,6 +220,32 @@ void WindowNativeBridge::TouchesEnded(NSSet* touches)
     }
 }
 
+float32 WindowNativeBridge::GetSurfaceScale() const
+{
+    if (renderView != nullptr)
+    {
+        return [renderView surfaceScale];
+    }
+    else
+    {
+        return 1.0f;
+    }
+}
+
+bool WindowNativeBridge::SetSurfaceScale(float32 scale)
+{
+    DVASSERT(renderView != nullptr);
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    [renderView setSurfaceScale:scale];
+
+    CGSize size = [renderView frame].size;
+    CGSize surfaceSize = [renderView surfaceSize];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height, eFullscreen::On));
+
+    return true;
+}
+
 UIImage* RenderUIViewToImage(UIView* view)
 {
     DVASSERT(view != nullptr);

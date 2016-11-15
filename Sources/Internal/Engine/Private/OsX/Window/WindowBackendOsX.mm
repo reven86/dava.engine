@@ -102,6 +102,17 @@ void WindowBackend::SetCursorVisibility(bool visible)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
+float32 WindowBackend::GetSurfaceScale() const
+{
+    return bridge->GetSurfaceScale();
+}
+
+bool WindowBackend::SetSurfaceScale(const float32 scale)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+    return true;
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
@@ -128,6 +139,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
+        break;
     default:
         break;
     }
@@ -136,27 +150,6 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 void WindowBackend::WindowWillClose()
 {
     engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
-}
-
-float32 WindowBackend::GetSurfaceScale() const
-{
-    return [bridge->renderView backbufferScale];
-}
-
-bool WindowBackend::SetSurfaceScale(float32 scale)
-{
-    DVASSERT(scale > 0.0f && scale <= 1.0f);
-
-    [bridge->renderView setBackbufferScale:scale];
-
-    // Workaround to force change backbuffer size
-    [bridge->nswindow setContentView:nil];
-    [bridge->nswindow setContentView:bridge->renderView];
-    [bridge->nswindow makeFirstResponder:bridge->renderView];
-
-    bridge->WindowDidResize();
-
-    return true;
 }
 
 } // namespace Private

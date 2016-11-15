@@ -47,7 +47,7 @@ public:
     void ProcessPlatformEvents();
 
     float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(float32 scale);
+    bool SetSurfaceScale(const float32 scale);
 
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);

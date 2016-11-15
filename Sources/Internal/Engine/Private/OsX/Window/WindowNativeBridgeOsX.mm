@@ -511,6 +511,35 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
         SetSystemCursorVisible(visible);
     }
 }
+
+float32 WindowNativeBridge::GetSurfaceScale() const
+{
+    if (renderView != nullptr)
+    {
+        return [renderView backbufferScale];
+    }
+    else
+    {
+        return 1.0f;
+    }
+}
+
+void WindowNativeBridge::SetSurfaceScale(const float32 scale)
+{
+    DVASSERT(renderView != nullptr);
+    DVASSERT(nswindow != nullptr);
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    [renderView setBackbufferScale:scale];
+
+    // Workaround to force change backbuffer size
+    [nswindow setContentView:nil];
+    [nswindow setContentView:renderView];
+    [nswindow makeFirstResponder:renderView];
+
+    WindowDidResize();
+}
+
 } // namespace Private
 } // namespace DAVA
 
