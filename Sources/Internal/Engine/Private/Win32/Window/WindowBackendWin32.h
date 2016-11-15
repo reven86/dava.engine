@@ -56,15 +56,18 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(float32 scale);
-
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
+
+    float32 GetSurfaceScale() const;
+    bool SetSurfaceScale(const float32 scale);
 
 private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
+    bool CanChangeSurfaceScale() const;
+    void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);

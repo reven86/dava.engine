@@ -91,8 +91,7 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-    RunAsyncOnUIThread([this, scale]() { bridge->SetSurfaceScale(scale); });
-
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
     return true;
 }
 
@@ -129,6 +128,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        RunAsyncOnUIThread([this, e]() { bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale); });
         break;
     default:
         break;

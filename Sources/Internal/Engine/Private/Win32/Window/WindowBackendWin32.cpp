@@ -18,6 +18,7 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -168,25 +169,55 @@ float32 WindowBackend::GetSurfaceScale() const
     return surfaceScale;
 }
 
-bool WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(const float32 scale)
 {
-    const rhi::Api graphicsApi = Renderer::GetAPI();
-    if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
+    // We'll check it again before actual surface changing
+    if (CanChangeSurfaceScale())
     {
-        Logger::Instance()->Debug(Format("SetSurfaceScale: scaling is not supported on current graphics API").c_str());
+        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+        return true;
+    }
+    else
+    {
         return false;
     }
+}
 
+bool WindowBackend::CanChangeSurfaceScale() const
+{
+    // Check if currently used rendering API is supported
+    // If renderer is not initialized yet, fallback to true
+    if (Renderer::IsInitialized())
+    {
+        const rhi::Api graphicsApi = Renderer::GetAPI();
+        if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else
+    {
+        return true;
+    }
+}
+
+void WindowBackend::DoSetSurfaceScale(float32 scale)
+{
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-    surfaceScale = scale;
+    if (CanChangeSurfaceScale())
+    {
+        surfaceScale = scale;
 
-    const float32 surfaceWidth = lastWidth * surfaceScale;
-    const float32 surfaceHeight = lastHeight * surfaceScale;
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, fullscreen));
-
-    return true;
+        const float32 surfaceWidth = lastWidth * surfaceScale;
+        const float32 surfaceHeight = lastHeight * surfaceScale;
+        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, fullscreen));
+    }
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -379,6 +410,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
+
     default:
         break;
     }

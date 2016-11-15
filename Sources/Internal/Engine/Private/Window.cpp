@@ -539,13 +539,10 @@ float32 Window::GetSurfaceScale() const
 }
 
 bool Window::SetSurfaceScale(float32 scale)
-{    
+{
     if (scale <= 0.0f || scale > 1.0f)
     {
-        const char8* errorMessage = Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str();
-        DVASSERT_MSG(false, errorMessage)
-        Logger::Debug(errorMessage);
-        
+        DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
         return false;
     }
 
