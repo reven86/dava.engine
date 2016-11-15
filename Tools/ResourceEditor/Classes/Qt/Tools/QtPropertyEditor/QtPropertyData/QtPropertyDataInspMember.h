@@ -21,10 +21,10 @@ public:
 protected:
     InspMemberModifyCommand* lastCommand;
 
-    virtual void SetValueInternal(const QVariant& value);
-    virtual void SetTempValueInternal(const QVariant& value);
-    virtual bool UpdateValueInternal();
-    virtual bool EditorDoneInternal(QWidget* editor);
+    void SetValueInternal(const QVariant& value) override;
+    void SetTempValueInternal(const QVariant& value) override;
+    bool UpdateValueInternal() override;
+    bool EditorDoneInternal(QWidget* editor) override;
 };
 
 #endif // __QT_PROPERTY_DATA_INSP_MEMBER_H__

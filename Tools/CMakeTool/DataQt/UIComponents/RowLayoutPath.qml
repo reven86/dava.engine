@@ -62,7 +62,7 @@ RowLayout {
                 if(folder[0] === "/") {
                     folder = folder.substring(1);
                 }
-                fileDialog.folder = "file:///" + folder
+                fileDialog.folder = "file:///" + fileSystemHelper.GetDir(folder);
             }
 
             fileDialog.open();

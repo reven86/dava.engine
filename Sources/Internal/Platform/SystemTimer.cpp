@@ -1,14 +1,19 @@
 #include <chrono>
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 #include "DAVAConfig.h"
 #include "Debug/Replay.h"
 
+#if defined(__DAVAENGINE_APPLE__)
+#include "mach/mach_time.h"
+#endif
+
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_APPLE__)
 static mach_timebase_info_data_t timebase;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 
@@ -141,7 +146,7 @@ float32 SystemTimer::ElapsedSec()
     }
 #elif defined(__DAVAENGINE_ANDROID__)
     uint64 currentTime = GetTickCount();
-    return (float32)(currentTime - t0) / 1000.f;
+    return static_cast<float32>(currentTime - t0) / 1000.f;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     uint64 current = mach_absolute_time();
     uint64 elapsed = (current - t0) * timebase.numer / timebase.denom;

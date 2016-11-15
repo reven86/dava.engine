@@ -127,6 +127,9 @@ private:
     bool visible = false;                   // Native control initially is invisible
     Rect rectInWindowSpace;
 
+    Windows::Foundation::EventRegistrationToken tokenNavigationStarting;
+    Windows::Foundation::EventRegistrationToken tokenNavigationCompleted;
+
     WebViewProperties properties;
     // clang-format on
 };
