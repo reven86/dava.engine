@@ -40,10 +40,10 @@ dx11_QueryBuffer_Create(uint32 maxObjectCount)
     Handle handle = QueryBufferDX11Pool::Alloc();
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
     DVASSERT(buf);
+    DVASSERT(buf->pendingQueries.empty());
 
     buf->results.resize(maxObjectCount);
     memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
-    buf->pendingQueries.clear();
     buf->curObjectIndex = DAVA::InvalidIndex;
     buf->bufferCompleted = false;
 
@@ -103,7 +103,7 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
 
         if (hr == S_OK)
         {
-            buf->results[resultIndex] = static_cast<uint32>(val);
+            buf->results[resultIndex] += static_cast<uint32>(val);
             QueryDX11Pool.push_back(buf->pendingQueries[q].first);
 
             buf->pendingQueries[q] = buf->pendingQueries.back();
@@ -204,12 +204,11 @@ void SetQueryIndex(Handle handle, uint32 objectIndex, ID3D11DeviceContext* conte
             }
             else
             {
-                D3D11_QUERY_DESC desc;
-
+                D3D11_QUERY_DESC desc = {};
                 desc.Query = D3D11_QUERY_OCCLUSION;
-                desc.MiscFlags = 0;
 
-                CHECK_HR(_D3D11_Device->CreateQuery(&desc, &iq));
+                HRESULT hr = E_FAIL;
+                DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &iq), hr);
             }
 
             if (iq)

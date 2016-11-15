@@ -153,6 +153,7 @@ public:
 class ModifiablePropertyLineBase
 {
 public:
+    virtual ~ModifiablePropertyLineBase() = default;
     ModifiablePropertyLineBase(const String& name)
         : externalValueName(name)
     {

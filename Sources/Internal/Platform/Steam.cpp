@@ -11,8 +11,19 @@
 
 namespace DAVA
 {
+struct SteamCallbacks
+{
+    STEAM_CALLBACK(SteamCallbacks, GameOverlayActivated, GameOverlayActivated_t)
+    {
+        Steam::GameOverlayActivated.Emit(pParam->m_bActive != 0);
+    }
+    // Place other Steam callbacks here
+};
+static SteamCallbacks* steamCallbacks = nullptr;
+
 const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
+Signal<bool> Steam::GameOverlayActivated;
 
 void Steam::Init()
 {
@@ -49,10 +60,14 @@ void Steam::Init()
     }
 
     isInited = true;
+
+    steamCallbacks = new SteamCallbacks();
 }
 
 void Steam::Deinit()
 {
+    SafeDelete(steamCallbacks);
+
     // Shutdown the SteamAPI
     SteamAPI_Shutdown();
     isInited = false;

@@ -13,8 +13,8 @@
 
 static GLuint colorRenderbuffer = -1;
 static GLuint depthRenderbuffer = -1;
-static int backingWidth = 0;
-static int backingHeight = 0;
+static GLint backingWidth = 0;
+static GLint backingHeight = 0;
 static bool resize_pending = true;
 static EAGLRenderingAPI renderingAPI = kEAGLRenderingAPIOpenGLES2;
 
@@ -45,15 +45,16 @@ bool ios_gl_check_layer()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
 
-    resize_pending = false;
-
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
-        return NO;
+    }
+    else
+    {
+        resize_pending = false;
     }
 
-    return YES;
+    return NO;
 }
 
 void ios_gl_init(void* nativeLayer)
@@ -85,9 +86,9 @@ void ios_gl_begin_frame()
 {
 }
 
-void ios_gl_reset(void* nativeLayer)
+void ios_gl_reset(void* nativeLayer, GLint width, GLint height)
 {
-    resize_pending = (_GLES2_DefaultFrameBuffer_Width != backingWidth) || (_GLES2_DefaultFrameBuffer_Height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
+    resize_pending = (width != backingWidth) || (height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
 
     _GLES2_Native_Window = nativeLayer;
 }

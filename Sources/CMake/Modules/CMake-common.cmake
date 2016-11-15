@@ -3,6 +3,14 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
 endif()
 
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
+
 include ( GlobalVariables      )
 
 if ( DAVA_MEMORY_PROFILER )
@@ -68,6 +76,19 @@ macro (enable_pch)
     endif ()
 endmacro ()
 
+macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
+    set(OUTPUT_LIST "")
+    foreach (LIB_FILE ${LIB_LIST})
+        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
+        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
+        if (${LIB_INDEX} EQUAL -1)
+            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
+        endif()
+    endforeach()
+    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
+    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
+endmacro()
+
 
 ##
 #in
@@ -130,7 +151,7 @@ macro (define_source)
         get_filename_component( ITEM_ARG_SOURCE ${ITEM_ARG_SOURCE} ABSOLUTE )
         get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  NAME_WE     )
         
-        if( IS_DIRECTORY ${ITEM_ARG_SOURCE} )                     
+        if( IS_DIRECTORY ${ITEM_ARG_SOURCE} )
             file( GLOB FIND_CMAKELIST "${ITEM_ARG_SOURCE}/CMakeLists.txt")
             if( FIND_CMAKELIST AND ARG_RECURSIVE_CALL )
                 set (${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP )
@@ -144,7 +165,13 @@ macro (define_source)
                 define_source( SOURCE ${LIST_SOURCE} IGNORE_ITEMS ${ARG_IGNORE_ITEMS} RECURSIVE_CALL true GROUP_SOURCE ${ARG_GROUP_SOURCE} )
             endif()
         else()
-            file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            string(FIND ${ITEM_ARG_SOURCE} "*" MASK_SYMBOL_FOUND)
+            if (${MASK_SYMBOL_FOUND} MATCHES -1)
+                set( LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            else()
+                file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            endif()
+
             foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
                 get_filename_component( ITEM_EXT ${ITEM_LIST_SOURCE} EXT )
                 set( IGNORE_FLAG )
@@ -168,7 +195,7 @@ macro (define_source)
             endforeach ()
         endif()
     endforeach ()
-    
+
     source_group( "" FILES ${PROJECT_SOURCE_FILES} )
     
     get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
@@ -230,11 +257,15 @@ macro (define_source)
                     endif()
                 endif()
 
-                list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
-                if (${_index} MATCHES -1)
-                    set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
-                    list( APPEND PROJECT_HEADER_FILE_ONLY ${ITEM_LIST_SOURCE} )
-                endif() 
+                string(FIND ${ITEM_LIST_SOURCE} ${CMAKE_BINARY_DIR} BINARY_DIR_FOUND)
+                if(${BINARY_DIR_FOUND} MATCHES -1)
+                    list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
+                    if (${_index} MATCHES -1 )
+                        set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
+                        list( APPEND PROJECT_HEADER_FILE_ONLY ${ITEM_LIST_SOURCE} )
+                    endif() 
+                endif()
+
             endforeach ()
             #message( " ")  
         endforeach ()  
@@ -522,13 +553,6 @@ macro(add_target_properties _target _name)
 endmacro()
 
 #
-function (append_property KEY_PROP  VALUE)
-    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
-    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
-    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
-endfunction()
-
 
 function (reset_property KEY_PROP )
     SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )

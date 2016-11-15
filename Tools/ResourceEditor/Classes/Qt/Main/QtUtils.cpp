@@ -8,7 +8,7 @@
 #include "mainwindow.h"
 
 #include "CommandLine/CommandLineParser.h"
-#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
