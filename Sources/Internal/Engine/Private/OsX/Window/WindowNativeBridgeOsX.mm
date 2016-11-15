@@ -55,7 +55,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     {
         float32 dpi = GetDpi();
         CGSize surfaceSize = [renderView convertSizeToBacking:viewRect.size];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfaceSize.width, surfaceSize.height, dpi, eFullscreen::Off));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 
@@ -78,6 +78,16 @@ void WindowNativeBridge::SetTitle(const char8* title)
     NSString* nsTitle = [NSString stringWithUTF8String:title];
     [nswindow setTitle:nsTitle];
     [nsTitle release];
+}
+
+void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
+{
+    bool isFullscreenRequested = newMode == eFullscreen::On;
+
+    if (isFullscreen != isFullscreenRequested)
+    {
+        [nswindow toggleFullScreen:nil];
+    }
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
@@ -131,7 +141,8 @@ void WindowNativeBridge::WindowDidResize()
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
@@ -139,8 +150,9 @@ void WindowNativeBridge::WindowDidChangeScreen()
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 dpi = GetDpi();
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
@@ -164,6 +176,16 @@ void WindowNativeBridge::WindowWillClose()
 
     [renderView release];
     [windowDelegate release];
+}
+
+void WindowNativeBridge::WindowWillEnterFullScreen()
+{
+    isFullscreen = true;
+}
+
+void WindowNativeBridge::WindowWillExitFullScreen()
+{
+    isFullscreen = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)

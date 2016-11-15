@@ -33,6 +33,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    ::memset(&windowPlacement, 0, sizeof(windowPlacement));
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
     defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
@@ -56,7 +58,7 @@ bool WindowBackend::Create(float32 width, float32 height)
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"DAVA_WINDOW",
-                                    windowStyle,
+                                    windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
                                     w,
@@ -92,6 +94,11 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
 void WindowBackend::SetTitle(const String& title)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -177,6 +184,59 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
+{
+    if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
+    {
+        return;
+    }
+
+    // Changing of fullscreen mode leads to size changing, so set mode before it applying
+    if (newMode == eFullscreen::On)
+    {
+        isFullscreen = true;
+        SetFullscreenMode();
+    }
+    else
+    {
+        isFullscreen = false;
+        SetWindowedMode();
+    }
+}
+
+void WindowBackend::SetFullscreenMode()
+{
+    // Get window placement which is needed for back to windowed mode
+    ::GetWindowPlacement(hwnd, &windowPlacement);
+
+    // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+    // If it's not yet visible, the style should not be modified
+    // since ShowWindow(..., SW_SHOW) will occur later
+    uint32 style = fullscreenStyle | (::IsWindowVisible(hwnd) == TRUE ? WS_VISIBLE : 0);
+    ::SetWindowLong(hwnd, GWL_STYLE, style);
+
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+    HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    ::GetMonitorInfo(monitor, &monitorInfo);
+
+    ::SetWindowPos(hwnd,
+                   HWND_TOP,
+                   monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.top,
+                   monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                   SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void WindowBackend::SetWindowedMode()
+{
+    ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+    ::SetWindowPlacement(hwnd, &windowPlacement);
+
+    UINT flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, flags);
+}
+
 void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 {
     if (captureMode != mode)
@@ -241,7 +301,7 @@ void WindowBackend::DoSetCursorVisibility(bool visible)
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
+    ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
 
     *w = rc.right - rc.left;
     *h = rc.bottom - rc.top;
@@ -261,8 +321,9 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         // on win32 surfaceWidth/surfaceHeight is same as window width/height
         float32 surfaceWidth = width;
         float32 surfaceHeight = height;
+        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
     }
 }
 
@@ -279,6 +340,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -691,7 +755,7 @@ LRESULT WindowBackend::OnCreate()
     float32 surfaceHeight = height;
     float32 dpi = GetDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
