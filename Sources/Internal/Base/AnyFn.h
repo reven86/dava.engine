@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tuple>
-#include "Base/RttiType.h"
+#include "Base/RtType.h"
 #include "Base/BaseTypes.h"
 #include "Base/Exception.h"
 #include "Base/Any.h"
@@ -57,8 +57,8 @@ public:
         template <typename... Args>
         static Params FromArgs();
 
-        const RttiType* retType;
-        Vector<const RttiType*> argsType;
+        const RtType* retType;
+        Vector<const RtType*> argsType;
     };
 
 private:

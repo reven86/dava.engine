@@ -1,14 +1,14 @@
 #pragma once
 
-#ifndef __DAVA_ReflectedTypeDB__
-#include "Reflection/ReflectedTypeDB.h"
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
 #endif
 
-#include "Reflection/Private/StructureWrapperDefault.h"
-#include "Reflection/Private/StructureWrapperPtr.h"
-#include "Reflection/Private/StructureWrapperStdIdx.h"
-#include "Reflection/Private/StructureWrapperStdMap.h"
-#include "Reflection/Private/StructureWrapperStdSet.h"
+#include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
+#include "Reflection/Private/Wrappers/StructureWrapperPtr.h"
+#include "Reflection/Private/Wrappers/StructureWrapperStdIdx.h"
+#include "Reflection/Private/Wrappers/StructureWrapperStdMap.h"
+#include "Reflection/Private/Wrappers/StructureWrapperStdSet.h"
 
 namespace DAVA
 {
@@ -23,19 +23,19 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::false_type)
 template <typename T>
 const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
 {
-    static_assert(std::is_convertible<const T*, const ReflectedBase*>::value,
-                  "T* can't be converted to ReflectedBase*. "
+    static_assert(std::is_convertible<const T*, const ReflectionBase*>::value,
+                  "T* can't be converted to ReflectionBase*. "
                   "It seems that there is inheritance Diamond Problem. "
                   "Try to use virtual inheritance!");
 
-    return static_cast<const ReflectedBase*>(ptr)->GetReflectedType();
+    return static_cast<const ReflectionBase*>(ptr)->GetReflectedType();
 }
 
 template <typename T>
 const ReflectedType* GetVirtualReflectedType(const T* ptr)
 {
-    static const bool isReflectedBase = std::is_base_of<ReflectedBase, T>::value;
-    return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isReflectedBase>());
+    static const bool isRefBase = std::is_base_of<ReflectionBase, T>::value;
+    return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isRefBase>());
 }
 
 template <typename T>
@@ -93,16 +93,16 @@ ReflectedType* ReflectedTypeDB::CreateStatic()
 template <typename T>
 ReflectedType* ReflectedTypeDB::Edit()
 {
-    using DecayT = RttiType::DecayT<T>;
+    using DecayT = RtType::DecayT<T>;
     ReflectedType* ret = CreateStatic<DecayT>();
 
-    if (nullptr == ret->rttiType)
+    if (nullptr == ret->rtType)
     {
-        ret->rttiType = RttiType::Instance<DecayT>();
+        ret->rtType = RtType::Instance<DecayT>();
         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
 
-        rttiTypeToReflectedTypeMap[ret->rttiType] = ret;
-        rttiNameToReflectedTypeMap[String(ret->rttiType->GetName())] = ret;
+        rtTypeToReflectedTypeMap[ret->rtType] = ret;
+        rtTypeNameToReflectedTypeMap[String(ret->rtType->GetName())] = ret;
 
         ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
@@ -136,7 +136,7 @@ const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
 template <typename T, typename... Bases>
 void ReflectedTypeDB::RegisterBases()
 {
-    RttiInheritance::RegisterBases<T, Bases...>();
+    RtTypeInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedTypeDB::Edit<Bases>() != nullptr... };
 }
 

@@ -3,9 +3,7 @@
 #include <cstring>
 
 #include "Reflection/Reflection.h"
-#include "Reflection/Wrappers.h"
-#include "Reflection/WrappersRuntime.h"
-#include "Reflection/Private/StructureWrapperDefault.h"
+#include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
 {
@@ -14,19 +12,19 @@ namespace ReflectedTypeDBDetail
 struct Dumper
 {
     using PrinterFn = void (*)(std::ostringstream&, const Any&);
-    using PrintersTable = Map<const RttiType*, PrinterFn>;
+    using PrintersTable = Map<const RtType*, PrinterFn>;
 
     static const PrintersTable pointerPrinters;
     static const PrintersTable valuePrinters;
 
-    static std::pair<PrinterFn, PrinterFn> GetPrinterFns(const RttiType* type)
+    static std::pair<PrinterFn, PrinterFn> GetPrinterFns(const RtType* type)
     {
         std::pair<PrinterFn, PrinterFn> ret = { nullptr, nullptr };
 
         if (nullptr != type)
         {
             const PrintersTable* pt = &valuePrinters;
-            const RttiType* keyType = type;
+            const RtType* keyType = type;
             if (type->IsPointer())
             {
                 pt = &pointerPrinters;
@@ -42,7 +40,7 @@ struct Dumper
                 ret.first = it->second;
             }
 
-            ret.second = pt->at(RttiType::Instance<void>());
+            ret.second = pt->at(RtType::Instance<void>());
         }
         else
         {
@@ -58,7 +56,7 @@ struct Dumper
     static void DumpAny(std::ostringstream& out, const Any& any)
     {
         std::ostringstream line;
-        std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(any.GetRttiType());
+        std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(any.GetRtType());
 
         if (fns.first != nullptr)
         {
@@ -76,7 +74,7 @@ struct Dumper
     {
         if (ref.IsValid())
         {
-            const RttiType* valueType = ref.GetValueType();
+            const RtType* valueType = ref.GetValueType();
 
             std::ostringstream line;
             std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(valueType);
@@ -111,7 +109,7 @@ struct Dumper
 
         if (ref.IsValid())
         {
-            const RttiType* valueType = ref.GetValueType();
+            const RtType* valueType = ref.GetValueType();
             const char* typeName = valueType->GetName();
 
             std::streamsize w = 40;
@@ -242,48 +240,49 @@ struct Dumper
 };
 
 const Dumper::PrintersTable Dumper::valuePrinters = {
-    { RttiType::Instance<int32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int32>(); } },
-    { RttiType::Instance<uint32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint32>(); } },
-    { RttiType::Instance<int64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int64>(); } },
-    { RttiType::Instance<uint64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint64>(); } },
-    { RttiType::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
-    { RttiType::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
-    { RttiType::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
-    { RttiType::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
-    { RttiType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
+    { RtType::Instance<int32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int32>(); } },
+    { RtType::Instance<uint32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint32>(); } },
+    { RtType::Instance<int64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int64>(); } },
+    { RtType::Instance<uint64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint64>(); } },
+    { RtType::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
+    { RtType::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
+    { RtType::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
+    { RtType::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
+    { RtType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
 };
 
 const Dumper::PrintersTable Dumper::pointerPrinters = {
-    { RttiType::Instance<char>(), [](std::ostringstream& out, const Any& any) { out << any.Get<const char*>(); } },
-    { RttiType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "0x" << std::setw(8) << std::setfill('0') << std::hex << any.Get<void*>(); } }
+    { RtType::Instance<char>(), [](std::ostringstream& out, const Any& any) { out << any.Get<const char*>(); } },
+    { RtType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "0x" << std::setw(8) << std::setfill('0') << std::hex << any.Get<void*>(); } }
 };
 
 } // ReflectionDetail
 
-Reflection::Reflection(const ReflectedObject& object_, const ReflectedType* objectType_, const ReflectedMeta* objectMeta_, const ValueWrapper* valueWrapper_)
+Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* valueWrapper_)
     : object(object_)
-    , objectType(objectType_)
-    , objectMeta(objectMeta_)
     , valueWrapper(valueWrapper_)
 {
-    if (nullptr != objectType)
+    const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
+
+    // cache structure wrapper
+    if (nullptr != reflectedType)
     {
-        structureWrapper = objectType->GetStrucutreWrapper();
+        structureWrapper = reflectedType->GetStrucutreWrapper();
     }
 
-    if (nullptr != objectMeta)
-    {
-        if (objectMeta->HasMeta<StructureWrapper>())
-        {
-            structureWrapper = objectMeta->GetMeta<StructureWrapper>();
-        }
-    }
-
-    //     if (nullptr == structureWrapper)
+    //     if (nullptr != objectMeta)
     //     {
-    //         static StructureWrapperDefault emptyStructureWrapper;
-    //         structureWrapper = &emptyStructureWrapper;
+    //         if (objectMeta->HasMeta<StructureWrapper>())
+    //         {
+    //             structureWrapper = objectMeta->GetMeta<StructureWrapper>();
+    //         }
     //     }
+
+    if (nullptr == structureWrapper)
+    {
+        static StructureWrapperDefault emptyStructureWrapper;
+        structureWrapper = &emptyStructureWrapper;
+    }
 }
 
 bool Reflection::HasFields() const
@@ -301,7 +300,7 @@ Vector<Reflection::Field> Reflection::GetFields() const
     return structureWrapper->GetFields(object, valueWrapper);
 }
 
-const Reflection::FieldsCaps& Reflection::GetFieldsCaps() const
+const ReflectionCaps& Reflection::GetFieldsCaps() const
 {
     return structureWrapper->GetFieldsCaps(object, valueWrapper);
 }

@@ -1,13 +1,11 @@
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/ReflectedStructure.h"
 
 namespace DAVA
 {
 ReflectedType::~ReflectedType() = default;
 
-ReflectedType::ReflectedType(const RttiType* rttiType_)
-    : rttiType(rttiType_)
+ReflectedType::ReflectedType(const RtType* rttiType_)
+    : rtType(rttiType_)
 {
 }
 
@@ -36,7 +34,7 @@ bool ReflectedType::HasDtor() const
 
 void ReflectedType::Destroy(Any&& any) const
 {
-    if (!any.GetRttiType()->IsPointer())
+    if (!any.GetRtType()->IsPointer())
     {
         any.Clear();
     }

@@ -1,5 +1,7 @@
+#pragma once
+
 #ifndef __DAVA_ReflectedType__
-#include "Reflection/ReflectedType.h"
+#include "Reflection/Reflection.h"
 #endif
 
 namespace DAVA
@@ -9,9 +11,9 @@ namespace ReflectedTypeDetail
 static std::array<void*, 4> zeroArray = { 0 };
 };
 
-inline const RttiType* ReflectedType::GetRttiType() const
+inline const RtType* ReflectedType::GetRtType() const
 {
-    return rttiType;
+    return rtType;
 }
 
 inline const String& ReflectedType::GetPermanentName() const
@@ -30,9 +32,9 @@ inline const StructureWrapper* ReflectedType::GetStrucutreWrapper() const
 }
 
 template <typename... Args>
-bool ReflectedType::HasCtor(CtorWrapper::Policy policy) const
+bool ReflectedType::HasCtor(ReflectionCtorPolicy policy) const
 {
-    if ((0 == sizeof...(Args)) && policy == CtorWrapper::Policy::ByValue && rttiType->IsFundamental())
+    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && rtType->IsFundamental())
     {
         return true;
     }
@@ -53,12 +55,12 @@ bool ReflectedType::HasCtor(CtorWrapper::Policy policy) const
 }
 
 template <typename... Args>
-Any ReflectedType::Create(CtorWrapper::Policy policy, Args... args) const
+Any ReflectedType::Create(ReflectionCtorPolicy policy, Args... args) const
 {
-    if ((0 == sizeof...(Args)) && policy == CtorWrapper::Policy::ByValue && rttiType->IsFundamental())
+    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && rtType->IsFundamental())
     {
         Any ret;
-        ret.LoadValue(ReflectedTypeDetail::zeroArray.data(), rttiType);
+        ret.LoadValue(ReflectedTypeDetail::zeroArray.data(), rtType);
         return ret;
     }
     else
@@ -76,5 +78,4 @@ Any ReflectedType::Create(CtorWrapper::Policy policy, Args... args) const
 
     DAVA_THROW(Exception, "There is no appropriate ctor to call it with specified Args...");
 }
-
 } // namespace DAVA

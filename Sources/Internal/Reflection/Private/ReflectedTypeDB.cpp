@@ -1,33 +1,18 @@
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
 List<std::unique_ptr<ReflectedType>> ReflectedTypeDB::customReflectedTypes;
-UnorderedMap<const RttiType*, ReflectedType*> ReflectedTypeDB::rttiTypeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rttiNameToReflectedTypeMap;
+UnorderedMap<const RtType*, ReflectedType*> ReflectedTypeDB::rtTypeToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rtTypeNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
 
-#ifdef __REFLECTION_FEATURE__
-
-void ReflectedTypeDBB : SetPermanentName(const String& name) const
-{
-    ReflectedType* rt = const_cast<ReflectedType*>(this);
-
-    assert(permanentName.empty() && "Name is already set");
-    assert(permanentNameToReflectedTypeMap.count(name) == 0 && "Permanent name alredy in use");
-
-    rt->permanentName = name;
-    rt->permanentNameToReflectedTypeMap[permanentName] = rt;
-}
-#endif
-
-const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* rttiType)
+const ReflectedType* ReflectedTypeDB::GetByRtType(const RtType* rtType)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rttiTypeToReflectedTypeMap.find(rttiType);
-    if (it != rttiTypeToReflectedTypeMap.end())
+    auto it = rtTypeToReflectedTypeMap.find(rtType);
+    if (it != rtTypeToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -35,12 +20,12 @@ const ReflectedType* ReflectedTypeDB::GetByRttiType(const RttiType* rttiType)
     return ret;
 }
 
-const ReflectedType* ReflectedTypeDB::GetByRttiName(const String& rttiName)
+const ReflectedType* ReflectedTypeDB::GetByRtTypeName(const String& rttiName)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rttiNameToReflectedTypeMap.find(rttiName);
-    if (it != rttiNameToReflectedTypeMap.end())
+    auto it = rtTypeNameToReflectedTypeMap.find(rttiName);
+    if (it != rtTypeNameToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -61,18 +46,18 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
     return ret;
 }
 
-ReflectedType* ReflectedTypeDB::Create(const RttiType* rttiType, const String& permanentName)
+ReflectedType* ReflectedTypeDB::Create(const RtType* rtType, const String& permanentName)
 {
-    customReflectedTypes.emplace_back(new ReflectedType(rttiType));
+    customReflectedTypes.emplace_back(new ReflectedType(rtType));
     ReflectedType* ret = customReflectedTypes.back().get();
 
-    String rttiName(rttiType->GetName());
+    String rttiName(rtType->GetName());
 
-    DVASSERT(rttiTypeToReflectedTypeMap.count(rttiType) == 0 && "ReflectedType with specified RttiType already exists");
-    DVASSERT(rttiNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
+    DVASSERT(rtTypeToReflectedTypeMap.count(rtType) == 0 && "ReflectedType with specified RttiType already exists");
+    DVASSERT(rtTypeNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
 
-    rttiTypeToReflectedTypeMap[rttiType] = ret;
-    rttiNameToReflectedTypeMap[rttiName] = ret;
+    rtTypeToReflectedTypeMap[rtType] = ret;
+    rtTypeNameToReflectedTypeMap[rttiName] = ret;
 
     RegisterPermanentName(ret, permanentName);
 
@@ -90,5 +75,4 @@ void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, 
     rt->permanentName = permanentName;
     permanentNameToReflectedTypeMap[permanentName] = rt;
 }
-
 } // namespace DAVA

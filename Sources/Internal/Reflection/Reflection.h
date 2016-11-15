@@ -3,12 +3,17 @@
 #include <sstream>
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
-#include "Base/RttiType.h"
+#include "Base/RtType.h"
+#include "Base/RtTypeInheritance.h"
+
 #include "Debug/DVAssert.h"
 
-#include "Reflection/ReflectedMeta.h"
-#include "Reflection/ReflectedObject.h"
-#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectionTypes.h"
+#include "Reflection/Private/ReflectedMeta.h"
+#include "Reflection/Private/ReflectedType.h"
+#include "Reflection/Private/ReflectedTypeDB.h"
+#include "Reflection/Private/ReflectedStructure.h"
+#include "Reflection/Private/ReflectedObject.h"
 
 // TODO: usage comments
 #define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
@@ -21,7 +26,15 @@
 
 namespace DAVA
 {
+class ReflectedType;
+class ReflectedTypeDB;
+class ReflectedObject;
+class ReflectedMeta;
+
 class ValueWrapper;
+class MethodWrapper;
+class CtorWrapper;
+class DtorWrapper;
 class StructureWrapper;
 
 class Reflection final
@@ -30,29 +43,15 @@ public:
     struct Field;
     struct Method;
 
-    struct FieldsCaps
-    {
-        bool add = false;
-        bool insert = false;
-        bool remove = false;
-        bool createValue = false;
-        bool dynamic = false;
-        bool flat = false;
-        const RttiType* flatKeyType = nullptr;
-        const RttiType* flatValueType = nullptr;
-    };
-
     Reflection() = default;
     Reflection(const Reflection&) = default;
-    Reflection(const ReflectedObject& object_, const ReflectedType* objectType_, const ReflectedMeta* objectMeta_, const ValueWrapper* valueWrapper_);
+    Reflection(const ReflectedObject& object, const ValueWrapper* valueWrapper);
 
     bool IsValid() const;
     bool IsReadonly() const;
 
-    const RttiType* GetValueType() const;
+    const RtType* GetValueType() const;
     ReflectedObject GetValueObject() const;
-
-    const ReflectedType* GetReflectedType() const;
 
     Any GetValue() const;
     bool SetValue(const Any& value) const;
@@ -61,7 +60,7 @@ public:
     Reflection GetField(const Any& name) const;
     Vector<Field> GetFields() const;
 
-    const FieldsCaps& GetFieldsCaps() const;
+    const ReflectionCaps& GetFieldsCaps() const;
 
     bool AddField(const Any& key, const Any& value) const;
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
@@ -87,30 +86,109 @@ public:
 
 private:
     ReflectedObject object;
-    const ReflectedMeta* objectMeta = nullptr;
-    const ReflectedType* objectType = nullptr;
     const ValueWrapper* valueWrapper = nullptr;
     const StructureWrapper* structureWrapper = nullptr;
 };
 
-/// \brief A reflection field.
 struct Reflection::Field
 {
     Any key;
     Reflection ref;
 };
 
-/// \brief A reflection method.
 struct Reflection::Method
 {
-    String key; ///< method key (usually its name)
-    AnyFn fn; ///< method itself with binded runtime object it belongs to
+    String key;
+    AnyFn fn;
 };
+
+class ValueWrapper
+{
+public:
+    ValueWrapper() = default;
+    ValueWrapper(const ValueWrapper&) = delete;
+    virtual ~ValueWrapper() = default;
+
+    virtual const RtType* GetType() const = 0;
+
+    virtual bool IsReadonly(const ReflectedObject& object) const = 0;
+    virtual Any GetValue(const ReflectedObject& object) const = 0;
+    virtual bool SetValue(const ReflectedObject& object, const Any& value) const = 0;
+
+    virtual ReflectedObject GetValueObject(const ReflectedObject& object) const = 0;
+};
+
+class MethodWrapper
+{
+public:
+    AnyFn anyFn;
+};
+
+class EnumWrapper
+{
+    // TODO: implement
+};
+
+class CtorWrapper
+{
+public:
+    CtorWrapper() = default;
+    CtorWrapper(const CtorWrapper&) = delete;
+    virtual ~CtorWrapper() = default;
+
+    virtual ReflectionCtorPolicy GetCtorPolicy() const = 0;
+    virtual const AnyFn::Params& GetInvokeParams() const = 0;
+
+    virtual Any Create() const = 0;
+    virtual Any Create(const Any&) const = 0;
+    virtual Any Create(const Any&, const Any&) const = 0;
+    virtual Any Create(const Any&, const Any&, const Any&) const = 0;
+    virtual Any Create(const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Create(const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
+};
+
+class DtorWrapper
+{
+public:
+    DtorWrapper() = default;
+    DtorWrapper(const DtorWrapper&) = delete;
+    virtual ~DtorWrapper() = default;
+
+    virtual void Destroy(Any&& value) const = 0;
+    virtual void Destroy(ReflectedObject&& object) const = 0;
+};
+
+class StructureWrapper
+{
+public:
+    StructureWrapper() = default;
+    StructureWrapper(const StructureWrapper&) = delete;
+    virtual ~StructureWrapper() = default;
+
+    virtual bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+    virtual Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual const ReflectionCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+    virtual Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const = 0;
+    virtual bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const = 0;
+    virtual bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+};
+
+template <typename T>
+struct StructureWrapperCreator;
 
 } // namespace DAVA
 
 #define __DAVA_Reflection__
-#include "Reflection/Wrappers.h"
-#include "Reflection/WrappersRuntime.h"
-#include "ReflectedTypeDB.h"
 #include "Reflection/Private/Reflection_impl.h"
+#include "Reflection/Private/ReflectedMeta_impl.h"
+#include "Reflection/Private/ReflectedType_impl.h"
+#include "Reflection/Private/ReflectedTypeDB_impl.h"
+#include "Reflection/Private/ReflectedObject_impl.h"

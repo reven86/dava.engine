@@ -1,6 +1,6 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
-#include "Base/RttiInheritance.h"
+#include "Base/RtTypeInheritance.h"
 #include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
 #include <numeric>
@@ -294,9 +294,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         Any a;
         a.Set(bPtr);
 
-        RttiInheritance::RegisterBases<B, A>();
-        RttiInheritance::RegisterBases<D, A, A1>();
-        RttiInheritance::RegisterBases<E, D>();
+        RtTypeInheritance::RegisterBases<B, A>();
+        RtTypeInheritance::RegisterBases<D, A, A1>();
+        RtTypeInheritance::RegisterBases<E, D>();
 
         // simple
         TEST_VERIFY(bPtr == a.Get<void*>());
@@ -412,7 +412,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(a == b);
 
         // load test
-        a.LoadValue(&v1, RttiType::Instance<int>());
+        a.LoadValue(&v1, RtType::Instance<int>());
         TEST_VERIFY(a.Get<int>() == v1);
 
         // store test
@@ -420,21 +420,21 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(v1 == v2);
 
         // load/store pointers
-        a.LoadValue(&iptr1, RttiType::Instance<int*>());
+        a.LoadValue(&iptr1, RtType::Instance<int*>());
         a.StoreValue(&iptr2, sizeof(iptr2));
         TEST_VERIFY(iptr1 == iptr2);
 
         // load/store trivial types
         Trivial triv;
         Trivial triv1{ 11, 22 };
-        a.LoadValue(&triv, RttiType::Instance<Trivial>());
+        a.LoadValue(&triv, RtType::Instance<Trivial>());
         TEST_VERIFY(a.Get<Trivial>() == triv);
         a.StoreValue(&triv1, sizeof(triv1));
         TEST_VERIFY(triv1 == triv);
 
         // load/store fail cases
         NotTrivial not_triv;
-        TEST_VERIFY(!a.LoadValue(&not_triv, RttiType::Instance<NotTrivial>()));
+        TEST_VERIFY(!a.LoadValue(&not_triv, RtType::Instance<NotTrivial>()));
         TEST_VERIFY(!a.StoreValue(&not_triv, sizeof(not_triv)));
         TEST_VERIFY(!a.StoreValue(&triv, sizeof(triv) / 2));
     }
@@ -579,8 +579,8 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         AnyFn fn(&A::TestSum<R, T...>);
 
         auto& invokeParams = fn.GetInvokeParams();
-        TEST_VERIFY(invokeParams.retType == RttiType::Instance<R>());
-        TEST_VERIFY(invokeParams.argsType.at(0) == RttiType::Instance<A*>());
+        TEST_VERIFY(invokeParams.retType == RtType::Instance<R>());
+        TEST_VERIFY(invokeParams.argsType.at(0) == RtType::Instance<A*>());
         TEST_VERIFY(invokeParams.argsType.size() == (sizeof...(args) + 1));
 
         Any res = fn.Invoke(&a, args...);
@@ -599,7 +599,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         // now bind this, and test once again
         fn = fn.BindThis(&a);
         auto& invokeParams1 = fn.GetInvokeParams();
-        TEST_VERIFY(invokeParams1.retType == RttiType::Instance<R>());
+        TEST_VERIFY(invokeParams1.retType == RtType::Instance<R>());
         TEST_VERIFY(invokeParams1.argsType.size() == sizeof...(args));
 
         res = fn.Invoke(args...);

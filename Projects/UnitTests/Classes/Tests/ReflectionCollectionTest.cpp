@@ -2,7 +2,7 @@
 #include "Base/Result.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
-#include "Reflection/ReflectionQualifier.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include <functional>
 
@@ -28,7 +28,7 @@ struct RelfCollectionsHolder
 
 DAVA_REFLECTION_IMPL(RelfCollectionsHolder)
 {
-    DAVA::ReflectionQualifier<RelfCollectionsHolder>::Begin()
+    DAVA::ReflectionRegistrator<RelfCollectionsHolder>::Begin()
     .Field("intVector", &RelfCollectionsHolder::intVector)
     .Field("stringVector", &RelfCollectionsHolder::stringVector)
     .Field("intPtrVector", &RelfCollectionsHolder::intPtrVector)
@@ -108,10 +108,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY(*(std::next(startExpected, i)) == ref.GetField(i).GetValue().Cast<int>());
         }
 
-        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
-        TEST_VERIFY(caps.add);
-        TEST_VERIFY(caps.insert);
-        TEST_VERIFY(caps.remove);
+        const DAVA::ReflectionCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
         TEST_VERIFY(ref.GetField(size_t(5)).GetValue().Cast<int>() == 5);
@@ -137,10 +137,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY(i->second == v);
         }
 
-        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
-        TEST_VERIFY(caps.add);
-        TEST_VERIFY(!caps.insert);
-        TEST_VERIFY(caps.remove);
+        const DAVA::ReflectionCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(!caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(int(5), int(5)));
         TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
@@ -166,10 +166,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
             TEST_VERIFY((*i) == v);
         }
 
-        const Reflection::FieldsCaps caps = ref.GetFieldsCaps();
-        TEST_VERIFY(caps.add);
-        TEST_VERIFY(!caps.insert);
-        TEST_VERIFY(caps.remove);
+        const DAVA::ReflectionCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(!caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
         TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);

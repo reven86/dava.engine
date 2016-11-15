@@ -4,7 +4,7 @@
 #include "Base/Result.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
-#include "Reflection/ReflectionQualifier.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 struct SimpleStruct
 {
@@ -60,7 +60,7 @@ struct SimpleStruct
 
     DAVA_REFLECTION(SimpleStruct)
     {
-        DAVA::ReflectionQualifier<SimpleStruct>::Begin()
+        DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
         .ConstructorByValue()
         .ConstructorByValue<int>()
         .ConstructorByValue<int, int>()
@@ -75,7 +75,7 @@ struct SimpleStruct
     }
 };
 
-struct A : public virtual DAVA::ReflectedBase
+struct A : public virtual DAVA::ReflectionBase
 {
     int a = 99;
 
@@ -86,19 +86,19 @@ struct A : public virtual DAVA::ReflectedBase
 
     DAVA_VIRTUAL_REFLECTION(A)
     {
-        DAVA::ReflectionQualifier<A>::Begin()
+        DAVA::ReflectionRegistrator<A>::Begin()
         .Field("a", &A::a)
         .Method("Me", &A::Me)
         .End();
     }
 };
 
-struct B : public virtual DAVA::ReflectedBase
+struct B : public virtual DAVA::ReflectionBase
 {
     DAVA::String b = "BBB";
     DAVA_VIRTUAL_REFLECTION(B)
     {
-        DAVA::ReflectionQualifier<B>::Begin()
+        DAVA::ReflectionRegistrator<B>::Begin()
         .Field("b", &B::b)
         .End();
     }
@@ -110,7 +110,7 @@ struct AB : public A, public B
 
     DAVA_VIRTUAL_REFLECTION(AB, A, B)
     {
-        DAVA::ReflectionQualifier<AB>::Begin()
+        DAVA::ReflectionRegistrator<AB>::Begin()
         .Field("ab", &AB::ab)
         .End();
     }
@@ -121,20 +121,20 @@ struct D : public AB
     DAVA::String d = "DDD";
     DAVA_VIRTUAL_REFLECTION(D, AB)
     {
-        DAVA::ReflectionQualifier<D>::Begin()
+        DAVA::ReflectionRegistrator<D>::Begin()
         .Field("d", &D::d)
         .End();
     }
 };
 
-struct DHolder : DAVA::ReflectedBase
+struct DHolder : DAVA::ReflectionBase
 {
     int i;
     D d;
 
     DAVA_VIRTUAL_REFLECTION(DHolder)
     {
-        DAVA::ReflectionQualifier<DHolder>::Begin()
+        DAVA::ReflectionRegistrator<DHolder>::Begin()
         .Field("i", &DHolder::i)
         .Field("d", &DHolder::d)
         .End();
@@ -298,7 +298,7 @@ protected:
 
     DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
     {
-        DAVA::ReflectionQualifier<ReflectionTestClass>::Begin()
+        DAVA::ReflectionRegistrator<ReflectionTestClass>::Begin()
         .ConstructorByPointer()
         .ConstructorByPointer<int, int, int>()
         .DestructorByPointer()
@@ -356,9 +356,9 @@ struct BaseOnlyReflection : public A
 
     DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, A)
     {
-        DAVA::ReflectionQualifier<BaseOnlyReflection>::Begin()
+        DAVA::ReflectionRegistrator<BaseOnlyReflection>::Begin()
         .ConstructorByPointer(&BaseOnlyReflection::Create)
-        .DestructorByPointer()
+        .DestructorByPointer([](BaseOnlyReflection* c) { c->Release(); })
         .End();
     }
 
@@ -405,6 +405,11 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         std::ostringstream dumpOutput;
 
+        A a;
+        DAVA::Reflection ttt = DAVA::Reflection::Create(&a);
+        ttt.Dump(dumpOutput);
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
         ReflectionTestClass t;
         DAVA::Reflection t_ref = DAVA::Reflection::Create(&t);
 
@@ -417,12 +422,12 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype0 = DAVA::ReflectedTypeDB::Get<T>();
         TEST_VERIFY(nullptr != rtype0);
-        TEST_VERIFY(rtype0->GetRttiType() == DAVA::RttiType::Instance<T>());
+        TEST_VERIFY(rtype0->GetRtType() == DAVA::RtType::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedTypeDB::GetByRttiType(DAVA::RttiType::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedTypeDB::GetByRtType(DAVA::RtType::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
-        const DAVA::ReflectedType* rtype2 = DAVA::ReflectedTypeDB::GetByRttiName(typeid(T).name());
+        const DAVA::ReflectedType* rtype2 = DAVA::ReflectedTypeDB::GetByRtTypeName(typeid(T).name());
         TEST_VERIFY(rtype2 == rtype0);
 
         const DAVA::ReflectedType* rtype3 = DAVA::ReflectedTypeDB::GetByPermanentName(permName);
@@ -466,9 +471,9 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<T>();
 
-        TEST_VERIFY(true == rtype->HasCtor<Args...>(DAVA::CtorWrapper::Policy::ByValue));
+        TEST_VERIFY(true == rtype->HasCtor<Args...>(DAVA::ReflectionCtorPolicy::ByValue));
 
-        DAVA::Any a = rtype->Create(DAVA::CtorWrapper::Policy::ByValue, args...);
+        DAVA::Any a = rtype->Create(DAVA::ReflectionCtorPolicy::ByValue, args...);
         DAVA::Any b = T(args...);
         TEST_VERIFY(a.Get<T>() == b.Get<T>());
 
@@ -477,7 +482,7 @@ DAVA_TESTCLASS (ReflectionTest)
         // false case, when arguments count doesn't match
         try
         {
-            a = rtype->Create(DAVA::CtorWrapper::Policy::ByValue, "false case");
+            a = rtype->Create(DAVA::ReflectionCtorPolicy::ByValue, "false case");
             TEST_VERIFY(false && "Invoking ctor with bad arguments shouldn't be able");
         }
         catch (const DAVA::Exception&)
@@ -523,7 +528,7 @@ DAVA_TESTCLASS (ReflectionTest)
                 catch (const DAVA::Exception&)
                 {
                     TEST_VERIFY(!a.IsEmpty());
-                    TEST_VERIFY(a.GetRttiType() == DAVA::RttiType::Instance<SimpleStruct>());
+                    TEST_VERIFY(a.GetRtType() == DAVA::RtType::Instance<SimpleStruct>());
                 }
 
                 a.Set(new SimpleStruct());
@@ -540,7 +545,7 @@ DAVA_TESTCLASS (ReflectionTest)
         // custom ctor/dtor
         rtype = DAVA::ReflectedTypeDB::Get<BaseOnlyReflection>();
 
-        DAVA::Any b = rtype->Create(DAVA::CtorWrapper::Policy::ByPointer);
+        DAVA::Any b = rtype->Create(DAVA::ReflectionCtorPolicy::ByPointer);
         TEST_VERIFY(!b.IsEmpty());
 
         rtype->Destroy(std::move(b));
@@ -561,16 +566,16 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         TEST_VERIFY
         (
-        ref.GetValueType() == DAVA::RttiType::Instance<T>() ||
-        ref.GetValueType()->Decay() == DAVA::RttiType::Instance<T>()
+        ref.GetValueType() == DAVA::RtType::Instance<T>() ||
+        ref.GetValueType()->Decay() == DAVA::RtType::Instance<T>()
         );
 
         if (ref.GetValueObject().IsValid())
         {
             TEST_VERIFY
             (
-            ref.GetValueObject().GetType() == DAVA::RttiType::Instance<T*>() ||
-            ref.GetValueObject().GetType()->Decay() == DAVA::RttiType::Instance<T*>()
+            ref.GetValueObject().GetReflectedType()->GetRtType() == DAVA::RtType::Instance<T>() ||
+            ref.GetValueObject().GetReflectedType()->GetRtType()->Decay() == DAVA::RtType::Instance<T>()
             );
         }
 

@@ -4,16 +4,16 @@
 #include "Reflection/Reflection.h"
 #endif
 
-#include "Reflection/Private/ValueWrapperDefault.h"
+#include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
 #define DAVA_REFLECTION__IMPL(Cls) \
     template <typename FT__> \
     friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
     static void __ReflectionInitializer() \
     { \
-    static_assert(!std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectedBase"); \
-    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
-    __ReflectionInitializer_Impl(); \
+        static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
+        DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
+        __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
 
@@ -26,7 +26,7 @@
     } \
     static void __ReflectionInitializer() \
     { \
-        static_assert(std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectedBase"); \
+        static_assert(std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectionBase"); \
         DAVA::ReflectedTypeDB::RegisterBases<Cls, ##__VA_ARGS__>(); \
         DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
         __ReflectionInitializer_Impl(); \
@@ -43,7 +43,7 @@ inline bool Reflection::IsReadonly() const
     return valueWrapper->IsReadonly(object);
 }
 
-inline const RttiType* Reflection::GetValueType() const
+inline const RtType* Reflection::GetValueType() const
 {
     return valueWrapper->GetType();
 }
@@ -68,11 +68,6 @@ inline bool Reflection::IsValid() const
     return (nullptr != valueWrapper && object.IsValid());
 }
 
-inline const ReflectedType* Reflection::GetReflectedType() const
-{
-    return objectType;
-}
-
 template <typename Meta>
 inline bool Reflection::HasMeta() const
 {
@@ -91,9 +86,7 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
     if (nullptr != objectPtr)
     {
         static ValueWrapperDefault<T> objectValueWrapper;
-
-        const ReflectedType* objectType = ReflectedTypeDB::GetByPointer(objectPtr);
-        return Reflection(ReflectedObject(objectPtr), objectType, objectMeta, &objectValueWrapper);
+        return Reflection(ReflectedObject(objectPtr), &objectValueWrapper);
     }
 
     return Reflection();
@@ -103,8 +96,7 @@ static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullp
 {
     if (!any.IsEmpty())
     {
-        const ReflectedType* objectType = ReflectedTypeDB::GetByRttiType(any.GetRttiType());
-        ReflectedObject(any.GetData(), any.GetRttiType());
+        const ReflectedType* objectType = ReflectedTypeDB::GetByRtType(any.GetRtType());
 
         // TODO:
         // ...
@@ -114,5 +106,4 @@ static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullp
 
     return Reflection();
 }
-
 } // namespace DAVA
