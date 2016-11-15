@@ -36,6 +36,9 @@ Q_DECLARE_METATYPE(const InspMember*);
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , loggerOutput(new LoggerOutputObject)
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
+#endif //__DAVAENGINE_MACOS__
 {
     setupUi(this);
 
@@ -76,6 +79,8 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
+
+    qApp->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -358,7 +363,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 
         RebuildRecentMenu(project->GetProjectsHistory());
         FillComboboxLanguages(project);
-        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
+        setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -367,8 +372,13 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         {
             errors << QString::fromStdString(result.message);
         }
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
-        this->setWindowTitle("QuickEd");
+        QString errorStr = errors.join('\n');
+
+        setWindowTitle("QuickEd");
+
+        delayedExecutor.DelayedExecute([errorStr]() {
+            QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
+        });
     }
 }
 
@@ -480,6 +490,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
     {
         event->ignore();
     }
+}
+
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == event->type() && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
+    return false;
 }
 
 String MainWindow::GetState() const

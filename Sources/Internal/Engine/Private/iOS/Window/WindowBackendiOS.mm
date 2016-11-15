@@ -77,6 +77,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on iOS
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -95,6 +100,16 @@ void WindowBackend::TriggerPlatformEvents()
 void WindowBackend::ProcessPlatformEvents()
 {
     uiDispatcher.ProcessEvents();
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not supported
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not supported
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
