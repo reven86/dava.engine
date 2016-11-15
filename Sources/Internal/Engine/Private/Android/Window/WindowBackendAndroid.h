@@ -50,7 +50,7 @@ public:
     void TriggerPlatformEvents();
 
     float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(float32 scale);
+    bool SetSurfaceScale(const float32 scale);
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
@@ -74,6 +74,7 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    void DoSetSurfaceScale(const float32 scale);
     void UIEventHandler(const UIDispatcherEvent& e);
     void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
 

@@ -185,7 +185,13 @@ float32 WindowBackend::GetSurfaceScale() const
     return surfaceScale;
 }
 
-bool WindowBackend::SetSurfaceScale(float32 scale)
+bool WindowBackend::SetSurfaceScale(const float32 scale)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+    return true;
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
@@ -194,8 +200,6 @@ bool WindowBackend::SetSurfaceScale(float32 scale)
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, eFullscreen::On));
-
-    return true;
 }
 
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
@@ -230,6 +234,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
     default:
         break;
     }
