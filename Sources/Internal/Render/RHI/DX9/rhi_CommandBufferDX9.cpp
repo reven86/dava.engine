@@ -1101,6 +1101,7 @@ void _DX9_ResetBlock()
     TextureDX9::ReleaseAll();
     VertexBufferDX9::ReleaseAll();
     IndexBufferDX9::ReleaseAll();
+    QueryBufferDX9::ReleaseAll();
 
     for (;;)
     {
