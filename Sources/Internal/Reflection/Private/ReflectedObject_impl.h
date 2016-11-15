@@ -57,17 +57,19 @@ inline T* ReflectedObject::GetPtr() const
     const RtType* reqType = RtType::Instance<T>();
     const RtType* curType = reflectedType->GetRtType();
 
-    if (reqType == curType || reqType->Decay() == curType)
+    bool canGet = (reqType == curType) || (reqType->Decay() == curType);
+
+    if (canGet)
     {
         return static_cast<T*>(ptr);
     }
 
-    void* ret = nullptr;
-    bool canCast = RtTypeInheritance::DownCast(curType, reqType, ptr, &ret);
+    void* tmp = nullptr;
+    bool canCast = RtTypeInheritance::DownCast(curType, reqType, ptr, &tmp);
 
     DVASSERT(canCast);
 
-    return static_cast<T*>(ret);
+    return static_cast<T*>(tmp);
 }
 
 inline void* ReflectedObject::GetVoidPtr() const
