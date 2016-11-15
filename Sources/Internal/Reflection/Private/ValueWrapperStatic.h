@@ -12,6 +12,11 @@ public:
     {
     }
 
+    bool IsReadonly(const ReflectedObject& object) const override
+    {
+        return ValueWrapperDefault<T>::isConst;
+    }
+
     Any GetValue(const ReflectedObject& object) const override
     {
         Any ret;

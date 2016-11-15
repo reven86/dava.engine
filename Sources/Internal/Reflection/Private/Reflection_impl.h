@@ -40,7 +40,7 @@ namespace DAVA
 {
 inline bool Reflection::IsReadonly() const
 {
-    return valueWrapper->IsReadonly();
+    return valueWrapper->IsReadonly(object);
 }
 
 inline const RttiType* Reflection::GetValueType() const

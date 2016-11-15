@@ -17,7 +17,7 @@ public:
     {
     }
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
         return (nullptr == setter);
     }

@@ -13,9 +13,9 @@ public:
     ValueWrapper(const ValueWrapper&) = delete;
     virtual ~ValueWrapper() = default;
 
-    virtual bool IsReadonly() const = 0;
     virtual const RttiType* GetType() const = 0;
 
+    virtual bool IsReadonly(const ReflectedObject& object) const = 0;
     virtual Any GetValue(const ReflectedObject& object) const = 0;
     virtual bool SetValue(const ReflectedObject& object, const Any& value) const = 0;
 

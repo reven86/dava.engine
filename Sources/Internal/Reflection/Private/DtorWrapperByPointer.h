@@ -33,7 +33,7 @@ public:
         if (!object.IsEmpty())
         {
             C* c = object.Get<C*>();
-            delete c;
+            (*destroyer)(c);
 
             object.Clear();
         }

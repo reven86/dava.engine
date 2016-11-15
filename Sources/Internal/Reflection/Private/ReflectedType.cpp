@@ -34,20 +34,18 @@ bool ReflectedType::HasDtor() const
     return (nullptr != structure->dtor);
 }
 
-bool ReflectedType::Destroy(Any&& any) const
+void ReflectedType::Destroy(Any&& any) const
 {
     if (!any.GetRttiType()->IsPointer())
     {
         any.Clear();
-        return true;
+    }
+    else if (nullptr != structure->dtor)
+    {
+        structure->dtor->Destroy(std::move(any));
     }
     else
     {
-        if (nullptr != structure->dtor)
-        {
-            structure->dtor->Destroy(std::move(any));
-        }
-
         DAVA_THROW(Exception, "There is no appropriate dtor to destroy such object");
     }
 }

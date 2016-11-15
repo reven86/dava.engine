@@ -65,7 +65,7 @@ public:
 
     bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
     {
-        if (vw->IsReadonly())
+        if (vw->IsReadonly(object))
         {
             return false;
         }
@@ -78,7 +78,7 @@ public:
 
     bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
     {
-        if (vw->IsReadonly())
+        if (vw->IsReadonly(object))
         {
             return false;
         }
@@ -99,7 +99,7 @@ public:
 
     bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
     {
-        if (vw->IsReadonly())
+        if (vw->IsReadonly(object))
         {
             return false;
         }

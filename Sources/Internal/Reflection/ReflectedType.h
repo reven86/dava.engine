@@ -37,7 +37,7 @@ public:
     template <typename... Args>
     Any Create(CtorWrapper::Policy policy, Args...) const;
 
-    bool Destroy(Any&& any) const;
+    void Destroy(Any&& any) const;
 
 protected:
     String permanentName;

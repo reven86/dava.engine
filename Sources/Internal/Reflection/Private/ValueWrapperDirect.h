@@ -12,9 +12,9 @@ public:
     {
     }
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
-        return isConst;
+        return isConst || object.IsConst();
     }
 
     const RttiType* GetType() const override
@@ -39,7 +39,7 @@ public:
     {
         bool ret = false;
 
-        if (!IsReadonly() && object.IsValid())
+        if (!IsReadonly(object) && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
             const RttiType* inType = object.GetType()->Deref();

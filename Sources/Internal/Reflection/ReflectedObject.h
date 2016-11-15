@@ -22,6 +22,7 @@ public:
     ReflectedObject(const void* ptr, const RttiType* type);
 
     bool IsValid() const;
+    bool IsConst() const;
 
     const RttiType* GetType() const;
 
@@ -47,7 +48,7 @@ inline ReflectedObject::ReflectedObject(T* ptr_)
 template <typename T>
 inline ReflectedObject::ReflectedObject(const T* ptr_)
     : ptr(const_cast<T*>(ptr_))
-    , type(RttiType::Instance<T*>())
+    , type(RttiType::Instance<const T*>())
 {
 }
 
@@ -65,6 +66,7 @@ inline ReflectedObject::ReflectedObject(const void* ptr_, const RttiType* type_)
 {
     DVASSERT(nullptr != type_);
     DVASSERT(type_->IsPointer());
+    DVASSERT(type_->Deref()->IsConst());
 }
 
 inline const RttiType* ReflectedObject::GetType() const
@@ -75,6 +77,16 @@ inline const RttiType* ReflectedObject::GetType() const
 inline bool ReflectedObject::IsValid() const
 {
     return ((nullptr != ptr) && (nullptr != type));
+}
+
+inline bool ReflectedObject::IsConst() const
+{
+    if (nullptr != type)
+    {
+        return type->Deref()->IsConst();
+    }
+
+    return false;
 }
 
 template <typename T>
