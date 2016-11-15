@@ -43,7 +43,9 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
             material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
 
         if ((!enableFog) || (is2DMode)) //inverse logic to suspend vertex fog inherited from global material
+        {
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
+        }
 
         if (is2DMode)
             material->AddFlag(NMaterialFlagName::FLAG_FORCE_2D_MODE, 1);

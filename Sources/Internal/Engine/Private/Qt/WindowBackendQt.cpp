@@ -305,7 +305,7 @@ void WindowBackend::OnCreated()
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->logicalDpiX();
-    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
+    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
@@ -343,7 +343,7 @@ void WindowBackend::OnFrame()
 
 void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
 {
-    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
+    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
     eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
