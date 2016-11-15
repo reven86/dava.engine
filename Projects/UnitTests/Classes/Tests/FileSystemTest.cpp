@@ -367,12 +367,11 @@ DAVA_TESTCLASS (FileSystemTest)
     {
         FileSystem* fs = FileSystem::Instance();
 
-        const char* tmp = std::getenv("TEMP");
+        const FilePath tmp = fs->GetTempDirectoryPath();
 
-        if (tmp != nullptr)
+        if (!tmp.IsEmpty())
         {
-            String tmps = String(tmp);
-            std::replace(begin(tmps), end(tmps), '\\', '/');
+            String tmps = tmp.GetStringValue();
 
             const String dataDir = tmps + "/data/";
             if (fs->CreateDirectory(dataDir, true) != FileSystem::DIRECTORY_CANT_CREATE)
