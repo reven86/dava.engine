@@ -31,11 +31,17 @@ struct DataWrapper::Impl
 
     Set<DataListener*> listeners;
     Set<DataListener*> listenersToRemove;
+#ifdef __DAVAENGINE_DEBUG__
+    String typeName;
+#endif
 };
 
 DataWrapper::DataWrapper(const ReflectedType* type)
     : DataWrapper(Bind(&DataWrapperDetail::GetDataDefault, std::placeholders::_1, type))
 {
+#ifdef __DAVAENGINE_DEBUG__
+    impl->typeName = type->GetPermanentName();
+#endif
 }
 
 DataWrapper::DataWrapper(const DataAccessor& accessor)
@@ -121,6 +127,14 @@ bool DataWrapper::IsActive() const
 void DataWrapper::Sync(bool notifyListeners)
 {
     DVASSERT(impl != nullptr);
+
+    for (DataListener* listener : impl->listenersToRemove)
+    {
+        listener->Clear();
+        impl->listeners.erase(listener);
+    }
+    impl->listenersToRemove.clear();
+
     if (HasData())
     {
         Reflection reflection = GetData();
@@ -182,13 +196,6 @@ void DataWrapper::Sync(bool notifyListeners)
             NotifyListeners(notifyListeners);
         }
     }
-
-    for (DataListener* listener : impl->listenersToRemove)
-    {
-        listener->Clear();
-        impl->listeners.erase(listener);
-    }
-    impl->listenersToRemove.clear();
 }
 
 void DataWrapper::SyncWithEditor(const Reflection& etalonData)

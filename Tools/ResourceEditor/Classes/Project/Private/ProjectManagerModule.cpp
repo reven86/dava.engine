@@ -10,6 +10,7 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
+#include "TArc/WindowSubSystem/QtAction.h"
 
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 
@@ -80,14 +81,19 @@ void ProjectManagerModule::CreateActions()
     QAction* recentProjects = new QAction("Recent Projects", nullptr);
     ui.AddAction(windowKey, placementInfo, recentProjects);
 
-    QAction* closeProjectAction = new QAction("Close Project", nullptr);
-    closeProjectAction->setEnabled(false);
+    QtAction* closeProjectAction = new QtAction(&GetAccessor(), "Close Project", nullptr);
+
+    FieldDescriptor fieldDescr;
+    fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+    fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
+    closeProjectAction->SetStateUpdationFunction(QtAction::Enabling, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
+        return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
+    });
     connections.AddConnection(closeProjectAction, &QAction::triggered, [this]()
                               {
                                   CloseProject();
                               });
     ui.AddAction(windowKey, placementInfo, closeProjectAction);
-    closeAction = closeProjectAction;
 
     QAction* separator = new QAction(nullptr);
     separator->setSeparator(true);
@@ -176,12 +182,6 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
 
     AddRecentProject(incomePath);
-
-    // TODO UVR remove imperative code that sync state of action
-    if (closeAction)
-    {
-        closeAction->setEnabled(true);
-    }
 }
 
 void ProjectManagerModule::OpenLastProject()
@@ -213,11 +213,6 @@ void ProjectManagerModule::CloseProject()
         DVASSERT(data->closeProjectPredicate != nullptr);
         if (data->closeProjectPredicate())
         {
-            // TODO UVR remove imperative code that sync state of action
-            if (closeAction)
-            {
-                closeAction->setEnabled(false);
-            }
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
             data->projectPath = "";
 

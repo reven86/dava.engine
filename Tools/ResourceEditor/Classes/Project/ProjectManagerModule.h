@@ -36,5 +36,4 @@ private:
 private:
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
-    QPointer<QAction> closeAction;
 };
