@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Base/Platform.h"
 #include "TArcCore/ControllerModule.h"
 
 class TextureCache;

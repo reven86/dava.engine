@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 
 #include "MemoryManager/AllocatorBridge.h"
 
