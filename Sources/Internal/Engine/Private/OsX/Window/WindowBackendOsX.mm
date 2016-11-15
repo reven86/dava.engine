@@ -6,7 +6,6 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
 #include "Engine/OsX/WindowNativeServiceOsX.h"
