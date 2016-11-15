@@ -148,6 +148,7 @@ struct GLCommand
         COMPILE_SHADER,
         ATTACH_SHADER,
         LINK_PROGRAM,
+        DETACH_SHADER,
         GET_SHADER_IV,
         GET_SHADER_INFO_LOG,
         GET_PROGRAM_IV,

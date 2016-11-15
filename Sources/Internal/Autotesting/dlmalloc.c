@@ -2,8 +2,6 @@
 
 /*------------------------------ internal #includes ---------------------- */
 
-#include "Base/Platform.h"
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4146) /* no "unsigned" warnings */
 #endif /* _MSC_VER */

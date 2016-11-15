@@ -1,4 +1,5 @@
 #include "../dbg_Draw.h"
+#include "../Common/PreProcess.h"
 #include "../rhi_ShaderSource.h"
 #include "../rhi_ShaderCache.h"
 #include "rhi_Utils.h"
@@ -857,6 +858,8 @@ void DbgDraw::_init()
 {
     // init PTC
 
+    ShaderPreprocessScope preprocessScope;
+
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
 
@@ -952,14 +955,6 @@ void DbgDraw::_init()
         }
     }
 
-    // CRAP: hard-coded max vertex count
-    /*
-    _line_buf1.construct( 16*1024 );
-    _line_buf2.construct( 16*1024 );
-    _line_buf3.construct( 16*1024 );
-    _line_buf3.disable_depth_write();
-    _tri3d_buf.construct( 16*1024 );
-*/
     _normal_text2d_buf.construct(4 * 1024);
     _normal_text2d_buf.set_normal_text_size();
     _small_text2d_buf.construct(4 * 1024);

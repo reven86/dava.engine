@@ -1,5 +1,4 @@
-#if !defined ___MCPP_H__
-#define ___MCPP_H__
+#pragma once
 
 #define PREPROCESSED 0
 #define HAVE_CONFIG_H 0
@@ -7,21 +6,22 @@
 #define DLL_EXPORT 0
 
 #if defined(__DAVAENGINE_WIN32__)
-    #pragma warning(disable : 4018 4068 4101 4102 4146)
+#pragma warning(disable : 4018 4068 4101 4102 4146)
 #endif
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
 
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    #include <stdio.h>
-
-    #include "Base/Platform.h"
+#include "Base/Platform.h"
+#include "Debug/CPUProfiler.h"
+#include "mcpp_out.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 typedef struct _stat stat_t;
-    #ifndef S_IRUSR
-    #define S_IRUSR S_IREAD
-    #endif
+#ifndef S_IRUSR
+#define S_IRUSR S_IREAD
+#endif
 #else
 typedef struct stat stat_t;
 #endif
@@ -41,4 +41,13 @@ void mcpp__startup();
 void mcpp__cleanup();
 void mcpp__shutdown();
 
-#endif // ___MCPP_H__
+struct mcpp_preprocessed_text
+{
+    char* buffer = nullptr;
+    DAVA::uint32 pos = 0;
+};
+
+extern mcpp_preprocessed_text _mcpp_preprocessed_text;
+int mcpp_fputc_impl(int ch, OUTDEST dst);
+int mcpp_fputs_impl(const char* str, OUTDEST dst);
+int mcpp_fprintf_impl(OUTDEST dst, const char* format, ...);
