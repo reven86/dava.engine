@@ -83,7 +83,6 @@ void RenderWidget::OnFrame()
         widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
     }
 
-    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
     DVASSERT(isInPaint == false);
     isInPaint = true;
     SCOPE_EXIT
