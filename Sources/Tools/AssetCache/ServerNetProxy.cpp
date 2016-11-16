@@ -10,6 +10,11 @@ namespace DAVA
 {
 namespace AssetCache
 {
+
+// timeout of waiting for response from client.
+// temporary. should be removed after client side will implement correct net polling (i.e. polling without long gaps between polls)
+const uint32 CLIENT_PING_TIMEOUT_MS = 100 * 1000;
+
 ServerNetProxy::~ServerNetProxy()
 {
 }
@@ -19,7 +24,7 @@ void ServerNetProxy::Listen(uint16 port)
     listenPort = port;
     DVASSERT(!netServer);
 
-    netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
+    netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this, Net::TRANSPORT_TCP, CLIENT_PING_TIMEOUT_MS));
 }
 
 void ServerNetProxy::Disconnect()

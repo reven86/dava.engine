@@ -30,6 +30,8 @@ void CacheDB::NotifySizeChanged()
 
 void CacheDB::UpdateSettings(const DAVA::FilePath& folderPath, const DAVA::uint64 size, const DAVA::uint32 newMaxItemsInMemory, const DAVA::uint64 _autoSaveTimeout)
 {
+    bool fullCacheChanged = false;
+
     DAVA::FilePath newCacheRootFolder = folderPath;
     newCacheRootFolder.MakeDirectoryPathname();
 
@@ -44,11 +46,13 @@ void CacheDB::UpdateSettings(const DAVA::FilePath& folderPath, const DAVA::uint6
         cacheSettings = cacheRootFolder + DB_FILE_NAME;
 
         Load();
+        fullCacheChanged = true;
     }
 
     if (maxStorageSize != size)
     {
         ReduceFullCacheToSize(size);
+        fullCacheChanged = true;
 
         maxStorageSize = size;
         NotifySizeChanged();
@@ -67,7 +71,11 @@ void CacheDB::UpdateSettings(const DAVA::FilePath& folderPath, const DAVA::uint6
     }
 
     autoSaveTimeout = _autoSaveTimeout;
-    Save();
+
+    if (fullCacheChanged)
+    {
+        Save();
+    }
 }
 
 void CacheDB::Load()
