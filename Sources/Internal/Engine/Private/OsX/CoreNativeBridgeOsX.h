@@ -63,6 +63,7 @@ struct CoreNativeBridge final
         ON_DID_RECEIVE_REMOTE_NOTIFICATION,
         ON_DID_REGISTER_REMOTE_NOTIFICATION,
         ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION,
+        ON_DID_ACTIVATE_NOTIFICATION,
     };
     void NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3);
 

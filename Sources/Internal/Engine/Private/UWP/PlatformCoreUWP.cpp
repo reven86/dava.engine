@@ -103,15 +103,15 @@ void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAct
     {
         NotifyListeners(ON_LAUNCHED, launchArgs);
     }
-    if (launchArgs->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
-    {
-        Platform::String ^ launchString = launchArgs->Arguments;
-        if (!launchString->IsEmpty())
-        {
-            String uidStr = UTF8Utils::EncodeToUTF8(launchString->Data());
-            dispatcher.PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
-    }
+    //     if (launchArgs->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
+    //     {
+    //         Platform::String ^ launchString = launchArgs->Arguments;
+    //         if (!launchString->IsEmpty())
+    //         {
+    //             String uidStr = UTF8Utils::EncodeToUTF8(launchString->Data());
+    //             dispatcher->PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+    //         }
+    //     }
 }
 
 void PlatformCore::OnActivated()

@@ -5,12 +5,18 @@
 
 #include "Notification/Private/Android/LocalNotificationAndroid.h"
 #include "Notification/Private/LocalNotificationNotImplemented.h"
+#include "Notification/Private/NativeDelegate.h"
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
+LocalNotificationController::LocalNotificationController()
+{
+    nativeDelegate.reset(new NativeDelegate(*this));
+}
+
 LocalNotificationController::~LocalNotificationController()
 {
     LockGuard<Mutex> guard(notificationsListMutex);
@@ -23,6 +29,7 @@ LocalNotificationController::~LocalNotificationController()
             SafeRelease(notification);
         }
     }
+    nativeDelegate.reset();
 }
 
 LocalNotificationProgress* const LocalNotificationController::CreateNotificationProgress(const WideString& title, const WideString& text, uint32 maximum, uint32 current, bool useSound)

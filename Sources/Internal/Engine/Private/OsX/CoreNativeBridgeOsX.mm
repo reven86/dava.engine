@@ -140,17 +140,6 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 
 void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
 {
-    NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
-    if (userNotification.userInfo != nil)
-    {
-        NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
-        if (uid != nil && [uid length] != 0)
-        {
-            DAVA::String uidStr = DAVA::StringFromNSString(uid);
-            mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
-    }
-
     core->engineBackend->OnGameLoopStarted();
 
     WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
@@ -273,6 +262,9 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
             l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
             break;
+        case ON_DID_ACTIVATE_NOTIFICATION:
+            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            break;
         default:
             break;
         }
@@ -281,14 +273,7 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
 
 void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
 {
-    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
-    if (uid != nil && [uid length] != 0)
-    {
-        DAVA::String uidStr = DAVA::StringFromNSString(uid);
-        mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        core->engineBackend->GetPrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
-    }
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr, nullptr);
 }
 } // namespace Private
 } // namespace DAVA

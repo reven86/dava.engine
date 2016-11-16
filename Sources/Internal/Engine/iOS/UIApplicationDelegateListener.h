@@ -8,6 +8,7 @@
 
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(UILocalNotification);
 
 namespace DAVA
 {
@@ -40,6 +41,9 @@ struct UIApplicationDelegateListener
     {
     }
     virtual void applicationWillTerminate()
+    {
+    }
+    virtual void didActivateNotification(UILocalNotification* notification)
     {
     }
 };

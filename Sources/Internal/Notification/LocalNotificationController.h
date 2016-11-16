@@ -10,12 +10,14 @@ namespace DAVA
 class LocalNotification;
 class LocalNotificationText;
 class LocalNotificationProgress;
+class NativeDelegate;
 
 class LocalNotificationController : public Singleton<LocalNotificationController>
 {
     friend class LocalNotification;
 
 public:
+    LocalNotificationController();
     virtual ~LocalNotificationController();
     LocalNotificationProgress* const CreateNotificationProgress(const WideString& title = L"", const WideString& text = L"", uint32 max = 0, uint32 current = 0, bool useSound = false);
     LocalNotificationText* const CreateNotificationText(const WideString& title = L"", const WideString& text = L"", bool useSound = false);
@@ -32,5 +34,6 @@ public:
 private:
     Mutex notificationsListMutex;
     List<LocalNotification*> notificationsList;
+    std::unique_ptr<NativeDelegate> nativeDelegate;
 };
 }

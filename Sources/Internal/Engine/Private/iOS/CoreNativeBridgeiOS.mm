@@ -271,6 +271,9 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_WILL_TERMINATE:
             l->applicationWillTerminate();
             break;
+        case ON_DID_ACTIVATE_NOTIFICATION:
+            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            break;
         default:
             break;
         }
@@ -279,12 +282,7 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
 
 void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UILocalNotification* notification)
 {
-    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
-    if (uid != nil && [uid length] != 0)
-    {
-        const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
-        mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-    }
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr);
 }
 } // namespace Private
 } // namespace DAVA
