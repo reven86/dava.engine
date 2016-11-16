@@ -3009,7 +3009,7 @@ enum
 
 static DAVA::FixedSizePoolAllocator* smallBlockAllocator = nullptr;
 static DAVA::FixedSizePoolAllocator* largeBlockAllocator = nullptr;
-static std::atomic_uint32_t allocatorReferences(0);
+static std::atomic<DAVA::uint32> allocatorReferences(0);
 static std::unordered_map<char*, DAVA::uint32> customAllocations;
 
 char* AllocateTracked(DAVA::uint32 size)
