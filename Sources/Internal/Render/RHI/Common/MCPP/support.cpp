@@ -3009,7 +3009,7 @@ enum
 
 static DAVA::FixedSizePoolAllocator* smallBlockAllocator = nullptr;
 static DAVA::FixedSizePoolAllocator* largeBlockAllocator = nullptr;
-static std::atomic<bool> allocatorsInitialized(false);
+static std::atomic_uint32_t allocatorReferences(0);
 static std::unordered_map<char*, DAVA::uint32> customAllocations;
 
 char* AllocateTracked(DAVA::uint32 size)
@@ -3050,31 +3050,32 @@ void ReleaseTrackedMemory()
 
 void xbegin_allocations()
 {
-    DVASSERT(allocatorsInitialized.load() == false);
-
-    smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
-    largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
-
-    allocatorsInitialized = true;
+    if (allocatorReferences == 0)
+    {
+        smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
+        largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
+    }
+    ++allocatorReferences;
 }
 
 void xend_allocations()
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
 
-    ReleaseTrackedMemory();
-
-    delete smallBlockAllocator;
-    delete largeBlockAllocator;
-    smallBlockAllocator = nullptr;
-    largeBlockAllocator = nullptr;
-
-    allocatorsInitialized = false;
+    --allocatorReferences;
+    if (allocatorReferences == 0)
+    {
+        ReleaseTrackedMemory();
+        delete smallBlockAllocator;
+        delete largeBlockAllocator;
+        smallBlockAllocator = nullptr;
+        largeBlockAllocator = nullptr;
+    }
 }
 
 char*(xmalloc)(size_t size)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
     DVASSERT(size > 0);
 
     if (size <= SmallBlockSize)
@@ -3093,7 +3094,7 @@ char*(xmalloc)(size_t size)
 
 void(xfree)(void* ptr)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
 
     if (ptr == nullptr)
         return;
@@ -3114,7 +3115,7 @@ void(xfree)(void* ptr)
 
 char*(xrealloc)(void* ptr, size_t size)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
     DVASSERT(size > 0);
 
     char* newData = xmalloc(size);
