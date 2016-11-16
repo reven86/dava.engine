@@ -22,10 +22,10 @@
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent)
+DocumentGroup::DocumentGroup(Project* project_, MainWindow::DocumentGroupView* view_, QObject* parent)
     : QObject(parent)
-    , project(aProject)
-    , view(aView)
+    , project(project_)
+    , view(view_)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);

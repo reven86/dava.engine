@@ -22,7 +22,7 @@ class DocumentGroup : public QObject
     Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
     Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
-    explicit DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent = nullptr);
+    explicit DocumentGroup(Project* project, MainWindow::DocumentGroupView* view, QObject* parent = nullptr);
     ~DocumentGroup();
 
     Document* GetActiveDocument() const;
