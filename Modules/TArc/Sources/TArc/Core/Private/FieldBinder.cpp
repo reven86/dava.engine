@@ -115,7 +115,7 @@ public:
                 auto iter = listeners.find(FastName(fieldName));
                 if (iter != listeners.end())
                 {
-                    Reflection::Field field = reflection.GetField(Any(fieldName));
+                    Reflection::Field field = reflection.GetField(fieldAnyName);
                     iter->second(field.ref.GetValue());
                 }
             }

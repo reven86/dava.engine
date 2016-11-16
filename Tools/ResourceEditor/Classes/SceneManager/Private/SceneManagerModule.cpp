@@ -3,6 +3,7 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Main/mainwindow.h"
 
 #include "TArc/WindowSubSystem/QtAction.h"
 #include "TArc/WindowSubSystem/UI.h"
@@ -16,7 +17,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
 #include "Base/FastName.h"
-#include "Main/mainwindow.h"
+#include "Base/Any.h"
 
 namespace SceneManagerDetail
 {
@@ -46,6 +47,20 @@ private:
         .Field(DAVA::TArc::SceneTabbar::activeTabPropertyName, &TabbarData::activeContexID)
         .Field(DAVA::TArc::SceneTabbar::tabsPropertyName, &TabbarData::tabs)
         .End();
+    }
+};
+}
+
+namespace DAVA
+{
+template <>
+struct AnyCompare<SceneManagerDetail::SingleTab>
+{
+    static bool IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+    {
+        const SceneManagerDetail::SingleTab& tab1 = v1.Get<SceneManagerDetail::SingleTab>();
+        const SceneManagerDetail::SingleTab& tab2 = v2.Get<SceneManagerDetail::SingleTab>();
+        return tab1.tabTitle == tab2.tabTitle;
     }
 };
 }

@@ -20,6 +20,7 @@ inline void Any::Swap(Any& any)
 {
     std::swap(anyStorage, any.anyStorage);
     std::swap(type, any.type);
+    std::swap(compareFn, any.compareFn);
 }
 
 inline bool Any::IsEmpty() const
@@ -45,6 +46,8 @@ inline Any& Any::operator=(Any&& any)
         type = any.type;
         anyStorage = std::move(any.anyStorage);
         any.type = nullptr;
+        compareFn = any.compareFn;
+        any.compareFn = nullptr;
     }
 
     return *this;
@@ -131,7 +134,7 @@ void Any::Set(T&& value, NotAny<T>)
 
     type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
-    compareFn = &AnyCompare<std::remove_cv_t<T>>::IsEqual;
+    compareFn = &AnyCompare<U>::IsEqual;
 }
 
 template <typename T>
