@@ -945,6 +945,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break
     case WM_KEYUP:
     {
+        static const int RSHIFT_SCANCODE = 0x36;
+
         KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
 
         uint32 systemKeyCode = static_cast<uint32>(wParam);
@@ -954,7 +956,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             systemKeyCode |= 0x100;
         }
         uint32 scanCode = (extendedKeyInfo & 0xFF0000) >> 16;
-        if (VK_SHIFT == systemKeyCode && scanCode == 0x36) // is right shift key
+        const bool isShift = (VK_SHIFT == systemKeyCode);
+        if (isShift && scanCode == RSHIFT_SCANCODE) // is right shift key
         {
             systemKeyCode |= 0x100;
         }
@@ -968,6 +971,26 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
         UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnKeyUnpressed(ev.key);
+
+        if (isShift)
+        {
+            // If it's an up event and another shift is pressed right now, consider it's up too
+            // Since Windows does not send event with separate WM_KEYUP for second shift if first one is still pressed
+            const Key anotherShiftKey = (scanCode == RSHIFT_SCANCODE) ? Key::LSHIFT : Key::RSHIFT;
+            if (keyboard.IsKeyPressed(anotherShiftKey))
+            {
+                UIEvent anotherShiftUpEvent;
+                anotherShiftUpEvent.phase = UIEvent::Phase::KEY_UP;
+                anotherShiftUpEvent.device = UIEvent::Device::KEYBOARD;
+                anotherShiftUpEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+                anotherShiftUpEvent.key = anotherShiftKey;
+                anotherShiftUpEvent.modifiers = GetKeyboardModifiers();
+
+                UIControlSystem::Instance()->OnInput(&anotherShiftUpEvent);
+                keyboard.OnKeyUnpressed(anotherShiftUpEvent.key);
+            }
+        }
+
         // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
         return 0;
     }
