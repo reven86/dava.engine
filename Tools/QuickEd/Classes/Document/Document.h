@@ -77,7 +77,7 @@ private:
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     std::unique_ptr<DAVA::CommandStack> commandStack;
-    std::unique_ptr<QFileSystemWatcher> fileSystemWatcher;
+    QFileSystemWatcher* fileSystemWatcher = nullptr;
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;

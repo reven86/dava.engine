@@ -19,7 +19,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , commandStack(new CommandStack())
-    , fileSystemWatcher(new QFileSystemWatcher())
+    , fileSystemWatcher(new QFileSystemWatcher(this))
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
@@ -27,7 +27,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
-    connect(fileSystemWatcher.get(), &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
     commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
 
