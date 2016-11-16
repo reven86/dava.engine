@@ -14,16 +14,17 @@
 
 using DAVA::Logger;
 
-#include "Concurrency/Thread.h"
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/ConditionVariable.h"
-#include "Concurrency/LockGuard.h"
-#include "Concurrency/AutoResetEvent.h"
-#include "Concurrency/ManualResetEvent.h"
-#include "Debug/CPUProfiler.h"
+    #include "Concurrency/Thread.h"
+    #include "Concurrency/Semaphore.h"
+    #include "Concurrency/ConditionVariable.h"
+    #include "Concurrency/LockGuard.h"
+    #include "Concurrency/AutoResetEvent.h"
+    #include "Concurrency/ManualResetEvent.h"
+    #include "Debug/CPUProfiler.h"
 
 #include "_gl.h"
 
+#define RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION 1
 namespace rhi
 {
 struct RenderPassGLES2_t
@@ -1238,14 +1239,14 @@ bool _GLES2_PresentBuffer()
     if (!_GLES2_Context) //this is special case when rendering is done inside other app render loop (eg: QT loop in ResEditor)
         return true;
 
-// do swap-buffers            
-    #if defined(__DAVAENGINE_WIN32__)
+// do swap-buffers
+#if defined(__DAVAENGINE_WIN32__)
     win32_gl_end_frame();
-    #elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__)
     macos_gl_end_frame();
-    #elif defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_IPHONE__)
     ios_gl_end_frame();
-    #elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__)
     success = android_gl_end_frame();        
     #endif
 
@@ -1253,7 +1254,7 @@ bool _GLES2_PresentBuffer()
 }
 
 void _GLES2_ResetBlock()
-{        
+{
 #if defined(__DAVAENGINE_ANDROID__)
 
     TextureGLES2::ReCreateAll();
@@ -1481,9 +1482,36 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         }
         break;
 
+        case GLCommand::DETACH_SHADER:
+        {
+            GL_CALL(glDetachShader(GLuint(arg[0]), GLuint(arg[1])));
+            cmd->status = err;
+        }
+        break;
+
         case GLCommand::LINK_PROGRAM:
         {
-            GL_CALL(glLinkProgram(GLuint(arg[0])));
+            GLint linkStatus = GL_FALSE;
+            GLuint program = static_cast<GLuint>(arg[0]);
+            GL_CALL(glLinkProgram(program));
+            GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &linkStatus));
+            if (linkStatus)
+            {
+            #if (RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION)
+                // Force OpenGL to compile program immediately
+                GLint currentProgram = 0;
+                GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram));
+                GLint validateStatus = 0;
+                GLchar validateLog[2048] = {};
+                GLsizei validateLogLength = 0;
+                GL_CALL(glUseProgram(program));
+                GL_CALL(glValidateProgram(program));
+                GL_CALL(glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus));
+                GL_CALL(glGetProgramInfoLog(program, 2048, &validateLogLength, validateLog));
+                GL_CALL(glUseProgram(currentProgram));
+            #endif
+            }
+            cmd->retval = linkStatus;
             cmd->status = err;
         }
         break;

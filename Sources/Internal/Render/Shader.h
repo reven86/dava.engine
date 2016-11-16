@@ -43,7 +43,7 @@ class ShaderDescriptor;
 namespace ShaderDescriptorCache
 {
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
-void RelaoadShaders();
+void ReloadShaders();
 }
 
 class ShaderDescriptor
@@ -114,7 +114,7 @@ private:
     HashMap<FastName, int32> defines;
 
     friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
-    friend void ShaderDescriptorCache::RelaoadShaders();
+    friend void ShaderDescriptorCache::ReloadShaders();
 };
 
 inline bool ShaderDescriptor::IsValid()

@@ -11,7 +11,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
-#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Image/ImageConvert.h"
@@ -338,7 +338,7 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
         return nullptr;
     }
 
-    ScopedPtr<File> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    ScopedPtr<UnmanagedMemoryFile> file(new UnmanagedMemoryFile(data, size));
     DVASSERT(file);
 
     Vector<Image*> images;

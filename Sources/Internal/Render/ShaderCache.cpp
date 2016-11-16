@@ -64,8 +64,10 @@ void ClearDynamicBindigs()
     }
 }
 
-void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key)
+Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines)
 {
+    Vector<int32> key;
+
     key.clear();
     key.reserve(defines.size() * 2 + 1);
     for (auto& define : defines)
@@ -74,6 +76,8 @@ void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines
         key.push_back(define.second);
     }
     key.push_back(name.Index());
+
+    return key;
 }
 
 ShaderSourceCode LoadFromSource(const String& source)
@@ -168,8 +172,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     LockGuard<Mutex> guard(shaderCacheMutex);
 
     /*key*/
-    Vector<int32> key;
-    BuildFlagsKey(name, defines, key);
+    Vector<int32> key = BuildFlagsKey(name, defines);
 
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
@@ -296,7 +299,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     return res;
 }
 
-void RelaoadShaders()
+void ReloadShaders()
 {
     DVASSERT(initialized);
 

@@ -537,19 +537,17 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
 
             ExecGL(cmd1, countof(cmd1));
 
-            int status = 0;
             unsigned gl_prog = cmd1[0].retval;
             GLCommand cmd2[] =
             {
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
               { GLCommand::LINK_PROGRAM, { gl_prog } },
-              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, reinterpret_cast<uint64>(&status) } },
             };
 
             ExecGL(cmd2, countof(cmd2));
 
-            if (status)
+            if (cmd2[2].retval)
             {
                 entry.vprog->vdecl.InitVattr(gl_prog);
                 entry.vprog->GetProgParams(gl_prog);
@@ -574,11 +572,9 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         }
 
         _ProgramEntry.push_back(entry);
-        //Logger::Info("gl-prog cnt = %u",_ProgramEntry.size());
         prog->vprog = entry.vprog;
         prog->fprog = entry.fprog;
         prog->glProg = entry.glProg;
-        ;
     }
 
     return success;
