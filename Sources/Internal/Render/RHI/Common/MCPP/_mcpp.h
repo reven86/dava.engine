@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 #include "Base/Platform.h"
-#include "Debug/CPUProfiler.h"
+#include "Base/BaseTypes.h"
 #include "mcpp_out.h"
 
 #if defined(__DAVAENGINE_WIN32__)

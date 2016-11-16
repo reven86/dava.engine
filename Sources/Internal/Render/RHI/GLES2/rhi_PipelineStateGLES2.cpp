@@ -7,7 +7,6 @@
 #include "rhi_ProgGLES2.h"
 #include "rhi_GLES2.h"
 
-#include "Debug/CPUProfiler.h"
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"

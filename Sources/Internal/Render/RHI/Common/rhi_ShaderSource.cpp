@@ -2,19 +2,16 @@
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/Common/rhi_Utils.h"
 
-#include "Base/Hash.h"
-//#define PROFILER_ENABLED 1
-//#include "Debug/Profiler.h"
 
-    #include "Logger/Logger.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "FileSystem/DynamicMemoryFile.h"
-    #include "FileSystem/FileSystem.h"
+#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/FileSystem.h"
 using DAVA::DynamicMemoryFile;
-    #include "Utils/Utils.h"
-    #include "Debug/CPUProfiler.h"
-    #include "Concurrency/Mutex.h"
-    #include "Concurrency/LockGuard.h"
+#include "Utils/Utils.h"
+#include "Debug/ProfilerCPU.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 using DAVA::Mutex;
 using DAVA::LockGuard;
 
@@ -45,27 +42,6 @@ ShaderSource::~ShaderSource()
     ast = nullptr;
 }
 
-//------------------------------------------------------------------------------
-/*
-static rhi::BlendOp
-BlendOpFromText(const char* op)
-{
-    if (stricmp(op, "zero") == 0)
-        return rhi::BLENDOP_ZERO;
-    else if (stricmp(op, "one") == 0)
-        return rhi::BLENDOP_ONE;
-    else if (stricmp(op, "src_alpha") == 0)
-        return rhi::BLENDOP_SRC_ALPHA;
-    else if (stricmp(op, "inv_src_alpha") == 0)
-        return rhi::BLENDOP_INV_SRC_ALPHA;
-    else if (stricmp(op, "src_color") == 0)
-        return rhi::BLENDOP_SRC_COLOR;
-    else if (stricmp(op, "dst_color") == 0)
-        return rhi::BLENDOP_DST_COLOR;
-    else
-        return rhi::BLENDOP_ONE;
-}
-*/
 //------------------------------------------------------------------------------
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText)
