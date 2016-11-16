@@ -107,26 +107,6 @@ void MainWindow::OnRecentMenu(QAction* action)
     emit RecentProject(projectPath);
 }
 
-QString MainWindow::ConvertLangCodeToString(const QString& langCode)
-{
-    QLocale locale(langCode);
-    switch (locale.script())
-    {
-    case QLocale::SimplifiedChineseScript:
-    {
-        return "Chinese simpl.";
-    }
-
-    case QLocale::TraditionalChineseScript:
-    {
-        return "Chinese trad.";
-    }
-
-    default:
-        return QLocale::languageToString(locale.language());
-    }
-}
-
 void MainWindow::SetupShortcuts()
 {
     //Qt can not set multishortcut or enum shortcut in Qt designer
@@ -306,6 +286,11 @@ void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& re
             QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
         });
     }
+}
+
+MainWindow::ProjectView* MainWindow::GetProjectView()
+{
+    return projectView;
 }
 
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)

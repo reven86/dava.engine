@@ -25,9 +25,6 @@ public:
     explicit DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent = nullptr);
     ~DocumentGroup();
 
-    Project* GetProject() const;
-
-    const QList<Document*>& GetDocuments() const;
     Document* GetActiveDocument() const;
 
     bool CanSave() const;
@@ -45,6 +42,16 @@ public:
 
     void ConnectToTabBar(QTabBar* tabBar);
     void DisconnectTabBar(QTabBar* tabBar);
+
+    void LanguageChanged();
+    void RtlChanged();
+
+    void BiDiSupportChanged();
+    void GlobalStyleClassesChanged();
+
+    bool TryCloseAllDocuments();
+    bool HasUnsavedDocuments() const;
+    void CloseAllDocuments();
 
 signals:
     void ActiveIndexChanged(int index);
@@ -96,6 +103,8 @@ private:
     Document* CreateDocument(const QString& path);
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
+
+    void RefreshControlsStuff();
 
     Project* project = nullptr;
     MainWindow::DocumentGroupView* view = nullptr;

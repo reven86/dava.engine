@@ -50,10 +50,7 @@ public:
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
-    ProjectView* GetProjectView()
-    {
-        return projectView;
-    }
+    ProjectView* GetProjectView();
 
 signals:
     void NewProject();
@@ -75,8 +72,6 @@ private slots:
     void OnEditorPreferencesTriggered();
 
 private:
-    static QString ConvertLangCodeToString(const QString& langCode);
-
     void SetProjectPath(const QString& projectPath);
 
     void SetupShortcuts();

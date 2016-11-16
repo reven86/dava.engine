@@ -164,3 +164,23 @@ void MainWindow::ProjectView::ExecDialogReloadSprites(SpritesPacker* packer)
     dialogReloadSprites.exec();
     mainWindow->acceptableLoggerFlags = lastFlags;
 }
+
+QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)
+{
+    QLocale locale(langCode);
+    switch (locale.script())
+    {
+    case QLocale::SimplifiedChineseScript:
+    {
+        return "Chinese simpl.";
+    }
+
+    case QLocale::TraditionalChineseScript:
+    {
+        return "Chinese trad.";
+    }
+
+    default:
+        return QLocale::languageToString(locale.language());
+    }
+}

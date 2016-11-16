@@ -63,7 +63,7 @@ signals:
     void CanCloseChanged(bool canClose);
 
 public slots:
-    void FontPresetChanged(const DAVA::String& presetName);
+    void OnFontPresetChanged(const DAVA::String& presetName);
     void SetCanClose(bool canClose);
 
 private slots:

@@ -116,7 +116,7 @@ bool Document::IsDocumentExists() const
     return fileExists;
 }
 
-void Document::FontPresetChanged(const DAVA::String& presetName)
+void Document::OnFontPresetChanged(const DAVA::String& presetName)
 {
     RefreshAllControlProperties();
 }

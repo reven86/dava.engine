@@ -181,11 +181,7 @@ void Project::SetCurrentLanguage(const QString& newLanguageCode)
     editorLocalizationSystem->SetCurrentLocale(newLanguageCode);
     editorFontSystem->RegisterCurrentLocaleFonts();
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
+    documentGroup->LanguageChanged();
 }
 
 const QStringList& Project::GetDefaultPresetNames() const
@@ -202,22 +198,14 @@ void Project::SetRtl(bool isRtl)
 {
     UIControlSystem::Instance()->SetRtl(isRtl);
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
+    documentGroup->RtlChanged();
 }
 
 void Project::SetBiDiSupport(bool support)
 {
     UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
+    documentGroup->BiDiSupportChanged();
 }
 
 void Project::SetGlobalStyleClasses(const QString& classesStr)
@@ -231,11 +219,7 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
     }
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
+    documentGroup->GlobalStyleClassesChanged();
 }
 
 QString Project::GetResourceDirectory() const
@@ -245,12 +229,9 @@ QString Project::GetResourceDirectory() const
 
 void Project::OnReloadSprites()
 {
-    for (auto& document : documentGroup->GetDocuments())
+    if (!documentGroup->TryCloseAllDocuments())
     {
-        if (!documentGroup->TryCloseDocument(document))
-        {
-            return;
-        }
+        return;
     }
 
     view->ExecDialogReloadSprites(spritesPacker.get());
@@ -263,8 +244,7 @@ void Project::OnReloadSpritesFinished()
 
 bool Project::TryCloseAllDocuments()
 {
-    auto documents = documentGroup->GetDocuments();
-    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
+    bool hasUnsaved = documentGroup->HasUnsavedDocuments();
 
     if (hasUnsaved)
     {
@@ -284,10 +264,7 @@ bool Project::TryCloseAllDocuments()
         }
     }
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        documentGroup->CloseDocument(document);
-    }
+    documentGroup->CloseAllDocuments();
 
     return true;
 }

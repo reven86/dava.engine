@@ -57,16 +57,6 @@ DocumentGroup::~DocumentGroup()
     DisconnectTabBar(view->GetTabBar());
 };
 
-Project* DocumentGroup::GetProject() const
-{
-    return project;
-}
-
-const QList<Document*>& DocumentGroup::GetDocuments() const
-{
-    return documents;
-}
-
 Document* DocumentGroup::GetActiveDocument() const
 {
     return active;
@@ -393,7 +383,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
 
 void DocumentGroup::SaveAllDocuments()
 {
-    for (auto& document : documents)
+    for (Document* document : documents)
     {
         SaveDocument(document, true);
     }
@@ -530,7 +520,7 @@ void DocumentGroup::ApplyFileChanges()
 {
     QList<Document*> changed;
     QList<Document*> removed;
-    for (const auto& document : changedFiles)
+    for (Document* document : changedFiles)
     {
         if (document->IsDocumentExists())
         {
@@ -612,7 +602,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
         Document* document = new Document(packageRef, this);
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-        connect(this, &DocumentGroup::FontPresetChanged, document, &Document::FontPresetChanged, Qt::DirectConnection);
+        connect(this, &DocumentGroup::FontPresetChanged, document, &Document::OnFontPresetChanged, Qt::DirectConnection);
         return document;
     }
     else
@@ -648,4 +638,61 @@ RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
         return builder.BuildPackage();
 
     return RefPtr<PackageNode>();
+}
+
+void DocumentGroup::RefreshControlsStuff()
+{
+    for (Document* document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void DocumentGroup::LanguageChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::RtlChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::BiDiSupportChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::GlobalStyleClassesChanged()
+{
+    RefreshControlsStuff();
+}
+
+bool DocumentGroup::TryCloseAllDocuments()
+{
+    for (Document* document : documents)
+    {
+        if (!TryCloseDocument(document))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool DocumentGroup::HasUnsavedDocuments() const
+{
+    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](const Document* document) { return document->CanSave(); }) != documents.end();
+
+    return hasUnsaved;
+}
+
+void DocumentGroup::CloseAllDocuments()
+{
+    for (Document* document : documents)
+    {
+        CloseDocument(document);
+    }
 }

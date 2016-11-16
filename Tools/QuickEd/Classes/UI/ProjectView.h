@@ -41,6 +41,8 @@ private slots:
     void OnCurrentLanguageChanged(int newLanguageIndex);
 
 private:
+    static QString ConvertLangCodeToString(const QString& langCode);
+
     void InitPluginsToolBar();
 
     void InitLanguageBox();

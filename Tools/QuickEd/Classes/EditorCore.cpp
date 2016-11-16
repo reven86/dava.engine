@@ -188,8 +188,6 @@ REGISTER_PREFERENCES_ON_START(EditorCore,
                               )
 
 EditorCore::EditorCore(DAVA::Engine& engine)
-    : QObject()
-    , cacheClient()
 {
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     ToolsAssetGuard::Instance()->Init();
