@@ -251,6 +251,7 @@ void EngineBackend::OnGameLoopStopped()
     dyingWindows.clear();
 
     engine->gameLoopStopped.Emit();
+    rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 }
 
 void EngineBackend::OnEngineCleanup()
@@ -502,6 +503,7 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
         appIsSuspended = true;
         if (Renderer::IsInitialized())
             rhi::SuspendRendering();
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
     }
 }
