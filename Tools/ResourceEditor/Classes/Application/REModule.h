@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
 #include "TArc/Core/ControllerModule.h"
 
 #include "TArc/DataProcessing/DataListener.h"

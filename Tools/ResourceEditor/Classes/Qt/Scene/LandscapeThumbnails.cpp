@@ -1,5 +1,4 @@
 #include "LandscapeThumbnails.h"
-#include "Base/Platform.h"
 #include "Concurrency/LockGuard.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
