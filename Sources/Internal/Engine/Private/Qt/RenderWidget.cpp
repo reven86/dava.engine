@@ -22,6 +22,12 @@
 
 namespace DAVA
 {
+struct RenderWidget::QScreenParams
+{
+    int screenScale = 0;
+    int logicalDPI = 0;
+};
+
 const char* initializedPropertyName = "initialized";
 RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
@@ -59,7 +65,10 @@ void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 void RenderWidget::OnCreated()
 {
     widgetDelegate->OnCreated();
-    dpi = devicePixelRatio();
+
+    screenParams = std::make_unique<QScreenParams>();
+    screenParams->screenScale = devicePixelRatio();
+    screenParams->logicalDPI = logicalDpiX();
 
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
 }
@@ -72,15 +81,24 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
-    if (dpi != devicePixelRatio())
+    if (screenParams)
     {
-        dpi = devicePixelRatio();
+        if (screenParams->screenScale != devicePixelRatio())
+        {
+            screenParams->screenScale = devicePixelRatio();
 
-        QQuickWindow* qWindow = quickWindow();
-        bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+            QQuickWindow* qWindow = quickWindow();
+            bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
 
-        QSize size = geometry().size();
-        widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
+            QSize size = geometry().size();
+            widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
+        }
+
+        if (screenParams->logicalDPI != logicalDpiX())
+        {
+            screenParams->logicalDPI = logicalDpiX();
+            widgetDelegate->OnDpiChanged(static_cast<float32>(screenParams->logicalDPI));
+        }
     }
 
     DVASSERT(isInPaint == false);

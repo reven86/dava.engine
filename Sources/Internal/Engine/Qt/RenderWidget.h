@@ -23,6 +23,7 @@ public:
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
         virtual void OnResized(uint32 width, uint32 height, bool isFullScreen) = 0;
+        virtual void OnDpiChanged(float32 dpi) = 0;
         virtual void OnVisibilityChanged(bool isVisible) = 0;
 
         virtual void OnMousePressed(QMouseEvent* e) = 0;
@@ -130,7 +131,8 @@ private:
 
     friend class Private::WindowBackend;
 
-    int32 dpi = 0;
+    struct QScreenParams;
+    std::unique_ptr<QScreenParams> screenParams;
 };
 
 } // namespace DAVA
