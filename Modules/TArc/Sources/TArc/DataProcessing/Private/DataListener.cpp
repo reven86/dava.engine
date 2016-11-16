@@ -6,17 +6,22 @@ namespace TArc
 {
 DataListener::~DataListener()
 {
-    holder.RemoveListener(this);
+    Vector<DataWrapper> wrappersCopy(wrappers.begin(), wrappers.end());
+    wrappers.clear();
+    for (DataWrapper& wrapper : wrappersCopy)
+    {
+        wrapper.ClearListener();
+    }
 }
 
-void DataListener::InitListener(const DataWrapper& wrapper)
+void DataListener::AddWrapper(DataWrapper wrapper)
 {
-    holder = wrapper;
+    wrappers.emplace(wrapper);
 }
 
-void DataListener::Clear()
+void DataListener::RemoveWrapper(DataWrapper wrapper)
 {
-    holder = DataWrapper();
+    wrappers.erase(wrapper);
 }
 
 } // namespace TArc

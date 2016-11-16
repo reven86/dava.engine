@@ -4,6 +4,7 @@
 
 #include "TArc/Core/OperationRegistrator.h"
 #include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 namespace DAVA
 {
@@ -16,7 +17,7 @@ class DataContext;
 
 namespace REGlobal
 {
-extern DAVA::FastName MainWindowName;
+extern DAVA::TArc::WindowKey MainWindowKey;
 
 DAVA::TArc::DataContext* GetGlobalContext();
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type);

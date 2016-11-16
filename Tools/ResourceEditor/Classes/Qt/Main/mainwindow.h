@@ -297,7 +297,7 @@ private:
     bool IsSavingAllowed();
     // <--
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     //Need for any debug functionality
     QPointer<DeveloperTools> developerTools;

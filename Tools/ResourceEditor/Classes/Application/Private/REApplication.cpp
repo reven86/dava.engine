@@ -4,6 +4,7 @@
 #include "Classes/Application/InitModule.h"
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Project/ProjectManagerModule.h"
+#include "Classes/SceneManager/SceneManagerModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -165,6 +166,7 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<InitModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
+    tarcCore->CreateModule<SceneManagerModule>();
     tarcCore->CreateModule<LaunchModule>();
 }
 

@@ -9,8 +9,6 @@ class ProjectManagerData;
 class ProjectManagerModule : public DAVA::TArc::ClientModule
 {
 protected:
-    void OnContextCreated(DAVA::TArc::DataContext& context) override;
-    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
 private:

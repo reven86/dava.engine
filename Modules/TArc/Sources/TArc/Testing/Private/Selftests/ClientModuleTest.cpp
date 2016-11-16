@@ -21,12 +21,12 @@ public:
 
     static TestControllerModule* instance;
 
-    ContextManager& GetContextMng()
+    ContextManager* GetContextMng()
     {
         return GetContextManager();
     }
 
-    ContextAccessor& GetCtxAccessor()
+    ContextAccessor* GetCtxAccessor()
     {
         return GetAccessor();
     }
@@ -49,11 +49,11 @@ protected:
     {
     }
 
-    void OnContextCreated(DataContext& context) override
+    void OnContextCreated(DataContext* context) override
     {
     }
 
-    void OnContextDeleted(DataContext& context) override
+    void OnContextDeleted(DataContext* context) override
     {
     }
 
@@ -90,7 +90,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextCreated(_))
         .WillOnce(Invoke(fn));
 
-        DataContext::ContextID id = TestControllerModule::instance->GetContextMng().CreateContext();
+        DataContext::ContextID id = TestControllerModule::instance->GetContextMng()->CreateContext();
         TEST_VERIFY(id == undeletedContext);
     }
 
@@ -112,39 +112,39 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDeleted(_))
         .WillOnce(Invoke(verifyFn));
 
-        ContextAccessor& accessor = TestControllerModule::instance->GetCtxAccessor();
-        ContextManager& mng = TestControllerModule::instance->GetContextMng();
+        ContextAccessor* accessor = TestControllerModule::instance->GetCtxAccessor();
+        ContextManager* mng = TestControllerModule::instance->GetContextMng();
 
-        DataContext::ContextID id = mng.CreateContext();
+        DataContext::ContextID id = mng->CreateContext();
         TEST_VERIFY(id == newContext);
 
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
 
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        mng->ActivateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
         // activate already active context
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        mng->ActivateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
         // deactivate context test
-        mng.ActivateContext(DataContext::Empty);
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        mng->ActivateContext(DataContext::Empty);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
 
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        mng->ActivateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
-        mng.ActivateContext(newContext);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == newContext);
+        mng->ActivateContext(newContext);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == newContext);
 
-        mng.DeleteContext(newContext);
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        mng->DeleteContext(newContext);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
     }
 
     DAVA_TEST (DeleteContextTest)
@@ -156,7 +156,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDeleted(_))
         .WillOnce(Invoke(verifyFn));
 
-        TestControllerModule::instance->GetContextMng().DeleteContext(undeletedContext);
+        TestControllerModule::instance->GetContextMng()->DeleteContext(undeletedContext);
     }
 
     DAVA_TEST (DeleteInvalidContextTest)
@@ -164,7 +164,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         bool exeptionCatched = false;
         try
         {
-            TestControllerModule::instance->GetContextMng().DeleteContext(1);
+            TestControllerModule::instance->GetContextMng()->DeleteContext(1);
         }
         catch (std::runtime_error& /*e*/)
         {
@@ -179,7 +179,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         bool exeptionCatched = false;
         try
         {
-            TestControllerModule::instance->GetContextMng().ActivateContext(1);
+            TestControllerModule::instance->GetContextMng()->ActivateContext(1);
         }
         catch (std::runtime_error& /*e*/)
         {
@@ -191,12 +191,12 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (GetInvalidContextTest)
     {
-        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetContext(1) == nullptr);
+        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor()->GetContext(1) == nullptr);
     }
 
     DAVA_TEST (GetActiveInvalidContextTest)
     {
-        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetActiveContext() == nullptr);
+        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor()->GetActiveContext() == nullptr);
     }
 
     DataContext::ContextID undeletedContext = DataContext::Empty;

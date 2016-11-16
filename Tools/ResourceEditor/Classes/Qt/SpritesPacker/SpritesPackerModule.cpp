@@ -87,7 +87,7 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
 
 void SpritesPackerModule::ShowPackerDialog()
 {
-    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), ui->GetWindow(DAVA::TArc::WindowKey(REGlobal::MainWindowName)));
+    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), ui->GetWindow(REGlobal::MainWindowKey));
     dialogReloadSprites.exec();
 }
 
@@ -96,7 +96,7 @@ void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
     DAVA::TArc::WaitDialogParams params;
     params.message = QString::fromStdString(DAVA::String("Reloading Particles for ") + projectPath.GetAbsolutePathname());
     params.needProgressBar = false;
-    waitDialogHandle = ui->ShowWaitDialog(DAVA::TArc::WindowKey(REGlobal::MainWindowName), params);
+    waitDialogHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, params);
 }
 
 void SpritesPackerModule::CloseWaitDialog()

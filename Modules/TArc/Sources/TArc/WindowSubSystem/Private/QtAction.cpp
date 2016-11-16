@@ -4,20 +4,20 @@ namespace DAVA
 {
 namespace TArc
 {
-QtAction::QtAction(ContextAccessor* accessor, QObject* parent /*= nullptr*/)
+QtAction::QtAction(ContextAccessor* accessor, QObject* parent)
     : QAction(parent)
     , fieldBinder(accessor)
 {
 }
 
-QtAction::QtAction(ContextAccessor* accessor, const QString& text, QObject* parent /* = nullptr */)
+QtAction::QtAction(ContextAccessor* accessor, const QString& text, QObject* parent)
     : QAction(text, parent)
     , fieldBinder(accessor)
 
 {
 }
 
-QtAction::QtAction(ContextAccessor* accessor, const QIcon& icon, const QString& text, QObject* parent /* = nullptr */)
+QtAction::QtAction(ContextAccessor* accessor, const QIcon& icon, const QString& text, QObject* parent)
     : QAction(icon, text, parent)
     , fieldBinder(accessor)
 {

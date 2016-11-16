@@ -17,8 +17,8 @@ class QtAction : public QAction
 {
 public:
     QtAction(ContextAccessor* accessor, QObject* parent = nullptr);
-    QtAction(ContextAccessor* accessor, const QString& text, QObject* parent /* = nullptr */);
-    QtAction(ContextAccessor* accessor, const QIcon& icon, const QString& text, QObject* parent /* = nullptr */);
+    QtAction(ContextAccessor* accessor, const QString& text, QObject* parent = nullptr);
+    QtAction(ContextAccessor* accessor, const QIcon& icon, const QString& text, QObject* parent = nullptr);
 
     enum eActionState
     {

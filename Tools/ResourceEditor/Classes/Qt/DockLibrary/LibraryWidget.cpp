@@ -153,7 +153,7 @@ void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperatio
 {
     globalOperations = globalOperations_;
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper.SetListener(this);
 
     QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
 
@@ -399,7 +399,7 @@ void LibraryWidget::ShowPreview(const QString& pathname) const
     globalOperations->CallAction(GlobalOperations::ShowScenePreview, DAVA::Any(pathname.toStdString()));
 }
 
-void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     DVASSERT(projectDataWrapper == wrapper);
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();

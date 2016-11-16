@@ -41,7 +41,7 @@ private:
 
     void SetSelectedItem(QTreeWidgetItem* item);
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     QTreeWidgetItem* selectedItem;
     Ui::FMODSoundBrowser* ui;

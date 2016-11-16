@@ -26,7 +26,7 @@ private:
     friend class QtReflectionBridge;
     QtReflected(QtReflectionBridge* reflectionBridge, DataWrapper&& wrapper, QObject* parent);
 
-    void OnDataChanged(const DataWrapper& wrapper, const Set<String>& fields) override;
+    void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields) override;
     void CreateMetaObject();
 
     void FirePropertySignal(const String& propertyName);

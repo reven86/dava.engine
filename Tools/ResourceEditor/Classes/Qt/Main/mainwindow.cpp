@@ -197,7 +197,7 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
 #endif
 {
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper.SetListener(this);
 
     ActiveSceneHolder::Init();
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
@@ -559,7 +559,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.min = min;
     params.max = max;
     params.needProgressBar = false;
-    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::WindowKey(REGlobal::MainWindowName), params);
+    waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
     DAVA::TArc::WaitDialog* dialog = dynamic_cast<DAVA::TArc::WaitDialog*>(waitDialog.get());
     dialog->beforeDestroy.Connect([this](DAVA::TArc::WaitHandle* handle)
                                   {
@@ -2762,7 +2762,7 @@ bool QtMainWindow::IsSavingAllowed()
     return true;
 }
 
-void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     DVASSERT(projectDataWrapper == wrapper);
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();

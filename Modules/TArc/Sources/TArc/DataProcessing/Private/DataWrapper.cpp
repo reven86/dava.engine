@@ -29,8 +29,8 @@ struct DataWrapper::Impl
     DataAccessor dataAccessor;
     Vector<Any> cachedValues;
 
-    Set<DataListener*> listeners;
-    Set<DataListener*> listenersToRemove;
+    DataListener* listener = nullptr;
+    DataListener* nextListenerToSet = nullptr;
 #ifdef __DAVAENGINE_DEBUG__
     String typeName;
 #endif
@@ -76,6 +76,16 @@ void DataWrapper::SetContext(DataContext* context)
     impl->activeContext = context;
 }
 
+void DataWrapper::ClearListener()
+{
+    if (impl == nullptr)
+    {
+        return;
+    }
+
+    impl->listener = nullptr;
+}
+
 bool DataWrapper::HasData() const
 {
     if (impl == nullptr || impl->activeContext == nullptr)
@@ -97,43 +107,38 @@ bool DataWrapper::HasData() const
     return reflection.IsValid();
 }
 
-void DataWrapper::AddListener(DataListener* listener)
+void DataWrapper::SetListener(DataListener* listener)
 {
     if (impl == nullptr)
     {
         return;
     }
 
-    DVASSERT(listener != nullptr);
-    listener->InitListener(*this);
-    impl->listeners.insert(listener);
+    impl->nextListenerToSet = listener;
 }
 
-void DataWrapper::RemoveListener(DataListener* listener)
-{
-    if (impl == nullptr)
-    {
-        return;
-    }
-
-    impl->listenersToRemove.insert(listener);
-}
 
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();
 }
 
-void DataWrapper::Sync(bool notifyListeners)
+void DataWrapper::Sync(bool notifyListener)
 {
     DVASSERT(impl != nullptr);
 
-    for (DataListener* listener : impl->listenersToRemove)
+    if (impl->nextListenerToSet != impl->listener)
     {
-        listener->Clear();
-        impl->listeners.erase(listener);
+        if (impl->listener != nullptr)
+        {
+            impl->listener->RemoveWrapper(*this);
+        }
+        impl->listener = impl->nextListenerToSet;
+        if (impl->nextListenerToSet != nullptr)
+        {
+            impl->listener->AddWrapper(*this);
+        }
     }
-    impl->listenersToRemove.clear();
 
     if (HasData())
     {
@@ -147,19 +152,19 @@ void DataWrapper::Sync(bool notifyListeners)
             {
                 impl->cachedValues.push_back(field.ref.GetValue());
             }
-            NotifyListeners(notifyListeners);
+            NotifyListeners(notifyListener);
         }
         else
         {
-            Set<String> fieldNames;
-            std::function<void(const String&)> nameInserter;
-            if (notifyListeners)
+            Vector<Any> fieldNames;
+            std::function<void(const Any&)> nameInserter;
+            if (notifyListener)
             {
-                nameInserter = [&fieldNames](const String& name) { fieldNames.insert(name); };
+                nameInserter = [&fieldNames](const Any& name) { fieldNames.push_back(name); };
             }
             else
             {
-                nameInserter = [](const String&) {};
+                nameInserter = [](const Any&) {};
             }
 
             for (size_t i = 0; i < fields.size(); ++i)
@@ -178,13 +183,13 @@ void DataWrapper::Sync(bool notifyListeners)
                 if (!valuesEqual)
                 {
                     impl->cachedValues[i] = newValue;
-                    nameInserter(field.key.Cast<String>());
+                    nameInserter(field.key);
                 }
             }
 
             if (!fieldNames.empty())
             {
-                NotifyListeners(notifyListeners, fieldNames);
+                NotifyListeners(notifyListener, fieldNames);
             }
         }
     }
@@ -193,7 +198,7 @@ void DataWrapper::Sync(bool notifyListeners)
         if (!impl->cachedValues.empty())
         {
             impl->cachedValues.clear();
-            NotifyListeners(notifyListeners);
+            NotifyListeners(notifyListener);
         }
     }
 }
@@ -228,14 +233,16 @@ void DataWrapper::SyncWithEditor(const Reflection& etalonData)
     }
 }
 
-void DataWrapper::NotifyListeners(bool sendNotify, const Set<String>& fields)
+void DataWrapper::NotifyListeners(bool sendNotify, const Vector<Any>& fields)
 {
     if (sendNotify == false)
         return;
 
     DVASSERT(impl != nullptr);
-    auto fn = std::bind(&DataListener::OnDataChanged, std::placeholders::_1, std::cref(*this), std::cref(fields));
-    std::for_each(impl->listeners.begin(), impl->listeners.end(), fn);
+    if (impl->listener)
+    {
+        impl->listener->OnDataChanged(*this, fields);
+    }
 }
 
 Reflection DataWrapper::GetData() const

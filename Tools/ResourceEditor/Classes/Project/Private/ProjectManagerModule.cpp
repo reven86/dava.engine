@@ -26,33 +26,20 @@
 namespace ProjectManagerDetails
 {
 const DAVA::String PROPERTIES_KEY = "ProjectManagerProperties";
-
-DAVA::TArc::WindowKey GetREWidnowKey()
-{
-    return DAVA::TArc::WindowKey(REGlobal::MainWindowName);
-}
-}
-
-void ProjectManagerModule::OnContextCreated(DAVA::TArc::DataContext& context)
-{
-}
-
-void ProjectManagerModule::OnContextDeleted(DAVA::TArc::DataContext& context)
-{
 }
 
 void ProjectManagerModule::PostInit()
 {
     using namespace DAVA::TArc;
 
-    ContextAccessor& accessor = GetAccessor();
+    ContextAccessor* accessor = GetAccessor();
 
-    DataContext* globalContext = accessor.GetGlobalContext();
+    DataContext* globalContext = accessor->GetGlobalContext();
     std::unique_ptr<ProjectManagerData> data = std::make_unique<ProjectManagerData>();
 
     DAVA::Vector<DAVA::String> extensions = { "sc2" };
     data->dataSourceSceneFiles.reset(new ProjectStructure(extensions));
-    data->spritesPacker.reset(new SpritesPackerModule(&GetUI()));
+    data->spritesPacker.reset(new SpritesPackerModule(GetUI()));
     data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
 
@@ -63,9 +50,7 @@ void ProjectManagerModule::PostInit()
 void ProjectManagerModule::CreateActions()
 {
     using namespace DAVA::TArc;
-    UI& ui = GetUI();
-    DAVA::TArc::WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
-
+    UI* ui = GetUI();
     DAVA::TArc::InsertionParams insertionParams;
     insertionParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     insertionParams.item = QString("actionNewScene");
@@ -76,12 +61,12 @@ void ProjectManagerModule::CreateActions()
                               {
                                   OpenProject();
                               });
-    ui.AddAction(windowKey, placementInfo, openProjectAction);
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, openProjectAction);
 
     QAction* recentProjects = new QAction("Recent Projects", nullptr);
-    ui.AddAction(windowKey, placementInfo, recentProjects);
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, recentProjects);
 
-    QtAction* closeProjectAction = new QtAction(&GetAccessor(), "Close Project", nullptr);
+    QtAction* closeProjectAction = new QtAction(GetAccessor(), "Close Project", nullptr);
 
     FieldDescriptor fieldDescr;
     fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
@@ -93,11 +78,11 @@ void ProjectManagerModule::CreateActions()
                               {
                                   CloseProject();
                               });
-    ui.AddAction(windowKey, placementInfo, closeProjectAction);
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, closeProjectAction);
 
     QAction* separator = new QAction(nullptr);
     separator->setSeparator(true);
-    ui.AddAction(windowKey, placementInfo, separator);
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, separator);
 
     DAVA::TArc::InsertionParams reloadSpritesInsertionParams;
     reloadSpritesInsertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
@@ -107,7 +92,7 @@ void ProjectManagerModule::CreateActions()
                               {
                                   ReloadSprites();
                               });
-    ui.AddAction(windowKey, reloadSpritePlacement, reloadSprites);
+    ui->AddAction(REGlobal::MainWindowKey, reloadSpritePlacement, reloadSprites);
 
     AddRecentProjectActions();
 }
@@ -121,7 +106,7 @@ void ProjectManagerModule::OpenProject()
 {
     DAVA::TArc::DirectoryDialogParams dirDialogParams;
     dirDialogParams.title = QString("Open Project Folder");
-    QString dirPath = GetUI().GetExistingDirectory(DAVA::TArc::WindowKey(REGlobal::MainWindowName), dirDialogParams);
+    QString dirPath = GetUI()->GetExistingDirectory(REGlobal::MainWindowKey, dirDialogParams);
     if (!dirPath.isEmpty())
     {
         DAVA::FilePath path = DAVA::FilePath(PathnameToDAVAStyle(dirPath));
@@ -138,7 +123,7 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
     {
         CloseProject();
 
-        DAVA::FileSystem* fileSystem = GetAccessor().GetEngineContext()->fileSystem;
+        DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
         if (fileSystem->Exists(incomePath))
         {
             bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
@@ -163,13 +148,13 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     data->projectPath = incomePath;
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
-    DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
+    DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
 
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
     LoadMaterialsSettings(data);
 
     DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
-    DAVA::EngineContext* engineCtx = GetAccessor().GetEngineContext();
+    DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
     DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
@@ -188,7 +173,7 @@ void ProjectManagerModule::OpenLastProject()
 {
     ProjectManagerData* data = GetData();
 
-    DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
+    DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
     DAVA::FilePath projectPath = propsItem.Get<DAVA::FilePath>(Settings::Internal_LastProjectPath.c_str());
     if (projectPath.IsEmpty())
     {
@@ -217,7 +202,7 @@ void ProjectManagerModule::CloseProject()
             data->projectPath = "";
 
             SettingsManager::ResetPerProjectSettings();
-            DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
+            DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
             propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(DAVA::FilePath()));
         }
     }
@@ -227,7 +212,7 @@ void ProjectManagerModule::ReloadSprites()
 {
     using namespace DAVA::TArc;
 
-    DataContext* ctx = GetAccessor().GetGlobalContext();
+    DataContext* ctx = GetAccessor()->GetGlobalContext();
     ProjectManagerData* data = ctx->GetData<ProjectManagerData>();
     DVASSERT(data);
     data->spritesPacker->RepackWithDialog();
@@ -240,7 +225,7 @@ void ProjectManagerModule::LoadMaterialsSettings(ProjectManagerData* data)
 
     // parse available material templates
     const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
-    DAVA::FileSystem* fileSystem = GetAccessor().GetEngineContext()->fileSystem;
+    DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
     if (fileSystem->Exists(materialsListPath))
     {
         DAVA::ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
@@ -281,8 +266,8 @@ void ProjectManagerModule::LoadMaterialsSettings(ProjectManagerData* data)
 ProjectManagerData* ProjectManagerModule::GetData()
 {
     using namespace DAVA::TArc;
-    ContextAccessor& accessor = GetAccessor();
-    DataContext* ctx = accessor.GetGlobalContext();
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* ctx = accessor->GetGlobalContext();
     return ctx->GetData<ProjectManagerData>();
 }
 
@@ -290,10 +275,9 @@ void ProjectManagerModule::AddRecentProjectActions()
 {
     using namespace DAVA::TArc;
 
-    UI& ui = GetUI();
+    UI* ui = GetUI();
     DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
 
-    WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
     for (DAVA::String& projectPath : recentProjects)
     {
         QAction* project = new QAction(QString::fromStdString(projectPath), nullptr);
@@ -303,7 +287,7 @@ void ProjectManagerModule::AddRecentProjectActions()
                                   });
 
         ActionPlacementInfo placement(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects"))));
-        ui.AddAction(windowKey, placement, project);
+        ui->AddAction(REGlobal::MainWindowKey, placement, project);
     }
 }
 
@@ -337,13 +321,12 @@ void ProjectManagerModule::RemoveRecentProjects()
 {
     using namespace DAVA::TArc;
 
-    UI& ui = GetUI();
+    UI* ui = GetUI();
     DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
 
-    WindowKey windowKey = ProjectManagerDetails::GetREWidnowKey();
     for (DAVA::String& projectPath : recentProjects)
     {
-        ui.RemoveAction(windowKey, ActionPlacementInfo(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects$/") + projectPath))));
+        ui->RemoveAction(REGlobal::MainWindowKey, ActionPlacementInfo(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects$/") + projectPath))));
     }
 }
 

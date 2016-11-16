@@ -13,7 +13,7 @@ public:
         , accessor(accessor_)
     {
         wrapper = accessor->CreateWrapper(type);
-        wrapper.AddListener(this);
+        wrapper.SetListener(this);
     }
 
     UniversalDataListener(const UniversalDataListener& other) = delete;
@@ -25,19 +25,19 @@ public:
         listeners = std::move(other.listeners);
         std::swap(accessor, other.accessor);
 
-        other.wrapper.RemoveListener(&other);
+        other.wrapper.SetListener(nullptr);
         wrapper = std::move(other.wrapper);
-        wrapper.AddListener(this);
+        wrapper.SetListener(this);
     }
 
     UniversalDataListener& operator=(UniversalDataListener&& other) = delete;
 
     ~UniversalDataListener()
     {
-        wrapper.RemoveListener(this);
+        wrapper.SetListener(nullptr);
     }
 
-    void OnDataChanged(const DataWrapper& wrapper, const Set<String>& changedFields)
+    void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& changedFields) override
     {
         if (!wrapper.HasData())
         {
@@ -96,8 +96,22 @@ public:
         }
         else
         {
-            for (const String& fieldName : changedFields)
+            for (const Any& fieldAnyName : changedFields)
             {
+                FastName fieldName;
+                if (fieldAnyName.CanCast<const char*>())
+                {
+                    fieldName = FastName(fieldAnyName.Cast<const char*>());
+                }
+                else if (fieldAnyName.CanCast<String>())
+                {
+                    fieldName = FastName(fieldAnyName.Cast<String>());
+                }
+                else
+                {
+                    continue;
+                }
+
                 auto iter = listeners.find(FastName(fieldName));
                 if (iter != listeners.end())
                 {

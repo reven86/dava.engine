@@ -117,7 +117,7 @@ void CustomColorsPanel::InitUI()
 void CustomColorsPanel::ConnectToSignals()
 {
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper.SetListener(this);
 
     connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
             this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
@@ -176,7 +176,7 @@ DAVA::int32 CustomColorsPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 }
 // end of convert functions ==========================
 
-void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data);

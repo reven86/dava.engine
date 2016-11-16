@@ -35,19 +35,19 @@ protected:
     {
     }
 
-    void OnContextCreated(DataContext& context) override
+    void OnContextCreated(DataContext* context) override
     {
     }
 
-    void OnContextDeleted(DataContext& context) override
+    void OnContextDeleted(DataContext* context) override
     {
     }
 
     void PostInit() override
     {
-        ContextManager& ctxManager = GetContextManager();
-        DataContext::ContextID id = ctxManager.CreateContext();
-        ctxManager.ActivateContext(id);
+        ContextManager* ctxManager = GetContextManager();
+        DataContext::ContextID id = ctxManager->CreateContext();
+        ctxManager->ActivateContext(id);
     }
 };
 }

@@ -9,7 +9,7 @@ namespace REGlobalDetails
 DAVA::TArc::CoreInterface* coreInstance = nullptr;
 }
 
-DAVA::FastName MainWindowName = DAVA::FastName("ResourceEditor");
+DAVA::TArc::WindowKey MainWindowKey(DAVA::FastName("ResourceEditor"));
 
 DAVA::TArc::DataContext* GetGlobalContext()
 {

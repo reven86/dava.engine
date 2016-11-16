@@ -58,7 +58,7 @@ private:
     DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
     DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
 private:
     QComboBox* comboColor = nullptr;

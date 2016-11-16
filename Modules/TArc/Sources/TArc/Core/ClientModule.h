@@ -19,15 +19,25 @@ public:
     }
 
 protected:
-    virtual void OnContextCreated(DataContext& context) = 0;
-    virtual void OnContextDeleted(DataContext& context) = 0;
+    virtual void OnContextCreated(DataContext* context)
+    {
+    }
+    virtual void OnContextDeleted(DataContext* context)
+    {
+    }
+    virtual void OnContextWillChanged(DataContext* current, DataContext* newOne)
+    {
+    }
+    virtual void OnContextDidChanged(DataContext* current, DataContext* oldOne)
+    {
+    }
     virtual void OnWindowClosed(const WindowKey& key)
     {
     }
 
     virtual void PostInit() = 0;
-    ContextAccessor& GetAccessor();
-    UI& GetUI();
+    ContextAccessor* GetAccessor();
+    UI* GetUI();
 
     template <typename Ret, typename Cls, typename... Args>
     void RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...) const);

@@ -4,34 +4,26 @@
 
 #include "Classes/Project/ProjectManagerData.h"
 
-void LaunchModule::OnContextCreated(DAVA::TArc::DataContext& context)
-{
-}
-
-void LaunchModule::OnContextDeleted(DAVA::TArc::DataContext& context)
-{
-}
-
 void LaunchModule::PostInit()
 {
     using namespace DAVA::TArc;
-    ContextAccessor& accessor = GetAccessor();
+    ContextAccessor* accessor = GetAccessor();
 
-    accessor.GetGlobalContext()->CreateData(std::make_unique<LaunchModuleData>());
+    accessor->GetGlobalContext()->CreateData(std::make_unique<LaunchModuleData>());
 
-    projectDataWrapper = accessor.CreateWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper = accessor->CreateWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper.SetListener(this);
 
     InvokeOperation(REGlobal::OpenLastProjectOperation.ID);
 }
 
-void LaunchModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void LaunchModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     using namespace DAVA::TArc;
 
     DVASSERT(projectDataWrapper == wrapper);
 
-    DataContext* ctx = GetAccessor().GetGlobalContext();
+    DataContext* ctx = GetAccessor()->GetGlobalContext();
     if (ctx->GetData<LaunchModuleData>()->launchFinished == true)
     {
         return;
@@ -42,6 +34,6 @@ void LaunchModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const D
         return;
 
     ctx->GetData<LaunchModuleData>()->launchFinished = true;
-    projectDataWrapper.RemoveListener(this);
+    projectDataWrapper.SetListener(nullptr);
     projectDataWrapper = DAVA::TArc::DataWrapper();
 }

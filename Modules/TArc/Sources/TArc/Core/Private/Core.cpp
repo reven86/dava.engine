@@ -112,6 +112,11 @@ public:
         }
     }
 
+    uint32 GetContextCount() const
+    {
+        return static_cast<uint32>(contexts.size());
+    }
+
     DataContext* GetGlobalContext() override
     {
         return globalContext.get();
@@ -167,13 +172,23 @@ public:
     }
 
 protected:
+    virtual void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne)
+    {
+    }
+    virtual void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    {
+    }
+
     void ActivateContextImpl(DataContext* context)
     {
+        BeforeContextSwitch(activeContext, context);
+        DataContext* oldContext = activeContext;
         activeContext = context;
         for (DataWrapper& wrapper : wrappers)
         {
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
+        AfterContextSwitch(activeContext, oldContext);
     }
 
     void SyncWrappers()
@@ -464,7 +479,7 @@ public:
         {
             for (std::unique_ptr<ClientModule>& module : modules)
             {
-                module->OnContextDeleted(*context);
+                module->OnContextDeleted(context.get());
             }
         }
         modules.clear();
@@ -493,13 +508,13 @@ public:
     DataContext::ContextID CreateContext() override
     {
         contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
-        DataContext& context = *contexts.back();
+        DataContext* context = contexts.back().get();
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->OnContextCreated(context);
         }
 
-        return context.GetID();
+        return context->GetID();
     }
 
     void DeleteContext(DataContext::ContextID contextID) override
@@ -516,7 +531,7 @@ public:
 
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->OnContextDeleted(**iter);
+            module->OnContextDeleted(iter->get());
         }
 
         if (activeContext != nullptr && activeContext->GetID() == contextID)
@@ -659,6 +674,22 @@ public:
     }
 
 private:
+    void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne) override
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextWillChanged(currentContext, newOne);
+        }
+    }
+
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextDidChanged(currentContext, oldOne);
+        }
+    }
+
     AnyFn FindOperation(int operationId)
     {
         AnyFn operation;
