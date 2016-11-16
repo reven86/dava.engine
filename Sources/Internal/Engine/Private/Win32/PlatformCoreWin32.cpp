@@ -11,8 +11,10 @@
 #include "Engine/Window.h"
 #include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
+#include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
@@ -26,6 +28,7 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
     , nativeService(new NativeService(this))
 {
+    DllImport::Initialize();
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 
@@ -33,6 +36,17 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    // Check whether new pointer input is enabled and enable it if so
+    if (DllImport::fnEnableMouseInPointer != nullptr)
+    {
+        // EnableMouseInPointer should be called only once in process lifetime. All desktop applications
+        // by deafult start with mouse-in-pointer disabled.
+        if (!DllImport::fnEnableMouseInPointer(TRUE))
+        {
+            Logger::Warning("Failed to enable new pointer input");
+        }
+    }
+
     engineBackend.InitializePrimaryWindow();
 }
 

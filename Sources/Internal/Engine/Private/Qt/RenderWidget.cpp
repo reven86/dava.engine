@@ -3,10 +3,11 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Debug/CPUProfiler.h"
+#include "Base/Exception.h"
 #include "Debug/DVAssert.h"
 
 #include "Input/InputSystem.h"
@@ -58,6 +59,8 @@ void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 void RenderWidget::OnCreated()
 {
     widgetDelegate->OnCreated();
+    dpi = devicePixelRatio();
+
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
 }
 
@@ -69,7 +72,17 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
+    if (dpi != devicePixelRatio())
+    {
+        dpi = devicePixelRatio();
+
+        QQuickWindow* qWindow = quickWindow();
+        bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
+        QSize size = geometry().size();
+        widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
+    }
+
     DVASSERT(isInPaint == false);
     isInPaint = true;
     SCOPE_EXIT
@@ -125,9 +138,12 @@ void RenderWidget::OnSceneGraphInvalidated()
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
-    widgetDelegate->OnResized(size.width(), size.height(), dpi);
+
+    QQuickWindow* qWindow = quickWindow();
+    bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
+    widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
     emit Resized(size.width(), size.height());
 }
 

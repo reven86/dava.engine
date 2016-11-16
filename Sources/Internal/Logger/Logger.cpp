@@ -8,14 +8,6 @@
 
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_WINDOWS__)
-
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-
-#endif
-
 namespace
 {
 const size_t defaultBufferSize{ 4096 };
@@ -98,10 +90,8 @@ static const Array<const char8*, 5> logLevelString
 };
 
 Logger::Logger()
-    :
-    logLevel{ LEVEL_FRAMEWORK }
-    ,
-    consoleModeEnabled{ false }
+    : logLevel{ LEVEL_FRAMEWORK }
+    , consoleModeEnabled{ false }
 {
     SetLogFilename(String());
 }

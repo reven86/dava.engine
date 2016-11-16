@@ -1,7 +1,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Commands2/Base/RECommandStack.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
@@ -10,11 +10,13 @@
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -41,6 +43,8 @@ SceneEditor2::SceneEditor2()
     : Scene()
     , commandStack(new RECommandStack())
 {
+    DVASSERT(DAVA::Engine::Instance()->IsConsoleMode() == false);
+
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
     SafeRelease(notify);

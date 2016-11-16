@@ -149,6 +149,7 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
     return 0;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     // default win32 dpi is 96 = 100% scaling
@@ -159,9 +160,17 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
     float32 currDPI = static_cast<float32>(DPIHelper::GetScreenDPI());
 
     screenInfo.scale = currDPI / defaultDPI;
-
     return screenInfo;
 }
+
+void DeviceInfoPrivate::InitializeScreenInfo()
+{
+    screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
+    screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
+
+    screenInfo.scale = 1;
+}
+#endif
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
@@ -287,13 +296,6 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     // For now return default network info for Windows.
     return DeviceInfo::NetworkInfo();
-}
-
-void DeviceInfoPrivate::InitializeScreenInfo()
-{
-    screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
-    screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
-    screenInfo.scale = 1;
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

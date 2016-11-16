@@ -64,9 +64,9 @@ private:
         {
         }
         Request(AssetCache::ePacketID requestID_, const AssetCache::CacheItemKey& key_, AssetCache::CachedItemValue* value_ = nullptr)
-            : requestID(requestID_)
-            , key(key_)
+            : key(key_)
             , value(value_)
+            , requestID(requestID_)
         {
         }
 

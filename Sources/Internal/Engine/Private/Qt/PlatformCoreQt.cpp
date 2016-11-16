@@ -51,9 +51,6 @@ void PlatformCore::Run()
     // First of all we should init primaryWindowBackend, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
     primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
     engineBackend.OnGameLoopStarted();
-    // After OnGameLoopStarted, and client code injected RenderWidget into MainWindow and shown it we can activate rendering
-    // We can't activate rendering before RenderWidget was shown, because it will produce DAVA::OnFrame on showing e.g. in OnGameLoopStarted handler
-    primaryWindowBackend->ActivateRendering();
     applicationFocusChanged.Connect(primaryWindowBackend, &WindowBackend::OnApplicationFocusChanged);
     if (engineBackend.IsStandaloneGUIMode())
     {
@@ -61,6 +58,9 @@ void PlatformCore::Run()
         RenderWidget* widget = GetRenderWidget();
         widget->show();
     }
+    // After OnGameLoopStarted, and client code injected RenderWidget into MainWindow and shown it we can activate rendering
+    // We can't activate rendering before RenderWidget was shown, because it will produce DAVA::OnFrame on showing e.g. in OnGameLoopStarted handler
+    primaryWindowBackend->ActivateRendering();
 
     timer.start(16.0);
 

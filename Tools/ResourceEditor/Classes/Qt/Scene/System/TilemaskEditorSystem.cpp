@@ -210,16 +210,16 @@ void TilemaskEditorSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
+bool TilemaskEditorSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -235,13 +235,13 @@ void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
                     {
                         copyPasteFrom = cursorPosition;
                         copyPasteOffset = DAVA::Vector2();
-                        return;
+                        return false;
                     }
                     else
                     {
                         if (copyPasteFrom == DAVA::Vector2(-1.f, -1.f))
                         {
-                            return;
+                            return false;
                         }
                         copyPasteOffset = copyPasteFrom - cursorPosition;
                     }
@@ -264,6 +264,7 @@ void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void TilemaskEditorSystem::FinishEditing()
@@ -512,9 +513,13 @@ DAVA::uint32 TilemaskEditorSystem::GetTileTextureIndex()
 
 void TilemaskEditorSystem::InitSprites()
 {
-    DAVA::float32 texSize = drawSystem->GetTextureSize(textureLevel);
+    DAVA::int32 texSize = static_cast<DAVA::int32>(drawSystem->GetTextureSize(textureLevel));
+    if (toolTexture != nullptr && texSize != toolTexture->GetWidth())
+    {
+        DAVA::SafeRelease(toolTexture);
+    }
 
-    if (toolTexture == NULL)
+    if (toolTexture == nullptr)
     {
         toolTexture = DAVA::Texture::CreateFBO(texSize, texSize, DAVA::FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
     }

@@ -1,6 +1,12 @@
 
 #compiller flags
 
+append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__" )
+append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__" )
+append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__" )
+append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__" )
+append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__" )
+	
 if( APPLE )
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
@@ -203,7 +209,8 @@ elseif( WARNINGS_AS_ERRORS )
 -Wno-unused-local-typedef \
 -Wno-nullable-to-nonnull-conversion \
 -Wno-super-class-method-mismatch \
--Wno-nonnull")
+-Wno-nonnull \
+-Wno-gnu-zero-variadic-macro-arguments")
 
 
     if( ANDROID )

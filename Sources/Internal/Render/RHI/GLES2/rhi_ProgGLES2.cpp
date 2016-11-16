@@ -6,7 +6,6 @@
 
     #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
     #include "rhi_GLES2.h"
     #include "_gl.h"
@@ -679,8 +678,7 @@ void SetToRHI(const Handle cb, uint32 progUid, const void* instData)
     self->SetToRHI(progUid, instData);
 }
 
-const void*
-Instance(Handle cb)
+const void* Instance(Handle cb)
 {
     const ProgGLES2::ConstBuf* self = ConstBufGLES2Pool::Get(cb);
 

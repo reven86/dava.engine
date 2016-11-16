@@ -191,7 +191,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         HighlightNodes({});
         ProcessCursor(hoveredPoint, searchOrder);
         pressedPoint = hoveredPoint;
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != eMouseButtons::LEFT)
         {
             return true;
         }
@@ -335,7 +335,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         }
     }
     DVASSERT(magnetLines.size() == magnetControls.size() && magnetControls.size() == magnetTargetControls.size());
-    for (int i = 0, size = magnetLines.size(); i < size; ++i)
+    for (size_t i = 0, size = magnetLines.size(); i < size; ++i)
     {
         const MagnetLineInfo& line = magnetLines.at(i);
         const auto& gd = line.gd;
