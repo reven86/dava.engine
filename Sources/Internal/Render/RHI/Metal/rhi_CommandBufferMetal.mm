@@ -1489,6 +1489,8 @@ static void Metal_RejectFrame(const CommonImpl::Frame& frame)
     }
 #endif
 
+    @autoreleasepool
+    {
     for (unsigned i = 0; i != frame.pass.size(); ++i)
     {
         if (frame.pass[i] == InvalidHandle)
@@ -1517,12 +1519,15 @@ static void Metal_RejectFrame(const CommonImpl::Frame& frame)
         SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(frame.sync);
         sync->is_signaled = true;
     }
+    }
 }
 
 //------------------------------------------------------------------------------
 
 static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
+    @autoreleasepool
+    {
     MTL_TRACE("--present %u", frame.frameNumber);
         
     //for some reason when device is locked receive nil in drawable even before getting notification - check this case and do nothing to prevent crashes
@@ -1641,6 +1646,7 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     [_Metal_currentDrawable release];
     _Metal_currentDrawable = nil;
     _Metal_DefFrameBuf = nil;
+    }
 }
 
 static bool Metal_PresentBuffer()
