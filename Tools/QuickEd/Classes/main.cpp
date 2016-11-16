@@ -1,4 +1,5 @@
 #include "Engine/Engine.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "EditorCore.h"
 
 DAVA::KeyedArchive* CreateOptions()
@@ -13,6 +14,8 @@ DAVA::KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    DAVA::Assert::SetupDefaultHandlers();
+
     DAVA::Engine engine;
     {
         DAVA::Vector<DAVA::String> modules =

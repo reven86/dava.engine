@@ -8,7 +8,7 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Texture.h"
 
-#include "Debug/DVAssert.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "FileSystem/FileList.h"
 #include "Base/BaseTypes.h"
 
@@ -221,6 +221,8 @@ void Process(Engine& e)
 
 int DAVAMain(Vector<String> cmdline)
 {
+    Assert::SetupDefaultHandlers();
+
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 

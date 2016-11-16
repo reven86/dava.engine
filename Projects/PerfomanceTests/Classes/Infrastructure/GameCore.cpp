@@ -5,6 +5,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Engine/Window.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
@@ -389,6 +390,8 @@ KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    Assert::AddHandler(Assert::DefaultLoggerHandler);
+
     Vector<String> modules =
     {
       "JobManager",

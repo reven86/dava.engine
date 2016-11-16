@@ -3,6 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/VariantType.h"
 #include "CommandLine/ProgramOptions.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 using namespace DAVA;
 
@@ -360,6 +361,8 @@ int Process(Engine& e)
 
 int DAVAMain(Vector<String> cmdLine)
 {
+    Assert::SetupDefaultHandlers();
+
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
     e.update.Connect([&e](float32)

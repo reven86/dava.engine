@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Logger/Logger.h"
 #include "Engine/Engine.h"
 
@@ -31,6 +32,8 @@ int Process(Engine& e)
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    Assert::SetupDefaultHandlers();
+
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 
