@@ -5,7 +5,8 @@
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Math/Math2D.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
@@ -66,7 +67,7 @@ void LandscapeSystem::RemoveEntity(Entity* entity)
 
 void LandscapeSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("LandscapeSystem::Process");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_LANDSCAPE_SYSTEM);
 
     for (Entity* e : landscapeEntities)
     {

@@ -3,6 +3,14 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
 endif()
 
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
+
 include ( GlobalVariables      )
 
 if ( DAVA_MEMORY_PROFILER )
@@ -67,6 +75,62 @@ macro (enable_pch)
         endforeach ()
     endif ()
 endmacro ()
+#
+macro( processing_mix_data )
+    cmake_parse_arguments ( ARG "NOT_DATA_COPY"  "" "" ${ARGN} )
+
+    load_property( PROPERTY_LIST MIX_APP_DATA )
+    if( DEPLOY )
+        if( NOT DEPLOY_DIR_DATA )
+            if( MACOS AND NOT MAC_DISABLE_BUNDLE)
+                set( DEPLOY_DIR_DATA ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/Resources )
+            else()
+                set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
+            endif()
+        endif()
+
+        set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )        
+    else()
+        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
+    endif()
+    get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
+
+    foreach( ITEM ${MIX_APP_DATA} )
+        string( REGEX REPLACE " " "" ITEM ${ITEM} )
+        string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
+        list(GET ITEM 0 GROUP_PATH )
+        list(GET ITEM 1 DATA_PATH )
+        get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
+        if( NOT ARG_NOT_DATA_COPY )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+        endif()
+    endforeach()
+
+    if( NOT DEPLOY )
+        file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
+        foreach( ITEM ${LIST_FOLDER_ITEM} )
+            if( IS_DIRECTORY ${ITEM} )
+
+                if( MAC_DISABLE_BUNDLE AND MACOS)                    
+                    get_filename_component( FOLDER_NAME ${ITEM}  NAME     )
+                    foreach( CONFIGURATION ${CMAKE_CONFIGURATION_TYPES} )
+                        foreach( TMP_DATA_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CONFIGURATION} ${CMAKE_CURRENT_BINARY_DIR}/${CONFIGURATION}/Contents/Resources )
+                            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory  ${TMP_DATA_DIR} )
+                            if( NOT EXISTS ${TMP_DATA_DIR}/${FOLDER_NAME} )
+                                execute_process( COMMAND ln -s ${MIX_APP_DIR}/${FOLDER_NAME} ${TMP_DATA_DIR}/${FOLDER_NAME}  )
+                            endif()
+                        endforeach()
+                    endforeach()
+                else()
+                    list( APPEND RESOURCES_LIST  ${ITEM}  )
+                endif()
+            endif()
+        endforeach()
+    endif()
+
+endmacro ()
 
 macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
     set(OUTPUT_LIST "")
@@ -80,7 +144,6 @@ macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
     list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
     set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
 endmacro()
-
 
 ##
 #in
@@ -545,13 +608,6 @@ macro(add_target_properties _target _name)
 endmacro()
 
 #
-function (append_property KEY_PROP  VALUE)
-    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
-    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
-    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
-endfunction()
-
 
 function (reset_property KEY_PROP )
     SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )

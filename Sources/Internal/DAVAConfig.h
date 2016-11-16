@@ -1,9 +1,4 @@
-/*
-	__DAVAENGINE_IPHONE__ this define must be set in preprocessor macros for all projects that compiled using DAVAEngine for iPhone
- */
-
-#ifndef __DAVAENGINE_CONFIG_H__
-#define __DAVAENGINE_CONFIG_H__
+#pragma once
 
 #ifndef DISABLE_AUTOTESTS
 #ifndef __DAVAENGINE_AUTOTESTING__
@@ -25,19 +20,12 @@
 
 //#define LOCALIZATION_DEBUG // enable graphic debugging info for displaying of text
 
-//#define __DAVAENGINE_RENDER_AUTOCONFIG__	// it will use DAVANENGINE_OPENGL for MacOS / iPhone, and
-//#define __DAVAENGINE_DIRECTX9__
-#define __DAVAENGINE_OPENGL__
-
 // This flag allow to enable profiling stats
 //#define __DAVAENGINE_ENABLE_DEBUG_STATS__
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
 //    #define __DAVAENGINE_ENABLE_FRAMEWORK_STATS__
 //    #define __DAVAENGINE_ENABLE_TOOLS_STATS__
 #endif //__DAVAENGINE_ENABLE_DEBUG_STATS__
-
-//suppress 'deprecated' warning
-#define DAVAENGINE_HIDE_DEPRECATED
 
 // Switch on/off message box in assertion situation. In case this flag is
 // enabled the assertion message will be displayed even in release builds.
@@ -62,4 +50,11 @@
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY
 
-#endif // __DAVAENGINE_CONFIG_H__
+//suppress 'deprecated' warning
+#define DAVAENGINE_HIDE_DEPRECATED
+//suppressing of deprecated functions
+#ifdef DAVAENGINE_HIDE_DEPRECATED
+#undef DAVA_DEPRECATED
+#define DAVA_DEPRECATED(func) func
+#endif
+
