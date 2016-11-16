@@ -21,7 +21,7 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve);
 class Connection final : public Net::IChannelListener
 {
 public:
-    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport = Net::TRANSPORT_TCP, uint32 timeoutMs = 5*1000);
+    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport = Net::TRANSPORT_TCP, uint32 timeoutMs = 5 * 1000);
     ~Connection();
 
     const Net::Endpoint& GetEndpoint() const;
