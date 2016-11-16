@@ -7,11 +7,13 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
 
+#include "Autotesting/AutotestingSystem.h"
+#include "Debug/CPUProfiler.h"
+#include "Input/InputSystem.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
-#include "Input/InputSystem.h"
-#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -155,16 +157,35 @@ bool Window::GetCursorVisibility() const
 
 void Window::Update(float32 frameDelta)
 {
-    uiControlSystem->Update();
+    DAVA_CPU_PROFILER_SCOPE("Window::Update");
+
     update.Emit(this, frameDelta);
+
+    const EngineContext* context = engineBackend->GetContext();
+
+#if defined(__DAVAENGINE_AUTOTESTING__)
+    float32 realFrameDelta = context->systemTimer->RealFrameDelta();
+    context->autotestingSystem->Update(realFrameDelta);
+#endif
+
+    context->animationManager->Update(frameDelta);
+
+    uiControlSystem->Update();
 }
 
 void Window::Draw()
 {
-    if (isVisible)
-    {
-        uiControlSystem->Draw();
-    }
+    DAVA_CPU_PROFILER_SCOPE("Window::Draw");
+
+    const EngineContext* context = engineBackend->GetContext();
+    context->renderSystem2D->BeginFrame();
+
+#if defined(__DAVAENGINE_AUTOTESTING__)
+    context->autotestingSystem->Draw();
+#endif
+    uiControlSystem->Draw();
+
+    context->renderSystem2D->EndFrame();
 }
 
 void Window::EventHandler(const Private::MainDispatcherEvent& e)

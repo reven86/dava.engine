@@ -316,57 +316,55 @@ int32 EngineBackend::OnFrame()
     {
         if (Renderer::IsInitialized())
         {
-            OnBeginFrame();
-            OnUpdate(frameDelta);
-            OnDraw();
-            OnEndFrame();
+            Update(frameDelta);
+            UpdateWindows(frameDelta);
         }
+    }
+    else
+    {
+        Update(frameDelta);
     }
 
     globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
 }
 
-void EngineBackend::OnBeginFrame()
+void EngineBackend::BeginFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnBeginFrame");
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::BeginFrame");
     Renderer::BeginFrame();
 
     engine->beginFrame.Emit();
 }
 
-void EngineBackend::OnUpdate(float32 frameDelta)
+void EngineBackend::Update(float32 frameDelta)
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnUpdate");
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::Update");
     engine->update.Emit(frameDelta);
 
     context->localNotificationController->Update();
-    context->animationManager->Update(frameDelta);
+}
 
+void EngineBackend::UpdateWindows(float32 frameDelta)
+{
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::UpdateWindows");
     for (Window* w : aliveWindows)
     {
-        w->Update(frameDelta);
+        if (w->IsVisible())
+        {
+            BeginFrame();
+            w->Update(frameDelta);
+
+            Renderer::GetRenderStats().Reset();
+            w->Draw();
+            EndFrame();
+        }
     }
 }
 
-void EngineBackend::OnDraw()
+void EngineBackend::EndFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnDraw");
-    Renderer::GetRenderStats().Reset();
-    context->renderSystem2D->BeginFrame();
-
-    for (Window* w : aliveWindows)
-    {
-        w->Draw();
-    }
-
-    engine->draw.Emit();
-    context->renderSystem2D->EndFrame();
-}
-
-void EngineBackend::OnEndFrame()
-{
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnEndFrame");
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::EndFrame");
     context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();

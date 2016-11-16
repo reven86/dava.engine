@@ -83,10 +83,10 @@ private:
 
     void OnFrameConsole();
 
-    void OnBeginFrame();
-    void OnUpdate(float32 frameDelta);
-    void OnDraw();
-    void OnEndFrame();
+    void BeginFrame();
+    void Update(float32 frameDelta);
+    void UpdateWindows(float32 frameDelta);
+    void EndFrame();
 
     void EventHandler(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);

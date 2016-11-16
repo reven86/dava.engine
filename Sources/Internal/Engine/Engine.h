@@ -261,7 +261,6 @@ public:
     Signal<Window*> windowDestroyed; //!< Emited when native window is destroyed. After this signal no one should use window.
     Signal<> beginFrame;
     Signal<float32> update; //!< Emited on each frame. Note: rendering should be performed on Window::update signal.
-    Signal<> draw;
     Signal<> endFrame;
     Signal<> suspended; //!< Emited when application has entered suspended state. This signal is fired only on platforms
     //!< that support suspending: UWP, iOS, Android. Rendering is stopped but update signal is emited if system permits.

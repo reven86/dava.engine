@@ -158,11 +158,7 @@ public:
     Signal<Window*, bool> focusChanged;
     Signal<Window*, float32> dpiChanged;
     Signal<Window*, Size2f, Size2f> sizeChanged; //<! First Size2f is window size, second Size2f is window surface size
-    //Signal<Window*> beginUpdate;
-    //Signal<Window*> beginDraw;
     Signal<Window*, float32> update;
-    //Signal<Window*> endDraw;
-    //Signal<Window*> endUpdate;
 
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
@@ -211,7 +207,7 @@ private:
     bool isVisible = false;
     bool hasFocus = false;
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
-    eFullscreen fullscreenMode;
+    eFullscreen fullscreenMode = eFullscreen::Off;
 
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
