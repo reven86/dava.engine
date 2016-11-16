@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #ifndef __DAVAENGINE_APPLE__
 

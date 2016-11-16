@@ -21,7 +21,9 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
 
 #include "Concurrency/Mutex.h"
@@ -941,6 +943,8 @@ void Landscape::FlushQueue()
     batch->startIndex = indexBuffer.baseIndex;
     batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
 
+    DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
+
     activeRenderBatchArray.push_back(batch);
     ClearQueue();
 
@@ -1159,6 +1163,8 @@ void Landscape::DrawLandscapeInstancing()
         instanceDataPtr = nullptr;
 
         drawIndices = activeRenderBatchArray[0]->indexCount * activeRenderBatchArray[0]->instanceCount;
+
+        DAVA_PROFILER_GPU_RENDER_BATCH(activeRenderBatchArray[0], ProfilerGPUMarkerName::LANDSCAPE);
     }
 }
 
@@ -1214,7 +1220,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PREPARE_LANDSCAPE)
 
     RenderObject::PrepareToRender(camera);
 
