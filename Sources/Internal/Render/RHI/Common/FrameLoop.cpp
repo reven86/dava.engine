@@ -3,7 +3,8 @@
 #include "../rhi_Public.h"
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 
 namespace rhi
@@ -54,33 +55,31 @@ void ProcessFrame()
     else
     {
         bool frameRejected = false;
+        if (frames[frameToExecute].discarded)
         {
-            DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteFrame");
-
-            if (frames[frameToExecute].discarded)
-            {
-                DispatchPlatform::RejectFrame(frames[frameToExecute]);
-                frameRejected = true;
-            }
-            else
-            {
-                frames[frameToExecute].frameNumber = currentFrameNumber++;
-                DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
-            }
-            frames[frameToExecute].Reset();
-            frameSync.Lock();
-            frameToExecute++;
-            if (frameToExecute >= framePoolSize)
-            {
-                frameToBuild -= framePoolSize;
-                frameToExecute -= framePoolSize;
-            }
-            frameSync.Unlock();
+            DispatchPlatform::RejectFrame(frames[frameToExecute]);
+            frameRejected = true;
         }
+        else
+        {
+            DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_FRAME, currentFrameNumber);
+
+            frames[frameToExecute].frameNumber = currentFrameNumber++;
+            DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
+        }
+        frames[frameToExecute].Reset();
+        frameSync.Lock();
+        frameToExecute++;
+        if (frameToExecute >= framePoolSize)
+        {
+            frameToBuild -= framePoolSize;
+            frameToExecute -= framePoolSize;
+        }
+        frameSync.Unlock();
 
         if (!frameRejected)
         {
-            DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT);
             presentResult = DispatchPlatform::PresentBuffer();
         }
     }
@@ -120,11 +119,19 @@ uint32 FramesCount()
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     return frameToBuild - frameToExecute;
 }
+
 void AddPass(Handle pass)
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     frames[frameToBuild % framePoolSize].pass.push_back(pass);
-    //frames.back().perfQuerySet = PerfQuerySet::Current();
+}
+
+void SetFramePerfQueries(Handle startQuery, Handle endQuery)
+{
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
+    CommonImpl::Frame& frame = frames[frameToBuild % framePoolSize];
+    frame.perfQueryStart = startQuery;
+    frame.perfQueryEnd = endQuery;
 }
 }
 }
