@@ -2,6 +2,7 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
@@ -434,6 +435,7 @@ void VariantType::SetVariant(const VariantType& var)
         return;
     }
 
+    ReleasePointer();
     type = TYPE_NONE;
 
     switch (var.type)
@@ -1133,17 +1135,11 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        stringValue = new String(buf);
-        delete[] buf;
-        if (read != len)
-        {
-            return false;
-        }
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        stringValue = new String(buf.data());
+        return (read == len);
     }
-    break;
     case TYPE_WIDE_STRING:
     {
         int32 len;
@@ -1197,17 +1193,15 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        uint8* pData = new uint8[len];
-        read = fp->Read(pData, len);
+        Vector<uint8> pData(len);
+        read = fp->Read(pData.data(), len);
         if (read != len)
         {
             return false;
         }
-        DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
+        ScopedPtr<UnmanagedMemoryFile> pF(new UnmanagedMemoryFile(pData.data(), len));
         pointerValue = new KeyedArchive();
         static_cast<KeyedArchive*>(pointerValue)->Load(pF);
-        SafeRelease(pF);
-        SafeDeleteArray(pData);
     }
     break;
     case TYPE_INT64:
@@ -1308,11 +1302,9 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        fastnameValue = new FastName(buf);
-        delete[] buf;
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        fastnameValue = new FastName(buf.data());
         if (read != len)
         {
             return false;
@@ -1339,17 +1331,11 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        filepathValue = new FilePath(buf);
-        delete[] buf;
-        if (read != len)
-        {
-            return false;
-        }
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        filepathValue = new FilePath(buf.data());
+        return (read == len);
     }
-    break;
     default:
     {
         return false;

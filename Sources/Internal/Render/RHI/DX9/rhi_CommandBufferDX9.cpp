@@ -10,9 +10,11 @@
 using DAVA::Logger;
 
 #include "Core/Core.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
+#include "Platform/SystemTimer.h"
 
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
@@ -91,6 +93,8 @@ RenderPassDX9_t
 public:
     std::vector<Handle> cmdBuf;
     int priority;
+    Handle perfQueryStart;
+    Handle perfQueryEnd;
 };
 
 class CommandBufferDX9_t : public SoftwareCommandBuffer
@@ -134,6 +138,8 @@ static Handle dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 c
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
+    pass->perfQueryStart = passDesc.perfQueryStart;
+    pass->perfQueryEnd = passDesc.perfQueryEnd;
 
     for (uint32 i = 0; i != cmdBufCount; ++i)
     {
@@ -295,6 +301,13 @@ static void dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
     SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
+}
+
+static void dx9_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle query)
+{
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
+    cmd->perfQuery = query;
 }
 
 //------------------------------------------------------------------------------
@@ -469,7 +482,7 @@ CommandBufferDX9_t::CommandBufferDX9_t()
 
 void CommandBufferDX9_t::Execute()
 {
-    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
 
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
@@ -639,6 +652,12 @@ void CommandBufferDX9_t::Execute()
         {
             if (cur_query_buf != InvalidHandle)
                 QueryBufferDX9::SetQueryIndex(cur_query_buf, (static_cast<const SWCommand_SetQueryIndex*>(cmd))->objectIndex);
+        }
+        break;
+
+        case CMD_ISSUE_TIMESTAMP_QUERY:
+        {
+            PerfQueryDX9::IssueTimestampQuery(static_cast<const SWCommand_IssueTimestamptQuery*>(cmd)->perfQuery);
         }
         break;
 
@@ -1008,6 +1027,8 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     _DX9_FramesWithRestoreAttempt = 0;
 
+    PerfQueryDX9::ObtainPerfQueryMeasurment();
+
     std::vector<RenderPassDX9_t*> pass;
 
     for (Handle p : frame.pass)
@@ -1038,8 +1059,16 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->is_signaled = false;
         sync->is_used = true;
     }
+
+    PerfQueryDX9::BeginMeasurment();
+    if (frame.perfQueryStart != InvalidHandle)
+        PerfQueryDX9::IssueTimestampQuery(frame.perfQueryStart);
+
     for (RenderPassDX9_t* pp : pass)
     {
+        if (pp->perfQueryStart)
+            PerfQueryDX9::IssueTimestampQuery(pp->perfQueryStart);
+
         for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
         {
             Handle cb_h = pp->cmdBuf[b];
@@ -1057,10 +1086,18 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
             CommandBufferPoolDX9::Free(cb_h);
         }
+
+        if (pp->perfQueryEnd)
+            PerfQueryDX9::IssueTimestampQuery(pp->perfQueryEnd);
     }
 
     for (Handle p : frame.pass)
         RenderPassPoolDX9::Free(p);
+
+    if (frame.perfQueryEnd != InvalidHandle)
+        PerfQueryDX9::IssueTimestampQuery(frame.perfQueryEnd);
+
+    PerfQueryDX9::EndMeasurment();
 
     // update sync-objects
     _DX9_SyncObjectsSync.Lock();
@@ -1101,6 +1138,8 @@ void _DX9_ResetBlock()
     TextureDX9::ReleaseAll();
     VertexBufferDX9::ReleaseAll();
     IndexBufferDX9::ReleaseAll();
+    PerfQueryDX9::ReleaseAll();
+    QueryBufferDX9::ReleaseAll();
 
     for (;;)
     {
@@ -1555,6 +1594,59 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         }
         break;
 
+        case DX9Command::SYNC_CPU_GPU:
+        {
+            if (DeviceCaps().isPerfQuerySupported)
+            {
+                IDirect3DQuery9 *disjointQuery = nullptr, *freqQuery = nullptr, *tsQuery = nullptr;
+
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &disjointQuery);
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &tsQuery);
+
+                if (disjointQuery && freqQuery && tsQuery)
+                {
+                    disjointQuery->Issue(D3DISSUE_BEGIN);
+                    freqQuery->Issue(D3DISSUE_END);
+                    tsQuery->Issue(D3DISSUE_END);
+                    disjointQuery->Issue(D3DISSUE_END);
+
+                    bool disjoint = true;
+                    uint64 frequency = 0, timestamp = 0;
+
+                    while (S_FALSE == tsQuery->GetData(&timestamp, sizeof(uint64), D3DGETDATA_FLUSH))
+                    {
+                    };
+                    if (timestamp)
+                    {
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                        while (S_FALSE == disjointQuery->GetData(&disjoint, sizeof(bool), D3DGETDATA_FLUSH))
+                        {
+                        };
+                        while (S_FALSE == freqQuery->GetData(&frequency, sizeof(uint64), D3DGETDATA_FLUSH))
+                        {
+                        };
+
+                        if (!disjoint && frequency)
+                        {
+                            *reinterpret_cast<uint64*>(arg[1]) = timestamp / (frequency / 1000000); //mcs
+                        }
+                    }
+                }
+
+                if (disjointQuery)
+                    disjointQuery->Release();
+
+                if (freqQuery)
+                    freqQuery->Release();
+
+                if (tsQuery)
+                    tsQuery->Release();
+            }
+        }
+        break;
+
         default:
             DVASSERT(!"unknown DX-cmd");
         }
@@ -1591,6 +1683,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetIndices = &dx9_CommandBuffer_SetIndices;
     dispatch->impl_CommandBuffer_SetQueryBuffer = &dx9_CommandBuffer_SetQueryBuffer;
     dispatch->impl_CommandBuffer_SetQueryIndex = &dx9_CommandBuffer_SetQueryIndex;
+    dispatch->impl_CommandBuffer_IssueTimestampQuery = &dx9_CommandBuffer_IssueTimestampQuery;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &dx9_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture = &dx9_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState = &dx9_CommandBuffer_SetDepthStencilState;

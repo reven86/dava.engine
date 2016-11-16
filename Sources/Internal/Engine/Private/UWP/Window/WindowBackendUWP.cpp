@@ -9,6 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -39,6 +40,17 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
 void WindowBackend::SetTitle(const String& title)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    // Fullscreen mode cannot be changed on phones
+    if (IsWindowsPhone())
+    {
+        return;
+    }
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -92,12 +104,36 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        bridge->SetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        bridge->SetCursorCapture(e.setCursorCaptureEvent.mode);
+        break;
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
+        bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:
         break;
     }
+}
+
+bool WindowBackend::IsWindowsPhone() const
+{
+    return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
 } // namespace Private

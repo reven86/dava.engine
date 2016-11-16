@@ -17,6 +17,8 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 
+#include "Render/VisibilityQueryResults.h"
+
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
@@ -849,10 +851,10 @@ void SceneInfo::InitializeLayersSection()
 {
     QtPropertyData* header = CreateInfoHeader("Fragments Info");
 
-    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+    for (int32 i = 0; i < VisibilityQueryResults::QUERY_INDEX_COUNT; ++i)
     {
-        FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-        AddChild(layerName.c_str(), header);
+        FastName queryName = VisibilityQueryResults::GetQueryIndexName(static_cast<VisibilityQueryResults::eQueryIndex>(i));
+        AddChild(queryName.c_str(), header);
     }
 }
 
@@ -866,13 +868,13 @@ void SceneInfo::RefreshLayersSection()
         static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
         float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
 
-        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        for (int32 i = 0; i < VisibilityQueryResults::QUERY_INDEX_COUNT; ++i)
         {
-            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
+            FastName queryName = VisibilityQueryResults::GetQueryIndexName(static_cast<VisibilityQueryResults::eQueryIndex>(i));
+            uint32 fragmentStats = renderStats.visibilityQueryResults.count(queryName) ? renderStats.visibilityQueryResults[queryName] : 0U;
 
             String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
-            SetChild(layerName.c_str(), str.c_str(), header);
+            SetChild(queryName.c_str(), str.c_str(), header);
         }
     }
 }

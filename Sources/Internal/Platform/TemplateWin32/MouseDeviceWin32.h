@@ -1,12 +1,12 @@
 #ifndef __FRAMEWORK__MOUSECAPTUREWIN32_H__
 #define __FRAMEWORK__MOUSECAPTUREWIN32_H__
 
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Input/MouseDevice.h"
 #include "Math/Math2D.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -24,6 +24,8 @@ private:
 };
 
 } //  namespace DAVA
+
+#endif //!defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN32__
 

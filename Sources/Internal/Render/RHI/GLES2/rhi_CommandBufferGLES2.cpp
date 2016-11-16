@@ -9,6 +9,8 @@
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
 
+#include "../rhi_Public.h"
+
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
@@ -20,16 +22,22 @@ using DAVA::Logger;
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/ManualResetEvent.h"
-#include "Debug/CPUProfiler.h"
+#include "Platform/SystemTimer.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include "_gl.h"
 
+#define RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION 1
 namespace rhi
 {
 struct RenderPassGLES2_t
 {
     std::vector<Handle> cmdBuf;
     int priority;
+    Handle perfQueryStart;
+    Handle perfQueryEnd;
+    bool skipPerfQueries;
 };
 
 struct CommandBufferGLES2_t : public SoftwareCommandBuffer
@@ -43,6 +51,7 @@ public:
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
+    uint32 skipPassPerfQueries : 1;
     Handle sync;
 };
 
@@ -73,6 +82,9 @@ static Handle gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passConf.priority;
+    pass->perfQueryStart = passConf.perfQueryStart;
+    pass->perfQueryEnd = passConf.perfQueryEnd;
+    pass->skipPerfQueries = false;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
@@ -83,6 +95,7 @@ static Handle gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         cb->isFirstInPass = i == 0;
         cb->isLastInPass = i == cmdBufCount - 1;
         cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
+        cb->skipPassPerfQueries = false;
 
         pass->cmdBuf[i] = h;
         cmdBuf[i] = h;
@@ -238,6 +251,15 @@ static void gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
+}
+
+static void gles2_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle query)
+{
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    cb->skipPassPerfQueries = !_GLES2_TimeStampQuerySupported;
+
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
+    cmd->perfQuery = query;
 }
 
 //------------------------------------------------------------------------------
@@ -480,7 +502,7 @@ CommandBufferGLES2_t::~CommandBufferGLES2_t()
 
 void CommandBufferGLES2_t::Execute()
 {
-    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
 
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
@@ -688,6 +710,13 @@ void CommandBufferGLES2_t::Execute()
         {
             if (cur_query_buf != InvalidHandle)
                 QueryBufferGLES2::SetQueryIndex(cur_query_buf, (static_cast<const SWCommand_SetQueryIndex*>(cmd))->objectIndex);
+        }
+        break;
+
+        case CMD_ISSUE_TIMESTAMP_QUERY:
+        {
+            Handle query = (static_cast<const SWCommand_IssueTimestamptQuery*>(cmd))->perfQuery;
+            PerfQueryGLES2::IssueQuery(query);
         }
         break;
 
@@ -1164,6 +1193,9 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     std::vector<RenderPassGLES2_t*> pass;
     unsigned frame_n = 0;
+    Handle framePerfQueryStart = InvalidHandle;
+    Handle framePerfQueryEnd = InvalidHandle;
+    bool skipFramePerfQueries = false;
 
     for (Handle p : frame.pass)
     {
@@ -1181,9 +1213,22 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         }
         if (do_add)
             pass.push_back(pp);
+
+        if (DeviceCaps().isPerfQuerySupported && !_GLES2_TimeStampQuerySupported)
+        {
+            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+            {
+                pp->skipPerfQueries |= CommandBufferPoolGLES2::Get(pp->cmdBuf[b])->skipPassPerfQueries;
+            }
+
+            skipFramePerfQueries |= (pp->perfQueryStart != InvalidHandle) || pp->skipPerfQueries;
+            skipFramePerfQueries |= (pp->perfQueryEnd != InvalidHandle) || pp->skipPerfQueries;
+        }
     }
 
     frame_n = frame.frameNumber;
+    framePerfQueryStart = frame.perfQueryStart;
+    framePerfQueryEnd = frame.perfQueryEnd;
 
     if (frame.sync != InvalidHandle)
     {
@@ -1191,6 +1236,24 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
+    }
+
+    if (skipFramePerfQueries)
+    {
+        if (framePerfQueryStart != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQueryStart);
+        if (framePerfQueryEnd != InvalidHandle)
+            PerfQueryGLES2::SkipQuery(framePerfQueryEnd);
+
+        framePerfQueryStart = InvalidHandle;
+        framePerfQueryEnd = InvalidHandle;
+    }
+
+    PerfQueryGLES2::ObtainPerfQueryResults();
+
+    if (framePerfQueryStart != InvalidHandle)
+    {
+        PerfQueryGLES2::IssueQuery(framePerfQueryStart);
     }
 
     Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
@@ -1202,6 +1265,14 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
         {
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+
+            if (pp->perfQueryStart != InvalidHandle)
+            {
+                if (pp->skipPerfQueries)
+                    PerfQueryGLES2::SkipQuery(pp->perfQueryStart);
+                else
+                    PerfQueryGLES2::IssueQuery(pp->perfQueryStart);
+            }
 
             cb->Execute();
 
@@ -1215,9 +1286,22 @@ static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             }
 
             CommandBufferPoolGLES2::Free(cb_h);
+
+            if (pp->perfQueryEnd != InvalidHandle)
+            {
+                if (pp->skipPerfQueries)
+                    PerfQueryGLES2::SkipQuery(pp->perfQueryEnd);
+                else
+                    PerfQueryGLES2::IssueQuery(pp->perfQueryEnd);
+            }
         }
     }
     Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
+
+    if (framePerfQueryEnd != InvalidHandle)
+    {
+        PerfQueryGLES2::IssueQuery(framePerfQueryEnd);
+    }
 
     for (Handle p : frame.pass)
         RenderPassPoolGLES2::Free(p);
@@ -1238,14 +1322,14 @@ bool _GLES2_PresentBuffer()
     if (!_GLES2_Context) //this is special case when rendering is done inside other app render loop (eg: QT loop in ResEditor)
         return true;
 
-// do swap-buffers            
-    #if defined(__DAVAENGINE_WIN32__)
+// do swap-buffers
+#if defined(__DAVAENGINE_WIN32__)
     win32_gl_end_frame();
-    #elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__)
     macos_gl_end_frame();
-    #elif defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_IPHONE__)
     ios_gl_end_frame();
-    #elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__)
     success = android_gl_end_frame();        
     #endif
 
@@ -1253,7 +1337,7 @@ bool _GLES2_PresentBuffer()
 }
 
 void _GLES2_ResetBlock()
-{        
+{
 #if defined(__DAVAENGINE_ANDROID__)
 
     TextureGLES2::ReCreateAll();
@@ -1280,7 +1364,7 @@ void _GLES2_FinishFrame()
 
 static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
 
     int err = GL_NO_ERROR;
 
@@ -1481,9 +1565,36 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         }
         break;
 
+        case GLCommand::DETACH_SHADER:
+        {
+            GL_CALL(glDetachShader(GLuint(arg[0]), GLuint(arg[1])));
+            cmd->status = err;
+        }
+        break;
+
         case GLCommand::LINK_PROGRAM:
         {
-            GL_CALL(glLinkProgram(GLuint(arg[0])));
+            GLint linkStatus = GL_FALSE;
+            GLuint program = static_cast<GLuint>(arg[0]);
+            GL_CALL(glLinkProgram(program));
+            GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &linkStatus));
+            if (linkStatus)
+            {
+            #if (RHI_GL_ATTEMPT_TO_FORCE_PROGRAM_COMPILATION)
+                // Force OpenGL to compile program immediately
+                GLint currentProgram = 0;
+                GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram));
+                GLint validateStatus = 0;
+                GLchar validateLog[2048] = {};
+                GLsizei validateLogLength = 0;
+                GL_CALL(glUseProgram(program));
+                GL_CALL(glValidateProgram(program));
+                GL_CALL(glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus));
+                GL_CALL(glGetProgramInfoLog(program, 2048, &validateLogLength, validateLog));
+                GL_CALL(glUseProgram(currentProgram));
+            #endif
+            }
+            cmd->retval = linkStatus;
             cmd->status = err;
         }
         break;
@@ -1645,10 +1756,14 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         case GLCommand::GET_QUERYOBJECT_UIV:
         {
 #if defined(__DAVAENGINE_IPHONE__)
-            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glGetQueryObjectuiv)
+            {
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
+            }
 #else
-            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
 #endif
             cmd->status = err;
         }
@@ -1657,10 +1772,14 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         case GLCommand::DELETE_QUERIES:
         {
 #if defined(__DAVAENGINE_IPHONE__)
-            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glDeleteQueries)
+            {
+                EXEC_GL(glDeleteQueries(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
+            }
 #else
-            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
 #endif
             cmd->status = err;
         }
@@ -1673,6 +1792,10 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 #if defined(__DAVAENGINE_IPHONE__)
             EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glGetQueryObjectuiv)
+            {
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
+            }
 #else
             EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
 #endif
@@ -1681,11 +1804,65 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (err == GL_NO_ERROR && result)
             {
 #if defined(__DAVAENGINE_IPHONE__)
-                EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
+                if (glGetQueryObjectuiv)
+                {
+                    EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
+                }
 #else
-                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
 #endif
+            }
+        }
+        break;
+
+        case GLCommand::SYNC_CPU_GPU:
+        {
+            if (_GLES2_TimeStampQuerySupported)
+            {
+                GLuint64 gpuTimestamp = 0, cpuTimestamp = 0;
+                GLuint query = 0;
+
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_ANDROID__)
+
+                if (glGenQueries)
+                    GL_CALL(glGenQueries(1, &query));
+
+                if (query)
+                {
+                    if (glQueryCounter)
+                        GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+
+                    GL_CALL(glFinish());
+
+                    if (glGetQueryObjectui64v)
+                        GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
+
+                    cpuTimestamp = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                    if (glDeleteQueries)
+                        GL_CALL(glDeleteQueries(1, &query));
+                }
+
+#else
+
+                GL_CALL(glGenQueries(1, &query));
+
+                if (query)
+                {
+                    GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+                    GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
+                    cpuTimestamp = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+                    GL_CALL(glDeleteQueries(1, &query));
+                }
+
+#endif
+
+                *reinterpret_cast<uint64*>(arg[0]) = cpuTimestamp;
+                *reinterpret_cast<uint64*>(arg[1]) = gpuTimestamp / 1000; //mcs
             }
         }
         break;
@@ -1727,6 +1904,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetIndices = &gles2_CommandBuffer_SetIndices;
     dispatch->impl_CommandBuffer_SetQueryBuffer = &gles2_CommandBuffer_SetQueryBuffer;
     dispatch->impl_CommandBuffer_SetQueryIndex = &gles2_CommandBuffer_SetQueryIndex;
+    dispatch->impl_CommandBuffer_IssueTimestampQuery = &gles2_CommandBuffer_IssueTimestampQuery;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &gles2_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture = &gles2_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState = &gles2_CommandBuffer_SetDepthStencilState;
