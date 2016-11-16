@@ -139,8 +139,6 @@ bool rhi_MetalIsSupported()
 
 void Metal_InitContext()
 {
-    @autoreleasepool
-    {
     _Metal_Layer = static_cast<CAMetalLayer*>(_Metal_InitParam.window);
     [_Metal_Layer retain];
 
@@ -176,7 +174,6 @@ void Metal_InitContext()
     depth_desc.depthWriteEnabled = YES;
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
-    }
 }
 bool Metal_CheckSurface()
 {
