@@ -3050,20 +3050,21 @@ void ReleaseTrackedMemory()
 
 void xbegin_allocations()
 {
-    if (allocatorReferences == 0)
+    if (allocatorReferences.fetch_add(1) == 0)
     {
         smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
         largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
     }
-    ++allocatorReferences;
 }
 
 void xend_allocations()
 {
     DVASSERT(allocatorReferences > 0);
 
-    --allocatorReferences;
-    if (allocatorReferences == 0)
+    // fetch_sub returns previously stored value
+    // therefore it should be "1" (and "0" after fetch_sub(1))
+    // in order to actually delete allocators
+    if (allocatorReferences.fetch_sub(1) == 1)
     {
         ReleaseTrackedMemory();
         delete smallBlockAllocator;
