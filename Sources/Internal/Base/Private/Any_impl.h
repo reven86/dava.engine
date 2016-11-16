@@ -16,12 +16,6 @@ inline Any::Any(T&& value, NotAny<T>)
     Set(std::forward<T>(value));
 }
 
-inline void Any::Swap(Any& any)
-{
-    std::swap(anyStorage, any.anyStorage);
-    std::swap(rtType, any.rtType);
-}
-
 inline bool Any::IsEmpty() const
 {
     return (nullptr == rtType);
@@ -42,9 +36,7 @@ inline Any& Any::operator=(Any&& any)
 {
     if (this != &any)
     {
-        rtType = any.rtType;
-        anyStorage = std::move(any.anyStorage);
-        any.rtType = nullptr;
+        Set(std::move(any));
     }
 
     return *this;
@@ -111,6 +103,13 @@ inline const T& Any::Get(const T& defaultValue) const
 inline const void* Any::GetData() const
 {
     return anyStorage.GetData();
+}
+
+inline void Any::Swap(Any& any)
+{
+    std::swap(rtType, any.rtType);
+    std::swap(anyStorage, any.anyStorage);
+    std::swap(compareFn, any.compareFn);
 }
 
 inline void Any::Set(const Any& any)

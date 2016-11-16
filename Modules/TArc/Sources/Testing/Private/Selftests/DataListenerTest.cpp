@@ -2,9 +2,7 @@
 #include "Testing/MockListener.h"
 
 #include "DataProcessing/DataNode.h"
-
-#include "Reflection/ReflectedType.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class DataListenerNode : public DAVA::TArc::DataNode
 {
@@ -39,17 +37,17 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         ctx.CreateData(std::make_unique<DataListenerNode>());
         TEST_VERIFY(ctx.HasData<DataListenerNode>() == true);
 
-        activeWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        activeWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         activeWrapper.AddListener(&listener);
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
         EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
         EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
 
-        secondWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        secondWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         secondWrapper.AddListener(&secondListener);
 
-        bothWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        bothWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         bothWrapper.AddListener(&bothListener);
     }
 

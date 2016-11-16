@@ -1,3 +1,4 @@
+#include "Base/TemplateHelpers.h"
 #include "Base/RtTypeInheritance.h"
 
 namespace DAVA

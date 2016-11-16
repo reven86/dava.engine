@@ -80,7 +80,7 @@ public:
     After process all results you **must** `Pop` them.
     Throw LuaException or error.
     */
-    Any GetResult(int32 index, const Type* preferredType = nullptr) const;
+    Any GetResult(int32 index, const RtType* preferredType = nullptr) const;
 
     /**
     Return value at specified index on the stack as Any with specified type.
@@ -97,7 +97,7 @@ public:
     After process all results you **must** `Pop` them.
     Return false on error.
     */
-    bool GetResultSafe(int32 index, Any& any, const Type* preferredType = nullptr) const;
+    bool GetResultSafe(int32 index, Any& any, const RtType* preferredType = nullptr) const;
 
     /**
     Return value at specified index on the stack as Any with specified type.
@@ -190,12 +190,12 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
 template <typename T>
 inline Any LuaScript::GetResult(int32 index) const
 {
-    return GetResult(index, Type::Instance<T>());
+    return GetResult(index, RtType::Instance<T>());
 }
 
 template <typename T>
 inline bool LuaScript::GetResultSafe(int32 index, Any& any) const
 {
-    return GetResultSafe(index, any, Type::Instance<T>());
+    return GetResultSafe(index, any, RtType::Instance<T>());
 }
 }

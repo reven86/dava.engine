@@ -38,7 +38,7 @@ void RegisterReflection(lua_State* L);
 /**
 Gets Lua variable from the stack with specified index and convert it to Any.
 */
-Any LuaToAny(lua_State* L, int32 index, const Type* preferredType = nullptr);
+Any LuaToAny(lua_State* L, int32 index, const RtType* preferredType = nullptr);
 
 /**
 Put specified value as Lua variable to top of the stack.

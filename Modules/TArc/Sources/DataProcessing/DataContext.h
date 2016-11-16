@@ -2,7 +2,7 @@
 #define DAVAENGINE_DATACONTEXT__H
 
 #include "Base/BaseTypes.h"
-#include "Base/Type.h"
+#include "Base/RtType.h"
 
 #include "Functional/Function.h"
 

@@ -10,6 +10,7 @@
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RHI/rhi_ShaderSource.h"
+#include "Render/RHI/Common/PreProcess.h"
 #include "Render/DynamicBufferAllocator.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
@@ -302,6 +303,8 @@ void Initialize()
     //pc pipeline state
     rhi::ShaderSource vp_pc;
     rhi::ShaderSource fp_pc;
+
+    ShaderPreprocessScope preprocessScope;
 
     if (vp_pc.Construct(rhi::PROG_VERTEX, ImGuiImplDetails::vprogPC) && fp_pc.Construct(rhi::PROG_FRAGMENT, ImGuiImplDetails::fprogPC))
     {

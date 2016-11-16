@@ -24,8 +24,8 @@ public:
 private:
     Vector<const ReflectedStructure::Field*> fieldsCache;
     Vector<const ReflectedStructure::Method*> methodsCache;
-    Map<String, size_t> fieldsNameIndexes;
-    Map<String, size_t> methodsNameIndexes;
+    UnorderedMap<String, size_t> fieldsNameIndexes;
+    UnorderedMap<String, size_t> methodsNameIndexes;
 
     void FillCache(const RtType* rtType);
     void FillCacheEntries(const RtType* rtType);

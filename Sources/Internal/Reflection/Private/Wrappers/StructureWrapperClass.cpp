@@ -27,18 +27,21 @@ void StructureWrapperClass::FillCacheEntries(const RtType* rtType)
     const ReflectedType* reflectedType = ReflectedTypeDB::GetByRtType(rtType);
     const ReflectedStructure* structure = reflectedType->GetStrucutre();
 
-    for (auto& f : structure->fields)
+    if (nullptr != structure)
     {
-        const ReflectedStructure::Field* field = f.get();
-        fieldsCache.push_back(field);
-        fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
-    }
+        for (auto& f : structure->fields)
+        {
+            const ReflectedStructure::Field* field = f.get();
+            fieldsCache.push_back(field);
+            fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
+        }
 
-    for (auto& m : structure->methods)
-    {
-        const ReflectedStructure::Method* method = m.get();
-        methodsCache.push_back(method);
-        methodsNameIndexes[method->name] = methodsCache.size() - 1;
+        for (auto& m : structure->methods)
+        {
+            const ReflectedStructure::Method* method = m.get();
+            methodsCache.push_back(method);
+            methodsNameIndexes[method->name] = methodsCache.size() - 1;
+        }
     }
 }
 

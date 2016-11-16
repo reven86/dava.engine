@@ -25,7 +25,7 @@ DataContext::~DataContext()
 
 void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
 {
-    const ReflectedType* type = ReflectedType::GetByPointer(node.get());
+    const ReflectedType* type = ReflectedTypeDB::GetByPointer(node.get());
     DVASSERT(dataMap.count(type) == 0);
     dataMap.emplace(std::make_pair(type, node.release()));
 }

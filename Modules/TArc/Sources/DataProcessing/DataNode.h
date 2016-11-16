@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Functional/Signal.h"
-#include "Reflection/ReflectedBase.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 namespace TArc
 {
-class DataNode : public ReflectedBase
+class DataNode : public ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(DataNode)
     {

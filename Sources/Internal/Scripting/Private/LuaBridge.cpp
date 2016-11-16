@@ -116,7 +116,7 @@ Lua stack changes [-0, +1, -]
 int32 Any__tostring(lua_State* L)
 {
     Any* pAny = lua_checkdvany(L, 1);
-    lua_pushfstring(L, "Any: %s (%p)", pAny->IsEmpty() ? "<empty>" : pAny->GetType()->GetName(), pAny);
+    lua_pushfstring(L, "Any: %s (%p)", pAny->IsEmpty() ? "<empty>" : pAny->GetRtType()->GetName(), pAny);
     return 1;
 }
 
@@ -204,7 +204,7 @@ int32 AnyFn__tostring(lua_State* L)
         }
         funcDef += " Func(";
         bool first = true;
-        for (const Type* t : params.argsType)
+        for (const RtType* t : params.argsType)
         {
             if (first)
             {
@@ -231,7 +231,7 @@ int32 AnyFn__call(lua_State* L)
 {
     AnyFn* self = lua_checkdvanyfn(L, 1);
     int32 nargs = lua_gettop(L) - 1; // Lower element in stack is AnyFn userdata
-    const Vector<const Type*>& argsTypes = self->GetInvokeParams().argsType;
+    const Vector<const RtType*>& argsTypes = self->GetInvokeParams().argsType;
 
     DVASSERT_MSG(nargs >= 0, "Lua stack corrupted!");
     if (nargs != argsTypes.size())
@@ -398,7 +398,7 @@ int32 Reflection__index(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self->GetField(name).ref;
+    Reflection refl = self->GetField(name);
     if (refl.IsValid())
     {
         if (refl.HasFields() || refl.HasMethods())
@@ -411,7 +411,7 @@ int32 Reflection__index(lua_State* L)
         return 1;
     }
 
-    AnyFn method = self->GetMethod(name.Get<String>()).fn;
+    AnyFn method = self->GetMethod(name.Get<String>());
     if (method.IsValid())
     {
         lua_pushdvanyfn(L, method);
@@ -444,7 +444,7 @@ int32 Reflection__newindex(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self->GetField(name).ref;
+    Reflection refl = self->GetField(name);
     if (refl.IsValid())
     {
         try
@@ -488,9 +488,9 @@ bool lua_equalmetatable(lua_State* L, const char* metatableName)
     return eq == 1;
 }
 
-Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
+Any LuaToAny(lua_State* L, int32 index, const RtType* preferredType /*= nullptr*/)
 {
-#define ISTYPE(t) (preferredType == Type::Instance<t>())
+#define ISTYPE(t) (preferredType == RtType::Instance<t>())
 #define CASTTYPE(t, ex) (Any(static_cast<t>(ex)))
 #define IFCAST(t, luaFn) if ISTYPE(t) { return CASTTYPE(t, luaFn(L, index)); }
 #define THROWTYPE DAVA_THROW(LuaException, LUA_ERRRUN, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
@@ -568,7 +568,7 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
                 Any* any = lua_todvany(L, index);
                 if (preferredType
                     && !ISTYPE(Any)
-                    && any->GetType() != preferredType)
+                    && any->GetRtType() != preferredType)
                 {
                     THROWTYPE;
                 }
