@@ -3,7 +3,7 @@
 
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 
 namespace rhi
 {
@@ -42,11 +42,21 @@ void QueryComplete(Handle buf);
 bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryPool();
+void ReleaseAll();
 }
 
-namespace PerfQuerySetDX9
+namespace PerfQueryDX9
 {
 void SetupDispatch(Dispatch* dispatch);
+
+void IssueTimestampQuery(Handle handle);
+void BeginMeasurment();
+void EndMeasurment();
+
+void ReleaseAll();
+
+void ObtainPerfQueryMeasurment();
+void ReleasePerfQueryPool();
 }
 
 namespace PipelineStateDX9
@@ -62,7 +72,7 @@ namespace ConstBufferDX9
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
-const void* InstData(Handle cb);
+const void* Instance(Handle cb);
 void SetToRHI(Handle cb, const void* instData);
 void InvalidateAllConstBufferInstances();
 }
@@ -157,6 +167,8 @@ DX9Command
 
         CREATE_RENDER_TARGET,
         CREARE_DEPTHSTENCIL_SURFACE,
+
+        SYNC_CPU_GPU,
     };
 
     Func func;

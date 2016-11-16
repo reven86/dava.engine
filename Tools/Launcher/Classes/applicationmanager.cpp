@@ -2,8 +2,9 @@
 #include "filemanager.h"
 #include "errormessenger.h"
 #include "processhelper.h"
+#include "filemanager.h"
 
-#include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include <QFile>
 #include <QDebug>
@@ -11,17 +12,6 @@
 
 namespace ApplicationManagerDetails
 {
-QString GetBranchDirectory_kostil(const QString& branchID)
-{
-    QString path = FileManager::GetBaseAppsDirectory() + branchID + "/";
-    return path;
-}
-QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
-{
-    QString path = GetBranchDirectory_kostil(branchID) + appID + "/";
-    return path;
-}
-
 QString RemoveWhitespace(const QString& str)
 {
     QString replacedStr = str;
@@ -33,6 +23,7 @@ QString RemoveWhitespace(const QString& str)
 
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
+    , fileManager(new FileManager(this))
 {
     localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
@@ -83,24 +74,41 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
         localConfig.SetWebpageURL(webPageUrl);
     }
     localConfig.CopyStringsAndFavsFromConfig(remoteConfig);
+    SaveLocalConfig();
+}
+
+void ApplicationManager::SaveLocalConfig() const
+{
     localConfig.SaveToFile(localConfigFilePath);
+}
+
+QString ApplicationManager::GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const
+{
+    QString path = fileManager->GetBaseAppsDirectory() + branchID + "/" + appID + "/";
+    return path;
 }
 
 QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
 {
     branchID = ApplicationManagerDetails::RemoveWhitespace(branchID);
     appID = ApplicationManagerDetails::RemoveWhitespace(appID);
-    QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
+
+    //try to get right path
+    QString runPath = fileManager->GetApplicationDirectory(branchID, appID);
     if (QFile::exists(runPath))
     {
         return runPath;
     }
-    runPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchID, appID);
-    if (QFile::exists(runPath))
+
+    //try to get old ugly path with a bug on "/" symbol
+    QString tmpRunPath = GetApplicationDirectory_kostil(branchID, appID);
+    if (QFile::exists(tmpRunPath))
     {
-        return runPath;
+        return tmpRunPath;
     }
+    //we can have old branche name or old app name
     QList<QString> branchKeys = localConfig.GetStrings().keys(branchID);
+    //it can be combination of old and new names
     branchKeys.append(branchID);
     for (const QString& branchKey : branchKeys)
     {
@@ -108,18 +116,20 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
         appKeys.append(appID);
         for (const QString& appKey : appKeys)
         {
-            QString newRunPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            QString newRunPath = fileManager->GetApplicationDirectory(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;
             }
-            newRunPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchKey, appKey);
+            newRunPath = GetApplicationDirectory_kostil(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;
             }
         }
     }
+    //we expect that folder exists
+    //or we just downloaded it and did not find original folder? make new folder with a correct name
     if (mustExists)
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application %1 in branch %2 not exists!").arg(appID).arg(branchID));
@@ -130,6 +140,33 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
         FileManager::MakeDirectory(runPath);
         return runPath;
     }
+}
+
+FileManager* ApplicationManager::GetFileManager() const
+{
+    return fileManager;
+}
+
+QString ApplicationManager::GetLocalAppPath(const AppVersion* version, const QString& appID)
+{
+    Q_ASSERT(!appID.isEmpty());
+    if (version == nullptr)
+    {
+        return QString();
+    }
+    QString runPath = version->runPath;
+    if (runPath.isEmpty())
+    {
+        QString correctID = ApplicationManagerDetails::RemoveWhitespace(appID);
+#ifdef Q_OS_WIN
+        runPath = correctID + ".exe";
+#elif defined(Q_OS_MAC)
+        runPath = correctID + ".app";
+#else
+#error "unsupported platform"
+#endif //platform
+    }
+    return runPath;
 }
 
 bool ApplicationManager::ShouldShowNews()
@@ -147,10 +184,11 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     //check self-update
     if (remoteConfig.GetLauncherVersion() != localConfig.GetLauncherVersion())
     {
-        AppVersion version;
-        version.id = remoteConfig.GetLauncherVersion();
-        version.url = remoteConfig.GetLauncherURL();
-        tasks.push_back(UpdateTask("", "", version, true));
+        AppVersion newVersion;
+        newVersion.id = remoteConfig.GetLauncherVersion();
+        newVersion.url = remoteConfig.GetLauncherURL();
+
+        tasks.push_back(UpdateTask("", "", nullptr, newVersion, true));
 
         return;
     }
@@ -176,7 +214,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
                 Application* localApp = localConfig.GetApplication(branch->id, app->id);
                 AppVersion* localAppVersion = localApp->GetVersion(0);
                 if (localAppVersion->id != appVersion->id)
-                    tasks.push_back(UpdateTask(branch->id, app->id, *appVersion));
+                    tasks.push_back(UpdateTask(branch->id, app->id, localAppVersion, *appVersion));
             }
         }
     }
@@ -186,14 +224,14 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     {
         Branch* branch = localConfig.GetBranch(i);
         if (!remoteConfig.GetBranch(branch->id))
-            tasks.push_back(UpdateTask(branch->id, "", AppVersion(), false, true));
+            tasks.push_back(UpdateTask(branch->id, "", nullptr, AppVersion(), false, true));
     }
 }
 
 void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version)
 {
     localConfig.InsertApplication(branchID, appID, version);
-    localConfig.SaveToFile(localConfigFilePath);
+    SaveLocalConfig();
 }
 
 QString ApplicationManager::GetString(const QString& stringID) const
@@ -223,18 +261,7 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
         return "";
     }
     QString runPath = GetApplicationDirectory(branchID, appID);
-    QString localAppPath = version->runPath;
-    if (localAppPath.isEmpty())
-    {
-        QString localAppID = ApplicationManagerDetails::RemoveWhitespace(appID);
-#ifdef Q_OS_WIN
-        localAppPath = localAppID + ".exe";
-#elif defined(Q_OS_MAC)
-        localAppPath = "ToolSet.app/Contents/MacOS/" + localAppID;
-#else
-#error "unsupported platform"
-#endif //platform
-    }
+    QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
     if (!QFile::exists(runPath))
     {
@@ -251,7 +278,7 @@ void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, con
     {
         return;
     }
-    ShowFileInExplorer(runPath);
+    QtHelpers::ShowInOSFileManager(runPath);
 }
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
@@ -277,7 +304,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         {
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessenger::ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(appID, runPath, true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }
@@ -290,8 +317,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         }
         FileManager::DeleteDirectory(appPath);
         localConfig.RemoveApplication(branchID, appID, versionID);
-        localConfig.SaveToFile(localConfigFilePath);
-
+        SaveLocalConfig();
         return true;
     }
     return false;
@@ -318,17 +344,16 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
             }
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessenger::ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(app->id, runPath, true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }
         }
     }
 
-    QString branchPath = FileManager::GetBranchDirectory(branchID);
+    QString branchPath = fileManager->GetBranchDirectory(branchID);
     FileManager::DeleteDirectory(branchPath);
     localConfig.RemoveBranch(branch->id);
-    localConfig.SaveToFile(localConfigFilePath);
-
+    SaveLocalConfig();
     return true;
 }

@@ -33,8 +33,8 @@ AndroidSystemDelegate::AndroidSystemDelegate(JavaVM* vm)
 
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
-    float32 width = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
-    float32 height = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
+    float32 width = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dx;
+    float32 height = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dy;
     float32 dpi = GetScreenDPI();
 
     float32 inches = sqrt((width * width) + (height * height)) / dpi;
@@ -97,18 +97,28 @@ void CorePlatformAndroid::ProcessFrame()
     }
 }
 
+void CorePlatformAndroid::SetScreenScaleMultiplier(float32 multiplier)
+{
+    float32 curMultiplier = Core::GetScreenScaleMultiplier();
+    if (!FLOAT_EQUAL(multiplier, curMultiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+        RenderReset(pendingWidth, pendingHeight);
+    }
+}
+
 void CorePlatformAndroid::ApplyPendingViewSize()
 {
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] in");
-    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", pendingWidth, pendingHeight);
+    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d, surfW = %d, surfH = %d", pendingWidth, pendingHeight, backbufferWidth, backbufferHeight);
 
     viewSizeChanged = false;
 
     DeviceInfo::InitializeScreenInfo();
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(pendingWidth, pendingHeight);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
-    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(pendingWidth, pendingHeight);
+    UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
+    UIControlSystem::Instance()->vcs->ScreenSizeChanged();
 
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
     Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] done");
@@ -135,8 +145,16 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     pendingWidth = w;
     pendingHeight = h;
-    backbufferWidth = int32(w * GetScreenScaleFactor());
-    backbufferHeight = int32(h * GetScreenScaleFactor());
+
+    // Android is always using hardware scaler for rendering.
+    // By specifying a scaled size for the buffer, the hardware
+    // scaler will be enabled and we will benefit in our rendering
+    // to the specified window (buffer is going to be up-scaled
+    // or down-scaled to the window size).
+    // For more info see: http://android-developers.blogspot.com.by/2013/09/using-hardware-scaler-for-performance.html
+    float32 scale = Core::GetScreenScaleMultiplier();
+    backbufferWidth = static_cast<int32>(scale * w);
+    backbufferHeight = static_cast<int32>(scale * h);
 
     viewSizeChanged = true;
 

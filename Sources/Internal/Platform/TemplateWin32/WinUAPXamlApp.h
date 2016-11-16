@@ -170,7 +170,7 @@ private:
 
     bool isMouseCursorShown = true;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
+    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
 
     struct MouseButtonChange
     {

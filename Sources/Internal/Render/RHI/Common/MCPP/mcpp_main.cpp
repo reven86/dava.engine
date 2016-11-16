@@ -84,7 +84,6 @@ int stdc2; /* cplus_val || stdc_ver >= 199901L */
 int stdc3; /* cplus_val >= 199901L || stdc_ver >= 199901L.
         (cplus_val >= 199901L) specifies compatible mode to C99 (extended
         feature of this preprocessor)   */
-int standard = TRUE; /* TRUE, if mcpp_mode is STD or POST_STD    */
 int std_line_prefix = STD_LINE_PREFIX;
 /* Output line and file information in C source style   */
 
@@ -120,8 +119,6 @@ char* cur_fullname;
 /* Full path of current source file (i.e. infile->full_fname)       */
 int no_source_line; /* Do not output line in diag.  */
 char identifier[IDMAX + IDMAX / 8]; /* Current identifier   */
-int mcpp_debug = 0; /* != 0 if debugging now        */
-
 /*
  *   in_directive is set TRUE while a directive line is scanned by directive().
  * It modifies the behavior of squeeze_ws() in expand.c so that newline is
@@ -311,14 +308,13 @@ static void init_main(void)
     mcpp_mode = STD;
     cplus_val = stdc_ver = 0L;
     stdc_val = 0;
-    standard = TRUE;
     std_line_prefix = STD_LINE_PREFIX;
     errors = src_col = 0;
     warn_level = -1;
     infile = NULL;
     in_directive = in_define = in_getarg = in_include = in_if = FALSE;
     src_line = macro_line = in_asm = 0L;
-    mcpp_debug = mkdep = no_output = keep_comments = keep_spaces = 0;
+    mkdep = no_output = keep_comments = keep_spaces = 0;
     include_nest = 0;
     insert_sep = NO_SEP;
     mbchar = MBCHAR;
@@ -440,11 +436,6 @@ char** argv)
 fatal_error_exit:
 #if MCPP_LIB
     /* Free malloced memory */
-    if (mcpp_debug & MACRO_CALL)
-    {
-        if (in_file != stdin_name)
-            xfree(in_file);
-    }
     clear_filelist();
     clear_symtable();
     clear_cur_work_dir();
@@ -457,8 +448,6 @@ fatal_error_exit:
     if (fp_err != stderr)
         mcpp__fclose(fp_err);
 
-    if (mcpp_debug & MEMORY)
-        print_heap();
     if (errors > 0 && option_flags.no_source_line == FALSE)
     {
         mcpp_fprintf(MCPP_ERR, "%d error%s in preprocessor.\n",
@@ -750,11 +739,6 @@ static void mcpp_main(void)
              */
             int has_pragma;
 
-            if ((mcpp_debug & MACRO_CALL) && !in_directive)
-            {
-                line_col.line = src_line; /* Location in source   */
-                line_col.col = infile->bptr - infile->buffer - 1;
-            }
             if (scan_token(c, (wp = out_ptr, &wp), out_wend) == NAM && (defp = is_macro(&wp)) != NULL)
             { /* A macro  */
                 wp = expand_macro(defp, out_ptr, out_wend, line_col, &has_pragma); /* Expand it completely */
@@ -983,22 +967,6 @@ char* out /* 'out' is 'output' in actual  */
         }
         else if (out_end <= wp)
         { /* Too long line    */
-            if (mcpp_debug & MACRO_CALL)
-            { /* -K option        */
-                /* Other than GCC or Visual C   */
-                /* scan_token() scans a comment as sequence of some */
-                /* tokens such as '/', '*', ..., '*', '/', since it */
-                /* does not expect comment.                         */
-                save = out_ptr;
-                while ((save = strrchr(save, '/')) != NULL)
-                {
-                    if (*(save - 1) == '*')
-                    { /* '*' '/' sequence */
-                        out_ptr = save + 1; /* Devide at the end*/
-                        break; /*      of a comment*/
-                    }
-                }
-            }
             save = save_string(out_ptr); /* Save the token   */
             *out_ptr++ = '\n'; /* Append newline   */
             *out_ptr = EOS;

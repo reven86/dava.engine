@@ -146,7 +146,7 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 
 bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 {
-    if (currentInput->device == UIEvent::Device::MOUSE && currentInput->mouseButton != UIEvent::MouseButton::LEFT)
+    if (currentInput->device == eInputDevices::MOUSE && currentInput->mouseButton != eMouseButtons::LEFT)
     {
         return false;
     }
@@ -165,8 +165,8 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::Phase::DRAG:
     {
-        UIEvent::MouseButton button = currentInput->mouseButton;
-        if (button == UIEvent::MouseButton::LEFT && currentInput->point != prevPos)
+        eMouseButtons button = currentInput->mouseButton;
+        if (button == eMouseButtons::LEFT && currentInput->point != prevPos)
         {
             if (ProcessDrag(currentInput->point))
             {

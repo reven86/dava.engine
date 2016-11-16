@@ -42,7 +42,7 @@ public:
     void UpdateDistanceToCamera();
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
@@ -57,6 +57,7 @@ public:
 
 private:
     void OnKeyboardInput(DAVA::UIEvent* event);
+    void OnWheelInput(DAVA::UIEvent* event);
 
     void Draw();
 

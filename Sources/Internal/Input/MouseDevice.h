@@ -4,6 +4,8 @@
 #include <memory>
 #include "Base/BaseObject.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class UIEvent;
@@ -47,5 +49,7 @@ public:
 };
 
 } //  namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __FRAMEWORK__MOUSECAPTURE_H__
