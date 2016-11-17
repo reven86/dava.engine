@@ -104,14 +104,13 @@ void UWPApplication::InstallEventHandlers()
     using namespace ::Windows::Gaming::Input;
     using namespace ::Windows::Phone::UI::Input;
     using namespace ::Windows::Graphics::Display;
-    using ::Windows::Foundation::Metadata::ApiInformation;
 
     Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
     Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
     UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
 
     SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &UWPApplication::OnBackRequested);
-    if (ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1))
+    if (PlatformCore::IsPhoneContractPresent())
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &UWPApplication::OnBackPressed);
     }

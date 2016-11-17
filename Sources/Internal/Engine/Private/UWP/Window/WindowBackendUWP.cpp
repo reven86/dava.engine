@@ -45,12 +45,10 @@ void WindowBackend::SetTitle(const String& title)
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     // Fullscreen mode cannot be changed on phones
-    if (IsWindowsPhone())
+    if (!PlatformCore::IsPhoneContractPresent())
     {
-        return;
+        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
     }
-
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -124,11 +122,6 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     default:
         break;
     }
-}
-
-bool WindowBackend::IsWindowsPhone() const
-{
-    return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

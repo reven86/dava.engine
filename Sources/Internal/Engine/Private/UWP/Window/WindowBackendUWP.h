@@ -49,7 +49,6 @@ public:
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);
-    bool IsWindowsPhone() const;
 
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference

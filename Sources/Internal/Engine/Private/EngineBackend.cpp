@@ -261,8 +261,6 @@ void EngineBackend::OnEngineCleanup()
     if (ImGui::IsInitialized())
         ImGui::Uninitialize();
 
-    if (ImGui::IsInitialized())
-        ImGui::Uninitialize();
     DestroySubsystems();
 
     if (Renderer::IsInitialized())
@@ -734,17 +732,24 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
 #ifdef __DAVAENGINE_AUTOTESTING__
-    context->autotestingSystem->Release();
-    context->autotestingSystem = nullptr;
+    if (context->autotestingSystem != nullptr)
+    {
+        context->autotestingSystem->Release();
+        context->autotestingSystem = nullptr;
+    }
 #endif
 
-    delete context->analyticsCore;
-    context->analyticsCore = nullptr;
-
-    context->moduleManager->ShutdownModules();
-    delete context->moduleManager;
-    context->moduleManager = nullptr;
-
+    if (context->analyticsCore != nullptr)
+    {
+        delete context->analyticsCore;
+        context->analyticsCore = nullptr;
+    }
+    if (context->moduleManager != nullptr)
+    {
+        context->moduleManager->ShutdownModules();
+        delete context->moduleManager;
+        context->moduleManager = nullptr;
+    }
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
@@ -752,43 +757,56 @@ void EngineBackend::DestroySubsystems()
         context->jobManager->WaitWorkerJobs();
         context->jobManager->WaitMainJobs();
     }
-
-    if (!IsConsoleMode())
+    if (context->localNotificationController != nullptr)
     {
         context->localNotificationController->Release();
         context->localNotificationController = nullptr;
-
+    }
+    if (context->uiScreenManager != nullptr)
+    {
         context->uiScreenManager->Release();
         context->uiScreenManager = nullptr;
-
-        delete context->inputSystem;
-        context->inputSystem = nullptr;
     }
-
-    context->fontManager->Release();
-    context->fontManager = nullptr;
-
-    context->uiControlSystem->Release();
-    context->uiControlSystem = nullptr;
-
-    context->animationManager->Release();
-    context->animationManager = nullptr;
-
-    context->renderSystem2D->Release();
-    context->renderSystem2D = nullptr;
-
-    context->performanceSettings->Release();
-    context->performanceSettings = nullptr;
-
-    context->random->Release();
-    context->random = nullptr;
-
-    context->allocatorFactory->Release();
-    context->allocatorFactory = nullptr;
-
-    context->versionInfo->Release();
-    context->versionInfo = nullptr;
-
+    if (context->fontManager != nullptr)
+    {
+        context->fontManager->Release();
+        context->fontManager = nullptr;
+    }
+    if (context->uiControlSystem != nullptr)
+    {
+        context->uiControlSystem->Release();
+        context->uiControlSystem = nullptr;
+    }
+    if (context->animationManager != nullptr)
+    {
+        context->animationManager->Release();
+        context->animationManager = nullptr;
+    }
+    if (context->renderSystem2D != nullptr)
+    {
+        context->renderSystem2D->Release();
+        context->renderSystem2D = nullptr;
+    }
+    if (context->performanceSettings != nullptr)
+    {
+        context->performanceSettings->Release();
+        context->performanceSettings = nullptr;
+    }
+    if (context->random != nullptr)
+    {
+        context->random->Release();
+        context->random = nullptr;
+    }
+    if (context->allocatorFactory != nullptr)
+    {
+        context->allocatorFactory->Release();
+        context->allocatorFactory = nullptr;
+    }
+    if (context->versionInfo != nullptr)
+    {
+        context->versionInfo->Release();
+        context->versionInfo = nullptr;
+    }
     if (context->jobManager != nullptr)
     {
         context->jobManager->Release();
@@ -814,6 +832,11 @@ void EngineBackend::DestroySubsystems()
         delete context->packManager;
         context->packManager = nullptr;
     }
+    if (context->inputSystem != nullptr)
+    {
+        delete context->inputSystem;
+        context->inputSystem = nullptr;
+    }
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
@@ -825,21 +848,33 @@ void EngineBackend::DestroySubsystems()
     }
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager->Release();
-    context->assetsManager = nullptr;
+    if (context->assetsManager != nullptr)
+    {
+        context->assetsManager->Release();
+        context->assetsManager = nullptr;
+    }
 #endif
 
-    context->fileSystem->Release();
-    context->fileSystem = nullptr;
-
-    context->systemTimer->Release();
-    context->systemTimer = nullptr;
-
-    delete context->deviceManager;
-    context->deviceManager = nullptr;
-
-    context->logger->Release();
-    context->logger = nullptr;
+    if (context->fileSystem != nullptr)
+    {
+        context->fileSystem->Release();
+        context->fileSystem = nullptr;
+    }
+    if (context->systemTimer != nullptr)
+    {
+        context->systemTimer->Release();
+        context->systemTimer = nullptr;
+    }
+    if (context->deviceManager != nullptr)
+    {
+        delete context->deviceManager;
+        context->deviceManager = nullptr;
+    }
+    if (context->logger != nullptr)
+    {
+        context->logger->Release();
+        context->logger = nullptr;
+    }
 }
 
 } // namespace Private

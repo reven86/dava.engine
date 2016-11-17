@@ -22,11 +22,15 @@ namespace DAVA
 {
 namespace Private
 {
+bool PlatformCore::isPhoneContractPresent = false;
+
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , dispatcher(engineBackend->GetDispatcher())
     , nativeService(new NativeService(this))
 {
+    using ::Windows::Foundation::Metadata::ApiInformation;
+    isPhoneContractPresent = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
 }
 
 PlatformCore::~PlatformCore() = default;

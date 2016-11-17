@@ -37,6 +37,8 @@ public:
     void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
     void OnDpiChanged();
 
+    static bool IsPhoneContractPresent();
+
 private:
     void GameThread();
 
@@ -47,11 +49,18 @@ private:
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
+
+    static bool isPhoneContractPresent;
 };
 
 inline NativeService* PlatformCore::GetNativeService() const
 {
     return nativeService.get();
+}
+
+inline bool PlatformCore::IsPhoneContractPresent()
+{
+    return isPhoneContractPresent;
 }
 
 } // namespace Private
