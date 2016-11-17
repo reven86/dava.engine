@@ -12,6 +12,7 @@
 #   include "Concurrency/Mutex.h"
 #   include "Concurrency/LockGuard.h"
 #   include "Utils/Utils.h"
+#   include "Utils/UTF8Utils.h"
 
 // Types and prototypes from dbghelp.h
 #define MAX_SYM_NAME            2000

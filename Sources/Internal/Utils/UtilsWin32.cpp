@@ -7,6 +7,7 @@
 #include <ShellAPI.h>
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include <ppltasks.h>
+#include "Utils/Utils.h"
 #endif
 
 namespace DAVA
@@ -44,7 +45,7 @@ void OpenURL(const String& url)
 
     try
     {
-        auto platform_string = ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str());
+        auto platformString = ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str());
         uri = ref new Windows::Foundation::Uri(platformString);
     }
     catch (Platform::InvalidArgumentException ^ )
