@@ -465,9 +465,9 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
             layoutWidth += advances[i].x;
             metrics.drawRect.x = Min(metrics.drawRect.x, int32(bbox.xMin));
-            metrics.drawRect.y = Min(metrics.drawRect.y, int32(bbox.yMin));
+            metrics.drawRect.y = Min(metrics.drawRect.y, multilineOffsetY - int32(bbox.yMax));
             metrics.drawRect.dx = Max(metrics.drawRect.dx, int32(bbox.xMax));
-            metrics.drawRect.dy = Max(metrics.drawRect.dy, int32(bbox.yMax));
+            metrics.drawRect.dy = Max(metrics.drawRect.dy, multilineOffsetY - int32(bbox.yMin));
 
             if (realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight)
             {
