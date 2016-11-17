@@ -3,6 +3,7 @@
 #include "applicationmanager.h"
 #include "buttonswidget.h"
 #include "filedownloader.h"
+
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QtGui>
@@ -13,6 +14,7 @@ class BranchesListModel;
 class QSortFilterProxyModel;
 class FileManager;
 class ConfigDownloader;
+class ProcessCommunication;
 
 namespace Ui
 {
@@ -74,4 +76,6 @@ private:
     QFont tableFont;
     BranchesListModel* listModel = nullptr;
     QSortFilterProxyModel* filterModel = nullptr;
+
+    ProcessCommunication* processCommunication;
 };
