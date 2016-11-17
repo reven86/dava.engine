@@ -121,24 +121,19 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
-float32 WindowNativeBridge::GetSurfaceScale() const
-{
-    return surfaceScale;
-}
-
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
-    surfaceScale = scale;
-
     const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
-    const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
+    const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * scale;
+    const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * scale;
 
     const bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
     const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
+    surfaceScale = scale;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
 }
 
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
@@ -291,7 +286,7 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
     bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, fullscreen));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, fullscreen));
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
@@ -306,7 +301,7 @@ void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls
     bool isFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, fullscreen));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 

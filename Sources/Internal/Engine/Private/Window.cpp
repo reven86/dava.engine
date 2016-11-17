@@ -301,6 +301,7 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     height = compressedSize.height;
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
+    surfaceScale = compressedSize.surfaceScale;
     dpi = compressedSize.dpi;
     fullscreenMode = compressedSize.fullscreen;
 
@@ -535,7 +536,7 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 
 float32 Window::GetSurfaceScale() const
 {
-    return windowBackend->GetSurfaceScale();
+    return surfaceScale;
 }
 
 void Window::SetSurfaceScale(float32 scale)
