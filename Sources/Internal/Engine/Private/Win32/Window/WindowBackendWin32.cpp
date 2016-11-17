@@ -376,7 +376,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_SURFACE_SCALE:
         DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
-
+        break;
     default:
         break;
     }

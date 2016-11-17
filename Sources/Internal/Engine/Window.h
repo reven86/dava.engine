@@ -205,7 +205,7 @@ private:
     float32 height = 0.0f; //!< Window client area height.
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
-    float32 surfaceScale = 1.0f; //!< Window rendering surface scale
+    float32 surfaceScale = 1.0f; //!< Window rendering surface scale.
 };
 
 inline bool Window::IsPrimary() const
