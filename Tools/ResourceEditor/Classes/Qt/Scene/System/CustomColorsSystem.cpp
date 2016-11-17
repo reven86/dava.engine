@@ -23,7 +23,7 @@
 #include "TArc/DataProcessing/DataContext.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
 {
     SetColor(colorIndex);
 }
@@ -77,7 +77,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     if (!toolImageTexture)
     {
-        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.png");
+        CreateToolImage("~res:/ResourceEditor/LandscapeEditor/Tools/customcolorsbrush/circle.png");
     }
 
     enabled = true;

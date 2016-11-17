@@ -13,8 +13,8 @@ TextDrawSystem::TextDrawSystem(Scene* scene, SceneCameraSystem* _cameraSystem)
     : SceneSystem(scene)
     , cameraSystem(_cameraSystem)
 {
-    FilePath fntPath = FilePath("~res:/Fonts/korinna_df.fnt");
-    FilePath texPath = FilePath("~res:/Fonts/korinna_df.tex");
+    FilePath fntPath = FilePath("~res:/ResourceEditor/Fonts/korinna_df.fnt");
+    FilePath texPath = FilePath("~res:/ResourceEditor/Fonts/korinna_df.tex");
     font = GraphicFont::Create(fntPath, texPath);
     if (nullptr == font)
         return;
