@@ -52,8 +52,7 @@ struct WindowNativeBridge final
     UIView* GetUIViewFromPool(const char8* className);
     void ReturnUIViewToPool(UIView* view);
 
-    float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(const float32 scale);
+    void SetSurfaceScale(const float32 scale);
 
     //////////////////////////////////////////////////////////////////////////
     // Notifications from RenderViewController

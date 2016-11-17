@@ -171,28 +171,10 @@ void WindowBackend::SetSurfaceScale(const float32 scale)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
 }
 
-bool WindowBackend::CanChangeSurfaceScale() const
-{
-    // Check if currently used rendering API is supported
-    // If renderer is not initialized yet, fallback to false
-    if (Renderer::IsInitialized())
-    {
-        const rhi::Api graphicsApi = Renderer::GetAPI();
-        return (graphicsApi == rhi::RHI_DX9);
-    }
-    else
-    {
-        return false;
-    }
-}
-
 void WindowBackend::DoSetSurfaceScale(const float32 scale)
 {
-    if (CanChangeSurfaceScale())
+    if (Renderer::GetAPI() == rhi::RHI_DX9)
     {
-        DVASSERT(hwnd != nullptr);
-        DVASSERT(lastWidth > 0 && lastHeight > 0);
-
         surfaceScale = scale;
 
         const float32 surfaceWidth = lastWidth * surfaceScale;

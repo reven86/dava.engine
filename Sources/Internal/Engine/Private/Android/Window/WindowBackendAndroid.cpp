@@ -180,17 +180,11 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-float32 WindowBackend::GetSurfaceScale() const
-{
-    return surfaceScale;
-}
-
-bool WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
-    return true;
 }
 
 void WindowBackend::DoSetSurfaceScale(const float32 scale)
@@ -199,7 +193,7 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
 
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, eFullscreen::On));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, eFullscreen::On));
 }
 
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
@@ -311,7 +305,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     {
         // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
         // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, eFullscreen::On));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, eFullscreen::On));
     }
 }
 

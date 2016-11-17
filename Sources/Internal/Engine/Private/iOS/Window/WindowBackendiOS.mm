@@ -102,17 +102,11 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
-float32 WindowBackend::WindowBackend::GetSurfaceScale() const
-{
-    return bridge->GetSurfaceScale();
-}
-
-bool WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
-    return true;
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)
