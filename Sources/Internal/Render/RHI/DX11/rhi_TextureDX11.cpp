@@ -494,6 +494,8 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
     dx11_Texture_Unmap(tex);
 }
 
+//==============================================================================
+
 bool dx11_Texture_NeedRestore(Handle tex)
 {
     return false;
