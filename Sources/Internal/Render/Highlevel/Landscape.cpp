@@ -25,6 +25,7 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"

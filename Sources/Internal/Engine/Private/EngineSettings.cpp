@@ -1,6 +1,7 @@
 #include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {

@@ -29,7 +29,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
 #include "UI/UIControlSystem.h"
-#include "Engine/Settings.h"
+#include "Engine/EngineSettings.h"
 
 #include "Network/NetCore.h"
 #include "MemoryManager/MemoryProfiler.h"
