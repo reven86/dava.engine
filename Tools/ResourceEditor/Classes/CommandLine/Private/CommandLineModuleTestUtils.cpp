@@ -481,6 +481,7 @@ void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)
 
 SceneBuilder::SceneBuilder(const FilePath& scenePathname)
     : scenePathname(scenePathname)
+    , scene(nullptr)
 {
     FileSystem::Instance()->CreateDirectory(scenePathname.GetDirectory(), false);
     scene.reset(new Scene);
