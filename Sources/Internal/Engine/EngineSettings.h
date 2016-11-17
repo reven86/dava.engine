@@ -4,8 +4,9 @@
 #include "Base/FastName.h"
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
-#include "Reflection/Registrator.h"
 #include "Functional/Function.h"
+#include "Functional/Signal.h"
+#include "Reflection/Registrator.h"
 
 #if !defined(__DAVAENGINE_COREV2__)
 #include "Base/Singleton.h"
@@ -36,7 +37,7 @@ public:
         SETTING_LANDSCAPE_MORPHING,
         SETTING_TEST,
 
-        //don't foget add new enum values to reflection block
+        //don't forget add new enum values to reflection block
         SETTING_COUNT
     };
 
@@ -61,6 +62,8 @@ public:
 
     static const FastName& GetSettingName(eSetting setting);
     static eSetting GetSettingByName(const FastName& name);
+
+    Signal<eSetting> settingChanged;
 
 protected:
     template <eSetting ID, typename T>
@@ -88,19 +91,24 @@ template <EngineSettings::eSetting ID>
 inline void EngineSettings::SetSetting(const Any& value)
 {
     DVASSERT(setting[ID].GetType() == value.GetType());
-    setting[ID] = value;
+    if (setting[ID] != value)
+    {
+        setting[ID] = value;
+        settingChanged.Emit(ID);
+    }
 }
 
 template <EngineSettings::eSetting ID, typename T>
 inline const T& EngineSettings::GetSettingRefl() const
 {
-    return setting[ID].Get<T>();
+    const Any& v = GetSetting<ID>();
+    return v.Get<T>();
 }
 
 template <EngineSettings::eSetting ID, typename T>
 inline void EngineSettings::SetSettingRefl(const T& value)
 {
-    setting[ID] = value;
+    SetSetting<ID>(value);
 }
 
 template <EngineSettings::eSetting ID, typename T>
