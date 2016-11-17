@@ -1,15 +1,26 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
+#include "ui_mainwindow.h"
 
 #include "Base/Introspection.h"
 #include "Logger/Logger.h"
 #include "Render/RenderBase.h"
-#include "ui_mainwindow.h"
 
 #include "Preferences/PreferencesRegistrator.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+#include "QtTools/Utils/ShortcutChecker.h"
+#endif //__DAVAENGINE_MACOS__
+
+#include "QtTools/Utils/QtDelayedExecutor.h"
+
 #include <QtGui>
 #include <QtWidgets>
+
+namespace DAVA
+{
+class RenderWidget;
+}
 
 class PackageWidget;
 class PropertiesWidget;
@@ -29,7 +40,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspB
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
-    void AttachDocumentGroup(DocumentGroup* documentGroup);
+    void AttachDocumentGroup(DocumentGroup* documentGroup, DAVA::RenderWidget* renderWidget);
 
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
     void ExecDialogReloadSprites(SpritesPacker* packer);
@@ -81,6 +92,8 @@ private:
     void SetPixelized(bool pixelized);
     void closeEvent(QCloseEvent* event) override;
 
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::String GetState() const;
     void SetState(const DAVA::String& array);
 
@@ -101,6 +114,12 @@ private:
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
 
+#if defined(__DAVAENGINE_MACOS__)
+    ShortcutChecker shortcutChecker;
+#endif //__DAVAENGINE_MACOS__
+
+    QtDelayedExecutor delayedExecutor;
+
 public:
     INTROSPECTION(MainWindow,
                   PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
@@ -109,5 +128,3 @@ public:
                   PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };
-
-#endif // MAINWINDOW_H

@@ -136,6 +136,7 @@ DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 DV_LOCAL_CPPFLAGS += -std=c++14
 
 DV_LOCAL_CFLAGS += -DDAVA_FMOD
+DV_LOCAL_CFLAGS += -D__DAVAENGINE_ANDROID__
 
 # remove warnings about unused arguments to compiler
 DV_LOCAL_CFLAGS += -Qunused-arguments
@@ -243,6 +244,7 @@ DV_LOCAL_CFLAGS += -fno-standalone-debug
 
 # set exported build flags
 DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS) -fno-standalone-debug
+DV_LOCAL_EXPORT_CFLAGS += -D__DAVAENGINE_ANDROID__
 
 # set exported used libs
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
@@ -365,6 +367,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/MemoryManager/*.cpp) \
@@ -429,6 +432,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
+					 $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \

@@ -2,7 +2,6 @@
 #define __DAVAENGINE_POSIX_THREADS_H__ 
 
 #include "Base/Platform.h"
-
 #ifndef __DAVAENGINE_WINDOWS__
 #include <pthread.h>
 #else

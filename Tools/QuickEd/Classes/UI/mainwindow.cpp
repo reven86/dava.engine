@@ -4,6 +4,8 @@
 #include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
+#include "Engine/Qt/RenderWidget.h"
+
 #include "Helpers/ResourcesManageHelper.h"
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
@@ -13,7 +15,6 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "Preferences/PreferencesDialog.h"
@@ -35,6 +36,9 @@ Q_DECLARE_METATYPE(const InspMember*);
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , loggerOutput(new LoggerOutputObject)
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
+#endif //__DAVAENGINE_MACOS__
 {
     setupUi(this);
 
@@ -75,6 +79,8 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
+
+    qApp->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -82,7 +88,7 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
+void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup, RenderWidget* renderWidget)
 {
     Q_ASSERT(documentGroup != nullptr);
 
@@ -97,18 +103,18 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    actionCloseDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
-    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    renderWidget->addAction(actionCloseDocument);
 
     QAction* actionReloadDocument = new QAction("Reload current document", this);
     QList<QKeySequence> shortcurs;
     shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
               << Qt::Key_F5;
     actionReloadDocument->setShortcuts(shortcurs);
-    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    actionReloadDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
-    previewWidget->GetGLWidget()->addAction(actionReloadDocument);
+    renderWidget->addAction(actionReloadDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
@@ -357,7 +363,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 
         RebuildRecentMenu(project->GetProjectsHistory());
         FillComboboxLanguages(project);
-        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
+        setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -366,8 +372,13 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         {
             errors << QString::fromStdString(result.message);
         }
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
-        this->setWindowTitle("QuickEd");
+        QString errorStr = errors.join('\n');
+
+        setWindowTitle("QuickEd");
+
+        delayedExecutor.DelayedExecute([errorStr]() {
+            QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
+        });
     }
 }
 
@@ -479,6 +490,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
     {
         event->ignore();
     }
+}
+
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == event->type() && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
+    return false;
 }
 
 String MainWindow::GetState() const

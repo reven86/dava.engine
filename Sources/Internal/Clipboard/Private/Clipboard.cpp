@@ -1,7 +1,9 @@
 #include "Clipboard/Clipboard.h"
 
 #if defined(__DAVAENGINE_WIN32__)
-#include "win32/ClipboardImplWin32.h"
+#include "Win32/ClipboardImplWin32.h"
+#elif defined(__DAVAENGINE_MACOS__)
+#include "Mac/ClipboardImplOsx.h"
 #else
 #include "ClipboardImplStub.h"
 #endif
@@ -9,13 +11,12 @@
 namespace DAVA
 {
 Clipboard::Clipboard()
+    : pImpl(std::make_unique<ClipboardImpl>())
 {
-    pImpl = new ClipboardImpl();
 }
 
 Clipboard::~Clipboard()
 {
-    SafeDelete(pImpl);
 }
 
 bool Clipboard::IsReadyToUse() const
@@ -23,9 +24,9 @@ bool Clipboard::IsReadyToUse() const
     return pImpl->IsReadyToUse();
 }
 
-bool Clipboard::ClearClipboard() const
+bool Clipboard::Clear() const
 {
-    return pImpl->ClearClipboard();
+    return pImpl->Clear();
 }
 
 bool Clipboard::HasText() const

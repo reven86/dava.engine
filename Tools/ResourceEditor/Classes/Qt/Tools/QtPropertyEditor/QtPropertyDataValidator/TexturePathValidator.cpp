@@ -1,6 +1,6 @@
 #include "TexturePathValidator.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Qt/Settings/Settings.h"
 
 #include "FileSystem/FileSystem.h"

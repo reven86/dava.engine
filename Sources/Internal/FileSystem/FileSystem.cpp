@@ -271,8 +271,19 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    int res = FileAPI::RemoveFile(filePath.GetNativeAbsolutePathname().c_str());
-    return (res == 0);
+    const auto& fileName = filePath.GetNativeAbsolutePathname();
+    int res = FileAPI::RemoveFile(fileName.c_str());
+    if (res == 0)
+    {
+        return true;
+    }
+
+    if (errno == ENOENT) // no such file
+    {
+        return false;
+    }
+    Logger::Error("can't delete file %s cause: %s", filePath.GetStringValue().c_str(), strerror(errno));
+    return false;
 }
 
 bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
@@ -794,7 +805,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetInternalStoragePathname();
 #endif
 }
@@ -804,7 +815,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetExternalStoragePathname();
 #endif
 }

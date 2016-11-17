@@ -16,11 +16,6 @@ include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set( ADDED_CPP_PATTERNS  AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp ResourceArchiver/*.cpp )
 set( ADDED_H_PATTERNS    AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   ResourceArchiver/*.h  )
 
-if( DAVA_USE_QT_WIDGETS )
-    add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/QtTools" ${CMAKE_CURRENT_BINARY_DIR}/QtTools )
-    set( ADDED_LIBS QtTools )
-endif()
-
 define_source  (  SOURCE ${ADDED_CPP_PATTERNS} ${ADDED_H_PATTERNS} )
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES}" )
@@ -33,12 +28,12 @@ if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} )#tmp
     save_property( PROPERTY_LIST  DEFINITIONS )
 endif()
 
-add_library                 ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${PROJECT_HEADER_FILE_ONLY} )
+load_property ( PROPERTY_LIST   DEFINITIONS DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+add_definitions ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
+add_library ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${PROJECT_HEADER_FILE_ONLY} )
 
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
 elseif( WIN32 )
    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} )
 endif()
-
-	

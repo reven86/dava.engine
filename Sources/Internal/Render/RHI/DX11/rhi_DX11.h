@@ -3,7 +3,7 @@
 
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 #include "_dx11.h"
 
 struct ID3D11DeviceContext;
@@ -38,16 +38,21 @@ bool QueryIsCompleted(Handle buf);
 void ReleaseQueryPool();
 }
 
-namespace PerfQuerySetDX11
+namespace PerfQueryDX11
 {
+void IssueTimestampQuery(Handle handle, ID3D11DeviceContext* context);
+void BeginMeasurment(ID3D11DeviceContext* context);
+void EndMeasurment(ID3D11DeviceContext* context);
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+void DeferredPerfQueriesIssued(const std::vector<Handle>& queries);
+void IssueTimestampQueryDeferred(Handle handle, ID3D11DeviceContext* context);
+#endif
+
 void SetupDispatch(Dispatch* dispatch);
-void BeginFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
-void EndFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
-void IssueTimestampQuery(Handle handle, uint32 timestampIndex, ID3D11DeviceContext* context);
-void IssueFrameBeginQuery(Handle handle, ID3D11DeviceContext* context);
-void IssueFrameEndQuery(Handle handle, ID3D11DeviceContext* context);
-Handle Current();
-void ObtainResults(Handle handle);
+
+void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context);
+void ReleasePerfQueryPool();
 }
 
 namespace PipelineStateDX11
@@ -118,7 +123,8 @@ DX11Command
         MAP = 1,
         UNMAP = 2,
         UPDATE_SUBRESOURCE = 3,
-        COPY_RESOURCE = 4
+        COPY_RESOURCE = 4,
+        SYNC_CPU_GPU = 5,
     };
 
     Func func;
