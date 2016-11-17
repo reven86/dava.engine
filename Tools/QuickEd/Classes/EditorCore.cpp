@@ -473,7 +473,7 @@ void EditorCore::UnpackHelp()
     {
         try
         {
-            ResourceArchive helpRA("~res:/Help.docs");
+            ResourceArchive helpRA("~res:/QuickEd/Help.docs");
 
             fs->DeleteDirectory(docsPath);
             fs->CreateDirectory(docsPath, true);
