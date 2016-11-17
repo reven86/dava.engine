@@ -23,6 +23,7 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/CPUProfiler.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -80,6 +81,18 @@ Landscape::Landscape()
             floatHeightTexture = true;
         }
     }
+
+#ifdef __DAVAENGINE_COREV2__
+    EngineSettings* settings = Engine::Instance()->GetContext()->settings;
+#else
+    EngineSettings* settings = EngineSettings::Instance();
+#endif
+
+    EngineSettings::eSettingValue landscapeSetting = settings->GetSetting<EngineSettings::SETTING_LANDSCAPE_RENDERMODE>().Get<EngineSettings::eSettingValue>();
+    if (landscapeSetting == EngineSettings::LANDSCAPE_NO_INSTANCING)
+        renderMode = RENDERMODE_NO_INSTANCING;
+    else if (landscapeSetting == EngineSettings::LANDSCAPE_INSTANCING && renderMode == RENDERMODE_INSTANCING_MORPHING)
+        renderMode = RENDERMODE_INSTANCING;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
