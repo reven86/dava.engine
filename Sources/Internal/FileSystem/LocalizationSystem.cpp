@@ -16,6 +16,11 @@
 #include "Core/Core.h"
 #endif
 
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Android/JNIBridge.h"
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#endif
+
 namespace DAVA
 {
 //TODO: move it to DateTimeWin32 or remove
@@ -68,7 +73,6 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
     String locale = GetDeviceLocale();
-    ;
 
     if (locale.empty())
     {
@@ -77,6 +81,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
     }
     SetCurrentLocale(locale);
 }
+
+#if !defined(__DAVAENGINE_ANDROID__)
 
 String LocalizationSystem::GetDeviceLocale(void) const
 {
@@ -93,6 +99,23 @@ String LocalizationSystem::GetDeviceLocale(void) const
     }
     return locale;
 }
+
+#else
+
+String LocalizationSystem::GetDeviceLocale(void) const
+{
+    if (!overridenLangId.empty())
+    {
+        return overridenLangId;
+    }
+
+    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
+    Function<jstring()> getLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+
+    return JNI::ToString(getLocale());
+}
+
+#endif
 
 void LocalizationSystem::Init()
 {
