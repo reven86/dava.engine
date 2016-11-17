@@ -5,7 +5,11 @@
 #include "FileSystem/FilePath.h"
 #include "CommandLine/CommandLineModule.h"
 
-class SceneEditor2;
+namespace DAVA
+{
+class Scene;
+}
+
 class BeastRunner;
 class BeastCommandLineTool : public CommandLineModule
 {
@@ -24,7 +28,7 @@ private:
     DAVA::FilePath outputPathname;
 
     BeastRunner* beastRunner = false;
-    SceneEditor2* scene = nullptr;
+    DAVA::Scene* scene = nullptr;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

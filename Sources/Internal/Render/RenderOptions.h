@@ -54,6 +54,7 @@ public:
 #endif
         DRAW_NONDEF_GLYPH,
         HIGHLIGHT_HARD_CONTROLS,
+
         OPTIONS_COUNT
     };
 
