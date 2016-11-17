@@ -188,7 +188,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
         newVersion.id = remoteConfig.GetLauncherVersion();
         newVersion.url = remoteConfig.GetLauncherURL();
 
-        tasks.push_back(UpdateTask("", "", nullptr, newVersion, true));
+        tasks.push_back(UpdateTask("", "", "", nullptr, newVersion, true));
 
         return;
     }
@@ -214,7 +214,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
                 Application* localApp = localConfig.GetApplication(branch->id, app->id);
                 AppVersion* localAppVersion = localApp->GetVersion(0);
                 if (localAppVersion->id != appVersion->id)
-                    tasks.push_back(UpdateTask(branch->id, app->id, localAppVersion, *appVersion));
+                    tasks.push_back(UpdateTask(branch->id, app->id, app->realID, localAppVersion, *appVersion));
             }
         }
     }
@@ -224,13 +224,14 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     {
         Branch* branch = localConfig.GetBranch(i);
         if (!remoteConfig.GetBranch(branch->id))
-            tasks.push_back(UpdateTask(branch->id, "", nullptr, AppVersion(), false, true));
+            tasks.push_back(UpdateTask(branch->id, "", "", nullptr, AppVersion(), false, true));
     }
 }
 
-void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version)
+void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version)
 {
-    localConfig.InsertApplication(branchID, appID, version);
+    localConfig.InsertApplication(branchID, appID, realAppID, version);
+    localConfig.UpdateApplicationsNames();
     SaveLocalConfig();
 }
 
@@ -253,14 +254,18 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
-QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
+QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& realAppID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version == nullptr)
     {
         return "";
     }
-    QString runPath = GetApplicationDirectory(branchID, appID);
+    Application* app = localConfig.GetApplication(branchID, appID);
+    Q_ASSERT(app != nullptr);
+    QString realID = app->realID;
+
+    QString runPath = GetApplicationDirectory(branchID, realAppID);
     QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
     if (!QFile::exists(runPath))
@@ -273,7 +278,13 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
 
 void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    Application* app = localConfig.GetApplication(branchID, appID);
+    if (app == nullptr)
+    {
+        return;
+    }
+    QString realID = app->realID;
+    QString runPath = ExtractApplicationRunPath(branchID, appID, realID, versionID);
     if (runPath.isEmpty())
     {
         return;
@@ -283,7 +294,13 @@ void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, con
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    Application* app = localConfig.GetApplication(branchID, appID);
+    if (app == nullptr)
+    {
+        return;
+    }
+    QString realID = app->realID;
+    QString runPath = ExtractApplicationRunPath(branchID, appID, realID, versionID);
     if (runPath.isEmpty())
     {
         return;
@@ -299,7 +316,13 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = GetApplicationDirectory(branchID, appID, false) + version->runPath;
+        Application* app = localConfig.GetApplication(branchID, appID);
+        if (app == nullptr)
+        {
+            return false;
+        }
+        QString realID = app->realID;
+        QString runPath = GetApplicationDirectory(branchID, realID, false) + version->runPath;
         if (!runPath.isEmpty())
         {
             while (ProcessHelper::IsProcessRuning(runPath))
@@ -310,13 +333,13 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
             }
         }
 
-        QString appPath = GetApplicationDirectory(branchID, appID);
+        QString appPath = GetApplicationDirectory(branchID, realID);
         if (appPath.isEmpty())
         {
             return true;
         }
         FileManager::DeleteDirectory(appPath);
-        localConfig.RemoveApplication(branchID, appID, versionID);
+        localConfig.RemoveApplication(branchID, appID, realID, versionID);
         SaveLocalConfig();
         return true;
     }
@@ -337,7 +360,7 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
         for (int j = 0; j < versionCount; ++j)
         {
             AppVersion* version = app->GetVersion(j);
-            QString runPath = GetApplicationDirectory(branchID, app->id) + version->runPath;
+            QString runPath = GetApplicationDirectory(branchID, app->realID) + version->runPath;
             if (runPath.isEmpty())
             {
                 return false;

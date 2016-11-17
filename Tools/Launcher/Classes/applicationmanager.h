@@ -40,11 +40,11 @@ public:
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
 public slots:
-    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
+    void OnAppInstalled(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
 
 private:
     void LoadLocalConfig(const QString& configPath);
-    QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
+    QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& realAppID, const QString& versionID);
 
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 

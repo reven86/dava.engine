@@ -30,12 +30,16 @@ struct Application
     Application()
     {
     }
-    Application(const QString& _id)
-        : id(_id)
+    Application(const QString& id_, const QString& realID_)
+        : id(id_)
+        , realID(realID_)
     {
     }
 
+    //in a fact it is an ID to be displayed in UI
+    // old name was not changed to save capability with other code
     QString id;
+    QString realID;
 
     int GetVerionsCount() const
     {
@@ -103,9 +107,13 @@ public:
     QByteArray Serialize() const;
     void SaveToFile(const QString& filePath) const;
 
-    void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
-    void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
+    void InsertApplication(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
 
+    void RemoveApplication(const QString& branchID, const QString& appID, const QString& realAppID, const QString& version);
+
+    static bool IsToolset(const QString& realAppID);
+    static QStringList GetToolsetApplications();
+    QStringList GetTranslatedToolsetApplications() const;
     int GetBranchCount();
     QString GetBranchID(int index);
 
@@ -143,6 +151,10 @@ public:
     void UpdateApplicationsNames();
 
 private:
+    void InsertApplicationImpl(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
+
+    void RemoveApplicationImpl(const QString& branchID, const QString& appID, const QString& version);
+
     bool ParseJSON(const QByteArray& configData);
 
     QString launcherVersion;

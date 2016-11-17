@@ -201,7 +201,7 @@ void UpdateDialog::DownloadFinished()
 
     const UpdateTask& task = tasks.head();
 
-    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.realAppID, false);
     if (task.currentVersion != nullptr)
     {
         QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
@@ -220,7 +220,7 @@ void UpdateDialog::DownloadFinished()
     if (ListArchive(filePath, files)
         && UnpackArchive(filePath, appDir, files))
     {
-        emit AppInstalled(task.branchID, task.appID, task.newVersion);
+        emit AppInstalled(task.branchID, task.appID, task.realAppID, task.newVersion);
         UpdateLastLogValue("Unpack Complete!");
         CompleteLog();
     }
