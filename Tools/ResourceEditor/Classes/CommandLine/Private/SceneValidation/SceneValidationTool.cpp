@@ -45,7 +45,7 @@ SceneValidationTool::SceneValidationTool(const DAVA::Vector<DAVA::String>& comma
     : CommandLineModule(commandLine, Key)
 {
     options.AddOption(OptionName::Scene, DAVA::VariantType(DAVA::String("")), "Path to validated scene");
-    options.AddOption(OptionName::SceneList, DAVA::VariantType(DAVA::String("")), "Path to file with the list of validated scenes");
+    options.AddOption(OptionName::ProcessFileList, DAVA::VariantType(DAVA::String("")), "Path to file with the list of validated scenes");
     options.AddOption(OptionName::Validate, DAVA::VariantType(DAVA::String("all")), "Validation options: all, matrices, sameNames, collisionTypes, texturesRelevance, materialGroups", true);
 }
 
@@ -61,17 +61,17 @@ void SceneValidationTool::EnableAllValidations()
 bool SceneValidationTool::PostInitInternal()
 {
     scenePath = options.GetOption(OptionName::Scene).AsString();
-    scenesListPath = options.GetOption(OptionName::SceneList).AsString();
+    scenesListPath = options.GetOption(OptionName::ProcessFileList).AsString();
 
     if (scenePath.IsEmpty() && scenesListPath.IsEmpty())
     {
-        DAVA::Logger::Error("scene or scenesList param should be specified");
+        DAVA::Logger::Error("'%s' or '%s' param should be specified", OptionName::Scene.c_str(), OptionName::ProcessFileList.c_str());
         return false;
     }
 
     if (!scenePath.IsEmpty() && !scenesListPath.IsEmpty())
     {
-        DAVA::Logger::Error("Both scene and scenesList params should not be specified");
+        DAVA::Logger::Error("Both '%s' and '%s' params should not be specified", OptionName::Scene.c_str(), OptionName::ProcessFileList.c_str());
         return false;
     }
 
@@ -120,11 +120,11 @@ bool SceneValidationTool::PostInitInternal()
     return true;
 }
 
-void SceneValidationTool::UpdateExitCode(DAVA::Result result)
+void SceneValidationTool::UpdateResult(DAVA::Result newResult)
 {
-    if (GetExitCode() == 0 && result == DAVA::Result::RESULT_FAILURE)
+    if (newResult != DAVA::Result::RESULT_SUCCESS)
     {
-        SetExitCode(-1);
+        result = newResult;
     }
 }
 
@@ -143,17 +143,13 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         scenePathes.push_back(scenePath);
     }
 
-    new ConsoleProject;
-    SCOPE_EXIT
-    {
-        ConsoleProject::Instance()->Release();
-    };
+    ConsoleProject consoleProject;
 
     ValidationProgressToLog progressToLog;
 
     for (const FilePath& scenePath : scenePathes)
     {
-        ConsoleProject::Instance()->OpenProject(ProjectManager::CreateProjectPathFromPath(scenePath));
+        consoleProject.OpenProject(ProjectManager::CreateProjectPathFromPath(scenePath));
 
         ScopedPtr<Scene> scene(new Scene);
         if (DAVA::SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePath))
@@ -165,7 +161,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
                 SceneValidation::ValidateMatrices(scene, validationProgress);
-                UpdateExitCode(validationProgress.GetResult());
+                UpdateResult(validationProgress.GetResult());
             }
 
             if (validateSameNames)
@@ -173,7 +169,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
                 SceneValidation::ValidateSameNames(scene, validationProgress);
-                UpdateExitCode(validationProgress.GetResult());
+                UpdateResult(validationProgress.GetResult());
             }
 
             if (validateCollisionTypes)
@@ -181,7 +177,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
                 SceneValidation::ValidateCollisionProperties(scene, validationProgress);
-                UpdateExitCode(validationProgress.GetResult());
+                UpdateResult(validationProgress.GetResult());
             }
 
             if (validateTexturesRelevance)
@@ -189,7 +185,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
                 SceneValidation::ValidateTexturesRelevance(scene, validationProgress);
-                UpdateExitCode(validationProgress.GetResult());
+                UpdateResult(validationProgress.GetResult());
             }
 
             if (validateMaterialGroups)
@@ -197,7 +193,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
                 SceneValidation::ValidateMaterialsGroups(scene, validationProgress);
-                UpdateExitCode(validationProgress.GetResult());
+                UpdateResult(validationProgress.GetResult());
             }
         }
         else

@@ -28,7 +28,6 @@ const DAVA::String OptionName::Create("-create");
 
 const DAVA::String OptionName::Links("-links");
 const DAVA::String OptionName::Scene("-scene");
-const DAVA::String OptionName::SceneList("-scenelist");
 const DAVA::String OptionName::Texture("-texture");
 const DAVA::String OptionName::Yaml("-yaml");
 

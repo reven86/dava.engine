@@ -42,10 +42,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "matrices" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() == 0);
+        TEST_VERIFY(tool.GetExitCode() == 0);
     }
 
     DAVA_TEST (WrongMatricesTest)
@@ -63,10 +63,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "matrices" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() != 0);
+        TEST_VERIFY(tool.GetExitCode() != 0);
     }
 
     DAVA_TEST (CorrectSameNamesTest)
@@ -81,10 +81,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "sameNames" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() == 0);
+        TEST_VERIFY(tool.GetExitCode() == 0);
     }
 
     DAVA_TEST (WrongSameNamesTest)
@@ -106,10 +106,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "sameNames" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() != 0);
+        TEST_VERIFY(tool.GetExitCode() != 0);
     }
 
     DAVA_TEST (CorrectCollisionsTest)
@@ -128,10 +128,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "collisionTypes" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() == 0);
+        TEST_VERIFY(tool.GetExitCode() == 0);
     }
 
     DAVA_TEST (WrongCollisionsTest)
@@ -150,10 +150,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "collisionTypes" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() != 0);
+        TEST_VERIFY(tool.GetExitCode() != 0);
     }
 
     DAVA_TEST (CorrectRelevanceTest)
@@ -191,10 +191,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "texturesRelevance" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() == 0);
+        TEST_VERIFY(tool.GetExitCode() == 0);
     }
 
     DAVA_TEST (WrongRelevanceTest)
@@ -209,10 +209,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "texturesRelevance" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() != 0);
+        TEST_VERIFY(tool.GetExitCode() != 0);
     }
 
     DAVA_TEST (CorrectMaterialsTest)
@@ -234,10 +234,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "materialGroups" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() == 0);
+        TEST_VERIFY(tool.GetExitCode() == 0);
     }
 
     DAVA_TEST (WrongMaterialsTest)
@@ -258,10 +258,10 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 
         Vector<String> cmdLine = { "ResourceEditor", "-scenevalidation", "-scene", scenePathnameStr, "-validate", "materialGroups" };
 
-        std::unique_ptr<CommandLineModule> tool(new SceneValidationTool(cmdLine));
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        SceneValidationTool tool(cmdLine);
+        CommandLineModuleTestExecute::ExecuteModule(&tool);
 
-        TEST_VERIFY(tool->GetExitCode() != 0);
+        TEST_VERIFY(tool.GetExitCode() != 0);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

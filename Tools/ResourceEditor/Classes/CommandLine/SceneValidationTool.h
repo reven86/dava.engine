@@ -14,7 +14,7 @@ private:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
 
-    void UpdateExitCode(DAVA::Result);
+    void UpdateResult(DAVA::Result);
     void EnableAllValidations();
 
     DAVA::FilePath scenePath;

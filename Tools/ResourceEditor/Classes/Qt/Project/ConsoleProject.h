@@ -4,11 +4,12 @@
 #include "Base/Singleton.h"
 
 /**
-singleton class responsible at reading some project-related resources.
-It is based on ProjectManager class, but excluding particles reloading, signals etc.
+class is responsible at reading some project-related resources.
+It is based on ProjectManager class.
+But unlike ProjectManager it is not a singleton and does not reload particles or emit signals
 Probably will be refactored/removed after implementing of resource system
 */
-class ConsoleProject : public DAVA::Singleton<ConsoleProject>
+class ConsoleProject
 {
 public:
     /**

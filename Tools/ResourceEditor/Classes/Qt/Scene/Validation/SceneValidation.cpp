@@ -349,7 +349,7 @@ void ValidateMatrices(Scene* scene, ValidationProgress& validationProgress)
         }
     }
 
-    validationProgress.Done();
+    validationProgress.Finished();
 }
 
 void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
@@ -383,7 +383,7 @@ void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
         currentIter = rangePair.second;
     }
 
-    validationProgress.Done();
+    validationProgress.Finished();
 }
 
 void ValidateCollisionProperties(Scene* scene, ValidationProgress& validationProgress)
@@ -417,7 +417,7 @@ void ValidateCollisionProperties(Scene* scene, ValidationProgress& validationPro
         }
     }
 
-    validationProgress.Done();
+    validationProgress.Finished();
 }
 
 void ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgress)
@@ -448,7 +448,7 @@ void ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgr
         }
     }
 
-    validationProgress.Done();
+    validationProgress.Finished();
 }
 
 void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgress)
@@ -501,6 +501,6 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         }
     }
 
-    validationProgress.Done();
+    validationProgress.Finished();
 }
 }

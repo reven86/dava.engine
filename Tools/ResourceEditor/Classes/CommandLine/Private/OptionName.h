@@ -34,7 +34,6 @@ public:
 
     static const DAVA::String Links;
     static const DAVA::String Scene;
-    static const DAVA::String SceneList;
     static const DAVA::String Texture;
     static const DAVA::String Yaml;
 

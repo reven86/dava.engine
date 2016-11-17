@@ -518,7 +518,7 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Com
 
         if (recursively)
         {
-            child->GetChildEntitiesWithComponent(container, type);
+            child->GetChildEntitiesWithComponent(container, type, recursively);
         }
     }
 }
@@ -535,7 +535,7 @@ void Entity::GetChildEntitiesWithComponent(Container<const Entity*, A>& containe
 
         if (recursively)
         {
-            child->GetChildEntitiesWithComponent(container, type);
+            child->GetChildEntitiesWithComponent(container, type, recursively);
         }
     }
 }

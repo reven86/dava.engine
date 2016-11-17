@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Result.h"
 #include "FileSystem/FilePath.h"
 
 #include "CommandLine/ProgramOptions.h"
@@ -13,6 +14,8 @@ class CommandLineModule : public DAVA::TArc::ConsoleModule
 
 public:
     CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);
+
+    int GetExitCode() const override;
 
 protected:
     void PostInit() override;
@@ -29,4 +32,10 @@ protected:
     DAVA::ProgramOptions options;
 
     bool isInitialized = false;
+    DAVA::Result result = DAVA::Result::RESULT_SUCCESS;
 };
+
+inline int CommandLineModule::GetExitCode() const
+{
+    return (result == DAVA::Result::RESULT_SUCCESS ? 0 : -1);
+}

@@ -18,7 +18,7 @@ void ValidationProgress::Alerted(const DAVA::String& msg)
     consumer->ValidationAlert(msg);
 }
 
-void ValidationProgress::Done()
+void ValidationProgress::Finished()
 {
     DVASSERT(consumer != nullptr);
     consumer->ValidationDone();

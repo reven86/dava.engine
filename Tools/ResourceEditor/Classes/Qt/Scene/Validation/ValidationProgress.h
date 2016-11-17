@@ -15,7 +15,7 @@ public:
 
     void Started(const DAVA::String& title);
     void Alerted(const DAVA::String& msg);
-    void Done();
+    void Finished();
 
     DAVA::Result GetResult() const;
 

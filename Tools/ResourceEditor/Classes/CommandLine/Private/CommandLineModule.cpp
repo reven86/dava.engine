@@ -63,7 +63,7 @@ void CommandLineModule::PostInit()
 
     if (!isInitialized)
     {
-        SetExitCode(-1);
+        result = DAVA::Result::RESULT_ERROR;
     }
 }
 

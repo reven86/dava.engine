@@ -38,7 +38,7 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/SceneExporterTool.h"
-#include "CommandLine/SceneValidationTool.h"s
+#include "CommandLine/SceneValidationTool.h"
 
 namespace REApplicationDetail
 {
