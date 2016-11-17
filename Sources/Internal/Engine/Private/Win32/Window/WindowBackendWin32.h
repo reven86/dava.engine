@@ -59,7 +59,6 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
-    float32 GetSurfaceScale() const;
     void SetSurfaceScale(const float32 scale);
 
 private:

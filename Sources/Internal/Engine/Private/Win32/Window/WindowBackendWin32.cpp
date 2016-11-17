@@ -164,11 +164,6 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
-float32 WindowBackend::GetSurfaceScale() const
-{
-    return surfaceScale;
-}
-
 void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
@@ -203,7 +198,7 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
         const float32 surfaceWidth = lastWidth * surfaceScale;
         const float32 surfaceHeight = lastHeight * surfaceScale;
         const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
     }
 }
 
@@ -367,7 +362,7 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
 
         eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
     }
 }
 
