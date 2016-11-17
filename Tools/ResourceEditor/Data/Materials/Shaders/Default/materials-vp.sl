@@ -637,7 +637,8 @@ vertex_out vp_main( vertex_in input )
 
     #endif // !CUT_LEAF
 
-    output.varVertexColor = float4(sphericalLightFactor * 2.0, 1.0);
+    output.varVertexColor.xyz = half3(sphericalLightFactor * 2.0);
+    output.varVertexColor.w = half(1.0);    
 
     #undef A0     
     #undef A1     
