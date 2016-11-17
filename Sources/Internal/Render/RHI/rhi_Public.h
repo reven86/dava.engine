@@ -107,6 +107,7 @@ struct RenderDeviceCaps
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
     bool isInstancingSupported = false;
+    bool isPerfQuerySupported = false;
 
     RenderDeviceCaps()
     {
@@ -152,6 +153,7 @@ void ResumeRendering();
 //notify rendering backend that some explicit code can do some rendering not using rhi and thus leave rendering api in different state
 //eg: QT in RE/QuickEd do some opengl calls itself, thus values cached in rhi backend not correspond with actual state of opengl and should be invalidated
 void InvalidateCache();
+void SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -216,7 +218,7 @@ bool NeedRestoreIndexBuffer(HIndexBuffer vb);
 
 typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
 
-HQueryBuffer CreateQueryBuffer(unsigned maxObjectCount);
+HQueryBuffer CreateQueryBuffer(uint32 maxObjectCount);
 void ResetQueryBuffer(HQueryBuffer buf);
 void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
@@ -225,20 +227,18 @@ bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
 
 ////////////////////////////////////////////////////////////////////////////////
-// perfquery-set
+// perf-query
 
-typedef ResourceHandle<RESOURCE_PERFQUERY_SET> HPerfQuerySet;
+typedef ResourceHandle<RESOURCE_PERFQUERY> HPerfQuery;
 
-HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount);
-void DeletePerfQuerySet(HPerfQuerySet hset, bool forceImmediate = false);
+HPerfQuery CreatePerfQuery();
+void DeletePerfQuery(HPerfQuery handle, bool forceImmediate = false);
+void ResetPerfQuery(HPerfQuery handle);
 
-void ResetPerfQuerySet(HPerfQuerySet hset);
-void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid);
+bool PerfQueryIsReady(HPerfQuery);
+uint64 PerfQueryTimeStamp(HPerfQuery);
 
-bool PerfQuerySetIsValid(HPerfQuerySet hset);
-bool GetPerfQuerySetFreq(HPerfQuerySet hset, uint64* freq);
-bool GetPerfQuerySetTimestamp(HPerfQuerySet hset, uint32 timestampIndex, uint64* timestamp);
-bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1);
+void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery);
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
@@ -323,8 +323,6 @@ HSyncObject GetCurrentFrameSyncObject();
 typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
 typedef ResourceHandle<RESOURCE_PACKET_LIST> HPacketList;
 
-void SetFramePerfQuerySet(HPerfQuerySet hset);
-
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
@@ -363,6 +361,8 @@ struct Packet
     uint32 instanceCount;
     uint32 baseInstance;
     uint32 queryIndex;
+    HPerfQuery perfQueryStart;
+    HPerfQuery perfQueryEnd;
     uint32 options;
     uint32 userFlags; //ignored by RHI
     const char* debugMarker;
