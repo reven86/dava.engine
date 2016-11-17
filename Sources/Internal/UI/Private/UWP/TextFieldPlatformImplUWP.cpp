@@ -171,6 +171,12 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    nativeControlHolder = nullptr;
+    nativeControl = nullptr;
+    nativeText = nullptr;
+    nativePassword = nullptr;
+#else
     using ::Windows::Foundation::EventRegistrationToken;
     using ::Windows::UI::Xaml::UIElement;
     using ::Windows::UI::ViewManagement::InputPane;
@@ -180,26 +186,18 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         UIElement ^ p = nativeControlHolder;
         EventRegistrationToken tokenHiding = tokenKeyboardHiding;
         EventRegistrationToken tokenShowing = tokenKeyboardShowing;
-
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice, tokenHiding, tokenShowing]() {
-            InputPane::GetForCurrentView()->Showing -= tokenHiding;
-            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
-            nservice->RemoveXamlControl(p);
-        });
-#else
         core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
             InputPane::GetForCurrentView()->Showing -= tokenHiding;
             InputPane::GetForCurrentView()->Hiding -= tokenShowing;
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-#endif
+
         nativeControlHolder = nullptr;
         nativeControl = nullptr;
         nativeText = nullptr;
         nativePassword = nullptr;
     }
+#endif
 }
 
 void TextFieldPlatformImpl::Initialize()
@@ -210,8 +208,20 @@ void TextFieldPlatformImpl::Initialize()
 
 void TextFieldPlatformImpl::OwnerIsDying()
 {
+    using ::Windows::UI::ViewManagement::InputPane;
+
     uiTextField = nullptr;
     textFieldDelegate = nullptr;
+
+#if defined(__DAVAENGINE_COREV2__)
+    auto self{ shared_from_this() };
+    window->RunAsyncOnUIThread([this, self]() {
+        WindowNativeService* nservice = window->GetNativeService();
+        InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
+        InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
+        nservice->RemoveXamlControl(nativeControlHolder);
+    });
+#endif
 }
 
 void TextFieldPlatformImpl::SetVisible(bool isVisible)
@@ -1236,7 +1246,6 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
                 core->RunOnUIThread([this, self]() {
 #endif
                     waitRenderToTextureComplete = false;
-                    Logger::Error("=================================== RenderToTexture: %p", nativeControl);
                     if (!HasFocus())
                     { // Do not hide control if it has gained focus while rendering to texture
                         SetNativePositionAndSize(rectInWindowSpace, true);
