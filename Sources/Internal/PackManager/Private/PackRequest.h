@@ -63,7 +63,7 @@ public:
     const String& GetErrorMessage() const override;
 
 private:
-    void ClearSuperpackData();
+    void Restart();
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, IPackManager::Pack& currentPack);
 
     void AskFooter();
