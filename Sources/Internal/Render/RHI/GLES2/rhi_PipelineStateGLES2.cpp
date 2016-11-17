@@ -1,17 +1,18 @@
 #include "../Common/rhi_Private.h"
-    #include "../rhi_ShaderCache.h"
-    #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
+#include "../rhi_ShaderCache.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 
-    #include "rhi_ProgGLES2.h"
-    #include "rhi_GLES2.h"
-    
-    #include "Logger/Logger.h"
-    #include "FileSystem/File.h"
-    #include "FileSystem/FileSystem.h"
+#include "rhi_ProgGLES2.h"
+#include "rhi_GLES2.h"
+
+#include "Logger/Logger.h"
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
-    #include "_gl.h"
+#include "_gl.h"
 
 #define SAVE_GLES_SHADERS 0
 
@@ -260,7 +261,7 @@ VertexDeclGLES2
                     vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
+                if (DeviceCaps().isInstancingSupported && (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor))
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
@@ -535,19 +536,17 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
 
             ExecGL(cmd1, countof(cmd1));
 
-            int status = 0;
             unsigned gl_prog = cmd1[0].retval;
             GLCommand cmd2[] =
             {
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
               { GLCommand::LINK_PROGRAM, { gl_prog } },
-              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, reinterpret_cast<uint64>(&status) } },
             };
 
             ExecGL(cmd2, countof(cmd2));
 
-            if (status)
+            if (cmd2[2].retval)
             {
                 entry.vprog->vdecl.InitVattr(gl_prog);
                 entry.vprog->GetProgParams(gl_prog);
@@ -572,11 +571,9 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         }
 
         _ProgramEntry.push_back(entry);
-        //Logger::Info("gl-prog cnt = %u",_ProgramEntry.size());
         prog->vprog = entry.vprog;
         prog->fprog = entry.fprog;
         prog->glProg = entry.glProg;
-        ;
     }
 
     return success;

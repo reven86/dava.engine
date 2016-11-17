@@ -1,24 +1,46 @@
 #pragma once
 
 #include <QString>
+#include <QObject>
+#include <QFileInfo>
+#include <QPair>
 
-namespace FileManager
+class FileManager : public QObject
 {
-QString GetDocumentsDirectory();
-QString GetBaseAppsDirectory();
-QString GetTempDirectory();
-QString GetLauncherDirectory();
-QString GetSelfUpdateTempDirectory();
-QString GetTempDownloadFilePath();
+    Q_OBJECT
+public:
+    FileManager(QObject* parent = nullptr);
 
-bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data);
-bool DeleteDirectory(const QString& path);
+    QString GetBaseAppsDirectory() const;
+    QString GetTempDirectory() const;
+    QString GetLauncherDirectory() const;
+    QString GetSelfUpdateTempDirectory() const;
+    QString GetTempDownloadFilePath() const;
+    QString GetApplicationDirectory(const QString& branchID, const QString& appID) const;
+    QString GetBranchDirectory(const QString& branchID) const;
+    //this function move all files and folder except folders, which created by Launcher
+    bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn) const;
 
-//this function move all files and folder except folders, which created by Launcher
-bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn);
+    QString GetFilesDirectory() const;
 
-void MakeDirectory(const QString& path);
+    static QString GetDocumentsDirectory();
+    static bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data);
+    static bool DeleteDirectory(const QString& path);
+    static void MakeDirectory(const QString& path);
 
-QString GetApplicationDirectory(const QString& branchID, const QString& appID);
-QString GetBranchDirectory(const QString& branchID);
+public slots:
+    void SetFilesDirectory(const QString& newDirPath);
+
+signals:
+    void FilesDirPathChanged(const QString& oldPath, const QString& newPath);
+
+private:
+    using EntireList = QList<QPair<QFileInfo, QString>>;
+
+    QString GetDefaultFilesDirectory() const;
+
+    QStringList OwnDirectories() const;
+    EntireList CreateEntireList(const QString& pathOut, const QString& pathIn) const;
+
+    QString filesDirectory;
 };

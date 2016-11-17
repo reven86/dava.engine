@@ -24,9 +24,10 @@ public:
     const String& GetModel() const;
     const String& GetUDID() const;
     const String& GetName() const;
+#if !defined(__DAVAENGINE_COREV2__)
     const DeviceInfo::ScreenInfo& GetScreenInfo() const;
+#endif
     eGPUFamily GetGPUFamily() const;
-
     const NetConfig& NetworkConfig() const;
     const Vector<IfAddress>& NetworkInterfaces() const;
     void SetNetworkInterfaces(const Vector<IfAddress>& availIfAddr);
@@ -47,7 +48,9 @@ private:
     String model;
     String udid;
     String name;
+#if !defined(__DAVAENGINE_COREV2__)
     DeviceInfo::ScreenInfo screenInfo;
+#endif
     eGPUFamily gpuFamily;
 
     NetConfig netConfig;
@@ -90,10 +93,12 @@ inline const String& PeerDescription::GetName() const
     return name;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 inline const DeviceInfo::ScreenInfo& PeerDescription::GetScreenInfo() const
 {
     return screenInfo;
 }
+#endif
 
 inline eGPUFamily PeerDescription::GetGPUFamily() const
 {

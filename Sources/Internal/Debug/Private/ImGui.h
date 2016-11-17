@@ -10,8 +10,9 @@ class UIEvent;
 namespace ImGui
 {
 void Initialize();
+bool IsInitialized();
 void OnFrameBegin();
 void OnFrameEnd();
-void OnInput(DAVA::UIEvent* input);
+bool OnInput(DAVA::UIEvent* input);
 void Uninitialize();
 }

@@ -16,21 +16,24 @@ class UpdateDialog;
 }
 
 class ApplicationManager;
+class FileManager;
 
 struct UpdateTask
 {
-    UpdateTask(const QString& branch, const QString& app, const AppVersion& _version, bool _isSelfUpdate = false, bool _isRemove = false)
+    UpdateTask(const QString& branch, const QString& app, const AppVersion* currentVersion_, const AppVersion& newVersion_, bool isSelfUpdate_ = false, bool isRemove_ = false)
         : branchID(branch)
         , appID(app)
-        , version(_version)
-        , isSelfUpdate(_isSelfUpdate)
-        , isRemoveBranch(_isRemove)
+        , currentVersion(currentVersion_)
+        , newVersion(newVersion_)
+        , isSelfUpdate(isSelfUpdate_)
+        , isRemoveBranch(isRemove_)
     {
     }
 
     QString branchID;
     QString appID;
-    AppVersion version;
+    AppVersion newVersion;
+    const AppVersion* currentVersion;
     bool isSelfUpdate;
     bool isRemoveBranch;
 };

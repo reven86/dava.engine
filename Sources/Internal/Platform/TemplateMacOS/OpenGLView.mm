@@ -15,12 +15,8 @@ using namespace DAVA;
 - (id)initWithFrame:(NSRect)frameRect
 {
     NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
-	
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
+
     NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-    NSLog(@"Display bpp: %d", CGDisplayBitsPerPixel(kCGDirectMainDisplay));
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
     // Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
     NSOpenGLPixelFormatAttribute attrs[] =
@@ -29,12 +25,8 @@ using namespace DAVA;
       // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
       NSOpenGLPFANoRecovery,
 
-// Attributes Common to FullScreen and non-FullScreen
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
+      // Attributes Common to FullScreen and non-FullScreen
       NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]), //24,
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-      NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
       NSOpenGLPFADepthSize, 16,
       NSOpenGLPFAStencilSize, 8,
       NSOpenGLPFADoubleBuffer,
@@ -52,13 +44,9 @@ using namespace DAVA;
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
 
-    // enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-
     return self;
 }
 
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 - (size_t)displayBitsPerPixel:(CGDirectDisplayID)displayId
 {
     CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
@@ -77,7 +65,6 @@ using namespace DAVA;
 
     return depth;
 }
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
 - (void)dealloc
 {

@@ -7,7 +7,11 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 set 				  ( NO_CEF true )
 include               ( CMake-common )
 
-find_package          ( DavaFramework REQUIRED COMPONENTS "Sound" )
+set ( DAVA_COREV2 1 )
+add_definitions ( -D__DAVAENGINE_COREV2__ 
+                             -DCONSOLE)
+
+find_package          ( DavaFramework REQUIRED)
 find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )
@@ -27,5 +31,3 @@ setup_main_executable()
 if (WIN32)
 	set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
 endif ()
-
-install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_TOOLS_BIN_DIR} CONFIGURATIONS Release )

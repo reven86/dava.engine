@@ -8,18 +8,10 @@
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
 namespace DAVA
 {
 namespace JNI
 {
-// TODO: del V2I
-Rect V2I(const Rect& rect)
-{
-    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(rect);
-}
-
 JNIEnv* GetEnv()
 {
     JNIEnv* env = Private::AndroidBridge::GetEnv();

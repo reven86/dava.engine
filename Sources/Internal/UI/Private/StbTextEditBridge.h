@@ -1,213 +1,203 @@
-#ifndef __DAVA_UITEXTFIELDSTBBRIDGE_H__
-#define __DAVA_UITEXTFIELDSTBBRIDGE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Math/Vector.h"
+#include "Input/KeyboardDevice.h"
 
 namespace DAVA
 {
 class TextBox;
+class UIEvent;
 struct StbState;
 
-/**
- * \brief Class that implements bridge for stb_textedit
- */
+/** Class that implements bridge for stb_textedit. */
 class StbTextEditBridge
 {
 public:
-    /**
-     * \brief Control keys in stb_textedit
-     */
-    enum CotrolKeys : uint32
-    {
-        KEY_SHIFT_MASK = 0x00020000,
-        KEY_LEFT = 0x00010000,
-        KEY_RIGHT = 0x00010001,
-        KEY_UP = 0x00010002,
-        KEY_DOWN = 0x00010003,
-        KEY_LINESTART = 0x00010004,
-        KEY_LINEEND = 0x00010005,
-        KEY_TEXTSTART = 0x00010006,
-        KEY_TEXTEND = 0x00010007,
-        KEY_DELETE = 0x00010008,
-        KEY_BACKSPACE = 8,
-        KEY_UNDO = 0x00010009,
-        KEY_REDO = 0x00010010,
-        KEY_INSERT = 0x00010011,
-        KEY_WORDLEFT = 0x00010012,
-        KEY_WORDRIGHT = 0x00010013,
-    };
-
-    /**
-     * \brief Delegate to implement stb_textedit callbacks
-     */
+    /** Delegate to implement stb_textedit callbacks. */
     class StbTextDelegate
     {
     public:
-        /** 
-         * \brief Default destructor
-         */
+        /** Default destructor. */
         virtual ~StbTextDelegate() = default;
 
-        /**
-        * \brief Service function for insert text in data structure
-        * \param[in] position position of inserting
-        * \param[in] str string to inserting
-        * \param[in] length string length
-        * \return count of inserted characters
+        /** 
+        Insert specified `string` with `length` to `position` in data structure.
+        Return count of inserted characters.
         */
-        virtual uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
+        virtual uint32 InsertText(uint32 position, const WideString::value_type* string, uint32 length) = 0;
 
-        /**
-        * \brief Service function for delete text from data structure
-        * \param[in] position position of deleting
-        * \param[in] length deleting substring length
-        * \return count of deleted characters
+        /** 
+        Delete text with specified `length` on `position` from data structure.
+        Return count of deleted characters.
         */
         virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
 
-        /**
-        * \brief Service function for getting instance of TextBox from field
-        * \return pointer to TextBox
-        */
-        virtual const TextBox* GetTextBox() = 0;
+        /** Get instance of TextBox strcuture from field. */
+        virtual const TextBox* GetTextBox() const = 0;
 
-        /**
-        * \brief Service function for getting text length
-        * \return text length
-        */
-        virtual uint32 GetTextLength() = 0;
+        /** Get text length. */
+        virtual uint32 GetTextLength() const = 0;
 
-        /**
-        * \brief Service function for getting character from text
-        * \param[in] i character index
-        * \return character
-        */
-        virtual WideString::value_type GetCharAt(uint32 i) = 0;
+        /** Get character at specified `index` from text. */
+        virtual WideString::value_type GetCharAt(uint32 index) const = 0;
+
+        /** Get text from field. */
+        virtual WideString GetText() const = 0;
+
+        /** Check that specified `character` is valid for current field. */
+        virtual bool IsCharAvaliable(WideString::value_type character) const = 0;
+
+        /** Allow copy or cut selected text to clipnoard. */
+        virtual bool IsCopyToClipboardAllowed() const
+        {
+            return true;
+        }
+
+        /** Allow paste specified string from clipbaord to field. */
+        virtual bool IsPasteFromClipboardAllowed() const
+        {
+            return true;
+        }
     };
 
-    /**
-     * \brief Default constructor
-     */
+    /** Create StbTextEditBridge with specified valid `delegate`. */
     StbTextEditBridge(StbTextDelegate* delegate);
 
-    /**
-     * \brief Copy constructor
-     * \param[in] c original object
-     */
+    /** Copy constructor. */
     StbTextEditBridge(const StbTextEditBridge& c);
 
-    /**
-     * \brief Destructor
-     */
+    /** Destructor. */
     virtual ~StbTextEditBridge();
 
-    /**
-     * \brief Copy class data to correct instance
-     * \param[in] c object to copy data
-     */
+    /** Copy class data to correct instance. */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
-    /**
-     * \brief Send key to STB text edit
-     * \param[in] codePoint key code
-     */
-    virtual bool SendKey(uint32 codePoint);
+/**
+    Send specified `key` with `modifiers` from UIEvent to STB text edit.
+    Return true if content of field has been changed.
+    */
+#if defined(__DAVAENGINE_COREV2__)
+    virtual bool SendKey(Key key, eModifierKeys modifiers);
+#else
+    virtual bool SendKey(Key key, uint32 modifiers);
+#endif
+
+/**
+    Send specified `keyChar` with `modifiers` to STB text edit.
+    Return true if content of field has been changed.
+    */
+#if defined(__DAVAENGINE_COREV2__)
+    virtual bool SendKeyChar(uint32 keyChar, eModifierKeys modifiers);
+#else
+    virtual bool SendKeyChar(uint32 keyChar, uint32 modifiers);
+#endif
 
     /**
-     * \brief Cut (delete) selected text
-     */
-    virtual bool Cut();
+    Send specified raw `codePoint` to STB text edit.
+    Return true if content of field has been changed.
+    */
+    virtual bool SendRaw(uint32 codePoint);
 
     /**
-     * \brief Insert (replace selected) new text in field
-     * \param[in] str string to pasting
-     */
-    virtual bool Paste(const WideString& str);
-
-    /**
-     * \brief Send mouse click to STB text edit
-     * \param[in] point mouse point (x,y) in control's local coordinates
-     */
+    Send mouse click with specified `point` in control's local 
+    coordinates to STB text edit.
+    */
     virtual void Click(const Vector2& point);
 
     /**
-     * \brief Send mouse drag event to STB text edit
-     * \param[in] point mouse point (x,y) in control's local coordinates
-     */
+    Send mouse drag event with specified `point` in control's local
+    coordinates to STB text edit.
+    */
     virtual void Drag(const Vector2& point);
 
-    /**
-     * \brief Clear STB text edit undo stack
-     */
+    /** Cut (delete) selected text. */
+    virtual bool Cut();
+
+    /** Insert (replace selected) new specified `string` in field. */
+    virtual bool Paste(const WideString& string);
+
+    /** Clear STB text edit undo stack. */
     virtual void ClearUndoStack();
 
     /**
-     * \brief Returns character index of selection start
-     * \return character index
-     */
+    Get character index of selection start.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
+    */
     uint32 GetSelectionStart() const;
 
     /**
-     * \brief Move start selection to position
-     *        Cursor equal 0 - cursor before first symbol,
-     *        cursor equal text length - cursor after last symbol
-     * \param[in] position new start selection position
-     */
+    Move begin selection to specified `position`.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
+    */
     void SetSelectionStart(uint32 position) const;
 
     /**
-     * \brief Returns character index of selection end
-     * \return character index
-     */
+    Get character index of selection end.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
+    */
     uint32 GetSelectionEnd() const;
 
     /**
-     * \brief Move end selection to position
-     *        Cursor equal 0 - cursor before first symbol,
-     *        cursor equal text length - cursor after last symbol
-     * \param[in] position new end selection position
-     */
+    Move end selection to specified `position`.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
+    */
     void SetSelectionEnd(uint32 position) const;
 
     /**
-     * \brief Returns character index of cursor position. 
-     *        Cursor equal 0 - cursor before first symbol, 
-     *        cursor equal text length - cursor after last symbol
-     * \return character index
-     */
+    Get character index of cursor position.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
+    */
     uint32 GetCursorPosition() const;
 
     /**
-    * \brief Move cursor to position.
-    *        Cursor equal 0 - cursor before first symbol,
-    *        cursor equal text length - cursor after last symbol
-    * \param[in] position new cursor position
+    Move cursor to specified `position`.
+    Cursor equal 0 - cursor before first symbol,
+    cursor equal text length - cursor after last symbol.
     */
     void SetCursorPosition(uint32 position) const;
 
-    /**
-    * \brief Enable single line mode
-    * \param[in] signleLine flag of single line mode enabling
-    */
+    /** Enable or disable single line mode. */
     void SetSingleLineMode(bool signleLine);
 
-    /**
-    * \brief Return single line mode flag
-    * \return if True that single line mode is enabled
-    */
+    /** Return single line mode flag. */
     bool IsSingleLineMode() const;
 
-    /**
-     * \brief Return inserting mode flag
-     * \return if True that inserting mode is enabled
-     */
+    /** Return inserting mode flag.*/
     bool IsInsertMode() const;
 
+    /** Select word neer cursor position. */
+    void SelectWord();
+
+    /** Select whole text. */
+    void SelectAll();
+
     /**
-     * \brief Return delegate
-     * \return delegate
-     */
+    Cut selected text to clipboard.
+    Return true if content has been changed.
+    */
+    bool CutToClipboard();
+
+    /**
+    Copy seleted text to clipboard.
+    Return true if text has been copied to clipboard.
+    */
+    bool CopyToClipboard();
+
+    /**
+    Replace selected text with text from clipboard or insert text
+    cursor position.
+    Return true if content has been changed.
+    */
+    bool PasteFromClipboard();
+
+    /** Get pointer delegate instance. */
     StbTextDelegate* GetDelegate() const;
 
 private:
@@ -220,5 +210,3 @@ inline StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() cons
     return delegate;
 }
 }
-
-#endif //__DAVA_UITEXTFIELDSTBBRIDGE_H__
