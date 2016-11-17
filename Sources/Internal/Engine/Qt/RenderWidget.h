@@ -131,8 +131,8 @@ private:
 
     friend class Private::WindowBackend;
 
-    struct QScreenParams;
-    std::unique_ptr<QScreenParams> screenParams;
+    struct QtScreenParams;
+    std::unique_ptr<QtScreenParams> screenParams;
 };
 
 } // namespace DAVA
