@@ -150,38 +150,35 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
-        using ::Windows::UI::Core::CoreCursor;
-        using ::Windows::UI::Core::CoreCursorType;
-        using ::Windows::UI::Core::CoreWindow;
         mouseVisible = visible;
-        if (visible)
-        {
-            CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
-        }
-        else
-        {
-            CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
-        }
+        xamlWindow->CoreWindow->PointerCursor = visible ? defaultCursor : nullptr;
     }
 }
 
 void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::Devices::Input::MouseDevice;
+    using ::Windows::Devices::Input::MouseEventArgs;
+    using ::Windows::UI::Xaml::Input::PointerEventHandler;
+
     if (captureMode != mode)
     {
-        using namespace ::Windows::Devices::Input;
-        using namespace ::Windows::Foundation;
         captureMode = mode;
+
+        MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
         switch (captureMode)
         {
         case DAVA::eCursorCapture::OFF:
-            MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+            tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
+            mouseDevice->MouseMoved -= tokenMouseMoved;
             break;
         case DAVA::eCursorCapture::FRAME:
             // now, not implemented
             break;
         case DAVA::eCursorCapture::PINNING:
-            tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+            xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
+            tokenMouseMoved = mouseDevice->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
             // after enabled Pinning mode, skip move events, large x, y delta
             mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
             break;
@@ -389,7 +386,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     if (prop->IsHorizontalMouseWheel)
     {
         using std::swap;
-        std::swap(deltaX, deltaY);
+        swap(deltaX, deltaY);
     }
     eModifierKeys modifierKeys = GetModifierKeys();
     bool isRelative = (captureMode == eCursorCapture::PINNING);
@@ -398,11 +395,12 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (mouseMoveSkipCount)
+    if (mouseMoveSkipCount > 0)
     {
         mouseMoveSkipCount--;
         return;
     }
+
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
     eModifierKeys modifierKeys = GetModifierKeys();
@@ -537,9 +535,11 @@ void WindowNativeBridge::InstallEventHandlers()
 
 void WindowNativeBridge::UninstallEventHandlers()
 {
-    using namespace ::Windows::UI::Core;
-    using namespace ::Windows::Devices::Input;
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::Devices::Input::MouseDevice;
+
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
+    MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
 
     coreWindow->Activated -= tokenActivated;
     coreWindow->VisibilityChanged -= tokenVisibilityChanged;
@@ -554,8 +554,8 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
-    SetCursorCapture(eCursorCapture::OFF);
-    SetCursorVisibility(true);
+
+    mouseDevice->MouseMoved -= tokenMouseMoved;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(
