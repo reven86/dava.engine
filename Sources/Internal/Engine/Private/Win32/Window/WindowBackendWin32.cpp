@@ -169,41 +169,25 @@ float32 WindowBackend::GetSurfaceScale() const
     return surfaceScale;
 }
 
-bool WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
-    // We'll check it again before actual surface changing
-    if (CanChangeSurfaceScale())
-    {
-        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
 }
 
 bool WindowBackend::CanChangeSurfaceScale() const
 {
     // Check if currently used rendering API is supported
-    // If renderer is not initialized yet, fallback to true
+    // If renderer is not initialized yet, fallback to false
     if (Renderer::IsInitialized())
     {
         const rhi::Api graphicsApi = Renderer::GetAPI();
-        if (graphicsApi == rhi::RHI_GLES2 || graphicsApi == rhi::RHI_DX11)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return (graphicsApi == rhi::RHI_DX9);
     }
     else
     {
-        return true;
+        return false;
     }
 }
 

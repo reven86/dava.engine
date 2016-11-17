@@ -86,11 +86,12 @@ public:
 
     /** 
         Sets window rendering surface scale.
-        Return `true` if scaling was successfully set. Scale value has to be from `0.0f` to `1.0f`.
+        Scale value has to be from `0.0f` to `1.0f`.
         
         \remark This should be used by user to tune rendering surface size for performance reason.
+        \remark On Win32 platform this method will have effect only if DirectX 9 is in use
     */
-    bool SetSurfaceScale(float32 scale);
+    void SetSurfaceScale(float32 scale);
 
     void Close();
     void SetTitle(const String& title);

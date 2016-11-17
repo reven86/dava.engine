@@ -538,24 +538,22 @@ float32 Window::GetSurfaceScale() const
     return windowBackend->GetSurfaceScale();
 }
 
-bool Window::SetSurfaceScale(float32 scale)
+void Window::SetSurfaceScale(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
         DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
-        return false;
+        return;
     }
 
     const float32 currentScale = GetSurfaceScale();
     if (FLOAT_EQUAL(currentScale, scale))
     {
         Logger::Debug(Format("Window::SetSurfaceScale: specified scale (%f) is the same as the current one, ignoring", scale).c_str());
-
-        // Consider it set
-        return true;
+        return;
     }
 
-    return windowBackend->SetSurfaceScale(scale);
+    windowBackend->SetSurfaceScale(scale);
 }
 
 } // namespace DAVA

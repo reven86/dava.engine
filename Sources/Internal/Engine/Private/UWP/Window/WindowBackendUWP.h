@@ -42,7 +42,7 @@ public:
     void ProcessPlatformEvents();
 
     float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(const float32 scale);
+    void SetSurfaceScale(const float32 scale);
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 

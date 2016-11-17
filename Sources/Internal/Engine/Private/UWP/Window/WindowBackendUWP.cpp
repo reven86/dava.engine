@@ -87,12 +87,11 @@ float32 WindowBackend::GetSurfaceScale() const
     return bridge->GetSurfaceScale();
 }
 
-bool WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
-    return true;
 }
 
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)

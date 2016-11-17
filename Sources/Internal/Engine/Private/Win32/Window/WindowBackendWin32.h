@@ -60,7 +60,7 @@ public:
     void SetCursorVisibility(bool visible);
 
     float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(const float32 scale);
+    void SetSurfaceScale(const float32 scale);
 
 private:
     // Shortcut for eMouseButtons::COUNT
