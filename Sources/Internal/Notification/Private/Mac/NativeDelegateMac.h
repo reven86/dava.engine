@@ -7,18 +7,21 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/OsX/NSApplicationDelegateListener.h"
-
-struct NativeDelegateMac : public DAVA::NSApplicationDelegateListener
+namespace DAVA
 {
+class LocalNotificationController;
+
+struct NativeDelegate : public NSApplicationDelegateListener
+{
+    NativeDelegate(LocalNotificationController& controller);
+    virtual ~NativeDelegate();
+
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;
-    void applicationDidResignActive() override;
-    void applicationWillTerminate() override;
-
-    void didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo) override;
-    void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken) override;
-    void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error) override;
     void didActivateNotification(NSUserNotification* notification) override;
+ 
+private:
+    DAVA::LocalNotificationController& localNotificationController;
 };
-
+}
 #endif // __DAVAENGINE_MACOS__

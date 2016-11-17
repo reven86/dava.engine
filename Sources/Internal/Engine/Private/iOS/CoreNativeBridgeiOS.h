@@ -57,6 +57,7 @@ struct CoreNativeBridge final
         ON_WILL_ENTER_FOREGROUND,
         ON_DID_ENTER_BACKGROUND,
         ON_WILL_TERMINATE,
+        ON_DID_RECEIVE_LOCAL_NOTIFICATION,
     };
     void NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2);
 

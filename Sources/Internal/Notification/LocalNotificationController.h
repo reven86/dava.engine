@@ -10,7 +10,7 @@ namespace DAVA
 class LocalNotification;
 class LocalNotificationText;
 class LocalNotificationProgress;
-class NativeDelegate;
+struct NativeDelegate;
 
 class LocalNotificationController : public Singleton<LocalNotificationController>
 {

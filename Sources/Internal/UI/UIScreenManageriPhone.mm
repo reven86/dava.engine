@@ -15,6 +15,9 @@ UIScreenManager::UIScreenManager()
     glControllerId = -1;
     activeControllerId = -1;
     activeScreenId = -1;
+#if defined(__DAVAENGINE_COREV2__)
+    drawBlocked = false;
+#endif // __DAVAENGINE_COREV2__
 }
 
 UIScreenManager::~UIScreenManager()
@@ -188,19 +191,34 @@ void UIScreenManager::StartGLAnimation()
 
 void UIScreenManager::BlockDrawing()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    drawBlocked = true;
+#else
     Screen& glController = screens[glControllerId];
     UIViewController* controller = (UIViewController*)glController.value;
     RenderView* view = (RenderView*)controller.view;
     [view performSelector:@selector(blockDrawing)];
+#endif // __DAVAENGINE_COREV2__
 }
 
 void UIScreenManager::UnblockDrawing()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    drawBlocked = false;
+#else
     Screen& glController = screens[glControllerId];
     UIViewController* controller = (UIViewController*)glController.value;
     RenderView* view = (RenderView*)controller.view;
     [view performSelector:@selector(unblockDrawing)];
+#endif // __DAVAENGINE_COREV2__
 }
+    
+#if defined(__DAVAENGINE_COREV2__)
+bool UIScreenManager::IsDrawBlocked()
+{
+    return drawBlocked;
+}
+#endif // __DAVAENGINE_COREV2__
 }
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)

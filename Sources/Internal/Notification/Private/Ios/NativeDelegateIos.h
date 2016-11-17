@@ -5,16 +5,19 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/iOS/UIApplicationDelegateListener.h"
-
-struct NativeDelegateIos : public DAVA::UIApplicationDelegateListener
+namespace DAVA
 {
+class LocalNotificationController;
+
+struct NativeDelegate : public UIApplicationDelegateListener
+{
+    NativeDelegate(LocalNotificationController& controller);
+    virtual ~NativeDelegate();
     void didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions) override;
     void applicationDidBecomeActive() override;
-    void applicationDidResignActive() override;
-    void applicationWillEnterForeground() override;
-    void applicationDidEnterBackground() override;
-    void applicationWillTerminate() override;
-    void didActivateNotification(UILocalNotification* notification) override;
+    void didReceiveLocalNotification(UILocalNotification* notification) override;
+private:
+    LocalNotificationController& localNotificationController;
 };
-
+}
 #endif // __DAVAENGINE_MACOS__

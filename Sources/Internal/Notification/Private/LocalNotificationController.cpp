@@ -5,7 +5,11 @@
 
 #include "Notification/Private/Android/LocalNotificationAndroid.h"
 #include "Notification/Private/LocalNotificationNotImplemented.h"
-#include "Notification/Private/NativeDelegate.h"
+
+#include "Notification/Private/Mac/NativeDelegateMac.h"
+#include "Notification/Private/Ios/NativeDelegateIos.h"
+#include "Notification/Private/Win10/NativeDelegateWin10.h"
+#include "Notification/Private/NativeDelegateNotImplemented.h"
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/LockGuard.h"

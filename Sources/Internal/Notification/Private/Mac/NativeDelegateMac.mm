@@ -1,4 +1,4 @@
-#include "Infrastructure/NativeDelegateMac.h"
+#include "Notification/Private/Mac/NativeDelegateMac.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -6,12 +6,30 @@
 
 #import <Foundation/Foundation.h>
 
-#include <Logger/Logger.h>
-#include <Utils/NSStringUtils.h>
+#include "Engine/Engine.h"
+#include "Engine/Osx/NativeServiceOsX.h"
+#include "Engine/Osx/WindowNativeServiceOsX.h"
+#include "Engine/Window.h"
+#include "Logger/Logger.h"
+#include "Notification/LocalNotificationController.h"
+#include "Utils/NSStringUtils.h"
 
-void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notification)
+namespace DAVA
 {
-    using namespace DAVA;
+
+NativeDelegate::NativeDelegate(DAVA::LocalNotificationController& controller) : localNotificationController(controller)
+{
+    Engine::Instance()->GetNativeService()->RegisterNSApplicationDelegateListener(this);
+}
+
+NativeDelegate::~NativeDelegate()
+{
+    Engine::Instance()->GetNativeService()->UnregisterNSApplicationDelegateListener(this);
+}
+
+void NativeDelegate::applicationDidFinishLaunching(NSNotification* notification)
+{
+    //using namespace DAVA;
     NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
     if (userNotification.userInfo != nil)
     {
@@ -19,65 +37,37 @@ void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notificati
         if (uid != nil && [uid length] != 0)
         {
             DAVA::String uidStr = DAVA::StringFromNSString(uid);
-            mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+            auto func = [this, uidStr](){
+                localNotificationController.OnNotificationPressed(uidStr);
+            };
+            Engine::Instance()->RunAsyncOnMainThread(func);
         }
     }
     Logger::Debug("NativeDelegateMac::applicationDidFinishLaunching");
 }
-
-void NativeDelegateMac::applicationDidBecomeActive()
+    
+void NativeDelegate::applicationDidBecomeActive()
 {
-    DAVA::Logger::Debug("NativeDelegateMac::applicationDidBecomeActive");
+    Logger::Debug("NativeDelegateMac::applicationDidBecomeActive");
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
 }
 
-void NativeDelegateMac::applicationDidResignActive()
+void NativeDelegate::didActivateNotification(NSUserNotification* notification)
 {
-    DAVA::Logger::Debug("NativeDelegateMac::applicationDidResignActive");
-}
-
-void NativeDelegateMac::applicationWillTerminate()
-{
-    DAVA::Logger::Debug("NativeDelegateMac::applicationWillTerminate");
-}
-
-void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo)
-{
-    using namespace DAVA;
-    Logger::Debug("TestBed.NativeDelegateMac::didReceiveRemoteNotification: enter");
-    Logger::Debug("    dictionary:");
-    for (NSString* key in userInfo)
-    {
-        String k = StringFromNSString(key);
-        String d = StringFromNSString([userInfo[key] description]);
-        Logger::Debug("        %s: %d", k.c_str(), d.c_str());
-    }
-    Logger::Debug("NativeDelegateMac::didReceiveRemoteNotification");
-}
-
-void NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken)
-{
-    DAVA::Logger::Debug("NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken");
-}
-
-void NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error)
-{
-    using namespace DAVA;
-    String descr = StringFromNSString([error localizedDescription]);
-    DAVA::Logger::Debug("NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError: %s", descr.c_str());
-}
-
-void NativeDelegateMac::didActivateNotification(NSUserNotification* notification)
-{
+    //using namespace DAVA;
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
     if (uid != nil && [uid length] != 0)
     {
         DAVA::String uidStr = DAVA::StringFromNSString(uid);
-        mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        core->engineBackend->GetPrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
-    }
-    DAVA::Logger::Debug("NativeDelegateMac::didActivateNotification");
-}
+        auto func = [this, uidStr](){
+            localNotificationController.OnNotificationPressed(uidStr);
+        };
+        Engine::Instance()->RunAsyncOnMainThread(func);
 
+        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
+    }
+    Logger::Debug("NativeDelegateMac::didActivateNotification");
+}
+} //  namespace DAVA
 #endif // __DAVAENGINE_MACOS__

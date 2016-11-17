@@ -43,7 +43,7 @@ struct UIApplicationDelegateListener
     virtual void applicationWillTerminate()
     {
     }
-    virtual void didActivateNotification(UILocalNotification* notification)
+    virtual void didReceiveLocalNotification(UILocalNotification* notification)
     {
     }
 };
