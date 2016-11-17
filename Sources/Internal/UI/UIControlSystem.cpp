@@ -17,12 +17,14 @@
 #include "UI/UIScreenTransition.h"
 #include "UI/UIEvent.h"
 #include "UI/UIPopup.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "UI/Update/UIUpdateSystem.h"
+#include "Debug/ProfilerOverlay.h"
 #include "Engine/EngineModule.h"
 #include "Input/MouseDevice.h"
 
@@ -328,7 +330,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
-    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Update");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
     updateCounter = 0;
     ProcessScreenLogic();
@@ -367,7 +369,7 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Draw");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_DRAW);
 
     resizePerFrame = 0;
 
@@ -418,6 +420,9 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
         return;
 #endif // !defined(__DAVAENGINE_COREV2__)
+
+    if (ProfilerOverlay::globalProfilerOverlay && ProfilerOverlay::globalProfilerOverlay->OnInput(newEvent))
+        return;
 
     if (frameSkip <= 0)
     {
