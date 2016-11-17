@@ -121,6 +121,7 @@ struct ModalMessageParams
 {
     enum Button
     {
+        NoButton = 0,
         Ok = 0x1,
         Cancel = 0x2,
         Close = 0x4,
@@ -143,6 +144,7 @@ struct ModalMessageParams
     QString title;
     QString message;
     Buttons buttons = Buttons(Ok | Cancel);
+    Button defaultButton = NoButton;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);

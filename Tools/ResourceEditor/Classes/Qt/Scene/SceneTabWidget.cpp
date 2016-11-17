@@ -45,9 +45,6 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
     setAcceptDrops(true);
 
-    // create DAVA UI
-    InitDAVAUI();
-
     QObject::connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(TabBarCurrentChanged(int)));
     QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
     QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(TabBarDataDropped(const QMimeData*)));
@@ -56,8 +53,6 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Updated(SceneEditor2*)), this, SLOT(SceneUpdated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
-
-    SetCurrentTab(0);
 
     auto moveToSelectionHandler = [&]
     {
@@ -76,10 +71,6 @@ SceneTabWidget::~SceneTabWidget()
         previewDialog->RemoveFromParent();
     }
     SafeRelease(previewDialog);
-
-    DVASSERT(GetTabCount() == 0);
-
-    ReleaseDAVAUI();
 }
 
 void SceneTabWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
@@ -96,25 +87,6 @@ void SceneTabWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
 void SceneTabWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
-}
-
-void SceneTabWidget::InitDAVAUI()
-{
-    dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
-    dava3DView->SetInputEnabled(true, true);
-    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
-    dava3DView->SetName(DAVA::FastName("Scene Tab 3D View"));
-
-    davaUIScreen = new DAVA::UIScreen();
-
-    DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
-    DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
-}
-
-void SceneTabWidget::ReleaseDAVAUI()
-{
-    SafeRelease(dava3DView);
-    SafeRelease(davaUIScreen);
 }
 
 int SceneTabWidget::OpenTab()
@@ -140,7 +112,8 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
     int tabIndex = FindTab(scenePath);
     if (tabIndex != -1)
     {
-        SetCurrentTab(tabIndex);
+        // TODO UVR LATER
+        //SetCurrentTab(tabIndex);
         return tabIndex;
     }
 
@@ -175,7 +148,8 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     scene->EnableEditorSystems();
 
     SetTabScene(tabIndex, scene);
-    SetCurrentTab(tabIndex);
+    // TODO UVR LATER
+    //SetCurrentTab(tabIndex);
 
     updateTabBarVisibility();
 }
@@ -242,9 +216,6 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
     SceneEditor2* scene = GetTabScene(index);
     if (index == tabBar->currentIndex())
     {
-        curScene = NULL;
-        dava3DView->SetScene(NULL);
-        davaUIScreen->RemoveControl(dava3DView);
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
@@ -253,60 +224,6 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
     updateTabBarVisibility();
 
     return true;
-}
-
-int SceneTabWidget::GetCurrentTab() const
-{
-    return tabBar->currentIndex();
-}
-
-void SceneTabWidget::SetCurrentTab(int index)
-{
-    DAVA::RenderWidget* renderWidget = GetRenderWidget();
-    if (renderWidget != nullptr)
-    {
-        renderWidget->setEnabled(false);
-    }
-
-    if (index >= 0 && index < tabBar->count())
-    {
-        SceneEditor2* oldScene = curScene;
-        curScene = GetTabScene(index);
-
-        if (NULL != oldScene)
-        {
-            oldScene->Deactivate();
-        }
-
-        tabBar->blockSignals(true);
-        tabBar->setCurrentIndex(index);
-        tabBar->blockSignals(false);
-
-        if (NULL != curScene)
-        {
-            if (dava3DView->GetParent() == nullptr)
-            {
-                const DAVA::List<DAVA::UIControl*>& children = davaUIScreen->GetChildren();
-                if (children.empty())
-                {
-                    davaUIScreen->AddControl(dava3DView);
-                }
-                else
-                {
-                    davaUIScreen->InsertChildBelow(dava3DView, children.front());
-                }
-            }
-
-            dava3DView->SetScene(curScene);
-            curScene->SetViewportRect(dava3DView->GetRect());
-
-            curScene->Activate();
-        }
-    }
-    if (renderWidget != nullptr)
-    {
-        renderWidget->setEnabled(true);
-    }
 }
 
 SceneEditor2* SceneTabWidget::GetTabScene(int index) const
@@ -336,7 +253,8 @@ int SceneTabWidget::GetTabCount() const
 
 void SceneTabWidget::TabBarCurrentChanged(int index)
 {
-    SetCurrentTab(index);
+    // TODO UVR LATER
+    //SetCurrentTab(index);
 }
 
 void SceneTabWidget::TabBarCloseRequest(int index)
@@ -346,10 +264,11 @@ void SceneTabWidget::TabBarCloseRequest(int index)
 
 void SceneTabWidget::TabBarCloseCurrentRequest()
 {
-    int tabIndex = GetCurrentTab();
-    if (tabIndex != -1)
+    // TODO UVR LATER
+    //int tabIndex = GetCurrentTab();
+    //if (tabIndex != -1)
     {
-        CloseTab(tabIndex);
+        //    CloseTab(tabIndex);
     }
 }
 
@@ -436,14 +355,15 @@ void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 heig
 {
     DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
 
-    davaUIScreen->SetSize(DAVA::Vector2(width, height));
+    // TODO UVR
+    /*davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 
     SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
     if (NULL != scene)
     {
         scene->SetViewportRect(dava3DView->GetRect());
-    }
+    }*/
 }
 
 void SceneTabWidget::dragEnterEvent(QDragEnterEvent* event)
@@ -600,7 +520,8 @@ bool SceneTabWidget::CloseAllTabs(bool silent)
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTabInternal(GetCurrentTab(), silent))
+        // TODO UVR LATER
+        //if (!CloseTabInternal(GetCurrentTab(), silent))
         {
             closed = false;
             break;

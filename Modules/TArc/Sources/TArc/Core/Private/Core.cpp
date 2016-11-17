@@ -549,6 +549,11 @@ public:
             return;
         }
 
+        if (activeContext == nullptr && contextID == DataContext::Empty)
+        {
+            return;
+        }
+
         if (contextID == DataContext::Empty)
         {
             ActivateContextImpl(nullptr);

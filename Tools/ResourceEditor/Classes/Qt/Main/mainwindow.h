@@ -57,7 +57,6 @@ public:
     explicit QtMainWindow(DAVA::TArc::UI* tarcUI, QWidget* parent = 0);
     ~QtMainWindow();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnRenderingInitialized();
     SceneEditor2* GetCurrentScene();
 
@@ -170,8 +169,6 @@ public slots:
     void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
     void OnConvertModifiedTextures();
-
-    void OnCloseTabRequest(int tabIndex, Request* closeRequest);
 
     void OnBeastAndSave();
 

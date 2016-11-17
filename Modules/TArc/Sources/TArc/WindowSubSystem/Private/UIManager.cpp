@@ -38,6 +38,7 @@ String FILE_DIR_KEY("fileDialogDir");
 
 static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
+  std::make_pair(QMessageBox::NoButton, ModalMessageParams::NoButton),
   std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
   std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
   std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
@@ -650,7 +651,7 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     using namespace UIManagerDetail;
     MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
 
-    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message, Convert(params.buttons));
+    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message, Convert(params.buttons), Convert(params.defaultButton));
     return Convert(resultButton);
 }
 

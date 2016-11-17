@@ -13,11 +13,6 @@ const char* PARTICLE_DATA_PATH = "Data/Gfx/Particles/";
 const char* WORKSPACE_PATH = "~doc:/ResourceEditor/";
 }
 
-void ProjectManagerData::SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn)
-{
-    closeProjectPredicate = fn;
-}
-
 const DAVA::String ProjectManagerData::ProjectPathProperty = DAVA::String("ProjectPath");
 
 ProjectManagerData::ProjectManagerData()

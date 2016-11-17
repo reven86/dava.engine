@@ -5,7 +5,6 @@
 #include "GlobalOperations.h"
 
 #include "Main/QtUtils.h"
-#include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
 
 #include "Actions/DAEConverter.h"

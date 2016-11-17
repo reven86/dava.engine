@@ -20,6 +20,7 @@ namespace REGlobal
 extern DAVA::TArc::WindowKey MainWindowKey;
 
 DAVA::TArc::DataContext* GetGlobalContext();
+DAVA::TArc::DataContext* GetActiveContext();
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type);
 void InitTArcCore(DAVA::TArc::CoreInterface* core);
 
@@ -32,5 +33,15 @@ T* GetDataNode()
     return ctx->GetData<T>();
 }
 
+template <typename T>
+T* GetActiveDataNode()
+{
+    DAVA::TArc::DataContext* ctx = GetActiveContext();
+    if (ctx == nullptr)
+        return nullptr;
+    return ctx->GetData<T>();
+}
+
 DECLARE_OPERATION_ID(OpenLastProjectOperation);
+DECLARE_OPERATION_ID(CloseAllScenesOperation);
 }

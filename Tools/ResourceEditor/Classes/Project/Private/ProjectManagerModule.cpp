@@ -51,38 +51,53 @@ void ProjectManagerModule::CreateActions()
 {
     using namespace DAVA::TArc;
     UI* ui = GetUI();
-    DAVA::TArc::InsertionParams insertionParams;
-    insertionParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
-    insertionParams.item = QString("actionNewScene");
-    DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", insertionParams));
 
-    QAction* openProjectAction = new QAction(QIcon(":/QtIcons/openproject.png"), "Open Project", nullptr);
-    connections.AddConnection(openProjectAction, &QAction::triggered, [this]()
-                              {
-                                  OpenProject();
-                              });
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, openProjectAction);
+    const QString openProjectName("Open Project");
+    const QString recentProjectsName("Recent Projects");
+    const QString closeProjectsName("Close Project");
 
-    QAction* recentProjects = new QAction("Recent Projects", nullptr);
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, recentProjects);
+    // OpenProject action
+    {
+        QAction* openProjectAction = new QAction(QIcon(":/QtIcons/openproject.png"), openProjectName, nullptr);
+        connections.AddConnection(openProjectAction, &QAction::triggered, [this]()
+                                  {
+                                      OpenProject();
+                                  });
 
-    QtAction* closeProjectAction = new QtAction(GetAccessor(), "Close Project", nullptr);
+        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+        ui->AddAction(REGlobal::MainWindowKey, placementInfo, openProjectAction);
+    }
 
-    FieldDescriptor fieldDescr;
-    fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
-    fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-    closeProjectAction->SetStateUpdationFunction(QtAction::Enabling, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
-        return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
-    });
-    connections.AddConnection(closeProjectAction, &QAction::triggered, [this]()
-                              {
-                                  CloseProject();
-                              });
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, closeProjectAction);
+    // RecentProjects
+    {
+        QAction* recentProjects = new QAction(recentProjectsName, nullptr);
+        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, openProjectName)));
+        ui->AddAction(REGlobal::MainWindowKey, placementInfo, recentProjects);
+    }
 
-    QAction* separator = new QAction(nullptr);
-    separator->setSeparator(true);
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, separator);
+    {
+        QtAction* closeProjectAction = new QtAction(GetAccessor(), closeProjectsName, nullptr);
+
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+        fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
+        closeProjectAction->SetStateUpdationFunction(QtAction::Enabling, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
+            return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
+        });
+        connections.AddConnection(closeProjectAction, &QAction::triggered, [this]() {
+            CloseProject();
+        });
+        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, recentProjectsName)));
+        ui->AddAction(REGlobal::MainWindowKey, placementInfo, closeProjectAction);
+    }
+
+    // Separator
+    {
+        QAction* separator = new QAction(nullptr);
+        separator->setSeparator(true);
+        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, closeProjectsName)));
+        ui->AddAction(REGlobal::MainWindowKey, placementInfo, separator);
+    }
 
     DAVA::TArc::InsertionParams reloadSpritesInsertionParams;
     reloadSpritesInsertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
@@ -195,8 +210,8 @@ void ProjectManagerModule::CloseProject()
 
     if (!data->projectPath.IsEmpty())
     {
-        DVASSERT(data->closeProjectPredicate != nullptr);
-        if (data->closeProjectPredicate())
+        InvokeOperation(REGlobal::CloseAllScenesOperation.ID);
+        if (GetAccessor()->GetContextCount() == 0)
         {
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
             data->projectPath = "";

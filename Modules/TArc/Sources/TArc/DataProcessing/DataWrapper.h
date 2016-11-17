@@ -15,7 +15,7 @@ class DataListener;
 class DataWrapper
 {
 public:
-    using DataAccessor = Function<Reflection(const DataContext&)>;
+    using DataAccessor = Function<Reflection(const DataContext*)>;
 
     DataWrapper() = default;
     DataWrapper(const DataWrapper& other) = default;

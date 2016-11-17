@@ -3,7 +3,10 @@
 #include "Base/BaseTypes.h"
 
 #include "TArc/Core/ControllerModule.h"
+#include "TArc/Core/FieldBinder.h"
 #include "TArc/Utils/QtConnections.h"
+
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
 
 namespace DAVA
 {
@@ -12,7 +15,7 @@ class FilePath;
 
 class SceneEditor2;
 
-class SceneManagerModule : public DAVA::TArc::ControllerModule
+class SceneManagerModule : public DAVA::TArc::ControllerModule, private SceneRenderWidget::IWidgetDelegate
 {
 protected:
     void OnRenderSystemInitialized(DAVA::Window* w) override;
@@ -32,13 +35,29 @@ protected:
 private:
     void CreateModuleControls(DAVA::TArc::UI* ui);
     void CreateModuleActions(DAVA::TArc::UI* ui);
+    void RegisterOperations();
 
     /// Action and operation handlers
     void CreateNewScene();
+    void CloseAllScenes();
 
+    /// Fields value handlers
+    void OnActiveTabChanged(const DAVA::Any& contextID);
+    void OnSceneModificationFlagChanged(const DAVA::Any& isSceneModified);
+    void OnScenePathChanged(const DAVA::Any& scenePath);
+
+    /// IWidgetDelegate
+    void CloseSceneRequest(DAVA::uint64 id) override;
+
+    /// Helpers
+    void UpdateTabTitle(DAVA::uint64 contextID);
+    bool CanCloseScene(SceneEditor2* scene);
+    bool IsSavingAllowed(SceneEditor2* scene);
     SceneEditor2* OpenSceneImpl(const DAVA::FilePath& scenePath);
 
 private:
     DAVA::TArc::QtConnections connections;
     DAVA::uint32 newSceneCounter = 0;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

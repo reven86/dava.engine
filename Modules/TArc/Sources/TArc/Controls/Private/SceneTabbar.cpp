@@ -13,11 +13,9 @@ namespace TArc
 SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* parent /* = nullptr */)
     : model(model_)
 {
-    activeTabWrapper = accessor->CreateWrapper(Bind(&SceneTabbar::GetModelField, this, activeTabPropertyName));
-    activeTabWrapper.SetListener(this);
-
-    tabsCollectionWrapper = accessor->CreateWrapper(Bind(&SceneTabbar::GetModelField, this, tabsPropertyName));
-    tabsCollectionWrapper.SetListener(this);
+    DataWrapper::DataAccessor accessorFn(this, &SceneTabbar::GetSceneTabsModel);
+    modelWrapperWrapper = accessor->CreateWrapper(accessorFn);
+    modelWrapperWrapper.SetListener(this);
 
     QObject::connect(this, &QTabBar::currentChanged, this, &SceneTabbar::OnCurrentTabChanged);
     QObject::connect(this, &QTabBar::tabCloseRequested, this, &SceneTabbar::OnCloseTabRequest);
@@ -25,19 +23,45 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
 
 SceneTabbar::~SceneTabbar()
 {
-    activeTabWrapper.SetListener(nullptr);
+    modelWrapperWrapper.SetListener(nullptr);
 }
 
 void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
-    if (wrapper == activeTabWrapper)
+    DVASSERT(wrapper.HasData());
+    if (fields.empty())
     {
+        OnTabsCollectionChanged();
         OnActiveTabChanged();
     }
-    else
+
+    bool tabsPropertyChanged = false;
+    bool activeTabPropertyChanged = false;
+    for (const Any& fieldName : fields)
     {
-        DVASSERT(wrapper == tabsCollectionWrapper);
+        if (fieldName.CanCast<String>())
+        {
+            String name = fieldName.Cast<String>();
+            if (name == tabsPropertyName)
+            {
+                tabsPropertyChanged = true;
+            }
+
+            if (name == activeTabPropertyName)
+            {
+                activeTabPropertyChanged = true;
+            }
+        }
+    }
+
+    if (tabsPropertyChanged)
+    {
         OnTabsCollectionChanged();
+    }
+
+    if (activeTabPropertyChanged)
+    {
+        OnActiveTabChanged();
     }
 }
 
@@ -45,7 +69,7 @@ void SceneTabbar::OnActiveTabChanged()
 {
     SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
 
-    Reflection ref = GetModelField(activeTabPropertyName);
+    Reflection ref = model.GetField(Any(activeTabPropertyName)).ref;
     DVASSERT(ref.IsValid());
     Any value = ref.GetValue();
     DVASSERT(value.CanCast<uint64>());
@@ -53,8 +77,7 @@ void SceneTabbar::OnActiveTabChanged()
 
     {
         QVariant data = tabData(currentIndex());
-        DVASSERT(data.canConvert<uint64>());
-        if (data.value<uint64>() == id)
+        if (data.canConvert<uint64>() && data.value<uint64>() == id)
             return;
     }
 
@@ -66,7 +89,7 @@ void SceneTabbar::OnActiveTabChanged()
         if (data.value<uint64>() == id)
         {
             setCurrentIndex(i);
-            break;
+            return;
         }
     }
 }
@@ -85,7 +108,7 @@ void SceneTabbar::OnTabsCollectionChanged()
             existsIds.emplace(data.value<uint64>(), i);
         }
 
-        Reflection ref = GetModelField(tabsPropertyName);
+        Reflection ref = model.GetField(tabsPropertyName).ref;
         Vector<Reflection::Field> fields = ref.GetFields();
         setEnabled(!fields.empty());
 
@@ -99,14 +122,25 @@ void SceneTabbar::OnTabsCollectionChanged()
             DVASSERT(titleValue.CanCast<String>());
             QString titleText = QString::fromStdString(titleValue.Cast<String>());
 
+            QString tooltipText;
+            Reflection tooltip = field.ref.GetField(tabTooltipPropertyName).ref;
+            if (tooltip.IsValid())
+            {
+                Any tooltipValue = tooltip.GetValue();
+                DVASSERT(tooltipValue.CanCast<String>());
+                tooltipText = QString::fromStdString(tooltipValue.Cast<String>());
+            }
+
             if (existsIds.count(id) == 0)
             {
                 int index = addTab(titleText);
+                setTabToolTip(index, tooltipText);
                 setTabData(index, QVariant::fromValue<uint64>(id));
             }
             else
             {
                 setTabText(existsIds[id], titleText);
+                setTabToolTip(existsIds[id], tooltipText);
                 existsIds.erase(id);
             }
         }
@@ -117,24 +151,30 @@ void SceneTabbar::OnTabsCollectionChanged()
         }
     }
 
-    if (isEnabled())
+    /*if (isEnabled())
     {
         OnCurrentTabChanged(currentIndex());
-    }
+    }*/
 }
 
-DAVA::Reflection SceneTabbar::GetModelField(const char* fieldName)
+DAVA::Reflection SceneTabbar::GetSceneTabsModel(const DataContext* /*context*/)
 {
-    return model.GetField(Any(fieldName)).ref;
+    return model;
 }
 
 void SceneTabbar::OnCurrentTabChanged(int currentTab)
 {
     SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
 
+    if (currentTab == -1)
+    {
+        model.GetField(activeTabPropertyName).ref.SetValue(uint64(0));
+        return;
+    }
+
     QVariant data = tabData(currentTab);
     DVASSERT(data.canConvert<uint64>());
-    GetModelField(activeTabPropertyName).SetValue(data.value<uint64>());
+    model.GetField(activeTabPropertyName).ref.SetValue(data.value<uint64>());
 }
 
 void SceneTabbar::OnCloseTabRequest(int index)
@@ -148,6 +188,7 @@ void SceneTabbar::OnCloseTabRequest(int index)
 const char* SceneTabbar::activeTabPropertyName = "ActiveTabID";
 const char* SceneTabbar::tabsPropertyName = "Tabs";
 const char* SceneTabbar::tabTitlePropertyName = "Title";
+const char* SceneTabbar::tabTooltipPropertyName = "Tooltip";
 
 } // namespace TArc
 } // namespace DAVA

@@ -37,6 +37,12 @@ QUrl CreateUrl(const QString scemeName, const QString& path, const InsertionPara
 }
 }
 
+InsertionParams::InsertionParams(eInsertionMethod method_, const QString& item_ /*= QString()*/)
+    : method(method_)
+    , item(item_)
+{
+}
+
 QUrl CreateMenuPoint(const QString& path, const InsertionParams& params)
 {
     return ActionUtilsDetail::CreateUrl(menuScheme, path, params);

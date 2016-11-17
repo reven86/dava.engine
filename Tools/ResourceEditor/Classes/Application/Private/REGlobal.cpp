@@ -18,6 +18,13 @@ DAVA::TArc::DataContext* GetGlobalContext()
     return REGlobalDetails::coreInstance->GetGlobalContext();
 }
 
+DAVA::TArc::DataContext* GetActiveContext()
+{
+    if (REGlobalDetails::coreInstance == nullptr)
+        return nullptr;
+    return REGlobalDetails::coreInstance->GetActiveContext();
+}
+
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type)
 {
     if (REGlobalDetails::coreInstance == nullptr)
@@ -31,5 +38,6 @@ void InitTArcCore(DAVA::TArc::CoreInterface* core)
 }
 
 IMPL_OPERATION_ID(OpenLastProjectOperation);
+IMPL_OPERATION_ID(CloseAllScenesOperation);
 
 } // namespace REGlobal

@@ -29,6 +29,9 @@ struct InsertionParams
     static QString Convert(eInsertionMethod v);
     static InsertionParams Create(const QUrl& url);
 
+    InsertionParams() = default;
+    InsertionParams(eInsertionMethod method_, const QString& item_ = QString());
+
     eInsertionMethod method = eInsertionMethod::AfterItem;
     QString item;
 };

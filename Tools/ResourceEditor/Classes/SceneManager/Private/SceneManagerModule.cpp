@@ -5,10 +5,13 @@
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
+#include "Classes/SceneManager/Private/SceneTabsModel.h"
+
 #include "TArc/WindowSubSystem/QtAction.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
-#include "TArc/Controls/SceneTabbar.h"
+//#include "TArc/Controls/SceneTabbar.h"
 
 #include "Engine/EngineContext.h"
 #include "Reflection/ReflectedType.h"
@@ -18,52 +21,6 @@
 #include "Functional/Function.h"
 #include "Base/FastName.h"
 #include "Base/Any.h"
-
-namespace SceneManagerDetail
-{
-struct SingleTab
-{
-    DAVA::String tabTitle;
-
-private:
-    DAVA_REFLECTION(SingleTab)
-    {
-        DAVA::ReflectionRegistrator<SceneManagerDetail::SingleTab>::Begin()
-        .Field(DAVA::TArc::SceneTabbar::tabTitlePropertyName, &SingleTab::tabTitle)
-        .End();
-    }
-};
-
-class TabbarData : public DAVA::TArc::DataNode
-{
-public:
-    DAVA::uint64 activeContexID = 0;
-    DAVA::Map<DAVA::uint64, SingleTab> tabs;
-
-private:
-    DAVA_VIRTUAL_REFLECTION(TabbarData, DAVA::TArc::DataNode)
-    {
-        DAVA::ReflectionRegistrator<SceneManagerDetail::TabbarData>::Begin()
-        .Field(DAVA::TArc::SceneTabbar::activeTabPropertyName, &TabbarData::activeContexID)
-        .Field(DAVA::TArc::SceneTabbar::tabsPropertyName, &TabbarData::tabs)
-        .End();
-    }
-};
-}
-
-namespace DAVA
-{
-template <>
-struct AnyCompare<SceneManagerDetail::SingleTab>
-{
-    static bool IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
-    {
-        const SceneManagerDetail::SingleTab& tab1 = v1.Get<SceneManagerDetail::SingleTab>();
-        const SceneManagerDetail::SingleTab& tab2 = v2.Get<SceneManagerDetail::SingleTab>();
-        return tab1.tabTitle == tab2.tabTitle;
-    }
-};
-}
 
 void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
@@ -91,18 +48,49 @@ void SceneManagerModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 
 void SceneManagerModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
+    using namespace DAVA::TArc;
+    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
+    DVASSERT(tabsModel != nullptr);
+
+    tabsModel->tabs.emplace(context->GetID(), TabDescriptor());
 }
 
 void SceneManagerModule::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
+    using namespace DAVA::TArc;
+    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
+    DVASSERT(tabsModel != nullptr);
+
+    tabsModel->tabs.erase(context->GetID());
 }
 
 void SceneManagerModule::OnContextWillChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
 {
+    using namespace DAVA::TArc;
+    if (current == nullptr)
+    {
+        return;
+    }
+
+    SceneData* data = current->GetData<SceneData>();
+    data->scene->Deactivate();
 }
 
 void SceneManagerModule::OnContextDidChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
+    using namespace DAVA::TArc;
+    if (current == nullptr)
+    {
+        return;
+    }
+
+    SceneData* data = current->GetData<SceneData>();
+    DVASSERT(data->scene != nullptr);
+    data->scene->Activate();
+
+    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
+    tabsModel->activeContexID = current->GetID();
+    tabsModel->tabs[current->GetID()].tabTitle = data->scene->GetScenePath().GetFilename();
 }
 
 void SceneManagerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -112,13 +100,20 @@ void SceneManagerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 void SceneManagerModule::PostInit()
 {
     DAVA::TArc::UI* ui = GetUI();
-    QtMainWindow* mainWindow = qobject_cast<QtMainWindow*>(ui->GetWindow(REGlobal::MainWindowKey));
-
-    mainWindow->InjectRenderWidget(GetContextManager()->GetRenderWidget());
-    mainWindow->EnableGlobalTimeout(true);
 
     CreateModuleControls(ui);
     CreateModuleActions(ui);
+    RegisterOperations();
+
+    fieldBinder.reset(new DAVA::TArc::FieldBinder(GetAccessor()));
+
+    DAVA::TArc::FieldDescriptor fieldDescr;
+    fieldDescr.type = DAVA::ReflectedType::Get<SceneTabsModel>();
+    fieldDescr.fieldName = DAVA::FastName(DAVA::TArc::SceneTabbar::activeTabPropertyName);
+    fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnActiveTabChanged));
+
+    QtMainWindow* mainWindow = qobject_cast<QtMainWindow*>(ui->GetWindow(REGlobal::MainWindowKey));
+    mainWindow->EnableGlobalTimeout(true);
 }
 
 void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
@@ -128,20 +123,11 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetGlobalContext();
 
-    context->CreateData(std::make_unique<SceneManagerDetail::TabbarData>());
-    SceneManagerDetail::TabbarData* data = context->GetData<SceneManagerDetail::TabbarData>();
-    data->tabs.emplace(1, SceneManagerDetail::SingleTab{ "FirstTab" });
-    data->tabs.emplace(21, SceneManagerDetail::SingleTab{ "21" });
-    data->tabs.emplace(33, SceneManagerDetail::SingleTab{ "21" });
-    data->activeContexID = 21;
+    SceneRenderWidget* renderWidget = new SceneRenderWidget(accessor, GetContextManager()->GetRenderWidget());
+    renderWidget->SetWidgetDelegate(this);
 
-    SceneTabbar* sceneTabbar = new SceneTabbar(accessor, DAVA::Reflection::Create(context->GetData<SceneManagerDetail::TabbarData>()));
-    DAVA::TArc::DockPanelInfo panelInfo;
-    panelInfo.title = QString("SceneTabbar");
-    panelInfo.tabbed = true;
-
-    DAVA::TArc::PanelKey panelKey(QStringLiteral("SceneTabBar"), panelInfo);
-    GetUI()->AddView(REGlobal::MainWindowKey, panelKey, sceneTabbar);
+    DAVA::TArc::PanelKey panelKey(QStringLiteral("SceneTabBar"), DAVA::TArc::CentralPanelInfo());
+    GetUI()->AddView(REGlobal::MainWindowKey, panelKey, renderWidget);
 }
 
 void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
@@ -152,7 +138,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
     // New Scene action
     {
         QtAction* action = new QtAction(accessor, QIcon(":/QtIcons/newscene.png"), QString("New Scene"));
-        action->setShortcut(QKeySequence(Qt::Key_Control + Qt::Key_N));
+        action->setShortcut(QKeySequence("Ctrl+N"));
         action->setShortcutContext(Qt::WindowShortcut);
 
         FieldDescriptor fieldDescr;
@@ -164,12 +150,17 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::CreateNewScene, this));
 
-        InsertionParams params;
-        params.item = "actionOpenScene";
-        params.method = InsertionParams::eInsertionMethod::BeforeItem;
-        ActionPlacementInfo placementInfo(CreateMenuPoint("File/"));
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::BeforeItem, "actionOpenScene" }));
+        placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::BeforeItem }));
+
         ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
     }
+}
+
+void SceneManagerModule::RegisterOperations()
+{
+    RegisterOperation(REGlobal::CloseAllScenesOperation.ID, this, &SceneManagerModule::CloseAllScenes);
 }
 
 void SceneManagerModule::CreateNewScene()
@@ -177,10 +168,9 @@ void SceneManagerModule::CreateNewScene()
     using namespace DAVA::TArc;
     ContextManager* contextManager = GetContextManager();
     DataContext::ContextID newContext = contextManager->CreateContext();
-    contextManager->ActivateContext(newContext);
 
     ContextAccessor* accessor = GetAccessor();
-    DataContext* context = accessor->GetActiveContext();
+    DataContext* context = accessor->GetContext(newContext);
     DVASSERT(context != nullptr);
 
     UI* ui = GetUI();
@@ -195,6 +185,192 @@ void SceneManagerModule::CreateNewScene()
     std::unique_ptr<SceneData> sceneData = std::make_unique<SceneData>();
     sceneData->scene = scene;
     context->CreateData(std::move(sceneData));
+    contextManager->ActivateContext(newContext);
+}
+
+void SceneManagerModule::CloseAllScenes()
+{
+    // TODO UVR
+}
+
+void SceneManagerModule::OnActiveTabChanged(const DAVA::Any& contextID)
+{
+    using namespace DAVA::TArc;
+    ContextManager* contextManager = GetContextManager();
+    DataContext::ContextID newContextID = DataContext::Empty;
+
+    if (contextID.CanCast<DAVA::uint64>())
+    {
+        newContextID = static_cast<DataContext::ContextID>(contextID.Cast<DAVA::uint64>());
+    }
+
+    contextManager->ActivateContext(newContextID);
+}
+
+void SceneManagerModule::OnSceneModificationFlagChanged(const DAVA::Any& isSceneModified)
+{
+    using namespace DAVA::TArc;
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        return;
+    }
+
+    UpdateTabTitle(ctx->GetID());
+}
+
+void SceneManagerModule::OnScenePathChanged(const DAVA::Any& scenePath)
+{
+    using namespace DAVA::TArc;
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        return;
+    }
+
+    UpdateTabTitle(ctx->GetID());
+}
+
+void SceneManagerModule::CloseSceneRequest(DAVA::uint64 id)
+{
+    using namespace DAVA::TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    ContextManager* contextManager = GetContextManager();
+
+    DataContext* context = accessor->GetContext(id);
+    if (context == nullptr)
+    {
+        return;
+    }
+
+    SceneData* data = context->GetData<SceneData>();
+    DVASSERT(data != nullptr);
+    DVASSERT(data->scene != nullptr);
+
+    if (CanCloseScene(data->scene))
+    {
+        contextManager->DeleteContext(id);
+    }
+}
+
+///////////////////////////////
+///           Helpers       ///
+///////////////////////////////
+void SceneManagerModule::UpdateTabTitle(DAVA::uint64 contextID)
+{
+    using namespace DAVA::TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext);
+    SceneData* sceneData = activeContext->GetData<SceneData>();
+    DVASSERT(sceneData);
+
+    const DAVA::FilePath& scenePath = sceneData->GetScenePath();
+    DAVA::String tabName = scenePath.GetFilename();
+    DAVA::String tabTooltip = scenePath.GetAbsolutePathname();
+
+    if (sceneData->IsSceneChanged())
+    {
+        tabName += "*";
+    }
+
+    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
+    DVASSERT(tabsModel->tabs.count(contextID) > 0);
+    TabDescriptor& tabDescr = tabsModel->tabs[contextID];
+    tabDescr.tabTitle = tabName;
+    tabDescr.tabTooltip = tabTooltip;
+}
+
+bool SceneManagerModule::CanCloseScene(SceneEditor2* scene)
+{
+    using namespace DAVA::TArc;
+
+    DAVA::int32 toolsFlags = scene->GetEnabledTools();
+    if (!scene->IsChanged())
+    {
+        if (toolsFlags)
+        {
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+        }
+        return true;
+    }
+
+    if (!IsSavingAllowed(scene))
+    {
+        return false;
+    }
+
+    UI* ui = GetUI();
+    ModalMessageParams params;
+    params.buttons = ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel;
+    params.defaultButton = ModalMessageParams::Cancel;
+    params.message = "Do you want to save changes, made to scene?";
+    params.title = "Scene was changed";
+
+    ModalMessageParams::Button answer = ui->ShowModalMessage(REGlobal::MainWindowKey, params);
+
+    if (answer == ModalMessageParams::Cancel)
+    {
+        return false;
+    }
+
+    if (answer == QMessageBox::No)
+    {
+        if (toolsFlags)
+        {
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
+        }
+        return true;
+    }
+
+    if (toolsFlags)
+    {
+        DAVA::FilePath colorSystemTexturePath = scene->customColorsSystem->GetCurrentSaveFileName();
+        bool customColorActive = (toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) == SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR;
+        if (!GetAccessor()->GetEngineContext()->fileSystem->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
+        {
+            return false;
+        }
+
+        scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+    }
+
+    if (!SaveScene(scene))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool SceneManagerModule::IsSavingAllowed(SceneEditor2* scene)
+{
+    DVASSERT(scene != nullptr);
+    QString warningMessage;
+    if (scene->GetEnabledTools() != 0)
+    {
+        warningMessage = "Disable landscape editing before save!";
+    }
+
+    if (scene->wayEditSystem->IsWayEditEnabled())
+    {
+        warningMessage = "Disable path editing before save!";
+    }
+
+    if (warningMessage.isEmpty())
+    {
+        return true;
+    }
+
+    using namespace DAVA::TArc;
+    UI* ui = GetUI();
+
+    ModalMessageParams params;
+    params.buttons = ModalMessageParams::Ok;
+    params.title = "Saving is not allowed";
+    params.message = warningMessage;
+    ui->ShowModalMessage(REGlobal::MainWindowKey, params);
 }
 
 SceneEditor2* SceneManagerModule::OpenSceneImpl(const DAVA::FilePath& scenePath)

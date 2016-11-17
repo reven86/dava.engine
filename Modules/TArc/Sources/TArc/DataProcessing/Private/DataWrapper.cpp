@@ -10,10 +10,15 @@ namespace TArc
 {
 namespace DataWrapperDetail
 {
-Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
+Reflection GetDataDefault(const DataContext* context, const ReflectedType* type)
 {
     Reflection ret;
-    DataNode* node = context.GetData(type);
+    if (context == nullptr)
+    {
+        return ret;
+    }
+
+    DataNode* node = context->GetData(type);
     if (node != nullptr)
     {
         ret = Reflection::Create(node);
@@ -96,7 +101,7 @@ bool DataWrapper::HasData() const
     Reflection reflection;
     try
     {
-        reflection = impl->dataAccessor(*impl->activeContext);
+        reflection = impl->dataAccessor(impl->activeContext);
     }
     catch (const std::runtime_error& e)
     {
@@ -248,7 +253,7 @@ void DataWrapper::NotifyListeners(bool sendNotify, const Vector<Any>& fields)
 Reflection DataWrapper::GetData() const
 {
     DVASSERT(HasData());
-    return impl->dataAccessor(*impl->activeContext);
+    return impl->dataAccessor(impl->activeContext);
 }
 } // namespace TArc
 } // namespace DAVA

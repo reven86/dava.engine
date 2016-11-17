@@ -44,9 +44,6 @@ public:
     bool CloseTab(int index);
     bool CloseAllTabs(bool silent);
 
-    int GetCurrentTab() const;
-    void SetCurrentTab(int index);
-
     int GetTabCount() const;
     SceneEditor2* GetCurrentScene() const;
     SceneEditor2* GetTabScene(int index) const;
@@ -79,13 +76,7 @@ protected:
     bool CloseTabInternal(int index, bool silent);
 
     MainTabBar* tabBar;
-    DAVA::UIScreen* davaUIScreen;
-    DAVA::UI3DView* dava3DView;
-    const int davaUIScreenID = 0;
-    const int dava3DViewMargin = 3;
 
-    void InitDAVAUI();
-    void ReleaseDAVAUI();
     void UpdateTabName(int index);
 
     void SetTabScene(int index, SceneEditor2* scene);

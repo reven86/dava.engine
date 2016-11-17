@@ -31,28 +31,6 @@
   <property name="dockOptions">
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
-  <widget class="QFrame" name="mainFrame">
-   <layout class="QVBoxLayout" name="verticalLayout_8">
-    <property name="spacing">
-     <number>3</number>
-    </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
-     <number>1</number>
-    </property>
-    <item>
-     <widget class="SceneTabWidget" name="sceneTabWidget" native="true"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="DockProperties" name="dockProperties">
    <property name="minimumSize">
     <size>
@@ -200,7 +178,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNewScene"/>
    <addaction name="actionOpenScene"/>
    <addaction name="actionSaveScene"/>
    <addaction name="separator"/>
@@ -239,7 +216,6 @@
      <addaction name="actionOnlyOriginalTextures"/>
      <addaction name="actionWithCompressedTextures"/>
     </widget>
-    <addaction name="actionNewScene"/>
     <addaction name="actionOpenScene"/>
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
@@ -885,24 +861,6 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionNewScene">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/newscene.png</normaloff>:/QtIcons/newscene.png</iconset>
-   </property>
-   <property name="text">
-    <string>New Scene</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
-  </action>
   <action name="actionOpenScene">
    <property name="checkable">
     <bool>false</bool>
@@ -2272,12 +2230,6 @@
    <class>ParticleTimeLineWidget</class>
    <extends>QWidget</extends>
    <header>DockParticleEditor/particletimelinewidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SceneTabWidget</class>
-   <extends>QWidget</extends>
-   <header>Scene/scenetabwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

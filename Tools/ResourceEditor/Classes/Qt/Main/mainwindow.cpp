@@ -42,6 +42,7 @@
 #include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/SceneManager/SceneData.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -212,7 +213,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupWidget();
 
     recentFiles.SetMenu(ui->File);
-    centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
 
     qApp->installEventFilter(this);
 
@@ -291,19 +291,17 @@ QtMainWindow::~QtMainWindow()
     ActiveSceneHolder::Deinit();
 }
 
-void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
-{
-    ui->sceneTabWidget->InjectRenderWidget(renderWidget);
+//void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
+//{
+//// delete
+//QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+//deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+//deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+//connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
+//renderWidget->addAction(deleteSelection);
 
-    // delete
-    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
-    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
-    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
-    renderWidget->addAction(deleteSelection);
-
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
-}
+//QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+//}
 
 void QtMainWindow::OnRenderingInitialized()
 {
@@ -312,7 +310,13 @@ void QtMainWindow::OnRenderingInitialized()
 
 SceneEditor2* QtMainWindow::GetCurrentScene()
 {
-    return ui->sceneTabWidget->GetCurrentScene();
+    SceneData* data = REGlobal::GetActiveDataNode<SceneData>();
+    SceneEditor2* result = nullptr;
+    if (data)
+    {
+        result = data->GetScene();
+    }
+    return result;
 }
 
 bool QtMainWindow::SaveScene(SceneEditor2* scene)
@@ -409,7 +413,7 @@ void QtMainWindow::SetupWidget()
 {
     ui->sceneTree->Init(globalOperations);
     ui->scrollAreaWidgetContents->Init(globalOperations);
-    ui->sceneTabWidget->Init(globalOperations);
+    //ui->sceneTabWidget->Init(globalOperations);
 }
 
 void QtMainWindow::CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const
@@ -497,12 +501,13 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 
         SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
-        for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
+        // TODO UVR LATER
+        /*for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, collector);
             SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
-        }
+        }*/
 
         DAVA::TexturesMap& allScenesTextures = collector.GetTextures();
         if (!allScenesTextures.empty())
@@ -538,11 +543,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             }
         }
 
-        for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
+        // TODO UVR LATER
+        /*for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
             scene->editorVegetationSystem->ReloadVegetation();
-        }
+        }*/
 
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticleEffects();
@@ -809,7 +815,8 @@ void QtMainWindow::SetupDocks()
     QObject::connect(ui->sceneTreeFilterClear, SIGNAL(pressed()), ui->sceneTreeFilterEdit, SLOT(clear()));
     QObject::connect(ui->sceneTreeFilterEdit, SIGNAL(textChanged(const QString&)), ui->sceneTree, SLOT(SetFilter(const QString&)));
 
-    QObject::connect(ui->sceneTabWidget, SIGNAL(CloseTabRequest(int, Request*)), this, SLOT(OnCloseTabRequest(int, Request*)));
+    // TODO UVR LATER
+    //QObject::connect(ui->sceneTabWidget, SIGNAL(CloseTabRequest(int, Request*)), this, SLOT(OnCloseTabRequest(int, Request*)));
 
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo, SLOT(UpdateInfoByTimer()));
     QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo, SLOT(TexturesReloaded()));
@@ -855,7 +862,6 @@ void QtMainWindow::SetupActions()
     ui->File->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
     QObject::connect(actionOpenSceneQuickly, &QAction::triggered, this, &QtMainWindow::OnSceneOpenQuickly);
 
-    QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
     QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
     QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
     QObject::connect(ui->actionOnlyOriginalTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolder);
@@ -1055,14 +1061,15 @@ void QtMainWindow::SetupActions()
 void QtMainWindow::SetupShortCuts()
 {
     // select mode
-    connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
+    // TODO UVR LATER
+    //connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
 
     //tab closing
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+//connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #if defined(__DAVAENGINE_WIN32__)
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+//connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #endif
 }
 
@@ -1122,7 +1129,6 @@ void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, 
 
 void QtMainWindow::EnableProjectActions(bool enable)
 {
-    ui->actionNewScene->setEnabled(enable);
     ui->actionOpenScene->setEnabled(enable);
     ui->actionCubemapEditor->setEnabled(enable);
     ui->actionImageSplitter->setEnabled(enable);
@@ -1287,12 +1293,13 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommandNoti
 
 void QtMainWindow::OnSceneNew()
 {
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    // TODO UVR
+    /*ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
     if (data->IsOpened())
     {
         ui->sceneTabWidget->OpenTab();
-    }
+    }*/
 }
 
 void QtMainWindow::OnSceneOpen()
@@ -1393,71 +1400,6 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     sceneForSaving->Release();
 
     WaitStop();
-}
-
-void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
-{
-    SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tabIndex);
-    if (!scene)
-    {
-        closeRequest->Accept();
-        return;
-    }
-
-    DAVA::int32 toolsFlags = scene->GetEnabledTools();
-    if (!scene->IsChanged())
-    {
-        if (toolsFlags)
-        {
-            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-        }
-        closeRequest->Accept();
-        return;
-    }
-
-    if (!IsSavingAllowed())
-    {
-        closeRequest->Cancel();
-        return;
-    }
-
-    int answer = QMessageBox::warning(nullptr, "Scene was changed", "Do you want to save changes, made to scene?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
-    if (answer == QMessageBox::Cancel)
-    {
-        closeRequest->Cancel();
-        return;
-    }
-
-    if (answer == QMessageBox::No)
-    {
-        if (toolsFlags)
-        {
-            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
-        }
-        closeRequest->Accept();
-        return;
-    }
-
-    if (toolsFlags)
-    {
-        DAVA::FilePath colorSystemTexturePath = scene->customColorsSystem->GetCurrentSaveFileName();
-        if ((toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
-            !DAVA::FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
-        {
-            closeRequest->Cancel();
-            return;
-        }
-
-        scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
-    }
-
-    if (!SaveScene(scene))
-    {
-        closeRequest->Cancel();
-        return;
-    }
-
-    closeRequest->Accept();
 }
 
 void QtMainWindow::ExportTriggered()
@@ -2747,18 +2689,6 @@ bool QtMainWindow::IsSavingAllowed()
 {
     SceneEditor2* scene = GetCurrentScene();
 
-    if (!scene || scene->GetEnabledTools() != 0)
-    {
-        QMessageBox::warning(this, "Saving is not allowed", "Disable landscape editing before save!");
-        return false;
-    }
-
-    if (!scene || scene->wayEditSystem->IsWayEditEnabled())
-    {
-        QMessageBox::warning(this, "Saving is not allowed", "Disable path editing before save!");
-        return false;
-    }
-
     return true;
 }
 
@@ -2775,7 +2705,8 @@ void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const D
         QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
         QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
 
-        data->SetCloseProjectPredicateFunction(DAVA::Bind(&SceneTabWidget::CloseAllTabs, ui->sceneTabWidget, false));
+        // TODO UVR
+        //data->SetCloseProjectPredicateFunction(DAVA::Bind(&SceneTabWidget::CloseAllTabs, ui->sceneTabWidget, false));
     }
 
     if (data != nullptr && !data->GetProjectPath().IsEmpty())
@@ -2785,7 +2716,8 @@ void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const D
     }
     else
     {
-        ui->sceneTabWidget->CloseAllTabs(false);
+        // TODO UVR
+        //ui->sceneTabWidget->CloseAllTabs(false);
         EnableProjectActions(false);
         SetupTitle(DAVA::String());
     }
@@ -2831,54 +2763,55 @@ void QtMainWindow::LoadObjectTypes(SceneEditor2* scene)
 
 bool QtMainWindow::OpenScene(const QString& path)
 {
-    bool ret = false;
+    // TODO UVR
+    //bool ret = false;
 
-    if (!path.isEmpty())
-    {
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
-        DAVA::FilePath projectPath(data->GetProjectPath());
-        DAVA::FilePath argumentPath(path.toStdString());
+    //if (!path.isEmpty())
+    //{
+    //    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    //    DVASSERT(data != nullptr);
+    //    DAVA::FilePath projectPath(data->GetProjectPath());
+    //    DAVA::FilePath argumentPath(path.toStdString());
 
-        if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
-        {
-            QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
-                                                                              argumentPath.GetAbsolutePathname().c_str(),
-                                                                              projectPath.GetAbsolutePathname().c_str()));
-        }
-        else
-        {
-            int needCloseIndex = -1;
-            SceneEditor2* scene = ui->sceneTabWidget->GetCurrentScene();
-            if (scene && (ui->sceneTabWidget->GetTabCount() == 1))
-            {
-                DAVA::FilePath path = scene->GetScenePath();
-                if (path.GetFilename() == "newscene1.sc2" && !scene->CanUndo() && !scene->IsLoaded())
-                {
-                    needCloseIndex = 0;
-                }
-            }
+    //    if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
+    //    {
+    //        QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
+    //                                                                          argumentPath.GetAbsolutePathname().c_str(),
+    //                                                                          projectPath.GetAbsolutePathname().c_str()));
+    //    }
+    //    else
+    //    {
+    //        int needCloseIndex = -1;
+    //        SceneEditor2* scene = ui->sceneTabWidget->GetCurrentScene();
+    //        if (scene && (ui->sceneTabWidget->GetTabCount() == 1))
+    //        {
+    //            DAVA::FilePath path = scene->GetScenePath();
+    //            if (path.GetFilename() == "newscene1.sc2" && !scene->CanUndo() && !scene->IsLoaded())
+    //            {
+    //                needCloseIndex = 0;
+    //            }
+    //        }
 
-            DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
+    //        DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
 
-            int index = ui->sceneTabWidget->OpenTab(scenePath);
+    //        int index = ui->sceneTabWidget->OpenTab(scenePath);
 
-            if (index != -1)
-            {
-                recentFiles.Add(path.toStdString());
+    //        if (index != -1)
+    //        {
+    //            recentFiles.Add(path.toStdString());
 
-                // close empty default scene
-                if (-1 != needCloseIndex)
-                {
-                    ui->sceneTabWidget->CloseTab(needCloseIndex);
-                }
+    //            // close empty default scene
+    //            if (-1 != needCloseIndex)
+    //            {
+    //                ui->sceneTabWidget->CloseTab(needCloseIndex);
+    //            }
 
-                ret = true;
-            }
-        }
-    }
+    //            ret = true;
+    //        }
+    //    }
+    //}
 
-    return ret;
+    return false;
 }
 
 void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)
@@ -2907,7 +2840,8 @@ bool QtMainWindow::CanBeClosed()
 
 bool QtMainWindow::IsAnySceneChanged()
 {
-    int count = ui->sceneTabWidget->GetTabCount();
+    // TODO UVR
+    /*int count = ui->sceneTabWidget->GetTabCount();
     for (int i = 0; i < count; ++i)
     {
         SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(i);
@@ -2915,7 +2849,7 @@ bool QtMainWindow::IsAnySceneChanged()
         {
             return true;
         }
-    }
+    }*/
 
     return false;
 }
@@ -3059,91 +2993,93 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 {
-    int lastSceneTab = ui->sceneTabWidget->GetCurrentTab();
-    int answer = QMessageBox::Cancel;
-    bool needQuestion = true;
+    // TODO UVR
+    //int lastSceneTab = ui->sceneTabWidget->GetCurrentTab();
+    //int answer = QMessageBox::Cancel;
+    //bool needQuestion = true;
 
-    // tabs range where tilemask should be saved
-    DAVA::int32 firstTab = forAllTabs ? 0 : ui->sceneTabWidget->GetCurrentTab();
-    DAVA::int32 lastTab = forAllTabs ? ui->sceneTabWidget->GetTabCount() : ui->sceneTabWidget->GetCurrentTab() + 1;
+    //// tabs range where tilemask should be saved
+    //DAVA::int32 firstTab = forAllTabs ? 0 : ui->sceneTabWidget->GetCurrentTab();
+    //DAVA::int32 lastTab = forAllTabs ? ui->sceneTabWidget->GetTabCount() : ui->sceneTabWidget->GetCurrentTab() + 1;
 
-    for (int i = firstTab; i < lastTab; ++i)
-    {
-        SceneEditor2* tabEditor = ui->sceneTabWidget->GetTabScene(i);
-        if (nullptr != tabEditor)
-        {
-            const RECommandStack* cmdStack = tabEditor->GetCommandStack();
-            if (cmdStack->IsUncleanCommandExists(CMDID_TILEMASK_MODIFY))
-            {
-                // ask user about saving tilemask changes
-                ui->sceneTabWidget->SetCurrentTab(i);
+    //for (int i = firstTab; i < lastTab; ++i)
+    //{
+    //    SceneEditor2* tabEditor = ui->sceneTabWidget->GetTabScene(i);
+    //    if (nullptr != tabEditor)
+    //    {
+    //        const RECommandStack* cmdStack = tabEditor->GetCommandStack();
+    //        if (cmdStack->IsUncleanCommandExists(CMDID_TILEMASK_MODIFY))
+    //        {
+    //            // ask user about saving tilemask changes
+    //            ui->sceneTabWidget->SetCurrentTab(i);
 
-                if (needQuestion)
-                {
-                    QString message = tabEditor->GetScenePath().GetFilename().c_str();
-                    message += " has unsaved tilemask changes.\nDo you want to save?";
+    //            if (needQuestion)
+    //            {
+    //                QString message = tabEditor->GetScenePath().GetFilename().c_str();
+    //                message += " has unsaved tilemask changes.\nDo you want to save?";
 
-                    // if more than one scene to precess
-                    if ((lastTab - firstTab) > 1)
-                    {
-                        answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
-                    }
-                    else
-                    {
-                        answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
-                    }
-                }
+    //                // if more than one scene to precess
+    //                if ((lastTab - firstTab) > 1)
+    //                {
+    //                    answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
+    //                }
+    //                else
+    //                {
+    //                    answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+    //                }
+    //            }
 
-                switch (answer)
-                {
-                case QMessageBox::YesAll:
-                    needQuestion = false;
-                case QMessageBox::Yes:
-                {
-                    // turn off editor
-                    tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    //            switch (answer)
+    //            {
+    //            case QMessageBox::YesAll:
+    //                needQuestion = false;
+    //            case QMessageBox::Yes:
+    //            {
+    //                // turn off editor
+    //                tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-                    // save
-                    tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
-                }
-                break;
+    //                // save
+    //                tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
+    //            }
+    //            break;
 
-                case QMessageBox::NoAll:
-                    needQuestion = false;
-                case QMessageBox::No:
-                {
-                    // turn off editor
-                    tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-                }
-                break;
+    //            case QMessageBox::NoAll:
+    //                needQuestion = false;
+    //            case QMessageBox::No:
+    //            {
+    //                // turn off editor
+    //                tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    //            }
+    //            break;
 
-                case QMessageBox::Cancel:
-                default:
-                {
-                    // cancel save process
-                    return false;
-                }
-                break;
-                }
-            }
+    //            case QMessageBox::Cancel:
+    //            default:
+    //            {
+    //                // cancel save process
+    //                return false;
+    //            }
+    //            break;
+    //            }
+    //        }
 
-            //reset tilemask
-            tabEditor->landscapeEditorDrawSystem->ResetTileMaskTexture();
+    //        //reset tilemask
+    //        tabEditor->landscapeEditorDrawSystem->ResetTileMaskTexture();
 
-            // clear all tilemask commands in commandStack because they will be
-            // invalid after tilemask reloading
-            tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
-        }
-    }
+    //        // clear all tilemask commands in commandStack because they will be
+    //        // invalid after tilemask reloading
+    //        tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
+    //    }
+    //}
 
-    ui->sceneTabWidget->SetCurrentTab(lastSceneTab);
+    //ui->sceneTabWidget->SetCurrentTab(lastSceneTab);
 
     return true;
 }
 
 void QtMainWindow::OnReloadShaders()
 {
-    DAVA::ShaderDescriptorCache::RelaoadShaders();
+    // TODO UVR
+    /*DAVA::ShaderDescriptorCache::RelaoadShaders();
 
     for (int tab = 0, sz = ui->sceneTabWidget->GetTabCount(); tab < sz; ++tab)
     {
@@ -3190,7 +3126,7 @@ void QtMainWindow::OnReloadShaders()
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
 
-#undef INVALIDATE_2D_MATERIAL
+#undef INVALIDATE_2D_MATERIAL*/
 }
 
 void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)
@@ -3340,12 +3276,13 @@ void QtMainWindow::SetActionCheckedSilently(QAction* action, bool checked)
 
 void QtMainWindow::RestartParticleEffects()
 {
-    for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
+    // TODO UVR
+    /* for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
     {
         SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
         DVASSERT(scene);
         scene->particlesSystem->RestartParticleEffects();
-    }
+    }*/
 }
 
 void QtMainWindow::RemoveSelection()
@@ -3428,10 +3365,12 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         ui->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
         break;
     case GlobalOperations::HideScenePreview:
-        ui->sceneTabWidget->HideScenePreview();
+        // TODO UVR
+        //ui->sceneTabWidget->HideScenePreview();
         break;
     case GlobalOperations::ShowScenePreview:
-        ui->sceneTabWidget->ShowScenePreview(args.Cast<DAVA::String>().c_str());
+        // TODO UVR
+        //ui->sceneTabWidget->ShowScenePreview(args.Cast<DAVA::String>().c_str());
         break;
     case GlobalOperations::ShowMaterial:
         OnMaterialEditor(args.Cast<DAVA::NMaterial*>());
@@ -3467,17 +3406,18 @@ void QtMainWindow::HideWaitDialog()
 
 void QtMainWindow::ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor)
 {
-    for (int i = 0; i < ui->sceneTabWidget->GetTabCount(); ++i)
+    /*for (int i = 0; i < ui->sceneTabWidget->GetTabCount(); ++i)
     {
         SceneEditor2* sceneEditor = ui->sceneTabWidget->GetTabScene(i);
         DVASSERT(sceneEditor);
         functor(sceneEditor);
-    }
+    }*/
 }
 
 void QtMainWindow::CloseAllScenes()
 {
-    ui->sceneTabWidget->CloseAllTabs(true);
+    // TODO UVR
+    //ui->sceneTabWidget->CloseAllTabs(true);
 }
 
 void QtMainWindow::UpdateUndoActionText(const DAVA::String& text)
