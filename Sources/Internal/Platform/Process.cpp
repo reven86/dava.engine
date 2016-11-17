@@ -13,6 +13,19 @@ static const int BUF_SIZE = 512;
 
 namespace DAVA
 {
+namespace ProcessDetails
+{
+String EscapeSpaces(const String& str)
+{
+    if (str.find(' ') == String::npos)
+    {
+        return str;
+    }
+
+    return String("\"") + str + String("\"");
+}
+}
+
 Process::Process(const FilePath& path, const Vector<String>& args)
 {
     pid = -1; //invalid pid
@@ -149,17 +162,19 @@ bool Process::Run(bool showWindow)
         }
 
         // Create the child process.
-
-        String runArgsFlat = "cmd.exe /c ";
-        runArgsFlat += executablePath.GetAbsolutePathname();
+        String runArgsFlat = "cmd.exe /c \"";
+        runArgsFlat += ProcessDetails::EscapeSpaces(executablePath.GetAbsolutePathname());
         if (runArgs.size() > 0)
         {
             for (int i = 0; i < (int)runArgs.size(); ++i)
             {
-                runArgsFlat += " \"" + runArgs[i] + "\"";
+                runArgsFlat += " " + ProcessDetails::EscapeSpaces(runArgs[i]);
             }
         }
+        runArgsFlat += "\"";
 
+        Logger::FrameworkDebug("Run process: %s", runArgsFlat.c_str());
+        
 #if defined(UNICODE)
 
         wchar_t* execPathW = nullptr;
