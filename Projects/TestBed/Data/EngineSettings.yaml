@@ -1,3 +1,1 @@
-Landscape.Instancing: false
-Landscape.Morphing: false
-TestSetting: 1
+Landscape.RenderMode: Landscape.RenderMode.Morphing

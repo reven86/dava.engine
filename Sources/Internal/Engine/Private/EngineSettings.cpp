@@ -6,10 +6,11 @@ namespace DAVA
 {
 std::array<Any, EngineSettings::SETTING_COUNT> EngineSettings::settingDefault;
 std::array<FastName, EngineSettings::SETTING_COUNT> EngineSettings::settingName;
+std::array<FastName, EngineSettings::SETTING_VALUE_COUNT> EngineSettings::settingValueName;
 
 EngineSettings::EngineSettings()
 {
-    ReflectedType::Get<EngineSettings>(); //ensure that default values and names are initilized
+    ReflectedType::Get<EngineSettings>(); //ensure that settings was setup
 
     Reset();
 }
@@ -39,22 +40,12 @@ bool EngineSettings::Load(const FilePath& filepath)
                         setting[i] = settingNode->AsBool();
                     else if (setting[i].GetType() == Type::Instance<int32>())
                         setting[i] = settingNode->AsInt32();
-                    else if (setting[i].GetType() == Type::Instance<uint32>())
-                        setting[i] = settingNode->AsUInt32();
-                    else if (setting[i].GetType() == Type::Instance<int64>())
-                        setting[i] = settingNode->AsInt64();
-                    else if (setting[i].GetType() == Type::Instance<uint64>())
-                        setting[i] = settingNode->AsUInt64();
                     else if (setting[i].GetType() == Type::Instance<float32>())
                         setting[i] = settingNode->AsFloat();
-                    else if (setting[i].GetType() == Type::Instance<FastName>())
-                        setting[i] = settingNode->AsFastName();
                     else if (setting[i].GetType() == Type::Instance<String>())
                         setting[i] = settingNode->AsString();
-                    else if (setting[i].GetType() == Type::Instance<WideString>())
-                        setting[i] = settingNode->AsWString();
-                    else if (setting[i].GetType() == Type::Instance<eSettingTestEnum>())
-                        setting[i] = eSettingTestEnum(settingNode->AsInt32());
+                    else if (setting[i].GetType() == Type::Instance<eSettingValue>())
+                        setting[i] = GetSettingValueByName(FastName(settingNode->AsString().c_str()));
                 }
             }
 
@@ -71,16 +62,22 @@ const FastName& EngineSettings::GetSettingName(eSetting setting)
     return settingName[setting];
 }
 
-EngineSettings::eSetting EngineSettings::GetSettingByName(const FastName& name)
+const FastName& EngineSettings::GetSettingValueName(eSettingValue value)
+{
+    DVASSERT(value < SETTING_VALUE_COUNT);
+    return settingValueName[value];
+}
+
+EngineSettings::eSettingValue EngineSettings::GetSettingValueByName(const FastName& name)
 {
     uint32 i = 0;
-    for (; i < SETTING_COUNT; i++)
+    for (; i < SETTING_VALUE_COUNT; ++i)
     {
-        if (name == settingName[i])
+        if (settingValueName[i] == name)
             break;
     }
 
-    return eSetting(i);
+    return EngineSettings::eSettingValue(i);
 }
 
 } // ns DAVA

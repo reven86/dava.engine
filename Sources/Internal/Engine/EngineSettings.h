@@ -21,32 +21,56 @@ class EngineSettings
 class EngineSettings : public Singleton<EngineSettings>
 #endif
 {
+    //TODO: move to .cpp after merge reflection forward declaration
     DAVA_REFLECTION(EngineSettings)
     {
+#define SETUP_SETTING(eSetting, type, name, defvalue) SetupSetting<eSetting, type>(registrator, name, defvalue);
+#define SETUP_SETTING_WITH_RANGE(eSetting, type, name, defvalue, minvalue, maxvalue) SetupSetting<eSetting, type>(registrator, name, defvalue, std::make_pair(minvalue, maxvalue));
+#define SETUP_SETTING_VALUE(eSettingValue, name) settingValueName[eSettingValue] = FastName(name);
         auto& registrator = ReflectionRegistrator<EngineSettings>::Begin();
-        AddReflectionField<SETTING_LANDSCAPE_INSTANCING, bool>(registrator, "Landscape.Instancing", true);
-        AddReflectionField<SETTING_LANDSCAPE_MORPHING, bool>(registrator, "Landscape.Morphing", true);
-        AddReflectionField<SETTING_TEST, eSettingTestEnum>(registrator, "TestSetting", TEST_ENUM_1);
+
+        SETUP_SETTING_WITH_RANGE(SETTING_LANDSCAPE_RENDERMODE, eSettingValue, "Landscape.RenderMode", LANDSCAPE_MORPHING, LANDSCAPE_NO_INSTANCING, LANDSCAPE_MORPHING);
+
+        SETUP_SETTING_VALUE(LANDSCAPE_NO_INSTANCING, "Landscape.RenderMode.NoInstancing");
+        SETUP_SETTING_VALUE(LANDSCAPE_INSTANCING, "Landscape.RenderMode.Instancing");
+        SETUP_SETTING_VALUE(LANDSCAPE_MORPHING, "Landscape.RenderMode.Morphing");
+
         registrator.End();
+#undef SETUP_SETTING
+#undef SETUP_SETTING_WITH_RANGE
+#undef SETUP_SETTING_VALUE
     }
 
 public:
     enum eSetting : uint32
     {
-        SETTING_LANDSCAPE_INSTANCING = 0,
-        SETTING_LANDSCAPE_MORPHING,
-        SETTING_TEST,
+        SETTING_LANDSCAPE_RENDERMODE = 0,
 
-        //don't forget add new enum values to reflection block
+        //don't forget setup new enum values in reflection block
         SETTING_COUNT
     };
 
-    enum eSettingTestEnum
+    enum eSettingValue : uint32
     {
-        TEST_ENUM_1 = 0,
-        TEST_ENUM_2,
+        //'SETTING_LANDSCAPE_MODE'
+        LANDSCAPE_NO_INSTANCING = 0,
+        LANDSCAPE_INSTANCING,
+        LANDSCAPE_MORPHING,
 
-        TEST_ENUM_COUNT
+        //don't forget setup new enum values in reflection block
+        SETTING_VALUE_COUNT
+    };
+
+    struct SettingRange
+    {
+        SettingRange(const Any& _min, const Any& _max)
+            : min(_min)
+            , max(_max)
+        {
+        }
+
+        Any min;
+        Any max;
     };
 
     EngineSettings();
@@ -61,13 +85,14 @@ public:
     void SetSetting(const Any& value);
 
     static const FastName& GetSettingName(eSetting setting);
-    static eSetting GetSettingByName(const FastName& name);
+    static const FastName& GetSettingValueName(eSettingValue value);
+    static eSettingValue GetSettingValueByName(const FastName& name);
 
     Signal<eSetting> settingChanged;
 
 protected:
     template <eSetting ID, typename T>
-    static void AddReflectionField(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue);
+    static void SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const std::pair<T, T>& range = std::make_pair(T(), T()));
 
     template <eSetting ID, typename T>
     const T& GetSettingRefl() const;
@@ -75,8 +100,9 @@ protected:
     template <eSetting ID, typename T>
     void SetSettingRefl(const T& value);
 
-    static std::array<Any, EngineSettings::SETTING_COUNT> settingDefault;
-    static std::array<FastName, EngineSettings::SETTING_COUNT> settingName;
+    static std::array<Any, SETTING_COUNT> settingDefault;
+    static std::array<FastName, SETTING_COUNT> settingName;
+    static std::array<FastName, SETTING_VALUE_COUNT> settingValueName;
 
     std::array<Any, SETTING_COUNT> setting;
 };
@@ -112,11 +138,15 @@ inline void EngineSettings::SetSettingRefl(const T& value)
 }
 
 template <EngineSettings::eSetting ID, typename T>
-inline void EngineSettings::AddReflectionField(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue)
+inline void EngineSettings::SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const std::pair<T, T>& range)
 {
     settingDefault[ID] = defaultValue;
     settingName[ID] = FastName(name);
-    registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>);
+
+    if (range != std::make_pair(T(), T()))
+        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>)[Meta<SettingRange>(Any(range.first), Any(range.second))];
+    else
+        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>);
 }
 
 } //ns DAVA
