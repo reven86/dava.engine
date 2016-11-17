@@ -437,11 +437,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 if (error == 0)
                 {
                     FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
-                    error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
-
-                    skipGlyph = error != 0;
+                    if (realDraw)
+                    {
+                        error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
+                    }
                 }
             }
+            skipGlyph = error != 0;
         }
 
         if (skipGlyph)
@@ -454,22 +456,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         }
         else
         {
-            FT_BitmapGlyph bit = FT_BitmapGlyph(image);
-            FT_Bitmap* bitmap = &bit->bitmap;
-
-            int32 left = bit->left;
-            int32 top = multilineOffsetY - bit->top;
-            int32 width = bitmap->width;
-            int32 height = bitmap->rows;
-
-            if (glyph.index == 0)
-            {
-                width = int32(advances[i].x) >> ftToPixelShift;
-                height = 2 * metrics.baseline - metrics.height;
-                left = int32(pen.x) >> ftToPixelShift;
-                top = multilineOffsetY - (int32(pen.y) >> ftToPixelShift) - height;
-            }
-
             if (charSizes)
             {
                 float32 charSize = float32(advances[i].x) / ftToPixelScale; // Convert to pixels
@@ -478,14 +464,36 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
             }
 
             layoutWidth += advances[i].x;
+            metrics.drawRect.x = Min(metrics.drawRect.x, int32(bbox.xMin));
+            metrics.drawRect.y = Min(metrics.drawRect.y, int32(bbox.yMin));
+            metrics.drawRect.dx = Max(metrics.drawRect.dx, int32(bbox.xMax));
+            metrics.drawRect.dy = Max(metrics.drawRect.dy, int32(bbox.yMax));
 
-            metrics.drawRect.x = Min(metrics.drawRect.x, left);
-            metrics.drawRect.y = Min(metrics.drawRect.y, top);
-            metrics.drawRect.dx = Max(metrics.drawRect.dx, left + width);
-            metrics.drawRect.dy = Max(metrics.drawRect.dy, top + height);
-
-            if (realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight && top >= 0)
+            if (realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight)
             {
+                FT_BitmapGlyph bit = FT_BitmapGlyph(image);
+                FT_Bitmap* bitmap = &bit->bitmap;
+
+                int32 left = bit->left;
+                int32 top = multilineOffsetY - bit->top;
+                int32 width = bitmap->width;
+                int32 height = bitmap->rows;
+
+                if (top < 0)
+                {
+                    pen.x += advances[i].x;
+                    pen.y += advances[i].y;
+                    continue;
+                }
+
+                if (glyph.index == 0) // guess bitmap dimensions for empty bitmap
+                {
+                    width = int32(advances[i].x) >> ftToPixelShift;
+                    height = 2 * metrics.baseline - metrics.height;
+                    left = int32(pen.x) >> ftToPixelShift;
+                    top = multilineOffsetY - (int32(pen.y) >> ftToPixelShift) - height;
+                }
+
                 int32 realH = Min(height, bufHeight - top);
                 int32 realW = Min(width, bufWidth - left);
                 int32 ind = top * bufWidth + left;
