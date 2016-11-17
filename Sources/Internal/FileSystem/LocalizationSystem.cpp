@@ -417,5 +417,4 @@ WideString LocalizedWideString(const String& utf8Key)
 {
     return UTF8Utils::EncodeToWideString(LocalizationSystem::Instance()->GetLocalizedString(utf8Key));
 }
-
 };
