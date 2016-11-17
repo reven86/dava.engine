@@ -589,6 +589,11 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     inputSystem->HandleInputEvent(&uie);
 }
 
+bool Window::SetSurfaceScale(float32 scale)
+{
+    return true;
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__
