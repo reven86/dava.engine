@@ -31,6 +31,7 @@ class LocalNotificationController;
 class IPackManager;
 class AssetsManagerAndroid;
 class ModuleManager;
+class EngineSettings;
 
 namespace Net
 {
@@ -74,6 +75,8 @@ public:
     IPackManager* packManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
+    EngineSettings* settings = nullptr;
+    
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif

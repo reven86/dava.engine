@@ -21,6 +21,7 @@
 #include "Debug/Private/ImGui.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Input/InputSystem.h"
@@ -699,12 +700,15 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
+    context->settings = new EngineSettings();
+
     context->analyticsCore = new Analytics::Core;
 }
 
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
+    delete context->settings;
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
 
