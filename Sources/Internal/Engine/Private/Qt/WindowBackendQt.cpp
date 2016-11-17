@@ -245,15 +245,9 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-float32 WindowBackend::GetSurfaceScale() const
-{
-    return 1.0f;
-}
-
-bool WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScale(const float32 scale)
 {
     // Not supported natively on OpenGL
-    return false;
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
@@ -358,7 +352,7 @@ void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
     eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, fullscreen));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, fullscreen));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
