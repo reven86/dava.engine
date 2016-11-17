@@ -27,9 +27,9 @@ public:
         return (nullptr == setter) || object.IsConst();
     }
 
-    const RtType* GetType() const override
+    const Type* GetType() const override
     {
-        return RtType::Instance<GetT>();
+        return Type::Instance<GetT>();
     }
 
     Any GetValue(const ReflectedObject& object) const override

@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class RtType;
+class Type;
 class ReflectedMeta;
 class ReflectedType;
 class ValueWrapper;

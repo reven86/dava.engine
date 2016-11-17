@@ -11,7 +11,7 @@ namespace DAVA
 class StructureWrapperClass final : public StructureWrapperDefault
 {
 public:
-    StructureWrapperClass(const RtType* rtType);
+    StructureWrapperClass(const Type* type);
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
@@ -27,8 +27,8 @@ private:
     UnorderedMap<String, size_t> fieldsNameIndexes;
     UnorderedMap<String, size_t> methodsNameIndexes;
 
-    void FillCache(const RtType* rtType);
-    void FillCacheEntries(const RtType* rtType);
+    void FillCache(const Type* type);
+    void FillCacheEntries(const Type* type);
 };
 
 } // namespace DAVA

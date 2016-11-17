@@ -4,8 +4,8 @@ namespace DAVA
 {
 ReflectedType::~ReflectedType() = default;
 
-ReflectedType::ReflectedType(const RtType* rttiType_)
-    : rtType(rttiType_)
+ReflectedType::ReflectedType(const Type* rttiType_)
+    : type(rttiType_)
 {
 }
 
@@ -34,7 +34,7 @@ bool ReflectedType::HasDtor() const
 
 void ReflectedType::Destroy(Any&& any) const
 {
-    if (!any.GetRtType()->IsPointer())
+    if (!any.GetType()->IsPointer())
     {
         any.Clear();
     }

@@ -2,19 +2,19 @@
 
 namespace DAVA
 {
-StructureWrapperClass::StructureWrapperClass(const RtType* rtType)
+StructureWrapperClass::StructureWrapperClass(const Type* type)
 {
-    FillCache(rtType);
+    FillCache(type);
 }
 
-void StructureWrapperClass::FillCache(const RtType* rtType)
+void StructureWrapperClass::FillCache(const Type* type)
 {
-    FillCacheEntries(rtType);
+    FillCacheEntries(type);
 
-    const RtTypeInheritance* inheritance = rtType->GetInheritance();
+    const TypeInheritance* inheritance = type->GetInheritance();
     if (NULL != inheritance)
     {
-        const Vector<RtTypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
+        const Vector<TypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
         for (auto& baseInfo : baseTypesInfo)
         {
             FillCache(baseInfo.type);
@@ -22,9 +22,9 @@ void StructureWrapperClass::FillCache(const RtType* rtType)
     }
 }
 
-void StructureWrapperClass::FillCacheEntries(const RtType* rtType)
+void StructureWrapperClass::FillCacheEntries(const Type* type)
 {
-    const ReflectedType* reflectedType = ReflectedTypeDB::GetByRtType(rtType);
+    const ReflectedType* reflectedType = ReflectedTypeDB::GetByRtType(type);
     const ReflectedStructure* structure = reflectedType->GetStrucutre();
 
     if (nullptr != structure)

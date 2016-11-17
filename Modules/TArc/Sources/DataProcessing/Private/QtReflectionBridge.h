@@ -52,7 +52,7 @@ private:
     friend class QtReflected;
     UnorderedMap<const ReflectedType*, QMetaObject*> metaObjects;
 
-    UnorderedMap<const RtType*, QVariant (*)(const Any&)> anyToQVariant;
+    UnorderedMap<const Type*, QVariant (*)(const Any&)> anyToQVariant;
     UnorderedMap<int, Any (*)(const QVariant&)> qvariantToAny;
 };
 } // namespace TArc

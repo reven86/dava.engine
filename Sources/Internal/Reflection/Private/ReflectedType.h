@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class RtType;
+class Type;
 class ReflectedStructure;
 class DtorWrapper;
 class CtorWrapper;
@@ -20,7 +20,7 @@ class ReflectedType final
 public:
     ~ReflectedType();
 
-    const RtType* GetRtType() const;
+    const Type* GetType() const;
     const String& GetPermanentName() const;
 
     const ReflectedStructure* GetStrucutre() const;
@@ -41,11 +41,11 @@ public:
 
 protected:
     String permanentName;
-    const RtType* rtType;
+    const Type* type;
 
     std::unique_ptr<ReflectedStructure> structure;
     std::unique_ptr<StructureWrapper> structureWrapper;
 
-    ReflectedType(const RtType* rttiType_);
+    ReflectedType(const Type* rttiType_);
 };
 } // namespace DAVA

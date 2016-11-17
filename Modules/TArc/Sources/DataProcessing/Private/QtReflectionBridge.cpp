@@ -41,10 +41,10 @@ QVariant StringToVariant(const Any& v)
 }
 
 template <typename T>
-void FillConverter(UnorderedMap<const RtType*, QVariant (*)(const Any&)>& anyToVar,
+void FillConverter(UnorderedMap<const Type*, QVariant (*)(const Any&)>& anyToVar,
                    UnorderedMap<int, Any (*)(const QVariant&)>& varToAny)
 {
-    anyToVar.emplace(RtType::Instance<T>(), &ToVariant<T>);
+    anyToVar.emplace(Type::Instance<T>(), &ToVariant<T>);
     varToAny.emplace(qMetaTypeId<T>(), &ToAny<T>);
 }
 } // namespace ReflBridgeDetails
@@ -77,7 +77,7 @@ void FillConverter(UnorderedMap<const RtType*, QVariant (*)(const Any&)>& anyToV
     ReflBridgeDetails::FillConverter<T>(ATV, VTA);
 
 #define FILL_CONVERTES_FOR_CUSTOM_TYPE(ATV, VTA, ANY_TYPE, VAR_TYPE)\
-    ATV.emplace(RtType::Instance<ANY_TYPE>(), &ReflBridgeDetails::ANY_TYPE##ToVariant); \
+    ATV.emplace(Type::Instance<ANY_TYPE>(), &ReflBridgeDetails::ANY_TYPE##ToVariant); \
     VTA.emplace(qMetaTypeId<VAR_TYPE>(), &ReflBridgeDetails::VAR_TYPE##ToAny);
 
 QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wrapper_, QObject* parent)
@@ -248,7 +248,7 @@ void QtReflected::CreateMetaObject()
         signature += ")";
 
         String retValue = "QVariant";
-        if (params.retType == RtType::Instance<void>())
+        if (params.retType == Type::Instance<void>())
         {
             retValue = "void";
         }
@@ -375,10 +375,10 @@ QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper&& wrapper, QObjec
 
 QVariant QtReflectionBridge::Convert(const Any& value) const
 {
-    auto iter = anyToQVariant.find(value.GetRtType());
+    auto iter = anyToQVariant.find(value.GetType());
     if (iter == anyToQVariant.end())
     {
-        DVASSERT_MSG(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetRtType()->GetName()).c_str());
+        DVASSERT_MSG(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
         return QVariant();
     }
 

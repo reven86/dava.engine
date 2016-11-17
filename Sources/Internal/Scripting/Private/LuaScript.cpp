@@ -121,12 +121,12 @@ int32 LuaScript::ExecStringSafe(const String& script)
     }
 }
 
-Any LuaScript::GetResult(int32 index, const RtType* preferredType /*= nullptr*/) const
+Any LuaScript::GetResult(int32 index, const Type* preferredType /*= nullptr*/) const
 {
     return LuaBridge::LuaToAny(state->lua, index, preferredType);
 }
 
-bool LuaScript::GetResultSafe(int32 index, Any& any, const RtType* preferredType /*= nullptr*/) const
+bool LuaScript::GetResultSafe(int32 index, Any& any, const Type* preferredType /*= nullptr*/) const
 {
     try
     {

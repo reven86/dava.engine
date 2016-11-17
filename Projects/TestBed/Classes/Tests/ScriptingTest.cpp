@@ -1,5 +1,5 @@
 #include "Tests/ScriptingTest.h"
-#include "Base/RtType.h"
+#include "Base/Type.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Scripting/LuaScript.h"
 #include "UI/Input/UIActionBindingComponent.h"
@@ -248,7 +248,7 @@ String ScriptingTest::AnyToString(const Any& any)
     else IFFORMATEX(Reflection, "Any <Reflection <%s>>", any.Get<Reflection>().IsValid() ? any.Get<Reflection>().GetValueType()->GetName() : "non valid")
     else IFFORMATEX(Any, "Any <%s>", AnyToString(any.Get<Any>()).c_str())
     else IFFORMATEX(AnyFn, "Any <AnyFn <%s>>", any.Get<AnyFn>().IsValid() ? "..." : "non valid")
-    else return Format("Any <%s>", any.GetRtType()->GetName());
+    else return Format("Any <%s>", any.GetType()->GetName());
 
 #undef IFFORMAT
 #undef IFFORMATEX

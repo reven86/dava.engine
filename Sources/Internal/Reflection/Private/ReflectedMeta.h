@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/RtType.h"
+#include "Base/Type.h"
 
 namespace DAVA
 {
@@ -17,7 +17,7 @@ struct Meta
     Ptr ptr;
 };
 
-class RtType;
+class Type;
 class ReflectedMeta final
 {
 public:
@@ -40,7 +40,7 @@ public:
     template <typename Meta>
     bool HasMeta() const
     {
-        return metas.count(RtType::Instance<Meta>()) > 0;
+        return metas.count(Type::Instance<Meta>()) > 0;
     }
 
     template <typename T>
@@ -48,7 +48,7 @@ public:
     {
         T* meta = nullptr;
 
-        auto it = metas.find(RtType::Instance<T>());
+        auto it = metas.find(Type::Instance<T>());
         if (it != metas.end())
         {
             meta = static_cast<T*>(it->second.get());
@@ -60,11 +60,11 @@ public:
     template <typename T>
     void Emplace(Meta<T>&& meta)
     {
-        metas.emplace(RtType::Instance<T>(), std::move(meta.ptr));
+        metas.emplace(Type::Instance<T>(), std::move(meta.ptr));
     }
 
 protected:
-    UnorderedMap<const RtType*, Meta<void>::Ptr> metas;
+    UnorderedMap<const Type*, Meta<void>::Ptr> metas;
 };
 
 template <typename T, typename U>

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef __Dava_RtType__
-#include "Base/RtType.h"
+#include "Base/Type.h"
 #endif
 
 namespace DAVA
@@ -27,78 +27,78 @@ struct TypeSize<const void>
 };
 
 template <typename T>
-const RtType* GetTypeIfTrue(std::false_type)
+const Type* GetTypeIfTrue(std::false_type)
 {
     return nullptr;
 }
 
 template <typename T>
-const RtType* GetTypeIfTrue(std::true_type)
+const Type* GetTypeIfTrue(std::true_type)
 {
-    return RtType::Instance<T>();
+    return Type::Instance<T>();
 }
 
 template <typename T>
 struct TypeHolder
 {
-    static const RtType* rtType;
+    static const Type* type;
 };
 
 template <typename T>
-const RtType* TypeHolder<T>::rtType = nullptr;
+const Type* TypeHolder<T>::type = nullptr;
 } // namespace TypeDetails
 
-inline size_t RtType::GetSize() const
+inline size_t Type::GetSize() const
 {
     return size;
 }
 
-inline const char* RtType::GetName() const
+inline const char* Type::GetName() const
 {
     return stdTypeInfo->name();
 }
 
-inline std::type_index RtType::GetTypeIndex() const
+inline std::type_index Type::GetTypeIndex() const
 {
     return std::type_index(*stdTypeInfo);
 }
 
-inline const RtTypeInheritance* RtType::GetInheritance() const
+inline const TypeInheritance* Type::GetInheritance() const
 {
-    return static_cast<const RtTypeInheritance*>(inheritance.get());
+    return static_cast<const TypeInheritance*>(inheritance.get());
 }
 
-inline bool RtType::IsConst() const
+inline bool Type::IsConst() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isConst));
 }
 
-inline bool RtType::IsPointer() const
+inline bool Type::IsPointer() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isPointer));
 }
 
-inline bool RtType::IsReference() const
+inline bool Type::IsReference() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isReference));
 }
 
-inline bool RtType::IsFundamental() const
+inline bool Type::IsFundamental() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isFundamental));
 }
 
-inline bool RtType::IsTrivial() const
+inline bool Type::IsTrivial() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
 }
 
-inline bool RtType::IsEnum() const
+inline bool Type::IsEnum() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isEnum));
 }
 
-inline const RtType* RtType::Decay() const
+inline const Type* Type::Decay() const
 {
     if (nullptr != decayType)
         return decayType;
@@ -106,22 +106,22 @@ inline const RtType* RtType::Decay() const
     return this;
 }
 
-inline const RtType* RtType::Deref() const
+inline const Type* Type::Deref() const
 {
     return derefType;
 }
 
-inline const RtType* RtType::Pointer() const
+inline const Type* Type::Pointer() const
 {
     return pointerType;
 }
 
 template <typename T>
-void RtType::Init(RtType** ptype)
+void Type::Init(Type** ptype)
 {
-    static RtType rtType;
+    static Type type;
 
-    *ptype = &rtType;
+    *ptype = &type;
 
     using DerefU = DerefT<T>;
     using DecayU = DecayT<T>;
@@ -131,37 +131,37 @@ void RtType::Init(RtType** ptype)
     static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
 
-    rtType.size = RttiTypeDetail::TypeSize<T>::size;
-    rtType.name = typeid(T).name();
-    rtType.stdTypeInfo = &typeid(T);
+    type.size = RttiTypeDetail::TypeSize<T>::size;
+    type.name = typeid(T).name();
+    type.stdTypeInfo = &typeid(T);
 
-    rtType.flags.set(isConst, std::is_const<T>::value);
-    rtType.flags.set(isPointer, std::is_pointer<T>::value);
-    rtType.flags.set(isReference, std::is_reference<T>::value);
-    rtType.flags.set(isFundamental, std::is_fundamental<T>::value);
-    rtType.flags.set(isTrivial, std::is_trivial<T>::value);
-    rtType.flags.set(isEnum, std::is_enum<T>::value);
+    type.flags.set(isConst, std::is_const<T>::value);
+    type.flags.set(isPointer, std::is_pointer<T>::value);
+    type.flags.set(isReference, std::is_reference<T>::value);
+    type.flags.set(isFundamental, std::is_fundamental<T>::value);
+    type.flags.set(isTrivial, std::is_trivial<T>::value);
+    type.flags.set(isEnum, std::is_enum<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
-    rtType.derefType = RttiTypeDetail::GetTypeIfTrue<DerefU>(condDeref);
+    type.derefType = RttiTypeDetail::GetTypeIfTrue<DerefU>(condDeref);
 
     auto condDecay = std::integral_constant<bool, needDecay>();
-    rtType.decayType = RttiTypeDetail::GetTypeIfTrue<DecayU>(condDecay);
+    type.decayType = RttiTypeDetail::GetTypeIfTrue<DecayU>(condDecay);
 
     auto condPointer = std::integral_constant<bool, needPointer>();
-    rtType.pointerType = RttiTypeDetail::GetTypeIfTrue<PointerU>(condPointer);
+    type.pointerType = RttiTypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
-    RttiTypeDetail::TypeHolder<T>::rtType = &rtType;
+    RttiTypeDetail::TypeHolder<T>::type = &type;
 }
 
 template <typename T>
-const RtType* RtType::Instance()
+const Type* Type::Instance()
 {
-    static RtType* type = nullptr;
+    static Type* type = nullptr;
 
     if (nullptr == type)
     {
-        RtType::Init<T>(&type);
+        Type::Init<T>(&type);
     }
 
     return type;

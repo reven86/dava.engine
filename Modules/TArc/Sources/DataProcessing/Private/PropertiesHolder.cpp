@@ -310,7 +310,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 }
 
 #define SAVE_IF_ACCEPTABLE(value, type, T, key) \
-    if (type == RtType::Instance<T>()) \
+    if (type == Type::Instance<T>()) \
     { \
         DVASSERT(nullptr != impl); \
         try \
@@ -324,7 +324,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     }
 
 #define LOAD_IF_ACCEPTABLE(value, type, T, key) \
-    if (type == RtType::Instance<T>()) \
+    if (type == Type::Instance<T>()) \
     { \
         DVASSERT(nullptr != impl); \
         Any retVal; \
@@ -350,7 +350,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 
 void PropertiesItem::Set(const String& key, const Any& value)
 {
-    const RtType* type = value.GetRtType();
+    const Type* type = value.GetType();
     QString keyStr = QString::fromStdString(key);
     impl->wasChanged = true;
     DVASSERT(!impl->jsonObject[keyStr].isObject());
@@ -362,7 +362,7 @@ void PropertiesHolder::SaveToFile()
     static_cast<Impl*>(impl.get())->SaveToFile();
 }
 
-Any PropertiesItem::Get(const String& key, const Any& defaultValue, const RtType* type) const
+Any PropertiesItem::Get(const String& key, const Any& defaultValue, const Type* type) const
 {
     DVASSERT(type != nullptr);
     DVASSERT(!defaultValue.IsEmpty());

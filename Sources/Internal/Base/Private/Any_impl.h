@@ -18,18 +18,18 @@ inline Any::Any(T&& value, NotAny<T>)
 
 inline bool Any::IsEmpty() const
 {
-    return (nullptr == rtType);
+    return (nullptr == type);
 }
 
 inline void Any::Clear()
 {
     anyStorage.Clear();
-    rtType = nullptr;
+    type = nullptr;
 }
 
-inline const RtType* Any::GetRtType() const
+inline const Type* Any::GetType() const
 {
-    return rtType;
+    return type;
 }
 
 inline Any& Any::operator=(Any&& any)
@@ -52,15 +52,15 @@ bool Any::CanGet() const
 {
     using U = AnyStorage::StorableType<T>;
 
-    if (nullptr == rtType)
+    if (nullptr == type)
     {
         return false;
     }
-    else if (rtType == RtType::Instance<U>())
+    else if (type == Type::Instance<U>())
     {
         return true;
     }
-    else if (rtType->IsPointer() && std::is_pointer<U>::value)
+    else if (type->IsPointer() && std::is_pointer<U>::value)
     {
         static const bool isVoidPtr = std::is_void<std::remove_pointer_t<U>>::value;
 
@@ -70,11 +70,11 @@ bool Any::CanGet() const
             return true;
         }
 
-        const RtType* utype = RtType::Instance<U>();
+        const Type* utype = Type::Instance<U>();
 
         // for any utype, that is "const T*"
         // utype->Decay() will return "T*"
-        if (rtType == utype->Decay())
+        if (type == utype->Decay())
         {
             // if type is "T*" and ttype is "const T*"
             // we should allow cast from "T*" into "const T*"
@@ -107,7 +107,7 @@ inline const void* Any::GetData() const
 
 inline void Any::Swap(Any& any)
 {
-    std::swap(rtType, any.rtType);
+    std::swap(type, any.type);
     std::swap(anyStorage, any.anyStorage);
     std::swap(compareFn, any.compareFn);
 }
@@ -115,17 +115,17 @@ inline void Any::Swap(Any& any)
 inline void Any::Set(const Any& any)
 {
     anyStorage = any.anyStorage;
-    rtType = any.rtType;
+    type = any.type;
     compareFn = any.compareFn;
 }
 
 inline void Any::Set(Any&& any)
 {
-    rtType = any.rtType;
+    type = any.type;
     compareFn = any.compareFn;
     anyStorage = std::move(any.anyStorage);
 
-    any.rtType = nullptr;
+    any.type = nullptr;
 }
 
 template <typename T>
@@ -133,7 +133,7 @@ void Any::Set(T&& value, NotAny<T>)
 {
     using U = AnyStorage::StorableType<T>;
 
-    rtType = RtType::Instance<U>();
+    type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
     compareFn = &AnyCompare<T>::IsEqual;
 }

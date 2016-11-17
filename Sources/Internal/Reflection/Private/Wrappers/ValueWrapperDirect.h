@@ -9,7 +9,7 @@ namespace DAVA
 class ValueWrapperDirect : public ValueWrapper
 {
 public:
-    ValueWrapperDirect(const RtType* type_, bool isConst_ = false)
+    ValueWrapperDirect(const Type* type_, bool isConst_ = false)
         : type(type_)
         , isConst(isConst_ || type->IsConst())
     {
@@ -20,7 +20,7 @@ public:
         return isConst || object.IsConst();
     }
 
-    const RtType* GetType() const override
+    const Type* GetType() const override
     {
         return type;
     }
@@ -45,7 +45,7 @@ public:
         if (!IsReadonly(object) && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            const RtType* inType = object.GetReflectedType()->GetRtType();
+            const Type* inType = object.GetReflectedType()->GetType();
             ret = value.StoreValue(ptr, inType->GetSize());
         }
 
@@ -58,7 +58,7 @@ public:
     }
 
 protected:
-    const RtType* type;
+    const Type* type;
     bool isConst;
 };
 

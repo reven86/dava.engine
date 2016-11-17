@@ -8,7 +8,7 @@
 namespace DAVA
 {
 class FilePath;
-class RtType;
+class Type;
 
 namespace TArc
 {
@@ -51,7 +51,7 @@ private:
     friend class PropertiesHolder;
     //RootPropertiesHolder use this empty c-tor
     PropertiesItem();
-    Any Get(const String& key, const Any& defaultValue, const RtType* type) const;
+    Any Get(const String& key, const Any& defaultValue, const Type* type) const;
     PropertiesItem(const PropertiesItem& parent, const String& name);
 
     struct Impl;
@@ -61,7 +61,7 @@ private:
 template <typename T>
 T PropertiesItem::Get(const String& key, const T& defaultValue) const
 {
-    Any loadedValue = Get(key, defaultValue, RtType::Instance<T>());
+    Any loadedValue = Get(key, defaultValue, Type::Instance<T>());
     return loadedValue.Get<T>(defaultValue);
 }
 

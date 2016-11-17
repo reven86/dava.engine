@@ -74,7 +74,7 @@ DataEditor<T> DataWrapper::CreateEditor()
         }
     }
 
-    throw std::runtime_error(Format("Somebody tried to create editor for data that doesn't exist. T = %s", RtType::Instance<T>()->GetName()));
+    throw std::runtime_error(Format("Somebody tried to create editor for data that doesn't exist. T = %s", Type::Instance<T>()->GetName()));
 }
 } // namespace TArc
 } // namespace DAVA

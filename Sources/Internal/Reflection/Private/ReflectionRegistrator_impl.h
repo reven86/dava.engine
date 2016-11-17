@@ -217,7 +217,7 @@ void ReflectionRegistrator<C>::End()
         ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
         type->structure.reset(structure);
-        type->structureWrapper.reset(new StructureWrapperClass(RtType::Instance<C>()));
+        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
 
         structure = nullptr;
     }

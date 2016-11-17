@@ -9,10 +9,10 @@
 
 namespace DAVA
 {
-class RtTypeInheritance;
-class RtType final
+class TypeInheritance;
+class Type final
 {
-    friend class RtTypeInheritance;
+    friend class TypeInheritance;
 
 public:
     template <typename T>
@@ -24,14 +24,14 @@ public:
     template <typename T>
     using PointerT = std::add_pointer_t<std::decay_t<T>>;
 
-    RtType(RtType&&) = delete;
-    RtType(const RtType&) = delete;
-    RtType& operator=(const RtType&) = delete;
+    Type(Type&&) = delete;
+    Type(const Type&) = delete;
+    Type& operator=(const Type&) = delete;
 
     size_t GetSize() const;
     const char* GetName() const;
     std::type_index GetTypeIndex() const;
-    const RtTypeInheritance* GetInheritance() const;
+    const TypeInheritance* GetInheritance() const;
 
     bool IsConst() const;
     bool IsPointer() const;
@@ -40,12 +40,12 @@ public:
     bool IsTrivial() const;
     bool IsEnum() const;
 
-    const RtType* Decay() const;
-    const RtType* Deref() const;
-    const RtType* Pointer() const;
+    const Type* Decay() const;
+    const Type* Deref() const;
+    const Type* Pointer() const;
 
     template <typename T>
-    static const RtType* Instance();
+    static const Type* Instance();
 
 private:
     enum TypeFlag
@@ -62,20 +62,20 @@ private:
     const char* name;
     const std::type_info* stdTypeInfo = &typeid(void);
 
-    const RtType* derefType = nullptr;
-    const RtType* decayType = nullptr;
-    const RtType* pointerType = nullptr;
+    const Type* derefType = nullptr;
+    const Type* decayType = nullptr;
+    const Type* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    mutable std::unique_ptr<const RtTypeInheritance, void (*)(const RtTypeInheritance*)> inheritance;
+    mutable std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
 
     template <typename T>
-    static void Init(RtType** ptype);
+    static void Init(Type** ptype);
 
-    RtType();
+    Type();
 };
 
 } // namespace DAVA
 
-#define __Dava_RtType__
-#include "Base/Private/RtType_impl.h"
+#define __Dava_Type__
+#include "Base/Private/Type_impl.h"

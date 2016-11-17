@@ -54,8 +54,8 @@ inline bool ReflectedObject::IsConst() const
 template <typename T>
 inline T* ReflectedObject::GetPtr() const
 {
-    const RtType* reqType = RtType::Instance<T>();
-    const RtType* curType = reflectedType->GetRtType();
+    const Type* reqType = Type::Instance<T>();
+    const Type* curType = reflectedType->GetType();
 
     bool canGet = (reqType == curType) || (reqType->Decay() == curType);
 
@@ -65,7 +65,7 @@ inline T* ReflectedObject::GetPtr() const
     }
 
     void* tmp = nullptr;
-    bool canCast = RtTypeInheritance::DownCast(curType, reqType, ptr, &tmp);
+    bool canCast = TypeInheritance::DownCast(curType, reqType, ptr, &tmp);
 
     DVASSERT(canCast);
 
@@ -76,28 +76,5 @@ inline void* ReflectedObject::GetVoidPtr() const
 {
     return ptr;
 }
-
-/*
-inline ReflectedObject ReflectedObject::Deref() const
-{
-    ReflectedObject ret;
-
-    if (nullptr == ptr)
-        return ret;
-
-    const RttiType* derefType = reflectedType->GetRtType();
-
-    if (nullptr == derefType)
-        return ret;
-
-    if (derefType->IsPointer())
-    {
-        void* inPtr = *(static_cast<void**>(ptr));
-        //ret = ReflectedObject(inPtr, derefType);
-    }
-
-    return ret;
-}
-*/
 
 } // namespace DAVA

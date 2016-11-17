@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-class RtType;
+class Type;
 class ReflectedType;
 
 class ReflectionBase
@@ -25,8 +25,8 @@ struct ReflectionCaps
     bool canCreateFieldValue = false;
     bool hasDynamicStruct = false;
     bool hasFlatStruct = false;
-    const RtType* flatKeyType = nullptr;
-    const RtType* flatValueType = nullptr;
+    const Type* flatKeyType = nullptr;
+    const Type* flatValueType = nullptr;
 };
 
 } // namespace DAVA

@@ -1,9 +1,9 @@
 #include "Base/TemplateHelpers.h"
-#include "Base/RtTypeInheritance.h"
+#include "Base/TypeInheritance.h"
 
 namespace DAVA
 {
-bool RtTypeInheritance::TryCast(const RtType* from, const RtType* to, CastType castType, void* inPtr, void** outPtr)
+bool TypeInheritance::TryCast(const Type* from, const Type* to, CastType castType, void* inPtr, void** outPtr)
 {
     if (to == from)
     {
@@ -20,7 +20,7 @@ bool RtTypeInheritance::TryCast(const RtType* from, const RtType* to, CastType c
         return true;
     }
 
-    const RtTypeInheritance* inheritance = from->GetInheritance();
+    const TypeInheritance* inheritance = from->GetInheritance();
     if (nullptr != inheritance)
     {
         Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
@@ -51,13 +51,13 @@ bool RtTypeInheritance::TryCast(const RtType* from, const RtType* to, CastType c
     return false;
 }
 
-bool RtTypeInheritance::CanCast(const RtType* from, const RtType* to)
+bool TypeInheritance::CanCast(const Type* from, const Type* to)
 {
     void* out = nullptr;
     return (TryCast(from, to, CastType::DownCast, nullptr, &out) || TryCast(from, to, CastType::UpCast, nullptr, &out));
 }
 
-bool RtTypeInheritance::Cast(const RtType* from, const RtType* to, void* inPtr, void** outPtr)
+bool TypeInheritance::Cast(const Type* from, const Type* to, void* inPtr, void** outPtr)
 {
     if (TryCast(from, to, CastType::DownCast, inPtr, outPtr))
     {

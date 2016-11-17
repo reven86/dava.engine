@@ -19,9 +19,9 @@ public:
         return isConst || object.IsConst();
     }
 
-    const RtType* GetType() const override
+    const Type* GetType() const override
     {
-        return RtType::Instance<T>();
+        return Type::Instance<T>();
     }
 
     Any GetValue(const ReflectedObject& object) const override

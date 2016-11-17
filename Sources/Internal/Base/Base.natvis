@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-  <Type Name="DAVA::RtType">
+  <Type Name="DAVA::Type">
     <DisplayString>{{{name, s}}}</DisplayString>
   </Type>
   <Type Name="DAVA::AutoStorage&lt;*&gt;">
@@ -11,7 +11,7 @@
     </Expand>
   </Type>
   <Type Name="DAVA::Any">
-    <DisplayString Condition="rtType == nullptr">Null</DisplayString>
-    <DisplayString>{{storage={anyStorage}, rtType={rtType->name, na}}}</DisplayString>
+    <DisplayString Condition="type == nullptr">Null</DisplayString>
+    <DisplayString>{{storage={anyStorage}, type={type->name, na}}}</DisplayString>
   </Type>
 </AutoVisualizer>

@@ -2,19 +2,19 @@
 
 namespace DAVA
 {
-bool Any::LoadValue(void* data, const RtType* type_)
+bool Any::LoadValue(void* data, const Type* type_)
 {
-    rtType = type_;
+    type = type_;
 
-    if (rtType->IsPointer())
+    if (type->IsPointer())
     {
         void** src = reinterpret_cast<void**>(data);
         anyStorage.SetAuto(*src);
         return true;
     }
-    else if (rtType->IsTrivial())
+    else if (type->IsTrivial())
     {
-        anyStorage.SetData(data, rtType->GetSize());
+        anyStorage.SetData(data, type->GetSize());
         return true;
     }
 
@@ -23,15 +23,15 @@ bool Any::LoadValue(void* data, const RtType* type_)
 
 bool Any::StoreValue(void* data, size_t size) const
 {
-    if (nullptr != rtType && size >= rtType->GetSize())
+    if (nullptr != type && size >= type->GetSize())
     {
-        if (rtType->IsPointer())
+        if (type->IsPointer())
         {
             void** dst = reinterpret_cast<void**>(data);
             *dst = anyStorage.GetAuto<void*>();
             return true;
         }
-        else if (rtType->IsTrivial())
+        else if (type->IsTrivial())
         {
             std::memcpy(data, anyStorage.GetData(), size);
             return true;
@@ -43,18 +43,18 @@ bool Any::StoreValue(void* data, size_t size) const
 
 bool Any::operator==(const Any& any) const
 {
-    if (rtType == nullptr && any.rtType == nullptr)
+    if (type == nullptr && any.type == nullptr)
     {
         return true;
     }
-    else if (rtType == nullptr || any.rtType == nullptr)
+    else if (type == nullptr || any.type == nullptr)
     {
         return false;
     }
 
-    if (any.rtType->IsPointer())
+    if (any.type->IsPointer())
     {
-        if (rtType->IsPointer())
+        if (type->IsPointer())
         {
             return anyStorage.GetSimple<void*>() == any.anyStorage.GetSimple<void*>();
         }
@@ -64,14 +64,14 @@ bool Any::operator==(const Any& any) const
         }
     }
 
-    if (rtType != any.rtType)
+    if (type != any.type)
     {
         return false;
     }
 
-    if (rtType->IsTrivial())
+    if (type->IsTrivial())
     {
-        return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), rtType->GetSize()));
+        return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), type->GetSize()));
     }
 
     return (*compareFn)(*this, any);

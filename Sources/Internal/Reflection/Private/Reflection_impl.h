@@ -43,7 +43,7 @@ inline bool Reflection::IsReadonly() const
     return valueWrapper->IsReadonly(object);
 }
 
-inline const RtType* Reflection::GetValueType() const
+inline const Type* Reflection::GetValueType() const
 {
     return valueWrapper->GetType();
 }
@@ -96,7 +96,7 @@ static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullp
 {
     if (!any.IsEmpty())
     {
-        const ReflectedType* objectType = ReflectedTypeDB::GetByRtType(any.GetRtType());
+        const ReflectedType* objectType = ReflectedTypeDB::GetByRtType(any.GetType());
 
         // TODO:
         // ...

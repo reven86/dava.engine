@@ -11,9 +11,9 @@ namespace ReflectedTypeDetail
 static std::array<void*, 4> zeroArray = { 0 };
 };
 
-inline const RtType* ReflectedType::GetRtType() const
+inline const Type* ReflectedType::GetType() const
 {
-    return rtType;
+    return type;
 }
 
 inline const String& ReflectedType::GetPermanentName() const
@@ -34,7 +34,7 @@ inline const StructureWrapper* ReflectedType::GetStrucutreWrapper() const
 template <typename... Args>
 bool ReflectedType::HasCtor(ReflectionCtorPolicy policy) const
 {
-    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && rtType->IsFundamental())
+    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && type->IsFundamental())
     {
         return true;
     }
@@ -57,10 +57,10 @@ bool ReflectedType::HasCtor(ReflectionCtorPolicy policy) const
 template <typename... Args>
 Any ReflectedType::Create(ReflectionCtorPolicy policy, Args... args) const
 {
-    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && rtType->IsFundamental())
+    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && type->IsFundamental())
     {
         Any ret;
-        ret.LoadValue(ReflectedTypeDetail::zeroArray.data(), rtType);
+        ret.LoadValue(ReflectedTypeDetail::zeroArray.data(), type);
         return ret;
     }
     else

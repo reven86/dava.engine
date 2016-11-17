@@ -422,9 +422,9 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype0 = DAVA::ReflectedTypeDB::Get<T>();
         TEST_VERIFY(nullptr != rtype0);
-        TEST_VERIFY(rtype0->GetRtType() == DAVA::RtType::Instance<T>());
+        TEST_VERIFY(rtype0->GetType() == DAVA::Type::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedTypeDB::GetByRtType(DAVA::RtType::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedTypeDB::GetByRtType(DAVA::Type::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
         const DAVA::ReflectedType* rtype2 = DAVA::ReflectedTypeDB::GetByRtTypeName(typeid(T).name());
@@ -528,7 +528,7 @@ DAVA_TESTCLASS (ReflectionTest)
                 catch (const DAVA::Exception&)
                 {
                     TEST_VERIFY(!a.IsEmpty());
-                    TEST_VERIFY(a.GetRtType() == DAVA::RtType::Instance<SimpleStruct>());
+                    TEST_VERIFY(a.GetType() == DAVA::Type::Instance<SimpleStruct>());
                 }
 
                 a.Set(new SimpleStruct());
@@ -566,16 +566,16 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         TEST_VERIFY
         (
-        ref.GetValueType() == DAVA::RtType::Instance<T>() ||
-        ref.GetValueType()->Decay() == DAVA::RtType::Instance<T>()
+        ref.GetValueType() == DAVA::Type::Instance<T>() ||
+        ref.GetValueType()->Decay() == DAVA::Type::Instance<T>()
         );
 
         if (ref.GetValueObject().IsValid())
         {
             TEST_VERIFY
             (
-            ref.GetValueObject().GetReflectedType()->GetRtType() == DAVA::RtType::Instance<T>() ||
-            ref.GetValueObject().GetReflectedType()->GetRtType()->Decay() == DAVA::RtType::Instance<T>()
+            ref.GetValueObject().GetReflectedType()->GetType() == DAVA::Type::Instance<T>() ||
+            ref.GetValueObject().GetReflectedType()->GetType()->Decay() == DAVA::Type::Instance<T>()
             );
         }
 

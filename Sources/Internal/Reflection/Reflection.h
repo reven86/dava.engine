@@ -3,8 +3,8 @@
 #include <sstream>
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
-#include "Base/RtType.h"
-#include "Base/RtTypeInheritance.h"
+#include "Base/Type.h"
+#include "Base/TypeInheritance.h"
 
 #include "Debug/DVAssert.h"
 
@@ -50,7 +50,7 @@ public:
     bool IsValid() const;
     bool IsReadonly() const;
 
-    const RtType* GetValueType() const;
+    const Type* GetValueType() const;
     ReflectedObject GetValueObject() const;
 
     Any GetValue() const;
@@ -109,7 +109,7 @@ public:
     ValueWrapper(const ValueWrapper&) = delete;
     virtual ~ValueWrapper() = default;
 
-    virtual const RtType* GetType() const = 0;
+    virtual const Type* GetType() const = 0;
 
     virtual bool IsReadonly(const ReflectedObject& object) const = 0;
     virtual Any GetValue(const ReflectedObject& object) const = 0;

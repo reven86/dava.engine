@@ -292,14 +292,14 @@ inline AnyFn AnyFn::BindThis(const void* this_) const
 }
 
 inline AnyFn::Params::Params()
-    : retType(RtType::Instance<void>())
+    : retType(Type::Instance<void>())
 {
 }
 
 template <typename Ret, typename... Args>
 AnyFn::Params& AnyFn::Params::Set()
 {
-    retType = RtType::Instance<Ret>();
+    retType = Type::Instance<Ret>();
     return SetArgs<Args...>();
 }
 
@@ -308,12 +308,12 @@ AnyFn::Params& AnyFn::Params::SetArgs()
 {
     argsType.reserve(sizeof...(Args));
 
-    auto args_push_back = [this](const RtType* t) {
+    auto args_push_back = [this](const Type* t) {
         argsType.push_back(t);
         return true;
     };
 
-    bool unpack[] = { true, args_push_back(RtType::Instance<Args>())... };
+    bool unpack[] = { true, args_push_back(Type::Instance<Args>())... };
 
     return *this;
 }

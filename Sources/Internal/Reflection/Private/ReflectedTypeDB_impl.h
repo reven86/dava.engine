@@ -93,16 +93,16 @@ ReflectedType* ReflectedTypeDB::CreateStatic()
 template <typename T>
 ReflectedType* ReflectedTypeDB::Edit()
 {
-    using DecayT = RtType::DecayT<T>;
+    using DecayT = Type::DecayT<T>;
     ReflectedType* ret = CreateStatic<DecayT>();
 
-    if (nullptr == ret->rtType)
+    if (nullptr == ret->type)
     {
-        ret->rtType = RtType::Instance<DecayT>();
+        ret->type = Type::Instance<DecayT>();
         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
 
-        rtTypeToReflectedTypeMap[ret->rtType] = ret;
-        rtTypeNameToReflectedTypeMap[String(ret->rtType->GetName())] = ret;
+        rtTypeToReflectedTypeMap[ret->type] = ret;
+        rtTypeNameToReflectedTypeMap[String(ret->type->GetName())] = ret;
 
         ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
@@ -136,7 +136,7 @@ const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
 template <typename T, typename... Bases>
 void ReflectedTypeDB::RegisterBases()
 {
-    RtTypeInheritance::RegisterBases<T, Bases...>();
+    TypeInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedTypeDB::Edit<Bases>() != nullptr... };
 }
 

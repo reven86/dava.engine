@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class RtType;
+class Type;
 class ReflectedType;
 class ReflectedTypeDB
 {
@@ -12,7 +12,7 @@ class ReflectedTypeDB
     friend class ReflectionRegistrator;
 
 public:
-    static ReflectedType* Create(const RtType* rtType, const String& permanentName);
+    static ReflectedType* Create(const Type* type, const String& permanentName);
 
     template <typename T>
     static const ReflectedType* Get();
@@ -20,7 +20,7 @@ public:
     template <typename T>
     static const ReflectedType* GetByPointer(const T* ptr);
 
-    static const ReflectedType* GetByRtType(const RtType* rtType);
+    static const ReflectedType* GetByRtType(const Type* type);
     static const ReflectedType* GetByRtTypeName(const String& rttiName);
     static const ReflectedType* GetByPermanentName(const String& permanentName);
 
@@ -37,7 +37,7 @@ protected:
     static ReflectedType* Edit();
 
     static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
-    static UnorderedMap<const RtType*, ReflectedType*> rtTypeToReflectedTypeMap;
+    static UnorderedMap<const Type*, ReflectedType*> rtTypeToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> rtTypeNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };

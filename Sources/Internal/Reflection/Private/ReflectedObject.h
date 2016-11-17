@@ -14,11 +14,6 @@ public:
     template <typename T>
     ReflectedObject(const T* ptr);
 
-    /*
-    ReflectedObject(void* ptr, const ReflectedType* reflectedType);
-    ReflectedObject(const void* ptr, const ReflectedType* reflectedType);
-    */
-
     bool IsValid() const;
     bool IsConst() const;
 
@@ -28,8 +23,6 @@ public:
     T* GetPtr() const;
 
     void* GetVoidPtr() const;
-
-    //ReflectedObject Deref() const;
 
 protected:
     void* ptr = nullptr;
