@@ -17,7 +17,7 @@ void ImGuiTest::LoadResources()
     GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
     GetBackground()->SetColor(backColor);
 
-    app.GetEngine().GetContext()->settings->Load("~res:/EngineSettings.yaml");
+    BaseScreen::LoadResources();
 }
 
 void ImGuiTest::Update(DAVA::float32 timeElapsed)
