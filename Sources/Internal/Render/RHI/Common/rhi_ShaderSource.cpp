@@ -610,6 +610,12 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                         }
                     }
 
+                    if (prop.arraySize > 1 && !prop.isBigArray)
+                    {
+                        Logger::Error("property \"%s\" is an array but not marked as \"bigarray\"", prop.uid.c_str());
+                        DVASSERT(!"kaboom!");
+                    }
+
                     switch (decl->type.baseType)
                     {
                     case sl::HLSLBaseType_Float:
