@@ -223,8 +223,6 @@ void WindowNativeBridge::TouchesEnded(NSSet* touches)
 
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
-    DVASSERT(renderView != nullptr);
-
     [renderView setSurfaceScale:scale];
 
     CGSize size = [renderView frame].size;

@@ -127,7 +127,6 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
     const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * scale;
     const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * scale;
-
     const bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
     const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
@@ -279,10 +278,8 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
 {
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
-
     float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
     float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
-
     bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
@@ -419,7 +416,6 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
 
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
-
     eModifierKeys modifierKeys = GetModifierKeys();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, true));
 }

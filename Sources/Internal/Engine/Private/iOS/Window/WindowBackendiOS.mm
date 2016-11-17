@@ -9,7 +9,6 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
-#include "Engine/Private/iOS/Window/RenderViewiOS.mm"
 
 #include "Platform/SystemTimer.h"
 

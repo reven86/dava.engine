@@ -205,7 +205,7 @@ private:
     float32 height = 0.0f; //!< Window client area height.
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
-    float32 surfaceScale = 1.0f; // !< Window rendering surface scale
+    float32 surfaceScale = 1.0f; //!< Window rendering surface scale
 };
 
 inline bool Window::IsPrimary() const
@@ -236,6 +236,11 @@ inline Size2f Window::GetSize() const
 inline Size2f Window::GetSurfaceSize() const
 {
     return { surfaceWidth, surfaceHeight };
+}
+
+inline float32 Window::GetSurfaceScale() const
+{
+    return surfaceScale;
 }
 
 inline eFullscreen Window::GetFullscreen() const

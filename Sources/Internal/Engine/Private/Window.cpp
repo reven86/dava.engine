@@ -8,7 +8,6 @@
 #include "Engine/Private/WindowBackend.h"
 
 #include "Logger/Logger.h"
-#include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
@@ -532,11 +531,6 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.keyEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
-}
-
-float32 Window::GetSurfaceScale() const
-{
-    return surfaceScale;
 }
 
 void Window::SetSurfaceScale(float32 scale)

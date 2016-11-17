@@ -65,7 +65,6 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
-    bool CanChangeSurfaceScale() const;
     void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
