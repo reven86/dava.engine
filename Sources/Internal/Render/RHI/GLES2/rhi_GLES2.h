@@ -39,9 +39,16 @@ bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryObjectsPool();
 }
-namespace PerfQuerySetGLES2
+namespace PerfQueryGLES2
 {
 void SetupDispatch(Dispatch* dispatch);
+
+void ObtainPerfQueryResults();
+
+void IssueQuery(Handle handle);
+void SkipQuery(Handle handle);
+
+void ReleaseQueryObjectsPool();
 }
 
 namespace TextureGLES2
@@ -161,7 +168,9 @@ struct GLCommand
         GET_QUERYOBJECT_UIV,
         DELETE_QUERIES,
 
-        GET_QUERY_RESULT_NO_WAIT
+        GET_QUERY_RESULT_NO_WAIT,
+
+        SYNC_CPU_GPU
     };
 
     Func func;

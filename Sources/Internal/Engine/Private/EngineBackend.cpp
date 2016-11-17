@@ -15,7 +15,7 @@
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
 #include "Core/PerformanceSettings.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
 #include "Debug/Private/ImGui.h"
@@ -46,6 +46,8 @@
 #include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Debug/ProfilerCPU.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -261,7 +263,7 @@ void EngineBackend::OnEngineCleanup()
 
 void EngineBackend::DoEvents()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::DoEvents");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DO_EVENTS);
     dispatcher->ProcessEvents();
     for (Window* w : aliveWindows)
     {
@@ -283,7 +285,8 @@ void EngineBackend::OnFrameConsole()
 
 int32 EngineBackend::OnFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnFrame");
+    DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(ProfilerCPUMarkerName::ENGINE_ON_FRAME, globalFrameIndex);
+
     context->systemTimer->Start();
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
@@ -313,7 +316,7 @@ int32 EngineBackend::OnFrame()
 
 void EngineBackend::OnBeginFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnBeginFrame");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_BEGIN_FRAME);
     Renderer::BeginFrame();
 
     engine->beginFrame.Emit();
@@ -321,7 +324,7 @@ void EngineBackend::OnBeginFrame()
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnUpdate");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE);
     engine->update.Emit(frameDelta);
 
     context->localNotificationController->Update();
@@ -335,7 +338,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnDraw");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW);
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
@@ -350,7 +353,7 @@ void EngineBackend::OnDraw()
 
 void EngineBackend::OnEndFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnEndFrame");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_END_FRAME);
     context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();

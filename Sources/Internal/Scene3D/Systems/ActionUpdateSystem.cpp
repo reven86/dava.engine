@@ -3,7 +3,8 @@
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -46,7 +47,7 @@ void ActionUpdateSystem::RemoveEntity(Entity* entity)
 
 void ActionUpdateSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("ActionUpdateSystem::Process");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_ACTION_UPDATE_SYSTEM);
 
     DelayedDeleteActions();
 
