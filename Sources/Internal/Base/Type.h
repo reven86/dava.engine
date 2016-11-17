@@ -38,6 +38,8 @@ public:
     bool IsReference() const;
     bool IsFundamental() const;
     bool IsTrivial() const;
+    bool IsIntegral() const;
+    bool IsFloatingPoint() const;
     bool IsEnum() const;
 
     const Type* Decay() const;
@@ -55,6 +57,8 @@ private:
         isReference,
         isFundamental,
         isTrivial,
+        isIntegral,
+        isFloatingPoint,
         isEnum
     };
 

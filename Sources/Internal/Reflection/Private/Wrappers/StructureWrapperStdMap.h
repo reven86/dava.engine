@@ -23,8 +23,8 @@ public:
         caps.canRemoveField = true;
         caps.hasFlatStruct = true;
         caps.hasDynamicStruct = true;
-        caps.flatKeyType = Type::Instance<K>();
-        caps.flatValueType = Type::Instance<V>();
+        caps.flatKeysType = Type::Instance<K>();
+        caps.flatValuesType = Type::Instance<V>();
     }
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override

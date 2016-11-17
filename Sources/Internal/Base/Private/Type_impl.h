@@ -93,6 +93,16 @@ inline bool Type::IsTrivial() const
     return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
 }
 
+inline bool Type::IsIntegral() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isIntegral));
+}
+
+inline bool Type::IsFloatingPoint() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isFloatingPoint));
+}
+
 inline bool Type::IsEnum() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isEnum));
@@ -140,6 +150,8 @@ void Type::Init(Type** ptype)
     type.flags.set(isReference, std::is_reference<T>::value);
     type.flags.set(isFundamental, std::is_fundamental<T>::value);
     type.flags.set(isTrivial, std::is_trivial<T>::value);
+    type.flags.set(isIntegral, std::is_integral<T>::value);
+    type.flags.set(isFloatingPoint, std::is_floating_point<T>::value);
     type.flags.set(isEnum, std::is_enum<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
