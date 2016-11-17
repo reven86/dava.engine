@@ -113,12 +113,11 @@ public:
     void Close();
     void SetTitle(const String& title);
 
-    /** Gets current fullscreen mode */
+    /** Get current window mode: fullscreen or windowed. */
     eFullscreen GetFullscreen() const;
 
     /** 
-        Sets fullscreen mode to window. 
-        Succeed fullscreen mode changing leads to changing of window size.
+        Switch window to fullscreen or windowed mode.
     */
     void SetFullscreen(eFullscreen newMode);
 
@@ -126,7 +125,15 @@ public:
     void* GetNativeHandle() const;
     WindowNativeService* GetNativeService() const;
 
+    /**
+        Run task on window's UI thread.
+    */
     void RunAsyncOnUIThread(const Function<void()>& task);
+
+    /**
+        Run task on window's UI thread and wait its completion.
+    */
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
         Supported on Win32, OsX, WinUWP.

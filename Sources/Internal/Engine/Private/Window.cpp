@@ -112,6 +112,11 @@ void Window::RunAsyncOnUIThread(const Function<void()>& task)
     windowBackend->RunAsyncOnUIThread(task);
 }
 
+void Window::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    windowBackend->RunAndWaitOnUIThread(task);
+}
+
 void Window::InitCustomRenderParams(rhi::InitParam& params)
 {
     windowBackend->InitCustomRenderParams(params);

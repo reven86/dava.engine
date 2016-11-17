@@ -43,6 +43,7 @@ public:
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
     HWND GetHWND() const;
