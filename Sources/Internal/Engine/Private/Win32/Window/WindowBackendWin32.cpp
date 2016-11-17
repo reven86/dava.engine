@@ -731,7 +731,7 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
     // Since Windows does not send event with separate WM_KEYUP for second shift if first one is still pressed
     if (isShift && type == MainDispatcherEvent::KEY_UP)
     {
-        KeyboardDevice& keyboard = engineBackend->GetEngineContext()->inputSystem->GetKeyboard();
+        const KeyboardDevice& keyboard = engineBackend->GetEngineContext()->inputSystem->GetKeyboard();
 
         const Key anotherShiftKey = isRightShift ? Key::LSHIFT : Key::RSHIFT;
         if (keyboard.IsKeyPressed(anotherShiftKey))
