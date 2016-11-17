@@ -5,7 +5,7 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/TextBlockGraphicRender.h"
-#include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -13,8 +13,8 @@ TextDrawSystem::TextDrawSystem(Scene* scene, SceneCameraSystem* _cameraSystem)
     : SceneSystem(scene)
     , cameraSystem(_cameraSystem)
 {
-    FilePath fntPath = FilePath("~res:/Fonts/korinna_df.fnt");
-    FilePath texPath = FilePath("~res:/Fonts/korinna_df.tex");
+    FilePath fntPath = FilePath("~res:/ResourceEditor/Fonts/korinna_df.fnt");
+    FilePath texPath = FilePath("~res:/ResourceEditor/Fonts/korinna_df.tex");
     font = GraphicFont::Create(fntPath, texPath);
     if (nullptr == font)
         return;
@@ -54,7 +54,7 @@ void TextDrawSystem::Draw()
     {
         for (const auto& textToDraw : textToDraw)
         {
-            WideString wStr = UTF8Utils::EncodeToWideString(textToDraw.text);
+            WideString wStr = StringToWString(textToDraw.text);
             vertices.resize(4 * wStr.length());
 
             float32 x = textToDraw.pos.x;
