@@ -333,7 +333,7 @@ void AutotestingSystem::Update(float32 timeElapsed)
             }
             JobManager::Instance()->WaitWorkerJobs();
 #if defined(__DAVAENGINE_COREV2__)
-            Engine::Instance()->Quit();
+            Engine::Instance()->Quit(0);
 #else
             Core::Instance()->Quit();
 #endif
@@ -431,7 +431,7 @@ void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
 #if defined(__DAVAENGINE_COREV2__)
-    Engine::Instance()->Quit();
+    Engine::Instance()->Quit(0);
 #else
     Core::Instance()->Quit();
 #endif

@@ -193,7 +193,7 @@ void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
     if (frameCount >= 100)
     {
         Logger::Debug("****** quit");
-        engine.Quit();
+        engine.Quit(0);
     }
 }
 

@@ -11,6 +11,8 @@
 
 namespace DAVA
 {
+class KeyedArchive;
+
 /**
     \ingroup engine
     Utility function to get engine context.
@@ -30,7 +32,6 @@ const EngineContext* GetEngineContext();
 */
 Window* GetPrimaryWindow();
 
-class KeyedArchive;
 /**
     \ingroup engine
     Core component of dava.engine which manages application's control flow.
@@ -189,8 +190,12 @@ public:
 
     /**
         Quit application with given exit code.
+
+        Application should use traditional exit code values: zero for success, positive values for failure.
+
+        \note Not all platforms allow to specify exit code, but leave this ability for symmetry.
     */
-    void Quit(int exitCode = 0);
+    void Quit(int exitCode);
 
     /**
         Set handler which is invoked when user is trying to close window or application.
