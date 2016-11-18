@@ -15,6 +15,7 @@
 #elif defined(__DAVAENGINE_APPLE__)
 #import <Foundation/NSAutoreleasePool.h>
 #include <mach/thread_policy.h>
+#include <mach/thread_act.h>
 #endif
 
 namespace DAVA

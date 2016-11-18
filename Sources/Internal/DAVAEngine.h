@@ -3,7 +3,6 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Base/Platform.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"

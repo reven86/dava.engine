@@ -121,6 +121,12 @@ static bool metal_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
+static void metal_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+}
+
+//------------------------------------------------------------------------------
+
 bool rhi_MetalIsSupported()
 {
     if (!_Metal_Device)
@@ -205,7 +211,7 @@ void metal_Initialize(const InitParam& param)
     VertexBufferMetal::SetupDispatch(&DispatchMetal);
     IndexBufferMetal::SetupDispatch(&DispatchMetal);
     QueryBufferMetal::SetupDispatch(&DispatchMetal);
-    PerfQuerySetMetal::SetupDispatch(&DispatchMetal);
+    PerfQueryMetal::SetupDispatch(&DispatchMetal);
     TextureMetal::SetupDispatch(&DispatchMetal);
     PipelineStateMetal::SetupDispatch(&DispatchMetal);
     ConstBufferMetal::SetupDispatch(&DispatchMetal);
@@ -223,6 +229,8 @@ void metal_Initialize(const InitParam& param)
 
     DispatchMetal.impl_InitContext = &Metal_InitContext;
     DispatchMetal.impl_ValidateSurface = &Metal_CheckSurface;
+
+    DispatchMetal.impl_SyncCPUGPU = &metal_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchMetal);
 

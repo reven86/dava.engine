@@ -59,7 +59,7 @@ macro ( init_project )
 
 endmacro()
 
-set(TARGETS "all" CACHE STRING "")
+set( TARGETS "all" CACHE STRING "" )
 
 if(TARGETS STREQUAL "all")
 
@@ -111,6 +111,7 @@ else()
 
 endif()
 
+processing_mix_data()
 
 
 
