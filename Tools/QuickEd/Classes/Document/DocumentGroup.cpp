@@ -691,8 +691,8 @@ bool DocumentGroup::HasUnsavedDocuments() const
 
 void DocumentGroup::CloseAllDocuments()
 {
-    for (Document* document : documents)
+    while (!documents.empty())
     {
-        CloseDocument(document);
+        CloseDocument(documents.first());
     }
 }
