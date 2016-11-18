@@ -10,8 +10,12 @@ const char* ENGINE_DO_EVENTS = "Engine::DoEvents";
 const char* ENGINE_BEGIN_FRAME = "Engine::BeginFrame";
 const char* ENGINE_END_FRAME = "Engine::EndFrame";
 const char* ENGINE_UPDATE = "Engine::Update";
+#if defined(__DAVAENGINE_COREV2__)
 const char* ENGINE_UPDATE_WINDOW = "Engine::UpdateWindow";
 const char* ENGINE_DRAW_WINDOW = "Engine::DrawWindow";
+#else
+const char* ENGINE_DRAW = "Engine::Draw";
+#endif
 const char* JOB_MANAGER = "JobManager";
 const char* SOUND_SYSTEM = "SoundSystem";
 const char* ANIMATION_MANAGER = "AnimationManager";
