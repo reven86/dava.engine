@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 

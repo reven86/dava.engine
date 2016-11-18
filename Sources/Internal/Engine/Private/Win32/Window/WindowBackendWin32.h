@@ -16,6 +16,7 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/EngineTypes.h"
 
 namespace rhi
 {
@@ -40,6 +41,9 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    eFullscreen GetFullscreen() const;
+    void SetFullscreen(eFullscreen newMode);
+
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
@@ -52,13 +56,25 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
+
 private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetFullscreen(eFullscreen newMode);
+
+    void SetFullscreenMode();
+    void SetWindowedMode();
+    void DoSetCursorCapture(eCursorCapture mode);
+    void DoSetCursorVisibility(bool visible);
+    void UpdateClipCursor();
+    void HandleWindowFocusChanging(bool focusState);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
@@ -70,8 +86,9 @@ private:
     LRESULT OnExitSizeMove();
     LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
     LRESULT OnDpiChanged(RECT* suggestedRect);
-    LRESULT OnSetKillFocus(bool hasFocus);
+    LRESULT OnActivate(WPARAM wparam);
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
+    LRESULT OnMouseMoveRelativeEvent(int x, int y);
     LRESULT OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y);
     LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
     LRESULT OnCaptureChanged();
@@ -81,6 +98,7 @@ private:
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
+    LRESULT OnSetCursor(LPARAM lparam);
     bool OnClose();
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
@@ -94,6 +112,11 @@ private:
     float32 GetDpi() const;
 
 private:
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    bool mouseVisible = true;
+    HCURSOR defaultCursor = nullptr;
+    POINT lastCursorPosition;
+
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
@@ -103,8 +126,11 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool hasFocus = false;
+
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
+    bool isFullscreen = false;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
@@ -114,11 +140,13 @@ private:
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;
     Vector<TOUCHINPUT> touchInput;
+    WINDOWPLACEMENT windowPlacement;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;
-    static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD windowedStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD fullscreenStyle = WS_POPUP;
     static const DWORD windowExStyle = 0;
 };
 
@@ -140,6 +168,11 @@ inline WindowNativeService* WindowBackend::GetNativeService() const
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {
     // No custom render params
+}
+
+inline eFullscreen WindowBackend::GetFullscreen() const
+{
+    return isFullscreen ? eFullscreen::On : eFullscreen::Off;
 }
 
 } // namespace Private
