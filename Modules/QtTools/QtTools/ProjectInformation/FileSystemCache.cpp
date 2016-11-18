@@ -190,7 +190,7 @@ void FileSystemCache::Impl::OnDirChanged(const QString& path)
 {
     DVASSERT(watcher != nullptr);
     QDir changedDir(path);
-    QMutableSetIterator<QFileInfo> iter(files); //TODO check this code
+    QMutableSetIterator<QFileInfo> iter(files);
     while (iter.hasNext())
     {
         QFileInfo fileInfo = iter.next();
@@ -217,7 +217,12 @@ void FileSystemCache::Impl::OnDirChanged(const QString& path)
         QSet<QFileInfo> filesInDirectory;
 
         std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(changedDir);
-        watcher->addPaths(subDirectories);
+        QSet<QString> directoriesToAdd = subDirectories.toSet().subtract(watcher->directories().toSet());
+
+        for (const QString& folder : directoriesToAdd)
+        {
+            watcher->addPath(folder);
+        }
 
         files += filesInDirectory;
     }
