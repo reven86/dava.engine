@@ -89,8 +89,12 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
                                 {
                                     for (eGPUFamily gpu : compressedGPUs)
                                     {
-                                        FilePath gpuPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
-                                        TEST_VERIFY(dumpedLinks.count(gpuPathname.GetAbsolutePathname()) == 1);
+                                        Vector<FilePath> pathes;
+                                        texDescriptor->CreateLoadPathnamesForGPU(gpu, pathes);
+                                        for (const FilePath& p : pathes)
+                                        {
+                                            TEST_VERIFY(dumpedLinks.count(p.GetAbsolutePathname()) == 1);
+                                        }
                                     }
                                 }
                             }
