@@ -322,8 +322,6 @@ void UIControlSystem::Update()
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
-    Logger::Debug("Update delta: %f", SystemTimer::RealFrameDelta());
-
     updateCounter = 0;
     ProcessScreenLogic();
 
@@ -336,8 +334,6 @@ void UIControlSystem::Update()
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
-        uint64 tick = SystemTimer::Instance()->GetAbsoluteUs();
-
         if (currentScreenTransition)
         {
             currentScreenTransition->SystemUpdate(timeElapsed);
@@ -345,12 +341,6 @@ void UIControlSystem::Update()
         else if (currentScreen)
         {
             currentScreen->SystemUpdate(timeElapsed);
-        }
-
-        uint64 delta = SystemTimer::Instance()->GetAbsoluteUs() - tick;
-        if (delta >= 1000000)
-        {
-            Logger::Debug("Update delta: %ul (%f)", delta, SystemTimer::RealFrameDelta());
         }
 
         popupContainer->SystemUpdate(timeElapsed);
@@ -371,8 +361,6 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
 
-    uint64 tick = SystemTimer::Instance()->GetAbsoluteUs();
-
     if (currentScreenTransition)
     {
         currentScreenTransition->SystemDraw(baseGeometricData);
@@ -383,12 +371,6 @@ void UIControlSystem::Draw()
     }
 
     popupContainer->SystemDraw(baseGeometricData);
-
-    uint64 delta = SystemTimer::Instance()->GetAbsoluteUs() - tick;
-    if (delta >= 1000000)
-    {
-        Logger::Debug("Update delta: %ull (%f)", delta, SystemTimer::RealFrameDelta());
-    }
 
     if (frameSkip > 0)
     {
