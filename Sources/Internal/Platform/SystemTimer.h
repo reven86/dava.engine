@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Base/Platform.h"
 
 namespace DAVA
 {

@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -13,6 +14,7 @@
 #include <cxxabi.h>
 #if defined(__DAVAENGINE_MACOS__)
 #include <mach/mach_vm.h>
+#include <mach/mach.h>
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <unwind.h>
