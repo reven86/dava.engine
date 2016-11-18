@@ -1101,7 +1101,10 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     std::string txt;
     std::vector<uint8>* bin = nullptr;
 
-    PreProcessSource(targetApi, srcText, &txt);
+    {
+        ShaderPreprocessScope preprocessScope;
+        PreProcessSource(targetApi, srcText, &txt);
+    }
 
     for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
