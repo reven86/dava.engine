@@ -1,7 +1,7 @@
 #include "processwrapper.h"
 #include "filesystemhelper.h"
 
-#include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include <QProgressDialog>
 #include <QTimer>
@@ -75,7 +75,7 @@ void ProcessWrapper::OpenFolderInExplorer(const QString& folder)
         return;
     }
     QString path = fileInfo.canonicalFilePath();
-    ShowFileInExplorer(path);
+    QtHelpers::ShowInOSFileManager(path);
 }
 
 void ProcessWrapper::BlockingStopAllTasks()
