@@ -26,18 +26,21 @@ int main(int argc, char* argv[])
     QDir currentDir(fi.absoluteDir());
     QString platformsPath = "platforms";
     QString windowsDllPath = "qwindows.dll";
-    //remove "platforms" with permission hack
-    if (currentDir.exists(platformsPath))
+    if (currentDir.exists(windowsDllPath))
     {
-        currentDir.cd(platformsPath);
-        currentDir.removeRecursively();
-        currentDir.cdUp();
-    }
-    //try copy even if folder already exists
-    //if (!currentDir.exists(platformsDir))
-    {
-        currentDir.mkpath(platformsPath);
-        QFile::copy(windowsDllPath, platformsPath + "/" + windowsDllPath);
+        //remove "platforms" with permission hack
+        if (currentDir.exists(platformsPath))
+        {
+            currentDir.cd(platformsPath);
+            currentDir.removeRecursively();
+            currentDir.cdUp();
+        }
+        //try copy even if folder already exists
+        //if (!currentDir.exists(platformsDir))
+        {
+            currentDir.mkpath(platformsPath);
+            QFile::copy(windowsDllPath, platformsPath + "/" + windowsDllPath);
+        }
     }
 #endif //windows
     QApplication a(argc, argv);
