@@ -1035,7 +1035,7 @@ bool ShaderSource::Load(DAVA::File* in)
     READ_CHECK(vdecl.Load(in));
 
     READ_CHECK(ReadUI4(in, &readUI4));
-    READ_CHECK(readUI4 < rhi::MAX_SHADER_PROPERTY_COUNT);
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_PROPERTY_COUNT);
     prop.resize(readUI4);
     for (unsigned p = 0; p != prop.size(); ++p)
     {
@@ -1063,7 +1063,7 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
-    READ_CHECK(readUI4 < rhi::MAX_SHADER_CONST_BUFFER_COUNT);
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
     buf.resize(readUI4);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
@@ -1077,7 +1077,7 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
-    READ_CHECK(readUI4 < (rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT + rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT))
+    READ_CHECK(readUI4 <= (rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT + rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT))
     sampler.resize(readUI4);
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
