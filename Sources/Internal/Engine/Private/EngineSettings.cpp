@@ -1,3 +1,4 @@
+#include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
@@ -8,6 +9,21 @@ namespace DAVA
 std::array<Any, EngineSettings::SETTING_COUNT> EngineSettings::settingDefault;
 std::array<FastName, EngineSettings::SETTING_COUNT> EngineSettings::settingName;
 std::array<FastName, EngineSettings::SETTING_VALUE_COUNT> EngineSettings::settingValueName;
+
+DAVA_REFLECTION_IMPL(EngineSettings)
+{
+    auto& registrator = ReflectionRegistrator<EngineSettings>::Begin();
+
+    //settings setup
+    SetupSetting<SETTING_LANDSCAPE_RENDERMODE, eSettingValue>(registrator, "Landscape.RenderMode", LANDSCAPE_MORPHING, LANDSCAPE_NO_INSTANCING, LANDSCAPE_MORPHING);
+
+    //setting enum values setup
+    SetupSettingValue(LANDSCAPE_NO_INSTANCING, "Landscape.RenderMode.NoInstancing");
+    SetupSettingValue(LANDSCAPE_INSTANCING, "Landscape.RenderMode.Instancing");
+    SetupSettingValue(LANDSCAPE_MORPHING, "Landscape.RenderMode.Morphing");
+
+    registrator.End();
+}
 
 EngineSettings::EngineSettings()
 {
@@ -24,7 +40,7 @@ void EngineSettings::Reset()
 
 bool EngineSettings::Load(const FilePath& filepath)
 {
-    if (FileSystem::Instance()->Exists(filepath))
+    if (Engine::Instance()->GetContext()->fileSystem->Exists(filepath))
     {
         ScopedPtr<YamlParser> parser(YamlParser::Create(filepath));
         YamlNode* rootNode = parser->GetRootNode();

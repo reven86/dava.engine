@@ -4,7 +4,6 @@
 #include "Base/FastName.h"
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
-#include "Functional/Function.h"
 #include "Functional/Signal.h"
 #include "Reflection/Registrator.h"
 
@@ -15,33 +14,37 @@
 namespace DAVA
 {
 class FilePath;
+
+/**
+    \ingroup engine
+        Engine setting contain global setting if whole engine. List of settings is predefined.
+        To add new setting you should to add new enum value and call `SetupSetting` in reflection-impl block.
+        In setting-setup you should specify setting-type, setting string-name and default value.
+        For now type of setting can be `bool`, `int32`, `float32`, `String` and `enum`.
+        Also you can specify range of valid values, it will be added as meta-data in reflection.
+        To access range just get meta-data from reflection by type `SettingRange`.
+
+        If you want to use enum as setting-type - add necessary values to `eSettingValue`, 
+        call `SetupSettingValue` in reflection-impl block to set string-name of value. 
+        Then setup setting with type `eSettingValue` and specify range of valid enum values.
+
+        It is possible to load setting from yaml-file. File represents as list of key-value pairs, for example:
+            Landscape.RenderMode: Landscape.RenderMode.NoInstancing
+        The key is a setting-name. Value depends of setting-type. If setting has enum-type, the key is string-name of `eSettingValue`
+*/
+
 #ifdef __DAVAENGINE_COREV2__
 class EngineSettings
 #else
 class EngineSettings : public Singleton<EngineSettings>
 #endif
 {
-    //TODO: move to .cpp after merge reflection forward declaration
-    DAVA_REFLECTION(EngineSettings)
-    {
-#define SETUP_SETTING(eSetting, type, name, defvalue) SetupSetting<eSetting, type>(registrator, name, defvalue);
-#define SETUP_SETTING_WITH_RANGE(eSetting, type, name, defvalue, minvalue, maxvalue) SetupSetting<eSetting, type>(registrator, name, defvalue, std::make_pair(minvalue, maxvalue));
-#define SETUP_SETTING_VALUE(eSettingValue, name) settingValueName[eSettingValue] = FastName(name);
-        auto& registrator = ReflectionRegistrator<EngineSettings>::Begin();
-
-        SETUP_SETTING_WITH_RANGE(SETTING_LANDSCAPE_RENDERMODE, eSettingValue, "Landscape.RenderMode", LANDSCAPE_MORPHING, LANDSCAPE_NO_INSTANCING, LANDSCAPE_MORPHING);
-
-        SETUP_SETTING_VALUE(LANDSCAPE_NO_INSTANCING, "Landscape.RenderMode.NoInstancing");
-        SETUP_SETTING_VALUE(LANDSCAPE_INSTANCING, "Landscape.RenderMode.Instancing");
-        SETUP_SETTING_VALUE(LANDSCAPE_MORPHING, "Landscape.RenderMode.Morphing");
-
-        registrator.End();
-#undef SETUP_SETTING
-#undef SETUP_SETTING_WITH_RANGE
-#undef SETUP_SETTING_VALUE
-    }
+    DAVA_REFLECTION(EngineSettings);
 
 public:
+    /**
+        List of engine setting
+    */
     enum eSetting : uint32
     {
         SETTING_LANDSCAPE_RENDERMODE = 0,
@@ -50,6 +53,9 @@ public:
         SETTING_COUNT
     };
 
+    /**
+        List of setting-values for settings with enum-type
+    */
     enum eSettingValue : uint32
     {
         //'SETTING_LANDSCAPE_MODE'
@@ -61,6 +67,9 @@ public:
         SETTING_VALUE_COUNT
     };
 
+    /**
+        Range of valid values for setting. Used to retrieving from reflection meta-data 
+    */
     struct SettingRange
     {
         SettingRange(const Any& _min, const Any& _max)
@@ -75,24 +84,49 @@ public:
 
     EngineSettings();
 
+    /**
+        Reset setting to defaults
+    */
     void Reset();
+
+    /**
+        Load setting from yaml-file
+    */
     bool Load(const FilePath& filepath);
 
+    /**
+        Returns value of setting with `ID`
+    */
     template <eSetting ID>
     const Any& GetSetting() const;
 
+    /**
+        Set value for setting with `ID`
+    */
     template <eSetting ID>
     void SetSetting(const Any& value);
 
+    /**
+        Returns string-name of `setting`
+    */
     static const FastName& GetSettingName(eSetting setting);
+
+    /**
+        Returns string-name of `value`
+    */
     static const FastName& GetSettingValueName(eSettingValue value);
+
+    /**
+        Returns `eStringValue` by `name`
+    */
     static eSettingValue GetSettingValueByName(const FastName& name);
 
-    Signal<eSetting> settingChanged;
+    Signal<eSetting> settingChanged; //!< Emitted when any setting is changed. Setting-ID passes as param
 
 protected:
     template <eSetting ID, typename T>
-    static void SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const std::pair<T, T>& range = std::make_pair(T(), T()));
+    static void SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const T& rangeStart = T(), const T& rangeEnd = T());
+    static void SetupSettingValue(eSettingValue value, const char* name);
 
     template <eSetting ID, typename T>
     const T& GetSettingRefl() const;
@@ -138,15 +172,23 @@ inline void EngineSettings::SetSettingRefl(const T& value)
 }
 
 template <EngineSettings::eSetting ID, typename T>
-inline void EngineSettings::SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const std::pair<T, T>& range)
+inline void EngineSettings::SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const T& rangeStart, const T& rangeEnd)
 {
+    DVASSERT(rangeStart <= rangeEnd);
+
     settingDefault[ID] = defaultValue;
     settingName[ID] = FastName(name);
 
-    if (range != std::make_pair(T(), T()))
-        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>)[Meta<SettingRange>(Any(range.first), Any(range.second))];
+    if (rangeStart != rangeEnd)
+        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>)[Meta<SettingRange>(Any(rangeStart), Any(rangeEnd))];
     else
         registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>);
+}
+
+inline void EngineSettings::SetupSettingValue(eSettingValue value, const char* name)
+{
+    DVASSERT(value < SETTING_VALUE_COUNT);
+    settingValueName[value] = FastName(name);
 }
 
 } //ns DAVA
