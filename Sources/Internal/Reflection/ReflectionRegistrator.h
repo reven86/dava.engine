@@ -79,6 +79,8 @@ public:
     template <typename Mt>
     ReflectionRegistrator& Method(const char* name, const Mt& method);
 
+    ReflectionRegistrator& BindMeta(ReflectedMeta&& meta);
+
     void End();
 
     ReflectionRegistrator& operator[](ReflectedMeta&& meta);

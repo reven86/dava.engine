@@ -302,7 +302,7 @@ protected:
         .ConstructorByPointer()
         .ConstructorByPointer<int, int, int>()
         .DestructorByPointer()
-        .Field("staticInt", &ReflectionTestClass::staticInt)[DAVA::Meta<ValueRange<int>>(100, 200), DAVA::Meta<ValueValidator<int>>()]
+        .Field("staticInt", &staticInt)
         .Field("staticIntConst", &ReflectionTestClass::staticIntConst)
         .Field("staticCustom", &ReflectionTestClass::staticCustom)
         .Field("baseInt", &ReflectionTestClass::baseInt)

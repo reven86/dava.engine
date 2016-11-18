@@ -210,6 +210,23 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, con
 }
 
 template <typename C>
+ReflectionRegistrator<C>& ReflectionRegistrator<C>::BindMeta(ReflectedMeta&& meta)
+{
+    if (nullptr != lastMeta)
+    {
+        lastMeta->reset(new ReflectedMeta(std::move(meta)));
+    }
+
+    return *this;
+}
+
+template <typename C>
+ReflectionRegistrator<C>& ReflectionRegistrator<C>::operator[](ReflectedMeta&& meta)
+{
+    return BindMeta(std::move(meta));
+}
+
+template <typename C>
 void ReflectionRegistrator<C>::End()
 {
     if (nullptr != structure)
@@ -223,17 +240,6 @@ void ReflectionRegistrator<C>::End()
     }
 
     lastMeta = nullptr;
-}
-
-template <typename C>
-ReflectionRegistrator<C>& ReflectionRegistrator<C>::operator[](ReflectedMeta&& meta)
-{
-    if (nullptr != lastMeta)
-    {
-        lastMeta->reset(new ReflectedMeta(std::move(meta)));
-    }
-
-    return *this;
 }
 
 } // namespace DAVA

@@ -37,6 +37,16 @@ class CtorWrapper;
 class DtorWrapper;
 class StructureWrapper;
 
+/** 
+    Hold type information linked to appropriate runtime object.
+
+    Reflection is created by linking any class or primitive data with its unique reflected type.
+    Obtained Reflection allows to perform a number of operation over linked object:
+    - get or set value from/to the object at runtime
+    - introspect the object its fields, methods, enumerations at runtime.
+
+    It is also possible to create a new object or destroy existing objects from/with known reflected type.
+*/
 class Reflection final
 {
 public:
