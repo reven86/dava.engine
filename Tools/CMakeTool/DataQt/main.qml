@@ -100,6 +100,14 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
+        
+        //now update current history, because we load fields from it.
+        for(var j = 0; j < history.length; ++j) {
+            if(history[j].source === source) {
+                history[j] = newItem;
+            }
+        }
+        
         if(found) {
             //add item to top and remove it
             --i;
@@ -252,14 +260,6 @@ ApplicationWindow {
                         placeholderText: qsTr("path to source folder")
                         onTextChanged: {
                             updateOutputString();
-                        }
-                    }
-                    Connections {
-                        target: rowLayout_sourceFolder
-                        onPathChanged: {
-                            var path = rowLayout_sourceFolder.path;
-                            path = path.replace(/(\/|\\)+$/, "");
-                            rowLayout_buildFolder.path = path + "/_build" ;
                         }
                     }
                 }
