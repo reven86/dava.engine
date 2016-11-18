@@ -24,35 +24,38 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
     ProjectProperties props = ProjectProperties::Default();
     props.additionalResourceDirectory.relative = String("./Data/");
 
-    const YamlNode* fontNode = root->Get("font");
-    // Get font node
-    if (nullptr != fontNode)
+    if (root != nullptr)
     {
-        // Get default font node
-        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-        if (nullptr != defaultFontPath)
+        const YamlNode* fontNode = root->Get("font");
+        // Get font node
+        if (nullptr != fontNode)
         {
-            String fontsConfigsPath = FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
-            props.fontsConfigsDirectory.relative = fontsConfigsPath;
+            // Get default font node
+            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
+            if (nullptr != defaultFontPath)
+            {
+                String fontsConfigsPath = FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
+                props.fontsConfigsDirectory.relative = fontsConfigsPath;
+            }
         }
-    }
 
-    const YamlNode* localizationPathNode = root->Get("LocalizationPath");
-    const YamlNode* localeNode = root->Get("Locale");
-    if (localizationPathNode != nullptr && localeNode != nullptr)
-    {
-        String localePath = FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
-        props.textsDirectory.relative = localePath;
-        props.defaultLanguage = localeNode->AsString();
-    }
-
-    const YamlNode* libraryNode = root->Get("Library");
-    if (libraryNode != nullptr)
-    {
-        for (uint32 i = 0; i < libraryNode->GetCount(); i++)
+        const YamlNode* localizationPathNode = root->Get("LocalizationPath");
+        const YamlNode* localeNode = root->Get("Locale");
+        if (localizationPathNode != nullptr && localeNode != nullptr)
         {
-            String packagePath = FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
-            props.libraryPackages.push_back({ "", packagePath });
+            String localePath = FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
+            props.textsDirectory.relative = localePath;
+            props.defaultLanguage = localeNode->AsString();
+        }
+
+        const YamlNode* libraryNode = root->Get("Library");
+        if (libraryNode != nullptr)
+        {
+            for (uint32 i = 0; i < libraryNode->GetCount(); i++)
+            {
+                String packagePath = FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
+                props.libraryPackages.push_back({ "", packagePath });
+            }
         }
     }
 
@@ -104,7 +107,7 @@ ProjectProperties ProjectProperties::Default()
     properties.fontsDirectory.relative = "./Fonts/";
     properties.fontsConfigsDirectory.relative = "./Fonts/Configs/";
     properties.textsDirectory.relative = "./Strings/";
-    properties.defaultLanguage = "en";
+    properties.defaultLanguage = "";
 
     return properties;
 }
@@ -178,14 +181,17 @@ DAVA::FilePath ProjectProperties::MakeAbsolutePath(const DAVA::String& relPath) 
 
 std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::FilePath& projectFile, const YamlNode* root)
 {
-    const YamlNode* headerNode = root->Get("Header");
     int32 version = 0;
-    if (headerNode != nullptr)
+    if (root != nullptr)
     {
-        const YamlNode* versionNode = headerNode->Get("version");
-        if (versionNode != nullptr && versionNode->AsInt32())
+        const YamlNode* headerNode = root->Get("Header");
+        if (headerNode != nullptr)
         {
-            version = versionNode->AsInt32();
+            const YamlNode* versionNode = headerNode->Get("version");
+            if (versionNode != nullptr && versionNode->AsInt32())
+            {
+                version = versionNode->AsInt32();
+            }
         }
     }
 

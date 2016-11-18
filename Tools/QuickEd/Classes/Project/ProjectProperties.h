@@ -54,6 +54,11 @@ public:
         return defaultLanguage;
     }
 
+    void SetDefaultLanguage(const DAVA::String& lang)
+    {
+        defaultLanguage = lang;
+    }
+
 private:
     static std::tuple<DAVA::ResultList, ProjectProperties> ParseLegacyProperties(const DAVA::FilePath& projectFile, const DAVA::YamlNode* root, int version);
     void RefreshAbsolutePaths();

@@ -49,11 +49,21 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     FilePath::AddResourcesFolder(properties.GetConvertedResourceDirectory().absolute);
     FilePath::AddResourcesFolder(properties.GetResourceDirectory().absolute);
 
-    editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory().absolute);
-    editorFontSystem->LoadLocalizedFonts();
+    if (!properties.GetFontsConfigsDirectory().absolute.IsEmpty()) //for support legacy empty project
+    {
+        editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory().absolute);
+        editorFontSystem->LoadLocalizedFonts();
+    }
 
-    editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(properties.GetTextsDirectory().absolute.GetStringValue())));
-    editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.GetDefaultLanguage()));
+    if (!properties.GetTextsDirectory().absolute.IsEmpty()) //support legacy empty project
+    {
+        editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(properties.GetTextsDirectory().absolute.GetStringValue())));
+    }
+
+    if (!properties.GetDefaultLanguage().empty()) //support legacy empty project
+    {
+        editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.GetDefaultLanguage()));
+    }
 
     FilePath uiDirectory = properties.GetUiDirectory().absolute;
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
@@ -119,7 +129,7 @@ std::tuple<ResultList, ProjectProperties> Project::ParseProjectPropertiesFromFil
     ResultList resultList;
 
     RefPtr<YamlParser> parser(YamlParser::Create(projectFile.toStdString()));
-    if (parser.Get() == nullptr || parser->GetRootNode() == nullptr)
+    if (parser.Get() == nullptr)
     {
         QString message = tr("Can not parse project file %1.").arg(projectFile);
         resultList.AddResult(Result::RESULT_ERROR, message.toStdString());

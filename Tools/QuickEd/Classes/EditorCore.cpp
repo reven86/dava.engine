@@ -82,6 +82,8 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
 
     ProjectProperties defaultSettings = ProjectProperties::Default();
 
+    defaultSettings.SetDefaultLanguage("en");
+
     QString resourceDirectory = QString::fromStdString(defaultSettings.GetResourceDirectory().relative);
     if (!projectDir.mkpath(resourceDirectory))
     {
