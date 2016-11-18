@@ -73,6 +73,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window
     e.sizeEvent.height = h;
     e.sizeEvent.surfaceWidth = surfaceW;
     e.sizeEvent.surfaceHeight = surfaceH;
+    e.sizeEvent.surfaceScale = 1.0f;
     e.sizeEvent.dpi = dpi;
     e.sizeEvent.fullscreen = fullscreen;
     return e;
