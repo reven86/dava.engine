@@ -2,6 +2,7 @@
 #include "../rhi_ShaderSource.h"
 #include "../rhi_ShaderCache.h"
 #include "rhi_Utils.h"
+#include "PreProcess.h"
 
 namespace rhi
 {
