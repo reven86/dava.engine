@@ -1,10 +1,10 @@
 /***************************************************************************/
 /*                                                                         */
-/*  svkern.h                                                               */
+/*  svfntfmt.h                                                             */
 /*                                                                         */
-/*    The FreeType Kerning service (specification).                        */
+/*    The FreeType font format service (specification only).               */
 /*                                                                         */
-/*  Copyright 2006-2016 by                                                 */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,28 +16,32 @@
 /***************************************************************************/
 
 
-#ifndef SVKERN_H_
-#define SVKERN_H_
+#ifndef SVFNTFMT_H_
+#define SVFNTFMT_H_
 
 #include FT_INTERNAL_SERVICE_H
-#include FT_TRUETYPE_TABLES_H
 
 
 FT_BEGIN_HEADER
 
-#define FT_SERVICE_ID_KERNING  "kerning"
 
+  /*
+   *  A trivial service used to return the name of a face's font driver,
+   *  according to the XFree86 nomenclature.  Note that the service data
+   *  is a simple constant string pointer.
+   */
 
-  typedef FT_Error
-  (*FT_Kerning_TrackGetFunc)( FT_Face    face,
-                              FT_Fixed   point_size,
-                              FT_Int     degree,
-                              FT_Fixed*  akerning );
+#define FT_SERVICE_ID_FONT_FORMAT  "font-format"
 
-  FT_DEFINE_SERVICE( Kerning )
-  {
-    FT_Kerning_TrackGetFunc  get_track;
-  };
+#define FT_FONT_FORMAT_TRUETYPE  "TrueType"
+#define FT_FONT_FORMAT_TYPE_1    "Type 1"
+#define FT_FONT_FORMAT_BDF       "BDF"
+#define FT_FONT_FORMAT_PCF       "PCF"
+#define FT_FONT_FORMAT_TYPE_42   "Type 42"
+#define FT_FONT_FORMAT_CID       "CID Type 1"
+#define FT_FONT_FORMAT_CFF       "CFF"
+#define FT_FONT_FORMAT_PFR       "PFR"
+#define FT_FONT_FORMAT_WINFNT    "Windows FNT"
 
   /* */
 
@@ -45,7 +49,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* SVKERN_H_ */
+#endif /* SVFNTFMT_H_ */
 
 
 /* END */
