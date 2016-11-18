@@ -10,6 +10,7 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
+#include "UI/UIControlSystem.h"
 #include "Utils/NSStringUtils.h"
 #include "Utils/UTF8Utils.h"
 
