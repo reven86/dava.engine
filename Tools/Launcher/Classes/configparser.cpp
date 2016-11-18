@@ -146,7 +146,8 @@ bool ExtractApp(const QString& appName, const QString& realAppName, const QJsonO
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
-    bool isValid = !array.isEmpty();
+    //this array can be empty
+    bool isValid = true;
     for (const QJsonValueRef& ref : array)
     {
         QJsonObject entry = ref.toObject();
@@ -637,7 +638,9 @@ QStringList ConfigParser::GetToolsetApplications()
     static QStringList applications;
     if (applications.isEmpty())
     {
-        applications = { "AssetCacheServer", "ResourceEditor", "QuickEd" };
+        applications << "AssetCacheServer"
+                     << "ResourceEditor"
+                     << "QuickEd";
         //try to get project name as it stored in ba-manager
         QString prefix =
 #ifdef Q_OS_WIN

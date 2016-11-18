@@ -24,8 +24,8 @@ struct UpdateTask
         : branchID(branch)
         , appID(app)
         , realAppID(realAppID_)
-        , currentVersion(currentVersion_)
         , newVersion(newVersion_)
+        , currentVersion(currentVersion_)
         , isSelfUpdate(isSelfUpdate_)
         , isRemoveBranch(isRemove_)
     {
