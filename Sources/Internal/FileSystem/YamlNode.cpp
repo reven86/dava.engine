@@ -689,9 +689,9 @@ void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rew
         RemoveNodeFromMap(name);
     }
 
+    DVASSERT_MSG(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
     objectMap->ordered.insert(std::pair<String, YamlNode*>(name, node));
     objectMap->unordered.push_back(std::pair<String, YamlNode*>(name, node));
-    DVASSERT_MSG(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
 }
 
 void YamlNode::InternalSetString(const String& value, eStringRepresentation style /* = SR_DOUBLE_QUOTED_REPRESENTATION*/)
