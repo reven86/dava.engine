@@ -593,18 +593,12 @@ struct EqualToFirst
 void YamlNode::RemoveNodeFromMap(const String& name)
 {
     DVASSERT(GetType() == TYPE_MAP);
-    auto begin = objectMap->ordered.lower_bound(name),
-         end = objectMap->ordered.upper_bound(name);
-    if (begin == end)
+    auto iter = objectMap->ordered.find(name);
+    if (iter == objectMap->ordered.end())
         return;
 
-    auto it = begin;
-    for (; it != end; ++it)
-    {
-        SafeRelease(it->second);
-    }
-
-    objectMap->ordered.erase(begin, end);
+    SafeRelease(iter->second);
+    objectMap->ordered.erase(iter);
 
     Vector<std::pair<String, YamlNode*>>& array = objectMap->unordered;
     array.erase(std::remove_if(array.begin(), array.end(), EqualToFirst(name)), array.end());
