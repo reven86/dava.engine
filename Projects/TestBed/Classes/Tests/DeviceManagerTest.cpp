@@ -105,9 +105,6 @@ void DeviceManagerTest::OnDisplayConfigChanged()
         AddControl(x);
     }
 
-    UIStaticText** p = &uiDisplays[0];
-    size_t nn = uiDisplays.size();
-
     total.x += dx;
     total.y += dy;
     font->SetSize(14);
