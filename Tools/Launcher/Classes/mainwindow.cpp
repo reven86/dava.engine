@@ -181,7 +181,7 @@ void MainWindow::OnInstallAll()
         Application* remoteApplication = remoteConfig->GetApplication(selectedBranchID, appID);
         if (newVersion != nullptr && remoteApplication != nullptr)
         {
-            tasks.push_back(UpdateTask(selectedBranchID, appID, remoteApplication->realID, currentVersion, *newVersion));
+            tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
         }
     }
 
@@ -228,7 +228,7 @@ void MainWindow::OnInstall(int rowNumber)
     }
     AppVersion* currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);
     QQueue<UpdateTask> tasks;
-    tasks.push_back(UpdateTask(selectedBranchID, appID, remoteApplication->realID, currentVersion, *newVersion));
+    tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
 
     ShowUpdateDialog(tasks);
 

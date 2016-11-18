@@ -21,6 +21,7 @@ struct AppVersion
     QString cmd;
     QString url;
     QString buildNum;
+    bool isToolSet = false;
 
     static AppVersion LoadFromYamlNode(const YAML::Node* node);
 };
@@ -30,16 +31,14 @@ struct Application
     Application()
     {
     }
-    Application(const QString& id_, const QString& realID_)
+    Application(const QString& id_)
         : id(id_)
-        , realID(realID_)
     {
     }
 
     //in a fact it is an ID to be displayed in UI
     // old name was not changed to save capability with other code
     QString id;
-    QString realID;
 
     int GetVerionsCount() const
     {
@@ -107,11 +106,10 @@ public:
     QByteArray Serialize() const;
     void SaveToFile(const QString& filePath) const;
 
-    void InsertApplication(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
+    void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
 
-    void RemoveApplication(const QString& branchID, const QString& appID, const QString& realAppID, const QString& version);
+    void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
 
-    static bool IsToolset(const QString& realAppID);
     static QStringList GetToolsetApplications();
     QStringList GetTranslatedToolsetApplications() const;
     int GetBranchCount();
@@ -151,7 +149,7 @@ public:
     void UpdateApplicationsNames();
 
 private:
-    void InsertApplicationImpl(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
+    void InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version);
 
     void RemoveApplicationImpl(const QString& branchID, const QString& appID, const QString& version);
 

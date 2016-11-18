@@ -20,10 +20,9 @@ class FileManager;
 
 struct UpdateTask
 {
-    UpdateTask(const QString& branch, const QString& app, const QString& realAppID_, const AppVersion* currentVersion_, const AppVersion& newVersion_, bool isSelfUpdate_ = false, bool isRemove_ = false)
+    UpdateTask(const QString& branch, const QString& app, const AppVersion* currentVersion_, const AppVersion& newVersion_, bool isSelfUpdate_ = false, bool isRemove_ = false)
         : branchID(branch)
         , appID(app)
-        , realAppID(realAppID_)
         , newVersion(newVersion_)
         , currentVersion(currentVersion_)
         , isSelfUpdate(isSelfUpdate_)
@@ -33,7 +32,6 @@ struct UpdateTask
 
     QString branchID;
     QString appID;
-    QString realAppID;
     AppVersion newVersion;
     const AppVersion* currentVersion;
     bool isSelfUpdate;
@@ -52,7 +50,7 @@ public:
     void BreakLog();
 
 signals:
-    void AppInstalled(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
+    void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 public slots:
     void OnCancelClicked();

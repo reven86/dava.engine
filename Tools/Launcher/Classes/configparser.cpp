@@ -114,10 +114,11 @@ bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
     appVer->url = entry["artifacts"].toString();
     appVer->buildNum = entry["build_num"].toString();
     appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
     return !appVer->id.isEmpty();
 }
 
-bool ExtractApp(const QString& appName, const QString& realAppName, const QJsonObject& entry, Branch* branch, bool toolset)
+bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
 {
     if (appName.isEmpty())
     {
@@ -126,7 +127,7 @@ bool ExtractApp(const QString& appName, const QString& realAppName, const QJsonO
     Application* app = branch->GetApplication(appName);
     if (app == nullptr)
     {
-        branch->applications.append(Application(appName, realAppName));
+        branch->applications.append(Application(appName));
         app = &branch->applications.last();
     }
     QString buildType = entry["build_type"].toString();
@@ -177,16 +178,16 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         }
 
         QString appName = entry["build_name"].toString();
-        if (ConfigParser::IsToolset(appName))
+        if (appName.startsWith("toolset", Qt::CaseInsensitive))
         {
             for (const QString& toolsetApp : ConfigParser::GetToolsetApplications())
             {
-                isValid &= ExtractApp(toolsetApp, appName, entry, branch, true);
+                isValid &= ExtractApp(toolsetApp, entry, branch, true);
             }
         }
         else
         {
-            isValid &= ExtractApp(appName, appName, entry, branch, false);
+            isValid &= ExtractApp(appName, entry, branch, false);
         }
     }
     //hot fix to sort downloaded items without rewriting mainWindow
@@ -514,7 +515,7 @@ QByteArray ConfigParser::Serialize() const
                 QJsonObject buildObj = {
                     { "buildNum", ver->buildNum },
                     { "build_type", ver->id },
-                    { "build_name", app->realID },
+                    { "build_name", app->id },
                     { "branchName", branch->id },
                     { "artifacts", ver->url },
                     { "exe_location", ver->runPath }
@@ -556,22 +557,22 @@ void ConfigParser::RemoveBranch(const QString& branchID)
         branches.remove(index);
 }
 
-void ConfigParser::InsertApplication(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version)
+void ConfigParser::InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version)
 {
-    if (IsToolset(realAppID))
+    if (version.isToolSet)
     {
         for (const QString& fakeAppID : GetTranslatedToolsetApplications())
         {
-            InsertApplicationImpl(branchID, fakeAppID, realAppID, version);
+            InsertApplicationImpl(branchID, fakeAppID, version);
         }
     }
     else
     {
-        InsertApplicationImpl(branchID, appID, realAppID, version);
+        InsertApplicationImpl(branchID, appID, version);
     }
 }
 
-void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version)
+void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version)
 {
     Branch* branch = GetBranch(branchID);
     if (!branch)
@@ -583,7 +584,7 @@ void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString&
     Application* app = branch->GetApplication(appID);
     if (!app)
     {
-        branch->applications.push_back(Application(appID, realAppID));
+        branch->applications.push_back(Application(appID));
         app = branch->GetApplication(appID);
     }
 
@@ -591,9 +592,14 @@ void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString&
     app->versions.push_back(version);
 }
 
-void ConfigParser::RemoveApplication(const QString& branchID, const QString& appID, const QString& realAppID, const QString& version)
+void ConfigParser::RemoveApplication(const QString& branchID, const QString& appID, const QString& version)
 {
-    if (IsToolset(realAppID))
+    AppVersion* appVersion = GetAppVersion(branchID, appID, version);
+    if (appVersion == nullptr)
+    {
+        return;
+    }
+    if (appVersion->isToolSet)
     {
         for (const QString& fakeAppID : GetTranslatedToolsetApplications())
         {
@@ -626,11 +632,6 @@ void ConfigParser::RemoveApplicationImpl(const QString& branchID, const QString&
 
     if (!branch->GetAppCount())
         RemoveBranch(branchID);
-}
-
-bool ConfigParser::IsToolset(const QString& realAppID)
-{
-    return realAppID.startsWith("toolset", Qt::CaseInsensitive);
 }
 
 QStringList ConfigParser::GetToolsetApplications()

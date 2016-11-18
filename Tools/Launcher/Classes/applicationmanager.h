@@ -34,17 +34,18 @@ public:
     void ParseRemoteConfigData(const QByteArray& data);
     void SaveLocalConfig() const;
 
-    QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
+    QString GetApplicationDirectory(QString branchID, QString appID, bool isToolSet, bool mustExist = true) const;
     FileManager* GetFileManager() const;
 
+    //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
 public slots:
-    void OnAppInstalled(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version);
+    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 private:
     void LoadLocalConfig(const QString& configPath);
-    QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& realAppID, const QString& versionID);
+    QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 

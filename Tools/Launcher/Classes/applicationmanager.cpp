@@ -88,8 +88,10 @@ QString ApplicationManager::GetApplicationDirectory_kostil(const QString& branch
     return path;
 }
 
-QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
+QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool isToolSet, bool mustExists) const
 {
+    appID = isToolSet ? "Toolset" : appID;
+
     branchID = ApplicationManagerDetails::RemoveWhitespace(branchID);
     appID = ApplicationManagerDetails::RemoveWhitespace(appID);
 
@@ -188,7 +190,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
         newVersion.id = remoteConfig.GetLauncherVersion();
         newVersion.url = remoteConfig.GetLauncherURL();
 
-        tasks.push_back(UpdateTask("", "", "", nullptr, newVersion, true));
+        tasks.push_back(UpdateTask("", "", nullptr, newVersion, true));
 
         return;
     }
@@ -214,7 +216,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
                 Application* localApp = localConfig.GetApplication(branch->id, app->id);
                 AppVersion* localAppVersion = localApp->GetVersion(0);
                 if (localAppVersion->id != appVersion->id)
-                    tasks.push_back(UpdateTask(branch->id, app->id, app->realID, localAppVersion, *appVersion));
+                    tasks.push_back(UpdateTask(branch->id, app->id, localAppVersion, *appVersion));
             }
         }
     }
@@ -224,13 +226,13 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     {
         Branch* branch = localConfig.GetBranch(i);
         if (!remoteConfig.GetBranch(branch->id))
-            tasks.push_back(UpdateTask(branch->id, "", "", nullptr, AppVersion(), false, true));
+            tasks.push_back(UpdateTask(branch->id, "", nullptr, AppVersion(), false, true));
     }
 }
 
-void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const QString& realAppID, const AppVersion& version)
+void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version)
 {
-    localConfig.InsertApplication(branchID, appID, realAppID, version);
+    localConfig.InsertApplication(branchID, appID, version);
     localConfig.UpdateApplicationsNames();
     SaveLocalConfig();
 }
@@ -254,18 +256,14 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
-QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& realAppID, const QString& versionID)
+QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version == nullptr)
     {
         return "";
     }
-    Application* app = localConfig.GetApplication(branchID, appID);
-    Q_ASSERT(app != nullptr);
-    QString realID = app->realID;
-
-    QString runPath = GetApplicationDirectory(branchID, realAppID);
+    QString runPath = GetApplicationDirectory(branchID, appID, version->isToolSet);
     QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
     if (!QFile::exists(runPath))
@@ -278,13 +276,7 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
 
 void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    Application* app = localConfig.GetApplication(branchID, appID);
-    if (app == nullptr)
-    {
-        return;
-    }
-    QString realID = app->realID;
-    QString runPath = ExtractApplicationRunPath(branchID, appID, realID, versionID);
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
     if (runPath.isEmpty())
     {
         return;
@@ -294,13 +286,7 @@ void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, con
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    Application* app = localConfig.GetApplication(branchID, appID);
-    if (app == nullptr)
-    {
-        return;
-    }
-    QString realID = app->realID;
-    QString runPath = ExtractApplicationRunPath(branchID, appID, realID, versionID);
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
     if (runPath.isEmpty())
     {
         return;
@@ -314,34 +300,50 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
 bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
-    if (version)
+    if (version != nullptr)
     {
         Application* app = localConfig.GetApplication(branchID, appID);
-        if (app == nullptr)
+        if (app != nullptr)
         {
-            return false;
-        }
-        QString realID = app->realID;
-        QString runPath = GetApplicationDirectory(branchID, realID, false) + version->runPath;
-        if (!runPath.isEmpty())
-        {
-            while (ProcessHelper::IsProcessRuning(runPath))
+            QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, true);
+            if (appDirPath.isEmpty())
             {
-                int result = ErrorMessenger::ShowRetryDlg(appID, runPath, true);
-                if (result == QMessageBox::Cancel)
-                    return false;
+                return true;
             }
-        }
+            auto appIsRunning = [](const QString& appDirPath, const QString& appID, const AppVersion* version) -> bool {
+                QString runPath = appDirPath + GetLocalAppPath(version, appID);
+                while (ProcessHelper::IsProcessRuning(runPath))
+                {
+                    int result = ErrorMessenger::ShowRetryDlg(appID, runPath, true);
+                    if (result == QMessageBox::Cancel)
+                        return true;
+                }
+                return false;
+            };
+            if (version->isToolSet)
+            {
+                for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
+                {
+                    if (appIsRunning(appDirPath, fakeAppID, version))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (appIsRunning(appDirPath, appID, version))
+                {
+                    return false;
+                }
+            }
 
-        QString appPath = GetApplicationDirectory(branchID, realID);
-        if (appPath.isEmpty())
-        {
+            FileManager::DeleteDirectory(appDirPath);
+
+            localConfig.RemoveApplication(branchID, appID, versionID);
+            SaveLocalConfig();
             return true;
         }
-        FileManager::DeleteDirectory(appPath);
-        localConfig.RemoveApplication(branchID, appID, realID, versionID);
-        SaveLocalConfig();
-        return true;
     }
     return false;
 }
@@ -360,11 +362,7 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
         for (int j = 0; j < versionCount; ++j)
         {
             AppVersion* version = app->GetVersion(j);
-            QString runPath = GetApplicationDirectory(branchID, app->realID) + version->runPath;
-            if (runPath.isEmpty())
-            {
-                return false;
-            }
+            QString runPath = GetApplicationDirectory(branchID, app->id, version->isToolSet, true) + GetLocalAppPath(version, app->id);
             while (ProcessHelper::IsProcessRuning(runPath))
             {
                 int result = ErrorMessenger::ShowRetryDlg(app->id, runPath, true);
