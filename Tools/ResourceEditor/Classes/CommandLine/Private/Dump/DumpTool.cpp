@@ -2,10 +2,12 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
-#include "Utils/Dump/SceneDumper.h"
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
+
+#include "Utils/Dump/SceneDumper.h"
 
 DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-dump")
@@ -89,6 +91,8 @@ bool DumpTool::PostInitInternal()
         DAVA::Logger::Error("GPU was not selected");
         return false;
     }
+
+    DAVA::FindAndRemoveExchangingWithLast(compressedGPUs, DAVA::eGPUFamily::GPU_ORIGIN);
 
     bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, inFolder + filename);
     if (!qualityInitialized)
