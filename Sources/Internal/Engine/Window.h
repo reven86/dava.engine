@@ -178,6 +178,8 @@ private:
     void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
 
+    void HandleKeyPressEvent(const Private::MainDispatcherEvent& e, const Key eventKeyOverride = Key::UNKNOWN);
+
 private:
     Private::EngineBackend* engineBackend = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
