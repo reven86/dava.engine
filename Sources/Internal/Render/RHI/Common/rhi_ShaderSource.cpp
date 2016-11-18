@@ -667,6 +667,15 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                                 }
                             }
                         }
+                        else if (decl->assignment->nodeType == sl::HLSLNodeType_LiteralExpression)
+                        {
+                            sl::HLSLLiteralExpression* expr = static_cast<sl::HLSLLiteralExpression*>(decl->assignment);
+
+                            if (expr->type == sl::HLSLBaseType_Float)
+                                prop.defaultValue[0] = expr->fValue;
+                            else if (expr->type == sl::HLSLBaseType_Int)
+                                prop.defaultValue[0] = float(expr->iValue);
+                        }
                     }
 
                     buf_t* cbuf = nullptr;
