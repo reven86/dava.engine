@@ -139,11 +139,9 @@ void REModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA:
         return;
     }
 
-    DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-    DAVA::Texture::SetGPULoadingOrder({ family });
     REModuleDetail::REGlobalData* globalData = ctx->GetData<REModuleDetail::REGlobalData>();
-    globalData->mainWindow->OnSceneNew();
+    // TODO UVR LATER
+    //globalData->mainWindow->OnSceneNew();
 
     launchDataWrapper.SetListener(nullptr);
     launchDataWrapper = DAVA::TArc::DataWrapper();

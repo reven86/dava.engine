@@ -39,21 +39,38 @@ private:
 
     /// Action and operation handlers
     void CreateNewScene();
+    void OpenScene();
+    void OpenSceneQuckly();
+    void OpenSceneByPath(const DAVA::FilePath& scenePath);
+    void SaveScene();
+    void SaveSceneAs();
+    void SaveSceneToFolder(bool compressedTextures);
     void CloseAllScenes();
 
     /// Fields value handlers
     void OnActiveTabChanged(const DAVA::Any& contextID);
-    void OnSceneModificationFlagChanged(const DAVA::Any& isSceneModified);
     void OnScenePathChanged(const DAVA::Any& scenePath);
 
     /// IWidgetDelegate
-    void CloseSceneRequest(DAVA::uint64 id) override;
+    bool CloseSceneRequest(DAVA::uint64 id) override;
 
     /// Helpers
     void UpdateTabTitle(DAVA::uint64 contextID);
     bool CanCloseScene(SceneEditor2* scene);
     bool IsSavingAllowed(SceneEditor2* scene);
     SceneEditor2* OpenSceneImpl(const DAVA::FilePath& scenePath);
+
+    /// This method try to scene at "scenePath" place.
+    /// If "scenePath" is empty, method try to save scene at current scene file.
+    /// If current scene path is empty (for example this is completely new scene), method will call FileSaveDialog
+    /// return true if scene was saved
+    /// Preconditions:
+    ///     "scenePath" - should be a file
+    bool SaveSceneImpl(SceneEditor2* scene, const DAVA::FilePath& scenePath = DAVA::FilePath());
+    DAVA::FilePath GetSceneSavePath(const SceneEditor2* scene);
+
+    /// scene->SaveEmitters would call this function if emitter to save didn't have path
+    DAVA::FilePath SaveEmitterFallback(const DAVA::String& entityName, const DAVA::String& emitterName);
 
 private:
     DAVA::TArc::QtConnections connections;

@@ -132,13 +132,16 @@ void DataWrapper::Sync(bool notifyListener)
 {
     DVASSERT(impl != nullptr);
 
+    bool listenerWasChanged = false;
     if (impl->nextListenerToSet != impl->listener)
     {
         if (impl->listener != nullptr)
         {
             impl->listener->RemoveWrapper(*this);
         }
+        listenerWasChanged = true;
         impl->listener = impl->nextListenerToSet;
+        impl->cachedValues.clear();
         if (impl->nextListenerToSet != nullptr)
         {
             impl->listener->AddWrapper(*this);
@@ -200,7 +203,7 @@ void DataWrapper::Sync(bool notifyListener)
     }
     else
     {
-        if (!impl->cachedValues.empty())
+        if (!impl->cachedValues.empty() || listenerWasChanged == true)
         {
             impl->cachedValues.clear();
             NotifyListeners(notifyListener);

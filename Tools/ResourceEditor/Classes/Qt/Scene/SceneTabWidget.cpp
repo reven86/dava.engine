@@ -45,8 +45,6 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
     setAcceptDrops(true);
 
-    QObject::connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(TabBarCurrentChanged(int)));
-    QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
     QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(TabBarDataDropped(const QMimeData*)));
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const SelectableGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const SelectableGroup*)));
@@ -73,86 +71,18 @@ SceneTabWidget::~SceneTabWidget()
     SafeRelease(previewDialog);
 }
 
-void SceneTabWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
+/*int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
 {
-    tabBar->setMinimumWidth(renderWidget->minimumWidth());
-    setMinimumWidth(renderWidget->minimumWidth());
-    setMinimumHeight(renderWidget->minimumHeight() + tabBar->sizeHint().height());
-
-    layout()->addWidget(renderWidget);
-
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneTabWidget::OnRenderWidgetResized);
-}
-
-void SceneTabWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
-{
-    globalOperations = globalOperations_;
-}
-
-int SceneTabWidget::OpenTab()
-{
-    DVASSERT(globalOperations);
-    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.");
-
-    DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
-    scenePath.ReplaceExtension(".sc2");
-
-    int tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
-    tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
-
-    OpenTabInternal(scenePath, tabIndex);
-
-    return tabIndex;
-}
-
-int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
-{
+    // TODO UVR
     HideScenePreview();
 
-    int tabIndex = FindTab(scenePath);
-    if (tabIndex != -1)
-    {
-        // TODO UVR LATER
-        //SetCurrentTab(tabIndex);
-        return tabIndex;
-    }
 
     if (!TestSceneCompatibility(scenePath))
     {
         return -1;
     }
 
-    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname());
-
-    tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
-    tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
-
-    OpenTabInternal(scenePath, tabIndex);
-
-    return tabIndex;
-}
-
-void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex)
-{
-    SceneEditor2* scene = new SceneEditor2();
-    scene->SetScenePath(scenePathname);
-
-    if (DAVA::FileSystem::Instance()->Exists(scenePathname))
-    {
-        DAVA::SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
-        if (sceneWasLoaded != DAVA::SceneFileV2::ERROR_NO_ERROR)
-        {
-            QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
-        }
-    }
-    scene->EnableEditorSystems();
-
-    SetTabScene(tabIndex, scene);
-    // TODO UVR LATER
-    //SetCurrentTab(tabIndex);
-
-    updateTabBarVisibility();
-}
+}*/
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
 {
@@ -191,87 +121,6 @@ bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
     return true;
 }
 
-void SceneTabWidget::updateTabBarVisibility()
-{
-    const bool visible = (tabBar->count() > 0);
-    tabBar->setVisible(visible);
-}
-
-bool SceneTabWidget::CloseTab(int index)
-{
-    return CloseTabInternal(index, false);
-}
-
-bool SceneTabWidget::CloseTabInternal(int index, bool silent)
-{
-    if (silent == false)
-    {
-        Request request;
-        emit CloseTabRequest(index, &request);
-
-        if (!request.IsAccepted())
-            return false;
-    }
-
-    SceneEditor2* scene = GetTabScene(index);
-    if (index == tabBar->currentIndex())
-    {
-        SceneSignals::Instance()->EmitDeactivated(scene);
-    }
-
-    SafeRelease(scene);
-    tabBar->removeTab(index);
-    updateTabBarVisibility();
-
-    return true;
-}
-
-SceneEditor2* SceneTabWidget::GetTabScene(int index) const
-{
-    SceneEditor2* ret = NULL;
-
-    if (index >= 0 && index < tabBar->count())
-    {
-        ret = tabBar->tabData(index).value<SceneEditor2*>();
-    }
-
-    return ret;
-}
-
-void SceneTabWidget::SetTabScene(int index, SceneEditor2* scene)
-{
-    if (index >= 0 && index < tabBar->count())
-    {
-        tabBar->setTabData(index, qVariantFromValue(scene));
-    }
-}
-
-int SceneTabWidget::GetTabCount() const
-{
-    return tabBar->count();
-}
-
-void SceneTabWidget::TabBarCurrentChanged(int index)
-{
-    // TODO UVR LATER
-    //SetCurrentTab(index);
-}
-
-void SceneTabWidget::TabBarCloseRequest(int index)
-{
-    CloseTab(index);
-}
-
-void SceneTabWidget::TabBarCloseCurrentRequest()
-{
-    // TODO UVR LATER
-    //int tabIndex = GetCurrentTab();
-    //if (tabIndex != -1)
-    {
-        //    CloseTab(tabIndex);
-    }
-}
-
 void SceneTabWidget::TabBarDataDropped(const QMimeData* data)
 {
     QList<QUrl> urls = data->urls();
@@ -291,7 +140,8 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Select
     static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
     static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
 
-    DAVA::RenderWidget* renderWidget = GetRenderWidget();
+    // TODO UVR LATER
+    /*DAVA::RenderWidget* renderWidget = GetRenderWidget();
 
     if ((GetCurrentScene() == scene) && (objects != nullptr))
     {
@@ -315,54 +165,6 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Select
     else
     {
         renderWidget->unsetCursor();
-    }
-}
-
-void SceneTabWidget::SceneUpdated(SceneEditor2* scene)
-{
-    // update scene name on tabBar
-    for (int i = 0; i < tabBar->count(); ++i)
-    {
-        SceneEditor2* tabScene = GetTabScene(i);
-        if (tabScene == scene)
-        {
-            UpdateTabName(i);
-            break;
-        }
-    }
-}
-
-void SceneTabWidget::SceneSaved(SceneEditor2* scene)
-{
-    SceneUpdated(scene);
-}
-
-void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified)
-{
-    // update scene name on tabBar
-    for (int i = 0; i < tabBar->count(); ++i)
-    {
-        SceneEditor2* tabScene = GetTabScene(i);
-        if (tabScene == scene)
-        {
-            UpdateTabName(i);
-            break;
-        }
-    }
-}
-
-void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
-{
-    DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
-
-    // TODO UVR
-    /*davaUIScreen->SetSize(DAVA::Vector2(width, height));
-    dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
-
-    SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-    if (NULL != scene)
-    {
-        scene->SetViewportRect(dava3DView->GetRect());
     }*/
 }
 
@@ -423,11 +225,11 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
 
 void SceneTabWidget::dragMoveEvent(QDragMoveEvent* event)
 {
-    QObject* object = GetRenderWidget();
-    if (object != nullptr)
-    { //simulate catching events at RenderWidget. I guess we should inherit SceneTabWidget from RenderWidget::IClientDelegate
-        object->event(event);
-    }
+    //QObject* object = GetRenderWidget();
+    //if (object != nullptr)
+    //{ //simulate catching events at RenderWidget. I guess we should inherit SceneTabWidget from RenderWidget::IClientDelegate
+    //    object->event(event);
+    //}
 }
 
 void SceneTabWidget::keyReleaseEvent(QKeyEvent* event)
@@ -439,29 +241,6 @@ void SceneTabWidget::keyReleaseEvent(QKeyEvent* event)
             emit Escape();
         }
     }
-}
-
-void SceneTabWidget::UpdateTabName(int index)
-{
-    SceneEditor2* scene = GetTabScene(index);
-    if (NULL != scene)
-    {
-        DAVA::String tabName = scene->GetScenePath().GetFilename();
-        DAVA::String tabTooltip = scene->GetScenePath().GetAbsolutePathname();
-
-        if (scene->IsChanged())
-        {
-            tabName += "*";
-        }
-
-        tabBar->setTabText(index, tabName.c_str());
-        tabBar->setTabToolTip(index, tabTooltip.c_str());
-    }
-}
-
-SceneEditor2* SceneTabWidget::GetCurrentScene() const
-{
-    return curScene;
 }
 
 void SceneTabWidget::ShowScenePreview(const DAVA::FilePath& scenePath)
@@ -489,52 +268,35 @@ void SceneTabWidget::HideScenePreview()
     }
 }
 
-DAVA::RenderWidget* SceneTabWidget::GetRenderWidget() const
-{
-    return findChild<DAVA::RenderWidget*>();
-}
-
-int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
-{
-    for (int i = 0; i < tabBar->count(); ++i)
-    {
-        SceneEditor2* tabScene = GetTabScene(i);
-        if (tabScene && (tabScene->GetScenePath() == scenePath))
-        {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 bool SceneTabWidget::CloseAllTabs(bool silent)
 {
-    bool areTabBarSignalsBlocked = false;
-    if (silent)
-    {
-        areTabBarSignalsBlocked = tabBar->blockSignals(true);
-    }
+    // TODO UVR
+    //bool areTabBarSignalsBlocked = false;
+    //if (silent)
+    //{
+    //    areTabBarSignalsBlocked = tabBar->blockSignals(true);
+    //}
 
-    bool closed = true;
-    DAVA::uint32 count = GetTabCount();
-    while (count)
-    {
-        // TODO UVR LATER
-        //if (!CloseTabInternal(GetCurrentTab(), silent))
-        {
-            closed = false;
-            break;
-        }
-        count--;
-    }
+    //bool closed = true;
+    //DAVA::uint32 count = GetTabCount();
+    //while (count)
+    //{
+    //    // TODO UVR LATER
+    //    //if (!CloseTabInternal(GetCurrentTab(), silent))
+    //    {
+    //        closed = false;
+    //        break;
+    //    }
+    //    count--;
+    //}
 
-    if (silent)
-    {
-        tabBar->blockSignals(areTabBarSignalsBlocked);
-    }
+    //if (silent)
+    //{
+    //    tabBar->blockSignals(areTabBarSignalsBlocked);
+    //}
 
-    return closed;
+    //return closed;
+    return false;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)

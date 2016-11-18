@@ -19,6 +19,8 @@ public:
 
 private:
     friend class SceneManagerModule;
+
+    // TODO UVR Memory management
     SceneEditor2* scene = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(SceneData, DAVA::TArc::DataNode)

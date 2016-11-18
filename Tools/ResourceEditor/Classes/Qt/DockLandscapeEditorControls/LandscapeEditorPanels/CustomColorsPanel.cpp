@@ -119,8 +119,6 @@ void CustomColorsPanel::ConnectToSignals()
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
     projectDataWrapper.SetListener(this);
 
-    connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
-            this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
 
@@ -198,16 +196,14 @@ bool CustomColorsPanel::SaveTexture()
     SceneEditor2* sceneEditor = GetActiveScene();
 
     DAVA::FilePath selectedPathname = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-    if (!DAVA::FileSystem::Instance()->Exists(selectedPathname))
-    {
-        selectedPathname = sceneEditor->GetScenePath().GetDirectory();
-    }
+    DVASSERT(!selectedPathname.IsEmpty());
+    selectedPathname = selectedPathname.GetDirectory();
 
-    const QString text = "Custom colors texture is not saved. Do you want to save it?";
+    const QString text = "Custom colors texture was not saved. Do you want to save it?";
     QString filePath;
     for (;;)
     {
-        filePath = FileDialog::getSaveFileName(NULL, QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
+        filePath = FileDialog::getSaveFileName(nullptr, QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
                                                QString(selectedPathname.GetAbsolutePathname().c_str()),
                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
@@ -249,24 +245,6 @@ void CustomColorsPanel::LoadTexture()
     if (!selectedPathname.IsEmpty())
     {
         sceneEditor->customColorsSystem->LoadTexture(selectedPathname, true);
-    }
-}
-
-void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)
-{
-    if (scene != GetActiveScene())
-    {
-        return;
-    }
-
-    DAVA::FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
-    if (!selectedPathname.IsEmpty())
-    {
-        scene->customColorsSystem->SaveTexture(selectedPathname);
-    }
-    else
-    {
-        SaveTexture();
     }
 }
 

@@ -96,9 +96,11 @@ void SceneTabbar::OnActiveTabChanged()
 
 void SceneTabbar::OnTabsCollectionChanged()
 {
+    bool activeTabRemoved = false;
     {
         SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
 
+        uint64 currentTabID = tabData(currentIndex()).value<uint64>();
         UnorderedMap<uint64, int> existsIds;
         int tabCount = count();
         for (int i = 0; i < tabCount; ++i)
@@ -145,16 +147,25 @@ void SceneTabbar::OnTabsCollectionChanged()
             }
         }
 
+        activeTabRemoved = existsIds.count(currentTabID) > 0;
+
         for (const auto& node : existsIds)
         {
-            removeTab(node.second);
+            for (int i = 0; i < count(); ++i)
+            {
+                if (tabData(i).value<uint64>() == node.first)
+                {
+                    removeTab(i);
+                    break;
+                }
+            }
         }
     }
 
-    /*if (isEnabled())
+    if (activeTabRemoved)
     {
         OnCurrentTabChanged(currentIndex());
-    }*/
+    }
 }
 
 DAVA::Reflection SceneTabbar::GetSceneTabsModel(const DataContext* /*context*/)

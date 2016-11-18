@@ -42,7 +42,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
 void SceneRenderWidget::SetWidgetDelegate(IWidgetDelegate* widgetDelegate_)
 {
-    DVASSERT(widgetDelegate != nullptr);
+    DVASSERT(widgetDelegate == nullptr);
     widgetDelegate = widgetDelegate_;
 }
 

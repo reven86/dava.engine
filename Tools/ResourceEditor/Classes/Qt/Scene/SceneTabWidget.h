@@ -36,22 +36,10 @@ public:
     explicit SceneTabWidget(QWidget* parent);
     ~SceneTabWidget();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
-
-    int OpenTab();
-    int OpenTab(const DAVA::FilePath& scenePath);
-    bool CloseTab(int index);
     bool CloseAllTabs(bool silent);
-
-    int GetTabCount() const;
-    SceneEditor2* GetCurrentScene() const;
-    SceneEditor2* GetTabScene(int index) const;
 
     void ShowScenePreview(const DAVA::FilePath& scenePath);
     void HideScenePreview();
-
-    DAVA::RenderWidget* GetRenderWidget() const;
 
 signals:
     void CloseTabRequest(int index, Request* closeRequest);
@@ -59,27 +47,12 @@ signals:
 
 public slots:
     // this slot redirects any UIEvent to the active sceneProxy for processing
-    void TabBarCurrentChanged(int index);
-    void TabBarCloseRequest(int index);
-    void TabBarCloseCurrentRequest();
     void TabBarDataDropped(const QMimeData* data);
-    void OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height);
 
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects);
-    void SceneSaved(SceneEditor2* scene);
-    void SceneUpdated(SceneEditor2* scene);
-    void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);
-
 protected:
-    void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
-    bool CloseTabInternal(int index, bool silent);
-
     MainTabBar* tabBar;
-
-    void UpdateTabName(int index);
-
-    void SetTabScene(int index, SceneEditor2* scene);
 
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
@@ -88,11 +61,8 @@ protected:
 
     ScenePreviewDialog* previewDialog = nullptr;
 
-    int FindTab(const DAVA::FilePath& scenePath);
-
 private:
     bool TestSceneCompatibility(const DAVA::FilePath& scenePath);
-    void updateTabBarVisibility();
 
     int newSceneCounter = 0;
     SceneEditor2* curScene = nullptr;

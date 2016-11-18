@@ -23,6 +23,7 @@ public:
     void SetColor(DAVA::int32 colorIndex);
     DAVA::int32 GetColor();
 
+    void SaveTexture(); // with current of default generated path
     void SaveTexture(const DAVA::FilePath& filePath);
     bool LoadTexture(const DAVA::FilePath& filePath, bool createUndo);
     DAVA::FilePath GetCurrentSaveFileName();

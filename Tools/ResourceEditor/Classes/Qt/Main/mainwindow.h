@@ -60,8 +60,6 @@ public:
     void OnRenderingInitialized();
     SceneEditor2* GetCurrentScene();
 
-    bool OpenScene(const QString& path);
-    bool SaveScene(SceneEditor2* scene);
     bool SaveSceneAs(SceneEditor2* scene);
 
     void SetGPUFormat(DAVA::eGPUFamily gpu);
@@ -92,9 +90,6 @@ public:
 
     // qt actions slots
 public slots:
-    void OnSceneNew();
-    void OnSceneOpen();
-    void OnSceneOpenQuickly();
     void OnSceneSave();
     void OnSceneSaveAs();
     void OnSceneSaveToFolder();
@@ -235,8 +230,6 @@ protected:
 
     void OnSceneSaveAsInternal(bool saveWithCompressed);
 
-    void SaveAllSceneEmitters(SceneEditor2* scene) const;
-
 private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
@@ -319,23 +312,4 @@ private:
     std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
     DAVA::TArc::DataWrapper projectDataWrapper;
     QtDelayedExecutor delayedExecutor;
-
-private:
-    struct EmitterDescriptor
-    {
-        EmitterDescriptor(DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* layer, DAVA::FilePath path, DAVA::String name)
-            : emitter(_emitter)
-            , ownerLayer(layer)
-            , yamlPath(path)
-            , entityName(name)
-        {
-        }
-
-        DAVA::ParticleEmitter* emitter = nullptr;
-        DAVA::ParticleLayer* ownerLayer = nullptr;
-        DAVA::FilePath yamlPath;
-        DAVA::String entityName;
-    };
-
-    void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };

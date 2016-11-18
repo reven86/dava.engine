@@ -169,6 +169,7 @@ public:
     virtual ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) = 0;
 
     virtual QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
+    virtual QString GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
     virtual QString GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params = DirectoryDialogParams()) = 0;
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;

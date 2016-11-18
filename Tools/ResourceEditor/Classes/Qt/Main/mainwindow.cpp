@@ -174,7 +174,8 @@ private:
 
 void OpenScene(QtMainWindow* mainWindow, const QString& path)
 {
-    mainWindow->OpenScene(path);
+    // TODO UVR
+    //mainWindow->OpenScene(path);
 }
 }
 
@@ -319,62 +320,9 @@ SceneEditor2* QtMainWindow::GetCurrentScene()
     return result;
 }
 
-bool QtMainWindow::SaveScene(SceneEditor2* scene)
-{
-    DAVA::FilePath scenePath = scene->GetScenePath();
-    if (!scene->IsLoaded() || scenePath.IsEmpty())
-    {
-        return SaveSceneAs(scene);
-    }
-    else
-    {
-        if (scene->IsChanged())
-        {
-            SaveAllSceneEmitters(scene);
-            DAVA::SceneFileV2::eError ret = scene->SaveScene(scenePath);
-            if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-            {
-                QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
-            }
-            else
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 bool QtMainWindow::SaveSceneAs(SceneEditor2* scene)
 {
-    if (nullptr == scene)
-    {
-        return false;
-    }
-
-    DAVA::FilePath saveAsPath = scene->GetScenePath();
-    if (!DAVA::FileSystem::Instance()->Exists(saveAsPath))
-    {
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
-        DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
-        saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
-    }
-
-    QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-    if (selectedPath.isEmpty())
-    {
-        return false;
-    }
-
-    DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
-    if (scenePath.IsEmpty())
-    {
-        return false;
-    }
-
-    scene->SetScenePath(scenePath);
+    /*scene->SetScenePath(scenePath);
 
     SaveAllSceneEmitters(scene);
     DAVA::SceneFileV2::eError ret = scene->SaveScene(scenePath);
@@ -384,10 +332,12 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2* scene)
     }
     else
     {
+        // TODO UVR LATER
         recentFiles.Add(scenePath.GetAbsolutePathname());
         return true;
     }
 
+    return false;*/
     return false;
 }
 
@@ -414,81 +364,6 @@ void QtMainWindow::SetupWidget()
     ui->sceneTree->Init(globalOperations);
     ui->scrollAreaWidgetContents->Init(globalOperations);
     //ui->sceneTabWidget->Init(globalOperations);
-}
-
-void QtMainWindow::CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const
-{
-    DVASSERT(topLevelEmitter != nullptr);
-
-    for (auto& layer : topLevelEmitter->layers)
-    {
-        if (nullptr != layer->innerEmitter)
-        {
-            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
-            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
-        }
-    }
-
-    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
-}
-
-void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
-{
-    DVASSERT(nullptr != scene);
-
-    if (!SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool())
-    {
-        return;
-    }
-
-    DAVA::List<DAVA::Entity*> effectEntities;
-    scene->GetChildEntitiesWithComponent(effectEntities, DAVA::Component::PARTICLE_EFFECT_COMPONENT);
-    if (effectEntities.empty())
-    {
-        return;
-    }
-
-    DAVA::List<EmitterDescriptor> emittersForSave;
-    for (auto& entityWithEffect : effectEntities)
-    {
-        const DAVA::String entityName = entityWithEffect->GetName().c_str();
-        DAVA::ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
-        for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
-        {
-            CollectEmittersForSave(effect->GetEmitterInstance(i)->GetEmitter(), emittersForSave, entityName);
-        }
-    }
-
-    for (auto& descriptor : emittersForSave)
-    {
-        DAVA::ParticleEmitter* emitter = descriptor.emitter;
-        const DAVA::String& entityName = descriptor.entityName;
-
-        DAVA::FilePath yamlPathForSaving = descriptor.yamlPath;
-        if (yamlPathForSaving.IsEmpty())
-        {
-            QString particlesPath = GetSaveFolderForEmitters();
-
-            DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); // to ensure that folder is created
-
-            QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
-            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
-
-            if (filePath.isEmpty())
-            {
-                continue;
-            }
-
-            yamlPathForSaving = DAVA::FilePath(filePath.toStdString());
-            SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(yamlPathForSaving.GetDirectory()));
-        }
-
-        if (nullptr != descriptor.ownerLayer)
-        {
-            descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
-        }
-        emitter->SaveToYaml(yamlPathForSaving);
-    }
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
@@ -854,16 +729,6 @@ void QtMainWindow::SetupDocks()
 void QtMainWindow::SetupActions()
 {
     // scene file actions
-    QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
-
-    QAction* actionOpenSceneQuickly = FindFileDialog::CreateFindInFilesAction(this);
-    actionOpenSceneQuickly->setIcon(SharedIcon(":/QtIcons/openscene.png"));
-    actionOpenSceneQuickly->setText("Open Scene Quickly");
-    ui->File->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
-    QObject::connect(actionOpenSceneQuickly, &QAction::triggered, this, &QtMainWindow::OnSceneOpenQuickly);
-
-    QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
-    QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
     QObject::connect(ui->actionOnlyOriginalTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolder);
     QObject::connect(ui->actionWithCompressedTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolderCompressed);
 
@@ -1129,7 +994,6 @@ void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, 
 
 void QtMainWindow::EnableProjectActions(bool enable)
 {
-    ui->actionOpenScene->setEnabled(enable);
     ui->actionCubemapEditor->setEnabled(enable);
     ui->actionImageSplitter->setEnabled(enable);
     ui->dockLibrary->setEnabled(enable);
@@ -1147,8 +1011,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->dockSceneTree->setEnabled(enable);
     ui->dockSceneInfo->setEnabled(enable);
 
-    ui->actionSaveScene->setEnabled(enable);
-    ui->actionSaveSceneAs->setEnabled(enable);
     ui->actionOnlyOriginalTextures->setEnabled(enable);
     ui->actionWithCompressedTextures->setEnabled(enable);
 
@@ -1290,37 +1152,6 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommandNoti
 // ###################################################################################################
 // Mainwindow Qt actions
 // ###################################################################################################
-
-void QtMainWindow::OnSceneNew()
-{
-    // TODO UVR
-    /*ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(data != nullptr);
-    if (data->IsOpened())
-    {
-        ui->sceneTabWidget->OpenTab();
-    }*/
-}
-
-void QtMainWindow::OnSceneOpen()
-{
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(data != nullptr);
-    QString path = FileDialog::getOpenFileName(this, "Open scene file", data->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-    OpenScene(path);
-}
-
-void QtMainWindow::OnSceneOpenQuickly()
-{
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(data != nullptr);
-    QString path = FindFileDialog::GetFilePath(data->GetDataSourceSceneFiles(), "sc2", this);
-    if (!path.isEmpty())
-    {
-        OpenScene(path);
-    }
-}
-
 void QtMainWindow::OnSceneSave()
 {
     if (!IsSavingAllowed())
@@ -1331,7 +1162,8 @@ void QtMainWindow::OnSceneSave()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        SaveScene(scene);
+        // TODO UVR
+        //SaveScene(scene);
     }
 }
 
@@ -1390,14 +1222,15 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     DAVA::FilePath folder = PathnameToDAVAStyle(path);
     folder.MakeDirectoryPathname();
 
-    SceneSaver sceneSaver;
+    // TODO UVR ???
+    /*SceneSaver sceneSaver;
     sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
     sceneSaver.SetOutFolder(folder);
     sceneSaver.EnableCopyConverted(saveWithCompressed);
 
     SceneEditor2* sceneForSaving = scene->CreateCopyForExport();
     sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath());
-    sceneForSaving->Release();
+    sceneForSaving->Release();*/
 
     WaitStop();
 }
@@ -1451,7 +1284,8 @@ void QtMainWindow::OnRecentFilesTriggered(QAction* recentAction)
     DAVA::String path = recentFiles.GetItem(recentAction);
     if (!path.empty())
     {
-        OpenScene(QString::fromStdString(path));
+        // TODO UVR
+        //OpenScene(QString::fromStdString(path));
     }
 }
 
@@ -2277,7 +2111,8 @@ void QtMainWindow::OnBeastAndSave()
 
     if (!scene->IsLoaded() || scene->IsChanged())
     {
-        if (!SaveScene(scene))
+        // TODO UVR
+        //if (!SaveScene(scene))
             return;
     }
 
@@ -2294,7 +2129,8 @@ void QtMainWindow::OnBeastAndSave()
 
     RunBeast(dlg.GetPath(), dlg.GetMode());
     scene->SetChanged();
-    SaveScene(scene);
+    // TODO UVR
+    //SaveScene(scene);
 
     scene->ClearAllCommands();
 }
@@ -2667,7 +2503,8 @@ void QtMainWindow::OnBuildStaticOcclusion()
         bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
         if (needSaveScene)
         {
-            SaveScene(scene);
+            // TODO UVR
+            // SaveScene(scene);
         }
 
         ui->propertyEditor->ResetProperties();
@@ -2759,59 +2596,6 @@ void QtMainWindow::LoadObjectTypes(SceneEditor2* scene)
         return;
     ResourceEditor::eSceneObjectType objectType = scene->debugDrawSystem->GetRequestedObjectType();
     objectTypesWidget->setCurrentIndex(objectType + 1);
-}
-
-bool QtMainWindow::OpenScene(const QString& path)
-{
-    // TODO UVR
-    //bool ret = false;
-
-    //if (!path.isEmpty())
-    //{
-    //    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    //    DVASSERT(data != nullptr);
-    //    DAVA::FilePath projectPath(data->GetProjectPath());
-    //    DAVA::FilePath argumentPath(path.toStdString());
-
-    //    if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
-    //    {
-    //        QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
-    //                                                                          argumentPath.GetAbsolutePathname().c_str(),
-    //                                                                          projectPath.GetAbsolutePathname().c_str()));
-    //    }
-    //    else
-    //    {
-    //        int needCloseIndex = -1;
-    //        SceneEditor2* scene = ui->sceneTabWidget->GetCurrentScene();
-    //        if (scene && (ui->sceneTabWidget->GetTabCount() == 1))
-    //        {
-    //            DAVA::FilePath path = scene->GetScenePath();
-    //            if (path.GetFilename() == "newscene1.sc2" && !scene->CanUndo() && !scene->IsLoaded())
-    //            {
-    //                needCloseIndex = 0;
-    //            }
-    //        }
-
-    //        DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
-
-    //        int index = ui->sceneTabWidget->OpenTab(scenePath);
-
-    //        if (index != -1)
-    //        {
-    //            recentFiles.Add(path.toStdString());
-
-    //            // close empty default scene
-    //            if (-1 != needCloseIndex)
-    //            {
-    //                ui->sceneTabWidget->CloseTab(needCloseIndex);
-    //            }
-
-    //            ret = true;
-    //        }
-    //    }
-    //}
-
-    return false;
 }
 
 void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)
@@ -3239,7 +3023,8 @@ void QtMainWindow::OnBatchProcessScene()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneProcessor.Execute(sceneEditor))
     {
-        SaveScene(sceneEditor);
+        // TODO UVR
+        //SaveScene(sceneEditor);
     }
 }
 

@@ -66,6 +66,11 @@ bool TypeInheritance::CanUpCast(const Type* from, const Type* to)
 
 bool TypeInheritance::CanCast(const Type* from, const Type* to)
 {
+    if (from == nullptr || to == nullptr)
+    {
+        return false;
+    }
+
     return CanDownCast(from, to) || CanUpCast(from, to);
 }
 

@@ -34,6 +34,7 @@ public:
     void ClearMessage(const WindowKey& windowKey) override;
     ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) override;
 
+    QString GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params) override;
     QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params) override;
     QString GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params) override;
 

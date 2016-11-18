@@ -529,14 +529,14 @@ public:
             throw std::runtime_error(Format("DeleteContext failed for contextID : %d", contextID));
         }
 
-        for (std::unique_ptr<ClientModule>& module : modules)
-        {
-            module->OnContextDeleted(iter->get());
-        }
-
         if (activeContext != nullptr && activeContext->GetID() == contextID)
         {
             ActivateContextImpl(nullptr);
+        }
+
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextDeleted(iter->get());
         }
 
         contexts.erase(iter);

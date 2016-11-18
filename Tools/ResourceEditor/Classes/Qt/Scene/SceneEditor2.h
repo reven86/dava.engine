@@ -109,7 +109,9 @@ public:
     DAVA::SceneFileV2::eError SaveScene();
     bool Export(const SceneExporter::Params& exportingParams);
 
-    const DAVA::FilePath& GetScenePath();
+    void SaveEmitters(const DAVA::Function<DAVA::FilePath(const DAVA::String& /*entityName*/, const DAVA::String& /*emitterName*/)>& getEmitterPathFn);
+
+    const DAVA::FilePath& GetScenePath() const;
     void SetScenePath(const DAVA::FilePath& newScenePath);
 
     // commands

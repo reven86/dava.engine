@@ -30,7 +30,7 @@ public:
     class IWidgetDelegate
     {
     public:
-        virtual void CloseSceneRequest(DAVA::uint64 id) = 0;
+        virtual bool CloseSceneRequest(DAVA::uint64 id) = 0;
     };
 
     SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget);
@@ -54,7 +54,7 @@ private:
     const int davaUIScreenID = 0;
     const int dava3DViewMargin = 3;
 
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
 
     IWidgetDelegate* widgetDelegate = nullptr;
 };

@@ -38,6 +38,8 @@ void InitTArcCore(DAVA::TArc::CoreInterface* core)
 }
 
 IMPL_OPERATION_ID(OpenLastProjectOperation);
+IMPL_OPERATION_ID(CreateNewSceneOperation);
+IMPL_OPERATION_ID(OpenSceneOperation);
 IMPL_OPERATION_ID(CloseAllScenesOperation);
 
 } // namespace REGlobal

@@ -42,6 +42,8 @@ T* GetActiveDataNode()
     return ctx->GetData<T>();
 }
 
-DECLARE_OPERATION_ID(OpenLastProjectOperation);
-DECLARE_OPERATION_ID(CloseAllScenesOperation);
+DECLARE_OPERATION_ID(OpenLastProjectOperation); // Args - empty
+DECLARE_OPERATION_ID(CreateNewSceneOperation); // Args - empty
+DECLARE_OPERATION_ID(OpenSceneOperation); // Args - scenePath: DAVA::FilePath
+DECLARE_OPERATION_ID(CloseAllScenesOperation); // Args - empty
 }

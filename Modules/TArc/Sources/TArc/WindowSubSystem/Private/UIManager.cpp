@@ -56,6 +56,21 @@ static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>
   std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
 };
 
+QMessageBox::StandardButton Convert(const ModalMessageParams::Button& button)
+{
+    using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
+    QMessageBox::StandardButton ret = QMessageBox::NoButton;
+    for (const ButtonNode& node : buttonsConvertor)
+    {
+        if (button == node.second)
+        {
+            ret = node.first;
+        }
+    }
+
+    return ret;
+}
+
 QMessageBox::StandardButtons Convert(const ModalMessageParams::Buttons& buttons)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
@@ -118,7 +133,11 @@ void InsertAction(T* container, QAction* action, const InsertionParams& params)
         if (params.method == InsertionParams::eInsertionMethod::AfterItem)
         {
             QList<QAction*> actions = container->actions();
-            beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
+            int beforeActionIndex = actions.indexOf(beforeAction);
+            if (beforeActionIndex + 1 < actions.size())
+            {
+                beforeAction = actions.at(actions.indexOf(beforeAction) + 1);
+            }
         }
     }
 
@@ -611,6 +630,23 @@ QWidget* UIManager::GetWindow(const WindowKey& windowKey)
     return impl->FindOrCreateWindow(windowKey).window;
 }
 
+QString UIManager::GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params)
+{
+    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+
+    QString dir = params.dir;
+    if (dir.isEmpty())
+    {
+        dir = impl->propertiesHolder.Get<QString>(UIManagerDetail::FILE_DIR_KEY, dir);
+    }
+    QString filePath = QFileDialog::getSaveFileName(windowInfo.window, params.title, dir, params.filters);
+    if (!filePath.isEmpty())
+    {
+        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteDir());
+    }
+    return filePath;
+}
+
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
@@ -651,7 +687,8 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     using namespace UIManagerDetail;
     MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
 
-    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message, Convert(params.buttons), Convert(params.defaultButton));
+    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message,
+                                                                        Convert(params.buttons), Convert(params.defaultButton));
     return Convert(resultButton);
 }
 
