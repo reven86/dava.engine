@@ -100,11 +100,7 @@ bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , processCommunication(new ProcessCommunication(this))
 {
-    processCommunication->Send(ProcessCommunication::eMessage::USER_MESSAGE, qApp->applicationFilePath(), [](ProcessCommunication::eReply reply) {
-        qDebug() << static_cast<int>(reply);
-    });
     ui->setupUi(this);
     ui->action_updateConfiguration->setShortcuts(QList<QKeySequence>() << QKeySequence("F5") << QKeySequence("Ctrl+R"));
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);

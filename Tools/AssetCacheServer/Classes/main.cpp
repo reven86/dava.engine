@@ -1,16 +1,17 @@
-#include "Logger/Logger.h"
-#include "QtHelpers/RunGuard.h"
-
-#include "ServerCore.h"
 #include "UI/AssetCacheServerWindow.h"
+#include "ServerCore.h"
 
-#include <QApplication>
-#include <QCryptographicHash>
+#include "Logger/Logger.h"
 
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
-
 #include "Network/NetCore.h"
+
+#include "QtHelpers/RunGuard.h"
+#include "QtHelpers/ProcessCommunication.h"
+
+#include <QApplication>
+#include <QCryptographicHash>
 
 using namespace DAVA;
 
@@ -53,6 +54,16 @@ int Process(Engine& e)
                          server.reset();
                          runGuard.reset();
                      });
+    QString path = qApp->applicationFilePath();
+    ProcessCommunication processCommunication;
+    processCommunication.SetProcessRequestFunction([](ProcessCommunication::eMessage message) {
+        if (message == ProcessCommunication::eMessage::QUIT)
+        {
+            qApp->quit();
+            return ProcessCommunication::eReply::ACCEPT;
+        }
+        return ProcessCommunication::eReply::UNKNOWN_MESSAGE;
+    });
 
     return a.exec();
 }

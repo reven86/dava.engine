@@ -11,6 +11,8 @@
 
 class FileManager;
 struct AppVersion;
+class ProcessCommunication;
+
 class ApplicationManager : public QObject
 {
     Q_OBJECT
@@ -21,6 +23,8 @@ public:
 
     ConfigParser* GetLocalConfig();
     ConfigParser* GetRemoteConfig();
+
+    ProcessCommunication* GetProcessCommunicationModule() const;
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
@@ -54,6 +58,7 @@ private:
     ConfigParser remoteConfig;
 
     FileManager* fileManager = nullptr;
+    ProcessCommunication* processCommunication = nullptr;
 };
 
 #endif // APPLICATIONMANAGER_H

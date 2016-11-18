@@ -6,11 +6,15 @@
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
+
+#include "QtHelpers/ProcessCommunication.h"
+
 #include <QNetworkReply>
 #include <QDir>
 #include <QPushButton>
 #include <QListWidget>
 #include <QTreeView>
+#include <QMessageBox>
 
 namespace UpdateDialog_local
 {
@@ -198,20 +202,74 @@ void UpdateDialog::DownloadFinished()
 
     QString filePath = outputFile.fileName();
     outputFile.close();
+    UpdateLastLogValue(tr("Download Complete!"));
 
     const UpdateTask& task = tasks.head();
+
+    bool needRelaunch = false;
 
     QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
     if (task.currentVersion != nullptr)
     {
         QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
         QString runPath = appDir + localAppPath;
-        while (ProcessHelper::IsProcessRuning(runPath))
-            ErrorMessenger::ShowRetryDlg(task.appID, runPath, false);
+
+        if (ProcessHelper::IsProcessRuning(runPath))
+        {
+            //i will burn in hell if i wlil not modify this code
+            //AssetCacheServer is working on background, so we need to stop it and relaunch later
+            if (task.appID == "AssetCacheServer")
+            {
+                AddLogValue(tr("Stopping AssetCacheServer..."));
+                ProcessCommunication* processCommunication = appManager->GetProcessCommunicationModule();
+                ProcessCommunication::eReply reply = processCommunication->SendSync(ProcessCommunication::eMessage::QUIT, runPath);
+                if (reply == ProcessCommunication::eReply::ACCEPT)
+                {
+                    UpdateLastLogValue(tr("Waiting for AssetCacheServer will be stopped..."));
+                    QElapsedTimer timer;
+                    timer.start();
+                    const int maxWaitTime = 10000; //10 secs;
+                    bool isStillRunning = true;
+                    while (timer.elapsed() < maxWaitTime && isStillRunning)
+                    {
+                        isStillRunning = ProcessHelper::IsProcessRuning(runPath);
+                        QThread::msleep(100);
+                    }
+                    if (isStillRunning == false)
+                    {
+                        UpdateLastLogValue(tr("Asset cache server stopped"));
+                        CompleteLog();
+                        needRelaunch = true;
+                    }
+                    else
+                    {
+                        UpdateLastLogValue(tr("Asset cache server was not stopped till %1 seconds").arg(maxWaitTime / 1000));
+                        BreakLog();
+                        return;
+                    }
+                }
+                else
+                {
+                    UpdateLastLogValue(tr("Can not stop asset cache server, last error was %1").arg(ProcessCommunication::GetReplyString(reply)));
+                    BreakLog();
+                    return;
+                }
+            }
+            else
+            {
+                do
+                {
+                    if (ErrorMessenger::ShowRetryDlg(task.appID, runPath, true) == QMessageBox::Cancel)
+                    {
+                        AddLogValue(tr("Updating failed!"));
+                        BreakLog();
+                        return;
+                    }
+                } while (ProcessHelper::IsProcessRuning(runPath));
+            }
+        }
     }
     FileManager::DeleteDirectory(appDir);
-
-    UpdateLastLogValue(tr("Download Complete!"));
 
     AddLogValue(tr("Unpacking archive..."));
 
@@ -233,6 +291,10 @@ void UpdateDialog::DownloadFinished()
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     tasks.dequeue();
+    if (needRelaunch)
+    {
+        appManager->RunApplication(task.branchID, task.appID, task.newVersion.id);
+    }
     StartNextTask();
 }
 

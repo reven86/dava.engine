@@ -5,6 +5,7 @@
 #include "filemanager.h"
 
 #include "QtHelpers/HelperFunctions.h"
+#include "QtHelpers/ProcessCommunication.h"
 
 #include <QFile>
 #include <QDebug>
@@ -24,6 +25,8 @@ QString RemoveWhitespace(const QString& str)
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
     , fileManager(new FileManager(this))
+    , processCommunication(new ProcessCommunication(this))
+
 {
     localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
@@ -246,6 +249,11 @@ QString ApplicationManager::GetString(const QString& stringID) const
 ConfigParser* ApplicationManager::GetRemoteConfig()
 {
     return &remoteConfig;
+}
+
+ProcessCommunication* ApplicationManager::GetProcessCommunicationModule() const
+{
+    return processCommunication;
 }
 
 ConfigParser* ApplicationManager::GetLocalConfig()

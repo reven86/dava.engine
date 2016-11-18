@@ -20,24 +20,31 @@ public:
     {
         //messages
         QUIT,
-
         USER_MESSAGE = 0xFFFF,
     };
 
     enum class eReply
     {
-        DONE = 0xF0000,
+        ACCEPT = 0xF0000,
+        REJECT,
+        UNKNOWN_MESSAGE,
         NOT_INITIALIZED,
+        SEND_ERROR,
+        TIMEOUT_ERROR,
         USER_REPLY = 0xFFFFF
     };
 
+    static QString GetReplyString(eReply reply);
+
     //async method
     using CallbackFunction = std::function<void(eReply)>;
-    void Send(const eMessage messageCode, const QString &targetAppPath, CallbackFunction callBack = CallbackFunction());
+    void SendAsync(const eMessage messageCode, const QString &targetAppPath, CallbackFunction callBack = CallbackFunction());
+    eReply SendSync(const eMessage messagCode, const QString &targetAppPath);
 
     //this class require client function to process requests
     using ProcessRequestFunction = std::function<eReply(eMessage)>;
     void SetProcessRequestFunction(ProcessRequestFunction function);
+    bool IsInitialized() const;
 
 private slots:
     void Poll();
@@ -65,6 +72,7 @@ private:
     QList<MessageDetails> sentMessages;
     QElapsedTimer elapsedTimer;
     ProcessRequestFunction processRequest;
+    bool initialized = false;
 };
 
 

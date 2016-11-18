@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QApplication>
+#include <QThread>
 #include <QDebug>
 
 namespace ProcessCommunicationDetails
@@ -18,7 +19,7 @@ namespace ProcessCommunicationDetails
     const QString keyTransportMessageID = "messageID";
 
     const qint64 pollingTime = 50; //100ms;
-    const qint64 maximumTimeout = pollingTime * 10;
+    const qint64 maximumTimeout = 5 * 60 * 1000; // 5 minutes
     static qint64 lastMessageID = 0;
 }
 
@@ -38,6 +39,7 @@ ProcessCommunication::ProcessCommunication(QObject* parent)
     else
     {
         InitPollTimer();
+        initialized = true;
     }
 }
 
@@ -49,8 +51,34 @@ ProcessCommunication::~ProcessCommunication()
     }
 }
 
-void ProcessCommunication::Send(const eMessage messageCode, const QString &targetAppPath, CallbackFunction callBack /* = CallbackFunction() */)
+QString ProcessCommunication::GetReplyString(eReply reply)
 {
+    switch (reply)
+    {
+    case eReply::ACCEPT:
+        return tr("message accepted");
+    case eReply::REJECT:
+        return tr("message rejected");
+    case eReply::UNKNOWN_MESSAGE:
+        return tr("this message is unknown for client");
+    case eReply::NOT_INITIALIZED:
+        return tr("communication module was not initialized");
+    case eReply::SEND_ERROR:
+        return tr("can not send message");
+    case eReply::TIMEOUT_ERROR:
+        return tr("required application not responding");
+    default:
+        return tr("unknown reply");
+    }
+}
+
+void ProcessCommunication::SendAsync(const eMessage messageCode, const QString &targetAppPath, CallbackFunction callBack /* = CallbackFunction() */)
+{
+    if (IsInitialized() == false)
+    {
+        callBack(eReply::NOT_INITIALIZED);
+        return;
+    }
     QJsonObject obj;
     MessageDetails messageDetails(callBack);
     obj[ProcessCommunicationDetails::keyClientMessageID] = static_cast<int>(messageCode);
@@ -66,6 +94,37 @@ void ProcessCommunication::Send(const eMessage messageCode, const QString &targe
         messageDetails.creationTime = elapsedTimer.elapsed();
         sentMessages.append(messageDetails);
     }
+    else
+    {
+        callBack(eReply::SEND_ERROR);
+    }
+}
+
+ProcessCommunication::eReply ProcessCommunication::SendSync(const eMessage messagCode, const QString &targetAppPath)
+{
+    bool haveAnswer = false;
+    eReply reply;
+    CallbackFunction callBack = [&haveAnswer, &reply](eReply replyFromClient){
+        reply = replyFromClient;
+        haveAnswer = true;
+    };
+    SendAsync(messagCode, targetAppPath, callBack);
+    //whithout an answer this loop will be stopped by timeout
+    while (haveAnswer == false)
+    {
+        QThread::msleep(100);
+    }
+    return reply;
+}
+
+void ProcessCommunication::SetProcessRequestFunction(ProcessRequestFunction function)
+{
+    processRequest = function;
+}
+
+bool ProcessCommunication::IsInitialized() const
+{
+    return initialized;
 }
 
 void ProcessCommunication::Poll()
@@ -73,27 +132,44 @@ void ProcessCommunication::Poll()
     QJsonObject object = Read();
     if (object.isEmpty())
     {
-        return;
-    }
-    int messageIDValue = object[ProcessCommunicationDetails::keyClientMessageID].toInt();
+        bool gotReply = false;
 
-    qint64 transportLevelID = object[ProcessCommunicationDetails::keyTransportMessageID].toInt();
+        int messageIDValue = object[ProcessCommunicationDetails::keyClientMessageID].toInt();
+
+        qint64 transportLevelID = object[ProcessCommunicationDetails::keyTransportMessageID].toInt();
+        QMutableListIterator<MessageDetails> iterator(sentMessages);
+        while (iterator.hasNext())
+        {
+            const MessageDetails &details = iterator.next();
+            if (details.transportMessageID == transportLevelID)
+            {
+                details.callBack(static_cast<eReply>(messageIDValue));
+                iterator.remove();
+                //we got reply for sent message
+                gotReply = true;
+            }
+        }
+
+        //this is a new direct message
+        if (gotReply == false)
+        {
+            eMessage clientMessage = static_cast<eMessage>(messageIDValue);
+            eReply reply = processRequest(clientMessage);
+            QString targetApp = object[ProcessCommunicationDetails::keySenderApp].toString();
+            Reply(transportLevelID, reply, targetApp);
+        }
+    }
     QMutableListIterator<MessageDetails> iterator(sentMessages);
+    qint64 elapsedTime = elapsedTimer.elapsed();
     while (iterator.hasNext())
     {
         const MessageDetails &details = iterator.next();
-        if (details.transportMessageID == transportLevelID)
+        if (elapsedTime - details.creationTime > ProcessCommunicationDetails::maximumTimeout)
         {
-            details.callBack(static_cast<eReply>(messageIDValue));
+            details.callBack(eReply::TIMEOUT_ERROR);
             iterator.remove();
-            return;
         }
     }
-
-    eMessage clientMessage = static_cast<eMessage>(messageIDValue);
-    eReply reply = processRequest(clientMessage);
-    QString targetApp = object[ProcessCommunicationDetails::keySenderApp].toString();
-    Reply(transportLevelID, reply, targetApp);
 }
 
 void ProcessCommunication::Reply(qint64 transportLevelID, const eReply replyCode, const QString &targetAppPath)
