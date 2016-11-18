@@ -349,16 +349,21 @@ void EngineBackend::Update(float32 frameDelta)
 
 void EngineBackend::UpdateWindows(float32 frameDelta)
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::UpdateWindows");
     for (Window* w : aliveWindows)
     {
         if (w->IsVisible())
         {
             BeginFrame();
-            w->Update(frameDelta);
+            {
+                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
+                w->Update(frameDelta);
+            }
 
-            Renderer::GetRenderStats().Reset();
-            w->Draw();
+            {
+                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
+                Renderer::GetRenderStats().Reset();
+                w->Draw();
+            }
             EndFrame();
         }
     }

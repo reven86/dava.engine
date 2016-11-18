@@ -8,7 +8,6 @@
 #include "Engine/Private/WindowBackend.h"
 
 #include "Autotesting/AutotestingSystem.h"
-#include "Debug/CPUProfiler.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -162,8 +161,6 @@ bool Window::GetCursorVisibility() const
 
 void Window::Update(float32 frameDelta)
 {
-    DAVA_CPU_PROFILER_SCOPE("Window::Update");
-
     update.Emit(this, frameDelta);
 
     const EngineContext* context = engineBackend->GetContext();
@@ -180,8 +177,6 @@ void Window::Update(float32 frameDelta)
 
 void Window::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE("Window::Draw");
-
     const EngineContext* context = engineBackend->GetContext();
     context->renderSystem2D->BeginFrame();
 
