@@ -76,6 +76,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+    context->settings = new EngineSettings();
 }
 
 EngineBackend::~EngineBackend()
@@ -702,8 +703,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
-
-    context->settings = new EngineSettings();
 
     context->analyticsCore = new Analytics::Core;
 }

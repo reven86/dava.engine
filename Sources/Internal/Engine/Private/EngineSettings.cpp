@@ -25,6 +25,12 @@ DAVA_REFLECTION_IMPL(EngineSettings)
     registrator.End();
 }
 
+EngineSettings::SettingRange::SettingRange(const Any& _min, const Any& _max)
+    : min(_min)
+    , max(_max)
+{
+}
+
 EngineSettings::EngineSettings()
 {
     ReflectedType::Get<EngineSettings>(); //ensure that settings was setup
@@ -95,6 +101,39 @@ EngineSettings::eSettingValue EngineSettings::GetSettingValueByName(const FastNa
     }
 
     return EngineSettings::eSettingValue(i);
+}
+
+template <EngineSettings::eSetting ID, typename T>
+inline const T& EngineSettings::GetSettingRefl() const
+{
+    const Any& v = GetSetting<ID>();
+    return v.Get<T>();
+}
+
+template <EngineSettings::eSetting ID, typename T>
+inline void EngineSettings::SetSettingRefl(const T& value)
+{
+    SetSetting<ID>(value);
+}
+
+template <EngineSettings::eSetting ID, typename T>
+inline void EngineSettings::SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const T& rangeStart, const T& rangeEnd)
+{
+    DVASSERT(rangeStart <= rangeEnd);
+
+    settingDefault[ID] = defaultValue;
+    settingName[ID] = FastName(name);
+
+    if (rangeStart != rangeEnd)
+        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>)[Meta<SettingRange>(Any(rangeStart), Any(rangeEnd))];
+    else
+        registrator.Field(GetSettingName(ID).c_str(), &EngineSettings::GetSettingRefl<ID, T>, &EngineSettings::SetSettingRefl<ID, T>);
+}
+
+inline void EngineSettings::SetupSettingValue(eSettingValue value, const char* name)
+{
+    DVASSERT(value < SETTING_VALUE_COUNT);
+    settingValueName[value] = FastName(name);
 }
 
 } // ns DAVA
