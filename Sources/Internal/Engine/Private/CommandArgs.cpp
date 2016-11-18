@@ -9,6 +9,8 @@
 #include <shellapi.h>
 #endif
 
+#include <sstream>
+
 namespace DAVA
 {
 namespace Private
@@ -55,11 +57,14 @@ Vector<String> GetCommandArgs(int argc, char* argv[])
 
 Vector<String> GetCommandArgs(const String& cmdline)
 {
-    // TODO: manually break command line into args
     Vector<String> cmdargs;
     if (!cmdline.empty())
     {
-        cmdargs.push_back(cmdline);
+        std::istringstream stream(cmdline);
+
+        String token;
+        while (std::getline(stream, token, ' '))
+            cmdargs.push_back(token);
     }
     return cmdargs;
 }
