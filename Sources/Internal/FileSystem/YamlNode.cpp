@@ -8,20 +8,7 @@ namespace DAVA
 {
 static const String EMPTY_STRING = "";
 static const Vector<YamlNode*> EMPTY_VECTOR;
-static const Vector<std::pair<String, YamlNode*>> EMPTY_MAP = Vector<std::pair<String, YamlNode*>>();
-
-struct EqualToFirst
-{
-    EqualToFirst(const String& strValue)
-        : value(strValue)
-    {
-    }
-    bool operator()(const std::pair<String, YamlNode*>& val)
-    {
-        return val.first == value;
-    }
-    const String& value;
-};
+static const Map<String, YamlNode*> EMPTY_MAP = Map<String, YamlNode*>();
 
 YamlNode* YamlNode::CreateStringNode()
 {
@@ -36,11 +23,12 @@ YamlNode* YamlNode::CreateArrayNode(eArrayRepresentation representation /* = AR_
     return node;
 }
 
-YamlNode* YamlNode::CreateMapNode(eMapRepresentation valRepresentation /*= MR_BLOCK_REPRESENTATION*/, eStringRepresentation keyRepresentation /*= SR_PLAIN_REPRESENTATION*/)
+YamlNode* YamlNode::CreateMapNode(bool orderedSave /* = true*/, eMapRepresentation valRepresentation /*= MR_BLOCK_REPRESENTATION*/, eStringRepresentation keyRepresentation /*= SR_PLAIN_REPRESENTATION*/)
 {
     YamlNode* node = new YamlNode(TYPE_MAP);
     node->objectMap->style = valRepresentation;
     node->objectMap->keyStyle = keyRepresentation;
+    node->objectMap->orderedSave = orderedSave;
     return node;
 }
 
@@ -61,6 +49,7 @@ YamlNode::YamlNode(eType _type)
         objectMap = new ObjectMap();
         objectMap->style = MR_BLOCK_REPRESENTATION;
         objectMap->keyStyle = SR_PLAIN_REPRESENTATION;
+        objectMap->orderedSave = true;
         break;
     }
 }
@@ -87,11 +76,13 @@ YamlNode::~YamlNode()
     break;
     case TYPE_MAP:
     {
-        size_t size = objectMap->unordered.size();
-        for (size_t k = 0; k < size; ++k)
+        Map<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
+                                          end = objectMap->ordered.end();
+        for (; iter != end; ++iter)
         {
-            SafeRelease(objectMap->unordered[k].second);
+            SafeRelease(iter->second);
         }
+        objectMap->ordered.clear();
         objectMap->unordered.clear();
         SafeDelete(objectMap);
     }
@@ -316,7 +307,7 @@ VariantType YamlNode::AsVariantType() const
 {
     VariantType retValue;
 
-    const Vector<std::pair<String, YamlNode*>>& mapFromNode = AsMap();
+    const Map<String, YamlNode*>& mapFromNode = AsMap();
 
     for (auto it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
     {
@@ -540,17 +531,11 @@ const Vector<YamlNode*>& YamlNode::AsVector() const
     return EMPTY_VECTOR;
 }
 
-Vector<std::pair<String, YamlNode*>>::const_iterator YamlNode::FindInMap(const Vector<std::pair<String, YamlNode*>>& unordered, const String& name)
-{
-    auto it = std::find_if(begin(unordered), end(unordered), EqualToFirst(name));
-    return it;
-}
-
-const Vector<std::pair<String, YamlNode*>>& YamlNode::AsMap() const
+const Map<String, YamlNode*>& YamlNode::AsMap() const
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
-        return objectMap->unordered;
+        return objectMap->ordered;
 
     return EMPTY_MAP;
 }
@@ -583,24 +568,46 @@ const YamlNode* YamlNode::Get(const String& name) const
     //DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
     {
-        auto it = FindInMap(objectMap->unordered, name);
-        if (it != objectMap->unordered.end())
+        auto iter = objectMap->ordered.find(name);
+        if (iter != objectMap->ordered.end())
         {
-            return it->second;
+            return iter->second;
         }
     }
     return NULL;
 }
 
+struct EqualToFirst
+{
+    EqualToFirst(const String& strValue)
+        : value(strValue)
+    {
+    }
+    bool operator()(const std::pair<String, YamlNode*>& val)
+    {
+        return val.first == value;
+    }
+    const String& value;
+};
+
 void YamlNode::RemoveNodeFromMap(const String& name)
 {
     DVASSERT(GetType() == TYPE_MAP);
-    auto it = std::find_if(begin(objectMap->unordered), end(objectMap->unordered), EqualToFirst(name));
-    if (it != objectMap->unordered.end())
+    auto begin = objectMap->ordered.lower_bound(name),
+         end = objectMap->ordered.upper_bound(name);
+    if (begin == end)
+        return;
+
+    auto it = begin;
+    for (; it != end; ++it)
     {
         SafeRelease(it->second);
     }
-    objectMap->unordered.erase(it);
+
+    objectMap->ordered.erase(begin, end);
+
+    Vector<std::pair<String, YamlNode*>>& array = objectMap->unordered;
+    array.erase(std::remove_if(array.begin(), array.end(), EqualToFirst(name)), array.end());
 }
 YamlNode::eStringRepresentation YamlNode::GetStringRepresentation() const
 {
@@ -624,6 +631,12 @@ YamlNode::eStringRepresentation YamlNode::GetMapKeyRepresentation() const
 {
     DVASSERT(GetType() == TYPE_MAP);
     return objectMap->keyStyle;
+}
+
+bool YamlNode::GetMapOrderRepresentation() const
+{
+    DVASSERT(GetType() == TYPE_MAP);
+    return objectMap->orderedSave;
 }
 
 void YamlNode::InternalSetToString(const VariantType& varType)
@@ -675,17 +688,10 @@ void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rew
     {
         RemoveNodeFromMap(name);
     }
-    else
-    {
-#if defined(__DAVAENGINE_DEBUG__)
-        auto it = FindInMap(objectMap->unordered, name);
-        if (it != objectMap->unordered.end())
-        {
-            DVASSERT_MSG(false, Format("YamlNode::InternalAddNodeToMap: Unordered_map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
-        }
-#endif
-    }
+
+    objectMap->ordered.insert(std::pair<String, YamlNode*>(name, node));
     objectMap->unordered.push_back(std::pair<String, YamlNode*>(name, node));
+    DVASSERT_MSG(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
 }
 
 void YamlNode::InternalSetString(const String& value, eStringRepresentation style /* = SR_DOUBLE_QUOTED_REPRESENTATION*/)
@@ -735,7 +741,7 @@ void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
     const KeyedArchive::UnderlyingMap& innerArchiveMap = archive->GetArchieveData();
     for (KeyedArchive::UnderlyingMap::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
-        YamlNode* arrayElementNodeValue = CreateMapNode(MR_BLOCK_REPRESENTATION);
+        YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
         arrayElementNodeValue->InternalAddNodeToMap(it->second->GetTypeName(), CreateNodeFromVariantType(*it->second), false);
 
         InternalAddNodeToMap(it->first, arrayElementNodeValue, false);

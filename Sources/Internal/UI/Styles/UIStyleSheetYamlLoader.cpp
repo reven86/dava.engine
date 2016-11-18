@@ -20,9 +20,9 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
 
     for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
     {
-        const Vector<std::pair<String, YamlNode*>>& styleSheet = (*styleSheetIter)->AsMap();
+        const Map<String, YamlNode*>& styleSheet = (*styleSheetIter)->AsMap();
 
-        auto propertiesSectionIter = YamlNode::FindInMap(styleSheet, "properties");
+        auto propertiesSectionIter = styleSheet.find("properties");
 
         if (propertiesSectionIter != styleSheet.end())
         {
@@ -39,7 +39,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
                 }
             }
 
-            auto transitionSectionIter = YamlNode::FindInMap(styleSheet, "transition");
+            auto transitionSectionIter = styleSheet.find("transition");
 
             if (transitionSectionIter != styleSheet.end())
             {
@@ -67,7 +67,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
             propertyTable->SetProperties(propertiesToSet);
 
             Vector<String> selectorList;
-            Split(YamlNode::FindInMap(styleSheet, "selector")->second->AsString(), ",", selectorList);
+            Split(styleSheet.find("selector")->second->AsString(), ",", selectorList);
 
             for (const String& selectorString : selectorList)
             {

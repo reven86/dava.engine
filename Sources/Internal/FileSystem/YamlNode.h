@@ -48,7 +48,7 @@ public:
     YamlNode(eType type);
     static YamlNode* CreateStringNode();
     static YamlNode* CreateArrayNode(eArrayRepresentation representation = AR_FLOW_REPRESENTATION);
-    static YamlNode* CreateMapNode(eMapRepresentation valRepresentation = MR_BLOCK_REPRESENTATION, eStringRepresentation keyRepresentation = SR_PLAIN_REPRESENTATION);
+    static YamlNode* CreateMapNode(bool orderedSave = true, eMapRepresentation valRepresentation = MR_BLOCK_REPRESENTATION, eStringRepresentation keyRepresentation = SR_PLAIN_REPRESENTATION);
 
     eType GetType() const
     {
@@ -77,8 +77,7 @@ public:
     Rect AsRect() const;
 
     //These functions work only if type of node is map
-    const Vector<std::pair<String, YamlNode*>>& AsMap() const;
-    static Vector<std::pair<String, YamlNode*>>::const_iterator YamlNode::FindInMap(const Vector<std::pair<String, YamlNode*>>& unordered, const String& name);
+    const Map<String, YamlNode*>& AsMap() const;
     VariantType AsVariantType() const;
 
     VariantType AsVariantType(const InspMember* insp) const;
@@ -154,6 +153,7 @@ public:
     eArrayRepresentation GetArrayRepresentation() const;
     eMapRepresentation GetMapRepresentation() const;
     eStringRepresentation GetMapKeyRepresentation() const;
+    bool GetMapOrderRepresentation() const;
 
 protected:
     static YamlNode* CreateNodeFromVariantType(const VariantType& varType);
@@ -197,9 +197,11 @@ private:
 
     struct ObjectMap
     {
+        Map<String, YamlNode*> ordered;
         Vector<std::pair<String, YamlNode*>> unordered;
         eMapRepresentation style;
         eStringRepresentation keyStyle;
+        bool orderedSave;
     };
 
     union

@@ -192,7 +192,8 @@ bool YamlEmitter::EmitYamlNode(yaml_emitter_t* emitter, const YamlNode* node)
         if (!EmitMappingStart(emitter, GetYamlMappingStyle(node->GetMapRepresentation())))
             return false;
 
-        if (!EmitUnorderedMap(emitter, node))
+        bool res = node->GetMapOrderRepresentation() ? EmitOrderedMap(emitter, node) : EmitUnorderedMap(emitter, node);
+        if (!res)
             return false;
 
         if (!EmitMappingEnd(emitter))
@@ -305,6 +306,20 @@ bool YamlEmitter::EmitUnorderedMap(yaml_emitter_t* emitter, const YamlNode* mapN
         if (!EmitScalar(emitter, mapNode->GetItemKeyName(i), GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))
             return false;
         if (!EmitYamlNode(emitter, mapNode->Get(i)))
+            return false;
+    }
+    return true;
+}
+
+bool YamlEmitter::EmitOrderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode)
+{
+    const Map<String, YamlNode*>& map = mapNode->AsMap();
+    auto iter = map.begin(), end = map.end();
+    for (; iter != end; ++iter)
+    {
+        if (!EmitScalar(emitter, iter->first, GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))
+            return false;
+        if (!EmitYamlNode(emitter, iter->second))
             return false;
     }
     return true;
