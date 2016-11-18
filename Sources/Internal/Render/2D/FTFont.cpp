@@ -651,8 +651,7 @@ int32 FTInternalFont::LoadString(float32 size, const WideString& str)
 
         Glyph glyph;
         glyph.index = FontManager::Instance()->GetFT()->LookupGlyphIndex(faceId, str[i]);
-        FT_Error error = FontManager::Instance()->GetFT()->LookupGlyph(faceId, size, glyph.index, &glyph.image);
-        if (error == 0)
+        if (FontManager::Instance()->GetFT()->LookupGlyph(faceId, size, glyph.index, &glyph.image))
         {
             //             if (prevRsbDelta - face->glyph->lsb_delta >= 32)
             //                 glyph.delta = static_cast<uint32>(-1) << 6;
@@ -665,7 +664,7 @@ int32 FTInternalFont::LoadString(float32 size, const WideString& str)
         {
 #if defined(__DAVAENGINE_DEBUG__)
             // DVASSERT(false); //This situation can be unnormal. Check it
-            Logger::Warning("[FTInternalFont::LoadString] error = %d, str = %s", error, WStringToString(str).c_str());
+            Logger::Warning("[FTInternalFont::LoadString] error LookupGlyph, str = %s", WStringToString(str).c_str());
 #endif //__DAVAENGINE_DEBUG__
         }
 
