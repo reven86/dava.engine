@@ -67,6 +67,25 @@ bool UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& c
     }
 }
 
+FastName UIStyleSheetClassSet::GetTaggedClass(const FastName& tag) const
+{
+    if (!tag.IsValid())
+    {
+        return FastName();
+    }
+
+    auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
+        return cl.tag == tag;
+    });
+
+    if (it != classes.end())
+    {
+        return it->clazz;
+    }
+
+    return FastName();
+}
+
 bool UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
