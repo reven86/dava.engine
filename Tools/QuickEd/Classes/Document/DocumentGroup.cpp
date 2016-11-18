@@ -379,6 +379,8 @@ void DocumentGroup::SetActiveDocument(Document* document)
     emit ActiveIndexChanged(documents.indexOf(document));
     emit CanSaveChanged(CanSave());
     emit CanCloseChanged(CanClose());
+    emit CanUndoChanged(commandStackGroup->CanUndo());
+    emit CanRedoChanged(commandStackGroup->CanRedo());
 }
 
 void DocumentGroup::SaveAllDocuments()
