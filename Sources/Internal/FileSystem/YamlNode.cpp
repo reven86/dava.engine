@@ -8,7 +8,7 @@ namespace DAVA
 {
 static const String EMPTY_STRING = "";
 static const Vector<YamlNode*> EMPTY_VECTOR;
-static const Map<String, YamlNode*> EMPTY_MAP = Map<String, YamlNode*>();
+static const UnorderedMap<String, YamlNode*> EMPTY_MAP = UnorderedMap<String, YamlNode*>();
 
 YamlNode* YamlNode::CreateStringNode()
 {
@@ -76,8 +76,8 @@ YamlNode::~YamlNode()
     break;
     case TYPE_MAP:
     {
-        Map<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
-                                          end = objectMap->ordered.end();
+        UnorderedMap<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
+                                                   end = objectMap->ordered.end();
         for (; iter != end; ++iter)
         {
             SafeRelease(iter->second);
@@ -307,7 +307,7 @@ VariantType YamlNode::AsVariantType() const
 {
     VariantType retValue;
 
-    const Map<String, YamlNode*>& mapFromNode = AsMap();
+    const UnorderedMap<String, YamlNode*>& mapFromNode = AsMap();
 
     for (auto it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
     {
@@ -531,7 +531,7 @@ const Vector<YamlNode*>& YamlNode::AsVector() const
     return EMPTY_VECTOR;
 }
 
-const Map<String, YamlNode*>& YamlNode::AsMap() const
+const UnorderedMap<String, YamlNode*>& YamlNode::AsMap() const
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)

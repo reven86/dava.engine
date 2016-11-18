@@ -77,7 +77,7 @@ public:
     Rect AsRect() const;
 
     //These functions work only if type of node is map
-    const Map<String, YamlNode*>& AsMap() const;
+    const UnorderedMap<String, YamlNode*>& AsMap() const;
     VariantType AsVariantType() const;
 
     VariantType AsVariantType(const InspMember* insp) const;
@@ -197,7 +197,7 @@ private:
 
     struct ObjectMap
     {
-        Map<String, YamlNode*> ordered;
+        UnorderedMap<String, YamlNode*> ordered;
         Vector<std::pair<String, YamlNode*>> unordered;
         eMapRepresentation style;
         eStringRepresentation keyStyle;

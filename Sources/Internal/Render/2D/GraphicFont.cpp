@@ -150,7 +150,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
     if (distanceFieldFont)
         this->isDistanceFieldFont = distanceFieldFont->AsBool();
 
-    const Map<String, YamlNode*> charsMap = charsNode->AsMap();
+    const UnorderedMap<String, YamlNode*> charsMap = charsNode->AsMap();
     auto charsMapEnd = charsMap.end();
     for (auto iter = charsMap.begin(); iter != charsMapEnd; ++iter)
     {
@@ -172,7 +172,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
     const YamlNode* kerningNode = configNode->Get("kerning");
     if (kerningNode)
     {
-        const Map<String, YamlNode*> kerningMap = kerningNode->AsMap();
+        const UnorderedMap<String, YamlNode*> kerningMap = kerningNode->AsMap();
         for (auto iter = kerningMap.begin(); iter != kerningMap.end(); ++iter)
         {
             int32 charId = atoi(iter->first.c_str());
@@ -180,7 +180,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
             if (charIter == chars.end())
                 continue;
 
-            const Map<String, YamlNode*> charKerningMap = iter->second->AsMap();
+            const UnorderedMap<String, YamlNode*> charKerningMap = iter->second->AsMap();
             for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
                 int32 secondCharId = atoi(i->first.c_str());
