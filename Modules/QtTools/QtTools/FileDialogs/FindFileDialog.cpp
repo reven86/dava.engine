@@ -106,7 +106,6 @@ void FindFileDialog::Init(const QStringList& files)
     //init function can be called only once
     DVASSERT(stringsToDisplay.isEmpty());
     //collect all items in short form
-    QStringList stringsToDisplay;
     for (const QString& filePath : files)
     {
         stringsToDisplay << ToShortName(filePath);
