@@ -4,7 +4,6 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/iOS/WindowNativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
@@ -23,7 +22,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 

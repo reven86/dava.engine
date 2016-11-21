@@ -10,7 +10,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
 #endif
@@ -43,7 +42,7 @@ MovieViewControl::MovieViewControl()
     }
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddUIView([bridge->moviePlayer view]);
+    PlatformApi::AddUIView(window, [bridge->moviePlayer view]);
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     [[appDelegate renderViewController].backgroundView addSubview:[bridge->moviePlayer view]];
@@ -53,7 +52,7 @@ MovieViewControl::MovieViewControl()
 MovieViewControl::~MovieViewControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveUIView([bridge->moviePlayer view]);
+    PlatformApi::RemoveUIView(window, [bridge->moviePlayer view]);
 #else
     [[bridge->moviePlayer view] removeFromSuperview];
 #endif

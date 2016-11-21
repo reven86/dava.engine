@@ -16,7 +16,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 #include "UI/Private/iOS/WebViewControliOS.h"
@@ -42,8 +41,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
 {
     DVASSERT(isSingleLine);
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->GetUIViewFromPool("UITextFieldHolder"));
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(PlatformApi::GetUIViewFromPool(window, "UITextFieldHolder"));
     [bridge->textFieldHolder attachWindow:window];
 
     DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
@@ -77,8 +75,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         [textFieldHolder addSubview:textFieldHolder->textCtrl];
     }
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReturnUIViewToPool(textFieldHolder);
+    PlatformApi::ReturnUIViewToPool(window, textFieldHolder);
 }
 #else // defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
@@ -653,10 +650,10 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     if (renderToTexture && deltaMoveControl != 0 && text.length > 0)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(textView);
+        UIImage* nativeImage = PlatformApi::RenderUIViewToUIImage(textView);
         if (nativeImage != nullptr)
         {
-            RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+            RefPtr<Image> image(PlatformApi::ConvertUIImageToImage(nativeImage));
             if (image != nullptr)
             {
                 RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));
