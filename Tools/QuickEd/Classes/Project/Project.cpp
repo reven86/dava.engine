@@ -37,7 +37,7 @@ QString Project::RestoreSymLinkInFilePath(const QString& filePath) const
 #if defined(__DAVAENGINE_MACOS__)
     return symLinkRestorer->RestoreSymLinkInFilePath(filePath);
 #endif
-    
+
     return filePath;
 }
 

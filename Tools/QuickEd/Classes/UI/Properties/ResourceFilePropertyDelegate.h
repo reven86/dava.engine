@@ -26,8 +26,8 @@ private slots:
 private:
     bool IsPathValid(const QString& path);
     QPointer<QLineEdit> lineEdit = nullptr;
-    const Project *project = nullptr;
-    
+    const Project* project = nullptr;
+
     QString resourceExtension;
     QString projectResourceDir;
     QString resourceSubDir;
