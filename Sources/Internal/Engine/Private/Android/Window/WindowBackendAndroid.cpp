@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
@@ -106,7 +105,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
-    , nativeService(new WindowNativeService(this))
 {
 }
 

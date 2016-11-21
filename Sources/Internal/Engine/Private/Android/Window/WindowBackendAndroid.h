@@ -43,7 +43,6 @@ public:
     void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -85,7 +84,6 @@ private:
 
     jobject surfaceView = nullptr;
     ANativeWindow* androidWindow = nullptr;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     float32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     float32 lastMouseMoveY = -1; // spurious mouse move events
@@ -104,11 +102,6 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return androidWindow;
-}
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)

@@ -5,7 +5,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -123,7 +122,7 @@ void TextFieldPlatformImpl::Initialize()
     }
 
     std::weak_ptr<TextFieldPlatformImpl>* selfWeakPtr = new std::weak_ptr<TextFieldPlatformImpl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaTextField", selfWeakPtr);
+    jobject obj = PlatformApi::CreateNativeControl(window, "com.dava.engine.DavaTextField", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();

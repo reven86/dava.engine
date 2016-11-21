@@ -8,7 +8,6 @@
 #include "Engine/Window.h"
 #include "Engine/EngineContext.h"
 #include "Engine/Qt/NativeServiceQt.h"
-#include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
@@ -183,7 +182,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
 {
     QtEventListener::TCallback triggered = [this]()
     {

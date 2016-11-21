@@ -51,7 +51,6 @@ public:
     void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -100,7 +99,6 @@ private:
 
     // Use QPointer as renderWidget can be deleted outside WindowBackend in embedded mode
     QPointer<RenderWidget> renderWidget;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool closeRequestByApp = false;
 
@@ -117,11 +115,6 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return nullptr;
-}
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 } // namespace Private
