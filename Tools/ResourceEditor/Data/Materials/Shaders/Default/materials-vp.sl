@@ -217,10 +217,10 @@ vertex_out
 #endif
 
 #if TEXTURE0_SHIFT_ENABLED
-[material][a] property float2 texture0Shift;
+[material][a] property float2 texture0Shift = float2(0,0);
 #endif 
 #if TEXTURE0_ANIMATION_SHIFT
-[material][a] property float2 tex0ShiftPerSecond;
+[material][a] property float2 tex0ShiftPerSecond = float2(0,0);
 #endif
 
 #if VERTEX_FOG 
