@@ -46,7 +46,11 @@ void EngineSettings::Reset()
 
 bool EngineSettings::Load(const FilePath& filepath)
 {
+#ifdef __DAVAENGINE_COREV2__
     if (Engine::Instance()->GetContext()->fileSystem->Exists(filepath))
+#else
+    if (FileSystem::Instance()->Exists(filepath))
+#endif
     {
         ScopedPtr<YamlParser> parser(YamlParser::Create(filepath));
         YamlNode* rootNode = parser->GetRootNode();
