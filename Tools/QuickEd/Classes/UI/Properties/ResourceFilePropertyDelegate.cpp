@@ -14,22 +14,6 @@
 
 using namespace DAVA;
 
-namespace ResourceFilePropertyDelegateDetails
-{
-QString getOpenFileName(const Project *project, QWidget* parent, const QString& caption, const QString& dir,
-                        const QString& filter, QString* selectedFilter, QFileDialog::Options options)
-{
-    auto fileName = FileDialog::getOpenFileName(parent, caption, dir, filter, selectedFilter, options);
-    
-    if (project)
-    {
-        fileName = project->ResolveFilePath(fileName);
-    }
-    
-    return fileName;
-}
-}
-
 ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
 const QString& resourceExtension_,
 const QString& resourceSubDir_,
@@ -120,8 +104,13 @@ void ResourceFilePropertyDelegate::selectFileClicked()
         dir = projectResourceDir + resourceSubDir;
     }
 
-    QString filePathText = ResourceFilePropertyDelegateDetails::getOpenFileName(project, editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension, nullptr, QFileDialog::DontResolveSymlinks/* | QFileDialog::DontUseNativeDialog*/);
-    
+    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);
+
+    if (project)
+    {
+        filePathText = project->RestoreSymLinkInFilePath(filePathText);
+    }
+
     if (!filePathText.isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(filePathText);

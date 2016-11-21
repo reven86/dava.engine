@@ -18,6 +18,7 @@ class DocumentGroup;
 class MainWindow;
 class SpritesPacker;
 class FileSystemCache;
+class MacOSSymLinkRestorer;
 
 namespace DAVA
 {
@@ -46,8 +47,8 @@ public:
     const QString& GetProjectDirectory() const;
     const QString& GetProjectName() const;
     QString GetResourceDirectory() const;
-    
-    QString ResolveFilePath(const QString &filePath) const;
+
+    QString RestoreSymLinkInFilePath(const QString& filePath) const;
 
     QStringList GetAvailableLanguages() const;
     QString GetCurrentLanguage() const;
@@ -85,8 +86,7 @@ private:
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<FileSystemCache> projectStructure;
 #if defined(__DAVAENGINE_MACOS__)
-    class SymLinkResolver;
-    std::unique_ptr<SymLinkResolver> symLinkResolver;
+    std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
 #endif
 };
 
