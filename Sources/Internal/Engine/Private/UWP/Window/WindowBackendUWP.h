@@ -47,7 +47,6 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
-private:
     void UIEventHandler(const UIDispatcherEvent& e);
 
     EngineBackend* engineBackend = nullptr;
@@ -57,8 +56,6 @@ private:
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
-
-    friend ref struct WindowNativeBridge;
 };
 
 inline WindowNativeService* WindowBackend::GetNativeService() const

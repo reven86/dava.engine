@@ -96,6 +96,11 @@ EngineBackend* EngineBackend::Instance()
     return instance;
 }
 
+WindowBackend* EngineBackend::GetWindowBackend(Window* w)
+{
+    return w->windowBackend.get();
+}
+
 EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     : dispatcher(new MainDispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
     , platformCore(new PlatformCore(this))

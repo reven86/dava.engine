@@ -21,6 +21,8 @@ class EngineBackend final
 public:
     static EngineBackend* Instance();
 
+    static WindowBackend* GetWindowBackend(Window* w);
+
     EngineBackend(const Vector<String>& cmdargs);
     ~EngineBackend();
 

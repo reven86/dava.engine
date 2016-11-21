@@ -223,5 +223,5 @@ enum class eErrorCode
 #if defined(__OBJC__)
 #define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
 #else
-#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname;
+#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
 #endif

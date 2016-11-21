@@ -11,6 +11,7 @@
 #include "Math/Vector.h"
 
 #include "Engine/EngineTypes.h"
+#include "Engine/PlatformApi.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
