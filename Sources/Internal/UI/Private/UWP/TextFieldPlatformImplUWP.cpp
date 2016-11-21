@@ -214,6 +214,9 @@ void TextFieldPlatformImpl::OwnerIsDying()
     textFieldDelegate = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
+    // UITextField that owns this impl is in process of destruction and native control is no longer needed,
+    // so remove it from hierarchy. But do not delete reference to it as some methods running in other threads
+    // can use native control, e.g. thread where rendering to texture is being performed.
     auto self{ shared_from_this() };
     window->RunAsyncOnUIThread([this, self]() {
         WindowNativeService* nservice = window->GetNativeService();

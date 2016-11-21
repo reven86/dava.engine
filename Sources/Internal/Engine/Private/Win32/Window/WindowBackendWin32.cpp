@@ -844,7 +844,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_POINTERHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
         POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
@@ -864,12 +863,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_MOUSEHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
-        int32 x = GET_X_LPARAM(lparam);
-        int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(deltaX, deltaY, x, y);
+
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
