@@ -116,7 +116,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     }
 
 #if defined(__DAVAENGINE_MACOS__)
-    symLinkRestorer = make_unique<MacOSSymLinkRestorer>(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
 #endif
 }
 
