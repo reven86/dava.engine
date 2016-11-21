@@ -3,7 +3,6 @@
 #include "Base/GlobalEnum.h"
 
 #include "Engine/Engine.h"
-#include "Engine/NativeService.h"
 
 #include "Preferences/PreferencesStorage.h"
 #include "Preferences/PreferencesRegistrator.h"
@@ -28,10 +27,7 @@ GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_c
 
 QApplication* GetApplication()
 {
-    DAVA::Engine* engine = DAVA::Engine::Instance();
-    DVASSERT(engine != nullptr);
-    QApplication* app = engine->GetNativeService()->GetApplication();
-    return app;
+    return DAVA::PlatformApi::GetApplication();
 }
 
 #if defined(__DAVAENGINE_WINDOWS__)

@@ -6,7 +6,6 @@
 
 #include "Engine/Window.h"
 #include "Engine/Android/JNIBridge.h"
-#include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
@@ -43,7 +42,6 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
     AndroidBridge::AttachPlatformCore(this);
 }

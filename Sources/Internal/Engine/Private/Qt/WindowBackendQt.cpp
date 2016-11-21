@@ -7,7 +7,6 @@
 
 #include "Engine/Window.h"
 #include "Engine/EngineContext.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
@@ -193,7 +192,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
         qtEventListener = nullptr;
     };
 
-    qtEventListener = new QtEventListener(triggered, destroyed, engineBackend->GetNativeService()->GetApplication());
+    qtEventListener = new QtEventListener(triggered, destroyed, PlatformApi::GetApplication());
 }
 
 WindowBackend::~WindowBackend()
@@ -239,8 +238,7 @@ bool WindowBackend::IsWindowReadyForRender() const
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    NativeService* service = engineBackend->GetNativeService();
-    QApplication* app = service->GetApplication();
+    QApplication* app = PlatformApi::GetApplication();
     DVASSERT(app);
     if (app != nullptr)
     {
@@ -306,7 +304,7 @@ void WindowBackend::OnCreated()
     QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::GetApplication());
     float32 dpi = renderWidget->logicalDpiX();
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());

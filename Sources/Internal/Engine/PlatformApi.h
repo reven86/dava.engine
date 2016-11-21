@@ -10,13 +10,19 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 
+class QApplication;
+
 namespace DAVA
 {
+class RenderWidget;
 class Window;
 namespace PlatformApi
 {
 void AcqureWindowContext(Window* targetWindow);
 void ReleaseWindowContext(Window* targetWindow);
+
+QApplication* GetApplication();
+RenderWidget* GetRenderWidget();
 
 } // namespace PlatformApi
 } // namespace DAVA

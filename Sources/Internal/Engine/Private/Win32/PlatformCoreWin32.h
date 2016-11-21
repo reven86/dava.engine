@@ -25,8 +25,6 @@ public:
 
     static HINSTANCE Win32AppInstance();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
@@ -34,7 +32,6 @@ public:
 
 private:
     EngineBackend& engineBackend;
-    std::unique_ptr<NativeService> nativeService;
 
     static HINSTANCE hinstance;
 };
@@ -42,11 +39,6 @@ private:
 inline HINSTANCE PlatformCore::Win32AppInstance()
 {
     return hinstance;
-}
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 } // namespace Private

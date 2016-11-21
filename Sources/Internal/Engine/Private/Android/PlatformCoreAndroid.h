@@ -18,8 +18,6 @@ public:
     PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
@@ -39,18 +37,12 @@ private:
 private:
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* mainDispatcher = nullptr;
-    std::unique_ptr<NativeService> nativeService;
 
     bool quitGameThread = false;
 
     // Friends
     friend struct AndroidBridge;
 };
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 } // namespace Private
 } // namespace DAVA

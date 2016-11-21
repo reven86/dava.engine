@@ -4,7 +4,6 @@ namespace DAVA
 class Engine;
 class Window;
 class EngineContext;
-class NativeService;
 
 template <typename T>
 class Dispatcher;

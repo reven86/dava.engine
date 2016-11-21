@@ -47,7 +47,6 @@ public:
 
     Engine* GetEngine() const;
     MainDispatcher* GetDispatcher() const;
-    NativeService* GetNativeService() const;
     PlatformCore* GetPlatformCore() const;
 
     const KeyedArchive* GetOptions() const;

@@ -9,7 +9,6 @@
 #include <shellapi.h>
 
 #include "Engine/Window.h"
-#include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
@@ -26,7 +25,6 @@ HINSTANCE PlatformCore::hinstance = nullptr;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
-    , nativeService(new NativeService(this))
 {
     DllImport::Initialize();
 

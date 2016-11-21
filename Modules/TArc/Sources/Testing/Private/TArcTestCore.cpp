@@ -8,7 +8,6 @@
 #include "UnitTests/UnitTests.h"
 #include "FileSystem/File.h"
 #include "CommandLine/CommandLineParser.h"
-#include "Engine/NativeService.h"
 #include "Engine/Qt/RenderWidget.h"
 
 #include <QTimer>
@@ -274,12 +273,12 @@ void TestCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
-    e.GetNativeService()->GetApplication()->quit();
+    PlatformApi::GetApplication()->quit();
 }
 
 void TestCore::CreateRenderWidget()
 {
-    RenderWidget* w = e.GetNativeService()->GetRenderWidget();
+    RenderWidget* w = PlatformApi::GetRenderWidget();
     w->show();
 }
 

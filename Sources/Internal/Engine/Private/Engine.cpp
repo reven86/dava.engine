@@ -40,11 +40,6 @@ const EngineContext* Engine::GetContext() const
     return engineBackend->GetContext();
 }
 
-NativeService* Engine::GetNativeService() const
-{
-    return engineBackend->GetNativeService();
-}
-
 Window* Engine::PrimaryWindow() const
 {
     return engineBackend->GetPrimaryWindow();

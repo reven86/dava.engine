@@ -3,7 +3,6 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/NativeService.h"
 
 #include "Logger/Logger.h"
 #include "Particles/ParticleEmitter.h"
@@ -187,7 +186,7 @@ void EditorCore::Init(DAVA::Engine& engine)
     Q_INIT_RESOURCE(QtToolsResources);
     Themes::InitFromQApplication();
 
-    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::GetRenderWidget();
 
     spritesPacker.reset(new SpritesPacker());
     project = new Project(this);

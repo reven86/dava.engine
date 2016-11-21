@@ -147,11 +147,6 @@ const KeyedArchive* EngineBackend::GetOptions() const
     return options.Get();
 }
 
-NativeService* EngineBackend::GetNativeService() const
-{
-    return platformCore->GetNativeService();
-}
-
 Vector<char*> EngineBackend::GetCommandLineAsArgv()
 {
     Vector<char*> argv;

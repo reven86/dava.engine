@@ -2,6 +2,7 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Qt/PlatformCoreQt.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
 
 namespace DAVA
@@ -20,6 +21,18 @@ void ReleaseWindowContext(Window* targetWindow)
     using namespace DAVA::Private;
     WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
     wb->ReleaseContext();
+}
+
+QApplication* GetApplication()
+{
+    using namespace DAVA::Private;
+    return EngineBackend::Instance()->GetPlatformCore()->GetApplication();
+}
+
+RenderWidget* GetRenderWidget()
+{
+    using namespace DAVA::Private;
+    return EngineBackend::Instance()->GetPlatformCore()->GetRenderWidget();
 }
 
 } // namespace PlatformApi

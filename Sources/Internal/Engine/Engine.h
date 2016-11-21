@@ -7,11 +7,16 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/EngineContext.h"
-#include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/PlatformApi.h"
 
 namespace DAVA
 {
 class KeyedArchive;
+class Window;
+namespace Private
+{
+class EngineBackend;
+}
 
 /**
     \ingroup engine
@@ -155,7 +160,6 @@ public:
             - DeviceManager
     */
     const EngineContext* GetContext() const;
-    NativeService* GetNativeService() const;
 
     /**
         Return primary window if any.

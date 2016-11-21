@@ -18,8 +18,6 @@ public:
     PlatformCore(EngineBackend* engineBackend_);
     ~PlatformCore();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
@@ -45,18 +43,12 @@ private:
 private:
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
-    std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
 
     static bool isPhoneContractPresent;
 };
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 inline bool PlatformCore::IsPhoneContractPresent()
 {
