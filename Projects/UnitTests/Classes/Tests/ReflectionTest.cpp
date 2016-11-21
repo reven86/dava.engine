@@ -452,7 +452,7 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(r.GetMethod("Me").IsValid());
 
         BaseOnlyReflection* b = BaseOnlyReflection::Create();
-        r = DAVA::Reflection::Create(b);
+        r = DAVA::Reflection::Create(&b);
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
         TEST_VERIFY(r.GetField("a").IsValid());
