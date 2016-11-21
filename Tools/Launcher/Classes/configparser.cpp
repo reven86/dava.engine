@@ -512,10 +512,11 @@ QByteArray ConfigParser::Serialize() const
             for (int k = 0; k < app->GetVerionsCount(); ++k)
             {
                 const AppVersion* ver = app->GetVersion(k);
+                QString appName = ver->isToolSet ? "ToolSet" : app->id;
                 QJsonObject buildObj = {
                     { "buildNum", ver->buildNum },
                     { "build_type", ver->id },
-                    { "build_name", app->id },
+                    { "build_name", appName },
                     { "branchName", branch->id },
                     { "artifacts", ver->url },
                     { "exe_location", ver->runPath }
@@ -592,27 +593,7 @@ void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString&
     app->versions.push_back(version);
 }
 
-void ConfigParser::RemoveApplication(const QString& branchID, const QString& appID, const QString& version)
-{
-    AppVersion* appVersion = GetAppVersion(branchID, appID, version);
-    if (appVersion == nullptr)
-    {
-        return;
-    }
-    if (appVersion->isToolSet)
-    {
-        for (const QString& fakeAppID : GetTranslatedToolsetApplications())
-        {
-            RemoveApplicationImpl(branchID, fakeAppID, version);
-        }
-    }
-    else
-    {
-        RemoveApplicationImpl(branchID, appID, version);
-    }
-}
-
-void ConfigParser::RemoveApplicationImpl(const QString& branchID, const QString& appID, const QString& versionID)
+void ConfigParser::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
     Branch* branch = GetBranch(branchID);
     if (!branch)

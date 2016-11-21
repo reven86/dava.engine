@@ -151,8 +151,6 @@ public:
 private:
     void InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version);
 
-    void RemoveApplicationImpl(const QString& branchID, const QString& appID, const QString& version);
-
     bool ParseJSON(const QByteArray& configData);
 
     QString launcherVersion;

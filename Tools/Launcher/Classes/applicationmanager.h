@@ -26,7 +26,7 @@ public:
 
     void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
-    bool RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID);
+    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
     bool RemoveBranch(const QString& branchID);
 
     bool ShouldShowNews();

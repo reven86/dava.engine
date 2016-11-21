@@ -208,7 +208,7 @@ void MainWindow::OnRemoveAll()
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
         if (!appID.isEmpty() && !insVersionID.isEmpty())
         {
-            appManager->RemoveApplication(selectedBranchID, appID, insVersionID);
+            appManager->RemoveApplication(selectedBranchID, appID, true);
         }
     }
     ShowTable(selectedBranchID);
@@ -246,7 +246,7 @@ void MainWindow::OnRemove(int rowNumber)
                           QMessageBox::Yes | QMessageBox::No);
         int result = msbox.exec();
 
-        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, insVersionID))
+        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, true))
             RefreshApps();
     }
 }

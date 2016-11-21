@@ -297,55 +297,65 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
         ErrorMessenger::ShowNotificationDlg("Application is already launched.");
 }
 
-bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)
+bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, bool canReject)
 {
-    AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
-    if (version != nullptr)
+    Application* app = localConfig.GetApplication(branchID, appID);
+    if (app == nullptr)
     {
+        return true;
+    }
+    AppVersion* version = app->GetVersion(0);
+    if (version == nullptr)
+    {
+        return true;
+    }
+    auto tryRemoveApp = [this, canReject](const QString& branchID, const QString& appID) -> bool {
         Application* app = localConfig.GetApplication(branchID, appID);
-        if (app != nullptr)
+        if (app == nullptr)
         {
-            QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
-            if (appDirPath.isEmpty())
-            {
-                return true;
-            }
-            auto appIsRunning = [](const QString& appDirPath, const QString& appID, const AppVersion* version) -> bool {
-                QString runPath = appDirPath + GetLocalAppPath(version, appID);
-                while (ProcessHelper::IsProcessRuning(runPath))
-                {
-                    int result = ErrorMessenger::ShowRetryDlg(appID, runPath, true);
-                    if (result == QMessageBox::Cancel)
-                        return true;
-                }
-                return false;
-            };
-            if (version->isToolSet)
-            {
-                for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
-                {
-                    if (appIsRunning(appDirPath, fakeAppID, version))
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                if (appIsRunning(appDirPath, appID, version))
-                {
-                    return false;
-                }
-            }
-
-            FileManager::DeleteDirectory(appDirPath);
-
-            localConfig.RemoveApplication(branchID, appID, versionID);
-            SaveLocalConfig();
             return true;
         }
+        AppVersion* version = app->GetVersion(0);
+        if (version == nullptr)
+        {
+            return true;
+        }
+
+        QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
+        if (appDirPath.isEmpty())
+        {
+            return true;
+        }
+        QString runPath = appDirPath + GetLocalAppPath(version, appID);
+        while (ProcessHelper::IsProcessRuning(runPath))
+        {
+            int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
+            if (result == QMessageBox::Cancel)
+                return false;
+        }
+        FileManager::DeleteDirectory(appDirPath);
+        localConfig.RemoveApplication(branchID, appID, version->id);
+        SaveLocalConfig();
+        return true;
+    };
+    if (version->isToolSet)
+    {
+        for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
+        {
+            if (tryRemoveApp(branchID, fakeAppID) == false)
+            {
+                return false;
+            }
+        }
     }
-    return false;
+    else
+    {
+        if (tryRemoveApp(branchID, appID) == false)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool ApplicationManager::RemoveBranch(const QString& branchID)
