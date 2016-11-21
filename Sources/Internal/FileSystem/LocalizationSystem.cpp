@@ -77,7 +77,7 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 
     if (locale.empty())
     {
-        DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
+        DVASSERT(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
         locale = GetOptions()->GetString("locale", DEFAULT_LOCALE);
     }
     SetCurrentLocale(locale);
