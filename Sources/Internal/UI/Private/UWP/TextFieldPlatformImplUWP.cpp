@@ -19,7 +19,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -217,13 +216,15 @@ void TextFieldPlatformImpl::OwnerIsDying()
     // UITextField that owns this impl is in process of destruction and native control is no longer needed,
     // so remove it from hierarchy. But do not delete reference to it as some methods running in other threads
     // can use native control, e.g. thread where rendering to texture is being performed.
-    auto self{ shared_from_this() };
-    window->RunOnUIThreadAsync([this, self]() {
-        WindowNativeService* nservice = window->GetNativeService();
-        InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-        InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
-        nservice->RemoveXamlControl(nativeControlHolder);
-    });
+    if (nativeControlHolder != nullptr)
+    {
+        auto self{ shared_from_this() };
+        window->RunOnUIThreadAsync([this, self]() {
+            InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
+            InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
+            PlatformApi::RemoveXamlControl(window, nativeControlHolder);
+        });
+    }
 #endif
 }
 
@@ -529,7 +530,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddXamlControl(nativeControlHolder);
+    PlatformApi::AddXamlControl(window, nativeControlHolder);
 #else
     core->XamlApplication()->AddUIElement(nativeControlHolder);
 #endif
@@ -538,7 +539,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
 void TextFieldPlatformImpl::DeleteNativeControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveXamlControl(nativeControlHolder);
+    PlatformApi::RemoveXamlControl(window, nativeControlHolder);
 #else
     core->XamlApplication()->RemoveUIElement(nativeControlHolder);
 #endif
@@ -902,7 +903,7 @@ void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
             nativeControl->Focus(::Windows::UI::Xaml::FocusState::Pointer);
         else if (HasFocus())
 #if defined(__DAVAENGINE_COREV2__)
-            window->GetNativeService()->UnfocusXamlControl();
+            PlatformApi::UnfocusXamlControl(window, nativeControl);
 #else
             core->XamlApplication()->UnfocusUIElement();
 #endif
@@ -983,7 +984,7 @@ void TextFieldPlatformImpl::SetNativePositionAndSize(const Rect& rect, bool offS
     nativeControlHolder->Width = std::max(0.0f, rect.dx);
     nativeControlHolder->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->PositionXamlControl(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::PositionXamlControl(window, nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #endif

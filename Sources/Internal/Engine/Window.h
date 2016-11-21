@@ -223,7 +223,6 @@ public:
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     /**
         Run task on window's UI thread.

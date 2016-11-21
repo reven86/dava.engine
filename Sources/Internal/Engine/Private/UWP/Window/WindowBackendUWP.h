@@ -34,7 +34,6 @@ public:
     void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -55,13 +54,7 @@ public:
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
-    std::unique_ptr<WindowNativeService> nativeService;
 };
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {

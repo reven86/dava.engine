@@ -5,7 +5,6 @@ class Engine;
 class Window;
 class EngineContext;
 class NativeService;
-class WindowNativeService;
 
 template <typename T>
 class Dispatcher;

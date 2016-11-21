@@ -47,7 +47,6 @@ public:
 
     void* GetHandle() const;
     HWND GetHWND() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -122,7 +121,6 @@ private:
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     HWND hwnd = nullptr;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
     bool hasFocus = false;
@@ -157,11 +155,6 @@ inline void* WindowBackend::GetHandle() const
 inline HWND WindowBackend::GetHWND() const
 {
     return hwnd;
-}
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)

@@ -10,7 +10,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -156,25 +155,21 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    nativeWebView = nullptr;
+#else
     using ::Windows::UI::Xaml::Controls::WebView;
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
-
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunOnUIThreadAsync([p, nservice]() {
-            nservice->RemoveXamlControl(p);
-        });
-#else
         core->RunOnUIThread([p]() {
             // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-#endif
         nativeWebView = nullptr;
     }
+#endif
 }
 
 void WebViewControl::OwnerIsDying()
@@ -186,18 +181,19 @@ void WebViewControl::OwnerIsDying()
 
     if (nativeWebView != nullptr)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        auto self{ shared_from_this() };
+        window->RunOnUIThreadAsync([this, self]() {
+            nativeWebView->NavigationStarting -= tokenNavigationStarting;
+            nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+            PlatformApi::RemoveXamlControl(window, nativeWebView);
+        });
+#else
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
         Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
         Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
 
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunOnUIThreadAsync([p, nservice, tokenNS, tokenNC]() {
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
-#else
         core->RunOnUIThread([p, tokenNS, tokenNC]() {
             // We don't need blocking call here
             p->NavigationStarting -= tokenNS;
@@ -370,7 +366,7 @@ void WebViewControl::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddXamlControl(nativeWebView);
+    PlatformApi::AddXamlControl(window, nativeWebView);
 #else
     core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
@@ -521,7 +517,7 @@ void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif

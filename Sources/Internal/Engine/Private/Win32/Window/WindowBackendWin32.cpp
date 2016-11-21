@@ -9,7 +9,6 @@
 #include <ShellScalingAPI.h>
 
 #include "Engine/Window.h"
-#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
@@ -31,7 +30,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
-    , nativeService(new WindowNativeService(this))
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);

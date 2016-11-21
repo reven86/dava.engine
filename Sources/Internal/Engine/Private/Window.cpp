@@ -101,11 +101,6 @@ void* Window::GetNativeHandle() const
     return windowBackend->GetHandle();
 }
 
-WindowNativeService* Window::GetNativeService() const
-{
-    return windowBackend->GetNativeService();
-}
-
 void Window::RunOnUIThreadAsync(const Function<void()>& task)
 {
     windowBackend->RunAsyncOnUIThread(task);

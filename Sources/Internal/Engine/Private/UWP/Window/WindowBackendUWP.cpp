@@ -4,7 +4,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/UWP/WindowNativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
@@ -21,7 +20,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
     , bridge(ref new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge))
 {
 }
 

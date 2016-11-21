@@ -11,7 +11,6 @@
 #include "UI/UIControlSystem.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #include "Render/RHI/rhi_Public.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -50,28 +49,33 @@ MovieViewControl::MovieViewControl()
 
 MovieViewControl::~MovieViewControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    nativeControl = nullptr;
+#else
     using ::Windows::UI::Xaml::Controls::MediaElement;
 
     if (nativeControl != nullptr)
     {
         MediaElement ^ p = nativeControl;
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunOnUIThreadAsync([p, nservice]() {
-            nservice->RemoveXamlControl(p);
-        });
-#else
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-#endif
         nativeControl = nullptr;
     }
+#endif
 }
 
 void MovieViewControl::OwnerIsDying()
 {
-    // For now do nothing here
+#if defined(__DAVAENGINE_COREV2__)
+    if (nativeControl != nullptr)
+    {
+        auto self{ shared_from_this() };
+        window->RunOnUIThreadAsync([this, self]() {
+            PlatformApi::RemoveXamlControl(window, nativeControl);
+        });
+    }
+#endif
 }
 
 void MovieViewControl::Initialize(const Rect& rect)
@@ -252,7 +256,7 @@ void MovieViewControl::ProcessProperties(const MovieViewProperties& props)
         nativeControl->Volume = 1.0;
 
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetNativeService()->AddXamlControl(nativeControl);
+        PlatformApi::AddXamlControl(window, nativeControl);
 #else
         core->XamlApplication()->AddUIElement(nativeControl);
 #endif
@@ -377,7 +381,7 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
     nativeControl->Width = std::max(0.0f, rect.dx);
     nativeControl->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->PositionXamlControl(nativeControl, rect.x, rect.y);
+    PlatformApi::PositionXamlControl(window, nativeControl, rect.x, rect.y);
 #else
     core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
 #endif
