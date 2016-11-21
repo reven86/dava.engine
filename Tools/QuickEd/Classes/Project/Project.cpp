@@ -28,17 +28,74 @@
 
 using namespace DAVA;
 
+class Project::SymLinkResolver
+{
+public:
+    void Init(const QString &directory)
+    {
+        symlinks = FindSymLinks(directory);
+    }
+        
+    QString ResolveSymLink(const QString &origFilePath) const
+    {
+        QString filePath = origFilePath;
+        for(const auto &item : SymLinkResolver::symlinks.toStdVector())
+        {
+            if(filePath.startsWith(item.first))
+            {
+                filePath.replace(item.first, item.second);
+                return ResolveSymLink(filePath);
+            }
+        }
+        return filePath;
+    }
+
+private:
+    QVector<QPair<QString, QString>> FindSymLinks(const QString &absDirPath)
+    {
+        QVector<QPair<QString, QString>> symlinks;
+        QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Hidden, QDirIterator::Subdirectories);
+        while (dirIterator.hasNext())
+        {
+            dirIterator.next();
+            QFileInfo fileInfo(dirIterator.fileInfo());
+
+            if (fileInfo.isSymLink())
+            {
+                symlinks.push_back(qMakePair(fileInfo.symLinkTarget(), fileInfo.absoluteFilePath()));
+                symlinks += FindSymLinks(fileInfo.symLinkTarget());
+            }
+        }
+            
+        return symlinks;
+    }
+        
+    QVector<QPair<QString, QString>> symlinks;
+};
+
+QString Project::ResolveFilePath(const QString &filePath) const
+{
+#if defined(__DAVAENGINE_MACOS__)
+    return symLinkResolver->ResolveSymLink(filePath);
+#endif
+    
+    return filePath;
+}
+
 Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& properties_)
     : QObject(nullptr)
+    , properties(properties_)
+    , projectDirectory(QString::fromStdString(properties_.GetProjectDirectory().GetStringValue()))
+    , projectName(QString::fromStdString(properties_.GetProjectFile().GetFilename()))
     , view(view_)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
     , projectStructure(new FileSystemCache(QStringList() << "yaml"))
-    , properties(properties_)
-    , projectDirectory(QString::fromStdString(properties_.GetProjectDirectory().GetStringValue()))
-    , projectName(QString::fromStdString(properties_.GetProjectFile().GetFilename()))
+#if defined(__DAVAENGINE_MACOS__)
+    , symLinkResolver(new SymLinkResolver())
+#endif
 {
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
@@ -101,6 +158,10 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
 
         spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
     }
+
+#if defined(__DAVAENGINE_MACOS__)
+    symLinkResolver->Init(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
+#endif
 }
 
 Project::~Project()

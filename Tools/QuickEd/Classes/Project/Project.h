@@ -46,6 +46,8 @@ public:
     const QString& GetProjectDirectory() const;
     const QString& GetProjectName() const;
     QString GetResourceDirectory() const;
+    
+    QString ResolveFilePath(const QString &filePath) const;
 
     QStringList GetAvailableLanguages() const;
     QString GetCurrentLanguage() const;
@@ -82,6 +84,10 @@ private:
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<FileSystemCache> projectStructure;
+#if defined(__DAVAENGINE_MACOS__)
+    class SymLinkResolver;
+    std::unique_ptr<SymLinkResolver> symLinkResolver;
+#endif
 };
 
 #endif // QUICKED__PROJECT_H__

@@ -3,6 +3,8 @@
 
 #include "BasePropertyDelegate.h"
 
+class Project;
+
 class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
@@ -24,6 +26,8 @@ private slots:
 private:
     bool IsPathValid(const QString& path);
     QPointer<QLineEdit> lineEdit = nullptr;
+    const Project *project = nullptr;
+    
     QString resourceExtension;
     QString projectResourceDir;
     QString resourceSubDir;
