@@ -280,8 +280,7 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 desired
     bool found = false;
     std::size_t countersCount = 0;
     CounterArray* array = GetCounterArray(snapshot);
-    CounterArray::reverse_iterator rbegin = array->rbegin(), rend = array->rend();
-    CounterArray::reverse_iterator rit = rbegin;
+    CounterArray::reverse_iterator rit = array->rbegin(), rend = array->rend();
     for (; rit != rend; ++rit)
     {
         ++countersCount;
