@@ -158,7 +158,7 @@ void EditorCore::Init(DAVA::Engine& engine)
 {
     using namespace DAVA;
     ResourcesManageHelper::InitInternalResources();
-    EngineContext* context = engine.GetContext();
+    const EngineContext* context = engine.GetContext();
     UIControlSystem* uiControlSystem = context->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 

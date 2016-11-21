@@ -154,9 +154,9 @@ public:
         return wrapper;
     }
 
-    EngineContext& GetEngineContext() override
+    const EngineContext& GetEngineContext() override
     {
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         DVASSERT(engineContext);
         return *engineContext;
     }
@@ -250,7 +250,7 @@ public:
         rendererParams.scaleY = 1.0f;
         Renderer::Initialize(renderer, rendererParams);
 
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
         vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
         vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
@@ -288,7 +288,7 @@ public:
 
             if (modules.empty() == true)
             {
-                engine.Quit(0);
+                engine.QuitAsync(0);
             }
         }
         context->swapBuffers(surface);
@@ -680,7 +680,7 @@ Core::Core(Engine& engine, bool connectSignals)
 
 Core::~Core() = default;
 
-EngineContext& Core::GetEngineContext()
+const EngineContext& Core::GetEngineContext()
 {
     return impl->GetEngineContext();
 }

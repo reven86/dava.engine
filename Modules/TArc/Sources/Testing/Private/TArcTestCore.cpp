@@ -81,7 +81,7 @@ void TestCore::OnAppStarted()
     if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
         Logger::Error("%s", "There are no test classes");
-        e.Quit();
+        e.QuitAsync(0);
     }
     else
     {

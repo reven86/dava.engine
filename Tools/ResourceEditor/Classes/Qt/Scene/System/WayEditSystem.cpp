@@ -546,7 +546,7 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& 
 {
     DAVA::Engine* engine = DAVA::Engine::Instance();
     DVASSERT(engine != nullptr);
-    DAVA::EngineContext* engineContext = engine->GetContext();
+    const DAVA::EngineContext* engineContext = engine->GetContext();
     if (engineContext->inputSystem == nullptr)
     {
         return true;
