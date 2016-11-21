@@ -200,20 +200,25 @@ void UpdateDialog::DownloadFinished()
     outputFile.close();
 
     const UpdateTask& task = tasks.head();
-
-    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
     if (task.currentVersion != nullptr)
     {
+        //get path to the current version directory
+        QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.currentVersion->isToolSet, false);
+
         QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
         QString runPath = appDir + localAppPath;
         while (ProcessHelper::IsProcessRuning(runPath))
             ErrorMessenger::ShowRetryDlg(task.appID, runPath, false);
+
+        FileManager::DeleteDirectory(appDir);
     }
-    FileManager::DeleteDirectory(appDir);
 
     UpdateLastLogValue(tr("Download Complete!"));
 
     AddLogValue(tr("Unpacking archive..."));
+
+    //create path to a new version directory
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
 
     ui->cancelButton->setEnabled(false);
     ZipUtils::CompressedFilesAndSizes files;

@@ -305,7 +305,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         Application* app = localConfig.GetApplication(branchID, appID);
         if (app != nullptr)
         {
-            QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, true);
+            QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
             if (appDirPath.isEmpty())
             {
                 return true;
