@@ -9,7 +9,7 @@
 #include <memory>
 
 class SpritesPackerModule;
-class ProjectStructure;
+class FileSystemCache;
 class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
 {
     Q_OBJECT
@@ -53,7 +53,7 @@ public:
     void OpenLastProject();
     void CloseProject();
 
-    ProjectStructure* GetDataSourceSceneFiles() const;
+    FileSystemCache* GetDataSourceSceneFiles() const;
 
 signals:
     void ProjectOpened(const QString& path);
@@ -69,7 +69,7 @@ private:
 
     void UpdateInternalValues();
 
-    std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
+    std::unique_ptr<FileSystemCache> dataSourceSceneFiles;
 
     DAVA::FilePath projectPath;
     DAVA::FilePath dataSourcePath;
