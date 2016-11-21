@@ -619,9 +619,6 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
     const Matrix4& localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
     SetLocalTransform(localTransform);
 
-    /// InvalidateLocalTransform();
-    //    debugFlags = archive->GetUInt32("debugFlags", 0);
-
     KeyedArchive* compsArch = archive->GetArchive("components");
 
     if (serializationContext->GetVersion() < COMPONENTS_BY_NAME_SAVE_SCENE_VERSION)

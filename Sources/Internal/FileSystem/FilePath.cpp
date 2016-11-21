@@ -8,6 +8,7 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 namespace DAVA

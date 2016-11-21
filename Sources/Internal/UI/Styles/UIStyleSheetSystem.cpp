@@ -200,6 +200,11 @@ void UIStyleSheetSystem::SetGlobalTaggedClass(const FastName& tag, const FastNam
     globalClasses.SetTaggedClass(tag, clazz);
 }
 
+FastName UIStyleSheetSystem::GetGlobalTaggedClass(const FastName& tag) const
+{
+    return globalClasses.GetTaggedClass(tag);
+}
+
 void UIStyleSheetSystem::ResetGlobalTaggedClass(const FastName& tag)
 {
     globalClasses.ResetTaggedClass(tag);

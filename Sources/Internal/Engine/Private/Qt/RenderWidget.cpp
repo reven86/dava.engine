@@ -8,7 +8,6 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Base/Exception.h"
-#include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 
 #include "Input/InputSystem.h"
@@ -23,6 +22,12 @@
 
 namespace DAVA
 {
+struct RenderWidget::QtScreenParams
+{
+    int screenScale = 0;
+    int logicalDPI = 0;
+};
+
 const char* initializedPropertyName = "initialized";
 RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
@@ -60,6 +65,11 @@ void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 void RenderWidget::OnCreated()
 {
     widgetDelegate->OnCreated();
+
+    screenParams = std::make_unique<QtScreenParams>();
+    screenParams->screenScale = devicePixelRatio();
+    screenParams->logicalDPI = logicalDpiX();
+
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
 }
 
@@ -71,13 +81,31 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
     DVASSERT(isInPaint == false);
     isInPaint = true;
     SCOPE_EXIT
     {
         isInPaint = false;
     };
+
+    //process screen changing of screens or screens params outside the app
+    DVASSERT(screenParams);
+    if (screenParams->screenScale != devicePixelRatio())
+    {
+        screenParams->screenScale = devicePixelRatio();
+
+        QQuickWindow* qWindow = quickWindow();
+        bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
+        QSize size = geometry().size();
+        widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
+    }
+
+    if (screenParams->logicalDPI != logicalDpiX())
+    {
+        screenParams->logicalDPI = logicalDpiX();
+        widgetDelegate->OnDpiChanged(static_cast<float32>(screenParams->logicalDPI));
+    }
 
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
     if (!nativeHandle.isValid())

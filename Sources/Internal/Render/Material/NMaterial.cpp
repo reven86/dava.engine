@@ -544,9 +544,19 @@ void NMaterial::SetParent(NMaterial* _parent)
     InvalidateRenderVariants();
 }
 
-NMaterial* NMaterial::GetParent()
+NMaterial* NMaterial::GetParent() const
 {
     return parent;
+}
+
+NMaterial* NMaterial::GetTopLevelParent()
+{
+    NMaterial* result = this;
+    while (result->GetParent() != nullptr)
+    {
+        result = result->GetParent();
+    }
+    return result;
 }
 
 const Vector<NMaterial*>& NMaterial::GetChildren() const
@@ -572,12 +582,12 @@ uint32 NMaterial::GetConfigCount() const
     return static_cast<uint32>(materialConfigs.size());
 }
 
-const DAVA::FastName& NMaterial::GetCurrentConfigName() const
+const FastName& NMaterial::GetCurrentConfigName() const
 {
     return GetCurrentConfig().name;
 }
 
-void NMaterial::SetCurrentConfigName(const DAVA::FastName& newName)
+void NMaterial::SetCurrentConfigName(const FastName& newName)
 {
     GetMutableCurrentConfig().name = newName;
 }
@@ -604,7 +614,7 @@ void NMaterial::ReleaseConfigTextures(uint32 index)
         InvalidateTextureBindings();
 }
 
-const DAVA::FastName& NMaterial::GetConfigName(uint32 index) const
+const FastName& NMaterial::GetConfigName(uint32 index) const
 {
     return GetConfig(index).name;
 }
@@ -642,7 +652,7 @@ void NMaterial::RemoveConfig(uint32 index)
         InvalidateRenderVariants();
     }
 
-    currentConfig = DAVA::Min(currentConfig, static_cast<DAVA::uint32>(materialConfigs.size()) - 1);
+    currentConfig = Min(currentConfig, static_cast<uint32>(materialConfigs.size()) - 1);
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
@@ -718,6 +728,24 @@ void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, 
             flags[it.first] = it.second;
     }
     FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
+void NMaterial::PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags)
+{
+    uint32 flagsCount = static_cast<uint32>(flags.size());
+    uint32 variations = 1u << flagsCount;
+    for (const FastName& fxName : fxNames)
+    {
+        for (uint32 i = 0; i < variations; ++i)
+        {
+            HashMap<FastName, int32> enabledFlags;
+            for (uint32 f = 0; f < flagsCount; ++f)
+            {
+                enabledFlags[flags[f]] = static_cast<int32>((i & (1 << f)) != 0);
+            }
+            PreCacheFXWithFlags(enabledFlags, fxName);
+        }
+    }
 }
 
 void NMaterial::RebuildRenderVariants()

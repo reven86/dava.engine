@@ -1,7 +1,5 @@
 #include "RenderSystem2D.h"
 
-#include "Logger/Logger.h"
-
 #include "UI/UIControl.h"
 #include "UI/UIControlBackground.h"
 #include "UI/UIControlSystem.h"
@@ -11,6 +9,11 @@
 
 #include "Render/ShaderCache.h"
 #include "Render/VisibilityQueryResults.h"
+
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -153,8 +156,7 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
-    renderPass2DConfig.PerfQueryIndex0 = PERFQUERY__2D_PASS_T0;
-    renderPass2DConfig.PerfQueryIndex1 = PERFQUERY__2D_PASS_T1;
+    DAVA_PROFILER_GPU_RENDER_PASS(renderPass2DConfig, ProfilerGPUMarkerName::RENDER_PASS_2D);
 #ifdef __DAVAENGINE_RENDERSTATS__
     renderPass2DConfig.queryBuffer = VisibilityQueryResults::GetQueryBuffer();
 #endif

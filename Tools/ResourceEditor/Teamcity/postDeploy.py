@@ -24,7 +24,7 @@ def main():
 
     if len(sys.argv) > 2:
         beastFolderPath = sys.argv[2].rstrip("\\/")
-        beastDstPath = os.path.join(deployRoot, os.path.basename(beastFolderPath))
+        beastDstPath = os.path.join(deployRoot, 'Data.beast')
 
         print "Beast Path: " + beastFolderPath
         print "DST Path: " + beastDstPath

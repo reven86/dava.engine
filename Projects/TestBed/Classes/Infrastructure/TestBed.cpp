@@ -33,6 +33,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
 #include "Tests/UILoggingTest.h"
+#include "Tests/ProfilerTest.h"
 #include "Tests/ImGuiTest.h"
 //$UNITTEST_INCLUDE
 
@@ -235,6 +236,7 @@ void TestBed::RegisterTests()
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
     new UILoggingTest(*this);
+    new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     //$UNITTEST_CTOR

@@ -1,7 +1,6 @@
 #ifndef __DAVAENGINE_ATOMIC_GNU_H__
 #define __DAVAENGINE_ATOMIC_GNU_H__
 
-#include "Base/Platform.h"
 #ifndef USE_CPP11_CONCURRENCY
 
 #include "Concurrency/Atomic.h"

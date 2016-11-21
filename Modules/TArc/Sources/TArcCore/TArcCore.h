@@ -52,7 +52,7 @@ public:
     DAVA_DEPRECATED(EngineContext& GetEngineContext());
 
 private:
-    // in testing enviroment Core shouldn't connect to Engine signals.
+    // in testing environment Core shouldn't connect to Engine signals.
     // TArcTestClass wrap signals and call Core method directly
     Core(Engine& engine, bool connectSignals);
     bool IsConsoleMode() const;

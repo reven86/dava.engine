@@ -72,9 +72,9 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
     if (progType == PROG_VERTEX)
     {
         const char* found = strstr(DeviceCaps().deviceDescription, "GeForce");
-        if (found && strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
+        if (found && strlen(found) >= strlen("GeForce XXXX")) //filter GeForce 6 and 7 series
         {
-            if ((found[8] == '6' || found[8] == '7') && found[11] == '0')
+            if ((found[8] == '6' || found[8] == '7') && (found[11] == '0' || found[11] == '5'))
             {
                 supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
             }
@@ -119,6 +119,7 @@ static bool IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 static void dx9_Uninitialize()
 {
     QueryBufferDX9::ReleaseQueryPool();
+    PerfQueryDX9::ReleasePerfQueryPool();
 }
 
 //------------------------------------------------------------------------------
@@ -163,6 +164,12 @@ static bool dx9_NeedRestoreResources()
     return needRestore;
 }
 
+static void dx9_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX9Command cmd = { DX9Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX9(&cmd, 1, false);
+}
+
 //------------------------------------------------------------------------------
 void DX9CheckMultisampleSupport()
 {
@@ -205,6 +212,7 @@ void dx9_InitCaps()
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
+    MutableDeviceCaps::Get().isPerfQuerySupported = true;
 
     const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
     if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
@@ -293,6 +301,7 @@ bool dx9_SelectAdapter(DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_proces
 
 void dx9_InitContext()
 {
+    LoadLibrary(L"D3DCompiler_43.dll");
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
     if (_D3D9 == nullptr)
@@ -378,7 +387,7 @@ void dx9_Initialize(const InitParam& param)
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
     QueryBufferDX9::SetupDispatch(&DispatchDX9);
-    PerfQuerySetDX9::SetupDispatch(&DispatchDX9);
+    PerfQueryDX9::SetupDispatch(&DispatchDX9);
     TextureDX9::SetupDispatch(&DispatchDX9);
     PipelineStateDX9::SetupDispatch(&DispatchDX9);
     ConstBufferDX9::SetupDispatch(&DispatchDX9);
@@ -392,6 +401,7 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+    DispatchDX9.impl_SyncCPUGPU = &dx9_SynchronizeCPUGPU;
 
     DispatchDX9.impl_InitContext = &dx9_InitContext;
     DispatchDX9.impl_ValidateSurface = &dx9_CheckSurface;

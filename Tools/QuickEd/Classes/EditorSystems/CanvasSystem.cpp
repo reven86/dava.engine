@@ -72,7 +72,7 @@ GridControl::GridControl()
     : colorControl(new ColorControl)
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
-    background->SetSprite("~res:/Gfx/GrayGrid", 0);
+    background->SetSprite("~res:/QuickEd/Gfx/GrayGrid", 0);
     colorControl->SetName("Color control");
 
     UIControl::AddControl(colorControl);

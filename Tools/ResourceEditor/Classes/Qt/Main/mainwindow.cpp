@@ -2402,7 +2402,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 
     const DAVA::FilePath path = outputPath.toStdString();
 
-    BeastRunner beast(scene, path, mode, beastWaitDialog);
+    BeastRunner beast(scene, scene->GetScenePath(), path, mode, beastWaitDialog);
     beast.RunUIMode();
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
@@ -3145,7 +3145,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 void QtMainWindow::OnReloadShaders()
 {
-    DAVA::ShaderDescriptorCache::RelaoadShaders();
+    DAVA::ShaderDescriptorCache::ReloadShaders();
 
     for (int tab = 0, sz = ui->sceneTabWidget->GetTabCount(); tab < sz; ++tab)
     {

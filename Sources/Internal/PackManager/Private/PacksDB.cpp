@@ -4,6 +4,7 @@
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
+#include "Concurrency/Thread.h"
 
 
 #if __clang__
@@ -60,6 +61,7 @@ class PacksDBData
 public:
     PacksDBData(const String& dbPath, bool dbInMemory)
     {
+        DVASSERT(Thread::IsMainThread());
 #ifdef DAVA_MEMORY_PROFILING_ENABLE
         sqlite3_mem_methods mem = {
             &SqliteMalloc,
@@ -87,6 +89,7 @@ public:
     }
     ~PacksDBData()
     {
+        DVASSERT(Thread::IsMainThread());
         UnregisterDavaVFSForSqlite3();
     }
     sqlite::database& GetDB()

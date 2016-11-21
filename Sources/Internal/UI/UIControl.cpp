@@ -2393,6 +2393,11 @@ void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     }
 }
 
+FastName UIControl::GetTaggedClass(const FastName& tag) const
+{
+    return classes.GetTaggedClass(tag);
+}
+
 void UIControl::ResetTaggedClass(const FastName& tag)
 {
     if (classes.ResetTaggedClass(tag))
