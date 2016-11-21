@@ -3,6 +3,7 @@
 #include <QAction>
 #include <QLineEdit>
 #include <QApplication>
+#include <QMap>
 
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
@@ -12,6 +13,22 @@
 #include "Engine/Engine.h"
 
 using namespace DAVA;
+
+namespace ResourceFilePropertyDelegateDetails
+{
+QString getOpenFileName(const Project *project, QWidget* parent, const QString& caption, const QString& dir,
+                        const QString& filter, QString* selectedFilter, QFileDialog::Options options)
+{
+    auto fileName = FileDialog::getOpenFileName(parent, caption, dir, filter, selectedFilter, options);
+    
+    if (project)
+    {
+        fileName = project->ResolveFilePath(fileName);
+    }
+    
+    return fileName;
+}
+}
 
 ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
 const QString& resourceExtension_,
@@ -30,6 +47,7 @@ ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem&, const QModelIndex&)
 {
     DVASSERT(context.project != nullptr);
+    project = context.project;
     projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
@@ -102,7 +120,8 @@ void ResourceFilePropertyDelegate::selectFileClicked()
         dir = projectResourceDir + resourceSubDir;
     }
 
-    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);
+    QString filePathText = ResourceFilePropertyDelegateDetails::getOpenFileName(project, editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension, nullptr, QFileDialog::DontResolveSymlinks/* | QFileDialog::DontUseNativeDialog*/);
+    
     if (!filePathText.isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(filePathText);

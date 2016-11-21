@@ -96,7 +96,7 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
         return Result(Result::RESULT_ERROR, QObject::tr("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
     }
 
-    QDir resourceDir(projectDir.absolutePath() + resourceDirectory);
+    QDir resourceDir(projectDir.absolutePath() + "/" + resourceDirectory);
 
     QString gfxDirectory = QString::fromStdString(defaultSettings.GetGfxDirectories().front().directory.relative);
     if (!resourceDir.mkpath(gfxDirectory))
@@ -128,7 +128,7 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
         return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
     }
 
-    QDir textsDir(resourceDir.absolutePath() + textsDirectory);
+    QDir textsDir(resourceDir.absolutePath() + "/" + textsDirectory);
     QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml"));
     if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
     {
@@ -136,11 +136,11 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
     }
     defaultLanguageTextFile.close();
 
-    QDir fontsConfigDir(resourceDir.absolutePath() + fontsConfigDirectory);
+    QDir fontsConfigDir(resourceDir.absolutePath() + "/" + fontsConfigDirectory);
     QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName())));
     if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
     {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create localization file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
     }
     defaultFontsConfigFile.close();
 

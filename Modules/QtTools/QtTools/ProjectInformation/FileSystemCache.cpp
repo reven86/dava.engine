@@ -239,7 +239,6 @@ std::tuple<QStringList, QSet<QFileInfo>> FileSystemCache::Impl::CollectFilesAndD
     while (dirIterator.hasNext())
     {
         dirIterator.next();
-        QString tmp = dirIterator.filePath();
         QFileInfo fileInfo(dirIterator.fileInfo());
 
         if (fileInfo.isDir())
