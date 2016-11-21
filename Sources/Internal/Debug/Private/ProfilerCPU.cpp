@@ -280,14 +280,14 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 desired
     bool found = false;
     std::size_t countersCount = 0;
     CounterArray* array = GetCounterArray(snapshot);
-    CounterArray::reverse_iterator begin = array->rbegin(), end = array->rend();
-    CounterArray::reverse_iterator it = begin;
-    for (; it != end; ++it)
+    CounterArray::reverse_iterator rbegin = array->rbegin(), rend = array->rend();
+    CounterArray::reverse_iterator rit = rbegin;
+    for (; rit != rend; ++rit)
     {
         ++countersCount;
-        if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
+        if (rit->endTime != 0 && (strcmp(counterName, rit->name) == 0))
         {
-            if ((it->frame <= desiredFrameIndex || it->frame == 0 || desiredFrameIndex == 0))
+            if ((rit->frame <= desiredFrameIndex || rit->frame == 0 || desiredFrameIndex == 0))
             {
                 found = true;
                 break;
@@ -297,11 +297,14 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 desired
 
     if (found)
     {
+        CounterArray::iterator it(rit);
+        CounterArray::iterator end = array->end();
+
         trace.reserve(countersCount);
 
         uint64 threadID = it->threadID;
         uint64 counterEndTime = it->endTime;
-        for (; it != begin; --it)
+        for (; it != end; ++it)
         {
             if (it->threadID == threadID)
             {
