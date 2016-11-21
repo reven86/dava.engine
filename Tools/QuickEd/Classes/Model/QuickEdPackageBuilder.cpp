@@ -29,10 +29,9 @@ const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
 DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> QuickEdPackageBuilder::replaces;
 
-QuickEdPackageBuilder::QuickEdPackageBuilder(bool fixPrototypes_)
+QuickEdPackageBuilder::QuickEdPackageBuilder()
     : currentObject(nullptr)
     , currentSection(nullptr)
-    , fixPrototypes(fixPrototypes_)
 {
 }
 
@@ -201,18 +200,6 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
     bool addToParent = controlsStack.back().addToParent;
     controlsStack.pop_back();
-
-    if (controlPlace == TO_CONTROLS && fixPrototypes)
-    {
-        auto it = replaces.find(packagePath.GetFrameworkPath());
-        if (it != replaces.end())
-        {
-            if (it->second.find(lastControl->GetName()) != it->second.end())
-            {
-                controlPlace = TO_PROTOTYPES;
-            }
-        }
-    }
 
     if (addToParent)
     {

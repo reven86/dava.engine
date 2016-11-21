@@ -115,6 +115,7 @@ bool Project::OpenInternal(const QString& path)
             QString currentLocale = QString::fromStdString(localeNode->AsString());
             editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
         }
+
         const YamlNode* libraryNode = projectRoot->Get("Library");
         libraryPackages.clear();
         if (libraryNode != nullptr)
@@ -122,6 +123,26 @@ bool Project::OpenInternal(const QString& path)
             for (uint32 i = 0; i < libraryNode->GetCount(); i++)
             {
                 libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
+            }
+        }
+
+        const YamlNode* prototypesNode = projectRoot->Get("Prototypes");
+        prototypes.clear();
+        if (prototypesNode != nullptr)
+        {
+            for (uint32 i = 0; i < prototypesNode->GetCount(); i++)
+            {
+                Set<String> packagePrototypes;
+                const YamlNode* packNode = prototypesNode->Get(i);
+                const YamlNode* packagePrototypesNode = packNode->Get("prototypes");
+
+                for (uint32 j = 0; j < packagePrototypesNode->GetCount(); j++)
+                {
+                    packagePrototypes.insert(packagePrototypesNode->Get(j)->AsString());
+                }
+
+                const String& packagePath = packNode->Get("file")->AsString();
+                prototypes[packagePath] = packagePrototypes;
             }
         }
     }
@@ -179,7 +200,7 @@ QString Project::CreateNewProject(Result* result /*=nullptr*/)
         *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
         return "";
     }
-    bool needOverwriteProjectFile = true;
+
     QDir projectDir(projectDirPath);
     const QString projectFileName = GetProjectFileName();
     QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
@@ -205,6 +226,11 @@ QString Project::CreateNewProject(Result* result /*=nullptr*/)
         return "";
     }
     return fullProjectFilePath;
+}
+
+const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& Project::GetPrototypes() const
+{
+    return prototypes;
 }
 
 bool Project::IsOpen() const

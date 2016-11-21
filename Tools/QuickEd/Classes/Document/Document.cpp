@@ -5,6 +5,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "Project/Project.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
@@ -13,12 +14,13 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
+Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
+    , project(project_)
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
@@ -114,6 +116,11 @@ bool Document::CanSave() const
 bool Document::IsDocumentExists() const
 {
     return fileExists;
+}
+
+Project* Document::GetProject() const
+{
+    return project;
 }
 
 void Document::RefreshAllControlProperties()

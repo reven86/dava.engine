@@ -12,6 +12,8 @@ class PackageBaseNode;
 class QAction;
 class QTabBar;
 
+class Project;
+
 class DocumentGroup : public QObject
 {
     Q_OBJECT
@@ -20,7 +22,7 @@ class DocumentGroup : public QObject
     Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
     Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
-    explicit DocumentGroup(QObject* parent = nullptr);
+    explicit DocumentGroup(Project* project, QObject* parent = nullptr);
     ~DocumentGroup();
 
     QList<Document*> GetDocuments() const;
@@ -92,7 +94,8 @@ private:
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
 
-    Document* active;
+    Project* project = nullptr;
+    Document* active = nullptr;
     QList<Document*> documents;
     std::unique_ptr<CommandStackGroup> commandStackGroup;
     QSet<Document*> changedFiles;

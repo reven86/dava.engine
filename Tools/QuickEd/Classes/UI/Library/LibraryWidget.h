@@ -10,6 +10,7 @@
 
 class Document;
 class LibraryModel;
+class Project;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {

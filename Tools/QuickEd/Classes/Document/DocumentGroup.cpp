@@ -10,6 +10,7 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
+#include "Project/Project.h"
 
 #include <QApplication>
 #include <QMutableListIterator>
@@ -19,9 +20,9 @@
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(QObject* parent)
+DocumentGroup::DocumentGroup(Project* project_, QObject* parent)
     : QObject(parent)
-    , active(nullptr)
+    , project(project_)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
@@ -579,7 +580,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
     if (packageRef.Get() != nullptr)
     {
-        Document* document = new Document(packageRef, this);
+        Document* document = new Document(project, packageRef, this);
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
         return document;
@@ -611,7 +612,7 @@ RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
 {
     QuickEdPackageBuilder builder;
 
-    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
+    bool packageLoaded = UIPackageLoader(project->GetPrototypes()).LoadPackage(packagePath, &builder);
 
     if (packageLoaded)
         return builder.BuildPackage();

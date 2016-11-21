@@ -191,7 +191,7 @@ void EditorCore::Init(DAVA::Engine& engine)
 
     spritesPacker.reset(new SpritesPacker());
     project = new Project(this);
-    documentGroup = new DocumentGroup(this);
+    documentGroup = new DocumentGroup(project, this);
     mainWindow.reset(new MainWindow());
 
     mainWindow->previewWidget->InjectRenderWidget(renderWidget);

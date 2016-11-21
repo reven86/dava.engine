@@ -22,9 +22,11 @@ public:
     static const DAVA::int32 VERSION_WITH_LEGACY_ALIGNS = 0;
     static const DAVA::int32 LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION = 1;
     static const DAVA::int32 LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION = 2;
+    static const DAVA::int32 LAST_VERSION_WITHOUT_PROTOTYPES_SUPPORT = 5;
 
 public:
     UIPackageLoader();
+    UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes);
     virtual ~UIPackageLoader();
 
 public:
@@ -73,6 +75,7 @@ private:
     DAVA::int32 version = 0;
 
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> legacyPrototypes;
 };
 };
 

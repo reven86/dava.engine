@@ -31,6 +31,8 @@ public:
     static const QString& GetProjectFileName();
     QString CreateNewProject(DAVA::Result* result = nullptr);
 
+    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
+
 private:
     bool OpenInternal(const QString& path);
 
@@ -58,6 +60,7 @@ private:
     bool isOpen = false;
     DAVA::FilePath projectPath;
     DAVA::Vector<DAVA::FilePath> libraryPackages;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypes;
     QString projectName;
     DAVA::String projectsHistory;
     DAVA::uint32 projectsHistorySize;

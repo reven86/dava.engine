@@ -41,6 +41,12 @@ UIPackageLoader::UIPackageLoader()
     }
 }
 
+UIPackageLoader::UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes_)
+    : DAVA::AbstractUIPackageLoader()
+    , legacyPrototypes(legacyPrototypes_)
+{
+}
+
 UIPackageLoader::~UIPackageLoader()
 {
 }
@@ -153,7 +159,20 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
             if (loadingQueue[i].status == STATUS_WAIT)
             {
                 loadingQueue[i].status = STATUS_LOADING;
-                LoadControl(loadingQueue[i].node, AbstractUIPackageBuilder::TO_CONTROLS, builder);
+                AbstractUIPackageBuilder::eControlPlace controlPlace = AbstractUIPackageBuilder::TO_CONTROLS;
+                if (version <= LAST_VERSION_WITHOUT_PROTOTYPES_SUPPORT)
+                {
+                    auto it = legacyPrototypes.find(packagePath.GetFrameworkPath());
+                    if (it != legacyPrototypes.end())
+                    {
+                        if (it->second.find(loadingQueue[i].name) != it->second.end())
+                        {
+                            controlPlace = AbstractUIPackageBuilder::TO_PROTOTYPES;
+                        }
+                    }
+                }
+
+                LoadControl(loadingQueue[i].node, controlPlace, builder);
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }

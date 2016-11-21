@@ -16,7 +16,7 @@ class QuickEdPackageBuilder : public DAVA::AbstractUIPackageBuilder
 public:
     static DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> replaces;
 
-    QuickEdPackageBuilder(bool fixPrototypes = false);
+    QuickEdPackageBuilder();
     virtual ~QuickEdPackageBuilder();
 
     virtual void BeginPackage(const DAVA::FilePath& packagePath) override;
@@ -81,5 +81,5 @@ private:
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;
 
-    bool fixPrototypes = false;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypeInfo;
 };

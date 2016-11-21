@@ -13,11 +13,11 @@
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/QuickEdPackageBuilder.h"
+#include "Project/Project.h"
 
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
-
 
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
@@ -182,7 +182,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
     return nullptr;
 }
 
-void LibraryModel::SetPackageNode(PackageNode* package_)
+void LibraryModel::SetPackageNode(Project* project, PackageNode* package_)
 {
     for (QStandardItem* item : libraryRootItems)
     {
@@ -207,7 +207,7 @@ void LibraryModel::SetPackageNode(PackageNode* package_)
     if (package != nullptr)
     {
         package->AddListener(this);
-        BuildModel();
+        BuildModel(project);
     }
 }
 
@@ -249,14 +249,14 @@ QModelIndex LibraryModel::indexByNode(const void* node, const QStandardItem* ite
     return QModelIndex();
 }
 
-void LibraryModel::BuildModel()
+void LibraryModel::BuildModel(Project* project)
 {
     int32 index = 0;
     for (const FilePath& path : libraryPackagePaths)
     {
         QuickEdPackageBuilder builder;
         PackageNode* package = nullptr;
-        if (UIPackageLoader().LoadPackage(path, &builder))
+        if (UIPackageLoader(project->GetPrototypes()).LoadPackage(path, &builder))
         {
             RefPtr<PackageNode> libraryPackage = builder.BuildPackage();
             package = SafeRetain(libraryPackage.Get());

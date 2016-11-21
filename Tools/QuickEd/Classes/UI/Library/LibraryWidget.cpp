@@ -14,7 +14,15 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 
 void LibraryWidget::OnDocumentChanged(Document* document)
 {
-    libraryModel->SetPackageNode(nullptr != document ? document->GetPackage() : nullptr);
+    if (document != nullptr)
+    {
+        libraryModel->SetPackageNode(document->GetProject(), document->GetPackage());
+    }
+    else
+    {
+        libraryModel->SetPackageNode(nullptr, nullptr);
+    }
+
     treeView->expandAll();
     treeView->collapse(libraryModel->GetDefaultControlsModelIndex());
 }

@@ -491,7 +491,7 @@ void FileSystemDockWidget::OnFixPrototypes()
         if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 &&
             path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
         {
-            QuickEdPackageBuilder builder(false);
+            QuickEdPackageBuilder builder;
             Logger::Debug(">> (%d) %s", pct, path.GetFrameworkPath().c_str());
             if (UIPackageLoader().LoadPackage(path, &builder))
             {
@@ -510,24 +510,55 @@ void FileSystemDockWidget::OnFixPrototypes()
         }
     }
 
-    Logger::Debug("!!!! PROTOTYPES");
-    index = 0;
+    Vector<std::pair<String, Vector<String>>> replaces;
     for (auto it : QuickEdPackageBuilder::replaces)
     {
-        index++;
-        int pct = (index * 100) / files.size();
-        Logger::Debug("REPLACING (%d): %s", pct, it.first.c_str());
-        QuickEdPackageBuilder builder(true);
-        if (UIPackageLoader().LoadPackage(it.first, &builder))
+        std::pair<String, Vector<String>> prototypes;
+        prototypes.first = it.first;
+        for (auto it2 : it.second)
         {
-            RefPtr<PackageNode> pack = builder.BuildPackage();
-            if (pack.Valid())
-            {
-                YamlPackageSerializer serializer;
-                serializer.SerializePackage(pack.Get());
-                serializer.WriteToFile(pack->GetPath());
-            }
+            prototypes.second.push_back(it2);
         }
+
+        std::sort(prototypes.second.begin(), prototypes.second.end());
+        replaces.push_back(prototypes);
+    }
+
+    std::sort(replaces.begin(), replaces.end(), [](std::pair<String, Vector<String>>& p1, std::pair<String, Vector<String>>& p2) {
+        return p1.first < p2.first;
+    });
+
+    Logger::Debug("!!!! PROTOTYPES");
+    for (auto it : replaces)
+    {
+        //Logger::Debug("REPLACING (%d): %s", pct, it.first.c_str());
+        printf(" - {file: \"%s\", prototypes: [", it.first.c_str());
+
+        bool first = true;
+        for (auto it2 : it.second)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                printf(", ");
+            }
+            printf("\"%s\"", it2.c_str());
+        }
+        printf("]}\n");
+        //        QuickEdPackageBuilder builder(true);
+        //        if (UIPackageLoader().LoadPackage(it.first, &builder))
+        //        {
+        //            RefPtr<PackageNode> pack = builder.BuildPackage();
+        //            if (pack.Valid())
+        //            {
+        //                YamlPackageSerializer serializer;
+        //                serializer.SerializePackage(pack.Get());
+        //                serializer.WriteToFile(pack->GetPath());
+        //            }
+        //        }
 
         //        for (auto it2 : it.second)
         //        {

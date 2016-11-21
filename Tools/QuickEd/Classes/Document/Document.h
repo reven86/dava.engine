@@ -22,6 +22,7 @@ class UIEvent;
 class CommandStack;
 }
 
+class Project;
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
@@ -39,7 +40,7 @@ class Document final : public QObject
     Q_PROPERTY(bool canClose READ CanClose WRITE SetCanClose NOTIFY CanCloseChanged);
 
 public:
-    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
+    explicit Document(Project* project, const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
     const DAVA::FilePath& GetPackageFilePath() const;
@@ -55,6 +56,8 @@ public:
     bool CanSave() const;
     bool CanClose() const;
     bool IsDocumentExists() const;
+
+    Project* GetProject() const;
 
 signals:
     void FileChanged(Document* document);
@@ -80,6 +83,8 @@ private:
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;
+
+    Project* project;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

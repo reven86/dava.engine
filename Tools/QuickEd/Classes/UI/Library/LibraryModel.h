@@ -12,6 +12,7 @@ class AbstractProperty;
 class ControlNode;
 class ControlsContainerNode;
 class ImportedPackagesNode;
+class Project;
 
 class LibraryModel : public QStandardItemModel, PackageListener
 {
@@ -31,7 +32,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
-    void SetPackageNode(PackageNode* package);
+    void SetPackageNode(Project* project, PackageNode* package);
 
     QModelIndex GetDefaultControlsModelIndex() const;
 
@@ -39,7 +40,7 @@ private:
     QVariant data(const QModelIndex& index, int role) const override;
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
-    void BuildModel();
+    void BuildModel(Project* project);
     void AddControl(ControlNode* node, QStandardItem* rootItem, bool makePrototype);
     void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool makePrototype);
     QStandardItem* CreatePackageControlsItem(PackageNode* package, bool makePrototype);
