@@ -74,6 +74,7 @@ private:
     void OnDestroyed() override;
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, bool isFullScreen) override;
+    void OnDpiChanged(float32 dpi) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;

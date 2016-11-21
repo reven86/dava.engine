@@ -355,6 +355,11 @@ void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, fullscreen));
 }
 
+void WindowBackend::OnDpiChanged(float32 dpi)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+}
+
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
