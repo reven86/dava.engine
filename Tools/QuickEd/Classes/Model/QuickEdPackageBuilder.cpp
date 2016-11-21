@@ -63,7 +63,8 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
     FilePath packagePath(packagePathStr);
     for (PackageNode* package : importedPackages)
     {
-        if (package->GetPath().GetFrameworkPath() == packagePath.GetFrameworkPath())
+        //if (package->GetPath().GetFrameworkPath() == packagePath.GetFrameworkPath())
+        if (package->GetPath().GetAbsolutePathname() == packagePath.GetAbsolutePathname()) //TODO revert this workaround after DF-11992
             return true;
     }
 
