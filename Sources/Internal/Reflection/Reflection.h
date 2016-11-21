@@ -8,11 +8,11 @@
 
 #include "Debug/DVAssert.h"
 
-#include "Reflection/Private/ReflectedMeta.h"
-#include "Reflection/Private/ReflectedType.h"
-#include "Reflection/Private/ReflectedTypeDB.h"
-#include "Reflection/Private/ReflectedStructure.h"
-#include "Reflection/Private/ReflectedObject.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedTypeDB.h"
+#include "Reflection/ReflectedStructure.h"
+#include "Reflection/ReflectedObject.h"
 
 // TODO: usage comments
 #define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
@@ -25,15 +25,7 @@
 
 namespace DAVA
 {
-class ReflectedType;
-class ReflectedTypeDB;
-class ReflectedObject;
-class ReflectedMeta;
-
 class ValueWrapper;
-class MethodWrapper;
-class CtorWrapper;
-class DtorWrapper;
 class StructureWrapper;
 
 struct ReflectionBase
