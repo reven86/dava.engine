@@ -309,18 +309,22 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     {
         return true;
     }
-    auto tryRemoveApp = [this, canReject](const QString& branchID, const QString& appID) -> bool {
+    //can return nullptr
+    auto getVersion = [this](const QString& branchID, const QString& appID) -> AppVersion* {
         Application* app = localConfig.GetApplication(branchID, appID);
         if (app == nullptr)
         {
-            return true;
+            return nullptr;
         }
         AppVersion* version = app->GetVersion(0);
+        return version;
+    };
+    auto canRemoveApp = [this, canReject, getVersion](const QString& branchID, const QString& appID) -> bool {
+        AppVersion* version = getVersion(branchID, appID);
         if (version == nullptr)
         {
             return true;
         }
-
         QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
         if (appDirPath.isEmpty())
         {
@@ -333,27 +337,44 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
             if (result == QMessageBox::Cancel)
                 return false;
         }
+        return true;
+    };
+    auto removeApp = [this, getVersion](const QString& branchID, const QString& appID)
+    {
+        AppVersion* version = getVersion(branchID, appID);
+        if (version == nullptr)
+        {
+            return true;
+        }
+        QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
         FileManager::DeleteDirectory(appDirPath);
         localConfig.RemoveApplication(branchID, appID, version->id);
         SaveLocalConfig();
-        return true;
     };
     if (version->isToolSet)
     {
+        //check that we can remove folder "toolset" first
         for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
         {
-            if (tryRemoveApp(branchID, fakeAppID) == false)
+            if (canRemoveApp(branchID, fakeAppID) == false)
             {
                 return false;
             }
         }
+        //remove folder from hardDisk and from config parser
+        //right now we call DeleteDirectory three times for one folder. This is required by design of ApplicationManager and ConfigParser classes
+        for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
+        {
+            removeApp(branchID, fakeAppID);
+        }
     }
     else
     {
-        if (tryRemoveApp(branchID, appID) == false)
+        if (canRemoveApp(branchID, appID) == false)
         {
             return false;
         }
+        removeApp(branchID, appID);
     }
     return true;
 }
