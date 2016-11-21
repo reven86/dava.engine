@@ -74,13 +74,13 @@ public:
          Surface size is in raw pixels.
 
          \remark Use `Window::sizeChanged` signal to know, when window surface size was changed.
-         \remark Use `SetSurfaceScale` to tune surface size.
+         \remark Use `SetSurfaceScaleAsync` to tune surface size.
     */
     Size2f GetSurfaceSize() const;
 
     /** 
         Returns window rendering surface scale. 
-        By default it is 1.0f until user changes it with `SetSurfaceScale()` method.
+        By default it is 1.0f until user changes it with `SetSurfaceScaleAsync` method.
     */
     float32 GetSurfaceScale() const;
 
@@ -91,7 +91,7 @@ public:
         \remark This should be used by user to tune rendering surface size for performance reason.
         \remark On Win32 platform this method will have effect only if DirectX 9 is in use
     */
-    void SetSurfaceScale(float32 scale);
+    void SetSurfaceScaleAsync(float32 scale);
 
     void Close();
     void SetTitle(const String& title);

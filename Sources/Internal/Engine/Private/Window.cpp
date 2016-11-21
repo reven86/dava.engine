@@ -533,7 +533,7 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     inputSystem->HandleInputEvent(&uie);
 }
 
-void Window::SetSurfaceScale(float32 scale)
+void Window::SetSurfaceScaleAsync(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
@@ -547,7 +547,7 @@ void Window::SetSurfaceScale(float32 scale)
         return;
     }
 
-    windowBackend->SetSurfaceScale(scale);
+    windowBackend->SetSurfaceScaleAsync(scale);
 }
 
 } // namespace DAVA

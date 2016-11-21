@@ -59,7 +59,7 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
-    void SetSurfaceScale(const float32 scale);
+    void SetSurfaceScaleAsync(const float32 scale);
 
 private:
     // Shortcut for eMouseButtons::COUNT

@@ -245,7 +245,7 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-void WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
 {
     // Not supported natively on OpenGL
 }

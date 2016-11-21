@@ -180,7 +180,7 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-void WindowBackend::SetSurfaceScale(const float32 scale)
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
 {
     DVASSERT(scale > 0.0f && scale <= 1.0f);
 

@@ -222,7 +222,7 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     float32 mul = primaryWindow->GetSurfaceScale();
     mul += 0.1f;
 
-    primaryWindow->SetSurfaceScale(mul);
+    primaryWindow->SetSurfaceScaleAsync(mul);
 
     mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
@@ -233,7 +233,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     float32 mul = primaryWindow->GetSurfaceScale();
     mul -= 0.1f;
 
-    primaryWindow->SetSurfaceScale(mul);
+    primaryWindow->SetSurfaceScaleAsync(mul);
 
     mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
