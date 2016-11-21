@@ -52,11 +52,6 @@ int32 PlatformCore::OnFrame()
     return engineBackend->OnFrame();
 }
 
-WindowBackend* PlatformCore::GetWindowBackend(Window* window)
-{
-    return window->GetBackend();
-}
-
 } // namespace Private
 } // namespace DAVA
 

@@ -65,8 +65,8 @@ namespace PlatformApi
 void AddUIView(Window* targetWindow, UIView* uiview);
 void RemoveUIView(Window* targetWindow, UIView* uiview);
 
-UIView* GetUIViewFromPool(const char8* className);
-void ReturnUIViewToPool(UIView* view);
+UIView* GetUIViewFromPool(Window* targetWindow, const char8* className);
+void ReturnUIViewToPool(Window* targetWindow, UIView* view);
 
 UIImage* RenderUIViewToUIImage(UIView* view);
 Image* ConvertUIImageToImage(UIImage* nativeImage);

@@ -8,7 +8,6 @@
 
 #include <AppKit/NSScreen.h>
 
-#include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
@@ -27,7 +26,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 

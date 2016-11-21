@@ -39,7 +39,6 @@ public:
     void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -50,18 +49,15 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
-private:
     void UIEventHandler(const UIDispatcherEvent& e);
     void WindowWillClose();
 
-private:
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     std::unique_ptr<WindowNativeBridge> bridge;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
     bool closeRequestByApp = false;
@@ -71,11 +67,6 @@ private:
     friend class PlatformCore;
     friend struct WindowNativeBridge;
 };
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {

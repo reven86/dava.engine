@@ -4,7 +4,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -214,7 +213,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddNSView(bridge->webView);
+    PlatformApi::AddNSView(window, bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -249,7 +248,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveNSView(bridge->webView);
+    PlatformApi::RemoveNSView(window, bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif

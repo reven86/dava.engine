@@ -5,7 +5,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #endif
@@ -117,7 +116,7 @@ enum MoviePlayerHelperPlaybackState
 - (void)dealloc
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveNSView(videoView);
+    DAVA::PlatformApi::RemoveNSView(window, videoView);
 #else
     [videoView removeFromSuperview];
 #endif
@@ -194,7 +193,7 @@ enum MoviePlayerHelperPlaybackState
     videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddNSView(videoView);
+    DAVA::PlatformApi::AddNSView(window, videoView);
 #else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView addSubview:videoView];
