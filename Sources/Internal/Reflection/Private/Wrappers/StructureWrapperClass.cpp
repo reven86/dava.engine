@@ -98,12 +98,12 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
     String name = key.Cast<String>(String());
     if (!name.empty())
     {
-        void* methodThis = vw->GetValueObject(object).GetVoidPtr();
+        void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
         auto it = methodsNameIndexes.find(name);
         if (it != methodsNameIndexes.end())
         {
-            return methodsCache[it->second]->methodWrapper->anyFn.BindThis(methodThis);
+            return methodsCache[it->second]->method.BindThis(this_);
         }
     }
     return AnyFn();
@@ -113,12 +113,12 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
 {
     Vector<Reflection::Method> ret;
 
-    void* methodThis = vw->GetValueObject(object).GetVoidPtr();
+    void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
     ret.reserve(methodsCache.size());
     for (auto m : methodsCache)
     {
-        ret.push_back({ m->name, m->methodWrapper->anyFn.BindThis(methodThis) });
+        ret.push_back({ m->name, m->method.BindThis(this_) });
     }
 
     return ret;

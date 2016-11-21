@@ -6,11 +6,6 @@
 
 namespace DAVA
 {
-namespace ReflectedTypeDetail
-{
-static std::array<void*, 4> zeroArray = { 0 };
-};
-
 inline const Type* ReflectedType::GetType() const
 {
     return type;
@@ -32,50 +27,44 @@ inline const StructureWrapper* ReflectedType::GetStrucutreWrapper() const
 }
 
 template <typename... Args>
-bool ReflectedType::HasCtor(ReflectionCtorPolicy policy) const
+const AnyFn* ReflectedType::GetCtor(const Type* retType) const
 {
-    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && type->IsFundamental())
+    if (nullptr == retType)
     {
-        return true;
+        retType = type;
     }
-    else
-    {
-        auto params = DAVA::AnyFn::Params::FromArgs<Args...>();
 
-        for (auto& ctor : structure->ctors)
+    auto params = DAVA::AnyFn::Params::FromArgs<Args...>(retType);
+    for (auto& ctor : structure->ctors)
+    {
+        if (ctor->GetInvokeParams() == params)
         {
-            if (ctor->GetCtorPolicy() == policy && ctor->GetInvokeParams() == params)
-            {
-                return true;
-            }
+            return ctor.get();
         }
     }
 
-    return false;
+    return nullptr;
 }
 
 template <typename... Args>
-Any ReflectedType::Create(ReflectionCtorPolicy policy, Args... args) const
+Any ReflectedType::Create(CreatePolicy policy, Args... args) const
 {
-    if ((0 == sizeof...(Args)) && policy == ReflectionCtorPolicy::ByValue && type->IsFundamental())
+    const AnyFn* ctor = nullptr;
+
+    if (policy == CreatePolicy::ByValue)
     {
-        Any ret;
-        ret.LoadValue(ReflectedTypeDetail::zeroArray.data(), type);
-        return ret;
+        ctor = GetCtor<Args...>(type);
     }
     else
     {
-        auto params = DAVA::AnyFn::Params::FromArgs<Args...>();
-
-        for (auto& ctor : structure->ctors)
-        {
-            if (ctor->GetCtorPolicy() == policy && ctor->GetInvokeParams() == params)
-            {
-                return ctor->Create(std::forward<Args>(args)...);
-            }
-        }
+        ctor = GetCtor<Args...>(type->Pointer());
     }
 
-    DAVA_THROW(Exception, "There is no appropriate ctor to call it with specified Args...");
+    if (nullptr != ctor)
+    {
+        return ctor->Invoke(std::forward<Args>(args)...);
+    }
+
+    DAVA_THROW(Exception, "There is no appropriate ctor.");
 }
 } // namespace DAVA

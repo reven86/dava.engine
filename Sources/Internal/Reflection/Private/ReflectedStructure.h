@@ -19,8 +19,8 @@ public:
     struct Field
     {
         String name;
-        std::unique_ptr<ReflectedMeta> meta;
         std::unique_ptr<ValueWrapper> valueWrapper;
+        std::unique_ptr<ReflectedMeta> meta;
 
         const ReflectedType* reflectedType;
     };
@@ -28,8 +28,8 @@ public:
     struct Method
     {
         String name;
+        AnyFn method;
         std::unique_ptr<ReflectedMeta> meta;
-        std::unique_ptr<MethodWrapper> methodWrapper;
     };
 
     struct Enum
@@ -44,7 +44,7 @@ public:
     Vector<std::unique_ptr<Method>> methods;
     Vector<std::unique_ptr<Enum>> enums;
 
-    Vector<std::unique_ptr<CtorWrapper>> ctors;
-    std::unique_ptr<DtorWrapper> dtor;
+    Vector<std::unique_ptr<AnyFn>> ctors;
+    std::unique_ptr<AnyFn> dtor;
 };
 } // namespace DAVA

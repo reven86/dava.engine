@@ -9,9 +9,9 @@ ReflectedType::ReflectedType(const Type* rttiType_)
 {
 }
 
-Vector<const CtorWrapper*> ReflectedType::GetCtors() const
+Vector<const AnyFn*> ReflectedType::GetCtors() const
 {
-    Vector<const CtorWrapper*> ret;
+    Vector<const AnyFn*> ret;
 
     ret.reserve(structure->ctors.size());
     for (auto& it : structure->ctors)
@@ -22,29 +22,32 @@ Vector<const CtorWrapper*> ReflectedType::GetCtors() const
     return ret;
 }
 
-const DtorWrapper* ReflectedType::GetDtor() const
+const AnyFn* ReflectedType::GetDtor() const
 {
-    return structure->dtor.get();
+    if (structure->dtor != nullptr)
+    {
+        return structure->dtor.get();
+    }
+
+    return nullptr;
 }
 
-bool ReflectedType::HasDtor() const
+void ReflectedType::Destroy(Any&& v) const
 {
-    return (nullptr != structure->dtor);
-}
+    if (v.GetType()->IsPointer())
+    {
+        const AnyFn* dtor = GetDtor();
 
-void ReflectedType::Destroy(Any&& any) const
-{
-    if (!any.GetType()->IsPointer())
-    {
-        any.Clear();
+        if (nullptr != dtor)
+        {
+            dtor->Invoke(v);
+        }
+        else
+        {
+            DAVA_THROW(Exception, "There is no appropriate dtor.");
+        }
     }
-    else if (nullptr != structure->dtor)
-    {
-        structure->dtor->Destroy(std::move(any));
-    }
-    else
-    {
-        DAVA_THROW(Exception, "There is no appropriate dtor to destroy such object");
-    }
+
+    v.Clear();
 }
 } // namespace DAVA

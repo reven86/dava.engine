@@ -34,7 +34,12 @@ template <typename C>
 template <typename... Args>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::ConstructorByValue()
 {
-    structure->ctors.emplace_back(new CtorWrapperByValue<C, Args...>());
+    AnyFn* ctor = new AnyFn([](Args... args)
+                            {
+                                return C(std::forward<Args>(args)...);
+                            });
+
+    structure->ctors.emplace_back(ctor);
     return *this;
 }
 
@@ -42,7 +47,12 @@ template <typename C>
 template <typename... Args>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::ConstructorByPointer()
 {
-    structure->ctors.emplace_back(new CtorWrapperByPointer<C, Args...>());
+    AnyFn* ctor = new AnyFn([](Args... args)
+                            {
+                                return new C(std::forward<Args>(args)...);
+                            });
+
+    structure->ctors.emplace_back(ctor);
     return *this;
 }
 
@@ -50,21 +60,30 @@ template <typename C>
 template <typename... Args>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::ConstructorByPointer(C* (*fn)(Args...))
 {
-    structure->ctors.emplace_back(new CtorWrapperByPointer<C, Args...>(fn));
+    AnyFn* ctor = new AnyFn(fn);
+
+    structure->ctors.emplace_back(ctor);
     return *this;
 }
 
 template <typename C>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::DestructorByPointer()
 {
-    structure->dtor.reset(new DtorWrapperByPointer<C>());
+    AnyFn* dtor = new AnyFn([](C* ptr)
+                            {
+                                delete ptr;
+                            });
+
+    structure->dtor.reset(dtor);
     return *this;
 }
 
 template <typename C>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::DestructorByPointer(void (*fn)(C*))
 {
-    structure->dtor.reset(new DtorWrapperByPointer<C>(fn));
+    AnyFn* dtor = new AnyFn(fn);
+
+    structure->dtor.reset(dtor);
     return *this;
 }
 
@@ -196,12 +215,9 @@ template <typename C>
 template <typename Mt>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const Mt& method)
 {
-    MethodWrapper* methodWrapper = new MethodWrapper();
-    methodWrapper->anyFn = AnyFn(method);
-
     ReflectedStructure::Method* m = new ReflectedStructure::Method();
     m->name = name;
-    m->methodWrapper.reset(methodWrapper);
+    m->method = AnyFn(method);
 
     lastMeta = &m->meta;
     structure->methods.emplace_back(m);

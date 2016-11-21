@@ -89,7 +89,7 @@ public:
         return StructureWrapperDefault::GetMethods(obj, vw);
     }
 
-    const ReflectionCaps& GetFieldsCaps(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    const Reflection::FieldCaps& GetFieldsCaps(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = Deref(vw->GetValueObject(obj));
         const StructureWrapper* sw = GetInternalWrapper(derefObj);

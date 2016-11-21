@@ -312,7 +312,7 @@ Vector<Reflection::Field> Reflection::GetFields() const
     return structureWrapper->GetFields(object, valueWrapper);
 }
 
-const ReflectionCaps& Reflection::GetFieldsCaps() const
+const Reflection::FieldCaps& Reflection::GetFieldsCaps() const
 {
     return structureWrapper->GetFieldsCaps(object, valueWrapper);
 }

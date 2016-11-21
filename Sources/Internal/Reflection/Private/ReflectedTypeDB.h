@@ -12,8 +12,6 @@ class ReflectedTypeDB
     friend class ReflectionRegistrator;
 
 public:
-    static ReflectedType* Create(const Type* type, const String& permanentName);
-
     template <typename T>
     static const ReflectedType* Get();
 
@@ -23,6 +21,8 @@ public:
     static const ReflectedType* GetByRtType(const Type* type);
     static const ReflectedType* GetByRtTypeName(const String& rttiName);
     static const ReflectedType* GetByPermanentName(const String& permanentName);
+
+    static ReflectedType* CreateCustomType(const Type* type, const String& permanentName);
 
     template <typename T, typename... Bases>
     static void RegisterBases();

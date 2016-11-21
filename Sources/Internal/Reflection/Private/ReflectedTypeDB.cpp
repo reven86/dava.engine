@@ -46,8 +46,7 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
     return ret;
 }
 
-/*
-ReflectedType* ReflectedTypeDB::Create(const Type* type, const String& permanentName)
+ReflectedType* ReflectedTypeDB::CreateCustomType(const Type* type, const String& permanentName)
 {
     customReflectedTypes.emplace_back(new ReflectedType(type));
     ReflectedType* ret = customReflectedTypes.back().get();
@@ -64,7 +63,6 @@ ReflectedType* ReflectedTypeDB::Create(const Type* type, const String& permanent
 
     return ret;
 }
-*/
 
 void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, const String& permanentName)
 {

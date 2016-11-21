@@ -39,7 +39,7 @@ public:
         return Vector<Reflection::Method>();
     }
 
-    const ReflectionCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const override
+    const Reflection::FieldCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
         return caps;
     }
@@ -65,7 +65,7 @@ public:
     }
 
 protected:
-    ReflectionCaps caps;
+    Reflection::FieldCaps caps;
 };
 
 template <typename T>

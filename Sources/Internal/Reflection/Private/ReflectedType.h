@@ -6,8 +6,6 @@ namespace DAVA
 {
 class Type;
 class ReflectedStructure;
-class DtorWrapper;
-class CtorWrapper;
 class StructureWrapper;
 
 class ReflectedType final
@@ -18,6 +16,12 @@ class ReflectedType final
     friend class ReflectedTypeDB;
 
 public:
+    enum class CreatePolicy
+    {
+        ByValue,
+        ByPointer
+    };
+
     ~ReflectedType();
 
     const Type* GetType() const;
@@ -26,18 +30,17 @@ public:
     const ReflectedStructure* GetStrucutre() const;
     const StructureWrapper* GetStrucutreWrapper() const;
 
-    Vector<const CtorWrapper*> GetCtors() const;
-    const DtorWrapper* GetDtor() const;
+    Vector<const AnyFn*> GetCtors() const;
 
     template <typename... Args>
-    bool HasCtor(ReflectionCtorPolicy policy) const;
+    const AnyFn* GetCtor(const Type* retType = nullptr) const;
 
-    bool HasDtor() const;
+    const AnyFn* GetDtor() const;
 
     template <typename... Args>
-    Any Create(ReflectionCtorPolicy policy, Args...) const;
+    Any Create(CreatePolicy policy, Args... args) const;
 
-    void Destroy(Any&& any) const;
+    void Destroy(Any&& v) const;
 
 protected:
     String permanentName;
