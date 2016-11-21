@@ -101,16 +101,16 @@ public:
         return StructureWrapperDefault::GetFieldsCaps(obj, vw);
     }
 
-    Any CreateValue(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    AnyFn GetFieldCreator(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = Deref(vw->GetValueObject(obj));
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
-            return sw->CreateValue(derefObj, &ptrVW);
+            return sw->GetFieldCreator(derefObj, &ptrVW);
         }
 
-        return StructureWrapperDefault::CreateValue(obj, vw);
+        return StructureWrapperDefault::GetFieldCreator(obj, vw);
     }
 
     bool AddField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key, const Any& value) const override
@@ -152,7 +152,7 @@ public:
 protected:
     ValueWrapperDefault<T> ptrVW;
 
-    inline ReflectedObject Deref(ReflectedObject& obj) const
+    inline ReflectedObject Deref(const ReflectedObject& obj) const
     {
         if (obj.IsValid())
         {

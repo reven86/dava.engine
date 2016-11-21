@@ -67,7 +67,7 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
             if (it != fieldsNameIndexes.end())
             {
                 const ReflectedStructure::Field* field = fieldsCache[it->second];
-                return Reflection(vw->GetValueObject(object), field->valueWrapper.get());
+                return Reflection(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
             }
         }
     }
@@ -82,7 +82,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     ret.reserve(fieldsCache.size());
     for (auto field : fieldsCache)
     {
-        ret.push_back({ DAVA::Any(field->name), Reflection(vw->GetValueObject(object), field->valueWrapper.get()) });
+        ret.push_back({ DAVA::Any(field->name), Reflection(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get()) });
     }
 
     return ret;

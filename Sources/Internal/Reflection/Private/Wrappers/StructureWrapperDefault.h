@@ -44,9 +44,9 @@ public:
         return caps;
     }
 
-    Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
+    AnyFn GetFieldCreator(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
-        return Any();
+        return AnyFn();
     }
 
     bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override

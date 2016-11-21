@@ -258,26 +258,38 @@ const Dumper::PrintersTable Dumper::pointerPrinters = {
 
 } // ReflectionDetail
 
-Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* valueWrapper_)
+Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, const StructureWrapper* sw, const ReflectedMeta* meta_)
     : object(object_)
-    , valueWrapper(valueWrapper_)
+    , valueWrapper(vw)
+    , structureWrapper(sw)
+    , meta(meta_)
 {
+    // try to get structureWrapper from object reflected type
     const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
-
-    // cache structure wrapper
     if (nullptr != reflectedType)
     {
-        structureWrapper = reflectedType->GetStrucutreWrapper();
+        if (nullptr == structureWrapper)
+        {
+            structureWrapper = reflectedType->GetStrucutreWrapper();
+        }
+
+        if (nullptr == meta)
+        {
+            meta = reflectedType->GetStrucutre()->meta.get();
+        }
     }
 
-    //     if (nullptr != objectMeta)
-    //     {
-    //         if (objectMeta->HasMeta<StructureWrapper>())
-    //         {
-    //             structureWrapper = objectMeta->GetMeta<StructureWrapper>();
-    //         }
-    //     }
+    /*
+    if (nullptr != objectMeta)
+    {
+        if (objectMeta->HasMeta<StructureWrapper>())
+        {
+            structureWrapper = objectMeta->GetMeta<StructureWrapper>();
+        }
+    }
+    */
 
+    // in still no structureWrapper use empty one
     if (nullptr == structureWrapper)
     {
         static StructureWrapperDefault emptyStructureWrapper;
@@ -305,9 +317,9 @@ const ReflectionCaps& Reflection::GetFieldsCaps() const
     return structureWrapper->GetFieldsCaps(object, valueWrapper);
 }
 
-Any Reflection::CreateFieldValue() const
+AnyFn Reflection::GetFieldCreator() const
 {
-    return structureWrapper->CreateValue(object, valueWrapper);
+    return structureWrapper->GetFieldCreator(object, valueWrapper);
 }
 
 bool Reflection::AddField(const Any& key, const Any& value) const

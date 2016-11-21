@@ -76,5 +76,4 @@ private:
         }
     };
 };
-
 } // namespace DAVA

@@ -43,7 +43,11 @@ class StructureWrapper;
     Reflection is created by linking any class or primitive data with its unique reflected type.
     Obtained Reflection allows to perform a number of operation over linked object:
     - get or set value from/to the object at runtime
-    - introspect the object its fields, methods, enumerations at runtime.
+    - introspect the object - its fields, methods, enumerations at runtime.
+ 
+        +---------------+
+        | ReflectedType |
+        +---------------+
 
     It is also possible to create a new object or destroy existing objects from/with known reflected type.
 */
@@ -55,7 +59,7 @@ public:
 
     Reflection() = default;
     Reflection(const Reflection&) = default;
-    Reflection(const ReflectedObject& object, const ValueWrapper* valueWrapper);
+    Reflection(const ReflectedObject& object, const ValueWrapper* vw, const StructureWrapper* sw, const ReflectedMeta* meta);
 
     bool IsValid() const;
     bool IsReadonly() const;
@@ -70,16 +74,16 @@ public:
     Reflection GetField(const Any& name) const;
     Vector<Field> GetFields() const;
 
-    const ReflectionCaps& GetFieldsCaps() const;
-
-    bool AddField(const Any& key, const Any& value) const;
-    bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
-    bool RemoveField(const Any& key) const;
-    Any CreateFieldValue() const;
-
     bool HasMethods() const;
     AnyFn GetMethod(const String& key) const;
     Vector<Method> GetMethods() const;
+
+    // Experimental API
+    const ReflectionCaps& GetFieldsCaps() const;
+    AnyFn GetFieldCreator() const;
+    bool AddField(const Any& key, const Any& value) const;
+    bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
+    bool RemoveField(const Any& key) const;
 
     void Dump(std::ostream& out, size_t deep = 0) const;
 
@@ -98,6 +102,7 @@ private:
     ReflectedObject object;
     const ValueWrapper* valueWrapper = nullptr;
     const StructureWrapper* structureWrapper = nullptr;
+    const ReflectedMeta* meta = nullptr;
 };
 
 struct Reflection::Field
@@ -185,7 +190,10 @@ public:
     virtual AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
     virtual Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
 
-    virtual Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    // TODO:
+    // Value should be Reflection instead of Any?
+    // ...
+    virtual AnyFn GetFieldCreator(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const = 0;
     virtual bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const = 0;
     virtual bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;

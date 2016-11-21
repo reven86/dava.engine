@@ -71,13 +71,13 @@ inline bool Reflection::IsValid() const
 template <typename Meta>
 inline bool Reflection::HasMeta() const
 {
-    return (nullptr != objectMeta) ? objectMeta->HasMeta<Meta>() : false;
+    return (nullptr != meta) ? meta->template HasMeta<Meta>() : false;
 }
 
 template <typename Meta>
 inline const Meta* Reflection::GetMeta() const
 {
-    return (nullptr != objectMeta) ? objectMeta->GetMeta<Meta>() : nullptr;
+    return (nullptr != meta) ? meta->template GetMeta<Meta>() : nullptr;
 }
 
 template <typename T>
@@ -86,13 +86,13 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
     if (nullptr != objectPtr)
     {
         static ValueWrapperDefault<T> objectValueWrapper;
-        return Reflection(ReflectedObject(objectPtr), &objectValueWrapper);
+        return Reflection(ReflectedObject(objectPtr), &objectValueWrapper, nullptr, objectMeta);
     }
 
     return Reflection();
 }
 
-static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr)
+static Reflection Create(const Any& any, const ReflectedMeta* objectMeta)
 {
     if (!any.IsEmpty())
     {
