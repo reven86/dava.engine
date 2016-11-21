@@ -28,6 +28,7 @@
 #set( ADDED_BINARY_DIR           )
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
+#set( DEFINITIONS                )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -168,10 +169,12 @@ elseif( MACOS )
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )
 
     list( APPEND RESOURCES_LIST  ${APP_DATA}  )
-    list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
-    list( APPEND RESOURCES_LIST  ${MACOS_XIB}   )
-    list( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
-    list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
+    list( APPEND RESOURCES_LIST  ${MACOS_XIB} )
+    list( APPEND RESOURCES_LIST  ${MACOS_ICO} )
+
+    if( NOT DEPLOY_DIR_LIBS )
+        list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
+    endif()
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
 
@@ -331,6 +334,19 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( POSTPONED_MIX_DATA )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
 
 ###
 
@@ -428,39 +444,25 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND )
-    set (QTCONF_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+if ( QT5_FOUND AND WIN32 )
+    set (QTCONF_TARGET_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     if (DEPLOY_DIR AND DEPLOY)
         set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
-    if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
-    elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
-    endif()
+    set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
 
-     if ( TEAMCITY_DEPLOY AND WIN32 )
-        set ( PLUGINS_PATH .)
-        set ( QML_IMPORT_PATH .)
-        set ( QML2_IMPORT_PATH .)
-    elseif ( TEAMCITY_DEPLOY AND APPLE )
-        set ( PLUGINS_PATH PlugIns )
-        set ( QML_IMPORT_PATH Resources/qml)
-        set ( QML2_IMPORT_PATH Resources/qml)
-    else()
-        get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
-        set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
-        set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
-        set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
-    endif()
-
+    get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
+    set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
+    set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
+    set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
+ 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                             ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
+                             ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
+       ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in
        ${QTCONF_DEPLOY_PATH}
     )
 
@@ -570,17 +572,11 @@ elseif( MACOS )
 
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
-    if( DEPLOY )
-        set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
-
-    else()
-        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
-    endif()
-
-    set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
-
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks")
+        set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
+        if( NOT DEPLOY )
+            set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
+        endif()
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
@@ -603,6 +599,10 @@ elseif ( WIN32 )
 
     # Generate debug info also in release builds
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+
+    if( NOT DAVA_DEBUGGER_WORKING_DIRECTORY )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} )
+    endif()
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
 
@@ -746,7 +746,7 @@ if( ANDROID )
         endforeach()
     endforeach()
     
-    # to avoid of unwind's symbol overriding by other SO, need to link it as whole archive
+    # "to avoid of unwind's symbol overriding by other SO, need to link it as whole archive"
     set ( LIB_UNWIND_NAME "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libunwind.a" )
     string ( FIND "${CMAKE_CXX_STANDARD_LIBRARIES}" "${LIB_UNWIND_NAME}" LIB_UNWIND_NAME_POS )
     if ( NOT LIB_UNWIND_NAME_POS STREQUAL "-1" )
@@ -785,8 +785,11 @@ if( DEPLOY )
     
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
         file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+        if( NOT DEPLOY_DIR_DATA )
+            set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
+        endif()
         foreach( ITEM ${RESOURCES_LIST} )
-            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
+            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR_DATA}" )
         endforeach()
     endif()
 
@@ -807,7 +810,7 @@ if( DEPLOY )
                 )
         endif(APP_DATA)
 
-		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
+       foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
@@ -824,7 +827,11 @@ if( DEPLOY )
         endforeach()
 
     elseif( APPLE )
-        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
+        if( NOT DEPLOY_DIR_EXECUTABLE )
+            set( DEPLOY_DIR_EXECUTABLE ${DEPLOY_DIR} )
+        endif()
+
+        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR_EXECUTABLE} )
 
         if( IOS )
 
@@ -849,11 +856,22 @@ if( DEPLOY )
 
         endif()
 
+        if( MACOS AND (DEPLOY_DIR_LIBS OR MAC_DISABLE_BUNDLE) )
+            if( NOT DEPLOY_DIR_LIBS )
+                set( DEPLOY_DIR_LIBS ${DEPLOY_DIR}/Libs )
+            endif()
+
+            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR_LIBS} )
+
+            foreach ( ITEM ${DYLIB_FILES})
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${DEPLOY_DIR_LIBS} )
+            endforeach ()
+        endif()
+
     endif()
 
-    if( QT5_FOUND )
+    if( QT5_FOUND AND NOT QT_POST_DEPLOY )
         qt_deploy( )
-
     endif()
 
 endif()
