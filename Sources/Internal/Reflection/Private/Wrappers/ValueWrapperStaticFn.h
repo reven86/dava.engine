@@ -36,27 +36,24 @@ public:
     {
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
-        Any ret;
         UnrefGetT v = getter();
-        ret.Set(std::move(v));
-        return ret;
+
+        return Any(std::move(v));
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
-        bool ret = false;
-
-        if (nullptr != setter)
+        if (!IsReadonly(object))
         {
             const SetT& v = value.Get<UnrefSetT>();
             setter(v);
 
-            ret = true;
+            return true;
         }
 
-        return ret;
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override

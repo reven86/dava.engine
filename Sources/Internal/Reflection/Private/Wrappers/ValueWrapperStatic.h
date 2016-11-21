@@ -24,9 +24,7 @@ public:
 
     Any GetValue(const ReflectedObject& object) const override
     {
-        Any ret;
-        ret.Set(*field);
-        return ret;
+        return Any(*field);
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override

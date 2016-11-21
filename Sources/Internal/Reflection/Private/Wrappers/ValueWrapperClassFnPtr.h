@@ -24,7 +24,7 @@ public:
 
     bool IsReadonly(const ReflectedObject& object) const override
     {
-        return (nullptr == setter) || object.IsConst();
+        return (nullptr == setter || object.IsConst());
     }
 
     const Type* GetType() const override
@@ -37,30 +37,26 @@ public:
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
         C* cls = object.GetPtr<C>();
-
-        Any ret;
         UnrefGetT v = (cls->*getter)();
-        ret.Set(std::move(v));
-        return ret;
+
+        return Any(std::move(v));
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
-        bool ret = false;
-
-        if (nullptr != setter)
+        if (!IsReadonly(object))
         {
             C* cls = object.GetPtr<C>();
 
             const SetT& v = value.Get<UnrefSetT>();
             (cls->*setter)(v);
 
-            ret = true;
+            return true;
         }
 
-        return ret;
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override

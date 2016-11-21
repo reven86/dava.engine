@@ -29,7 +29,7 @@ public:
     {
         Any ret;
 
-        if (object.IsValid())
+        if (!IsReadonly(object))
         {
             void* ptr = object.GetVoidPtr();
             ret.LoadValue(ptr, type);
