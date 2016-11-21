@@ -31,7 +31,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
 
 Window::~Window() = default;
 
-void Window::SetSize(Size2f sz)
+void Window::SetSizeAsync(Size2f sz)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
@@ -63,7 +63,7 @@ Rect Window::GetFullVirtualRect() const
     return uiControlSystem->vcs->GetFullScreenVirtualRect();
 }
 
-void Window::Close()
+void Window::CloseAsync()
 {
     // Window cannot be close in embedded mode as window lifetime
     // is controlled by highlevel framework
@@ -73,7 +73,7 @@ void Window::Close()
     }
 }
 
-void Window::SetTitle(const String& title)
+void Window::SetTitleAsync(const String& title)
 {
     // It does not make sense to set window title in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode())
@@ -82,7 +82,7 @@ void Window::SetTitle(const String& title)
     }
 }
 
-void Window::SetFullscreen(eFullscreen newMode)
+void Window::SetFullscreenAsync(eFullscreen newMode)
 {
     // Window's fullscreen mode cannot be changed in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode() && newMode != fullscreenMode)
@@ -106,12 +106,12 @@ WindowNativeService* Window::GetNativeService() const
     return windowBackend->GetNativeService();
 }
 
-void Window::RunAsyncOnUIThread(const Function<void()>& task)
+void Window::RunOnUIThreadAsync(const Function<void()>& task)
 {
     windowBackend->RunAsyncOnUIThread(task);
 }
 
-void Window::RunAndWaitOnUIThread(const Function<void()>& task)
+void Window::RunOnUIThread(const Function<void()>& task)
 {
     windowBackend->RunAndWaitOnUIThread(task);
 }
@@ -121,7 +121,7 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
     windowBackend->InitCustomRenderParams(params);
 }
 
-void Window::SetCursorCapture(eCursorCapture mode)
+void Window::SetCursorCaptureAsync(eCursorCapture mode)
 {
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
@@ -142,7 +142,7 @@ eCursorCapture Window::GetCursorCapture() const
     return cursorCapture;
 }
 
-void Window::SetCursorVisibility(bool visible)
+void Window::SetCursorVisibilityAsync(bool visible)
 {
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
     {
@@ -584,7 +584,7 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     inputSystem->HandleInputEvent(&uie);
 }
 
-bool Window::SetSurfaceScale(float32 scale)
+bool Window::SetSurfaceScaleAsync(float32 scale)
 {
     return true;
 }

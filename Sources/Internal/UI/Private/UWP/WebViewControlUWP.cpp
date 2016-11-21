@@ -164,7 +164,7 @@ WebViewControl::~WebViewControl()
 
 #if defined(__DAVAENGINE_COREV2__)
         WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice]() {
+        window->RunOnUIThreadAsync([p, nservice]() {
             nservice->RemoveXamlControl(p);
         });
 #else
@@ -193,7 +193,7 @@ void WebViewControl::OwnerIsDying()
 
 #if defined(__DAVAENGINE_COREV2__)
         WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
+        window->RunOnUIThreadAsync([p, nservice, tokenNS, tokenNC]() {
             p->NavigationStarting -= tokenNS;
             p->NavigationCompleted -= tokenNC;
         });
@@ -268,7 +268,7 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
@@ -312,7 +312,7 @@ void WebViewControl::SetRenderToTexture(bool value)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
@@ -342,7 +342,7 @@ void WebViewControl::Update()
         auto self{ shared_from_this() };
         WebViewProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
-        window->RunAsyncOnUIThread([this, self, props]() {
+        window->RunOnUIThreadAsync([this, self, props]() {
             ProcessProperties(props);
         });
 #else
@@ -412,7 +412,7 @@ void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAndWaitOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
@@ -458,7 +458,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
 
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+    RunOnMainThreadAsync([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             webViewDelegate->PageLoaded(uiWebView);
@@ -578,7 +578,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     auto self{shared_from_this()};
     create_task(js).then([this, self](Platform::String^ result) {
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
+        RunOnMainThreadAsync([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
                 String jsResult = WStringToString(result->Data());
@@ -643,7 +643,7 @@ void WebViewControl::RenderToTexture()
             if (sprite.Valid())
             {
 #if defined(__DAVAENGINE_COREV2__)
-                window->GetEngine()->RunAsyncOnMainThread([this, self, sprite]()
+                RunOnMainThreadAsync([this, self, sprite]()
                 {
                     if (uiWebView != nullptr)
                     {

@@ -67,6 +67,26 @@ Window* GetPrimaryWindow()
     return Private::EngineBackend::Instance()->GetPrimaryWindow();
 }
 
+void RunOnMainThreadAsync(const Function<void()>& task)
+{
+    Private::EngineBackend::Instance()->DispatchOnMainThread(task, false);
+}
+
+void RunOnMainThread(const Function<void()>& task)
+{
+    Private::EngineBackend::Instance()->DispatchOnMainThread(task, true);
+}
+
+void RunOnUIThreadAsync(const Function<void()>& task)
+{
+    GetPrimaryWindow()->RunOnUIThreadAsync(task);
+}
+
+void RunOnUIThread(const Function<void()>& task)
+{
+    GetPrimaryWindow()->RunOnUIThread(task);
+}
+
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
@@ -549,7 +569,7 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
     {
         if (e.window != nullptr)
         {
-            e.window->Close();
+            e.window->CloseAsync();
         }
         else
         {

@@ -113,8 +113,8 @@ TestBed::TestBed(Engine& engine)
 
         Window* w = engine.PrimaryWindow();
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
-        w->SetTitle("[Testbed] The one who owns a minigun fears not");
-        w->SetSize({ 1024.f, 768.f });
+        w->SetTitleAsync("[Testbed] The one who owns a minigun fears not");
+        w->SetSizeAsync({ 1024.f, 768.f });
     }
 }
 
@@ -129,7 +129,7 @@ void TestBed::OnGameLoopStarted()
 
     if (engine.IsConsoleMode())
     {
-        engine.RunAsyncOnMainThread([]() {
+        RunOnMainThreadAsync([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
@@ -193,7 +193,7 @@ void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
     if (frameCount >= 100)
     {
         Logger::Debug("****** quit");
-        engine.Quit(0);
+        engine.QuitAsync(0);
     }
 }
 

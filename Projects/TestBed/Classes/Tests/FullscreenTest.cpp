@@ -206,10 +206,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        primaryWindow->SetFullscreen(eFullscreen::Off);
+        primaryWindow->SetFullscreenAsync(eFullscreen::Off);
         break;
     case 1:
-        primaryWindow->SetFullscreen(eFullscreen::On);
+        primaryWindow->SetFullscreenAsync(eFullscreen::On);
         break;
     case 99:
         UpdateMode();
@@ -291,14 +291,14 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     {
     case 0:
     {
-        primWind->SetCursorVisibility(false);
+        primWind->SetCursorVisibilityAsync(false);
         cursorVisible = primWind->GetCursorVisibility();
         break;
     }
     case 1:
     {
-        primWind->SetCursorCapture(eCursorCapture::PINNING);
-        primWind->SetCursorVisibility(false);
+        primWind->SetCursorCaptureAsync(eCursorCapture::PINNING);
+        primWind->SetCursorVisibilityAsync(false);
         cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
         break;
     }
@@ -364,9 +364,9 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                primWind->SetCursorCapture(eCursorCapture::OFF);
+                primWind->SetCursorCaptureAsync(eCursorCapture::OFF);
                 cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
-                primWind->SetCursorVisibility(true);
+                primWind->SetCursorVisibilityAsync(true);
                 cursorVisible = primWind->GetCursorVisibility();
             }
             break;

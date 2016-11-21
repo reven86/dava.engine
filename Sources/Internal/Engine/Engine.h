@@ -34,6 +34,48 @@ Window* GetPrimaryWindow();
 
 /**
     \ingroup engine
+    Utility function to run asynchronous task on DAVA main thread.
+
+    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
+    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThreadAsync()`.
+*/
+void RunOnMainThreadAsync(const Function<void()>& task);
+
+/**
+    \ingroup engine
+    Utility function to run task on DAVA main thread and wait its completion blocking caller thread.
+
+    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
+    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThread()`.
+*/
+void RunOnMainThread(const Function<void()>& task);
+
+/**
+    \ingroup engine
+    Utility function to run asynchronous task on UI thread belonging to primary window.
+
+    Behaviour is undefined:
+        - if Engine is initialized with console run mode.
+        - if called before `Engine::Init` method which create instance of primary window.
+        - if called after `Engine::windowDestroyed` signal emited for primary window.
+    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThreadAsync()`.
+*/
+void RunOnUIThreadAsync(const Function<void()>& task);
+
+/**
+    \ingroup engine
+    Utility function to run task on UI thread belonging to primary window and wait its completion blocking caller thread.
+
+    Behaviour is undefined:
+        - if Engine is initialized with console run mode.
+        - if called before `Engine::windowCreated` signal emited for primary window.
+        - if called after `Engine::windowDestroyed` signal emited for primary window.
+    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThread()`.
+*/
+void RunOnUIThread(const Function<void()>& task);
+
+/**
+    \ingroup engine
     Core component of dava.engine which manages application's control flow.
     
     Client applications and other parts of dava.engine interact with Engine in one way or another.
@@ -189,13 +231,14 @@ public:
     int Run();
 
     /**
-        Quit application with given exit code.
+        Request to quit application with given exit code.
 
         Application should use traditional exit code values: zero for success, positive values for failure.
+        Performed asynchronously, dava.engine closes all windows then emits signals `gameLoopStopped` and `cleanup`.
 
         \note Not all platforms allow to specify exit code, but leave this ability for symmetry.
     */
-    void Quit(int exitCode);
+    void QuitAsync(int exitCode);
 
     /**
         Set handler which is invoked when user is trying to close window or application.
@@ -221,13 +264,13 @@ public:
         Run given task in DAVA main thread context without waiting task execution.
         This method can be called from any thread.
     */
-    void RunAsyncOnMainThread(const Function<void()>& task);
+    void RunOnMainThreadAsync(const Function<void()>& task);
 
     /**
         Run given task in DAVA main thread context and block calling thread until task is executed.
         This method can be called from any thread.
     */
-    void RunAndWaitOnMainThread(const Function<void()>& task);
+    void RunOnMainThread(const Function<void()>& task);
 
     const KeyedArchive* GetOptions() const;
 

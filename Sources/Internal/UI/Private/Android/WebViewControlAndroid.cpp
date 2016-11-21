@@ -282,7 +282,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
     bool isRedirectedByMouseClick = jisRedirectedByMouseClick == JNI_TRUE;
     IUIWebViewDelegate::eAction action = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    window->GetEngine()->RunAndWaitOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
+    RunOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
         action = OnUrlChanged(url, isRedirectedByMouseClick);
     });
 
@@ -291,7 +291,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
 void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 {
-    window->GetEngine()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnPageLoaded();
     });
 }
@@ -299,7 +299,7 @@ void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 void WebViewControl::nativeOnExecuteJavaScript(JNIEnv* env, jstring jresult)
 {
     String result = JNI::JavaStringToString(jresult, env);
-    window->GetEngine()->RunAsyncOnMainThread([this, result]() {
+    RunOnMainThreadAsync([this, result]() {
         OnExecuteJavaScript(result);
     });
 }

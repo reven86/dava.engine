@@ -218,7 +218,7 @@ void TextFieldPlatformImpl::OwnerIsDying()
     // so remove it from hierarchy. But do not delete reference to it as some methods running in other threads
     // can use native control, e.g. thread where rendering to texture is being performed.
     auto self{ shared_from_this() };
-    window->RunAsyncOnUIThread([this, self]() {
+    window->RunOnUIThreadAsync([this, self]() {
         WindowNativeService* nservice = window->GetNativeService();
         InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
         InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
@@ -239,7 +239,7 @@ void TextFieldPlatformImpl::SetVisible(bool isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
@@ -309,7 +309,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
         auto self{ shared_from_this() };
         TextFieldProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
-        window->RunAsyncOnUIThread([this, self, props] {
+        window->RunOnUIThreadAsync([this, self, props] {
             ProcessProperties(props);
         });
 #else
@@ -651,7 +651,7 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
     {
         auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+        RunOnMainThreadAsync([this, self]() {
             if (textFieldDelegate != nullptr)
                 textFieldDelegate->TextFieldShouldCancel(uiTextField);
         });
@@ -670,7 +670,7 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
         {
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+            RunOnMainThreadAsync([this, self]() {
                 if (textFieldDelegate != nullptr)
                     textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
@@ -709,7 +709,7 @@ void TextFieldPlatformImpl::OnGotFocus()
     }
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAsyncOnMainThread([this, self, multiline, keyboardRect]() {
+    RunOnMainThreadAsync([this, self, multiline, keyboardRect]() {
 #else
     core->RunOnMainThread([this, self, multiline, keyboardRect]() {
 #endif
@@ -754,7 +754,7 @@ void TextFieldPlatformImpl::OnLostFocus()
 
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+    RunOnMainThreadAsync([this, self]() {
 #else
     core->RunOnMainThread([this, self]() {
 #endif
@@ -790,7 +790,7 @@ void TextFieldPlatformImpl::OnTextChanged()
     bool textAccepted = true;
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAndWaitOnMainThread([this, self, &newText, &textAccepted, &textToRestore]() {
+    RunOnMainThread([this, self, &newText, &textAccepted, &textToRestore]() {
 #else
     core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
 #endif
@@ -857,7 +857,7 @@ void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::Inp
 
         auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self, keyboardRect]() {
+        RunOnMainThreadAsync([this, self, keyboardRect]() {
 #else
         core->RunOnMainThread([this, self, keyboardRect]() {
 #endif
@@ -1228,7 +1228,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
 
         RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
+        RunOnMainThreadAsync([this, self, sprite, moveOffScreenOnCompletion]() {
 #else
         core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
 #endif
@@ -1244,7 +1244,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
             if (moveOffScreenOnCompletion)
             {
 #if defined(__DAVAENGINE_COREV2__)
-                window->RunAsyncOnUIThread([this, self]() {
+                window->RunOnUIThreadAsync([this, self]() {
 #else
                 core->RunOnUIThread([this, self]() {
 #endif

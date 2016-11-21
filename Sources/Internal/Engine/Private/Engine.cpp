@@ -80,7 +80,7 @@ int Engine::Run()
     return engineBackend->Run();
 }
 
-void Engine::Quit(int exitCode)
+void Engine::QuitAsync(int exitCode)
 {
     engineBackend->Quit(exitCode);
 }
@@ -90,12 +90,12 @@ void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
     engineBackend->SetCloseRequestHandler(handler);
 }
 
-void Engine::RunAsyncOnMainThread(const Function<void()>& task)
+void Engine::RunOnMainThreadAsync(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, false);
 }
 
-void Engine::RunAndWaitOnMainThread(const Function<void()>& task)
+void Engine::RunOnMainThread(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, true);
 }

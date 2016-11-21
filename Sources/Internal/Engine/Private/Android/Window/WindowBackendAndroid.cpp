@@ -257,11 +257,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
 
-        MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-        e.functor = [this, nativeWindow]() {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this, nativeWindow]() {
             ReplaceAndroidNativeWindow(nativeWindow);
-        };
-        mainDispatcher->PostEvent(e);
+        }));
     }
 
     float32 w = static_cast<float32>(width);
@@ -293,11 +291,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
 
 void WindowBackend::SurfaceDestroyed()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-    e.functor = [this]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
-    };
-    mainDispatcher->PostEvent(e);
+    }));
 }
 
 void WindowBackend::ProcessProperties()

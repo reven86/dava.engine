@@ -57,7 +57,7 @@ MovieViewControl::~MovieViewControl()
         MediaElement ^ p = nativeControl;
 #if defined(__DAVAENGINE_COREV2__)
         WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice]() {
+        window->RunOnUIThreadAsync([p, nservice]() {
             nservice->RemoveXamlControl(p);
         });
 #else
@@ -101,7 +101,7 @@ void MovieViewControl::SetVisible(bool isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
@@ -222,7 +222,7 @@ void MovieViewControl::Update()
         auto self{ shared_from_this() };
         MovieViewProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
-        window->RunAsyncOnUIThread([this, self, props]() {
+        window->RunOnUIThreadAsync([this, self, props]() {
             ProcessProperties(props);
         });
 #else
@@ -397,7 +397,7 @@ Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 void MovieViewControl::TellPlayingStatus(bool playing)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->RunAsyncOnUIThread([this, playing]() {
+    RunOnMainThreadAsync([this, playing]() {
         properties.playing = playing;
     });
 #else

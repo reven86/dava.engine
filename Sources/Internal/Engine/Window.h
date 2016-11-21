@@ -138,7 +138,7 @@ public:
 
         Performed asynchronously, use `sizeChanged` signal to track window size changing.
     */
-    void SetSize(Size2f size);
+    void SetSizeAsync(Size2f size);
 
     /**
          Return window rendering surface size in physical pixels.
@@ -169,7 +169,7 @@ public:
 
         Performed asynchronously, use `sizeChanged` signal and `GetSurfaceScale` method inside signal handler to track scale changing.
     */
-    bool SetSurfaceScale(float32 scale);
+    bool SetSurfaceScaleAsync(float32 scale);
 
     /**
         Set window virtual size.
@@ -197,14 +197,14 @@ public:
 
         \note Closing primary window leads to application exit.
     */
-    void Close();
+    void CloseAsync();
 
     /**
         Request to set window title if underlying window system allows.
 
         Performed asynchronously.
     */
-    void SetTitle(const String& title);
+    void SetTitleAsync(const String& title);
 
     /** Get current window mode: fullscreen or windowed. */
     eFullscreen GetFullscreen() const;
@@ -218,7 +218,7 @@ public:
 
         Performed asynchronously, use `sizeChanged` signal and `GetFullscreen` method inside signal handler to track mode changing.
     */
-    void SetFullscreen(eFullscreen newMode);
+    void SetFullscreenAsync(eFullscreen newMode);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
@@ -226,13 +226,15 @@ public:
 
     /**
         Run task on window's UI thread.
+        This method can be called from any thread.
     */
-    void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunOnUIThreadAsync(const Function<void()>& task);
 
     /**
         Run task on window's UI thread and wait its completion.
+        This method can be called from any thread.
     */
-    void RunAndWaitOnUIThread(const Function<void()>& task);
+    void RunOnUIThread(const Function<void()>& task);
 
     /**
         Request to set mouse cursor capture mode.
@@ -242,7 +244,7 @@ public:
         For application cursor capture mode remains intact until next `SetCursorCapture` call with other value but Window
         always cancels capture mode after losing focus and automatically restores it on gaining focus.
     */
-    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorCaptureAsync(eCursorCapture mode);
 
     /**
         Get cursor capture mode.
@@ -259,7 +261,7 @@ public:
         For application cursor visibility state remains intact until next `SetCursorVisibility` call with other value but Window
         always shows cursor after losing focus and automatically hides it on gaining focus.
     */
-    void SetCursorVisibility(bool visible);
+    void SetCursorVisibilityAsync(bool visible);
 
     /**
         Get cursor visibility.
