@@ -298,9 +298,10 @@ String GetBacktraceString(void* const* frames, size_t framesSize)
     return result.str();
 }
 
-String GetBacktraceString(const Vector<void*>& backtrace)
+String GetBacktraceString(const Vector<void*>& backtrace, size_t framesSize)
 {
-    return GetBacktraceString(backtrace.data(), backtrace.size());
+    const size_t length = (framesSize == 0) ? backtrace.size() : std::min(backtrace.size(), framesSize);
+    return GetBacktraceString(backtrace.data(), length);
 }
 
 String GetBacktraceString(size_t depth)

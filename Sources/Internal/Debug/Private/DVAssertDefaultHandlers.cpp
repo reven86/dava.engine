@@ -38,7 +38,7 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     const int backtraceDepth = 8;
 #else
-    const int backtraceDepth = -1;
+    const int backtraceDepth = 0;
 #endif
 
     const bool halt = DVAssertMessage::ShowMessage(
@@ -50,7 +50,7 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
     "Callstack:\n"
     "%s",
     assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
-    Debug::GetBacktraceString(assertInfo.backtrace.data(), backtraceDepth).c_str());
+    Debug::GetBacktraceString(assertInfo.backtrace, backtraceDepth).c_str());
 
     return halt ? FailBehaviour::Halt : FailBehaviour::Continue;
 }
