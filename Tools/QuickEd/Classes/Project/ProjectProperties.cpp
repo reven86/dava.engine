@@ -24,7 +24,11 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
     ProjectProperties props = ProjectProperties::Default();
     props.additionalResourceDirectory.relative = String("./Data/");
 
-    if (root != nullptr)
+    if (root == nullptr) // for support old project
+    {
+        props.SetDefaultLanguage("");
+    }
+    else
     {
         const YamlNode* fontNode = root->Get("font");
         // Get font node
@@ -107,7 +111,7 @@ ProjectProperties ProjectProperties::Default()
     properties.fontsDirectory.relative = "./Fonts/";
     properties.fontsConfigsDirectory.relative = "./Fonts/Configs/";
     properties.textsDirectory.relative = "./Strings/";
-    properties.defaultLanguage = "";
+    properties.defaultLanguage = "en";
 
     return properties;
 }
