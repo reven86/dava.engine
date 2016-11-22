@@ -55,7 +55,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
-    //-    ShaderPreprocessScope preprocessScope;
+    ShaderPreprocessScope preprocessScope;
 
     bool success = false;
     std::vector<std::string> def;
@@ -150,7 +150,6 @@ void ShaderSource::InlineFunctions()
         }
     }
 
-    //-unsigned inlined_cnt = 0;
     for (unsigned i = 0; i != global_func_decl.size(); ++i)
     {
         sl::HLSLFunction* func_decl = global_func_decl[i];
@@ -255,12 +254,10 @@ void ShaderSource::InlineFunctions()
             std::vector<sl::HLSLExpression**> _pexpr;
 
             sl::HLSLFunctionCall* _fcall;
-            //-            sl::HLSLExpression* _cur_expr;
             sl::HLSLStatement* _cur_statement;
             sl::HLSLStatement* _cur_statement_parent;
         };
 
-        //-Logger::Info("  %u calls found\n",unsigned(fcall.size()));
         bool keep_func_def = false;
         if (fcall.size() > 1)
         {
@@ -269,7 +266,6 @@ void ShaderSource::InlineFunctions()
         }
         for (unsigned k = 0; k != fcall.size(); ++k)
         {
-            //-Logger::Info("\"%s\" call = %p\n", func_decl->name, fcall[k]);
             FindStatementExpression find_statement_expression(fcall[k]);
 
             find_statement_expression.VisitRoot(ast->GetRoot());
