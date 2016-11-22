@@ -70,6 +70,7 @@ struct AndroidBridge final
     String internalDocumentsDir;
     String appPath;
     String packageName;
+    Vector<String> cmdargs;
 };
 
 } // namespace Private

@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EngineBackend.h"
@@ -14,6 +15,8 @@
 #include "Input/InputSystem.h"
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
+
+#include <exception>
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 extern DAVA::Private::AndroidBridge* androidBridge;
@@ -116,8 +119,16 @@ void PlatformCore::ActivityOnDestroy()
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline;
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(std::move(androidBridge->cmdargs));
+    }
+    catch (const Exception& e)
+    {
+        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
+        (void)e;
+        std::terminate();
+    }
 }
 
 void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)

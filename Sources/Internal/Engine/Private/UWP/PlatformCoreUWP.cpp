@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
@@ -14,6 +15,8 @@
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
+
+#include <exception>
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
@@ -142,8 +145,16 @@ void PlatformCore::OnDpiChanged()
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline = engineBackend->GetCommandLine();
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(engineBackend->GetCommandLine());
+    }
+    catch (const Exception& e)
+    {
+        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
+        (void)e;
+        std::terminate();
+    }
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();
