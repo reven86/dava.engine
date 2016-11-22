@@ -122,11 +122,12 @@ void ImGuiTest::ShowEngineSettings()
         }
         else if (fieldtype == Type::Instance<EngineSettings::eSettingValue>())
         {
-            const EngineSettings::SettingRange* range = field.ref.GetMeta<EngineSettings::SettingRange>();
+            using EnumSettingRange = EngineSettings::SettingRange<EngineSettings::eSettingValue>;
+            const EnumSettingRange* range = field.ref.GetMeta<EnumSettingRange>();
             if (range)
             {
-                int32 min = int32(range->min.Get<EngineSettings::eSettingValue>());
-                int32 max = int32(range->max.Get<EngineSettings::eSettingValue>());
+                int32 min = int32(range->min);
+                int32 max = int32(range->max);
                 int32 count = max - min + 1;
                 if (count > 0)
                 {

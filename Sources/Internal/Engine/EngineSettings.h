@@ -28,7 +28,8 @@ class FilePath;
         call `SetupSettingValue` in reflection-impl block to set string-name of value. 
         Then setup setting with type `eSettingValue` and specify range of valid enum values.
 
-        It is possible to load setting from yaml-file. File represents as list of key-value pairs, for example:
+        It is possible to load setting from yaml-file. To do it call EngineSettings::Load().
+        File with settings represents as list of key-value pairs, for example:
             Landscape.RenderMode: Landscape.RenderMode.NoInstancing
         The key is a setting-name. Value depends of setting-type. If setting has enum-type, the key is string-name of `eSettingValue`
 */
@@ -39,6 +40,8 @@ class EngineSettings
 class EngineSettings : public Singleton<EngineSettings>
 #endif
 {
+    struct EngineSettingsDetails;
+
     DAVA_REFLECTION(EngineSettings);
 
 public:
@@ -70,12 +73,13 @@ public:
     /**
         Range of valid values for setting. Used to retrieving from reflection meta-data 
     */
+    template <typename T>
     struct SettingRange
     {
-        SettingRange(const Any&, const Any&);
+        SettingRange(const T&, const T&);
 
-        Any min;
-        Any max;
+        T min;
+        T max;
     };
 
     EngineSettings();
@@ -121,37 +125,17 @@ public:
 
 protected:
     template <eSetting ID, typename T>
-    static void SetupSetting(ReflectionRegistrator<EngineSettings>& registrator, const char* name, const T& defaultValue, const T& rangeStart = T(), const T& rangeEnd = T());
-    static void SetupSettingValue(eSettingValue value, const char* name);
-
-    template <eSetting ID, typename T>
     const T& GetSettingRefl() const;
 
     template <eSetting ID, typename T>
     void SetSettingRefl(const T& value);
 
-    static std::array<Any, SETTING_COUNT> settingDefault;
-    static std::array<FastName, SETTING_COUNT> settingName;
-    static std::array<FastName, SETTING_VALUE_COUNT> settingValueName;
-
     std::array<Any, SETTING_COUNT> setting;
+
+    friend struct EngineSettingsDetails;
 };
 
-template <EngineSettings::eSetting ID>
-inline const Any& EngineSettings::GetSetting() const
-{
-    return setting[ID];
-}
-
-template <EngineSettings::eSetting ID>
-inline void EngineSettings::SetSetting(const Any& value)
-{
-    DVASSERT(setting[ID].GetType() == value.GetType());
-    if (setting[ID] != value)
-    {
-        setting[ID] = value;
-        settingChanged.Emit(ID);
-    }
-}
-
 } //ns DAVA
+
+#define __DAVA_ENGINE_SETTINGS_IMPL__
+#include "Private/EngineSettings_impl.h"
