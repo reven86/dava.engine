@@ -8,6 +8,8 @@ namespace DAVA
 {
 namespace PlatformApi
 {
+namespace Android
+{
 jobject CreateNativeControl(Window* targetWindow, const char8* controlClassName, void* backendPointer)
 {
     using namespace DAVA::Private;
@@ -15,6 +17,7 @@ jobject CreateNativeControl(Window* targetWindow, const char8* controlClassName,
     return wb->CreateNativeControl(controlClassName, backendPointer);
 }
 
+} // namespace Android
 } // namespace PlatformApi
 } // namespace DAVA
 

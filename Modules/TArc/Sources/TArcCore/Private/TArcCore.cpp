@@ -404,7 +404,7 @@ public:
 
         ToolsAssetGuard::Instance()->Init();
 
-        PlatformApi::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
+        PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
         DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
@@ -527,7 +527,7 @@ public:
 
     RenderWidget* GetRenderWidget() const override
     {
-        return PlatformApi::GetRenderWidget();
+        return PlatformApi::Qt::GetRenderWidget();
     }
 
     void Invoke(int operationId) override

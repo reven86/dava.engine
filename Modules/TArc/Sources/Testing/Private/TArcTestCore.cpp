@@ -273,12 +273,12 @@ void TestCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
-    PlatformApi::GetApplication()->quit();
+    PlatformApi::Qt::GetApplication()->quit();
 }
 
 void TestCore::CreateRenderWidget()
 {
-    RenderWidget* w = PlatformApi::GetRenderWidget();
+    RenderWidget* w = PlatformApi::Qt::GetRenderWidget();
     w->show();
 }
 

@@ -12,6 +12,8 @@ namespace DAVA
 {
 namespace PlatformApi
 {
+namespace Ios
+{
 void AddUIView(Window* targetWindow, UIView* uiview)
 {
     using namespace DAVA::Private;
@@ -98,6 +100,7 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
     return image;
 }
 
+} // namespace Ios
 } // namespace PlatformApi
 } // namespace DAVA
 

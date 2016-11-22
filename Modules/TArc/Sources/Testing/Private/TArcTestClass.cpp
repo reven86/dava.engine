@@ -55,7 +55,7 @@ const double TestClass::testTimeLimit = 10.0; // seconds
 TestClass::~TestClass()
 {
     DVASSERT(core != nullptr);
-    RenderWidget* widget = PlatformApi::GetRenderWidget();
+    RenderWidget* widget = PlatformApi::Qt::GetRenderWidget();
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 

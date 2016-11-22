@@ -88,7 +88,7 @@ void WebViewControl::Initialize(const Rect& rect)
     }
 
     std::weak_ptr<WebViewControl>* selfWeakPtr = new std::weak_ptr<WebViewControl>(shared_from_this());
-    jobject obj = PlatformApi::CreateNativeControl(window, "com.dava.engine.DavaWebView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaWebView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();

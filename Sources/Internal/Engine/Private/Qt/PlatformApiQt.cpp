@@ -9,6 +9,8 @@ namespace DAVA
 {
 namespace PlatformApi
 {
+namespace Qt
+{
 void AcqureWindowContext(Window* targetWindow)
 {
     using namespace DAVA::Private;
@@ -35,6 +37,7 @@ RenderWidget* GetRenderWidget()
     return EngineBackend::Instance()->GetPlatformCore()->GetRenderWidget();
 }
 
+} // namespace Qt
 } // namespace PlatformApi
 } // namespace DAVA
 

@@ -12,6 +12,8 @@ namespace DAVA
 {
 namespace PlatformApi
 {
+namespace Mac
+{
 void AddNSView(Window* targetWindow, NSView* nsview)
 {
     using namespace DAVA::Private;
@@ -24,6 +26,7 @@ void RemoveNSView(Window* targetWindow, NSView* nsview)
     [nsview removeFromSuperview];
 }
 
+} // namespace Mac
 } // namespace PlatformApi
 } // namespace DAVA
 

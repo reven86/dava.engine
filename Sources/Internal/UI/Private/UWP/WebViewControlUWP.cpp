@@ -186,7 +186,7 @@ void WebViewControl::OwnerIsDying()
         window->RunOnUIThreadAsync([this, self]() {
             nativeWebView->NavigationStarting -= tokenNavigationStarting;
             nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
-            PlatformApi::RemoveXamlControl(window, nativeWebView);
+            PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
         });
 #else
         // Compiler complains of capturing nativeWebView data member in lambda
@@ -366,7 +366,7 @@ void WebViewControl::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::AddXamlControl(window, nativeWebView);
+    PlatformApi::Win10::AddXamlControl(window, nativeWebView);
 #else
     core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
@@ -517,7 +517,7 @@ void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::Win10::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif

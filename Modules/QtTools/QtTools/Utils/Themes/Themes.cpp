@@ -27,7 +27,7 @@ GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_c
 
 QApplication* GetApplication()
 {
-    return DAVA::PlatformApi::GetApplication();
+    return DAVA::PlatformApi::Qt::GetApplication();
 }
 
 #if defined(__DAVAENGINE_WINDOWS__)

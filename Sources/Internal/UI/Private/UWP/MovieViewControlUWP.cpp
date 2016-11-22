@@ -72,7 +72,7 @@ void MovieViewControl::OwnerIsDying()
     {
         auto self{ shared_from_this() };
         window->RunOnUIThreadAsync([this, self]() {
-            PlatformApi::RemoveXamlControl(window, nativeControl);
+            PlatformApi::Win10::RemoveXamlControl(window, nativeControl);
         });
     }
 #endif
@@ -256,7 +256,7 @@ void MovieViewControl::ProcessProperties(const MovieViewProperties& props)
         nativeControl->Volume = 1.0;
 
 #if defined(__DAVAENGINE_COREV2__)
-        PlatformApi::AddXamlControl(window, nativeControl);
+        PlatformApi::Win10::AddXamlControl(window, nativeControl);
 #else
         core->XamlApplication()->AddUIElement(nativeControl);
 #endif
@@ -381,7 +381,7 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
     nativeControl->Width = std::max(0.0f, rect.dx);
     nativeControl->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::PositionXamlControl(window, nativeControl, rect.x, rect.y);
+    PlatformApi::Win10::PositionXamlControl(window, nativeControl, rect.x, rect.y);
 #else
     core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
 #endif

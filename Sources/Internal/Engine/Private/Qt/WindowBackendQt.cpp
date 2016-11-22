@@ -192,7 +192,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
         qtEventListener = nullptr;
     };
 
-    qtEventListener = new QtEventListener(triggered, destroyed, PlatformApi::GetApplication());
+    qtEventListener = new QtEventListener(triggered, destroyed, PlatformApi::Qt::GetApplication());
 }
 
 WindowBackend::~WindowBackend()
@@ -238,7 +238,7 @@ bool WindowBackend::IsWindowReadyForRender() const
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    QApplication* app = PlatformApi::GetApplication();
+    QApplication* app = PlatformApi::Qt::GetApplication();
     DVASSERT(app);
     if (app != nullptr)
     {
@@ -304,7 +304,7 @@ void WindowBackend::OnCreated()
     QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::Qt::GetApplication());
     float32 dpi = renderWidget->logicalDpiX();
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());

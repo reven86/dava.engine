@@ -9,6 +9,8 @@ namespace DAVA
 {
 namespace PlatformApi
 {
+namespace Win10
+{
 void AddXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     using namespace DAVA::Private;
@@ -37,6 +39,7 @@ void UnfocusXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ x
     wb->bridge->UnfocusXamlControl();
 }
 
+} // namespace Win10
 } // namespace PlatformApi
 } // namespace DAVA
 

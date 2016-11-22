@@ -186,7 +186,7 @@ void EditorCore::Init(DAVA::Engine& engine)
     Q_INIT_RESOURCE(QtToolsResources);
     Themes::InitFromQApplication();
 
-    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::GetRenderWidget();
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
 
     spritesPacker.reset(new SpritesPacker());
     project = new Project(this);

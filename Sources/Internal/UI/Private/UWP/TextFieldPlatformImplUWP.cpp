@@ -222,7 +222,7 @@ void TextFieldPlatformImpl::OwnerIsDying()
         window->RunOnUIThreadAsync([this, self]() {
             InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
             InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
-            PlatformApi::RemoveXamlControl(window, nativeControlHolder);
+            PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
         });
     }
 #endif
@@ -530,7 +530,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::AddXamlControl(window, nativeControlHolder);
+    PlatformApi::Win10::AddXamlControl(window, nativeControlHolder);
 #else
     core->XamlApplication()->AddUIElement(nativeControlHolder);
 #endif
@@ -539,7 +539,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
 void TextFieldPlatformImpl::DeleteNativeControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::RemoveXamlControl(window, nativeControlHolder);
+    PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
 #else
     core->XamlApplication()->RemoveUIElement(nativeControlHolder);
 #endif
@@ -903,7 +903,7 @@ void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
             nativeControl->Focus(::Windows::UI::Xaml::FocusState::Pointer);
         else if (HasFocus())
 #if defined(__DAVAENGINE_COREV2__)
-            PlatformApi::UnfocusXamlControl(window, nativeControl);
+            PlatformApi::Win10::UnfocusXamlControl(window, nativeControl);
 #else
             core->XamlApplication()->UnfocusUIElement();
 #endif
@@ -984,7 +984,7 @@ void TextFieldPlatformImpl::SetNativePositionAndSize(const Rect& rect, bool offS
     nativeControlHolder->Width = std::max(0.0f, rect.dx);
     nativeControlHolder->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::PositionXamlControl(window, nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::Win10::PositionXamlControl(window, nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #endif
