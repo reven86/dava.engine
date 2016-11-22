@@ -673,9 +673,9 @@ void DocumentGroup::GlobalStyleClassesChanged()
 
 bool DocumentGroup::TryCloseAllDocuments()
 {
-    for (Document* document : documents)
+    while (!documents.empty())
     {
-        if (!TryCloseDocument(document))
+        if (!TryCloseDocument(documents.first()))
         {
             return false;
         }
