@@ -28,7 +28,6 @@
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
-    , model(new FileSystemModel(this))
 {
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
@@ -36,17 +35,6 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     connect(ui->treeView, &QWidget::customContextMenuRequested, this, &FileSystemDockWidget::OnCustomContextMenuRequested);
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-    setFilterFixedString("");
-    model->setNameFilterDisables(false);
-    model->setReadOnly(false);
-
-    ui->treeView->setModel(model);
-    ui->treeView->hideColumn(0);
-    ui->treeView->hideColumn(1);
-    ui->treeView->hideColumn(2);
-    ui->treeView->hideColumn(3);
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
@@ -111,11 +99,22 @@ void FileSystemDockWidget::SetResourceDirectory(const QString& path)
 
     if (isAvailable)
     {
+        model = new FileSystemModel(this);
+        model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+        setFilterFixedString("");
+        model->setNameFilterDisables(false);
+        model->setReadOnly(false);
+        ui->treeView->setModel(model);
+        ui->treeView->hideColumn(1);
+        ui->treeView->hideColumn(2);
+        ui->treeView->hideColumn(3);
         ui->treeView->setRootIndex(model->setRootPath(path));
-        ui->treeView->showColumn(0);
     }
     else
     {
+        ui->treeView->setModel(nullptr);
+        delete model;
+        model = nullptr;
         ui->treeView->hideColumn(0);
     }
 }
