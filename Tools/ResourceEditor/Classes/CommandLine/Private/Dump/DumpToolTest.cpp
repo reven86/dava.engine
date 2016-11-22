@@ -12,7 +12,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 
@@ -46,7 +46,7 @@ DAVA::Set<DAVA::String> ReadLinks()
 
 DAVA_TARC_TESTCLASS(DumpToolTest)
 {
-    void TestLinks()
+    void TestLinks(SceneDumper::eMode mode, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs)
     {
         using namespace DAVA;
 
@@ -67,12 +67,13 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
             auto it = std::find_if(dumpedLinks.begin(), dumpedLinks.end(), [&ownerName](const String& str) {
                 return str.find(ownerName) != String::npos;
             });
-            TEST_VERIFY(it != dumpedLinks.end());
+
+            TEST_VERIFY((it == dumpedLinks.end()) == (mode == SceneDumper::eMode::REQUIRED));
 
             RenderObject* ro = GetRenderObject(child);
             if (ro != nullptr)
             {
-                auto testMaterial = [&dumpedLinks](NMaterial* mat)
+                auto testMaterial = [&dumpedLinks, &compressedGPUs](NMaterial* mat)
                 {
                     if (mat != nullptr)
                     {
@@ -82,6 +83,20 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
                             if (tx.first != FastName("heightmap"))
                             {
                                 TEST_VERIFY(dumpedLinks.count(tx.second->path.GetAbsolutePathname()) == 1);
+
+                                std::unique_ptr<TextureDescriptor> texDescriptor(TextureDescriptor::CreateFromFile(tx.second->path));
+                                if (texDescriptor)
+                                {
+                                    for (eGPUFamily gpu : compressedGPUs)
+                                    {
+                                        Vector<FilePath> pathes;
+                                        texDescriptor->CreateLoadPathnamesForGPU(gpu, pathes);
+                                        for (const FilePath& p : pathes)
+                                        {
+                                            TEST_VERIFY(dumpedLinks.count(p.GetAbsolutePathname()) == 1);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -97,7 +112,9 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
                 else if (ro->GetType() == RenderObject::TYPE_VEGETATION)
                 {
                     VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(ro);
-                    TEST_VERIFY(dumpedLinks.count(vegetation->GetCustomGeometryPath().GetAbsolutePathname()) == 1);
+
+                    const size_t expectedCount = (mode == SceneDumper::eMode::REQUIRED) ? 0 : 1;
+                    TEST_VERIFY(dumpedLinks.count(vegetation->GetCustomGeometryPath().GetAbsolutePathname()) == expectedCount);
                     TEST_VERIFY(dumpedLinks.count(vegetation->GetLightmapPath().GetAbsolutePathname()) == 1);
                 }
                 else
@@ -119,7 +136,7 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
         }
     }
 
-    DAVA_TEST (DumpFile)
+    DAVA_TEST (DumpFileExtended)
     {
         using namespace DAVA;
 
@@ -137,13 +154,50 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
           "-processfile",
           FilePath(DTestDetail::scenePathnameStr).GetFilename(),
           "-outfile",
-          FilePath(DTestDetail::linksStr).GetAbsolutePathname()
+          FilePath(DTestDetail::linksStr).GetAbsolutePathname(),
+          "-mode",
+          "e",
+          "-gpu",
+          "all"
         };
 
         std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
         REConsoleModuleTestUtils::ExecuteModule(tool.get());
 
-        TestLinks();
+        TestLinks(SceneDumper::eMode::EXTENDED, { GPU_POWERVR_IOS, GPU_POWERVR_ANDROID, GPU_TEGRA, GPU_MALI, GPU_ADRENO, GPU_DX11 });
+
+        REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
+    }
+
+    DAVA_TEST (DumpFileRequired)
+    {
+        using namespace DAVA;
+
+        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
+        REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
+
+        Vector<String> cmdLine =
+        {
+          "ResourceEditor",
+          "-dump",
+          "-links",
+          "-indir",
+          FilePath(DTestDetail::scenePathnameStr).GetDirectory().GetAbsolutePathname(),
+          "-processfile",
+          FilePath(DTestDetail::scenePathnameStr).GetFilename(),
+          "-outfile",
+          FilePath(DTestDetail::linksStr).GetAbsolutePathname(),
+          "-mode",
+          "r",
+          "-gpu",
+          "mali,tegra"
+        };
+
+        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
+        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+
+        TestLinks(SceneDumper::eMode::REQUIRED, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_TEGRA });
 
         REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
     }

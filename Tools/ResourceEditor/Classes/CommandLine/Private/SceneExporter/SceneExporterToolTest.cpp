@@ -8,7 +8,7 @@
 
 #include "Render/TextureDescriptor.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <functional>
 
