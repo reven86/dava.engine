@@ -1,5 +1,6 @@
 #include "Utils/Dump/SceneDumper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
@@ -13,7 +14,6 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 
@@ -91,7 +91,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive* properties, DAVA::Set
         DAVA::String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
         if (!pathname.empty())
         {
-            DAVA::FilePath projectPath = ProjectManager::CreateProjectPathFromPath(scenePathname);
+            DAVA::FilePath projectPath = ProjectManagerData::CreateProjectPathFromPath(scenePathname);
             links.emplace(projectPath + pathname);
         }
     }
