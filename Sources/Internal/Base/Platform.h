@@ -22,7 +22,7 @@
     #if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     #elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
     #define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    #define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__ DVASSERT(false, "Feature has no implementation or partly implemented")
+    #define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__ DVASSERT(false, "Feature has no implementation or partly implemented");
     #endif
 
 //Using C++11 concurrency as default
