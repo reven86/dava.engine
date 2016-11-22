@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../rhi_Type.h"
-#include "Debug/CPUProfiler.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -21,7 +20,7 @@
     #include <AGL/agl.h>
     #include <OpenGL/gl3.h>
     #include <OpenGL/gl3ext.h>
-    
+
     #define GetGLErrorString(code) #code
 
     #include "macos_gl.h"
@@ -63,11 +62,29 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+//Valid for clang. For MSVC and GCC instead '#func postfix' should be '#func##postfix'
+#define GET_GL_FUNC(func, postfix)                                                 \
+{                                                                                  \
+    func = reinterpret_cast<decltype(func)>(eglGetProcAddress(#func));             \
+    if (func == nullptr)                                                            \
+        func = reinterpret_cast<decltype(func)>(eglGetProcAddress(#func postfix)); \
+}
+
+typedef DAVA::uint64 GLuint64;
+
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
 typedef void(GL_APIENTRY* PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void(GL_APIENTRY* PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+
+typedef void(GL_APIENTRY* PFNGLGENQUERIESEXTPROC)(GLsizei n, GLuint* ids);
+typedef void(GL_APIENTRY* PFNGLDELETEQUERIESEXTPROC)(GLsizei n, const GLuint* ids);
+typedef void(GL_APIENTRY* PFNGLBEGINQUERYEXTPROC)(GLenum target, GLuint id);
+typedef void(GL_APIENTRY* PFNGLENDQUERYEXTPROC)(GLenum target);
+typedef void(GL_APIENTRY* PFNGLQUERYCOUNTEREXTPROC)(GLuint id, GLenum target);
+typedef void(GL_APIENTRY* PFNGLGETQUERYOBJECTUIVEXTPROC)(GLuint id, GLenum pname, GLuint* params);
+typedef void(GL_APIENTRY* PFNGLGETQUERYOBJECTUI64VEXTPROC)(GLuint id, GLenum pname, GLuint64* params);
 
 // GL_KHR_debug
 typedef void(GL_APIENTRY* GLDEBUGPROCKHR)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
@@ -82,6 +99,14 @@ extern PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC glBlitFramebuffer;
 extern PFNGL_DEBUGMESSAGECONTROLKHRPROC glDebugMessageControl;
 extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
+extern PFNGLGENQUERIESEXTPROC glGenQueries;
+extern PFNGLDELETEQUERIESEXTPROC glDeleteQueries;
+extern PFNGLBEGINQUERYEXTPROC glBeginQuery;
+extern PFNGLENDQUERYEXTPROC glEndQuery;
+extern PFNGLQUERYCOUNTEREXTPROC glQueryCounter;
+extern PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuiv;
+extern PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64v;
+
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
@@ -94,94 +119,90 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 #endif //defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8C02
 #endif
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)
-#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8C03
 #endif
 
 #if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
-#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83F1
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
-#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0
-#endif
-
-#if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 #endif
 
 #if !defined(GL_ETC1_RGB8_OES)
-#define GL_ETC1_RGB8_OES 0
+#define GL_ETC1_RGB8_OES 0x8D64
 #endif
 
 #if !defined(GL_ATC_RGB_AMD)
-#define GL_ATC_RGB_AMD 0
+#define GL_ATC_RGB_AMD 0x8C92
 #endif
 
 #if !defined(GL_ATC_RGBA_EXPLICIT_ALPHA_AMD)
-#define GL_ATC_RGBA_EXPLICIT_ALPHA_AMD 0
+#define GL_ATC_RGBA_EXPLICIT_ALPHA_AMD 0x8C93
 #endif
 
 #if !defined(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
-#define GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD 0
+#define GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD 0x87EE
 #endif
 
 #if !defined(GL_COMPRESSED_R11_EAC)
-#define GL_COMPRESSED_R11_EAC 0
+#define GL_COMPRESSED_R11_EAC 0x9270
 #endif
 
 #if !defined(GL_COMPRESSED_SIGNED_R11_EAC)
-#define GL_COMPRESSED_SIGNED_R11_EAC 0
+#define GL_COMPRESSED_SIGNED_R11_EAC 0x9271
 #endif
 
 #if !defined(GL_COMPRESSED_RG11_EAC)
-#define GL_COMPRESSED_RG11_EAC 0
+#define GL_COMPRESSED_RG11_EAC 0x9272
 #endif
 
 #if !defined(GL_COMPRESSED_SIGNED_RG11_EAC)
-#define GL_COMPRESSED_SIGNED_RG11_EAC 0
+#define GL_COMPRESSED_SIGNED_RG11_EAC 0x9273
 #endif
 
 #if !defined(GL_COMPRESSED_RGB8_ETC2)
-#define GL_COMPRESSED_RGB8_ETC2 0
+#define GL_COMPRESSED_RGB8_ETC2 0x9274
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA8_ETC2_EAC)
-#define GL_COMPRESSED_RGBA8_ETC2_EAC 0
+#define GL_COMPRESSED_RGBA8_ETC2_EAC 0x9278
 #endif
 
 #if !defined(GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2)
-#define GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 0
+#define GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9276
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG)
-#define GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG 0
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG 0x9137
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
-#define GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG 0
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG 0x9138
 #endif
 
 #if !defined(GL_HALF_FLOAT_OES)
-#define GL_HALF_FLOAT_OES 0
+#define GL_HALF_FLOAT_OES 0x8D61
 #endif
 
 #if !defined GL_QUERY_RESULT_AVAILABLE_EXT
-#define GL_QUERY_RESULT_AVAILABLE_EXT 0
+#define GL_QUERY_RESULT_AVAILABLE_EXT 0x8867
 #endif
 
 #if !defined GL_QUERY_RESULT_EXT
-#define GL_QUERY_RESULT_EXT 0
+#define GL_QUERY_RESULT_EXT 0x8866
 #endif
 
 #if !defined(GL_HALF_FLOAT)
@@ -308,6 +329,18 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 
+#if !defined(GL_TIME_ELAPSED)
+#define GL_TIME_ELAPSED 0x88BF
+#endif
+
+#if !defined(GL_TIMESTAMP)
+#define GL_TIMESTAMP 0x8E28
+#endif
+
+#if !defined(GL_GPU_DISJOINT)
+#define GL_GPU_DISJOINT 0x8FBB
+#endif
+
 #if !defined(GL_MAX_SAMPLES)
 #define GL_MAX_SAMPLES 0x8D57
 #endif
@@ -389,6 +422,7 @@ extern bool _GLES2_IsDebugSupported;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
+extern bool _GLES2_TimeStampQuerySupported;
 extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

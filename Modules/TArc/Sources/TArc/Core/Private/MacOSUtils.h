@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-
 namespace DAVA
 {
 namespace TArc

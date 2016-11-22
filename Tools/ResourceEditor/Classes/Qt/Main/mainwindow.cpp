@@ -1782,7 +1782,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 
     const DAVA::FilePath path = outputPath.toStdString();
 
-    BeastRunner beast(scene.Get(), path, mode, beastWaitDialog);
+    BeastRunner beast(scene.Get(), scene->GetScenePath(), path, mode, beastWaitDialog);
     beast.RunUIMode();
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
@@ -2350,7 +2350,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 
 void QtMainWindow::OnReloadShaders()
 {
-    DAVA::ShaderDescriptorCache::RelaoadShaders();
+    DAVA::ShaderDescriptorCache::ReloadShaders();
 
     REGlobal::GetAccessor()->ForEachContext([](DAVA::TArc::DataContext& ctx) {
         SceneData* sceneData = ctx.GetData<SceneData>();

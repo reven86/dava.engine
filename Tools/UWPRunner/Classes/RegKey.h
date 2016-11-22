@@ -2,6 +2,7 @@
 #define REGKEY_H
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 class RegKey
 {

@@ -5,12 +5,9 @@
 #include "TextureCache.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "Deprecated/ControlsFactory.h"
-#include "version.h"
 
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/DataProcessing/DataNode.h"
-
-#include "Debug/DVAssert.h"
 
 #include <QPointer>
 

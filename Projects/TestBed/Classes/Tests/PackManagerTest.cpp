@@ -305,7 +305,6 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     {
         ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
         ss << "do you want to retry?\n";
-        packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
     }
 
     Logger::Info("%s", ss.str().c_str());
@@ -420,8 +419,11 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(L"loading: " + packName);
         String pName = UTF8Utils::EncodeToUTF8(packName);
-        pm.RequestPack(pName);
-        pm.SetRequestOrder(pName, 0.f);
+        const IPackManager::Pack& p = pm.RequestPack(pName);
+        if (p.state == IPackManager::Pack::Status::Requested)
+        {
+            pm.SetRequestOrder(pName, 0.f);
+        }
     }
     catch (std::exception& ex)
     {

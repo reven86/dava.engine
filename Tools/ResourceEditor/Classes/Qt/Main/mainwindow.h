@@ -16,9 +16,6 @@
 #include "QtTools/Utils/ShortcutChecker.h"
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
-#include "DAVAEngine.h"
-#include "Base/Platform.h"
-
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QPointer>

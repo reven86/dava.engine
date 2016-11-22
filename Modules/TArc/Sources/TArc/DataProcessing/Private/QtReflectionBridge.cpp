@@ -1,6 +1,7 @@
 #include "QtReflectionBridge.h"
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
+#include "Base/TemplateHelpers.h"
 
 #include "Reflection/ReflectedType.h"
 
