@@ -102,7 +102,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     };
 
     UniqueLock<Mutex> lock(mutex);
-    RunOnUIThreadAsync(f);
+    RunOnUIThread(f);
     if (!inUiThread)
     {
         cv.Wait(lock, [&userChoice]() { return userChoice != USER_HASNT_CHOOSE_YET; });
