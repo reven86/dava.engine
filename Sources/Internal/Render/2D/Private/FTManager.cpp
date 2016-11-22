@@ -82,7 +82,7 @@ FT_Error FTManager::LookupGlyph(FaceID* faceId, float32 size, uint32 glyphIndex,
 
 uint32 FTManager::LookupGlyphIndex(FaceID* faceId, uint32 codePoint)
 {
-    return uint32(FTC_CMapCache_Lookup(cmapcache, faceId, 0, static_cast<FT_UInt32>(codePoint)));
+    return uint32(FTC_CMapCache_Lookup(cmapcache, static_cast<FTC_FaceID>(faceId), 0, static_cast<FT_UInt32>(codePoint)));
 }
 
 void FTManager::RemoveFace(FaceID* faceId)
