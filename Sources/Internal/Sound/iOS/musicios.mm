@@ -180,6 +180,23 @@ void MusicIOSSoundEvent::SetVolume(float32 _volume)
     ((AvSound*)avSound).audioPlayer.volume = Clamp(_volume, 0.f, 1.f);
 }
 
+void MusicIOSSoundEvent::SetSpeed(float32 _speed)
+{
+    speed = _speed;
+
+    AVAudioPlayer* player = ((AvSound*)avSound).audioPlayer;
+    if (!FLOAT_EQUAL(_speed, 1.0f))
+    {
+        // AVAudioPlayer only supports 0.5f - 2.0f range
+        player.rate = Clamp(_speed, 0.5f, 2.0f);
+        player.enableRate = YES;
+    }
+    else
+    {
+        player.enableRate = NO;
+    }
+}
+
 void MusicIOSSoundEvent::SetLoopCount(int32 looping)
 {
     ((AvSound*)avSound).audioPlayer.numberOfLoops = looping;
