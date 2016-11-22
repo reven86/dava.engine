@@ -55,45 +55,43 @@ void QEModule::OnRenderSystemInitialized(DAVA::Window* w)
     globalData.editorCore->OnRenderingInitialized();
 }
 
-bool QEModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
-{
-    QEModuleDetail::QEGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<QEModuleDetail::QEGlobalData>();
-    DVASSERT(globalData.windowKey == key);
-    return globalData.editorCore->GetProject()->GetDocumentGroup()->HasUnsavedDocuments();
-}
-
-bool QEModule::ControlWindowClosing(const DAVA::TArc::WindowKey& key, QCloseEvent* event)
+bool QEModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     QEModuleDetail::QEGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<QEModuleDetail::QEGlobalData>();
     DVASSERT(globalData.windowKey == key);
     Project* project = globalData.editorCore->GetProject();
-    bool canAccept = true;
     if (project != nullptr)
     {
         DocumentGroup* documentGroup = project->GetDocumentGroup();
-        if (documentGroup->HasUnsavedDocuments())
+        QString windowText = QObject::tr("Save changes to the following items?\n");
+        QStringList unsavedDocuments = documentGroup->GetUnsavedDocumentsNames();
+        const int maxDisplayableDocumentsCount = 15;
+        if (unsavedDocuments.size() > maxDisplayableDocumentsCount)
         {
-            canAccept = false;
+            unsavedDocuments = unsavedDocuments.mid(0, maxDisplayableDocumentsCount);
+            unsavedDocuments << "...";
         }
-    }
-
-    if (canAccept)
-    {
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
+        windowText.append(unsavedDocuments.join("\n"));
+        requestWindowText = windowText.toStdString();
+        return documentGroup->HasUnsavedDocuments() == false;
     }
     return true;
 }
 
 void QEModule::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
+    QEModuleDetail::QEGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<QEModuleDetail::QEGlobalData>();
+    DVASSERT(globalData.windowKey == key);
+    Project* project = globalData.editorCore->GetProject();
+    if (project != nullptr)
+    {
+        project->GetDocumentGroup()->SaveAllDocuments();
+    }
 }
 
 void QEModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
+    //do nothing
 }
 
 void QEModule::OnContextCreated(DAVA::TArc::DataContext& context)
@@ -110,10 +108,12 @@ void QEModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
     QEModuleDetail::QEGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<QEModuleDetail::QEGlobalData>();
     DVASSERT(globalData.windowKey == key);
-    Project* project = globalData.editorCore->GetProject();
+    EditorCore* editorCore = globalData.editorCore.get();
+    Project* project = editorCore->GetProject();
     if (project != nullptr)
     {
         project->GetDocumentGroup()->CloseAllDocuments();
+        editorCore->CloseProject(true);
     }
 }
 

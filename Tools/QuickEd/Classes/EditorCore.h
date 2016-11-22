@@ -34,10 +34,10 @@ public:
 
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
+    bool CloseProject(bool force = false);
 
 signals:
     void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
-    bool TryCloseDocuments();
 
 private slots:
     void OnNewProject();
@@ -48,7 +48,6 @@ private slots:
 
 private:
     void OpenProject(const QString& path);
-    bool CloseProject();
 
     bool IsUsingAssetCache() const;
     void SetUsingAssetCacheEnabled(bool enabled);

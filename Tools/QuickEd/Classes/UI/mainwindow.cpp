@@ -362,7 +362,7 @@ void MainWindow::UpdateWindowTitle()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    if (CanClose())
+    if (CanClose(false))
     {
         event->accept();
     }

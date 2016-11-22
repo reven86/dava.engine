@@ -51,6 +51,7 @@ public:
 
     bool TryCloseAllDocuments();
     bool HasUnsavedDocuments() const;
+    QStringList GetUnsavedDocumentsNames() const;
     void CloseAllDocuments();
 
 signals:

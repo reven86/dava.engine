@@ -9,6 +9,7 @@
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include <QFileSystemWatcher>
 #include <QFile>
+#include <QFileInfo>
 
 using namespace DAVA;
 using namespace std;
@@ -160,4 +161,10 @@ void Document::SetCanClose(bool canClose_)
         canClose = canClose_;
         emit CanCloseChanged(canClose);
     }
+}
+
+QString Document::GetName() const
+{
+    QFileInfo fileInfo(GetPackageAbsolutePath());
+    return fileInfo.fileName();
 }

@@ -1,6 +1,7 @@
 #include "EditorCore.h"
 
 #include "Project/Project.h"
+#include "Document/DocumentGroup.h"
 #include "UI/mainwindow.h"
 
 #include "version.h"
@@ -15,7 +16,6 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/Utils/Utils.h"
-
 
 #include <QFile>
 #include <QDir>
@@ -244,7 +244,6 @@ void EditorCore::OpenProject(const QString& path)
         mainWindow->SetRecentProjects(GetRecentProjects());
 
         connect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
-        connect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
         if (assetCacheEnabled)
         {
@@ -262,20 +261,22 @@ void EditorCore::OnCloseProject()
     CloseProject();
 }
 
-bool EditorCore::CloseProject()
+bool EditorCore::CloseProject(bool force)
 {
     if (project == nullptr)
     {
         return true;
     }
-
-    if (!TryCloseDocuments())
+    if (force)
+    {
+        project->GetDocumentGroup()->CloseAllDocuments();
+    }
+    else if (!project->TryCloseAllDocuments())
     {
         return false;
     }
 
     disconnect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
-    disconnect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
     DisableCacheClient();
     project = nullptr;

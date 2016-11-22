@@ -74,7 +74,7 @@ void REModule::OnRenderSystemInitialized(DAVA::Window* w)
     globalData.launcher->Launch();
 }
 
-bool REModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+bool REModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     REModuleDetail::REGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<REModuleDetail::REGlobalData>();
     DVASSERT(globalData.windowKey == key);

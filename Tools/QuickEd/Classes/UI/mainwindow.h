@@ -61,7 +61,7 @@ signals:
 
     void ShowHelp();
 
-    bool CanClose();
+    bool CanClose(bool force);
 
     void EmulationModeChanged(bool emulationMode);
 

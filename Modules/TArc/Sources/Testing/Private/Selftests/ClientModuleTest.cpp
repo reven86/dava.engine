@@ -36,7 +36,7 @@ protected:
     {
     }
 
-    bool CanWindowBeClosedSilently(const WindowKey& key) override
+    bool CanWindowBeClosedSilently(const WindowKey& key, DAVA::String& requestWindowText) override
     {
         return true;
     }
