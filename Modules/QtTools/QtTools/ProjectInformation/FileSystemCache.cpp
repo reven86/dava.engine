@@ -39,7 +39,7 @@ private:
     std::tuple<QStringList, QSet<QFileInfo>> CollectFilesAndDirectories(const QDir& dir) const;
     bool ForceRemovePaths(const QStringList& directories);
 
-    std::unique_ptr<QFileSystemWatcher> watcher;
+    QFileSystemWatcher* watcher = nullptr;
     QSet<QFileInfo> files;
 
     QStringList supportedExtensions;
@@ -82,8 +82,8 @@ FileSystemCache::Impl::Impl(const QStringList& supportedExtensions_)
     : QObject(nullptr)
     , watcher(new QFileSystemWatcher(this))
 {
-    QObject::connect(watcher.get(), &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
-    QObject::connect(watcher.get(), &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
+    QObject::connect(watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
+    QObject::connect(watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
     for (const QString& extension : supportedExtensions_)
     {
         supportedExtensions << extension.toLower();
@@ -141,7 +141,8 @@ void FileSystemCache::Impl::UntrackDirectory(const QString& directory)
     std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(QDir(directory));
 
     directories.removeOne(directory);
-    bool removeResult = ForceRemovePaths(subDirectories << directory);
+    subDirectories << directory;
+    bool removeResult = ForceRemovePaths(subDirectories);
     DVASSERT(removeResult);
     files -= filesInDirectory;
 }
@@ -219,9 +220,9 @@ void FileSystemCache::Impl::OnDirChanged(const QString& path)
         std::tie(subDirectories, filesInDirectory) = CollectFilesAndDirectories(changedDir);
         QSet<QString> directoriesToAdd = subDirectories.toSet().subtract(watcher->directories().toSet());
 
-        for (const QString& folder : directoriesToAdd)
+        for (const QString& directory : directoriesToAdd)
         {
-            watcher->addPath(folder);
+            watcher->addPath(directory);
         }
 
         files += filesInDirectory;
@@ -257,11 +258,18 @@ std::tuple<QStringList, QSet<QFileInfo>> FileSystemCache::Impl::CollectFilesAndD
 
 bool FileSystemCache::Impl::ForceRemovePaths(const QStringList& directories)
 {
-    bool result = true;
-    for (const QString& directory : directories)
+    QStringList directoriesToRemove = directories;
+    do
     {
-        result &= watcher->removePath(directory);
-    }
+        int countToRemove = directoriesToRemove.size();
+        directoriesToRemove = watcher->removePaths(directoriesToRemove);
+        int countAfterRemove = directoriesToRemove.size();
 
-    return result;
+        if (countToRemove == countAfterRemove)
+        {
+            return false;
+        }
+    } while (!directoriesToRemove.empty());
+
+    return true;
 }

@@ -126,8 +126,8 @@ Project::~Project()
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
-    projectStructure->UntrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(QString());
+    projectStructure->UntrackDirectory(uiResourcesPath);
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
