@@ -7,6 +7,7 @@
 #include "Base/StaticSingleton.h"
 #include "FileSystem/VariantType.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
+#include <bitset>
 
 namespace DAVA
 {
@@ -49,7 +50,7 @@ private:
     uint32 visiblePropertyIndex;
 };
 
-typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;
+typedef std::bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;
 };
 
 

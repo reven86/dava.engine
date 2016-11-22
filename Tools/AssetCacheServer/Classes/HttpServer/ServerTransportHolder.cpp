@@ -65,7 +65,10 @@ void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* s
     }
     else
     {
-        DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &ServerTransportHolder::DeleteItself));
+        if (DAVA::JobManager::Instance() != nullptr)
+        {
+            DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &ServerTransportHolder::DeleteItself));
+        }
     }
 }
 
