@@ -69,4 +69,5 @@ void REModule::PostInit()
 
     DAVA::TArc::UIManager* ui = static_cast<DAVA::TArc::UIManager*>(GetUI());
     ui->InjectWindow(REGlobal::MainWindowKey, globalData->mainWindow);
+    globalData->mainWindow->EnableGlobalTimeout(true);
 }

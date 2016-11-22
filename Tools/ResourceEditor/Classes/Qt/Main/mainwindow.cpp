@@ -391,29 +391,6 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
         return true;
     }
 #endif
-
-    if (qApp == obj)
-    {
-        if (QEvent::ApplicationStateChange == eventType)
-        {
-            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>(event);
-            Qt::ApplicationState state = stateChangeEvent->applicationState();
-            switch (state)
-            {
-            case Qt::ApplicationActive:
-            {
-                // TODO UVR
-                /*const auto isMenuBarEnabled = ui->menuBar->isEnabled();
-                ui->menuBar->setEnabled(false);
-                ui->menuBar->setEnabled(isMenuBarEnabled);*/
-                break;
-            }
-            default:
-                break;
-            }
-        }
-    }
-
     return QMainWindow::eventFilter(obj, event);
 }
 

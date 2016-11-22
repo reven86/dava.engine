@@ -37,7 +37,6 @@ public:
     {
     public:
         virtual bool OnCloseSceneRequest(DAVA::uint64 id) = 0;
-        virtual void OnDeleteSelection() = 0;
 
         virtual void OnDragEnter(QObject* target, QDragEnterEvent* event) = 0;
         virtual void OnDragMove(QObject* target, QDragMoveEvent* event) = 0;

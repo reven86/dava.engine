@@ -43,14 +43,8 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
     InitDavaUI();
 
-    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
-    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
-    renderWidget->addAction(deleteSelection);
-
     QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneRenderWidget::OnRenderWidgetResized);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, this, &SceneRenderWidget::OnMouseOverSelection);
-    QObject::connect(deleteSelection, &QAction::triggered, this, &SceneRenderWidget::OnDeleteSelection);
 
     tabBar->closeTab.Connect(this, &SceneRenderWidget::OnCloseTab);
 }
@@ -184,12 +178,6 @@ void SceneRenderWidget::OnCloseTab(DAVA::uint64 id)
 {
     DVASSERT(widgetDelegate);
     widgetDelegate->OnCloseSceneRequest(id);
-}
-
-void SceneRenderWidget::OnDeleteSelection()
-{
-    DVASSERT(widgetDelegate);
-    widgetDelegate->OnDeleteSelection();
 }
 
 void SceneRenderWidget::OnMouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)

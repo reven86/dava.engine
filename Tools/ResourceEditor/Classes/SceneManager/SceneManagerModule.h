@@ -60,7 +60,6 @@ private:
 
     /// IWidgetDelegate
     bool OnCloseSceneRequest(DAVA::uint64 id) override;
-    void OnDeleteSelection() override;
     void OnDragEnter(QObject* target, QDragEnterEvent* event) override;
     void OnDragMove(QObject* target, QDragMoveEvent* event) override;
     void OnDrop(QObject* target, QDropEvent* event) override;
@@ -91,6 +90,8 @@ private:
     bool IsSavingAllowed(SceneData* sceneData);
     void DefaultDragHandler(QObject* target, QDropEvent* event);
     bool IsValidMimeData(QDropEvent* event);
+    void DeleteSelection();
+    void MoveToSelection();
 
 private:
     DAVA::TArc::QtConnections connections;

@@ -34,7 +34,7 @@
 
 #include <QList>
 #include <QString>
-#include <QDropEvent>
+#include <QShortcut>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -67,8 +67,11 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     DAVA::Texture::SetGPULoadingOrder({ family });
 
     QtMainWindow* wnd = qobject_cast<QtMainWindow*>(GetUI()->GetWindow(REGlobal::MainWindowKey));
-    DVASSERT(wnd != nullptr);
-    wnd->OnRenderingInitialized();
+    if (wnd != nullptr)
+    {
+        DVASSERT(wnd != nullptr);
+        wnd->OnRenderingInitialized();
+    }
 }
 
 bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
@@ -229,9 +232,6 @@ void SceneManagerModule::PostInit()
                                          {
                                              OpenSceneByPath(DAVA::FilePath(scenePath));
                                          });
-
-    QtMainWindow* mainWindow = qobject_cast<QtMainWindow*>(ui->GetWindow(REGlobal::MainWindowKey));
-    mainWindow->EnableGlobalTimeout(true);
 }
 
 void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
@@ -241,7 +241,20 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetGlobalContext();
 
-    renderWidget = new SceneRenderWidget(accessor, GetContextManager()->GetRenderWidget(), this);
+    DAVA::RenderWidget* engineRenderWidget = GetContextManager()->GetRenderWidget();
+    renderWidget = new SceneRenderWidget(accessor, engineRenderWidget, this);
+
+    QAction* deleteSelection = new QAction("Delete Selection", engineRenderWidget);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    engineRenderWidget->addAction(deleteSelection);
+    connections.AddConnection(deleteSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::DeleteSelection));
+
+    QAction* moveToSelection = new QAction("Move to selection", engineRenderWidget);
+    moveToSelection->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    moveToSelection->setShortcutContext(Qt::WindowShortcut);
+    engineRenderWidget->addAction(moveToSelection);
+    connections.AddConnection(moveToSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::MoveToSelection));
 
     DAVA::TArc::PanelKey panelKey(QStringLiteral("SceneTabBar"), DAVA::TArc::CentralPanelInfo());
     GetUI()->AddView(REGlobal::MainWindowKey, panelKey, renderWidget);
@@ -964,19 +977,6 @@ bool SceneManagerModule::OnCloseSceneRequest(DAVA::uint64 id)
     return CloseSceneImpl(id, true);
 }
 
-void SceneManagerModule::OnDeleteSelection()
-{
-    using namespace DAVA::TArc;
-    DataContext* ctx = GetAccessor()->GetActiveContext();
-    if (ctx == nullptr)
-    {
-        return;
-    }
-
-    DAVA::RefPtr<SceneEditor2> scene = ctx->GetData<SceneData>()->scene;
-    ::RemoveSelection(scene.Get());
-}
-
 void SceneManagerModule::OnDragEnter(QObject* target, QDragEnterEvent* event)
 {
     DefaultDragHandler(target, event);
@@ -1028,7 +1028,7 @@ void SceneManagerModule::OnDrop(QObject* target, QDropEvent* event)
         WaitDialogParams params;
         params.message = QStringLiteral("Adding object to scene");
         params.min = 0;
-        params.max = files.size();
+        params.max = static_cast<DAVA::uint32>(files.size());
 
         std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(REGlobal::MainWindowKey, params);
         for (size_t i = 0; i < files.size(); ++i)
@@ -1494,4 +1494,30 @@ bool SceneManagerModule::IsValidMimeData(QDropEvent* event)
     event->setDropAction(Qt::IgnoreAction);
     event->accept();
     return false;
+}
+
+void SceneManagerModule::DeleteSelection()
+{
+    using namespace DAVA::TArc;
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        return;
+    }
+
+    DAVA::RefPtr<SceneEditor2> scene = ctx->GetData<SceneData>()->scene;
+    ::RemoveSelection(scene.Get());
+}
+
+void SceneManagerModule::MoveToSelection()
+{
+    using namespace DAVA::TArc;
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        return;
+    }
+
+    DAVA::RefPtr<SceneEditor2> scene = ctx->GetData<SceneData>()->scene;
+    scene->cameraSystem->MoveToSelection();
 }

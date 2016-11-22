@@ -153,9 +153,10 @@ void InsertAction(T* container, QAction* action, const InsertionParams& params)
     QAction* beforeAction = nullptr;
     if (params.item.isEmpty())
     {
-        if (params.method == InsertionParams::eInsertionMethod::BeforeItem)
+        QList<QAction*> actions = container->actions();
+        if (params.method == InsertionParams::eInsertionMethod::BeforeItem && !actions.isEmpty())
         {
-            beforeAction = container->actions().at(0);
+            beforeAction = actions.at(0);
         }
     }
     else
@@ -193,9 +194,17 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
     if (topLevelMenu == nullptr)
     {
-        topLevelMenu = new QMenu(topLevelTitle);
+        QAction* action = FindAction(windowInfo.menuBar, topLevelTitle);
+        topLevelMenu = new QMenu(topLevelTitle, windowInfo.menuBar);
         topLevelMenu->setObjectName(topLevelTitle);
-        windowInfo.menuBar->addMenu(topLevelMenu);
+        if (action != nullptr)
+        {
+            action->setMenu(topLevelMenu);
+        }
+        else
+        {
+            windowInfo.menuBar->addMenu(topLevelMenu);
+        }
     }
 
     QMenu* currentLevelMenu = topLevelMenu;
