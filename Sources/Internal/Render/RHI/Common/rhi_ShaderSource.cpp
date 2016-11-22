@@ -55,6 +55,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
+    //-    ShaderPreprocessScope preprocessScope;
+
     bool success = false;
     std::vector<std::string> def;
     const char* argv[128];

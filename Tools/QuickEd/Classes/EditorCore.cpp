@@ -45,7 +45,7 @@ void UnpackHelp(DAVA::FileSystem* fileSystem)
     {
         try
         {
-            DAVA::ResourceArchive helpRA("~res:/Help.docs");
+            DAVA::ResourceArchive helpRA("~res:/QuickEd/Help.docs");
 
             fileSystem->DeleteDirectory(docsPath);
             fileSystem->CreateDirectory(docsPath, true);

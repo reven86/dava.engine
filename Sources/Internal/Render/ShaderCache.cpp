@@ -357,5 +357,9 @@ void ReloadShaders()
         }
     }
 }
+
+void SetLoadingNotifyEnabled(bool enable)
+{
+}
 }
 };

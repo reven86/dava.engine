@@ -12,9 +12,9 @@
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#include <mach/mach.h>
 #if defined(__DAVAENGINE_MACOS__)
 #include <mach/mach_vm.h>
-#include <mach/mach.h>
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <unwind.h>

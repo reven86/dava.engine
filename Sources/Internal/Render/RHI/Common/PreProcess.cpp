@@ -184,3 +184,10 @@ void SetPreprocessCurFile(const char* filename)
 {
     mcpp__set_cur_file(filename);
 }
+
+ShaderPreprocessScope::ShaderPreprocessScope()
+{
+}
+ShaderPreprocessScope::~ShaderPreprocessScope()
+{
+}
