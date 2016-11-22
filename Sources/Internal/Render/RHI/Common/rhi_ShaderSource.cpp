@@ -85,6 +85,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
+    ShaderPreprocessScope preprocessScope;
+
     bool success = false;
     std::vector<std::string> def;
     const char* argv[128];
@@ -1035,6 +1037,7 @@ bool ShaderSource::Load(DAVA::File* in)
     READ_CHECK(vdecl.Load(in));
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_PROPERTY_COUNT);
     prop.resize(readUI4);
     for (unsigned p = 0; p != prop.size(); ++p)
     {
@@ -1062,6 +1065,7 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
     buf.resize(readUI4);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
@@ -1075,6 +1079,7 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= (rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT + rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT))
     sampler.resize(readUI4);
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
@@ -1536,32 +1541,33 @@ void ShaderSourceCache::Load(const char* fileName)
             if (!success)
             {
                 Clear();
+                Logger::Error("ShaderSource-Cache failed to load, ignoring cached shaders\n");
             }
         };
         
 #define READ_CHECK(exp) if (!exp) { success = false; return; }
 
-        uint32 readUI4 = 0;
-        READ_CHECK(ReadUI4(file, &readUI4));
+        uint32 formatVersion = 0;
+        READ_CHECK(ReadUI4(file, &formatVersion));
 
-        if (readUI4 == FormatVersion)
+        if (formatVersion == FormatVersion)
         {
             LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-            READ_CHECK(ReadUI4(file, &readUI4));
-            Entry.resize(readUI4);
+            uint32 entryCount = 0;
+            READ_CHECK(ReadUI4(file, &entryCount));
+            Entry.reserve(entryCount);
             Logger::Info("loading cached-shaders (%u): ", Entry.size());
 
-            for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
+            for (uint32 i = 0; i < entryCount; ++i)
             {
                 std::string str;
+                uint32 hash = 0;
                 READ_CHECK(ReadS0(file, &str));
+                READ_CHECK(ReadUI4(file, &hash));
+                Entry.push_back({ FastName(str.c_str()), hash, new ShaderSource() });
 
-                e->uid = FastName(str.c_str());
-                READ_CHECK(ReadUI4(file, &e->srcHash));
-                e->src = new ShaderSource();
-
-                READ_CHECK(e->src->Load(file));
+                READ_CHECK(Entry.back().src->Load(file));
             }
         }
         else
