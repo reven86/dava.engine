@@ -8,6 +8,7 @@
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
 #include "Classes/SceneManager/Private/SceneTabsModel.h"
@@ -33,7 +34,7 @@
 
 #include <QList>
 #include <QString>
-#include "SpritesPacker/SpritesPackerModule.h"
+#include <QDropEvent>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -240,8 +241,7 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetGlobalContext();
 
-    renderWidget = new SceneRenderWidget(accessor, GetContextManager()->GetRenderWidget());
-    renderWidget->SetWidgetDelegate(this);
+    renderWidget = new SceneRenderWidget(accessor, GetContextManager()->GetRenderWidget(), this);
 
     DAVA::TArc::PanelKey panelKey(QStringLiteral("SceneTabBar"), DAVA::TArc::CentralPanelInfo());
     GetUI()->AddView(REGlobal::MainWindowKey, panelKey, renderWidget);
@@ -337,7 +337,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
 
-        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::SaveScene, this, false));
+        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, false));
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Open Scene Quickly" }));
@@ -359,7 +359,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
 
-        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::SaveScene, this, true));
+        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, true));
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Save Scene" }));
@@ -571,7 +571,7 @@ void SceneManagerModule::RegisterOperations()
 {
     RegisterOperation(REGlobal::CloseAllScenesOperation.ID, this, &SceneManagerModule::CloseAllScenes);
     RegisterOperation(REGlobal::OpenSceneOperation.ID, this, &SceneManagerModule::OpenSceneByPath);
-    RegisterOperation(REGlobal::SaveCurrentScene.ID, this, &SceneManagerModule::SaveScene);
+    RegisterOperation(REGlobal::SaveCurrentScene.ID, this, static_cast<void (SceneManagerModule::*)()>(&SceneManagerModule::SaveScene));
     RegisterOperation(REGlobal::ReloadTexturesOperation.ID, this, &SceneManagerModule::ReloadTextures);
     RegisterOperation(REGlobal::ShowScenePreviewOperation.ID, this, &SceneManagerModule::ShowPreview);
     RegisterOperation(REGlobal::HideScenePreviewOperation.ID, this, &SceneManagerModule::HidePreview);
@@ -712,7 +712,7 @@ void SceneManagerModule::SaveScene(bool saveAs)
     DVASSERT(data != nullptr);
     DVASSERT(data->scene.Get() != nullptr);
 
-    if (!IsSavingAllowed(data->scene))
+    if (!IsSavingAllowed(data))
     {
         return;
     }
@@ -726,6 +726,11 @@ void SceneManagerModule::SaveScene(bool saveAs)
     SaveSceneImpl(data->scene, saveAsPath);
 }
 
+void SceneManagerModule::SaveScene()
+{
+    SaveScene(false);
+}
+
 void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
 {
     using namespace DAVA::TArc;
@@ -737,14 +742,14 @@ void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
 
     DAVA::RefPtr<SceneEditor2> scene = data->scene;
 
-    if (!IsSavingAllowed(scene))
+    if (!IsSavingAllowed(data))
     {
         return;
     }
 
     UI* ui = GetUI();
 
-    auto scenePathname = scene->GetScenePath();
+    const DAVA::FilePath& scenePathname = scene->GetScenePath();
     if (scenePathname.IsEmpty() || scenePathname.GetType() == DAVA::FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
     {
         ModalMessageParams params;
@@ -914,7 +919,7 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
 
 void SceneManagerModule::ShowPreview(const DAVA::FilePath& scenePath)
 {
-    if (renderWidget != nullptr && SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool() == true)
+    if (!renderWidget.isNull() && SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool() == true)
     {
         renderWidget->ShowPreview(scenePath);
     }
@@ -922,7 +927,7 @@ void SceneManagerModule::ShowPreview(const DAVA::FilePath& scenePath)
 
 void SceneManagerModule::HidePreview()
 {
-    if (renderWidget != nullptr)
+    if (!renderWidget.isNull())
     {
         renderWidget->HidePreview();
     }
@@ -954,9 +959,95 @@ void SceneManagerModule::OnScenePathChanged(const DAVA::Any& scenePath)
     UpdateTabTitle(ctx->GetID());
 }
 
-bool SceneManagerModule::CloseSceneRequest(DAVA::uint64 id)
+bool SceneManagerModule::OnCloseSceneRequest(DAVA::uint64 id)
 {
     return CloseSceneImpl(id, true);
+}
+
+void SceneManagerModule::OnDeleteSelection()
+{
+    using namespace DAVA::TArc;
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        return;
+    }
+
+    DAVA::RefPtr<SceneEditor2> scene = ctx->GetData<SceneData>()->scene;
+    ::RemoveSelection(scene.Get());
+}
+
+void SceneManagerModule::OnDragEnter(QObject* target, QDragEnterEvent* event)
+{
+    DefaultDragHandler(target, event);
+}
+
+void SceneManagerModule::OnDragMove(QObject* target, QDragMoveEvent* event)
+{
+    DefaultDragHandler(target, event);
+}
+
+void SceneManagerModule::OnDrop(QObject* target, QDropEvent* event)
+{
+    using namespace DAVA::TArc;
+    if (IsValidMimeData(event) == false)
+    {
+        return;
+    }
+
+    event->setAccepted(true);
+
+    const QMimeData* data = event->mimeData();
+    DAVA::Vector<DAVA::FilePath> files;
+    foreach (QUrl url, data->urls())
+    {
+        QString path = url.toLocalFile();
+        if (QFileInfo(path).suffix() == "sc2")
+        {
+            files.push_back(DAVA::FilePath(path.toStdString()));
+        }
+    }
+
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    if (ctx != nullptr && qobject_cast<DAVA::RenderWidget*>(target) != nullptr)
+    {
+        SceneData* data = ctx->GetData<SceneData>();
+        DAVA::Vector3 pos;
+
+        // check if there is intersection with landscape. ray from camera to mouse pointer
+        // if there is - we should move opening scene to that point
+        if (!data->scene->collisionSystem->LandRayTestFromCamera(pos))
+        {
+            DAVA::Landscape* landscape = data->scene->collisionSystem->GetLandscape();
+            if (landscape != nullptr && landscape->GetHeightmap() != nullptr && landscape->GetHeightmap()->Size() > 0)
+            {
+                data->scene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
+            }
+        }
+
+        WaitDialogParams params;
+        params.message = QStringLiteral("Adding object to scene");
+        params.min = 0;
+        params.max = files.size();
+
+        std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(REGlobal::MainWindowKey, params);
+        for (size_t i = 0; i < files.size(); ++i)
+        {
+            const DAVA::FilePath& path = files[i];
+            if (IsSceneCompatible(path))
+            {
+                data->scene->structureSystem->Add(path, pos);
+                waitHandle->SetProgressValue(static_cast<DAVA::uint32>(i));
+            }
+        }
+    }
+    else
+    {
+        for (const DAVA::FilePath& path : files)
+        {
+            OpenSceneByPath(path);
+        }
+    }
 }
 
 ///////////////////////////////
@@ -987,21 +1078,21 @@ void SceneManagerModule::UpdateTabTitle(DAVA::uint64 contextID)
     tabDescr.tabTooltip = tabTooltip;
 }
 
-bool SceneManagerModule::CanCloseScene(const DAVA::RefPtr<SceneEditor2>& scene)
+bool SceneManagerModule::CanCloseScene(SceneData* data)
 {
     using namespace DAVA::TArc;
 
-    DAVA::int32 toolsFlags = scene->GetEnabledTools();
-    if (!scene->IsChanged())
+    DAVA::int32 toolsFlags = data->scene->GetEnabledTools();
+    if (!data->scene->IsChanged())
     {
         if (toolsFlags)
         {
-            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+            data->scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
         }
         return true;
     }
 
-    if (!IsSavingAllowed(scene))
+    if (!IsSavingAllowed(data))
     {
         return false;
     }
@@ -1024,51 +1115,22 @@ bool SceneManagerModule::CanCloseScene(const DAVA::RefPtr<SceneEditor2>& scene)
     {
         if (toolsFlags)
         {
-            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
+            data->scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
         }
         return true;
     }
 
     if (toolsFlags != 0)
     {
-        scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+        data->scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
     }
 
-    if (!SaveSceneImpl(scene))
+    if (!SaveSceneImpl(data->scene))
     {
         return false;
     }
 
     return true;
-}
-
-bool SceneManagerModule::IsSavingAllowed(const DAVA::RefPtr<SceneEditor2>& scene)
-{
-    DVASSERT(scene.Get() != nullptr);
-    QString warningMessage;
-    if (scene->GetEnabledTools() != 0)
-    {
-        warningMessage = "Disable landscape editing before save!";
-    }
-    else if (scene->wayEditSystem->IsWayEditEnabled())
-    {
-        warningMessage = "Disable path editing before save!";
-    }
-
-    if (warningMessage.isEmpty())
-    {
-        return true;
-    }
-
-    using namespace DAVA::TArc;
-    UI* ui = GetUI();
-
-    ModalMessageParams params;
-    params.buttons = ModalMessageParams::Ok;
-    params.title = "Saving is not allowed";
-    params.message = warningMessage;
-    ui->ShowModalMessage(REGlobal::MainWindowKey, params);
-    return false;
 }
 
 DAVA::RefPtr<SceneEditor2> SceneManagerModule::OpenSceneImpl(const DAVA::FilePath& scenePath)
@@ -1360,7 +1422,7 @@ bool SceneManagerModule::CloseSceneImpl(DAVA::uint64 id, bool needSavingRequest)
     DVASSERT(data != nullptr);
     DVASSERT(data->scene.Get() != nullptr);
 
-    if (needSavingRequest == false || CanCloseScene(data->scene))
+    if (needSavingRequest == false || CanCloseScene(data))
     {
         contextManager->DeleteContext(id);
         return true;
@@ -1376,4 +1438,60 @@ void SceneManagerModule::RestartParticles()
                                       SceneData* data = ctx.GetData<SceneData>();
                                       data->scene->particlesSystem->RestartParticleEffects();
                                   });
+}
+
+bool SceneManagerModule::IsSavingAllowed(SceneData* sceneData)
+{
+    QString message;
+    bool result = sceneData->IsSavingAllowed(&message);
+    if (result == false)
+    {
+        using namespace DAVA::TArc;
+        ModalMessageParams params;
+        params.message = message;
+        params.buttons = ModalMessageParams::Ok;
+        params.title = "Saving is not allowed";
+        GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+    }
+
+    return result;
+}
+
+void SceneManagerModule::DefaultDragHandler(QObject* target, QDropEvent* event)
+{
+    if (!IsValidMimeData(event))
+    {
+        return;
+    }
+
+    if (qobject_cast<DAVA::RenderWidget*>(target) != nullptr)
+    {
+        event->setDropAction(Qt::LinkAction);
+    }
+    else
+    {
+        event->setDropAction(Qt::CopyAction);
+    }
+
+    event->setAccepted(true);
+}
+
+bool SceneManagerModule::IsValidMimeData(QDropEvent* event)
+{
+    const QMimeData* data = event->mimeData();
+    if (data->hasUrls())
+    {
+        foreach (const QUrl& url, data->urls())
+        {
+            QString path = url.toLocalFile();
+            if (QFileInfo(path).suffix() == "sc2")
+            {
+                return true;
+            }
+        }
+    }
+
+    event->setDropAction(Qt::IgnoreAction);
+    event->accept();
+    return false;
 }

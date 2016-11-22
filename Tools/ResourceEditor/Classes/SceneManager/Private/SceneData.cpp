@@ -36,6 +36,30 @@ DAVA::uint32 SceneData::GetEnabledLandscapeTools() const
     return scene->GetEnabledTools();
 }
 
+bool SceneData::IsSavingAllowed(QString* message /*= nullptr*/) const
+{
+    DVASSERT(scene.Get() != nullptr);
+    QString warningMessage;
+    if (scene->GetEnabledTools() != 0)
+    {
+        warningMessage = "Disable landscape editing before save!";
+    }
+    else if (scene->wayEditSystem->IsWayEditEnabled())
+    {
+        warningMessage = "Disable path editing before save!";
+    }
+
+    if (warningMessage.isEmpty())
+    {
+        return true;
+    }
+    if (message != nullptr)
+    {
+        *message = warningMessage;
+    }
+    return false;
+}
+
 const char* SceneData::scenePropertyName = "Scene";
 const char* SceneData::sceneChangedPropertyName = "IsSceneChanged";
 const char* SceneData::scenePathPropertyName = "ScenePath";

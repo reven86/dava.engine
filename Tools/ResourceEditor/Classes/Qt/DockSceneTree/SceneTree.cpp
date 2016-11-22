@@ -44,6 +44,8 @@
 
 #include "FileSystem/VariantType.h"
 
+#include <QShortcut>
+
 namespace SceneTreeDetails
 {
 QString GetParticlesConfigPath()
@@ -845,10 +847,10 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 
     // this widget signals
     QObject::connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &SceneTree::TreeSelectionChanged);
-    QObject::connect(this, &QTreeView::clicked, this, &SceneTree::TreeItemClicked);
     QObject::connect(this, &QTreeView::doubleClicked, this, &SceneTree::TreeItemDoubleClicked);
     QObject::connect(this, &QTreeView::collapsed, this, &SceneTree::TreeItemCollapsed);
     QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
+    QObject::connect(new QShortcut(QKeySequence(Qt::Key_X), this), &QShortcut::activated, this, &SceneTree::CollapseSwitch);
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 
@@ -1060,16 +1062,6 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
 
     SyncSelectionFromTree();
     EmitParticleSignals();
-}
-
-void SceneTree::TreeItemClicked(const QModelIndex& index)
-{
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
-    {
-        // TODO:
-        // ...
-    }
 }
 
 void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)

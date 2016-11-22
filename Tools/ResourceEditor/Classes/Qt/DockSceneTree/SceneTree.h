@@ -46,7 +46,6 @@ private slots:
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 
     void TreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    void TreeItemClicked(const QModelIndex& index);
     void TreeItemDoubleClicked(const QModelIndex& index);
     void TreeItemCollapsed(const QModelIndex& index);
     void TreeItemExpanded(const QModelIndex& index);

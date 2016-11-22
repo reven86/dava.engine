@@ -65,7 +65,6 @@
 
 #include "Beast/BeastRunner.h"
 
-
 #include "SceneProcessing/SceneProcessor.h"
 
 #include "Constants.h"
@@ -88,6 +87,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Qt/RenderWidget.h"
+#include "Engine/Qt/NativeServiceQt.h"
 #include "Reflection/ReflectedType.h"
 
 #include "Scene3D/Components/ActionComponent.h"
@@ -171,6 +171,26 @@ private:
     GlobalOperations* globalOperations;
 };
 
+bool IsSavingAllowed(const QString& warningTitle)
+{
+    SceneData* data = REGlobal::GetActiveDataNode<SceneData>();
+    DVASSERT(data);
+    QString message;
+    bool result = data->IsSavingAllowed(&message);
+    if (result == false)
+    {
+        using namespace DAVA::TArc;
+
+        ModalMessageParams params;
+        params.buttons = ModalMessageParams::Ok;
+        params.message = message;
+        params.title = warningTitle;
+        REGlobal::ShowModalMessage(params);
+    }
+
+    return result;
+}
+
 DAVA::RefPtr<SceneEditor2> GetCurrentScene()
 {
     SceneData* data = REGlobal::GetActiveDataNode<SceneData>();
@@ -226,7 +246,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupToolBars();
     SetupStatusBar();
     SetupActions();
-    SetupShortCuts();
 
     // create tool windows
     new TextureBrowser(this);
@@ -290,21 +309,10 @@ QtMainWindow::~QtMainWindow()
     ActiveSceneHolder::Deinit();
 }
 
-//void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
-//{
-//// delete
-//QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
-//deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-//deleteSelection->setShortcutContext(Qt::WidgetShortcut);
-//connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
-//renderWidget->addAction(deleteSelection);
-
-//QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
-//}
-
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
+    QObject::connect(DAVA::Engine::Instance()->GetNativeService()->GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 QString GetSaveFolderForEmitters()
@@ -329,7 +337,6 @@ void QtMainWindow::SetupWidget()
 {
     ui->sceneTree->Init(globalOperations);
     ui->scrollAreaWidgetContents->Init(globalOperations);
-    //ui->sceneTabWidget->Init(globalOperations);
 }
 
 void QtMainWindow::WaitStart(const QString& title, const QString& message, int min /* = 0 */, int max /* = 100 */)
@@ -610,8 +617,6 @@ void QtMainWindow::SetupDocks()
 
 void QtMainWindow::SetupActions()
 {
-    // scene file actions
-
 // import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
@@ -770,21 +775,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
 
     QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
-}
-
-void QtMainWindow::SetupShortCuts()
-{
-    // select mode
-    // TODO UVR LATER
-    //connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
-    // scene tree collapse/expand
-    connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
-
-    //tab closing
-//connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
-#if defined(__DAVAENGINE_WIN32__)
-//connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
-#endif
 }
 
 // ###################################################################################################
@@ -1596,10 +1586,9 @@ void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 
 void QtMainWindow::OnSaveHeightmapToImage()
 {
-    // TODO UVR
-    //if (!IsSavingAllowed())
+    if (MainWindowDetails::IsSavingAllowed("Save heightmap to Image"))
     {
-        //    return;
+        return;
     }
 
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
@@ -1632,13 +1621,12 @@ void QtMainWindow::OnSaveHeightmapToImage()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
-    DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    // TODO UVR
-    if (/*!IsSavingAllowed() ||*/ (nullptr == scene))
+    if (MainWindowDetails::IsSavingAllowed("Save tiled texture"))
     {
         return;
     }
 
+    DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
     LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
     if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
@@ -1789,11 +1777,10 @@ void QtMainWindow::OnBeastAndSave()
         }
     }
 
+    REGlobal::GetInvoker()->Invoke(REGlobal::SaveCurrentScene.ID);
     if (!scene->IsLoaded() || scene->IsChanged())
     {
-        // TODO UVR
-        //if (!SaveScene(scene))
-            return;
+        return;
     }
 
     BeastDialog dlg(this);
@@ -1802,17 +1789,9 @@ void QtMainWindow::OnBeastAndSave()
     if (!run)
         return;
 
-    // TODO UVR
-    //    if (!SaveTilemask(false))
-    {
-        return;
-    }
-
     RunBeast(dlg.GetPath(), dlg.GetMode());
     scene->SetChanged();
-    // TODO UVR
-    //SaveScene(scene);
-
+    REGlobal::GetInvoker()->Invoke(REGlobal::SaveCurrentScene.ID);
     scene->ClearAllCommands();
 }
 
@@ -2396,36 +2375,35 @@ void QtMainWindow::OnReloadShaders()
 {
     DAVA::ShaderDescriptorCache::RelaoadShaders();
 
-    REGlobal::GetAccessor()->ForEachContext([](DAVA::TArc::DataContext& ctx)
-                                            {
-                                                SceneData* sceneData = ctx.GetData<SceneData>();
-                                                DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
+    REGlobal::GetAccessor()->ForEachContext([](DAVA::TArc::DataContext& ctx) {
+        SceneData* sceneData = ctx.GetData<SceneData>();
+        DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
 
-                                                const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
+        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
 
-                                                for (auto material : topParents)
-                                                {
-                                                    material->InvalidateRenderVariants();
-                                                }
-                                                const DAVA::Map<DAVA::uint64, DAVA::NMaterial*>& particleInstances = sceneEditor->particleEffectSystem->GetMaterialInstances();
-                                                for (auto material : particleInstances)
-                                                {
-                                                    material.second->InvalidateRenderVariants();
-                                                }
+        for (auto material : topParents)
+        {
+            material->InvalidateRenderVariants();
+        }
+        const DAVA::Map<DAVA::uint64, DAVA::NMaterial*>& particleInstances = sceneEditor->particleEffectSystem->GetMaterialInstances();
+        for (auto material : particleInstances)
+        {
+            material.second->InvalidateRenderVariants();
+        }
 
-                                                DAVA::Set<DAVA::NMaterial*> materialList;
-                                                sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);
-                                                for (auto material : materialList)
-                                                {
-                                                    if (material)
-                                                        material->InvalidateRenderVariants();
-                                                }
+        DAVA::Set<DAVA::NMaterial*> materialList;
+        sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);
+        for (auto material : materialList)
+        {
+            if (material)
+                material->InvalidateRenderVariants();
+        }
 
-                                                sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
-                                                sceneEditor->renderSystem->SetForceUpdateLights();
+        sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
+        sceneEditor->renderSystem->SetForceUpdateLights();
 
-                                                sceneEditor->visibilityCheckSystem->InvalidateMaterials();
-                                            });
+        sceneEditor->visibilityCheckSystem->InvalidateMaterials();
+    });
 
 #define INVALIDATE_2D_MATERIAL(material) \
     if (DAVA::RenderSystem2D::material) \

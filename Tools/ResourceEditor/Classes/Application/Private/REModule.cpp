@@ -1,6 +1,5 @@
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Application/LaunchModuleData.h"
 
 #include "Main/mainwindow.h"
 #include "TextureCache.h"
@@ -53,62 +52,13 @@ REModule::~REModule()
     GetAccessor()->GetGlobalContext()->DeleteData<REModuleDetail::REGlobalData>();
 }
 
-//void REModule::OnRenderSystemInitialized(DAVA::Window* w)
-//{
-//    using TData = REModuleDetail::REGlobalData;
-//
-//    using namespace DAVA::TArc;
-//    ContextAccessor& accessor = GetAccessor();
-//    DataContext* globalContext = accessor.GetGlobalContext();
-//
-//    REModuleDetail::REGlobalData* globalData = globalContext->GetData<REModuleDetail::REGlobalData>();
-//    DVASSERT(globalData != nullptr);
-//    globalData->mainWindow->OnRenderingInitialized();
-//
-//    launchDataWrapper = accessor.CreateWrapper(DAVA::ReflectedType::Get<LaunchModuleData>());
-//    launchDataWrapper.SetListener(this);
-//}
-//
-//bool REModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
-//{
-//    using namespace DAVA::TArc;
-//    ContextAccessor& accessor = GetAccessor();
-//    DataContext* globalContext = accessor.GetGlobalContext();
-//    REModuleDetail::REGlobalData* globalData = globalContext->GetData<REModuleDetail::REGlobalData>();
-//    DVASSERT(globalData->windowKey == key);
-//    bool hasChangedScenes = false;
-//    globalData->mainWindow->ForEachScene([&hasChangedScenes](SceneEditor2* scene)
-//                                         {
-//                                             hasChangedScenes |= scene->IsChanged();
-//                                         });
-//
-//    return !hasChangedScenes;
-//}
-//
-//bool REModule::ControlWindowClosing(const DAVA::TArc::WindowKey& key, QCloseEvent* event)
-//{
-//    REModuleDetail::REGlobalData* globalData = GetAccessor().GetGlobalContext()->GetData<REModuleDetail::REGlobalData>();
-//    DVASSERT(globalData->windowKey == key);
-//    if (globalData->mainWindow->CanBeClosed())
-//    {
-//        globalData->mainWindow->CloseAllScenes();
-//        event->accept();
-//    }
-//    else
-//    {
-//        event->ignore();
-//    }
-//
-//    return true;
-//}
-
 void REModule::PostInit()
 {
     Themes::InitFromQApplication();
     DAVA::TArc::ContextAccessor* accessor = GetAccessor();
 
     DAVA::EngineContext* engineContext = accessor->GetEngineContext();
-    engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
+    engineContext->localizationSystem->InitWithDirectory("~res:/ResourceEditor/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
     engineContext->uiControlSystem->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
 
@@ -119,23 +69,4 @@ void REModule::PostInit()
 
     DAVA::TArc::UIManager* ui = static_cast<DAVA::TArc::UIManager*>(GetUI());
     ui->InjectWindow(REGlobal::MainWindowKey, globalData->mainWindow);
-}
-
-void REModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    using namespace DAVA::TArc;
-    DataContext* ctx = GetAccessor()->GetGlobalContext();
-    LaunchModuleData* data = ctx->GetData<LaunchModuleData>();
-    DVASSERT(data != nullptr);
-    if (!data->IsLaunchFinished())
-    {
-        return;
-    }
-
-    REModuleDetail::REGlobalData* globalData = ctx->GetData<REModuleDetail::REGlobalData>();
-    // TODO UVR LATER
-    //globalData->mainWindow->OnSceneNew();
-
-    launchDataWrapper.SetListener(nullptr);
-    launchDataWrapper = DAVA::TArc::DataWrapper();
 }

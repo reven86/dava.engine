@@ -15,6 +15,7 @@ class FilePath;
 }
 
 class SceneEditor2;
+class SceneData;
 
 class SceneManagerModule : public DAVA::TArc::ControllerModule, private SceneRenderWidget::IWidgetDelegate
 {
@@ -43,7 +44,8 @@ private:
     void OpenScene();
     void OpenSceneQuckly();
     void OpenSceneByPath(const DAVA::FilePath& scenePath);
-    void SaveScene(bool saveAs = false);
+    void SaveScene();
+    void SaveScene(bool saveAs);
     void SaveSceneToFolder(bool compressedTextures);
     void ExportScene();
     void CloseAllScenes(bool needSavingReqiest);
@@ -57,12 +59,15 @@ private:
     void OnScenePathChanged(const DAVA::Any& scenePath);
 
     /// IWidgetDelegate
-    bool CloseSceneRequest(DAVA::uint64 id) override;
+    bool OnCloseSceneRequest(DAVA::uint64 id) override;
+    void OnDeleteSelection() override;
+    void OnDragEnter(QObject* target, QDragEnterEvent* event) override;
+    void OnDragMove(QObject* target, QDragMoveEvent* event) override;
+    void OnDrop(QObject* target, QDropEvent* event) override;
 
     /// Helpers
     void UpdateTabTitle(DAVA::uint64 contextID);
-    bool CanCloseScene(const DAVA::RefPtr<SceneEditor2>& scene);
-    bool IsSavingAllowed(const DAVA::RefPtr<SceneEditor2>& scene);
+    bool CanCloseScene(SceneData* data);
     DAVA::RefPtr<SceneEditor2> OpenSceneImpl(const DAVA::FilePath& scenePath);
 
     /// This method try to scene at "scenePath" place.
@@ -83,6 +88,9 @@ private:
 
     bool CloseSceneImpl(DAVA::uint64 id, bool needSavingRequest);
     void RestartParticles();
+    bool IsSavingAllowed(SceneData* sceneData);
+    void DefaultDragHandler(QObject* target, QDropEvent* event);
+    bool IsValidMimeData(QDropEvent* event);
 
 private:
     DAVA::TArc::QtConnections connections;

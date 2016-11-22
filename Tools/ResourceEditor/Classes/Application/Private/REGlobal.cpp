@@ -7,6 +7,7 @@ namespace REGlobal
 namespace REGlobalDetails
 {
 DAVA::TArc::CoreInterface* coreInstance = nullptr;
+DAVA::TArc::UI* ui = nullptr;
 }
 
 DAVA::TArc::WindowKey MainWindowKey(DAVA::FastName("ResourceEditor"));
@@ -42,9 +43,15 @@ DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type)
     return REGlobalDetails::coreInstance->CreateWrapper(type);
 }
 
-void InitTArcCore(DAVA::TArc::CoreInterface* core)
+DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalMessageParams& params)
+{
+    return REGlobalDetails::ui->ShowModalMessage(MainWindowKey, params);
+}
+
+void InitTArcCore(DAVA::TArc::CoreInterface* core, DAVA::TArc::UI* ui)
 {
     REGlobalDetails::coreInstance = core;
+    REGlobalDetails::ui = ui;
 }
 
 IMPL_OPERATION_ID(OpenLastProjectOperation);

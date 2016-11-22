@@ -171,6 +171,11 @@ public:
         return engineContext;
     }
 
+    virtual UI* GetUI()
+    {
+        return nullptr;
+    }
+
 protected:
     virtual void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne)
     {
@@ -678,6 +683,11 @@ public:
         return controllerModule != nullptr;
     }
 
+    UI* GetUI() override
+    {
+        return uiManager.get();
+    }
+
 private:
     void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne) override
     {
@@ -751,6 +761,11 @@ EngineContext* Core::GetEngineContext()
 CoreInterface* Core::GetCoreInterface()
 {
     return impl.get();
+}
+
+UI* Core::GetUI()
+{
+    return impl->GetUI();
 }
 
 bool Core::IsConsoleMode() const

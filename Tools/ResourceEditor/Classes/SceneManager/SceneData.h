@@ -16,6 +16,8 @@ public:
     DAVA::FilePath GetScenePath() const;
     DAVA::uint32 GetEnabledLandscapeTools() const;
 
+    bool IsSavingAllowed(QString* message = nullptr) const;
+
     static const char* scenePropertyName;
     static const char* sceneChangedPropertyName;
     static const char* scenePathPropertyName;

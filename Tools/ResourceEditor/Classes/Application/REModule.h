@@ -7,17 +7,11 @@
 
 class TextureCache;
 class ResourceEditorLauncher;
-class REModule : public DAVA::TArc::ClientModule, private DAVA::TArc::DataListener
+class REModule : public DAVA::TArc::ClientModule
 {
 public:
     ~REModule();
 
 protected:
     void PostInit() override;
-
-private:
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
-
-private:
-    DAVA::TArc::DataWrapper launchDataWrapper;
 };

@@ -191,7 +191,6 @@ protected:
     void SetupStatusBar();
     void SetupDocks();
     void SetupActions();
-    void SetupShortCuts();
 
     void StartGlobalInvalidateTimer();
 

@@ -1,7 +1,6 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Application/InitModule.h"
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
@@ -94,7 +93,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
-    REGlobal::InitTArcCore(tarcCore->GetCoreInterface());
+    REGlobal::InitTArcCore(tarcCore->GetCoreInterface(), tarcCore->GetUI());
     if (isConsoleMode)
     {
         CreateConsoleModules(tarcCore);
@@ -136,7 +135,7 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
 
 void REApplication::Cleanup()
 {
-    REGlobal::InitTArcCore(nullptr);
+    REGlobal::InitTArcCore(nullptr, nullptr);
     DAVA::SafeRelease(beastProxy);
     DAVA::SafeRelease(settingsManager);
 
@@ -163,7 +162,6 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
-    tarcCore->CreateModule<InitModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();

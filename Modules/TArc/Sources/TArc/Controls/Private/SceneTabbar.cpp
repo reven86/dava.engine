@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 
 #include <QVariant>
+#include <QShortcut>
 
 namespace DAVA
 {
@@ -19,6 +20,10 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
 
     QObject::connect(this, &QTabBar::currentChanged, this, &SceneTabbar::OnCurrentTabChanged);
     QObject::connect(this, &QTabBar::tabCloseRequested, this, &SceneTabbar::OnCloseTabRequest);
+    QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this), &QShortcut::activated, DAVA::MakeFunction(this, &SceneTabbar::OnCloseCurrentTab));
+#if defined(__DAVAENGINE_WIN32__)
+    QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), this), &QShortcut::activated, DAVA::MakeFunction(this, &SceneTabbar::OnCloseCurrentTab));
+#endif
 }
 
 SceneTabbar::~SceneTabbar()
@@ -194,6 +199,15 @@ void SceneTabbar::OnCloseTabRequest(int index)
     DVASSERT(data.canConvert<uint64>());
     uint64 id = data.value<uint64>();
     closeTab.Emit(id);
+}
+
+void SceneTabbar::OnCloseCurrentTab()
+{
+    int currentTab = currentIndex();
+    if (currentTab != -1)
+    {
+        OnCloseTabRequest(currentTab);
+    }
 }
 
 const char* SceneTabbar::activeTabPropertyName = "ActiveTabID";

@@ -54,6 +54,7 @@ public:
 
     DAVA_DEPRECATED(EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
+    DAVA_DEPRECATED(UI* GetUI());
 
 private:
     // in testing environment Core shouldn't connect to Engine signals.

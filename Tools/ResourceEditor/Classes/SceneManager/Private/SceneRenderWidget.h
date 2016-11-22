@@ -13,6 +13,8 @@
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include "Engine/Qt/RenderWidget.h"
+
 #include <QFrame>
 
 namespace DAVA
@@ -27,31 +29,40 @@ class ContextAccessor;
 class SceneEditor2;
 class SelectableGroup;
 class ScenePreviewDialog;
-class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener
+class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener, private DAVA::RenderWidget::IClientDelegate
 {
+    Q_OBJECT
 public:
     class IWidgetDelegate
     {
     public:
-        virtual bool CloseSceneRequest(DAVA::uint64 id) = 0;
+        virtual bool OnCloseSceneRequest(DAVA::uint64 id) = 0;
+        virtual void OnDeleteSelection() = 0;
+
+        virtual void OnDragEnter(QObject* target, QDragEnterEvent* event) = 0;
+        virtual void OnDragMove(QObject* target, QDragMoveEvent* event) = 0;
+        virtual void OnDrop(QObject* target, QDropEvent* event) = 0;
     };
 
-    SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget);
+    SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, IWidgetDelegate* widgetDelegate);
     ~SceneRenderWidget();
 
     void ShowPreview(const DAVA::FilePath& scenePath);
     void HidePreview();
-    void SetWidgetDelegate(IWidgetDelegate* widgetDelegate);
 
 private:
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
-
     void InitDavaUI();
+
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
     void OnRenderWidgetResized(DAVA::uint32 w, DAVA::uint32 h);
-
     void OnCloseTab(DAVA::uint64 id);
+    void OnDeleteSelection();
+    void OnMouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
 
-    void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
+    bool eventFilter(QObject* object, QEvent* event) override;
+    void OnDragEntered(QDragEnterEvent* e) override;
+    void OnDragMoved(QDragMoveEvent* e) override;
+    void OnDrop(QDropEvent* e) override;
 
 private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;

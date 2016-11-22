@@ -10,9 +10,10 @@
 #include "Base/StaticSingleton.h"
 #include "Deprecated/ScenePreviewDialog.h"
 
-SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget_)
+SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget_, IWidgetDelegate* widgetDelegate_)
     : accessor(accessor_)
     , renderWidget(renderWidget_)
+    , widgetDelegate(widgetDelegate_)
 {
     using namespace DAVA::TArc;
     activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedType::Get<SceneData>());
@@ -22,12 +23,16 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     ctx->CreateData(std::make_unique<SceneTabsModel>());
 
     SceneTabbar* tabBar = new SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    tabBar->setAcceptDrops(true);
+    tabBar->setFocusPolicy(Qt::StrongFocus);
     tabBar->setTabsClosable(true);
     tabBar->setMovable(true);
     tabBar->setUsesScrollButtons(true);
     tabBar->setExpanding(false);
+    tabBar->installEventFilter(this);
 
     setMinimumSize(renderWidget->minimumSize());
+    renderWidget->SetClientDelegate(this);
 
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
@@ -38,8 +43,14 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
     InitDavaUI();
 
-    connections.AddConnection(renderWidget, &DAVA::RenderWidget::Resized, DAVA::MakeFunction(this, &SceneRenderWidget::OnRenderWidgetResized));
-    connections.AddConnection(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, DAVA::MakeFunction(this, &SceneRenderWidget::MouseOverSelection));
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(deleteSelection);
+
+    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneRenderWidget::OnRenderWidgetResized);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, this, &SceneRenderWidget::OnMouseOverSelection);
+    QObject::connect(deleteSelection, &QAction::triggered, this, &SceneRenderWidget::OnDeleteSelection);
 
     tabBar->closeTab.Connect(this, &SceneRenderWidget::OnCloseTab);
 }
@@ -76,12 +87,6 @@ void SceneRenderWidget::HidePreview()
     {
         previewDialog->Close();
     }
-}
-
-void SceneRenderWidget::SetWidgetDelegate(IWidgetDelegate* widgetDelegate_)
-{
-    DVASSERT(widgetDelegate == nullptr);
-    widgetDelegate = widgetDelegate_;
 }
 
 void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
@@ -177,13 +182,17 @@ void SceneRenderWidget::OnRenderWidgetResized(DAVA::uint32 w, DAVA::uint32 h)
 
 void SceneRenderWidget::OnCloseTab(DAVA::uint64 id)
 {
-    if (widgetDelegate)
-    {
-        widgetDelegate->CloseSceneRequest(id);
-    }
+    DVASSERT(widgetDelegate);
+    widgetDelegate->OnCloseSceneRequest(id);
 }
 
-void SceneRenderWidget::MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)
+void SceneRenderWidget::OnDeleteSelection()
+{
+    DVASSERT(widgetDelegate);
+    widgetDelegate->OnDeleteSelection();
+}
+
+void SceneRenderWidget::OnMouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)
 {
     using namespace DAVA::TArc;
 
@@ -217,4 +226,42 @@ void SceneRenderWidget::MouseOverSelection(SceneEditor2* scene, const Selectable
     {
         renderWidget->unsetCursor();
     }
+}
+
+bool SceneRenderWidget::eventFilter(QObject* object, QEvent* event)
+{
+    DVASSERT(widgetDelegate != nullptr);
+    QEvent::Type eventType = event->type();
+    switch (eventType)
+    {
+    case QEvent::DragEnter:
+        widgetDelegate->OnDragEnter(object, static_cast<QDragEnterEvent*>(event));
+        return true;
+    case QEvent::DragMove:
+        widgetDelegate->OnDragMove(object, static_cast<QDragMoveEvent*>(event));
+        return true;
+    case QEvent::Drop:
+        widgetDelegate->OnDrop(object, static_cast<QDropEvent*>(event));
+        return true;
+    default:
+        return false;
+    }
+}
+
+void SceneRenderWidget::OnDragEntered(QDragEnterEvent* e)
+{
+    DVASSERT(widgetDelegate != nullptr);
+    widgetDelegate->OnDragEnter(renderWidget, e);
+}
+
+void SceneRenderWidget::OnDragMoved(QDragMoveEvent* e)
+{
+    DVASSERT(widgetDelegate != nullptr);
+    widgetDelegate->OnDragMove(renderWidget, e);
+}
+
+void SceneRenderWidget::OnDrop(QDropEvent* e)
+{
+    DVASSERT(widgetDelegate != nullptr);
+    widgetDelegate->OnDrop(renderWidget, e);
 }

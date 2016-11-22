@@ -20,6 +20,7 @@ class DataContext;
 namespace REGlobal
 {
 extern DAVA::TArc::WindowKey MainWindowKey;
+void InitTArcCore(DAVA::TArc::CoreInterface* core, DAVA::TArc::UI* ui);
 
 DAVA::TArc::DataContext* GetGlobalContext();
 DAVA::TArc::DataContext* GetActiveContext();
@@ -28,7 +29,7 @@ DAVA::TArc::OperationInvoker* GetInvoker();
 DAVA::TArc::ContextAccessor* GetAccessor();
 
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type);
-void InitTArcCore(DAVA::TArc::CoreInterface* core);
+DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalMessageParams& params);
 
 template <typename T>
 T* GetDataNode()

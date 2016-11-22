@@ -39,6 +39,7 @@ private:
     Reflection GetSceneTabsModel(const DataContext* context);
     void OnCurrentTabChanged(int currentTab);
     void OnCloseTabRequest(int index);
+    void OnCloseCurrentTab();
 
 private:
     Reflection model;
