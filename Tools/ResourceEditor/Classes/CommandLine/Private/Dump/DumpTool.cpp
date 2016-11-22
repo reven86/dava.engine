@@ -20,7 +20,7 @@ DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
     options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
     options.AddOption(OptionName::OutFile, VariantType(String("")), "Full path to file to write result of dumping");
     options.AddOption(OptionName::Mode, VariantType(String("e")), "Mode of dumping: r - required, e - extended. Extended mode is default.");
-    options.AddOption(OptionName::GPU, VariantType(String("all")), "GPU family: PowerVR_iOS, PowerVR_Android, tegra, mali, adreno, origin, dx11. Can be multiple: -gpu mali,adreno,origin");
+    options.AddOption(OptionName::GPU, VariantType(String("all")), "GPU family: PowerVR_iOS, PowerVR_Android, tegra, mali, adreno, origin, dx11. Can be multiple: -gpu mali,adreno,origin", true);
 }
 
 bool DumpTool::PostInitInternal()

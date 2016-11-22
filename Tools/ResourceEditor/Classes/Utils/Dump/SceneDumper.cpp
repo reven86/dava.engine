@@ -118,7 +118,11 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, DAVA::Set<D
     {
         VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(renderObject);
         links.insert(vegetation->GetHeightmapPath());
-        links.insert(vegetation->GetCustomGeometryPath());
+
+        if (mode == eMode::EXTENDED)
+        {
+            links.insert(vegetation->GetCustomGeometryPath());
+        }
 
         Set<DataNode*> dataNodes;
         vegetation->GetDataNodes(dataNodes);

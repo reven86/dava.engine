@@ -112,7 +112,9 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
                 else if (ro->GetType() == RenderObject::TYPE_VEGETATION)
                 {
                     VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(ro);
-                    TEST_VERIFY(dumpedLinks.count(vegetation->GetCustomGeometryPath().GetAbsolutePathname()) == 1);
+
+                    const size_t expectedCount = (mode == SceneDumper::eMode::REQUIRED) ? 0 : 1;
+                    TEST_VERIFY(dumpedLinks.count(vegetation->GetCustomGeometryPath().GetAbsolutePathname()) == expectedCount);
                     TEST_VERIFY(dumpedLinks.count(vegetation->GetLightmapPath().GetAbsolutePathname()) == 1);
                 }
                 else
@@ -189,13 +191,13 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
           "-mode",
           "r",
           "-gpu",
-          "mali"
+          "mali,tegra"
         };
 
         std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
         REConsoleModuleTestUtils::ExecuteModule(tool.get());
 
-        TestLinks(SceneDumper::eMode::REQUIRED, { eGPUFamily::GPU_MALI });
+        TestLinks(SceneDumper::eMode::REQUIRED, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_TEGRA });
 
         REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
     }
