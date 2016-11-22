@@ -118,7 +118,7 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
     windowBackend->InitCustomRenderParams(params);
 }
 
-void Window::SetCursorCaptureAsync(eCursorCapture mode)
+void Window::SetCursorCapture(eCursorCapture mode)
 {
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
@@ -129,6 +129,8 @@ void Window::SetCursorCaptureAsync(eCursorCapture mode)
             {
                 cursorCapture = mode;
                 windowBackend->SetCursorCapture(mode);
+                // Hide cursor in pinning
+                windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
             }
         }
     }
@@ -139,21 +141,22 @@ eCursorCapture Window::GetCursorCapture() const
     return cursorCapture;
 }
 
-void Window::SetCursorVisibilityAsync(bool visible)
+void Window::SetCursorVisibility(bool visible)
 {
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
     {
         if (cursorVisible != visible)
         {
+            // Remember visibility state but prevent cursor showing in pinning
             cursorVisible = visible;
-            windowBackend->SetCursorVisibility(visible);
+            windowBackend->SetCursorVisibility(visible && cursorCapture != eCursorCapture::PINNING);
         }
     }
 }
 
 bool Window::GetCursorVisibility() const
 {
-    return cursorVisible;
+    return cursorVisible && cursorCapture != eCursorCapture::PINNING;
 }
 
 void Window::Update(float32 frameDelta)
@@ -388,7 +391,7 @@ bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
         }
         waitInputActivation = false;
         windowBackend->SetCursorCapture(cursorCapture);
-        windowBackend->SetCursorVisibility(cursorVisible);
+        windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
         return true;
     }
     return false;

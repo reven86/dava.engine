@@ -243,8 +243,10 @@ public:
 
         For application cursor capture mode remains intact until next `SetCursorCapture` call with other value but Window
         always cancels capture mode after losing focus and automatically restores it on gaining focus.
+        Application can recognize whether `eCursorCapture::PINNING` is enabled by examining UIEvent::isRelative field when
+        processing input events from mouse device. Also in `eCursorCapture::PINNING` mode cursor is automatically become hidden.
     */
-    void SetCursorCaptureAsync(eCursorCapture mode);
+    void SetCursorCapture(eCursorCapture mode);
 
     /**
         Get cursor capture mode.
@@ -260,8 +262,10 @@ public:
 
         For application cursor visibility state remains intact until next `SetCursorVisibility` call with other value but Window
         always shows cursor after losing focus and automatically hides it on gaining focus.
+        Application cannot control cursor visibility when `eCursorCapture::PINNING` mode is enabled, in this case cursor is
+        automatically hidden.
     */
-    void SetCursorVisibilityAsync(bool visible);
+    void SetCursorVisibility(bool visible);
 
     /**
         Get cursor visibility.
