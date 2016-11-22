@@ -65,7 +65,7 @@ static Handle dx9_PerfQuery_Create()
         perfQuery->isReady = 0;
         perfQuery->isValid = 0;
 
-        DVASSERT(perfQuery->query == nullptr)
+        DVASSERT(perfQuery->query == nullptr);
     }
 
     return handle;
