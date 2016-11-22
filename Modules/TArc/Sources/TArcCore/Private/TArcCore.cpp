@@ -403,7 +403,7 @@ public:
     {
         Impl::OnLoopStarted();
 
-        ToolsAssetGuard::Instance()->Init();
+        ToolsAssertGuard::Instance()->Init();
 
         engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));

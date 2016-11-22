@@ -3,6 +3,10 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+#include "AssertGuardMacOSHack.h"
+#endif
+
 #include <QApplication>
 #include <QAbstractEventDispatcher>
 #include <QWidget>
@@ -11,7 +15,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class ToolsAssetGuard::EventFilter final : public QObject
+class ToolsAssertGuard::EventFilter final : public QObject
 {
 public:
     EventFilter()
@@ -53,15 +57,15 @@ public:
     }
 };
 
-void ToolsAssetGuard::Init()
+void ToolsAssertGuard::Init()
 {
     DVAssertMessage::SetShowInnerOverride([](DVAssertMessage::eModalType type, const char8* message)
                                           {
-                                              return ToolsAssetGuard::Instance()->InnerShow(type, message);
+                                              return ToolsAssertGuard::Instance()->InnerShow(type, message);
                                           });
 }
 
-bool ToolsAssetGuard::InnerShow(DVAssertMessage::eModalType modalType, const char8* message)
+bool ToolsAssertGuard::InnerShow(DVAssertMessage::eModalType modalType, const char8* message)
 {
     LockGuard<Mutex> mutexGuard(mutex);
 
@@ -71,6 +75,9 @@ bool ToolsAssetGuard::InnerShow(DVAssertMessage::eModalType modalType, const cha
         filter.reset(new EventFilter());
     }
 
+#if defined(__DAVAENGINE_MACOS__)
+    MacOSRunLoopGuard macOSGuard;
+#endif
     return DVAssertMessage::InnerShow(DVAssertMessage::ALWAYS_MODAL, message);
 }
 } // namespace TArc
