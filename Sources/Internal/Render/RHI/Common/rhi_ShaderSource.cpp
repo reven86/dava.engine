@@ -1411,6 +1411,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     READ_CHECK(vertexLayout.Load(in));
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_PROPERTY_COUNT);
     property.resize(readUI4);
     for (unsigned p = 0; p != property.size(); ++p)
     {
@@ -1438,6 +1439,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
     buf.resize(readUI4);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
@@ -1451,6 +1453,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= (rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT + rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT))
     sampler.resize(readUI4);
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
@@ -1990,27 +1993,29 @@ void ShaderSourceCache::Load(const char* fileName)
             if (!success)
             {
                 Clear();
+                Logger::Error("ShaderSource-Cache failed to load, ignoring cached shaders\n");
             }
         };
         
 #define READ_CHECK(exp) if (!exp) { success = false; return; }
 
-        uint32 readUI4 = 0;
-        READ_CHECK(ReadUI4(file, &readUI4));
+        uint32 formatVersion = 0;
+        READ_CHECK(ReadUI4(file, &formatVersion));
 
-        if (readUI4 == FormatVersion)
+        if (formatVersion == FormatVersion)
         {
             LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-            READ_CHECK(ReadUI4(file, &readUI4));
-            Entry.resize(readUI4);
+            uint32 entryCount = 0;
+            READ_CHECK(ReadUI4(file, &entryCount));
+            Entry.resize(entryCount);
             Logger::Info("loading cached-shaders (%u): ", Entry.size());
 
             for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
             {
                 std::string str;
+                uint32 hash = 0;
                 READ_CHECK(ReadS0(file, &str));
-
                 e->uid = FastName(str.c_str());
                 READ_CHECK(ReadUI4(file, &e->api));
                 READ_CHECK(ReadUI4(file, &e->srcHash));
