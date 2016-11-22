@@ -57,6 +57,7 @@ Vector<String> GetCommandArgs(int argc, char* argv[])
 
 Vector<String> GetCommandArgs(const String& cmdline)
 {
+    //TODO: correctly break command line into args
     Vector<String> cmdargs;
     if (!cmdline.empty())
     {
