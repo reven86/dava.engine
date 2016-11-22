@@ -296,6 +296,11 @@ bool Project::TryCloseAllDocuments()
     return true;
 }
 
+DocumentGroup* Project::GetDocumentGroup() const
+{
+    return documentGroup.get();
+}
+
 void Project::OnFindFileInProject()
 {
     QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);

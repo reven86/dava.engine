@@ -40,6 +40,7 @@ find_package( DavaFramework REQUIRED )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
 find_package( QtHelpers REQUIRED )
+find_package( TArc REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

@@ -66,6 +66,8 @@ public:
 
     bool TryCloseAllDocuments();
 
+    DocumentGroup* GetDocumentGroup() const;
+
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
 
