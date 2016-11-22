@@ -1,9 +1,7 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
+#pragma once
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Main/Request.h"
 
 #include "TArc/DataProcessing/DataWrapper.h"
 #include "TArc/DataProcessing/DataListener.h"
@@ -66,5 +64,3 @@ private:
     QPushButton* buttonLoadTexture = nullptr;
     DAVA::TArc::DataWrapper projectDataWrapper;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

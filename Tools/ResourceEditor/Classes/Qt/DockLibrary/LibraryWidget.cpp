@@ -388,14 +388,12 @@ void LibraryWidget::OnRevealAtFolder()
 
 void LibraryWidget::HidePreview() const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::HideScenePreview, DAVA::Any());
+    REGlobal::GetInvoker()->Invoke(REGlobal::HideScenePreviewOperation.ID);
 }
 
 void LibraryWidget::ShowPreview(const QString& pathname) const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::ShowScenePreview, DAVA::Any(pathname.toStdString()));
+    REGlobal::GetInvoker()->Invoke(REGlobal::ShowScenePreviewOperation.ID, DAVA::FilePath(pathname.toStdString()));
 }
 
 void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)

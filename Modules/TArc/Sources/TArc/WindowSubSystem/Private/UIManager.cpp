@@ -40,6 +40,7 @@ static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>
 {
   std::make_pair(QMessageBox::NoButton, ModalMessageParams::NoButton),
   std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
+  std::make_pair(QMessageBox::Open, ModalMessageParams::Open),
   std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
   std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
   std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
@@ -113,7 +114,37 @@ QAction* FindAction(QWidget* w, const QString& actionName)
             return action;
     }
 
+    QMenu* menu = w->findChild<QMenu*>(actionName);
+    if (menu != nullptr)
+    {
+        return menu->menuAction();
+    }
+
     return nullptr;
+}
+
+void InsertActionImpl(QMenu* menu, QAction* before, QAction* action)
+{
+    menu->insertAction(before, action);
+}
+
+void InsertActionImpl(QToolBar* toolbar, QAction* before, QAction* action)
+{
+    QWidget* w = GetAttachedWidget(action);
+    if (w == nullptr)
+    {
+        toolbar->insertAction(before, action);
+    }
+    else
+    {
+        QToolButton* toolButton = qobject_cast<QToolButton*>(w);
+        bool autoRise = (toolButton != nullptr) ? toolButton->autoRaise() : false;
+        toolbar->insertWidget(before, w);
+        if (toolButton != nullptr)
+        {
+            toolButton->setAutoRaise(autoRise);
+        }
+    }
 }
 
 template <typename T>
@@ -142,14 +173,7 @@ void InsertAction(T* container, QAction* action, const InsertionParams& params)
     }
 
     action->setParent(container);
-    if (beforeAction == nullptr)
-    {
-        container->addAction(action);
-    }
-    else
-    {
-        container->insertAction(beforeAction, action);
-    }
+    InsertActionImpl(container, beforeAction, action);
 }
 
 void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)

@@ -5,6 +5,7 @@
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
+class RecentMenuItems;
 class ProjectManagerData;
 class ProjectManagerModule : public DAVA::TArc::ClientModule
 {
@@ -26,12 +27,8 @@ private:
     void LoadMaterialsSettings(ProjectManagerData* data);
     ProjectManagerData* GetData();
 
-    void AddRecentProjectActions();
-    void AddRecentProject(const DAVA::FilePath& projectPath);
-    void RemoveRecentProjects();
-    DAVA::Vector<DAVA::String> GetRecentProjects();
-
 private:
+    std::unique_ptr<RecentMenuItems> recentProject;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
 };

@@ -7,6 +7,7 @@
 #include "TArc/Utils/QtConnections.h"
 
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
+#include "Classes/Qt/Main/RecentMenuItems.h"
 
 namespace DAVA
 {
@@ -42,10 +43,14 @@ private:
     void OpenScene();
     void OpenSceneQuckly();
     void OpenSceneByPath(const DAVA::FilePath& scenePath);
-    void SaveScene();
-    void SaveSceneAs();
+    void SaveScene(bool saveAs = false);
     void SaveSceneToFolder(bool compressedTextures);
-    void CloseAllScenes();
+    void ExportScene();
+    void CloseAllScenes(bool needSavingReqiest);
+    void ReloadTextures(DAVA::eGPUFamily gpu);
+
+    void ShowPreview(const DAVA::FilePath& scenePath);
+    void HidePreview();
 
     /// Fields value handlers
     void OnActiveTabChanged(const DAVA::Any& contextID);
@@ -56,9 +61,9 @@ private:
 
     /// Helpers
     void UpdateTabTitle(DAVA::uint64 contextID);
-    bool CanCloseScene(SceneEditor2* scene);
-    bool IsSavingAllowed(SceneEditor2* scene);
-    SceneEditor2* OpenSceneImpl(const DAVA::FilePath& scenePath);
+    bool CanCloseScene(const DAVA::RefPtr<SceneEditor2>& scene);
+    bool IsSavingAllowed(const DAVA::RefPtr<SceneEditor2>& scene);
+    DAVA::RefPtr<SceneEditor2> OpenSceneImpl(const DAVA::FilePath& scenePath);
 
     /// This method try to scene at "scenePath" place.
     /// If "scenePath" is empty, method try to save scene at current scene file.
@@ -66,15 +71,25 @@ private:
     /// return true if scene was saved
     /// Preconditions:
     ///     "scenePath" - should be a file
-    bool SaveSceneImpl(SceneEditor2* scene, const DAVA::FilePath& scenePath = DAVA::FilePath());
-    DAVA::FilePath GetSceneSavePath(const SceneEditor2* scene);
+    bool SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const DAVA::FilePath& scenePath = DAVA::FilePath());
+    DAVA::FilePath GetSceneSavePath(const DAVA::RefPtr<SceneEditor2>& scene);
 
-    /// scene->SaveEmitters would call this function if emitter to save didn't have path
+    /// scene->SaveEmitters() would call this function if emitter to save didn't have path
     DAVA::FilePath SaveEmitterFallback(const DAVA::String& entityName, const DAVA::String& emitterName);
+    bool IsSceneCompatible(const DAVA::FilePath& scenePath);
+
+    bool SaveTileMaskInAllScenes();
+    bool SaveTileMaskInScene(DAVA::RefPtr<SceneEditor2> scene);
+
+    bool CloseSceneImpl(DAVA::uint64 id, bool needSavingRequest);
+    void RestartParticles();
 
 private:
     DAVA::TArc::QtConnections connections;
     DAVA::uint32 newSceneCounter = 0;
 
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    std::unique_ptr<RecentMenuItems> recentItems;
+
+    QPointer<SceneRenderWidget> renderWidget;
 };

@@ -37,9 +37,34 @@ void QtAction::OnFieldValueChanged(const Any& value, eActionState state)
     Any stateResult = iter->second(value);
     switch (state)
     {
-    case DAVA::TArc::QtAction::Enabling:
+    case Enabled:
+    {
         DVASSERT(stateResult.CanCast<bool>());
-        setEnabled(stateResult.Cast<bool>());
+        bool stateEnabled = stateResult.Cast<bool>();
+        if (stateEnabled != isEnabled())
+        {
+            setEnabled(stateEnabled);
+        }
+    }
+    break;
+    case Checked:
+    {
+        DVASSERT(stateResult.CanCast<bool>());
+        if (isCheckable() == false)
+        {
+            setCheckable(true);
+        }
+
+        bool stateChecked = stateResult.Cast<bool>();
+        if (stateChecked != isChecked())
+        {
+            setChecked(stateChecked);
+        }
+    }
+    break;
+    case Text:
+        DVASSERT(stateResult.CanCast<DAVA::String>());
+        setText(QString::fromStdString(stateResult.Cast<DAVA::String>()));
         break;
     default:
         DVASSERT(false);

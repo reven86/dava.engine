@@ -8,20 +8,23 @@ class SceneEditor2;
 class SceneData : public DAVA::TArc::DataNode
 {
 public:
-    SceneEditor2* GetScene();
+    // use this "using" in constructions like Any::CanCast, Any::Cast, Any::CanGet and Any::Get
+    using TSceneType = DAVA::RefPtr<SceneEditor2>;
+    TSceneType GetScene();
 
     bool IsSceneChanged() const;
     DAVA::FilePath GetScenePath() const;
+    DAVA::uint32 GetEnabledLandscapeTools() const;
 
     static const char* scenePropertyName;
     static const char* sceneChangedPropertyName;
     static const char* scenePathPropertyName;
+    static const char* sceneLandscapeToolsPropertyName;
 
 private:
     friend class SceneManagerModule;
 
-    // TODO UVR Memory management
-    SceneEditor2* scene = nullptr;
+    DAVA::RefPtr<SceneEditor2> scene;
 
     DAVA_VIRTUAL_REFLECTION(SceneData, DAVA::TArc::DataNode)
     {
@@ -29,6 +32,7 @@ private:
         .Field(scenePropertyName, &SceneData::scene)
         .Field(sceneChangedPropertyName, &SceneData::IsSceneChanged, nullptr)
         .Field(scenePathPropertyName, &SceneData::GetScenePath, nullptr)
+        .Field(sceneLandscapeToolsPropertyName, &SceneData::GetEnabledLandscapeTools, nullptr)
         .End();
     }
 };

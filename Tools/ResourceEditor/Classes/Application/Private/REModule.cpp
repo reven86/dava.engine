@@ -102,13 +102,6 @@ REModule::~REModule()
 //    return true;
 //}
 
-void REModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
-{
-    REModuleDetail::REGlobalData* globalData = GetAccessor()->GetGlobalContext()->GetData<REModuleDetail::REGlobalData>();
-    DVASSERT(REGlobal::MainWindowKey == key);
-    globalData->mainWindow->CloseAllScenes();
-}
-
 void REModule::PostInit()
 {
     Themes::InitFromQApplication();

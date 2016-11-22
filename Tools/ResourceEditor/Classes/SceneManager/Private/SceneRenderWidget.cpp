@@ -7,9 +7,12 @@
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/EngineContext.h"
 #include "Functional/Function.h"
+#include "Base/StaticSingleton.h"
+#include "Deprecated/ScenePreviewDialog.h"
 
-SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget)
+SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget_)
     : accessor(accessor_)
+    , renderWidget(renderWidget_)
 {
     using namespace DAVA::TArc;
     activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedType::Get<SceneData>());
@@ -36,8 +39,43 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     InitDavaUI();
 
     connections.AddConnection(renderWidget, &DAVA::RenderWidget::Resized, DAVA::MakeFunction(this, &SceneRenderWidget::OnRenderWidgetResized));
+    connections.AddConnection(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, DAVA::MakeFunction(this, &SceneRenderWidget::MouseOverSelection));
 
     tabBar->closeTab.Connect(this, &SceneRenderWidget::OnCloseTab);
+}
+
+SceneRenderWidget::~SceneRenderWidget()
+{
+    if (previewDialog != nullptr)
+    {
+        previewDialog->RemoveFromParent();
+    }
+    SafeRelease(previewDialog);
+}
+
+void SceneRenderWidget::ShowPreview(const DAVA::FilePath& scenePath)
+{
+    if (!previewDialog)
+    {
+        previewDialog = new ScenePreviewDialog();
+    }
+
+    if (scenePath.IsEqualToExtension(".sc2"))
+    {
+        previewDialog->Show(scenePath);
+    }
+    else
+    {
+        previewDialog->Close();
+    }
+}
+
+void SceneRenderWidget::HidePreview()
+{
+    if (previewDialog && previewDialog->GetParent())
+    {
+        previewDialog->Close();
+    }
 }
 
 void SceneRenderWidget::SetWidgetDelegate(IWidgetDelegate* widgetDelegate_)
@@ -56,7 +94,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
         return;
     }
 
-    SceneEditor2* currentScene = nullptr;
+    DAVA::RefPtr<SceneEditor2> currentScene;
     DataContext* activeContext = accessor->GetActiveContext();
     if (activeContext != nullptr)
     {
@@ -67,7 +105,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
         }
     }
 
-    if (currentScene != nullptr)
+    if (currentScene.Get() != nullptr)
     {
         if (dava3DView->GetParent() == nullptr)
         {
@@ -82,7 +120,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
             }
         }
 
-        dava3DView->SetScene(currentScene);
+        dava3DView->SetScene(currentScene.Get());
         currentScene->SetViewportRect(dava3DView->GetRect());
     }
     else
@@ -128,8 +166,8 @@ void SceneRenderWidget::OnRenderWidgetResized(DAVA::uint32 w, DAVA::uint32 h)
         return;
     }
 
-    SceneEditor2* scene = data->GetScene();
-    if (scene == nullptr)
+    DAVA::RefPtr<SceneEditor2> scene = data->GetScene();
+    if (scene.Get() == nullptr)
     {
         return;
     }
@@ -142,5 +180,41 @@ void SceneRenderWidget::OnCloseTab(DAVA::uint64 id)
     if (widgetDelegate)
     {
         widgetDelegate->CloseSceneRequest(id);
+    }
+}
+
+void SceneRenderWidget::MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)
+{
+    using namespace DAVA::TArc;
+
+    static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
+    static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
+    static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
+
+    DataContext* ctx = accessor->GetActiveContext();
+    SceneData* data = ctx->GetData<SceneData>();
+
+    if ((data->GetScene() == scene) && (objects != nullptr))
+    {
+        switch (scene->modifSystem->GetTransformType())
+        {
+        case Selectable::TransformType::Translation:
+            renderWidget->setCursor(cursorMove);
+            break;
+        case Selectable::TransformType::Rotation:
+            renderWidget->setCursor(cursorRotate);
+            break;
+        case Selectable::TransformType::Scale:
+            renderWidget->setCursor(cursorScale);
+            break;
+        case Selectable::TransformType::Disabled:
+        default:
+            renderWidget->unsetCursor();
+            break;
+        }
+    }
+    else
+    {
+        renderWidget->unsetCursor();
     }
 }

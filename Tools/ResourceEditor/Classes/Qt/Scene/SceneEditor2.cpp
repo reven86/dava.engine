@@ -343,7 +343,7 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 void SceneEditor2::SaveEmitters(const DAVA::Function<DAVA::FilePath(const DAVA::String&, const DAVA::String&)>& getEmitterPathFn)
 {
     DAVA::List<DAVA::Entity*> effectEntities;
-    scene->GetChildEntitiesWithComponent(effectEntities, DAVA::Component::PARTICLE_EFFECT_COMPONENT);
+    GetChildEntitiesWithComponent(effectEntities, DAVA::Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
     {
         return;

@@ -25,6 +25,16 @@ DAVA::TArc::DataContext* GetActiveContext()
     return REGlobalDetails::coreInstance->GetActiveContext();
 }
 
+DAVA::TArc::OperationInvoker* GetInvoker()
+{
+    return REGlobalDetails::coreInstance;
+}
+
+DAVA::TArc::ContextAccessor* GetAccessor()
+{
+    return REGlobalDetails::coreInstance;
+}
+
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type)
 {
     if (REGlobalDetails::coreInstance == nullptr)
@@ -40,6 +50,10 @@ void InitTArcCore(DAVA::TArc::CoreInterface* core)
 IMPL_OPERATION_ID(OpenLastProjectOperation);
 IMPL_OPERATION_ID(CreateNewSceneOperation);
 IMPL_OPERATION_ID(OpenSceneOperation);
+IMPL_OPERATION_ID(SaveCurrentScene);
 IMPL_OPERATION_ID(CloseAllScenesOperation);
+IMPL_OPERATION_ID(ReloadTexturesOperation);
+IMPL_OPERATION_ID(ShowScenePreviewOperation);
+IMPL_OPERATION_ID(HideScenePreviewOperation);
 
 } // namespace REGlobal

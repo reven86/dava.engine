@@ -22,7 +22,9 @@ public:
 
     enum eActionState
     {
-        Enabling // call back should return Any that can be casted to bool
+        Enabled, // call back should return Any that can be casted to bool
+        Checked,
+        Text
     };
 
     void SetStateUpdationFunction(eActionState state, const FieldDescriptor& fieldDescr, const Function<Any(const Any&)>& fn);

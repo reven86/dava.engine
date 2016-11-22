@@ -1,10 +1,8 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
+#pragma once
 
 #include "Command/Command.h"
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
-#include "Main/Request.h"
 
 class CustomColorsSystem : public LandscapeEditorSystem
 {
@@ -65,5 +63,3 @@ private:
     DAVA::Rect updatedRectAccumulator;
     bool editingIsEnabled = false;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

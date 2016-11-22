@@ -24,6 +24,9 @@ class ContextAccessor;
 }
 }
 
+class SceneEditor2;
+class SelectableGroup;
+class ScenePreviewDialog;
 class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener
 {
 public:
@@ -34,7 +37,10 @@ public:
     };
 
     SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget);
+    ~SceneRenderWidget();
 
+    void ShowPreview(const DAVA::FilePath& scenePath);
+    void HidePreview();
     void SetWidgetDelegate(IWidgetDelegate* widgetDelegate);
 
 private:
@@ -44,6 +50,8 @@ private:
     void OnRenderWidgetResized(DAVA::uint32 w, DAVA::uint32 h);
 
     void OnCloseTab(DAVA::uint64 id);
+
+    void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
 
 private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;
@@ -55,6 +63,8 @@ private:
     const int dava3DViewMargin = 3;
 
     DAVA::TArc::QtConnections connections;
+    DAVA::RenderWidget* renderWidget = nullptr;
+    ScenePreviewDialog* previewDialog = nullptr;
 
     IWidgetDelegate* widgetDelegate = nullptr;
 };

@@ -36,21 +36,13 @@ public:
     explicit SceneTabWidget(QWidget* parent);
     ~SceneTabWidget();
 
-    bool CloseAllTabs(bool silent);
-
     void ShowScenePreview(const DAVA::FilePath& scenePath);
     void HideScenePreview();
-
-signals:
-    void CloseTabRequest(int index, Request* closeRequest);
-    void Escape();
 
 public slots:
     // this slot redirects any UIEvent to the active sceneProxy for processing
     void TabBarDataDropped(const QMimeData* data);
 
-    // scene signals
-    void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects);
 protected:
     MainTabBar* tabBar;
 
@@ -62,8 +54,6 @@ protected:
     ScenePreviewDialog* previewDialog = nullptr;
 
 private:
-    bool TestSceneCompatibility(const DAVA::FilePath& scenePath);
-
     int newSceneCounter = 0;
     SceneEditor2* curScene = nullptr;
     std::shared_ptr<GlobalOperations> globalOperations;

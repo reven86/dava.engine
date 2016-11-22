@@ -14,8 +14,6 @@ public:
     {
         OpenScene, // args - scenePath: DAVA::String
         SetNameAsFilter, // args - name: DAVA::String
-        ShowScenePreview, // args - scenePath: DAVA::String
-        HideScenePreview, // args - empty
         ShowMaterial, // args - material::DAVA::NMaterial*
         ReloadTexture, // args - empty
     };

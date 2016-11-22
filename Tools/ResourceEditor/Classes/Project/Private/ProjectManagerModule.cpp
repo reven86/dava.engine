@@ -6,6 +6,7 @@
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/Main/QtUtils.h"
+#include "Classes/Qt/Main/RecentMenuItems.h"
 #include "Deprecated/EditorConfig.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
@@ -45,6 +46,21 @@ void ProjectManagerModule::PostInit()
 
     CreateActions();
     RegisterOperations();
+
+    RecentMenuItems::Params params;
+    params.accessor = accessor;
+    params.ui = GetUI();
+    params.settingsKeyCount = Settings::General_RecentProjectsCount;
+    params.settingsKeyData = Settings::Internal_RecentProjects;
+    params.menuSubPath << "File"
+                       << "Recent Projects";
+    params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
+
+    recentProject.reset(new RecentMenuItems(params));
+    recentProject->actionTriggered.Connect([this](const DAVA::String& projectPath)
+                                           {
+                                               OpenProjectByPath(DAVA::FilePath(projectPath));
+                                           });
 }
 
 void ProjectManagerModule::CreateActions()
@@ -81,7 +97,7 @@ void ProjectManagerModule::CreateActions()
         FieldDescriptor fieldDescr;
         fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-        closeProjectAction->SetStateUpdationFunction(QtAction::Enabling, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
+        closeProjectAction->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
             return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
         });
         connections.AddConnection(closeProjectAction, &QAction::triggered, [this]() {
@@ -108,8 +124,6 @@ void ProjectManagerModule::CreateActions()
                                   ReloadSprites();
                               });
     ui->AddAction(REGlobal::MainWindowKey, reloadSpritePlacement, reloadSprites);
-
-    AddRecentProjectActions();
 }
 
 void ProjectManagerModule::RegisterOperations()
@@ -181,7 +195,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
     data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
 
-    AddRecentProject(incomePath);
+    recentProject->Add(incomePath.GetAbsolutePathname());
 }
 
 void ProjectManagerModule::OpenLastProject()
@@ -210,7 +224,7 @@ void ProjectManagerModule::CloseProject()
 
     if (!data->projectPath.IsEmpty())
     {
-        InvokeOperation(REGlobal::CloseAllScenesOperation.ID);
+        InvokeOperation(REGlobal::CloseAllScenesOperation.ID, true);
         if (GetAccessor()->GetContextCount() == 0)
         {
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
@@ -284,81 +298,4 @@ ProjectManagerData* ProjectManagerModule::GetData()
     ContextAccessor* accessor = GetAccessor();
     DataContext* ctx = accessor->GetGlobalContext();
     return ctx->GetData<ProjectManagerData>();
-}
-
-void ProjectManagerModule::AddRecentProjectActions()
-{
-    using namespace DAVA::TArc;
-
-    UI* ui = GetUI();
-    DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
-
-    for (DAVA::String& projectPath : recentProjects)
-    {
-        QAction* project = new QAction(QString::fromStdString(projectPath), nullptr);
-        connections.AddConnection(project, &QAction::triggered, [this, projectPath]()
-                                  {
-                                      OpenProjectByPath(projectPath);
-                                  });
-
-        ActionPlacementInfo placement(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects"))));
-        ui->AddAction(REGlobal::MainWindowKey, placement, project);
-    }
-}
-
-void ProjectManagerModule::AddRecentProject(const DAVA::FilePath& projectPath)
-{
-    RemoveRecentProjects();
-
-    DAVA::Vector<DAVA::String> vectorToSave = GetRecentProjects();
-
-    DAVA::String stringToInsert = projectPath.GetAbsolutePathname();
-
-    //check present set to avoid duplicates
-    vectorToSave.erase(std::remove(vectorToSave.begin(), vectorToSave.end(), stringToInsert), vectorToSave.end());
-    vectorToSave.insert(vectorToSave.begin(), stringToInsert);
-
-    DAVA::uint32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
-    DAVA::uint32 size = DAVA::Min((DAVA::uint32)vectorToSave.size(), recentFilesMaxCount);
-
-    DAVA::KeyedArchive* archive = new DAVA::KeyedArchive();
-    for (DAVA::uint32 i = 0; i < size; ++i)
-    {
-        archive->SetString(DAVA::Format("%d", i), vectorToSave[i]);
-    }
-    SettingsManager::SetValue(Settings::Internal_RecentProjects, DAVA::VariantType(archive));
-    SafeRelease(archive);
-
-    AddRecentProjectActions();
-}
-
-void ProjectManagerModule::RemoveRecentProjects()
-{
-    using namespace DAVA::TArc;
-
-    UI* ui = GetUI();
-    DAVA::Vector<DAVA::String> recentProjects = GetRecentProjects();
-
-    for (DAVA::String& projectPath : recentProjects)
-    {
-        ui->RemoveAction(REGlobal::MainWindowKey, ActionPlacementInfo(CreateMenuPoint(QString::fromStdString(DAVA::String("File$/Recent Projects$/") + projectPath))));
-    }
-}
-
-DAVA::Vector<DAVA::String> ProjectManagerModule::GetRecentProjects()
-{
-    DAVA::Vector<DAVA::String> retVector;
-    DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentProjects);
-    if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
-    {
-        DAVA::KeyedArchive* archiveRecentFiles = recentFilesVariant.AsKeyedArchive();
-        DAVA::uint32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
-        DAVA::uint32 size = DAVA::Min(archiveRecentFiles->Count(), recentFilesMaxCount);
-        retVector.resize(size);
-        for (DAVA::uint32 i = 0; i < size; ++i)
-        {
-            retVector[i] = archiveRecentFiles->GetString(DAVA::Format("%d", i));
-        }
-    }
-    return retVector;
 }

@@ -13,7 +13,6 @@ public:
     ~REModule();
 
 protected:
-    void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void PostInit() override;
 
 private:

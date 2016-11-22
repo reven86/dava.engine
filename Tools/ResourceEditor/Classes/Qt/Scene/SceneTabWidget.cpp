@@ -2,7 +2,6 @@
 
 #include "UI/Focus/UIFocusComponent.h"
 
-#include "Main/Request.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
 #include "Classes/Qt/GlobalOperations.h"
@@ -71,56 +70,6 @@ SceneTabWidget::~SceneTabWidget()
     SafeRelease(previewDialog);
 }
 
-/*int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
-{
-    // TODO UVR
-    HideScenePreview();
-
-
-    if (!TestSceneCompatibility(scenePath))
-    {
-        return -1;
-    }
-
-}*/
-
-bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
-{
-    DAVA::VersionInfo::SceneVersion sceneVersion = DAVA::SceneFileV2::LoadSceneVersion(scenePath);
-
-    if (sceneVersion.IsValid())
-    {
-        DAVA::VersionInfo::eStatus status = DAVA::VersionInfo::Instance()->TestVersion(sceneVersion);
-        const DAVA::uint32 curVersion = DAVA::VersionInfo::Instance()->GetCurrentVersion().version;
-
-        switch (status)
-        {
-        case DAVA::VersionInfo::COMPATIBLE:
-        {
-            const DAVA::String& branches = DAVA::VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
-            const QString msg = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
-            const QMessageBox::StandardButton result = QMessageBox::warning(this, "Compatibility warning", msg, QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
-            if (result != QMessageBox::Open)
-            {
-                return false;
-            }
-            break;
-        }
-        case DAVA::VersionInfo::INVALID:
-        {
-            const DAVA::String& branches = DAVA::VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
-            const QString msg = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
-            QMessageBox::critical(this, "Compatibility error", msg);
-            return false;
-        }
-        default:
-            break;
-        }
-    }
-
-    return true;
-}
-
 void SceneTabWidget::TabBarDataDropped(const QMimeData* data)
 {
     QList<QUrl> urls = data->urls();
@@ -132,40 +81,6 @@ void SceneTabWidget::TabBarDataDropped(const QMimeData* data)
             globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(path.toStdString()));
         }
     }
-}
-
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects)
-{
-    static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
-    static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
-    static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
-
-    // TODO UVR LATER
-    /*DAVA::RenderWidget* renderWidget = GetRenderWidget();
-
-    if ((GetCurrentScene() == scene) && (objects != nullptr))
-    {
-        switch (scene->modifSystem->GetTransformType())
-        {
-        case Selectable::TransformType::Translation:
-            renderWidget->setCursor(cursorMove);
-            break;
-        case Selectable::TransformType::Rotation:
-            renderWidget->setCursor(cursorRotate);
-            break;
-        case Selectable::TransformType::Scale:
-            renderWidget->setCursor(cursorScale);
-            break;
-        case Selectable::TransformType::Disabled:
-        default:
-            renderWidget->unsetCursor();
-            break;
-        }
-    }
-    else
-    {
-        renderWidget->unsetCursor();
-    }*/
 }
 
 void SceneTabWidget::dragEnterEvent(QDragEnterEvent* event)
@@ -210,7 +125,8 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
                 }
 
                 WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString());
-                if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
+                // TODO UVR
+                //if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
                 {
                     curScene->structureSystem->Add(path.toStdString(), pos);
                 }
@@ -238,7 +154,8 @@ void SceneTabWidget::keyReleaseEvent(QKeyEvent* event)
     {
         if (event->key() == Qt::Key_Escape)
         {
-            emit Escape();
+            // TODO UVR
+            //emit Escape();
         }
     }
 }
@@ -266,37 +183,6 @@ void SceneTabWidget::HideScenePreview()
     {
         previewDialog->Close();
     }
-}
-
-bool SceneTabWidget::CloseAllTabs(bool silent)
-{
-    // TODO UVR
-    //bool areTabBarSignalsBlocked = false;
-    //if (silent)
-    //{
-    //    areTabBarSignalsBlocked = tabBar->blockSignals(true);
-    //}
-
-    //bool closed = true;
-    //DAVA::uint32 count = GetTabCount();
-    //while (count)
-    //{
-    //    // TODO UVR LATER
-    //    //if (!CloseTabInternal(GetCurrentTab(), silent))
-    //    {
-    //        closed = false;
-    //        break;
-    //    }
-    //    count--;
-    //}
-
-    //if (silent)
-    //{
-    //    tabBar->blockSignals(areTabBarSignalsBlocked);
-    //}
-
-    //return closed;
-    return false;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
