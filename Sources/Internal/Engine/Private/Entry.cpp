@@ -1,9 +1,12 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 #include "Base/Platform.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
+
+#include <exception>
 
 /**
     \ingroup engine
@@ -42,9 +45,15 @@ int main(int argc, char* argv[])
     using namespace DAVA;
     using DAVA::Private::EngineBackend;
 
-    Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
-    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return DAVAMain(std::move(cmdargs));
+    try {
+        Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
+        std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+        return DAVAMain(std::move(cmdargs));
+    } catch (const Exception& e) {
+        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
+        (void)e;
+        std::terminate();
+    }
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
@@ -61,9 +70,15 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
     using namespace DAVA;
     using Private::EngineBackend;
 
-    Vector<String> cmdargs = Private::GetCommandArgs();
-    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return DAVAMain(std::move(cmdargs));
+    try {
+        Vector<String> cmdargs = Private::GetCommandArgs();
+        std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+        return DAVAMain(std::move(cmdargs));
+    } catch (const Exception& e) {
+        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
+        (void)e;
+        std::terminate();
+    }
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
