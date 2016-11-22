@@ -8,7 +8,7 @@ SoundTest::SoundTest(TestBed& app)
 void SoundTest::LoadResources()
 {
     BaseScreen::LoadResources();
-    
+
     eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/Search_and_Destroy.mp3", FastName("group-1"));
     eventGroup2 = SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName("ingame_voice/notifications_VO/armor_pierced_by_player"), FastName("group-2"));
 

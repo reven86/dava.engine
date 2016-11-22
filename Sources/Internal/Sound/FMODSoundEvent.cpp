@@ -87,7 +87,7 @@ bool FMODSoundEvent::Trigger()
         ApplyParamsToEvent(fmodEvent);
 
         FMOD_VERIFY(fmodEvent->setVolume(volume));
-        
+
         const float pitch = SpeedToPitchInOctaves(speed);
         FMOD_VERIFY(fmodEvent->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
 
@@ -157,7 +157,7 @@ void FMODSoundEvent::SetSpeed(float32 _speed)
     if (speed != _speed)
     {
         speed = _speed;
-        
+
         Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
         size_t instancesCount = instancesCopy.size();
         for (size_t i = 0; i < instancesCount; ++i)

@@ -17,7 +17,7 @@ public:
     virtual void SetPaused(bool paused);
 
     virtual void SetVolume(float32 volume);
-    
+
     virtual void SetSpeed(float32 speed);
 
     virtual void SetLoopCount(int32 looping); // -1 = infinity

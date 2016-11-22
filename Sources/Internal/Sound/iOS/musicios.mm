@@ -179,11 +179,11 @@ void MusicIOSSoundEvent::SetVolume(float32 _volume)
     volume = _volume;
     ((AvSound*)avSound).audioPlayer.volume = Clamp(_volume, 0.f, 1.f);
 }
-    
+
 void MusicIOSSoundEvent::SetSpeed(float32 _speed)
 {
     speed = _speed;
-    
+
     AVAudioPlayer* player = ((AvSound*)avSound).audioPlayer;
     if (!FLOAT_EQUAL(_speed, 1.0f))
     {
