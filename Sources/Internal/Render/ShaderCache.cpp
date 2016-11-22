@@ -164,11 +164,11 @@ const ShaderSourceCode& GetSourceCode(const FastName& name)
 
     LoadFromSource(name.c_str(), shaderSourceCodes[name]);
     return shaderSourceCodes.at(name);
-    }
+}
 
-    void SetLoadingNotifyEnabled(bool enable)
-    {
-        loadingNotifyEnabled = enable;
+void SetLoadingNotifyEnabled(bool enable)
+{
+    loadingNotifyEnabled = enable;
 }
 
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
