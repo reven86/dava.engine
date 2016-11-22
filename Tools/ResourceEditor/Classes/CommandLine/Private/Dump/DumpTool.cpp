@@ -5,6 +5,7 @@
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "Render/GPUFamilyDescriptor.h"
 #include "Utils/Utils.h"
 
 #include "Utils/Dump/SceneDumper.h"
