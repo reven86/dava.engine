@@ -185,12 +185,6 @@ public:
     /** Get window virtual size. */
     Size2f GetVirtualSize() const;
 
-    /** Get window virtual rect where origin is always (0,0). */
-    Rect GetVirtualRect() const;
-
-    /** Get window full virtual rect */
-    Rect GetFullVirtualRect() const;
-
     /**
         Request to close window.
 

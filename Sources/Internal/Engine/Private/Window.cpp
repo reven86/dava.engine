@@ -54,17 +54,6 @@ Size2f Window::GetVirtualSize() const
     return Size2f(static_cast<float32>(sz.dx), static_cast<float32>(sz.dy));
 }
 
-Rect Window::GetVirtualRect() const
-{
-    Size2f sz = GetVirtualSize();
-    return Rect(0, 0, sz.dx, sz.dy);
-}
-
-Rect Window::GetFullVirtualRect() const
-{
-    return uiControlSystem->vcs->GetFullScreenVirtualRect();
-}
-
 void Window::CloseAsync()
 {
     // Window cannot be close in embedded mode as window lifetime
