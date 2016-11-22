@@ -126,8 +126,7 @@ void DialogConfigurePreset::UpdateLocalizedFontWidgets()
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
     FTFont* ftFont = static_cast<FTFont*>(font);
-    //QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
-    QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetAbsolutePathname())); //TODO revert this workaround after DF-11992
+    QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
     ui->comboBox_localizedFont->setCurrentText(fileInfo.fileName());
     ui->spinBox_localizedFontSize->blockSignals(false);
     ui->comboBox_localizedFont->blockSignals(false);

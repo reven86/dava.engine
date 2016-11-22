@@ -151,8 +151,7 @@ bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath&
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
         PackageNode* importedPackage = importedPackagesNode->GetImportedPackage(index);
-        //if (importedPackage->GetPath().GetFrameworkPath() == path.GetFrameworkPath())
-        if (importedPackage->GetPath().GetAbsolutePathname() == path.GetAbsolutePathname()) //TODO revert this workaround after DF-11992
+        if (importedPackage->GetPath().GetFrameworkPath() == path.GetFrameworkPath())
             return true;
         if (importedPackage->FindPackageInImportedPackagesRecursively(path))
             return true;
