@@ -12,7 +12,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 

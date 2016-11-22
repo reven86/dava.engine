@@ -1,8 +1,10 @@
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
+#include "TArc/DataProcessing/DataContext.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QFileInfo>
@@ -110,7 +112,9 @@ void SelectPathWidgetBase::OpenClicked()
         return;
     }
 
-    DAVA::String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::String projectPath = data->GetProjectPath().GetAbsolutePathname();
 
     if (checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {
