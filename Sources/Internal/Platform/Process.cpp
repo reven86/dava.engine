@@ -5,6 +5,7 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/wait.h>
+#include <unistd.h>
 #endif
 
 static const int READ = 0;

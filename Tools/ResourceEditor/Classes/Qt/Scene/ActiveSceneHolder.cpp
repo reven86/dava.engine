@@ -1,7 +1,7 @@
 #include "ActiveSceneHolder.h"
 #include "SceneSignals.h"
 
-#include "TArcUtils/QtConnections.h"
+#include "TArc/Utils/QtConnections.h"
 
 namespace ActiveSceneHolderDetails
 {
