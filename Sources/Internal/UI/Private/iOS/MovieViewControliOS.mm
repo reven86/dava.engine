@@ -42,7 +42,7 @@ MovieViewControl::MovieViewControl()
     }
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::AddUIView(window, [bridge->moviePlayer view]);
+    PlatformApi::Ios::AddUIView(window, [bridge->moviePlayer view]);
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     [[appDelegate renderViewController].backgroundView addSubview:[bridge->moviePlayer view]];
@@ -52,7 +52,7 @@ MovieViewControl::MovieViewControl()
 MovieViewControl::~MovieViewControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::RemoveUIView(window, [bridge->moviePlayer view]);
+    PlatformApi::Ios::RemoveUIView(window, [bridge->moviePlayer view]);
 #else
     [[bridge->moviePlayer view] removeFromSuperview];
 #endif

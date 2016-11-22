@@ -41,7 +41,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
 {
     DVASSERT(isSingleLine);
 
-    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(PlatformApi::GetUIViewFromPool(window, "UITextFieldHolder"));
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(PlatformApi::Ios::GetUIViewFromPool(window, "UITextFieldHolder"));
     [bridge->textFieldHolder attachWindow:window];
 
     DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
@@ -75,7 +75,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         [textFieldHolder addSubview:textFieldHolder->textCtrl];
     }
 
-    PlatformApi::ReturnUIViewToPool(window, textFieldHolder);
+    PlatformApi::Ios::ReturnUIViewToPool(window, textFieldHolder);
 }
 #else // defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
@@ -650,10 +650,10 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     if (renderToTexture && deltaMoveControl != 0 && text.length > 0)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        UIImage* nativeImage = PlatformApi::RenderUIViewToUIImage(textView);
+        UIImage* nativeImage = PlatformApi::Ios::RenderUIViewToUIImage(textView);
         if (nativeImage != nullptr)
         {
-            RefPtr<Image> image(PlatformApi::ConvertUIImageToImage(nativeImage));
+            RefPtr<Image> image(PlatformApi::Ios::ConvertUIImageToImage(nativeImage));
             if (image != nullptr)
             {
                 RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));

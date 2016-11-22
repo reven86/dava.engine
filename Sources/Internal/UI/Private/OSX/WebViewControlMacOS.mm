@@ -213,7 +213,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::AddNSView(window, bridge->webView);
+    PlatformApi::Mac::AddNSView(window, bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -248,7 +248,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::RemoveNSView(window, bridge->webView);
+    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif
