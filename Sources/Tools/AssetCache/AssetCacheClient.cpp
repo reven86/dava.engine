@@ -32,9 +32,11 @@ AssetCacheClient::~AssetCacheClient()
 
 AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
-    timeoutms = connectionParams.timeoutms;
-
     isActive = true;
+    lightRequestTimeoutMs = connectionParams.timeoutms;
+    heavyRequestTimeoutMs = lightRequestTimeoutMs + (100u * 1000u);
+    currentTimeoutMs = lightRequestTimeoutMs;
+
     bool connectCalled = client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
     if (!connectCalled)
     {
@@ -55,9 +57,9 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
             }
 
             uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-            if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+            if (((currentTimeoutMs > 0) && (deltaTime > currentTimeoutMs)) && (client.ChannelIsOpened() == false))
             {
-                Logger::Error("Timeout on connecting to asset cache %s:%hu (%lld ms)", connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+                Logger::Error("Timeout on connecting to asset cache %s (%lld ms)", connectionParams.ip.c_str(), currentTimeoutMs);
                 isActive = false;
                 return AssetCache::Error::OPERATION_TIMEOUT;
             }
@@ -91,7 +93,7 @@ AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
     bool requestSent = client.RequestServerStatus();
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -114,7 +116,7 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
     bool requestSent = client.RequestAddData(key, value);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(heavyRequestTimeoutMs);
     }
 
     {
@@ -139,7 +141,7 @@ AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCac
     bool requestSent = client.RequestData(key);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(heavyRequestTimeoutMs);
     }
 
     {
@@ -162,7 +164,7 @@ AssetCache::Error AssetCacheClient::RemoveFromCacheSynchronously(const AssetCach
     bool requestSent = client.RequestRemoveData(key);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -185,7 +187,7 @@ AssetCache::Error AssetCacheClient::ClearCacheSynchronously()
     bool requestSent = client.RequestClearCache();
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -196,8 +198,10 @@ AssetCache::Error AssetCacheClient::ClearCacheSynchronously()
     return resultCode;
 }
 
-AssetCache::Error AssetCacheClient::WaitRequest()
+AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 {
+    currentTimeoutMs = timeoutMs;
+
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
     Request currentRequest;
@@ -215,9 +219,10 @@ AssetCache::Error AssetCacheClient::WaitRequest()
             currentRequest = request;
         }
 
-        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
+        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        if (((timeoutMs > 0) && (deltaTime > timeoutMs)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
         {
+            Logger::Debug("Operation timeout: (%lld ms)", timeoutMs);
             return AssetCache::Error::OPERATION_TIMEOUT;
         }
     }
@@ -356,7 +361,7 @@ void AssetCacheClient::OnCacheCleared(bool cleared)
 void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType type)
 {
     LockGuard<Mutex> guard(requestLocker);
-    request.recieved = false;
+    request.recieved = true;
     request.processingRequest = false;
 
     switch (type)
@@ -382,6 +387,11 @@ void AssetCacheClient::OnClientProxyStateChanged()
     if (client.ChannelIsOpened() == false)
     {
         isActive = false;
+
+        LockGuard<Mutex> guard(requestLocker);
+        request.recieved = true;
+        request.processingRequest = false;
+        request.result = AssetCache::Error::CANNOT_CONNECT;
     }
 }
 
