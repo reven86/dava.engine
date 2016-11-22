@@ -6,8 +6,7 @@
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 #include "Render/Image/Image.h"
 
-#import <UIKit/UIView.h>
-#import <UIKit/UIImage.h>
+#import <UIKit/UIKit.h>
 
 namespace DAVA
 {
@@ -31,7 +30,7 @@ UIView* GetUIViewFromPool(Window* targetWindow, const char8* className)
 {
     using namespace DAVA::Private;
     WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
-    wb->bridge->GetUIViewFromPool(className);
+    return wb->bridge->GetUIViewFromPool(className);
 }
 
 void ReturnUIViewToPool(Window* targetWindow, UIView* view)

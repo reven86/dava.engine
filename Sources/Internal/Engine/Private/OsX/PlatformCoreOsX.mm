@@ -9,7 +9,6 @@
 #import <AppKit/NSApplication.h>
 
 #include "Engine/Window.h"
-#include "Engine/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
@@ -21,7 +20,6 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , bridge(new CoreNativeBridge(this))
-    , nativeService(new NativeService(this))
 {
 }
 

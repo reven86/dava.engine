@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Window.h"
-#include "Engine/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
@@ -18,7 +17,6 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , dispatcher(engineBackend->GetDispatcher())
     , bridge(new CoreNativeBridge(this))
-    , nativeService(new NativeService(this))
 {
 }
 

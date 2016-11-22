@@ -22,8 +22,6 @@ public:
     PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
@@ -44,16 +42,10 @@ private:
     EngineBackend* engineBackend = nullptr;
 
     std::unique_ptr<CoreNativeBridge> bridge;
-    std::unique_ptr<NativeService> nativeService;
 
     // Friends
     friend struct CoreNativeBridge;
 };
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 } // namespace Private
 } // namespace DAVA
