@@ -631,6 +631,20 @@ void SoundSystem::ReleaseAllEventWaveData()
         ReleaseFMODEventGroupData(toplevelGroups[i]);
 }
 
+void SoundSystem::SetAllGroupsVolume(float32 volume)
+{
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup& group = soundGroups[i];
+
+        group.volume = volume;
+        for (auto& x : group.events)
+        {
+            x->SetVolume(volume);
+        }
+    }
+}
+
 void SoundSystem::SetGroupVolume(const FastName& groupName, float32 volume)
 {
     LockGuard<Mutex> lock(soundGroupsMutex);

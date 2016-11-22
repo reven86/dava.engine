@@ -66,6 +66,7 @@ public:
     void SetListenerPosition(const Vector3& position);
     void SetListenerOrientation(const Vector3& forward, const Vector3& left);
 
+    void SetAllGroupsVolume(float32 volume);
     void SetGroupVolume(const FastName& groupName, float32 volume);
     float32 GetGroupVolume(const FastName& groupName) const;
 
