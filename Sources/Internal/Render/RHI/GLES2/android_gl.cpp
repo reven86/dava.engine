@@ -124,13 +124,14 @@ void android_gl_reset(void* _window, GLint width, GLint height)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
 
-    _nativeWindow = static_cast<ANativeWindow*>(_window);
-    if (nullptr != _nativeWindow && (backingWidth != width || backingHeight != height))
+    ANativeWindow* nativeWindow = static_cast<ANativeWindow*>(_window);
+    if (nullptr != nativeWindow && (_nativeWindow != nativeWindow || backingWidth != width || backingHeight != height))
     {
         needRecreateSurface = true;
         backingWidth = width;
         backingHeight = height;
     }
+    _nativeWindow = nativeWindow;
 }
 
 bool android_gl_checkSurface()
