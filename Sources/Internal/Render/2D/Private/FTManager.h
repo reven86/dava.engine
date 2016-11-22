@@ -11,6 +11,7 @@ public:
     struct FaceID
     {
         virtual FT_Error OpenFace(FT_Library library, FT_Face* ftface) = 0;
+        virtual ~FaceID() = default;
     };
 
     FTManager();
