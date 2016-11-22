@@ -168,6 +168,15 @@ void FMODFileSoundEvent::SetVolume(float32 _volume)
     }
 }
 
+void FMODFileSoundEvent::SetSpeed(float32 _speed)
+{
+    speed = _speed;
+    if (fmodInstanceGroup != nullptr)
+    {
+        FMOD_VERIFY(fmodInstanceGroup->setPitch(speed));
+    }
+}
+
 bool FMODFileSoundEvent::IsActive() const
 {
     if (fmodInstanceGroup)

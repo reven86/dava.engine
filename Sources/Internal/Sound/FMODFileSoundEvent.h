@@ -30,6 +30,8 @@ public:
 
     virtual void SetVolume(float32 volume);
 
+    virtual void SetSpeed(float32 speed);
+
     virtual bool IsActive() const;
     virtual bool Trigger();
     virtual void Stop(bool force = false);
