@@ -57,8 +57,6 @@ struct MainDispatcherEvent final
 
         GAMEPAD_ADDED,
         GAMEPAD_REMOVED,
-
-        RENDERING_NOT_POSSIBLE,
     };
 
     static bool IsInputEvent(eType type);
