@@ -13,7 +13,7 @@
 
 #include "FileSystem/FileSystem.h"
 
-#include "TArcCore/TArcCore.h"
+#include "TArc/Core/Core.h"
 
 #include "QtTools/Utils/MessageHandler.h"
 
@@ -55,7 +55,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo QEApplication::GetInitInfo() const
     return initInfo;
 }
 
-void QEApplication::Init(DAVA::EngineContext& engineContext)
+void QEApplication::Init(DAVA::EngineContext* engineContext)
 {
     using namespace DAVA;
 #if defined(__DAVAENGINE_MACOS__)
@@ -67,9 +67,9 @@ void QEApplication::Init(DAVA::EngineContext& engineContext)
 
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-    engineContext.logger->SetLogFilename("QuickEd.txt");
+    engineContext->logger->SetLogFilename("QuickEd.txt");
 
-    UIControlSystem* uiControlSystem = engineContext.uiControlSystem;
+    UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
@@ -81,7 +81,7 @@ void QEApplication::Init(DAVA::EngineContext& engineContext)
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, eModifierKeys::SHIFT), UIInputSystem::ACTION_FOCUS_PREV);
 
-    FileSystem* fs = engineContext.fileSystem;
+    FileSystem* fs = engineContext->fileSystem;
     fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
     fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
 
@@ -89,7 +89,7 @@ void QEApplication::Init(DAVA::EngineContext& engineContext)
     FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
-    engineContext.logger->Log(Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
+    engineContext->logger->Log(Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     qInstallMessageHandler(DAVAMessageHandler);
 }

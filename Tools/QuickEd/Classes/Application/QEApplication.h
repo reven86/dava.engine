@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArcCore/BaseApplication.h"
+#include "TArc/Core//BaseApplication.h"
 
 namespace DAVA
 {
@@ -25,7 +25,7 @@ protected:
 private:
     void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
     void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
-    void Init(DAVA::EngineContext& engineContext) override;
+    void Init(DAVA::EngineContext* engineContext) override;
     void Cleanup() override;
 
     bool AllowMultipleInstances() const override;

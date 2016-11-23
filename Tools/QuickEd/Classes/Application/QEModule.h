@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/Platform.h"
-#include "TArcCore/ControllerModule.h"
+#include "TArc/Core/ControllerModule.h"
 
 class QEModule : public DAVA::TArc::ControllerModule
 {

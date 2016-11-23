@@ -72,7 +72,7 @@ void REModule::OnRenderSystemInitialized(DAVA::Window* w)
     launchDataWrapper.AddListener(this);
 }
 
-bool REModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+bool REModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     using namespace DAVA::TArc;
     ContextAccessor& accessor = GetAccessor();
