@@ -116,7 +116,7 @@ void RotationControllerSystem::Input(UIEvent* event)
 
 void RotationControllerSystem::RotateDirection(Camera* camera)
 {
-    if (!camera->GetIsOrtho())
+    //if (!camera->GetIsOrtho())
     {
         DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
         curViewAngleZ += dp.x * rotationSpeed;
