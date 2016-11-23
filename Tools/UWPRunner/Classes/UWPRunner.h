@@ -54,6 +54,7 @@ private:
     bool RestartIpOverUsb();
 
     void NetLogOutput(const DAVA::String& logString);
+    DAVA::EngineContext* GetEngineContext();
 
     PackageOptions options;
     DAVA::Signal<> cleanNeeded;

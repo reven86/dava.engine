@@ -3,6 +3,7 @@
 #include <QXmlStreamReader>
 
 #include "Concurrency/Thread.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
 #include "Network/NetConfig.h"
@@ -56,6 +57,11 @@ UWPRunner::~UWPRunner()
 
 void UWPRunner::Run()
 {
+    if (GetEngineContext()->netCore == nullptr)
+    {
+        RUNNER_EXCEPTION("NetCore module is not created");
+    }
+
     //Create Qt runner
     Logger::Info("Preparing to launch...");
     ProcessPackageOptions();
@@ -138,7 +144,7 @@ void UWPRunner::WaitApp()
 
     do
     {
-        Net::NetCore::Instance()->Poll();
+        GetEngineContext()->netCore->Poll();
 
         if (logConsumer.IsChannelOpen())
         {
@@ -245,10 +251,9 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
         }
     }
 
-    NetCore::Instance()->RegisterService(
-    NetCore::SERVICE_LOG,
-    [this](uint32 serviceId, void*) -> IChannelListener* { return &logConsumer; },
-    [](IChannelListener* obj, void*) -> void {});
+    auto logCreator = [this](uint32, void*) -> IChannelListener* { return &logConsumer; };
+    auto logDestroyer = [](IChannelListener* obj, void*) {};
+    GetEngineContext()->netCore->RegisterService(NetCore::SERVICE_LOG, logCreator, logDestroyer);
 
     eNetworkRole role;
     Endpoint endPoint;
@@ -268,14 +273,14 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
     config.AddService(NetCore::SERVICE_LOG);
 
     const uint32 timeout = 5 * 60 * 1000; //5 min
-    controllerId = NetCore::Instance()->CreateController(config, nullptr, timeout);
+    controllerId = GetEngineContext()->netCore->CreateController(config, nullptr, timeout);
 }
 
 void UWPRunner::UnInitializeNetwork()
 {
     if (controllerId != Net::NetCore::INVALID_TRACK_ID)
     {
-        Net::NetCore* netCore = Net::NetCore::Instance();
+        Net::NetCore* netCore = GetEngineContext()->netCore;
         netCore->DestroyControllerBlocked(controllerId);
         netCore->UnregisterService(Net::NetCore::SERVICE_LOG);
         controllerId = Net::NetCore::INVALID_TRACK_ID;
@@ -449,8 +454,7 @@ void UWPRunner::NetLogOutput(const String& logString)
             if (!outputFile)
             {
                 FileSystem::Instance()->DeleteFile(options.outputFile);
-                uint32 attributes = File::WRITE;
-                outputFile.Set(File::Create(options.outputFile, attributes));
+                outputFile.Set(File::Create(options.outputFile, File::WRITE));
             }
 
             if (outputFile)
@@ -465,6 +469,11 @@ void UWPRunner::NetLogOutput(const String& logString)
     {
         davaApplicationTerminated = true;
     }
+}
+
+DAVA::EngineContext* UWPRunner::GetEngineContext()
+{
+    return Engine::Instance()->GetContext();
 }
 
 String GetCurrentArchitecture()
