@@ -31,7 +31,7 @@ def get_download_info():
     return 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz'
 
 
-def _cmake_args(additional_args = []):
+def _cmake_args(additional_args=[]):
     default_args = [
         '-DFREETYPE_NO_DIST=true',
         '-DWITH_BZip2=OFF',
@@ -41,6 +41,7 @@ def _cmake_args(additional_args = []):
     ]
     default_args.extend(additional_args)
     return default_args
+
 
 def _download_and_extract(working_directory_path):
     source_folder_path = os.path.join(
@@ -66,6 +67,12 @@ def _build_win32(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
     _patch_sources(source_folder_path, working_directory_path)
 
+    # TODO: Get zlib paths for correct arch and configuration
+    zlib_cmake_flags = [
+        '-DZLIB_LIBRARY=' + os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/zlib.lib'),
+        '-DZLIB_INCLUDE_DIR=' + os.path.join(root_project_path, 'Libs/zlib')
+    ]
+
     build_utils.build_and_copy_libraries_win32_cmake(
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
@@ -74,7 +81,7 @@ def _build_win32(working_directory_path, root_project_path):
         'freetyped.lib', 'freetype.lib',
         'freetype246MT_D.lib', 'freetype246MT.lib',
         'freetype.lib', 'freetype.lib',
-        cmake_additional_args=_cmake_args())
+        cmake_additional_args=_cmake_args(zlib_cmake_flags))
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -82,6 +89,12 @@ def _build_win32(working_directory_path, root_project_path):
 def _build_win10(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
     _patch_sources(source_folder_path, working_directory_path)
+
+    # TODO: Get zlib paths for correct arch and configuration
+    zlib_cmake_flags = [
+        '-DZLIB_LIBRARY=' + os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/zlib.lib'),
+        '-DZLIB_INCLUDE_DIR=' + os.path.join(root_project_path, 'Libs/zlib')
+    ]
 
     build_utils.build_and_copy_libraries_win10_cmake(
         os.path.join(working_directory_path, 'gen'),
@@ -92,7 +105,7 @@ def _build_win10(working_directory_path, root_project_path):
         'freetype.lib', 'freetype.lib',
         'freetype.lib', 'freetype.lib',
         'freetype.lib', 'freetype.lib',
-        cmake_additional_args=_cmake_args())
+        cmake_additional_args=_cmake_args(zlib_cmake_flags))
 
     _copy_headers(source_folder_path, root_project_path)
 
