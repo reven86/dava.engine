@@ -1,5 +1,6 @@
 #include "Utils/Dump/SceneDumper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
@@ -13,11 +14,10 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 
-DAVA::Set<DAVA::FilePath> SceneDumper::DumpLinks(const FilePath& scenePath, SceneDumper::eMode mode, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs)
+DAVA::Set<DAVA::FilePath> SceneDumper::DumpLinks(const DAVA::FilePath& scenePath, SceneDumper::eMode mode, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs)
 {
     DAVA::Set<DAVA::FilePath> links;
     SceneDumper dumper(scenePath, mode, compressedGPUs);
@@ -30,7 +30,7 @@ DAVA::Set<DAVA::FilePath> SceneDumper::DumpLinks(const FilePath& scenePath, Scen
     return links;
 }
 
-SceneDumper::SceneDumper(const FilePath& scenePath, SceneDumper::eMode mode_, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs_)
+SceneDumper::SceneDumper(const DAVA::FilePath& scenePath, SceneDumper::eMode mode_, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs_)
     : scenePathname(scenePath)
     , compressedGPUs(compressedGPUs_)
     , mode(mode_)
@@ -72,7 +72,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive* properties, DAVA::Set
     if (nullptr == properties)
         return;
 
-    auto SaveProp = [&properties, &links](const String& name)
+    auto SaveProp = [&properties, &links](const DAVA::String& name)
     {
         DAVA::String str = properties->GetString(name);
         if (!str.empty())
@@ -91,7 +91,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive* properties, DAVA::Set
         DAVA::String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
         if (!pathname.empty())
         {
-            DAVA::FilePath projectPath = ProjectManager::CreateProjectPathFromPath(scenePathname);
+            DAVA::FilePath projectPath = ProjectManagerData::CreateProjectPathFromPath(scenePathname);
             links.emplace(projectPath + pathname);
         }
     }
@@ -215,7 +215,7 @@ void SceneDumper::DumpMaterial(DAVA::NMaterial* material, DAVA::Set<DAVA::FilePa
     }
 }
 
-void SceneDumper::DumpEffect(ParticleEffectComponent* effect, DAVA::Set<DAVA::FilePath>& links) const
+void SceneDumper::DumpEffect(DAVA::ParticleEffectComponent* effect, DAVA::Set<DAVA::FilePath>& links) const
 {
     if (nullptr == effect)
     {
@@ -230,7 +230,7 @@ void SceneDumper::DumpEffect(ParticleEffectComponent* effect, DAVA::Set<DAVA::Fi
         DumpEmitter(effect->GetEmitterInstance(em), links, gfxFolders);
     }
 
-    for (const FilePath& folder : gfxFolders)
+    for (const DAVA::FilePath& folder : gfxFolders)
     {
         DAVA::FilePath flagsTXT = folder + "flags.txt";
         if (DAVA::FileSystem::Instance()->Exists(flagsTXT))

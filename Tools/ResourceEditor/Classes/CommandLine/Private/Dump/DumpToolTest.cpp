@@ -4,7 +4,7 @@
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
 
-
+#include "Render/TextureDescriptor.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
@@ -12,7 +12,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 
