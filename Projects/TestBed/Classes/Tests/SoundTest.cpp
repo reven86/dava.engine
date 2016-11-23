@@ -9,8 +9,8 @@ void SoundTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/Search_and_Destroy.mp3", FastName("group-1"));
-    eventGroup2 = SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName("ingame_voice/notifications_VO/armor_pierced_by_player"), FastName("group-2"));
+    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-1"));
+    eventGroup2 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-2"));
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
