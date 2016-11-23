@@ -350,8 +350,14 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         offsetX = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(offsetX)));
     }
 
-    FT_Size ft_size;
-    ftm->LookupSize(this, size, &ft_size);
+    FT_Size ft_size = nullptr;
+    FT_Error error = ftm->LookupSize(this, size, &ft_size);
+
+    if (error != FT_Err_Ok)
+    {
+        Logger::Error("[FTInternalFont::DrawString] LookupSize error %d", error);
+        return Font::StringMetrics();
+    }
 
     int32 faceBboxYMin = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMin, ft_size->metrics.y_scale) * descendScale); // draw offset
     int32 faceBboxYMax = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMax, ft_size->metrics.y_scale) * ascendScale); // baseline
@@ -385,7 +391,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
     int32 layoutWidth = 0; // width in FT points
 
-    FT_Error error;
     for (uint32 i = 0; i < strLen; ++i)
     {
         Glyph& glyph = glyphs[i];
@@ -633,11 +638,12 @@ int32 FTInternalFont::LoadString(float32 size, const WideString& str)
 
         Glyph glyph;
         glyph.index = ftm->LookupGlyphIndex(this, str[i]);
-        if (ftm->LookupGlyph(this, size, glyph.index, &glyph.image) != FT_Err_Ok)
+        FT_Error error = ftm->LookupGlyph(this, size, glyph.index, &glyph.image);
+        if (error != FT_Err_Ok)
         {
 #if defined(__DAVAENGINE_DEBUG__)
             // DVASSERT(false); //This situation can be unnormal. Check it
-            Logger::Warning("[FTInternalFont::LoadString] error LookupGlyph, str = %s", WStringToString(str).c_str());
+            Logger::Warning("[FTInternalFont::LoadString] LookupGlyph error %d, str = %s", error, WStringToString(str).c_str());
 #endif //__DAVAENGINE_DEBUG__
         }
 
