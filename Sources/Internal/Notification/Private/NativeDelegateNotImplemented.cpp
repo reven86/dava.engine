@@ -1,10 +1,10 @@
-#include "Notification/Private/LocalNotificationNotImplemented.h"
+#include "Notification/Private/NativeDelegateNotImplemented.h"
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
 
 namespace DAVA
 {
-NativeDelegateImpl::NativeDelegateImpl(LocalNotificationController& controller)
+NativeDelegate::NativeDelegate(LocalNotificationController& controller)
 {
 }
 }

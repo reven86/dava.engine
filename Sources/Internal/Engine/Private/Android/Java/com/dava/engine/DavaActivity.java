@@ -62,6 +62,7 @@ public final class DavaActivity extends Activity
         public void onRestart();
         public void onStop();
         public void onDestroy();
+        public void onNewIntent(Intent intent);
     }
 
     /**
@@ -77,6 +78,7 @@ public final class DavaActivity extends Activity
         public void onRestart() {}
         public void onStop() {}
         public void onDestroy() {}
+        public void onNewIntent(Intent intent) {}
     }
 
     public static final String LOG_TAG = "DAVA"; //!< Tag used by dava.engine java classes for internal log outputs
@@ -95,6 +97,7 @@ public final class DavaActivity extends Activity
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
+
 /* uncomment after multidex enabled
     protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
 */
@@ -114,6 +117,7 @@ public final class DavaActivity extends Activity
     private static final int ON_ACTIVITY_RESTART = 4;
     private static final int ON_ACTIVITY_STOP = 5;
     private static final int ON_ACTIVITY_DESTROY = 6;
+    private static final int ON_ACTIVITY_NEW_INTENT = 7;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -174,15 +178,10 @@ public final class DavaActivity extends Activity
     @Override
     public void onNewIntent(Intent intent)
     {
-        if (null != intent)
-        {
-            String uid = intent.getStringExtra("uid");
-            if (uid != null)
-            {
-                DavaNotificationProvider.NotificationPressed(uid);
-            }
-        }
+        Log.d(LOG_TAG, "DavaActivity.onNewIntent");
 		super.onNewIntent(intent);
+
+        notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
     }
 
     @Override
@@ -211,7 +210,6 @@ public final class DavaActivity extends Activity
         hideNavigationBar();
         
         splashView = new DavaSplashView(this);
-        DavaNotificationProvider.Init(this);
         
         layout = new FrameLayout(this);
         layout.addView(splashView);
@@ -436,8 +434,6 @@ public final class DavaActivity extends Activity
                 isPaused = false;
                 nativeOnResume();
                 notifyListeners(ON_ACTIVITY_RESUME, null);
-/* uncomment after multidex enabled
-*/
             }
         }
     }
@@ -448,8 +444,6 @@ public final class DavaActivity extends Activity
         {
             isPaused = true;
             notifyListeners(ON_ACTIVITY_PAUSE, null);
-/* uncomment after multidex enabled
-*/
             nativeOnPause();
         }
     }
@@ -591,6 +585,9 @@ public final class DavaActivity extends Activity
                     break;
                 case ON_ACTIVITY_DESTROY:
                     l.onDestroy();
+                    break;
+                case ON_ACTIVITY_NEW_INTENT:
+                    l.onNewIntent((Intent)arg);
                     break;
                 }
             }

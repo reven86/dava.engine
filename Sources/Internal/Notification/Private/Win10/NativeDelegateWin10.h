@@ -10,10 +10,10 @@ namespace DAVA
 {
 class LocalNotificationController;
 
-struct NativeDelegateImpl : public XamlApplicationListener
+struct NativeDelegate : public XamlApplicationListener
 {
-    NativeDelegateImpl(LocalNotificationController& controller);
-    virtual ~NativeDelegateImpl();
+    NativeDelegate(LocalNotificationController& controller);
+    virtual ~NativeDelegate();
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs) override;
 
 private:

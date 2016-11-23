@@ -2,6 +2,7 @@ package com.dava.testbed;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.content.Intent;
 
 import com.dava.engine.DavaActivity;
 
@@ -55,5 +56,11 @@ public class TestBed implements DavaActivity.ActivityListener
     {
         Log.d(DavaActivity.LOG_TAG, "TestBed.onDestroy");
         DavaActivity.instance().unregisterActivityListener(this);
+    }
+
+    @Override
+    public void onNewIntent(Intent intent)
+    {
+        Log.d(DavaActivity.LOG_TAG, "TestBed.onNewIntent");
     }
 }

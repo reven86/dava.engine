@@ -8,10 +8,9 @@ namespace DAVA
 {
 class LocalNotificationController;
 
-class NativeDelegateImpl
+struct NativeDelegate
 {
-public:
-    NativeDelegateImpl(LocalNotificationController& controller);
+    NativeDelegate(LocalNotificationController& controller);
 };
 }
 

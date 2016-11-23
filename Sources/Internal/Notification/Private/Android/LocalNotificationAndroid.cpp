@@ -110,24 +110,12 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 
 extern "C"
 {
-#if defined(__DAVAENGINE_COREV2__)
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaNotificationProvider_onNotificationPressed(JNIEnv* env, jclass jclazz, jstring uid)
-#else
+#if !defined(__DAVAENGINE_COREV2__)
 JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
-#endif
-{
-#if defined(__DAVAENGINE_COREV2__)
-    DAVA::String str(JNI::JavaStringToString(uid));
-    auto function = [str]()
-    {
-        DAVA::LocalNotificationController::Instance()->OnNotificationPressed(str);
-    };
-    DAVA::Engine::Instance()->RunAsyncOnMainThread(function);
-#else
     const char* str = env->GetStringUTFChars(uid, 0);
     DAVA::LocalNotificationController::Instance()->OnNotificationPressed(DAVA::String(str));
     env->ReleaseStringUTFChars(uid, str);
-#endif
+#endif //  !defined(__DAVAENGINE_COREV2__)
 }
 }
 

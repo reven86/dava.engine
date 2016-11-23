@@ -9,6 +9,7 @@
 #include "Notification/Private/Mac/NativeDelegateMac.h"
 #include "Notification/Private/Ios/NativeDelegateIos.h"
 #include "Notification/Private/Win10/NativeDelegateWin10.h"
+#include "Notification/Private/Android/NativeDelegateAndroid.h"
 #include "Notification/Private/NativeDelegateNotImplemented.h"
 
 #include "Base/BaseTypes.h"

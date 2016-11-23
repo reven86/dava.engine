@@ -10,18 +10,18 @@
 #include "Utils/UTF8Utils.h"
 namespace DAVA
 {
-NativeDelegateImpl::NativeDelegateImpl(LocalNotificationController& controller)
+NativeDelegate::NativeDelegate(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterXamlApplicationListener(this);
 }
 
-NativeDelegateImpl::~NativeDelegateImpl()
+NativeDelegate::~NativeDelegate()
 {
     Engine::Instance()->GetNativeService()->UnregisterXamlApplicationListener(this);
 }
 
-void NativeDelegateImpl::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
+void NativeDelegate::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
 {
     using namespace DAVA;
     String arguments = UTF8Utils::EncodeToUTF8(launchArgs->Arguments->Data());
@@ -38,7 +38,6 @@ void NativeDelegateImpl::OnLaunched(::Windows::ApplicationModel::Activation::Lau
             Engine::Instance()->RunAsyncOnMainThread(function);
         }
     }
-    Logger::Debug("TestBed.NativeDelegateWin10::OnLaunched: arguments=%s, activationKind=%d", arguments.c_str(), launchArgs->Kind);
 }
 }
 #endif // __DAVAENGINE_WIN_UAP__
