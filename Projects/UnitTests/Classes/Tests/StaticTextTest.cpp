@@ -68,7 +68,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
-                    Logger::Error("SplitByWords: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
+                    Logger::Error("SplitByWords: *it != *itResult: %ls != %ls", it->c_str(), itResult->c_str());
                     testSuccess = false;
                 }
                 ++it;
@@ -106,7 +106,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
-                    Logger::Error("SplitBySymbols: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
+                    Logger::Error("SplitBySymbols: *it != *itResult: %ls != %ls", it->c_str(), itResult->c_str());
                     testSuccess = false;
                 }
                 ++it;
@@ -145,7 +145,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
-                    Logger::Error("SplitByWordsWithNewLine: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
+                    Logger::Error("SplitByWordsWithNewLine: *it != *itResult: %ls != %ls", it->c_str(), itResult->c_str());
                     testSuccess = false;
                 }
                 ++it;
@@ -185,7 +185,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
-                    Logger::Error("SplitBySymbolsWithNewLine: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
+                    Logger::Error("SplitBySymbolsWithNewLine: *it != *itResult: %ls != %ls", it->c_str(), itResult->c_str());
                     testSuccess = false;
                 }
                 ++it;
@@ -224,7 +224,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
-                    Logger::Error("SplitAndTrimTest: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
+                    Logger::Error("SplitAndTrimTest: *it != *itResult: %ls != %ls", it->c_str(), itResult->c_str());
                     testSuccess = false;
                     break;
                 }
@@ -266,7 +266,7 @@ DAVA_TESTCLASS (StaticTextTest)
             const WideString& result = staticText->GetVisualText();
             if (result != data.result)
             {
-                Logger::Error("TestFitting: %s != %s", result.c_str(), data.result.c_str());
+                Logger::Error("TestFitting: %ls != %ls", result.c_str(), data.result.c_str());
             }
             TEST_VERIFY(result == data.result);
         }
