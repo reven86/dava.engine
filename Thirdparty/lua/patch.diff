@@ -12,7 +12,7 @@ diff -ur ./lua_source_orig/src/linit.c ./lua_source/src/linit.c
 diff -ur ./lua_source_orig/src/luaconf.h ./lua_source/src/luaconf.h
 --- ./lua_source_orig/src/luaconf.h	2008-02-11 18:25:08.000000000 +0200
 +++ ./lua_source/src/luaconf.h	2016-10-18 09:57:54.253438300 +0300
-@@ -757,7 +757,14 @@
+@@ -757,7 +757,18 @@
  ** without modifying the main part of the file.
  */
  
@@ -23,6 +23,10 @@ diff -ur ./lua_source_orig/src/luaconf.h ./lua_source/src/luaconf.h
 +#define getenv(x) (NULL)
 +#define system(x) (-1)
 +#undef LUA_DL_DLL
++#undef lua_popen
++#undef lua_pclose
++#define lua_popen(L,c,m) ((void)((void)c, m), luaL_error(L, LUA_QL("popen") " not supported"), (FILE*)0)
++#define lua_pclose(L,file) ((void)((void)L, file), 0)
 +#endif
 +#endif
  
