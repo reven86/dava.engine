@@ -41,7 +41,7 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     bool IsDrawBlocked();
 #endif // __DAVAENGINE_COREV2__
-    
+
 private:
     void ActivateGLController();
 

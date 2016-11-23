@@ -19,7 +19,8 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(DAVA::LocalNotificationController& controller) : localNotificationController(controller)
+NativeDelegate::NativeDelegate(DAVA::LocalNotificationController& controller)
+    : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterNSApplicationDelegateListener(this);
 }
@@ -39,7 +40,7 @@ void NativeDelegate::applicationDidFinishLaunching(NSNotification* notification)
         if (uid != nil && [uid length] != 0)
         {
             DAVA::String uidStr = DAVA::StringFromNSString(uid);
-            auto func = [this, uidStr](){
+            auto func = [this, uidStr]() {
                 localNotificationController.OnNotificationPressed(uidStr);
             };
             Engine::Instance()->RunAsyncOnMainThread(func);
@@ -47,7 +48,7 @@ void NativeDelegate::applicationDidFinishLaunching(NSNotification* notification)
     }
     Logger::Debug("NativeDelegateMac::applicationDidFinishLaunching");
 }
-    
+
 void NativeDelegate::applicationDidBecomeActive()
 {
     Logger::Debug("NativeDelegateMac::applicationDidBecomeActive");
@@ -61,7 +62,7 @@ void NativeDelegate::didActivateNotification(NSUserNotification* notification)
     if (uid != nil && [uid length] != 0)
     {
         DAVA::String uidStr = DAVA::StringFromNSString(uid);
-        auto func = [this, uidStr](){
+        auto func = [this, uidStr]() {
             localNotificationController.OnNotificationPressed(uidStr);
         };
         Engine::Instance()->RunAsyncOnMainThread(func);

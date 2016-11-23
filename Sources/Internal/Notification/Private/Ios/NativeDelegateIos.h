@@ -19,6 +19,7 @@ struct NativeDelegate : public UIApplicationDelegateListener
     void didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions) override;
     void applicationDidBecomeActive() override;
     void didReceiveLocalNotification(UILocalNotification* notification) override;
+
 private:
     LocalNotificationController& localNotificationController;
 };

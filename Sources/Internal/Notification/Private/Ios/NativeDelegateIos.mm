@@ -14,7 +14,8 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(LocalNotificationController& controller) : localNotificationController(controller)
+NativeDelegate::NativeDelegate(LocalNotificationController& controller)
+    : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterUIApplicationDelegateListener(this);
 }
@@ -27,8 +28,9 @@ NativeDelegate::~NativeDelegate()
 void NativeDelegate::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
 #if defined(__IPHONE_8_0)
-    if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){
-        [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
+    if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+    {
+        [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
     }
 #endif
     UILocalNotification* notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
@@ -38,7 +40,7 @@ void NativeDelegate::didFinishLaunchingWithOptions(UIApplication* application, N
         if (uid != nil && [uid length] != 0)
         {
             const String& uidStr = StringFromNSString(uid);
-            auto func = [this, uidStr](){
+            auto func = [this, uidStr]() {
                 localNotificationController.OnNotificationPressed(uidStr);
             };
             Engine::Instance()->RunAsyncOnMainThread(func);
@@ -57,7 +59,7 @@ void NativeDelegate::didReceiveLocalNotification(UILocalNotification* notificati
     if (uid != nil && [uid length] != 0)
     {
         const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
-        auto func = [this, uidStr](){
+        auto func = [this, uidStr]() {
             localNotificationController.OnNotificationPressed(uidStr);
         };
         Engine::Instance()->RunAsyncOnMainThread(func);

@@ -22,7 +22,7 @@ struct NativeDelegate : public NSApplicationDelegateListener
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;
     void didActivateNotification(NSUserNotification* notification) override;
- 
+
 private:
     DAVA::LocalNotificationController& localNotificationController;
 };

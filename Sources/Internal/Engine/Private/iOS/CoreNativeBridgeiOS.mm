@@ -138,8 +138,9 @@ void CoreNativeBridge::OnFrameTimer()
     // mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
     // mutex might be already locked so we'll got a deadlock.
     // Return to this code after RenderManager mutex will be removed.
-    if (core->engineBackend->GetEngineContext()->uiScreenManager->IsDrawBlocked()) return;
-    
+    if (core->engineBackend->GetEngineContext()->uiScreenManager->IsDrawBlocked())
+        return;
+
     int32 fps = core->OnFrame();
     if (fps <= 0)
     {
