@@ -231,7 +231,10 @@ public:
     Signal<> suspended; //!< Emited when application has entered suspended state. This signal is fired only on platforms
     //!< that support suspending: UWP, iOS, Android. Rendering is stopped but update signal is emited if system permits.
     Signal<> resumed; //!< Emited when application exits suspended state.
+
     Signal<rhi::RenderingError> renderingError; //!< Emited when rendering is not possible anymore, can be invoked from any thread.
+    //!< Application should be gracefully closed (with optional message to user depending on error value)
+    //!< Ignoring this signal or continuing work after it may lead to undefined behaviour
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
