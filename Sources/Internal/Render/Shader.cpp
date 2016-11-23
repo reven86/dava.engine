@@ -160,11 +160,29 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     for (auto& prop : vSource->Properties())
     {
-        bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
+        if (prop.bufferindex < vertexConstBuffersCount)
+        {
+            bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
+        }
+        else
+        {
+            Logger::Error("[UpdateConfigFromSource] Invalid vertex const-buffer index. Index: %u, Count: %u", prop.bufferindex, vertexConstBuffersCount);
+            Logger::Error("Shader source code:");
+            Logger::Error("%s", vSource->SourceCode());
+        }
     }
     for (auto& prop : fSource->Properties())
     {
-        bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
+        if (prop.bufferindex < fragmentConstBuffersCount)
+        {
+            bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
+        }
+        else
+        {
+            Logger::Error("[UpdateConfigFromSource] Invalid fragment const-buffer index. Index: %u, Count: %u", prop.bufferindex, fragmentConstBuffersCount);
+            Logger::Error("Shader source code:");
+            Logger::Error("%s", fSource->SourceCode());
+        }
     }
     for (uint32 i = 0, sz = static_cast<uint32>(constBuffers.size()); i < sz; ++i)
     {
