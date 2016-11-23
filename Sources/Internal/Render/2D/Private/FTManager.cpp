@@ -7,31 +7,50 @@
 
 namespace DAVA
 {
-static uint32 MAX_FACES = 4;
-static uint32 MAX_SIZES = 16;
-static uint32 MAX_BYTES = 2 * 1024 * 1024;
+static const uint32 MAX_FACES = 4;
+static const uint32 MAX_SIZES = 16;
+static const uint32 MAX_BYTES = 2 * 1024 * 1024;
+
+namespace FTFontDetails
+{
+FT_Error FaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface)
+{
+    FaceID* face = static_cast<FaceID*>(face_id);
+    FT_Error error = face->OpenFace(library, aface);
+    return error;
+}
+}
 
 FTManager::FTManager()
 {
     FT_Error error = FT_Init_FreeType(&library);
     if (error)
     {
-        Logger::Error("FontManager FT_Init_FreeType failed");
+        DVASSERT_MSG(false, "FTManager: FT_Init_FreeType failed")
+        Logger::Error("FTManager: FT_Init_FreeType failed");
+        return;
     }
-    error = FTC_Manager_New(library, MAX_FACES, MAX_SIZES, MAX_BYTES, &FaceRequester, 0, &manager);
+
+    error = FTC_Manager_New(library, MAX_FACES, MAX_SIZES, MAX_BYTES, &FTFontDetails::FaceRequester, 0, &manager);
     if (error)
     {
-        Logger::Error("FontManager FTC_Manager_New failed");
+        DVASSERT_MSG(false, "FTManager: FTC_Manager_New failed")
+        Logger::Error("FTManager: FTC_Manager_New failed");
+        return;
     }
+
     error = FTC_ImageCache_New(manager, &glyphcache);
     if (error)
     {
-        Logger::Error("FontManager FTC_ImageCache_New failed");
+        DVASSERT_MSG(false, "FTManager: FTC_ImageCache_New failed")
+        Logger::Error("FTManager: FTC_ImageCache_New failed");
     }
+
     error = FTC_CMapCache_New(manager, &cmapcache);
     if (error)
     {
-        Logger::Error("FontManager FTC_CMapCache_New failed");
+        DVASSERT_MSG(false, "FTManager: FTC_CMapCache_New failed")
+        Logger::Error("FTManager: FTC_CMapCache_New failed");
     }
 }
 
@@ -88,13 +107,6 @@ uint32 FTManager::LookupGlyphIndex(FaceID* faceId, uint32 codePoint)
 void FTManager::RemoveFace(FaceID* faceId)
 {
     FTC_Manager_RemoveFaceID(manager, static_cast<FTC_FaceID>(faceId));
-}
-
-FT_Error FTManager::FaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface)
-{
-    FaceID* face = static_cast<FaceID*>(face_id);
-    FT_Error error = face->OpenFace(library, aface);
-    return error;
 }
 
 } // DAVA

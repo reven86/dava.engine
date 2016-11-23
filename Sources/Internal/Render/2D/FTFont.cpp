@@ -74,13 +74,32 @@ private:
     static Mutex drawStringMutex;
     static const int32 ftToPixelShift; // Int value for shift to convert FT point to pixel
     static const float32 ftToPixelScale; // Float value to convert FT point to pixel
-
-    static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count);
-    static void StreamClose(FT_Stream stream);
 };
 
 const int32 FTInternalFont::ftToPixelShift = 6;
 const float32 FTInternalFont::ftToPixelScale = 1.f / 64.f;
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace FTFontDetails
+{
+unsigned long StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
+{
+    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
+    if (count == 0)
+        return 0;
+    is->Seek(int32(offset), File::SEEK_FROM_START);
+    return is->Read(buffer, uint32(count));
+}
+
+void StreamClose(FT_Stream stream)
+{
+    File* file = reinterpret_cast<File*>(stream->descriptor.pointer);
+    SafeRelease(file);
+}
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 FTFont::FTFont(FTInternalFont* _internalFont)
 {
@@ -220,7 +239,7 @@ DAVA::float32 FTFont::GetDescendScale() const
     return descendScale;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Mutex FTInternalFont::drawStringMutex;
 
@@ -281,8 +300,8 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
     stream.pos = 0;
     stream.descriptor.pointer = static_cast<void*>(fontFile);
     stream.pathname.pointer = 0;
-    stream.read = &FTInternalFont::StreamLoad;
-    stream.close = &FTInternalFont::StreamClose;
+    stream.read = &FTFontDetails::StreamLoad;
+    stream.close = &FTFontDetails::StreamClose;
     stream.memory = 0;
     stream.cursor = 0;
     stream.limit = 0;
@@ -307,21 +326,6 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
         Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontFile->GetFilename().GetStringValue().c_str());
     }
     return error;
-}
-
-unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
-{
-    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
-    if (count == 0)
-        return 0;
-    is->Seek(int32(offset), File::SEEK_FROM_START);
-    return is->Read(buffer, uint32(count));
-}
-
-void FTInternalFont::StreamClose(FT_Stream stream)
-{
-    File* file = reinterpret_cast<File*>(stream->descriptor.pointer);
-    SafeRelease(file);
 }
 
 Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buffer, int32 bufWidth, int32 bufHeight,
