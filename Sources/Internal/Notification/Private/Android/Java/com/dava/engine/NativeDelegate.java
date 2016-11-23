@@ -7,17 +7,17 @@ import android.content.Intent;
 import com.dava.engine.DavaActivity;
 import com.dava.engine.DavaNotificationProvider;
 
-public class NativeDelegate implements DavaActivity.ActivityListener
+public class NativeDelegate extends DavaActivity.ActivityListenerImpl
 {
     public static native void nativeNewIntent(String uid);
 
-    public void RegisterListener()
+    void RegisterListener()
     {
         DavaActivity.instance().registerActivityListener(this);
         DavaNotificationProvider.Init(DavaActivity.instance());
     }
 
-    public void UnRegisterListener()
+    void UnRegisterListener()
     {
         DavaActivity.instance().unregisterActivityListener(this);
     }
@@ -45,36 +45,6 @@ public class NativeDelegate implements DavaActivity.ActivityListener
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-    }
-
-    @Override
-    public void onStart()
-    {
-    }
-
-    @Override
-    public void onResume()
-    {
-    }
-
-    @Override
-    public void onPause()
-    {
-    }
-
-    @Override
-    public void onRestart()
-    {
-    }
-
-    @Override
-    public void onStop()
-    {
-    }
-
-    @Override
     public void onDestroy()
     {
         DavaActivity.instance().unregisterActivityListener(this);
@@ -88,10 +58,9 @@ public class NativeDelegate implements DavaActivity.ActivityListener
             String uid = intent.getStringExtra("uid");
             if (uid != null)
             {
-                DavaNotificationProvider.NotificationPressed(uid);
+                DavaNotificationProvider.HideNotification(uid);
                 nativeNewIntent(uid);
             }
         }
     }
-
 }

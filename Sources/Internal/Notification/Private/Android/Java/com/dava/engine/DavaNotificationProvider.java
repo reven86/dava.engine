@@ -26,7 +26,7 @@ public class DavaNotificationProvider {
     private static Context context;
     private static DavaActivity activity;
  
-    public static void Init(DavaActivity davaActivity)
+    static void Init(DavaActivity davaActivity)
     {
         Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.Init");
         activity = davaActivity;
@@ -39,19 +39,20 @@ public class DavaNotificationProvider {
         isInited = (null != notificationManager && null != assetsManager);
         if (!isInited)
         {
+            Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider not inited!");
             return;
         }
         icon = android.R.drawable.sym_def_app_icon;
         builder.setSmallIcon(icon);
     }
 
-    public static void SetNotificationIcon(int value)
+    static void SetNotificationIcon(int value)
     {
         icon = value;
         builder.setSmallIcon(icon);
     }
 
-    public int GetNotificationIcon()
+    static int GetNotificationIcon()
     {
         return icon;
     }
@@ -76,12 +77,6 @@ public class DavaNotificationProvider {
 
             notificationManager.notify(uid, 0, builder.build());
         }
-    }
-    
-    static void NotificationPressed(String uid)
-    {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.NotificationPressed");
-        HideNotification(uid);
     }
     
     static void NotifyProgress(String uid, String title, String text, int maxValue, int value, boolean useSound)

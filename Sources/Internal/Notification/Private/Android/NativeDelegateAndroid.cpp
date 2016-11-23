@@ -32,15 +32,15 @@ NativeDelegate::NativeDelegate(LocalNotificationController& controller)
 {
     try
     {
-        nativeDelegate.reset(new DAVA::JNI::JavaClass("com/dava/engine/NativeDelegate"));
-        release = nativeDelegate->GetMethod<void>("release");
+        instance = nullptr;
         JNIEnv* env = JNI::GetEnv();
-        jclass clazz = env->FindClass("com/dava/engine/NativeDelegate");
-        jmethodID methodId = env->GetMethodID(clazz, "<init>", "()V");
-        jobject obj = env->NewObject(clazz, methodId);
+        JNI::JavaClass clazz("com/dava/engine/NativeDelegate");
+        release = clazz.GetMethod<void>("release");
+        jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "()V");
+        jobject obj = env->NewObject(clazz, classConstructor);
         instance = env->NewGlobalRef(obj);
     }
-    catch (const DAVA::JNI::Exception& e)
+    catch (const JNI::Exception& e)
     {
         Logger::Error("[NativeDelegate] failed to init java bridge: %s", e.what());
         DVASSERT_MSG(false, e.what());
@@ -50,7 +50,10 @@ NativeDelegate::NativeDelegate(LocalNotificationController& controller)
 
 NativeDelegate::~NativeDelegate()
 {
-    release(instance);
+    if (instance != nullptr)
+    {
+        release(instance);
+    }
 }
 } // namespace DAVA
 

@@ -16,9 +16,7 @@ struct NativeDelegate final
     ~NativeDelegate();
 
 private:
-    std::unique_ptr<JNI::JavaClass> nativeDelegate;
     jobject instance;
-    Function<void(jobject)> init;
     Function<void(jobject)> release;
 };
 
