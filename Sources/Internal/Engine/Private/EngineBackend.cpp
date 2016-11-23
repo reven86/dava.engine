@@ -534,6 +534,13 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
     }
 }
 
+void EngineBackend::HandleRenderingNotPossible(rhi::RenderingError error)
+{
+    // rendering error event should be processed immediately
+    dispatcher->LinkToCurrentThread();
+    dispatcher->SendEvent(MainDispatcherEvent::CreateRenderingNotPossibleError(error));
+}
+
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
     dispatcher->PostEvent(MainDispatcherEvent::CreateAppTerminateEvent(triggeredBySystem));
@@ -583,6 +590,10 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.height = static_cast<int32>(surfSize.dy);
     rendererParams.scaleX = surfSize.dx / size.dx;
     rendererParams.scaleY = surfSize.dy / size.dy;
+    rendererParams.renderingNotPossibleFunc = [](rhi::RenderingError err)
+    {
+        Instance()->HandleRenderingNotPossible(err);
+    };
 
     w->InitCustomRenderParams(rendererParams);
 

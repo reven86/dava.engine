@@ -234,6 +234,13 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCaptureLostEvent(Window* wi
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateRenderingNotPossibleError(rhi::RenderingError error)
+{
+    MainDispatcherEvent e(RENDERING_NOT_POSSIBLE);
+    e.renderingError.error = error;
+    return e;
+}
+
 } // namespace Private
 } // namespace DAVA
 
