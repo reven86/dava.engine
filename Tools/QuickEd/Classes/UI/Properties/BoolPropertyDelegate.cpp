@@ -13,7 +13,7 @@ BoolPropertyDelegate::~BoolPropertyDelegate()
 {
 }
 
-QWidget* BoolPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* BoolPropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     QComboBox* comboBox = new QComboBox(parent);
     comboBox->addItem(QVariant(false).toString(), false);

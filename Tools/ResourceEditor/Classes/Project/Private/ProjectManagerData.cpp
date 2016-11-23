@@ -1,7 +1,7 @@
 #include "Classes/Project/ProjectManagerData.h"
 
 #include "Classes/Deprecated/EditorConfig.h"
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 #include "SpritesPacker/SpritesPackerModule.h"
 
 namespace ProjectManagerDataDetails
@@ -83,7 +83,7 @@ DAVA::FilePath ProjectManagerData::CreateProjectPathFromPath(const DAVA::FilePat
     return DAVA::FilePath();
 }
 
-const ProjectStructure* ProjectManagerData::GetDataSourceSceneFiles() const
+const FileSystemCache* ProjectManagerData::GetDataSourceSceneFiles() const
 {
     return dataSourceSceneFiles.get();
 }
