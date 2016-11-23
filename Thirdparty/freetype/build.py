@@ -10,6 +10,7 @@ def get_supported_targets(platform):
 
 
 def get_dependencies_for_target(target):
+    # TODO: Add zlib as dependency under win32 and win10
     return []
 
 
@@ -29,6 +30,17 @@ def build_for_target(target, working_directory_path, root_project_path):
 def get_download_info():
     return 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz'
 
+
+def _cmake_args(additional_args = []):
+    default_args = [
+        '-DFREETYPE_NO_DIST=true',
+        '-DWITH_BZip2=OFF',
+        '-DWITH_HarfBuzz=OFF',
+        '-DWITH_PNG=OFF',
+        '-DWITH_ZLIB=ON'
+    ]
+    default_args.extend(additional_args)
+    return default_args
 
 def _download_and_extract(working_directory_path):
     source_folder_path = os.path.join(
@@ -61,7 +73,8 @@ def _build_win32(working_directory_path, root_project_path):
         'freetype.sln', 'freetype',
         'freetyped.lib', 'freetype.lib',
         'freetype246MT_D.lib', 'freetype246MT.lib',
-        'freetype.lib', 'freetype.lib')
+        'freetype.lib', 'freetype.lib',
+        cmake_additional_args=_cmake_args())
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -78,7 +91,8 @@ def _build_win10(working_directory_path, root_project_path):
         'freetyped.lib', 'freetype.lib',
         'freetype.lib', 'freetype.lib',
         'freetype.lib', 'freetype.lib',
-        'freetype.lib', 'freetype.lib')
+        'freetype.lib', 'freetype.lib',
+        cmake_additional_args=_cmake_args())
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -93,7 +107,8 @@ def _build_macos(working_directory_path, root_project_path):
         root_project_path,
         'freetype.xcodeproj', 'freetype',
         'libfreetype.a',
-        'libfreetype_macos.a')
+        'libfreetype_macos.a',
+        cmake_additional_args=_cmake_args())
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -108,7 +123,8 @@ def _build_ios(working_directory_path, root_project_path):
         root_project_path,
         'freetype.xcodeproj', 'freetype',
         'libfreetype.a',
-        'libfreetype_ios.a')
+        'libfreetype_ios.a',
+        cmake_additional_args=_cmake_args(['-DIOS_PLATFORM=OS']))
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -122,7 +138,8 @@ def _build_android(working_directory_path, root_project_path):
         source_folder_path,
         root_project_path,
         'libfreetype.a',
-        'libfreetype.a')
+        'libfreetype.a',
+        cmake_additional_args=_cmake_args())
 
     _copy_headers(source_folder_path, root_project_path)
 

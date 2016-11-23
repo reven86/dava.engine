@@ -187,13 +187,14 @@ def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_genera
     build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
 
-def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi):
+def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi, cmake_additional_args = []):
     if not os.path.exists(output_folder_path):
         os.makedirs(output_folder_path)
 
     cmd = ['cmake', '-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath, '-DANDROID_NDK=' + android_ndk_path, '-DCMAKE_BUILD_TYPE=Release', '-DANDROID_ABI=' + abi]
     if (sys.platform == 'win32'):
         cmd.extend(['-G', 'MinGW Makefiles', '-DCMAKE_MAKE_PROGRAM=' + os.path.join(android_ndk_path, 'prebuilt\\windows-x86_64\\bin\\make.exe')])
+    cmd.extend(cmake_additional_args)
 
     cmd.append(src_folder_path)
 
@@ -569,7 +570,7 @@ def build_and_copy_libraries_macos_cmake(
         cmake_additional_args = [], target_lib_subdir=''):
     build_folder_macos = os.path.join(gen_folder_path, 'build_macos')
 
-    cmake_generate_build_xcode(build_folder_macos, source_folder_path, build_config.macos_cmake_generator, project_name, target_name, cmake_additional_args)
+    cmake_generate_build_xcode(build_folder_macos, source_folder_path, build_config.get_cmake_generator_macos(), project_name, target_name, cmake_additional_args)
 
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure
@@ -592,7 +593,7 @@ def build_and_copy_libraries_ios_cmake(
     toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/ios.toolchain.cmake')
     cmake_additional_args.append('-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath)
 
-    cmake_generate_build_xcode(build_folder_ios, source_folder_path, build_config.macos_cmake_generator, project_name, target_name, cmake_additional_args)
+    cmake_generate_build_xcode(build_folder_ios, source_folder_path, build_config.get_cmake_generator_macos(), project_name, target_name, cmake_additional_args)
 
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure
@@ -616,8 +617,8 @@ def build_and_copy_libraries_android_cmake(
     toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/android.toolchain.cmake')
     android_ndk_folder_path = get_android_ndk_path(root_project_path)
 
-    cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, arm_abi)
-    cmake_generate_build_ndk(build_android_x86_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'x86')
+    cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, arm_abi, cmake_additional_args)
+    cmake_generate_build_ndk(build_android_x86_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'x86', cmake_additional_args)
 
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure
