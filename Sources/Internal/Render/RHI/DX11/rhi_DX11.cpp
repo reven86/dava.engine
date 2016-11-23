@@ -390,6 +390,8 @@ void dx11_InitCaps()
 
 void dx11_InitContext()
 {
+    _DX11_RenderThreadId = GetCurrentThreadId();
+
 #if defined(__DAVAENGINE_WIN_UAP__)
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     HRESULT hr = E_FAIL;

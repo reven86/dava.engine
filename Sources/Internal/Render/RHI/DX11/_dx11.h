@@ -40,22 +40,7 @@
 #define CHECK_HR(hr) hr
 #endif
 
-#define DX11_DEVICE_CALL(F, HR) \
-{ \
-    _D3D11_DeviceLock.Lock(); \
-    if (_D3D11_Device) \
-    {\
-        HR = F; \
-        DX11_ProcessCallResult(HR, #F, __FILE__, __LINE__); \
-        _D3D11_DeviceLock.Unlock(); \
-    }\
-    else \
-    { \
-        DAVA::Logger::Error("DX11 Device is not ready, therefor call %s is not possible\nat %s [%u]", #F, __FILE__, __LINE__);\
-        _D3D11_DeviceLock.Unlock(); \
-        do { Sleep(1); } while (true); \
-    } \
-}
+#define DX11_DEVICE_CALL(F, HR) DX11_DeviceCall([&]() -> HRESULT { return (F); }, HR, #F, __FILE__, __LINE__)
 
 namespace rhi
 {
@@ -65,6 +50,7 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 const char* DX11_GetErrorText(HRESULT hr);
 
+void DX11_DeviceCall(const DAVA::Function<HRESULT()>& fn, HRESULT& result, const char* call, const char* fileName, DAVA::uint32 line);
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
 
 extern ID3D11Device* _D3D11_Device;
@@ -83,5 +69,6 @@ extern ID3D11Debug* _D3D11_Debug;
 extern ID3DUserDefinedAnnotation* _D3D11_UserAnnotation;
 
 extern InitParam _DX11_InitParam;
+extern DWORD _DX11_RenderThreadId;
 
 } // namespace rhi

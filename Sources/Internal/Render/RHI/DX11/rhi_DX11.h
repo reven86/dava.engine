@@ -125,6 +125,8 @@ DX11Command
         UPDATE_SUBRESOURCE = 3,
         COPY_RESOURCE = 4,
         SYNC_CPU_GPU = 5,
+
+        INVOKE_METHOD = 6,
     };
 
     Func func;

@@ -986,6 +986,13 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         }
         break;
 
+        case DX11Command::INVOKE_METHOD:
+        {
+            DAVA::Function<HRESULT()>* method = reinterpret_cast<DAVA::Function<HRESULT()>*>(static_cast<uintptr_t>(arg[0]));
+            cmd->retval = (*method)();
+        }
+        break;
+
         default:
             DVASSERT(!"unknown DX11-cmd");
         }
