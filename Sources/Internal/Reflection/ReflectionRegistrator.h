@@ -9,6 +9,7 @@
 #include "Reflection/Private/Wrappers/ValueWrapperStatic.h"
 #include "Reflection/Private/Wrappers/ValueWrapperStaticFn.h"
 #include "Reflection/Private/Wrappers/ValueWrapperStaticFnPtr.h"
+#include "Reflection/Private/Wrappers/ValueWrapperStaticFnPtrC.h"
 #include "Reflection/Private/Wrappers/StructureWrapperClass.h"
 #include "Reflection/Private/Wrappers/StructureWrapperPtr.h"
 #include "Reflection/Private/Wrappers/StructureWrapperStdIdx.h"
@@ -43,35 +44,8 @@ public:
     template <typename T>
     ReflectionRegistrator& Field(const char* name, T C::*field);
 
-    template <typename GetT>
-    ReflectionRegistrator& Field(const char* name, GetT (*getter)(), std::nullptr_t);
-
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, GetT (*getter)(), void (*setter)(SetT));
-
-    template <typename GetT>
-    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)(), std::nullptr_t);
-
-    template <typename GetT>
-    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, std::nullptr_t);
-
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, void (C::*setter)(SetT));
-
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)(), void (C::*setter)(SetT));
-
-    template <typename GetT>
-    ReflectionRegistrator& Field(const char* name, const Function<GetT()>& getter, std::nullptr_t);
-
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, const Function<GetT()>& getter, const Function<void(SetT)>& setter);
-
-    template <typename GetT>
-    ReflectionRegistrator& Field(const char* name, const Function<GetT(C*)>& getter, std::nullptr_t);
-
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, const Function<GetT(C*)>& getter, const Function<void(C*, SetT)>& setter);
+    template <typename GetF, typename SetF>
+    ReflectionRegistrator& Field(const char* name, GetF getter, SetF setter = nullptr);
 
     template <typename Mt>
     ReflectionRegistrator& Method(const char* name, const Mt& method);
@@ -88,11 +62,10 @@ private:
 
     std::unique_ptr<ReflectedMeta>* lastMeta;
 
-    template <typename T>
-    ReflectionRegistrator& AddField(const char* name, ValueWrapper* vw);
+    ReflectionRegistrator& AddField(const char* name, ReflectedStructure::Field* f);
 };
 
 } // namespace DAVA
 
-#define __DAVA_Reflection_Qualifier__
+#define __DAVA_Reflection_Registrator__
 #include "Reflection/Private/ReflectionRegistrator_impl.h"

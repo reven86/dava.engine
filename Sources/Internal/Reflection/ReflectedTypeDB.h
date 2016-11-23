@@ -6,6 +6,13 @@ namespace DAVA
 {
 class Type;
 class ReflectedType;
+
+/**
+    \ingroup reflection
+    ADatabase .
+
+    Holds info about type static structure `ReflectedStructure` and runtime structure wrapper `StructureWrapper`.
+*/
 class ReflectedTypeDB
 {
     template <typename C>

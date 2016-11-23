@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-template <typename T, typename C>
+template <typename C, typename T>
 class ValueWrapperClass : public ValueWrapperDefault<T>
 {
 public:

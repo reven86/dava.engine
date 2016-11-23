@@ -14,13 +14,26 @@
 #include "Reflection/ReflectedStructure.h"
 #include "Reflection/ReflectedObject.h"
 
-// TODO: usage comments
+/** \defgroup reflection Reflection
+    TODO: detailed description 
+*/
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
 #define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
 
-// TODO: usage comments
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
 #define DAVA_VIRTUAL_REFLECTION(Cls, ...) DAVA_VIRTUAL_REFLECTION__IMPL(Cls, ##__VA_ARGS__)
 
-// TODO: usage comments
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
 #define DAVA_REFLECTION_IMPL(Cls) DAVA_REFLECTION_IMPL__IMPL(Cls)
 
 namespace DAVA
@@ -28,13 +41,26 @@ namespace DAVA
 class ValueWrapper;
 class StructureWrapper;
 
+/**
+    \ingroup reflection
+    Must be used as base class for any user class that is going to have virtual reflection.
+
+    \code
+    class Foo : public DAVA::Reflection
+    {
+        DAVA_VIRTUAL_REFLECTION(Foo);
+        // ...
+    };
+    \endcode
+*/
 struct ReflectionBase
 {
     virtual const ReflectedType* GetReflectedType() const = 0;
 };
 
 /** 
-    Hold type information linked to appropriate runtime object.
+    \ingroup reflection
+    Holds reflected type information linked to appropriate runtime object.
 
     Reflection is created by linking any class or primitive data with its unique reflected type.
     Obtained Reflection allows to perform a number of operation over linked object:

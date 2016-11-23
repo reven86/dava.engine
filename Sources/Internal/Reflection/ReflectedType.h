@@ -8,6 +8,35 @@ class Type;
 class ReflectedStructure;
 class StructureWrapper;
 
+/**
+    \ingroup reflection
+    Reflected type.
+    Holds some compile-time and runtime information about type `T`:
+        - type `T` ctor/dtor
+        - type `T` compile-time structure 
+        - type `T` runtime structure
+
+    Typically this class should be used for creating or destroing objects with type `T`.
+    Object can be created with different policies: by value, by pointer etc. 
+    \see `ReflectedType::CreatePolicy`
+
+    \code
+    struct Foo;
+
+    Foo CreateFooByValue()
+    {
+        ReflectedType *fooReflectedType = ReflectedTypeDB::Get<Foo>();
+        Any f = fooReflectedType->Create(ReflectedType::CreatePolicy::ByValue); 
+
+        // f should contain Foo instance
+        return f.Get<Foo>();
+    }
+    \endcode
+
+    Holds info about type static(registred by user) structure `ReflectedStructure` and 
+    runtime structure wrapper `StructureWrapper`. Also it holds type permanent name, if it was
+    specified by user.
+*/
 class ReflectedType final
 {
     template <typename T>
@@ -16,15 +45,19 @@ class ReflectedType final
     friend class ReflectedTypeDB;
 
 public:
+    /** Object creating policy. */
     enum class CreatePolicy
     {
-        ByValue,
-        ByPointer
+        ByValue, //!< Create by value.
+        ByPointer //!< Create by pointer.
     };
 
     ~ReflectedType();
 
+    /** Return type. */
     const Type* GetType() const;
+
+    /** */
     const String& GetPermanentName() const;
 
     const ReflectedStructure* GetStrucutre() const;
