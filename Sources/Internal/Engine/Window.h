@@ -278,7 +278,7 @@ public:
     Signal<Window*, float32> dpiChanged; //<! Emitted when DPI of the display where window is on has changed.
     Signal<Window*, Size2f /* windowSize*/, Size2f /* surfaceSize */> sizeChanged; //<! Emitted when window client ares size or surface size has changed.
     Signal<Window*, float32> update; //!< Emitted on each frame if window is visible.
-    Signal<Window*> draw; //!< Emited after `update` signal.
+    Signal<Window*> draw; //!< Emited after `update` signal after `UIControlSystem::Draw`
 
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
