@@ -349,13 +349,14 @@ extern struct option_flags_
     int dollar_in_name; /* Allow $ in identifiers       */
 } option_flags;
 
+#define standard TRUE
+
 extern int mcpp_mode; /* Mode of preprocessing        */
 extern int stdc_val; /* Value of __STDC__            */
 extern long stdc_ver; /* Value of __STDC_VERSION__    */
 extern long cplus_val; /* Value of __cplusplus for C++ */
 extern int stdc2; /* cplus_val or (stdc_ver >= 199901L)   */
 extern int stdc3; /* (stdc_ver or cplus_val) >= 199901L   */
-extern int standard; /* mcpp_mode is STD or POST_STD */
 extern int std_line_prefix; /* #line in C source style      */
 extern int warn_level; /* Level of warning             */
 extern int errors; /* Error counter                */
@@ -389,7 +390,6 @@ extern int mbchar; /* Encoding of multi-byte char  */
 extern int mbchk; /* Possible multi-byte char     */
 extern int bsl_in_mbchar; /* 2nd byte of mbchar has '\\'  */
 extern int bsl_need_escape; /* '\\' in mbchar should be escaped */
-extern int mcpp_debug; /* Class of debug information   */
 extern long in_asm; /* In #asm - #endasm block      */
 extern jmp_buf error_exit; /* Exit on fatal error          */
 extern char* cur_fullname; /* Full name of current source  */

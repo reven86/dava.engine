@@ -23,6 +23,11 @@ using DAVA::Logger;
 #include "Platform/DeviceInfo.h"
 #endif
 
+extern "C" {
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
 namespace rhi
 {
 //==============================================================================
@@ -105,6 +110,7 @@ static bool _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 static void dx11_Uninitialize()
 {
     QueryBufferDX11::ReleaseQueryPool();
+    PerfQueryDX11::ReleasePerfQueryPool();
 }
 
 static void ResizeSwapchain()
@@ -171,6 +177,14 @@ static void dx11_SuspendRendering()
     }
 #endif
 }
+
+static void dx11_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX11Command cmd = { DX11Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX11(&cmd, 1);
+}
+
+//------------------------------------------------------------------------------
 
 #if !defined(__DAVAENGINE_WIN_UAP__)
 void InitDeviceAndSwapChain()
@@ -344,6 +358,7 @@ void dx11_InitCaps()
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = false;
     MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().isPerfQuerySupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -356,6 +371,18 @@ void dx11_InitCaps()
 #endif
     {
         MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+    }
+
+    //Some drivers returns untrue DX feature-level, so check it manually
+    if (MutableDeviceCaps::Get().isPerfQuerySupported)
+    {
+        ID3D11Query* freqQuery = nullptr;
+        D3D11_QUERY_DESC desc = {};
+        desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+        _D3D11_Device->CreateQuery(&desc, &freqQuery);
+        MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
+
+        DAVA::SafeRelease(freqQuery);
     }
 }
 
@@ -393,7 +420,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
-    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
+    PerfQueryDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);
@@ -412,6 +439,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_ValidateSurface = &dx11_CheckSurface;
     DispatchDX11.impl_FinishRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResetBlock = &dx11_ResetBlock;
+    DispatchDX11.impl_SyncCPUGPU = &dx11_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchDX11);
 

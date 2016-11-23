@@ -33,6 +33,7 @@ bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
+bool _GLES2_TimeStampQuerySupported = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 
 #if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
@@ -201,14 +202,18 @@ static void gles_check_GL_extensions()
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
             MutableDeviceCaps::Get().maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
+
+        _GLES2_TimeStampQuerySupported = strstr(ext, "ARB_timer_query") != nullptr || strstr(ext, "EXT_disjoint_timer_query") != nullptr;
+        MutableDeviceCaps::Get().isPerfQuerySupported = strstr(ext, "EXT_timer_query") != nullptr || _GLES2_TimeStampQuerySupported;
     }
 
+    int majorVersion = 2;
+    int minorVersion = 0;
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
         DAVA::Logger::Info("OpenGL version: %s", version);
 
-        int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
         if (dotChar && dotChar != version && *(dotChar + 1))
         {
@@ -225,34 +230,25 @@ static void gles_check_GL_extensions()
                 MutableDeviceCaps::Get().isInstancingSupported = true;
                 Short_Int_Supported = true;
             }
+
 #ifdef __DAVAENGINE_ANDROID__
-            glDrawElementsInstanced = reinterpret_cast<PFNGLEGL_GLDRAWELEMENTSINSTANCED>(eglGetProcAddress("glDrawElementsInstanced"));
-            if (glDrawElementsInstanced == nullptr)
-                glDrawElementsInstanced = reinterpret_cast<PFNGLEGL_GLDRAWELEMENTSINSTANCED>(eglGetProcAddress("glDrawElementsInstancedEXT"));
+            GET_GL_FUNC(glDrawElementsInstanced, "EXT");
+            GET_GL_FUNC(glDrawArraysInstanced, "EXT");
+            GET_GL_FUNC(glVertexAttribDivisor, "EXT");
 
-            glDrawArraysInstanced = reinterpret_cast<PFNGLEGL_GLDRAWARRAYSINSTANCED>(eglGetProcAddress("glDrawArraysInstanced"));
-            if (glDrawArraysInstanced == nullptr)
-                glDrawArraysInstanced = reinterpret_cast<PFNGLEGL_GLDRAWARRAYSINSTANCED>(eglGetProcAddress("glDrawArraysInstancedEXT"));
+            GET_GL_FUNC(glRenderbufferStorageMultisample, "EXT");
+            GET_GL_FUNC(glBlitFramebuffer, "EXT");
 
-            glVertexAttribDivisor = reinterpret_cast<PFNGLEGL_GLVERTEXATTRIBDIVISOR>(eglGetProcAddress("glVertexAttribDivisor"));
-            if (glVertexAttribDivisor == nullptr)
-                glVertexAttribDivisor = reinterpret_cast<PFNGLEGL_GLVERTEXATTRIBDIVISOR>(eglGetProcAddress("glVertexAttribDivisorEXT"));
+            GET_GL_FUNC(glDebugMessageControl, "KHR");
+            GET_GL_FUNC(glDebugMessageCallback, "KHR");
 
-            glRenderbufferStorageMultisample = reinterpret_cast<PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE>(eglGetProcAddress("glRenderbufferStorageMultisample"));
-            if (glRenderbufferStorageMultisample == nullptr)
-                glRenderbufferStorageMultisample = reinterpret_cast<PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE>(eglGetProcAddress("glRenderbufferStorageMultisampleEXT"));
-
-            glBlitFramebuffer = reinterpret_cast<PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC>(eglGetProcAddress("glBlitFramebuffer"));
-            if (glBlitFramebuffer == nullptr)
-                glBlitFramebuffer = reinterpret_cast<PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC>(eglGetProcAddress("glBlitFramebufferEXT"));
-
-            glDebugMessageControl = reinterpret_cast<PFNGL_DEBUGMESSAGECONTROLKHRPROC>(eglGetProcAddress("glDebugMessageControl"));
-            if (glDebugMessageControl == nullptr)
-                glDebugMessageControl = reinterpret_cast<PFNGL_DEBUGMESSAGECONTROLKHRPROC>(eglGetProcAddress("glDebugMessageControlKHR"));
-
-            glDebugMessageCallback = reinterpret_cast<PFNGL_DEBUGMESSAGECALLBACKKHRPROC>(eglGetProcAddress("glDebugMessageCallback"));
-            if (glDebugMessageCallback == nullptr)
-                glDebugMessageCallback = reinterpret_cast<PFNGL_DEBUGMESSAGECALLBACKKHRPROC>(eglGetProcAddress("glDebugMessageCallbackKHR"));
+            GET_GL_FUNC(glGenQueries, "EXT");
+            GET_GL_FUNC(glDeleteQueries, "EXT");
+            GET_GL_FUNC(glBeginQuery, "EXT");
+            GET_GL_FUNC(glEndQuery, "EXT");
+            GET_GL_FUNC(glGetQueryObjectuiv, "EXT");
+            GET_GL_FUNC(glQueryCounter, "EXT");
+            GET_GL_FUNC(glGetQueryObjectui64v, "EXT");
 #endif
         }
         else
@@ -266,6 +262,12 @@ static void gles_check_GL_extensions()
             {
                 if ((majorVersion > 3) || (minorVersion >= 2))
                     _GLES2_IsSeamlessCubmapSupported = true;
+
+                if ((majorVersion > 3) || (minorVersion >= 3))
+                {
+                    _GLES2_TimeStampQuerySupported = true;
+                    MutableDeviceCaps::Get().isPerfQuerySupported = true;
+                }
             }
 
             Float_Supported |= majorVersion >= 3;
@@ -274,6 +276,35 @@ static void gles_check_GL_extensions()
             Short_Int_Supported = true;
         }
     }
+
+#ifdef __DAVAENGINE_ANDROID__
+    if (_GLES2_TimeStampQuerySupported)
+    {
+        //some driver returns available timestamp-query extension but not implement it
+
+        GLuint query = 0;
+        if (glGenQueries)
+            GL_CALL(glGenQueries(1, &query));
+
+        if (query)
+        {
+            GLuint64 ts = 0;
+
+            if (glQueryCounter)
+                GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+
+            GL_CALL(glFinish());
+
+            if (glGetQueryObjectui64v)
+                GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &ts));
+
+            if (glDeleteQueries)
+                GL_CALL(glDeleteQueries(1, &query));
+
+            MutableDeviceCaps::Get().isPerfQuerySupported = _GLES2_TimeStampQuerySupported = (ts != 0);
+        }
+    }
+#endif
 
     bool runningOnTegra = false;
     bool runningOnMali = false;
@@ -301,7 +332,7 @@ static void gles_check_GL_extensions()
 
     // allow multisampling only on NVIDIA Tegra GPU
     // and if functions were loaded
-    if (runningOnTegra && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
+    if (runningOnTegra && (majorVersion >= 3) && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
 #endif
     {
         GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
@@ -318,6 +349,7 @@ void gles2_Uninitialize()
     //TODO: release GL resources
     //now it's crash cause Qt context deleted before uninit renderer
     //QueryBufferGLES2::ReleaseQueryObjectsPool();
+    //PerfQueryGLES2::ReleaseQueryObjectsPool();
 }
 
 //------------------------------------------------------------------------------
@@ -340,12 +372,17 @@ static void gles2_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_InvalidateCache()
+static void gles2_InvalidateCache()
 {
     PipelineStateGLES2::InvalidateCache();
     DepthStencilStateGLES2::InvalidateCache();
     TextureGLES2::InvalidateCache();
+}
+
+static void gles2_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    GLCommand cmd = { GLCommand::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecGL(&cmd, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -508,7 +545,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQueryGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -523,6 +560,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_SyncCPUGPU = &gles2_SynchronizeCPUGPU;
 
     DispatchGLES2.impl_InitContext = _GLES2_AcquireContext;
     DispatchGLES2.impl_ValidateSurface = &gles2_CheckSurface;

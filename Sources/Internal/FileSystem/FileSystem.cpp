@@ -27,6 +27,7 @@
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
 #include <direct.h>
 #include <io.h>
@@ -271,8 +272,19 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    int res = FileAPI::RemoveFile(filePath.GetNativeAbsolutePathname().c_str());
-    return (res == 0);
+    const auto& fileName = filePath.GetNativeAbsolutePathname();
+    int res = FileAPI::RemoveFile(fileName.c_str());
+    if (res == 0)
+    {
+        return true;
+    }
+
+    if (errno == ENOENT) // no such file
+    {
+        return false;
+    }
+    Logger::Error("can't delete file %s cause: %s", filePath.GetStringValue().c_str(), strerror(errno));
+    return false;
 }
 
 bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
@@ -385,6 +397,26 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
     return File::Create(frameworkPath, attributes);
+}
+
+FilePath FileSystem::GetTempDirectoryPath() const
+{
+#ifdef __DAVAENGINE_WIN_UAP__
+    auto folder = Windows::Storage::ApplicationData::Current->TemporaryFolder;
+    const wchar_t* ptr = folder->Path->Data();
+    return FilePath(ptr);
+#else
+    static const char* envNames[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR" };
+    for (const char* envName : envNames)
+    {
+        const char* tmp = std::getenv(envName);
+        if (tmp != nullptr)
+        {
+            return FilePath(tmp);
+        }
+    }
+    return FilePath();
+#endif
 }
 
 const FilePath& FileSystem::GetCurrentWorkingDirectory()
