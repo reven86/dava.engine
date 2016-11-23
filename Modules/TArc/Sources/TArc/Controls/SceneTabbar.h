@@ -20,8 +20,8 @@ public:
     ///     "ActiveTabID" : castable to uint64
     ///     "Tabs" : collection of reflected objects. Key of concrete object is ID that can be used to set ActiveTabID
     ///     each tab should have:
-    ///         "title": castable to DAVA::String
-    ///         "tooltip": castable to DAVA::String [optional]
+    ///         "Title": castable to DAVA::String
+    ///         "Tooltip": castable to DAVA::String [optional]
     SceneTabbar(ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
     ~SceneTabbar();
 

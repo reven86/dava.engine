@@ -635,6 +635,11 @@ public:
         {
             Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
         }
+
+        if (invokeListener != nullptr)
+        {
+            invokeListener->Invoke(operationId, args...);
+        }
     }
 
     bool WindowCloseRequested(const WindowKey& key) override
@@ -688,6 +693,11 @@ public:
         return uiManager.get();
     }
 
+    void SetInvokeListener(OperationInvoker* invoker)
+    {
+        invokeListener = invoker;
+    }
+
 private:
     void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne) override
     {
@@ -724,6 +734,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
+    OperationInvoker* invokeListener = nullptr;
 };
 
 Core::Core(Engine& engine)
@@ -818,28 +829,11 @@ bool Core::HasControllerModule() const
     return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
-OperationInvoker* Core::GetMockInvoker()
-{
-    return nullptr;
-}
-
-DataContext* Core::GetActiveContext()
-{
-    DVASSERT(impl);
-    return impl->GetActiveContext();
-}
-
-DataContext* Core::GetGlobalContext()
-{
-    DVASSERT(impl);
-    return impl->GetGlobalContext();
-}
-
-DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+void Core::SetInvokeListener(OperationInvoker* proxyInvoker)
 {
     GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
     DVASSERT(guiImpl != nullptr);
-    return guiImpl->CreateWrapper(type);
+    guiImpl->SetInvokeListener(proxyInvoker);
 }
 
 } // namespace TArc

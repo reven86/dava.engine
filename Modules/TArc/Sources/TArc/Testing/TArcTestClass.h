@@ -4,6 +4,9 @@
 
 #include "UnitTests/TestClass.h"
 
+#include <QList>
+#include <QWidget>
+
 namespace DAVA
 {
 namespace TArc
@@ -21,14 +24,18 @@ public:
 
     virtual void CreateTestedModules();
 
-protected:
     OperationInvoker* GetMockInvoker();
     DataContext* GetActiveContext();
     DataContext* GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
+    ContextAccessor* GetAccessor();
+    ContextManager* GetContextManager();
+
+    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
 
 protected:
     std::unique_ptr<Core> core;
+    std::unique_ptr<OperationInvoker> mockInvoker = nullptr;
 };
 
 } // namespace TArc

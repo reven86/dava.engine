@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArcCore/ControllerModule.h"
+#include "TArc/Core/ControllerModule.h"
 
 namespace DAVA
 {
@@ -17,6 +17,6 @@ public:
     MOCK_METHOD1(OnContextDeleted, void(DataContext& context));
     MOCK_METHOD1(OnWindowClosed, void(const WindowKey& key));
     MOCK_METHOD0(PostInit, void());
-}
+};
 } // namespace TArc
 } // namespace DAVA

@@ -1,4 +1,5 @@
 #include "TArc/Testing/TArcTestClass.h"
+#include "TArc/Testing/MockInvoker.h"
 #include "TArc/Core/ControllerModule.h"
 #include "TArc/WindowSubSystem/UI.h"
 
@@ -79,6 +80,9 @@ void TestClass::SetUp(const String& testName)
         DVASSERT(e->IsConsoleMode() == false);
         core.reset(new Core(*e, false));
 
+        mockInvoker.reset(new MockInvoker());
+        core->SetInvokeListener(mockInvoker.get());
+
         CreateTestedModules();
         if (!core->HasControllerModule())
         {
@@ -127,22 +131,40 @@ bool TestClass::TestComplete(const String& testName) const
 
 OperationInvoker* TestClass::GetMockInvoker()
 {
-    return core->GetMockInvoker();
+    return mockInvoker.get();
 }
 
 DataContext* TestClass::GetActiveContext()
 {
-    return core->GetActiveContext();
+    return core->GetCoreInterface()->GetActiveContext();
 }
 
 DataContext* TestClass::GetGlobalContext()
 {
-    return core->GetGlobalContext();
+    return core->GetCoreInterface()->GetGlobalContext();
 }
 
 DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
 {
-    return core->CreateWrapper(type);
+    return core->GetCoreInterface()->CreateWrapper(type);
+}
+
+DAVA::TArc::ContextAccessor* TestClass::GetAccessor()
+{
+    return core->GetCoreInterface();
+}
+
+DAVA::TArc::ContextManager* TestClass::GetContextManager()
+{
+    return core->GetCoreInterface();
+}
+
+QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& objectName)
+{
+    UIManager* manager = dynamic_cast<UIManager*>(core->GetUI());
+    QWidget* wnd = manager->GetWindow(wndKey);
+
+    return wnd->findChildren<QWidget*>(objectName);
 }
 
 void TestClass::CreateTestedModules()

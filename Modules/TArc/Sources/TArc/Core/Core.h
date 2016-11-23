@@ -8,6 +8,7 @@
 
 #include <memory>
 
+class QWidget;
 namespace DAVA
 {
 class Engine;
@@ -73,11 +74,7 @@ private:
     void OnFrame(float32 delta);
     void OnWindowCreated(DAVA::Window* w);
     bool HasControllerModule() const;
-
-    OperationInvoker* GetMockInvoker();
-    DataContext* GetActiveContext();
-    DataContext* GetGlobalContext();
-    DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
+    void SetInvokeListener(OperationInvoker* proxyInvoker);
 
 private:
     class Impl;
