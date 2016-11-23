@@ -150,7 +150,7 @@ gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
         if (results[q] != uint32(-1))
         {
             if (resultIndex < buf->results.size())
-                buf->results[resultIndex] = results[q];
+                buf->results[resultIndex] += results[q];
 
             QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
 

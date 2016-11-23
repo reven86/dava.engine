@@ -18,7 +18,6 @@ class UIControlSystem;
 class UIEvent;
 class KeyboardDevice;
 class GamepadDevice;
-class MouseDevice;
 namespace Private
 {
 class EngineBackend;
@@ -43,9 +42,6 @@ public:
     KeyboardDevice& GetKeyboard();
     GamepadDevice& GetGamepadDevice();
 
-    // TODO: remove method after pinning merged
-    MouseDevice& GetMouseDevice();
-
 private:
     InputSystem(Engine* engine);
     ~InputSystem();
@@ -66,7 +62,6 @@ private:
     UIControlSystem* uiControlSystem = nullptr;
     RefPtr<KeyboardDevice> keyboard;
     RefPtr<GamepadDevice> gamepad;
-    RefPtr<MouseDevice> mouse;
 
     struct InputHandler
     {
@@ -97,11 +92,6 @@ inline KeyboardDevice& InputSystem::GetKeyboard()
 inline GamepadDevice& InputSystem::GetGamepadDevice()
 {
     return *gamepad;
-}
-
-inline MouseDevice& InputSystem::GetMouseDevice()
-{
-    return *mouse;
 }
 
 } // namespace DAVA

@@ -4,8 +4,8 @@
 
 #include "Base/ScopedPtr.h"
 #include "Logger/Logger.h"
+#include "Scene3D/Scene.h"
 
-#include "Scene/SceneEditor2.h"
 #include "Beast/BeastRunner.h"
 
 #include "CommandLine/Private/OptionName.h"
@@ -47,11 +47,11 @@ bool BeastCommandLineTool::PostInitInternal()
         return false;
     }
 
-    scene = new SceneEditor2();
+    scene = new DAVA::Scene();
     if (scene->LoadScene(scenePathname) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
-        beastRunner = new BeastRunner(scene, outputPathname, BeastProxy::MODE_LIGHTMAPS, nullptr);
+        beastRunner = new BeastRunner(scene, scenePathname, outputPathname, BeastProxy::MODE_LIGHTMAPS, nullptr);
         beastRunner->Start();
     }
     else
@@ -86,7 +86,7 @@ void BeastCommandLineTool::BeforeDestroyedInternal()
 
     if (scene != nullptr)
     {
-        scene->SaveScene();
+        scene->SaveScene(scenePathname, false);
         DAVA::SafeRelease(scene);
     }
 

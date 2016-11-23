@@ -219,6 +219,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -254,9 +259,14 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    // not implemented
+    // case UIDispatcherEvent::CHANGE_MOUSE_MODE:
     default:
         break;
     }
@@ -295,10 +305,10 @@ void WindowBackend::OnCreated()
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->logicalDpiX();
-    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
+    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -331,12 +341,18 @@ void WindowBackend::OnFrame()
     engineBackend->OnFrame();
 }
 
-void WindowBackend::OnResized(uint32 width, uint32 height)
+void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
 {
-    float32 scale = renderWidget->quickWindow()->effectiveDevicePixelRatio();
+    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale));
+    eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, fullscreen));
+}
+
+void WindowBackend::OnDpiChanged(float32 dpi)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
@@ -498,6 +514,24 @@ void WindowBackend::DoSetTitle(const char8* title)
     renderWidget->setWindowTitle(title);
 }
 
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
+{
+    QQuickWindow* quickWindow = renderWidget->quickWindow();
+    if (quickWindow == nullptr)
+    {
+        return;
+    }
+
+    if (newMode == eFullscreen::On)
+    {
+        quickWindow->showFullScreen();
+    }
+    else
+    {
+        quickWindow->showNormal();
+    }
+}
+
 void WindowBackend::AcqureContext()
 {
     AcqureContextImpl();
@@ -546,6 +580,16 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
+}
+
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
 }
 
 eModifierKeys WindowBackend::GetModifierKeys() const

@@ -1,5 +1,3 @@
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_MACOS__)
 #import "AssertGuardMacOSHack.h"
 

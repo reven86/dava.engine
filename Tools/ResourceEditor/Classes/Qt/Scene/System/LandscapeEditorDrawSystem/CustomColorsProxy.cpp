@@ -1,6 +1,9 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+
 #include "Render/Texture.h"
 #include "Render/Material/NMaterial.h"
 
@@ -31,7 +34,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
-    brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
+    brushMaterial->SetFXName(FastName("~res:/ResourceEditor/LandscapeEditor/Materials/CustomColors.material"));
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
@@ -115,7 +118,10 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     viewport.x = viewport.y = 0;
     viewport.width = viewport.height = size;
 
-    Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data);
+
+    Vector<Color> customColors = data->GetEditorConfig()->GetColorPropertyValues("LandscapeCustomColors");
     if (customColors.empty())
     {
         RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
