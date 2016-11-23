@@ -1,6 +1,7 @@
 package com.dava.engine;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -119,6 +120,7 @@ final class DavaSurfaceView extends SurfaceView
     @Override public void onRestart() {}
     @Override public void onStop() {}
     @Override public void onDestroy() {}
+    @Override public void onNewIntent(Intent intent) {}
 
     @Override
     public void onResume()
