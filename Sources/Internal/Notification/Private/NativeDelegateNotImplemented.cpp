@@ -4,8 +4,11 @@
 
 namespace DAVA
 {
+namespace Private
+{
 NativeDelegate::NativeDelegate(LocalNotificationController& controller)
 {
 }
-}
+} // namespace Private
+} // namespace DAVA
 #endif

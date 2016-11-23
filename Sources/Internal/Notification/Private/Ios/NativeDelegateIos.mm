@@ -11,6 +11,8 @@
 
 namespace DAVA
 {
+namespace Private
+{
 NativeDelegate::NativeDelegate(LocalNotificationController& controller) : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterUIApplicationDelegateListener(this);
@@ -61,5 +63,6 @@ void NativeDelegate::didReceiveLocalNotification(UILocalNotification* notificati
     }
     DAVA::Logger::Debug("NativeDelegateIos::didActivateNotification");
 }
+} // namespace Private
 } // namespace DAVA
 #endif // __DAVAENGINE_MACOS__

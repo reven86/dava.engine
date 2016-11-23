@@ -10,6 +10,8 @@ namespace DAVA
 {
 class LocalNotificationController;
 
+namespace Private
+{
 struct NativeDelegate final
 {
     NativeDelegate(LocalNotificationController& controller);
@@ -19,7 +21,7 @@ private:
     jobject instance;
     Function<void(jobject)> release;
 };
-
+} // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__

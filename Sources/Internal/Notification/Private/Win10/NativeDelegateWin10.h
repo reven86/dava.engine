@@ -10,6 +10,8 @@ namespace DAVA
 {
 class LocalNotificationController;
 
+namespace Private
+{
 struct NativeDelegate : public XamlApplicationListener
 {
     NativeDelegate(LocalNotificationController& controller);
@@ -19,5 +21,6 @@ struct NativeDelegate : public XamlApplicationListener
 private:
     LocalNotificationController& localNotificationController;
 };
-}
+} // namespace Private
+} // namespace DAVA
 #endif // __DAVAENGINE_WIN_UAP__

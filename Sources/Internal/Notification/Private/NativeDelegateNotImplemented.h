@@ -8,10 +8,13 @@ namespace DAVA
 {
 class LocalNotificationController;
 
+namespace Private
+{
 struct NativeDelegate
 {
     NativeDelegate(LocalNotificationController& controller);
 };
-}
+} // namespace Private
+} // namespace DAVA
 
 #endif //__DAVAENGINE_WIN32__

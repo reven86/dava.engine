@@ -28,6 +28,8 @@ JNIEXPORT void JNICALL Java_com_dava_engine_NativeDelegate_nativeNewIntent(JNIEn
 
 namespace DAVA
 {
+namespace Private
+{
 NativeDelegate::NativeDelegate(LocalNotificationController& controller)
 {
     try
@@ -55,6 +57,7 @@ NativeDelegate::~NativeDelegate()
         release(instance);
     }
 }
+} // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__

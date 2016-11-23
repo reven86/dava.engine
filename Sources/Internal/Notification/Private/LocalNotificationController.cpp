@@ -19,7 +19,7 @@ namespace DAVA
 {
 LocalNotificationController::LocalNotificationController()
 {
-    nativeDelegate.reset(new NativeDelegate(*this));
+    nativeDelegate.reset(new Private::NativeDelegate(*this));
 }
 
 LocalNotificationController::~LocalNotificationController()

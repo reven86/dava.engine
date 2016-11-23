@@ -10,6 +10,8 @@
 #include "Utils/UTF8Utils.h"
 namespace DAVA
 {
+namespace Private
+{
 NativeDelegate::NativeDelegate(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
@@ -39,5 +41,6 @@ void NativeDelegate::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
         }
     }
 }
-}
+} // namespace Private
+} // namespace DAVA
 #endif // __DAVAENGINE_WIN_UAP__

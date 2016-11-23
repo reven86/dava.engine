@@ -11,6 +11,8 @@ namespace DAVA
 {
 class LocalNotificationController;
 
+namespace Private
+{
 struct NativeDelegate : public NSApplicationDelegateListener
 {
     NativeDelegate(LocalNotificationController& controller);
@@ -23,5 +25,6 @@ struct NativeDelegate : public NSApplicationDelegateListener
 private:
     DAVA::LocalNotificationController& localNotificationController;
 };
-}
+} // namespace Private
+} // namespace DAVA
 #endif // __DAVAENGINE_MACOS__
