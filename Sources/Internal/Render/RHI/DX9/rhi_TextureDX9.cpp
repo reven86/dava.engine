@@ -79,11 +79,11 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
         if (is_depthbuf)
         {
-            cmds[0] = { DX9Command::CREARE_DEPTHSTENCIL_SURFACE, { desc.width, desc.height, fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
+            cmds[0] = { DX9Command::CREARE_DEPTHSTENCIL_SURFACE, { desc.width, desc.height, (DAVA::uint64)fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
         }
         else
         {
-            cmds[0] = { DX9Command::CREATE_RENDER_TARGET, { desc.width, desc.height, fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
+            cmds[0] = { DX9Command::CREATE_RENDER_TARGET, { desc.width, desc.height, (DAVA::uint64)fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
         };
         ExecDX9(cmds, countof(cmds), force_immediate);
         DVASSERT(surf9 != nullptr);
