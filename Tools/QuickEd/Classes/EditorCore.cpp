@@ -1,62 +1,41 @@
 #include "EditorCore.h"
 
-#include "Engine/Engine.h"
-#include "Engine/EngineContext.h"
-#include "Engine/Qt/RenderWidget.h"
+#include "Project/Project.h"
+#include "UI/mainwindow.h"
 
-#include "Logger/Logger.h"
-#include "Particles/ParticleEmitter.h"
-#include "FileSystem/FileSystem.h"
-#include "Utils/Utils.h"
-
-#include "Helpers/ResourcesManageHelper.h"
-#include "TextureCompression/PVRConverter.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include "QtTools/Utils/AssertGuard.h"
-#include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/Utils/AssertGuard.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/Utils.h"
 
-#include "Document/DocumentGroup.h"
-#include "Document/Document.h"
-#include "Model/PackageHierarchy/PackageNode.h"
+#include "TextureCompression/PVRConverter.h"
+#include "version.h"
 
-#include "UI/mainwindow.h"
+#include "Base/Result.h"
+#include "DAVAVersion.h"
+#include "Engine/Engine.h"
+#include "Engine/Qt/NativeServiceQt.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
+#include "Particles/ParticleEmitter.h"
+#include "UI/Input/UIInputSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
-#include "UI/FileSystemView/FileSystemModel.h"
-#include "UI/Package/PackageModel.h"
-#include "UI/Layouts/UILayoutSystem.h"
-#include "UI/Input/UIInputSystem.h"
+#include "Utils/Utils.h"
+
+#include <QFile>
+#include <QDir>
 
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
-
 namespace EditorCoreDetails
 {
-void UnpackHelp(DAVA::FileSystem* fileSystem)
-{
-    //Unpack Help to Documents.
-    DAVA::FilePath docsPath = DAVA::FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (!fileSystem->Exists(docsPath))
-    {
-        try
-        {
-            DAVA::ResourceArchive helpRA("~res:/QuickEd/Help.docs");
-
-            fileSystem->DeleteDirectory(docsPath);
-            fileSystem->CreateDirectory(docsPath, true);
-
-            helpRA.UnpackToFolder(docsPath);
-        }
-        catch (std::exception& ex)
-        {
-            DVASSERT_MSG("can't unpack help docs to documents dir: %s", ex.what());
-        }
-    }
-}
+static const char* EDITOR_TITLE = "DAVA Framework - QuickEd | %s-%s [%u bit]";
+static const DAVA::String DOCUMENTATION_DIRECTORY("~doc:/Help/");
 
 void InitPVRTexTool()
 {
@@ -67,97 +46,159 @@ void InitPVRTexTool()
 #endif
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 }
+
+std::tuple<std::unique_ptr<Project>, ResultList> CreateProject(const QString& path, MainWindow* mainWindow)
+{
+    ResultList resultList;
+
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
+    {
+        QString message = QObject::tr("%1 does not exist.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    if (!fileInfo.isFile())
+    {
+        QString message = QObject::tr("%1 is not a file.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    ProjectProperties properties;
+    std::tie(resultList, properties) = Project::ParseProjectPropertiesFromFile(path);
+    if (!resultList.IsSuccess())
+    {
+        return std::make_tuple(nullptr, resultList);
+    }
+
+    return std::make_tuple(std::make_unique<Project>(mainWindow->GetProjectView(), properties), resultList);
 }
 
-EditorCore::EditorCore()
-    : QObject(nullptr)
-    , Singleton<EditorCore>()
+DAVA::Result CreateProjectStructure(const QString& projectFilePath)
+{
+    QDir projectDir(QFileInfo(projectFilePath).absolutePath());
+
+    ProjectProperties defaultSettings = ProjectProperties::Default();
+
+    QString resourceDirectory = QString::fromStdString(defaultSettings.GetResourceDirectory().relative);
+    if (!projectDir.mkpath(resourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
+    }
+
+    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings.GetConvertedResourceDirectory().relative);
+    if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
+    }
+
+    QDir resourceDir(projectDir.absolutePath() + "/" + resourceDirectory);
+
+    QString gfxDirectory = QString::fromStdString(defaultSettings.GetGfxDirectories().front().directory.relative);
+    if (!resourceDir.mkpath(gfxDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create gfx directory %1.").arg(gfxDirectory).toStdString());
+    }
+
+    QString uiDirectory = QString::fromStdString(defaultSettings.GetUiDirectory().relative);
+    if (!resourceDir.mkpath(uiDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(uiDirectory).toStdString());
+    }
+
+    QString textsDirectory = QString::fromStdString(defaultSettings.GetTextsDirectory().relative);
+    if (!resourceDir.mkpath(textsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(textsDirectory).toStdString());
+    }
+
+    QString fontsDirectory = QString::fromStdString(defaultSettings.GetFontsDirectory().relative);
+    if (!resourceDir.mkpath(fontsDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts directory %1.").arg(fontsDirectory).toStdString());
+    }
+
+    QString fontsConfigDirectory = QString::fromStdString(defaultSettings.GetFontsConfigsDirectory().relative);
+    if (!resourceDir.mkpath(fontsConfigDirectory))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
+    }
+
+    QDir textsDir(resourceDir.absolutePath() + "/" + textsDirectory);
+    QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings.GetDefaultLanguage()) + ".yaml"));
+    if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
+    }
+    defaultLanguageTextFile.close();
+
+    QDir fontsConfigDir(resourceDir.absolutePath() + "/" + fontsConfigDirectory);
+    QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectProperties::GetFontsConfigFileName())));
+    if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
+    }
+    defaultFontsConfigFile.close();
+
+    defaultSettings.SetProjectFile(projectFilePath.toStdString());
+    if (!Project::EmitProjectPropertiesToFile(defaultSettings))
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create project file %1.").arg(projectFilePath).toStdString());
+    }
+
+    return Result();
+}
+
+std::tuple<QString, DAVA::ResultList> CreateNewProject()
+{
+    DAVA::ResultList resultList;
+
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), QObject::tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
+    {
+        return std::make_tuple(QString(), resultList);
+    }
+
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = QString::fromStdString(ProjectProperties::GetProjectFileName());
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        resultList.AddResult(Result::RESULT_FAILURE, QObject::tr("Project file exists!").toStdString());
+        return std::make_tuple(QString(), resultList);
+    }
+
+    Result result = CreateProjectStructure(fullProjectFilePath);
+    if (result.type != Result::RESULT_SUCCESS)
+    {
+        resultList.AddResult(result);
+        return std::make_tuple(QString(), resultList);
+    }
+
+    return std::make_tuple(fullProjectFilePath, resultList);
+}
+};
+
+REGISTER_PREFERENCES_ON_START(EditorCore,
+                              PREF_ARG("isUsingAssetCache", false),
+                              PREF_ARG("projectsHistory", DAVA::String()),
+                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
+                              )
+
+EditorCore::EditorCore(DAVA::Engine& engine)
 {
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     ToolsAssetGuard::Instance()->Init();
-}
 
-EditorCore::~EditorCore()
-{
-    if (cacheClient && cacheClient->IsConnected())
-    {
-        cacheClient->Disconnect();
-    }
-
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
-}
-
-MainWindow* EditorCore::GetMainWindow() const
-{
-    return mainWindow.get();
-}
-
-Project* EditorCore::GetProject() const
-{
-    return project;
-}
-
-void EditorCore::ConnectInternal()
-{
-    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
-    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
-    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
-
-    connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
-    connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
-    connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
-    connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
-    connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
-    connect(project, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
-
-    connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
-    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
-    connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
-    connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
-    connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
-    connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
-    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
-    connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-
-    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
-    EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
-    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
-    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
-
-    PreviewWidget* previewWidget = mainWindow->previewWidget;
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-
-    PackageWidget* packageWidget = mainWindow->packageWidget;
-    connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
-    connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
-    connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
-    connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
-    connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
-    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
-    connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
-    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
-
-    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
-}
-
-void EditorCore::Init(DAVA::Engine& engine)
-{
     using namespace DAVA;
-    ResourcesManageHelper::InitInternalResources();
     const EngineContext* context = engine.GetContext();
+
+    FileSystem* fs = context->fileSystem;
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
+
     UIControlSystem* uiControlSystem = context->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 
@@ -175,10 +216,9 @@ void EditorCore::Init(DAVA::Engine& engine)
     Renderer::SetDesiredFPS(60);
 
     const char* settingsPath = "QuickEdSettings.archive";
-    FilePath localPrefrencesPath(context->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
+    FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
-    EditorCoreDetails::UnpackHelp(context->fileSystem);
     EditorCoreDetails::InitPVRTexTool();
 
     qInstallMessageHandler(DAVAMessageHandler);
@@ -186,153 +226,56 @@ void EditorCore::Init(DAVA::Engine& engine)
     Q_INIT_RESOURCE(QtToolsResources);
     Themes::InitFromQApplication();
 
-    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
-
-    spritesPacker.reset(new SpritesPacker());
-    project = new Project(this);
-    documentGroup = new DocumentGroup(this);
     mainWindow.reset(new MainWindow());
 
-    mainWindow->previewWidget->InjectRenderWidget(renderWidget);
-
-    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
-    mainWindow->AttachDocumentGroup(documentGroup, renderWidget);
-
-    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
+    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
+    mainWindow->InjectRenderWidget(renderWidget);
 
     //we need to register preferences when whole class is initialized
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    ConnectInternal();
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
+    mainWindow->SetRecentProjects(GetRecentProjects());
+
+    mainWindow->SetEditorTitle(GenerateEditorTitle());
+
+    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
+    connect(mainWindow.get(), &MainWindow::NewProject, this, &EditorCore::OnNewProject);
+    connect(mainWindow.get(), &MainWindow::OpenProject, this, &EditorCore::OnOpenProject);
+    connect(mainWindow.get(), &MainWindow::RecentProject, this, &EditorCore::OpenProject);
+    connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
+    connect(mainWindow.get(), &MainWindow::Exit, this, &EditorCore::OnExit);
+    connect(mainWindow.get(), &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+
+    UnpackHelp();
 
     mainWindow->show();
 }
 
+EditorCore::~EditorCore()
+{
+    DVASSERT(project == nullptr);
+
+    DisableCacheClient();
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
 void EditorCore::OnRenderingInitialized()
 {
-    mainWindow->previewWidget->OnWindowCreated();
-    QStringList projectsPathes = project->GetProjectsHistory();
-    if (!projectsPathes.isEmpty())
+    mainWindow->OnWindowCreated();
+    QString lastProjectPath = GetLastProject();
+    if (!lastProjectPath.isEmpty())
     {
-        OpenProject(projectsPathes.last());
+        OpenProject(lastProjectPath);
     }
 }
 
-void EditorCore::OnReloadSpritesStarted()
+void EditorCore::OnShowHelp()
 {
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        if (!documentGroup->TryCloseDocument(document))
-        {
-            return;
-        }
-    }
-    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
-}
-
-void EditorCore::OnReloadSpritesFinished()
-{
-    if (cacheClient)
-    {
-        cacheClient->Disconnect();
-        cacheClient.reset();
-    }
-
-    Sprite::ReloadSprites();
-}
-
-void EditorCore::OnProjectPathChanged(const QString& projectPath)
-{
-    DisableCacheClient();
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-    if (assetCacheEnabled)
-    {
-        EnableCacheClient();
-    }
-
-    spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
-
-    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    spritesPacker->ClearTasks();
-    QDirIterator it(projectPath + "/DataSource");
-    while (it.hasNext())
-    {
-        it.next();
-        const QFileInfo& fileInfo = it.fileInfo();
-        if (fileInfo.isDir())
-        {
-            QString outputPath = fileInfo.absoluteFilePath();
-            if (!outputPath.contains(searchOption))
-            {
-                continue;
-            }
-            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
-            QDir outputDir(outputPath);
-            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
-        }
-    }
-}
-
-void EditorCore::RecentMenu(QAction* recentProjectAction)
-{
-    QString projectPath = recentProjectAction->data().toString();
-
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-    OpenProject(projectPath);
-}
-
-void EditorCore::UpdateLanguage()
-{
-    project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnRtlChanged(bool isRtl)
-{
-    UIControlSystem::Instance()->SetRtl(isRtl);
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnBiDiSupportChanged(bool support)
-{
-    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
-{
-    Vector<String> tokens;
-    Split(classesStr.toStdString(), " ", tokens);
-
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
-    for (String& token : tokens)
-    {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
-    }
-
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
+    FilePath docsPath = EditorCoreDetails::DOCUMENTATION_DIRECTORY + "index.html";
+    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+    QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void EditorCore::OpenProject(const QString& path)
@@ -341,56 +284,55 @@ void EditorCore::OpenProject(const QString& path)
     {
         return;
     }
-    ResultList resultList;
 
-    if (project->CanOpenProject(path))
+    ResultList resultList;
+    std::unique_ptr<Project> newProject;
+
+    std::tie(newProject, resultList) = EditorCoreDetails::CreateProject(path, mainWindow.get());
+
+    if (newProject.get())
     {
-        if (!project->Open(path))
+        project = std::move(newProject);
+        AddRecentProject(project->GetProjectPath());
+
+        mainWindow->SetRecentProjects(GetRecentProjects());
+
+        connect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
+        connect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
+
+        if (assetCacheEnabled)
         {
-            QString message = tr("Error while opening project %1").arg(path);
-            resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+            EnableCacheClient();
         }
+
+        project->SetAssetCacheClient(cacheClient.get());
     }
-    else
-    {
-        QString message = tr("Can not open project %1").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-    }
-    mainWindow->OnProjectOpened(resultList, project);
+
+    mainWindow->ShowResultList(tr("Error while loading project"), resultList);
+}
+
+void EditorCore::OnCloseProject()
+{
+    CloseProject();
 }
 
 bool EditorCore::CloseProject()
 {
-    if (!project->IsOpen())
+    if (project == nullptr)
     {
         return true;
     }
-    auto documents = documentGroup->GetDocuments();
-    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
 
-    if (hasUnsaved)
+    if (!TryCloseDocuments())
     {
-        int ret = QMessageBox::question(
-        qApp->activeWindow(),
-        tr("Save changes"),
-        tr("Some files has been modified.\n"
-           "Do you want to save your changes?"),
-        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
-        if (ret == QMessageBox::Cancel)
-        {
-            return false;
-        }
-        else if (ret == QMessageBox::SaveAll)
-        {
-            documentGroup->SaveAllDocuments();
-        }
+        return false;
     }
 
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        documentGroup->CloseDocument(document);
-    }
-    project->Close();
+    disconnect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
+    disconnect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
+
+    DisableCacheClient();
+    project = nullptr;
     return true;
 }
 
@@ -399,32 +341,6 @@ void EditorCore::OnExit()
     if (CloseProject())
     {
         qApp->quit();
-    }
-}
-
-void EditorCore::OnNewProject()
-{
-    Result result;
-    auto projectPath = project->CreateNewProject(&result);
-    if (result)
-    {
-        OpenProject(projectPath);
-    }
-    else if (result.type == Result::RESULT_ERROR)
-    {
-        QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
-    }
-}
-
-void EditorCore::OnProjectOpenChanged(bool isOpen)
-{
-    if (isOpen)
-    {
-        mainWindow->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
-    }
-    else
-    {
-        mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
     }
 }
 
@@ -438,6 +354,7 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
     if (enabled)
     {
         EnableCacheClient();
+        assetCacheEnabled = true;
     }
     else
     {
@@ -450,7 +367,7 @@ void EditorCore::EnableCacheClient()
 {
     DisableCacheClient();
     cacheClient.reset(new AssetCacheClient());
-    AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
+    DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
     if (connected != AssetCache::Error::NO_ERRORS)
     {
         cacheClient.reset();
@@ -459,6 +376,7 @@ void EditorCore::EnableCacheClient()
     else
     {
         Logger::Info("Asset cache client started");
+        emit AssetCacheChanged(cacheClient.get());
     }
 }
 
@@ -468,5 +386,110 @@ void EditorCore::DisableCacheClient()
     {
         cacheClient->Disconnect();
         cacheClient.reset();
+        emit AssetCacheChanged(cacheClient.get());
     }
+}
+
+const QStringList& EditorCore::GetRecentProjects() const
+{
+    return recentProjects;
+}
+
+QString EditorCore::GetLastProject() const
+{
+    if (!recentProjects.empty())
+    {
+        return recentProjects.last();
+    }
+
+    return QString();
+}
+
+void EditorCore::AddRecentProject(const QString& projectPath)
+{
+    recentProjects.removeAll(projectPath);
+    recentProjects += projectPath;
+    while (static_cast<DAVA::uint32>(recentProjects.size()) > projectsHistorySize)
+    {
+        recentProjects.removeFirst();
+    }
+}
+
+String EditorCore::GetRecentProjectsAsString() const
+{
+    return recentProjects.join('\n').toStdString();
+}
+
+void EditorCore::SetRecentProjectsFromString(const String& history)
+{
+    recentProjects = QString::fromStdString(history).split("\n", QString::SkipEmptyParts);
+}
+
+void EditorCore::OnOpenProject()
+{
+    QString defaultPath;
+    if (project.get() != nullptr)
+    {
+        defaultPath = project->GetProjectDirectory() + project->GetProjectName();
+    }
+    else
+    {
+        defaultPath = QDir::currentPath();
+    }
+
+    QString projectPath = QFileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
+                                                       defaultPath, tr("Project files(*.quicked *.uieditor)"));
+
+    if (projectPath.isEmpty())
+    {
+        return;
+    }
+    projectPath = QDir::toNativeSeparators(projectPath);
+
+    OpenProject(projectPath);
+}
+
+void EditorCore::OnNewProject()
+{
+    ResultList resultList;
+    QString newProjectPath;
+
+    std::tie(newProjectPath, resultList) = EditorCoreDetails::CreateNewProject();
+
+    if (!newProjectPath.isEmpty())
+    {
+        OpenProject(newProjectPath);
+        return;
+    }
+
+    mainWindow->ShowResultList(tr("Error while creating project"), resultList);
+}
+
+void EditorCore::UnpackHelp()
+{
+    FilePath docsPath(EditorCoreDetails::DOCUMENTATION_DIRECTORY);
+    FileSystem* fs = FileSystem::Instance();
+    if (!fs->Exists(docsPath))
+    {
+        try
+        {
+            ResourceArchive helpRA("~res:/QuickEd/Help.docs");
+
+            fs->DeleteDirectory(docsPath);
+            fs->CreateDirectory(docsPath, true);
+
+            helpRA.UnpackToFolder(docsPath);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
+            DVASSERT(false && "can't unpack help docs to documents dir");
+        }
+    }
+}
+
+QString EditorCore::GenerateEditorTitle() const
+{
+    using namespace EditorCoreDetails;
+    return QString::fromStdString(DAVA::Format(EDITOR_TITLE, DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION, static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8)));
 }

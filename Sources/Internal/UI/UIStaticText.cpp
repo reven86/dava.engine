@@ -133,6 +133,7 @@ void UIStaticText::SetFont(Font* _font)
         if (textBlock->NeedCalculateCacheParams())
         {
             SetLayoutDirty();
+            PrepareSprite();
         }
     }
 }
