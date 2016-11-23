@@ -74,13 +74,32 @@ private:
     static Mutex drawStringMutex;
     static const int32 ftToPixelShift; // Int value for shift to convert FT point to pixel
     static const float32 ftToPixelScale; // Float value to convert FT point to pixel
-
-    static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count);
-    static void StreamClose(FT_Stream stream);
 };
 
 const int32 FTInternalFont::ftToPixelShift = 6;
 const float32 FTInternalFont::ftToPixelScale = 1.f / 64.f;
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace FTFontDetails
+{
+unsigned long StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
+{
+    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
+    if (count == 0)
+        return 0;
+    is->Seek(int32(offset), File::SEEK_FROM_START);
+    return is->Read(buffer, uint32(count));
+}
+
+void StreamClose(FT_Stream stream)
+{
+    File* file = reinterpret_cast<File*>(stream->descriptor.pointer);
+    SafeRelease(file);
+}
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 FTFont::FTFont(FTInternalFont* _internalFont)
 {
@@ -220,7 +239,7 @@ DAVA::float32 FTFont::GetDescendScale() const
     return descendScale;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Mutex FTInternalFont::drawStringMutex;
 
@@ -281,8 +300,8 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
     stream.pos = 0;
     stream.descriptor.pointer = static_cast<void*>(fontFile);
     stream.pathname.pointer = 0;
-    stream.read = &FTInternalFont::StreamLoad;
-    stream.close = &FTInternalFont::StreamClose;
+    stream.read = &FTFontDetails::StreamLoad;
+    stream.close = &FTFontDetails::StreamClose;
     stream.memory = 0;
     stream.cursor = 0;
     stream.limit = 0;
@@ -309,21 +328,6 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
     return error;
 }
 
-unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
-{
-    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
-    if (count == 0)
-        return 0;
-    is->Seek(int32(offset), File::SEEK_FROM_START);
-    return is->Read(buffer, uint32(count));
-}
-
-void FTInternalFont::StreamClose(FT_Stream stream)
-{
-    File* file = reinterpret_cast<File*>(stream->descriptor.pointer);
-    SafeRelease(file);
-}
-
 Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buffer, int32 bufWidth, int32 bufHeight,
                                                uint8 r, uint8 g, uint8 b, uint8 a,
                                                float32 size, bool realDraw,
@@ -346,8 +350,14 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         offsetX = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(offsetX)));
     }
 
-    FT_Size ft_size;
-    ftm->LookupSize(this, size, &ft_size);
+    FT_Size ft_size = nullptr;
+    FT_Error error = ftm->LookupSize(this, size, &ft_size);
+
+    if (error != FT_Err_Ok)
+    {
+        Logger::Error("[FTInternalFont::DrawString] LookupSize error %d", error);
+        return Font::StringMetrics();
+    }
 
     int32 faceBboxYMin = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMin, ft_size->metrics.y_scale) * descendScale); // draw offset
     int32 faceBboxYMax = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMax, ft_size->metrics.y_scale) * ascendScale); // baseline
@@ -381,7 +391,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
     int32 layoutWidth = 0; // width in FT points
 
-    FT_Error error;
     for (uint32 i = 0; i < strLen; ++i)
     {
         Glyph& glyph = glyphs[i];
@@ -629,11 +638,12 @@ int32 FTInternalFont::LoadString(float32 size, const WideString& str)
 
         Glyph glyph;
         glyph.index = ftm->LookupGlyphIndex(this, str[i]);
-        if (ftm->LookupGlyph(this, size, glyph.index, &glyph.image) != FT_Err_Ok)
+        FT_Error error = ftm->LookupGlyph(this, size, glyph.index, &glyph.image);
+        if (error != FT_Err_Ok)
         {
 #if defined(__DAVAENGINE_DEBUG__)
             // DVASSERT(false); //This situation can be unnormal. Check it
-            Logger::Warning("[FTInternalFont::LoadString] error LookupGlyph, str = %s", WStringToString(str).c_str());
+            Logger::Warning("[FTInternalFont::LoadString] LookupGlyph error %d, str = %s", error, WStringToString(str).c_str());
 #endif //__DAVAENGINE_DEBUG__
         }
 

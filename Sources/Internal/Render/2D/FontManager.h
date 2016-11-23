@@ -11,8 +11,6 @@ class FTManager;
 
 class FontManager : public Singleton<FontManager>
 {
-    std::unique_ptr<FTManager> ftmanager;
-
 public:
     FontManager();
     virtual ~FontManager();
@@ -70,6 +68,7 @@ private:
 private:
     Map<Font*, String> registeredFonts;
     Map<String, Font*> fontMap;
+    std::unique_ptr<FTManager> ftmanager;
 };
 };
 
