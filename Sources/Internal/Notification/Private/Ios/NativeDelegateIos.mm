@@ -1,6 +1,7 @@
 #include "Notification/Private/Ios/NativeDelegateIos.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_COREV2__)
 
 #import <Foundation/Foundation.h>
 
@@ -65,4 +66,5 @@ void NativeDelegate::didReceiveLocalNotification(UILocalNotification* notificati
 }
 } // namespace Private
 } // namespace DAVA
-#endif // __DAVAENGINE_MACOS__
+#endif // __DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_IPHONE__

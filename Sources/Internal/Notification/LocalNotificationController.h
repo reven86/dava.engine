@@ -38,6 +38,8 @@ public:
 private:
     Mutex notificationsListMutex;
     List<LocalNotification*> notificationsList;
+#if defined(__DAVAENGINE_COREV2__)
     std::unique_ptr<Private::NativeDelegate> nativeDelegate;
+#endif
 };
-}
+} // namespace DAVA

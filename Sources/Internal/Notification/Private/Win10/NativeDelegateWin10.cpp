@@ -1,6 +1,7 @@
 #include "Notification/Private/Win10/NativeDelegateWin10.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/UWP/NativeServiceUWP.h"
 #include "Notification/LocalNotificationController.h"
@@ -43,4 +44,5 @@ void NativeDelegate::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
 }
 } // namespace Private
 } // namespace DAVA
+#endif // __DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_WIN_UAP__

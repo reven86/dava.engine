@@ -1,11 +1,10 @@
-#if defined(__DAVAENGINE_COREV2__)
-
-#include "Base/BaseTypes.h"
-#include "Notification/LocalNotificationController.h"
-#include "Notification/Private/Android/LocalNotificationAndroid.h"
 #include "Notification/Private/Android/NativeDelegateAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Notification/LocalNotificationController.h"
+#include "Notification/Private/Android/LocalNotificationAndroid.h"
 
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Engine.h"
@@ -60,5 +59,5 @@ NativeDelegate::~NativeDelegate()
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_ANDROID__
 #endif // __DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

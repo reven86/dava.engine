@@ -19,7 +19,9 @@ namespace DAVA
 {
 LocalNotificationController::LocalNotificationController()
 {
+#if defined(__DAVAENGINE_COREV2__)
     nativeDelegate.reset(new Private::NativeDelegate(*this));
+#endif
 }
 
 LocalNotificationController::~LocalNotificationController()
@@ -34,7 +36,9 @@ LocalNotificationController::~LocalNotificationController()
             SafeRelease(notification);
         }
     }
+#if defined(__DAVAENGINE_COREV2__)
     nativeDelegate.reset();
+#endif
 }
 
 LocalNotificationProgress* const LocalNotificationController::CreateNotificationProgress(const WideString& title, const WideString& text, uint32 maximum, uint32 current, bool useSound)
