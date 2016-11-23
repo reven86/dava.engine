@@ -33,10 +33,9 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/Settings/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/Utils/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/Controller/*.cpp) \
+	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/Utils/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
+	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) )
 
 LOCAL_CPPFLAGS += -std=c++14
 
