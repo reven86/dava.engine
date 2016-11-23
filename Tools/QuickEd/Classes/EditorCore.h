@@ -34,7 +34,7 @@ public:
 
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
-    bool CloseProject(bool force = false);
+    bool CloseProject(bool force);
 
 signals:
     void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
@@ -43,7 +43,6 @@ private slots:
     void OnNewProject();
     void OnOpenProject();
     void OnCloseProject();
-    void OnExit();
     void OnShowHelp();
 
 private:

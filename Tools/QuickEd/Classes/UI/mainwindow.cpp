@@ -134,7 +134,7 @@ void MainWindow::ConnectActions()
     connect(ui->actionNewProject, &QAction::triggered, this, &MainWindow::NewProject);
     connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::OpenProject);
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::CloseProject);
-    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::Exit);
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->menuRecent, &QMenu::triggered, this, &MainWindow::OnRecentMenu);
 
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::ShowHelp);
@@ -358,18 +358,6 @@ void MainWindow::UpdateWindowTitle()
         title = QString("%1 | Project %2").arg(editorTitle).arg(projectPath);
     }
     setWindowTitle(title);
-}
-
-void MainWindow::closeEvent(QCloseEvent* event)
-{
-    if (CanClose(false))
-    {
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
-    }
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)

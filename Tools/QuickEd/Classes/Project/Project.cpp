@@ -256,7 +256,7 @@ QString Project::GetResourceDirectory() const
 
 void Project::OnReloadSprites()
 {
-    if (!documentGroup->TryCloseAllDocuments())
+    if (CloseAllDocuments(false) == false)
     {
         return;
     }
@@ -269,28 +269,30 @@ void Project::OnReloadSpritesFinished()
     Sprite::ReloadSprites();
 }
 
-bool Project::TryCloseAllDocuments()
+bool Project::CloseAllDocuments(bool force)
 {
-    bool hasUnsaved = documentGroup->HasUnsavedDocuments();
-
-    if (hasUnsaved)
+    if (force == false)
     {
-        int ret = QMessageBox::question(
-        view->mainWindow,
-        tr("Save changes"),
-        tr("Some files has been modified.\n"
-           "Do you want to save your changes?"),
-        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
-        if (ret == QMessageBox::Cancel)
+        bool hasUnsaved = documentGroup->HasUnsavedDocuments();
+
+        if (hasUnsaved)
         {
-            return false;
-        }
-        else if (ret == QMessageBox::SaveAll)
-        {
-            documentGroup->SaveAllDocuments();
+            int ret = QMessageBox::question(
+            view->mainWindow,
+            tr("Save changes"),
+            tr("Some files has been modified.\n"
+               "Do you want to save your changes?"),
+            QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
+            if (ret == QMessageBox::Cancel)
+            {
+                return false;
+            }
+            else if (ret == QMessageBox::SaveAll)
+            {
+                documentGroup->SaveAllDocuments();
+            }
         }
     }
-
     documentGroup->CloseAllDocuments();
 
     return true;

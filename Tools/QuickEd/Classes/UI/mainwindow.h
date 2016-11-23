@@ -56,12 +56,9 @@ signals:
     void NewProject();
     void OpenProject();
     void CloseProject();
-    void Exit();
     void RecentProject(const QString& path);
 
     void ShowHelp();
-
-    bool CanClose(bool force);
 
     void EmulationModeChanged(bool emulationMode);
 
@@ -88,8 +85,6 @@ private:
     void SetPixelized(bool pixelized);
 
     void UpdateWindowTitle();
-
-    void closeEvent(QCloseEvent* event) override;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 

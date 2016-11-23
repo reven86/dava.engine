@@ -64,7 +64,7 @@ public:
 
     DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
 
-    bool TryCloseAllDocuments();
+    bool CloseAllDocuments(bool force);
 
     DocumentGroup* GetDocumentGroup() const;
 

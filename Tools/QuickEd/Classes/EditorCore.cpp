@@ -1,7 +1,6 @@
 #include "EditorCore.h"
 
 #include "Project/Project.h"
-#include "Document/DocumentGroup.h"
 #include "UI/mainwindow.h"
 
 #include "version.h"
@@ -176,12 +175,10 @@ EditorCore::EditorCore()
 
     mainWindow->SetEditorTitle(GenerateEditorTitle());
 
-    connect(mainWindow, &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow, &MainWindow::NewProject, this, &EditorCore::OnNewProject);
     connect(mainWindow, &MainWindow::OpenProject, this, &EditorCore::OnOpenProject);
     connect(mainWindow, &MainWindow::RecentProject, this, &EditorCore::OpenProject);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
-    connect(mainWindow, &MainWindow::Exit, this, &EditorCore::OnExit);
     connect(mainWindow, &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
     UnpackHelp();
     //we need to register preferences when whole class is initialized
@@ -226,7 +223,7 @@ void EditorCore::OnShowHelp()
 
 void EditorCore::OpenProject(const QString& path)
 {
-    if (!CloseProject())
+    if (!CloseProject(false))
     {
         return;
     }
@@ -258,7 +255,7 @@ void EditorCore::OpenProject(const QString& path)
 
 void EditorCore::OnCloseProject()
 {
-    CloseProject();
+    CloseProject(false);
 }
 
 bool EditorCore::CloseProject(bool force)
@@ -267,11 +264,7 @@ bool EditorCore::CloseProject(bool force)
     {
         return true;
     }
-    if (force)
-    {
-        project->GetDocumentGroup()->CloseAllDocuments();
-    }
-    else if (!project->TryCloseAllDocuments())
+    if (project->CloseAllDocuments(force) == false)
     {
         return false;
     }
@@ -281,14 +274,6 @@ bool EditorCore::CloseProject(bool force)
     DisableCacheClient();
     project = nullptr;
     return true;
-}
-
-void EditorCore::OnExit()
-{
-    if (CloseProject())
-    {
-        qApp->quit();
-    }
 }
 
 bool EditorCore::IsUsingAssetCache() const
