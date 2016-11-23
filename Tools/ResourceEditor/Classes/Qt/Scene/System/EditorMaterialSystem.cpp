@@ -1,6 +1,5 @@
 #include "EditorMaterialSystem.h"
 #include "Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
