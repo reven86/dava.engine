@@ -317,12 +317,6 @@ static void dx11_Texture_Delete(Handle tex)
         self->tex2d_srv = nullptr;
     }
 
-    for (const RenderTargetViewDX11_t& v : self->rt_view)
-    {
-        v.view->Release();
-    }
-    self->rt_view.clear();
-
     if (self->tex2d_dsv)
     {
         self->tex2d_dsv->Release();
@@ -337,6 +331,12 @@ static void dx11_Texture_Delete(Handle tex)
         self->tex2d_copy->Release();
         self->tex2d_copy = nullptr;
     }
+
+    for (const RenderTargetViewDX11_t& v : self->rt_view)
+    {
+        v.view->Release();
+    }
+    self->rt_view.clear();
 
     if (self->mappedData)
     {
