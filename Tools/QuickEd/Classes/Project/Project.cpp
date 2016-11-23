@@ -298,9 +298,19 @@ bool Project::CloseAllDocuments(bool force)
     return true;
 }
 
-DocumentGroup* Project::GetDocumentGroup() const
+void Project::SaveAllDocuments()
 {
-    return documentGroup.get();
+    documentGroup->SaveAllDocuments();
+}
+
+bool Project::CanCloseSilently() const
+{
+    return documentGroup->HasUnsavedDocuments() == false;
+}
+
+QStringList Project::GetUnsavedDocumentsNames() const
+{
+    return documentGroup->GetUnsavedDocumentsNames();
 }
 
 void Project::OnFindFileInProject()

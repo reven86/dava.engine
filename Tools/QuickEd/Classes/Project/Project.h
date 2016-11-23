@@ -65,8 +65,9 @@ public:
     DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
 
     bool CloseAllDocuments(bool force);
-
-    DocumentGroup* GetDocumentGroup() const;
+    void SaveAllDocuments();
+    bool CanCloseSilently() const;
+    QStringList GetUnsavedDocumentsNames() const;
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);

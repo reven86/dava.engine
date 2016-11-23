@@ -33,7 +33,9 @@ public:
     void OnRenderingInitialized();
 
     MainWindow* GetMainWindow() const;
-    Project* GetProject() const;
+    bool CanCloseProjectSilently() const;
+    QStringList GetUnsavedDocumentsNames() const;
+    void SaveAllDocuments();
     bool CloseProject(bool force);
 
 signals:
@@ -69,8 +71,8 @@ private:
 
     std::unique_ptr<Project> project;
 
-    //TArc owns mainWindow
-    MainWindow* mainWindow;
+    //TArc is owner of mainWindow
+    MainWindow* mainWindow = nullptr;
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;

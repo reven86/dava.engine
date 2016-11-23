@@ -209,9 +209,30 @@ MainWindow* EditorCore::GetMainWindow() const
     return mainWindow;
 }
 
-Project* EditorCore::GetProject() const
+bool EditorCore::CanCloseProjectSilently() const
 {
-    return project.get();
+    if (project)
+    {
+        return project->CanCloseSilently();
+    }
+    return true;
+}
+
+QStringList EditorCore::GetUnsavedDocumentsNames() const
+{
+    if (project)
+    {
+        return project->GetUnsavedDocumentsNames();
+    }
+    return QStringList();
+}
+
+void EditorCore::SaveAllDocuments()
+{
+    if (project)
+    {
+        project->SaveAllDocuments();
+    }
 }
 
 void EditorCore::OnShowHelp()
