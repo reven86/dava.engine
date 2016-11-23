@@ -5,6 +5,12 @@
 
 #include "Base/BaseObject.h"
 
+namespace rhi
+{
+// forward declaration of RenderingError type for use in callback.
+enum class RenderingError : DAVA::uint32;
+}
+
 namespace DAVA
 {
 /**
@@ -256,7 +262,7 @@ protected:
         Application should be gracefully closed with all required actions (dump memory, update analytics, etc),
         Assumed to be "no-return" callback. Application behaviour after this callback assumed to be undefined.
     */
-    virtual void OnRenderingIsNotPossible();
+    virtual void OnRenderingIsNotPossible(rhi::RenderingError);
 
 #if defined(__DAVAENGINE_ANDROID__)
 protected:

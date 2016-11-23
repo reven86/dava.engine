@@ -54,6 +54,12 @@ enum Api
     RHI_METAL
 };
 
+enum class RenderingError : uint32_t
+{
+    DriverError,
+    UnsupportedHardware,
+};
+
 enum ProgType
 {
     PROG_VERTEX,

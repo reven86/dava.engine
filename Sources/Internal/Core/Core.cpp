@@ -296,9 +296,9 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
-    rendererParams.renderingNotPossibleFunc = []()
+    rendererParams.renderingNotPossibleFunc = [](rhi::RenderingError error)
     {
-        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible(error);
     };
 
     Renderer::Initialize(renderer, rendererParams);

@@ -202,12 +202,27 @@ void DX9CheckMultisampleSupport()
 
 void dx9_InitCaps()
 {
-    D3DCAPS9 caps;
+    D3DCAPS9 caps = {};
     _D3D9_Device->GetDeviceCaps(&caps);
+
+    DWORD shaderModel = DAVA::Min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
+    if (shaderModel < 3)
+    {
+        if (_DX9_InitParam.renderingNotPossibleFunc)
+        {
+            _DX9_InitParam.renderingNotPossibleFunc(RenderingError::UnsupportedHardware);
+        }
+        else
+        {
+            DVASSERT_MSG(0, "RHI error callback is not set and has been called");
+            abort();
+        }
+        return;
+    }
 
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) >= 3);
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true; // assume having Shader Model 3 or greater
     MutableDeviceCaps::Get().isInstancingSupported = true;
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
