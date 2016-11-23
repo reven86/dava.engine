@@ -109,7 +109,7 @@ Logger::eLogLevel Logger::GetLogLevel() const
     return logLevel;
 }
 
-const char8* Logger::GetLogLevelString(eLogLevel ll) const
+const char8* Logger::GetLogLevelString(eLogLevel ll)
 {
 #ifndef __DAVAENGINE_WINDOWS__
     static_assert(logLevelString.size() == LEVEL__DISABLE,
@@ -118,7 +118,7 @@ const char8* Logger::GetLogLevelString(eLogLevel ll) const
     return logLevelString[ll];
 }
 
-Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll) const
+Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll)
 {
     for (size_t i = 0; i < logLevelString.size(); ++i)
     {
