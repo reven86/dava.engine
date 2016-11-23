@@ -9,7 +9,7 @@ class ReflectedType;
 
 /**
     \ingroup reflection
-    ADatabase .
+    ReflectedType database.
 
     Holds info about type static structure `ReflectedStructure` and runtime structure wrapper `StructureWrapper`.
 */

@@ -19,12 +19,17 @@
     Minimalistic program that uses dava.engine:
     \code
     #include <Engine/Engine.h>
+
     int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     {
-        using namespace DAVA;
-        Engine engine; // Create Engine object
-        engine.Init(eEngineRunMode::GUI_STANDALONE, Vector<String>(), nullptr); // Initialize engine
-        return engine.Run(); // Run game loop
+        // Create Engine object
+        DAVA::Engine engine; 
+
+        // Initialize engine
+        engine.Init(DAVA::eEngineRunMode::GUI_STANDALONE, DAVA::Vector<String>(), nullptr); 
+
+        // Run game loop
+        return engine.Run(); 
     }
     \endcode
 */
