@@ -208,9 +208,9 @@ void dx9_InitCaps()
     DWORD shaderModel = DAVA::Min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
     if (shaderModel < 3)
     {
-        if (_DX9_InitParam.renderingNotPossibleFunc)
+        if (_DX9_InitParam.renderingErrorCallback)
         {
-            _DX9_InitParam.renderingNotPossibleFunc(RenderingError::UnsupportedShaderModel);
+            _DX9_InitParam.renderingErrorCallback(RenderingError::UnsupportedShaderModel, _DX9_InitParam.renderingErrorCallbackContext);
         }
     }
 

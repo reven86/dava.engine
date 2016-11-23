@@ -294,12 +294,9 @@ void Core::CreateRenderer()
     rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
     rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
-
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
-    rendererParams.renderingNotPossibleFunc = [](rhi::RenderingError error)
-    {
-        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible(error);
-    };
+    rendererParams.renderingErrorCallback = &Core::OnRenderingError;
+    rendererParams.renderingErrorCallbackContext = this;
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -960,6 +957,11 @@ Analytics::Core& Core::GetAnalyticsCore() const
 {
     DVASSERT(analyticsCore);
     return *analyticsCore;
+}
+
+void Core::OnRenderingError(rhi::RenderingError error, void* context)
+{
+    GetApplicationCore()->OnRenderingIsNotPossible(error);
 }
 
 } // namespace DAVA

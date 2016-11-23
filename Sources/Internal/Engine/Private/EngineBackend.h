@@ -95,10 +95,10 @@ private:
     void HandleAppTerminate(const MainDispatcherEvent& e);
     void HandleUserCloseRequest(const MainDispatcherEvent& e);
 
-    void HandleRenderingNotPossible(rhi::RenderingError error);
-
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
+
+    static void OnRenderingError(rhi::RenderingError err, void* param);
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;

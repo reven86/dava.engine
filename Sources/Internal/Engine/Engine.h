@@ -9,6 +9,8 @@
 #include "Engine/EngineContext.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
+#include "Render/RHI/rhi_Type.h"
+
 namespace DAVA
 {
 class KeyedArchive;
@@ -229,6 +231,7 @@ public:
     Signal<> suspended; //!< Emited when application has entered suspended state. This signal is fired only on platforms
     //!< that support suspending: UWP, iOS, Android. Rendering is stopped but update signal is emited if system permits.
     Signal<> resumed; //!< Emited when application exits suspended state.
+    Signal<rhi::RenderingError> renderingError; //!< Emited when rendering is not possible anymore, can be invoked from any thread.
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

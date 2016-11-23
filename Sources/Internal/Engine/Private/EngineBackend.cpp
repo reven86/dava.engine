@@ -534,13 +534,6 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
     }
 }
 
-void EngineBackend::HandleRenderingNotPossible(rhi::RenderingError error)
-{
-    // rendering error event should be processed immediately
-    dispatcher->LinkToCurrentThread();
-    dispatcher->SendEvent(MainDispatcherEvent::CreateRenderingNotPossibleError(error));
-}
-
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
     dispatcher->PostEvent(MainDispatcherEvent::CreateAppTerminateEvent(triggeredBySystem));
@@ -590,10 +583,9 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.height = static_cast<int32>(surfSize.dy);
     rendererParams.scaleX = surfSize.dx / size.dx;
     rendererParams.scaleY = surfSize.dy / size.dy;
-    rendererParams.renderingNotPossibleFunc = [](rhi::RenderingError err)
-    {
-        Instance()->HandleRenderingNotPossible(err);
-    };
+
+    rendererParams.renderingErrorCallbackContext = this;
+    rendererParams.renderingErrorCallback = &EngineBackend::OnRenderingError;
 
     w->InitCustomRenderParams(rendererParams);
 
@@ -774,6 +766,18 @@ void EngineBackend::DestroySubsystems()
     context->systemTimer->Release();
 
     context->logger->Release();
+}
+
+void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
+{
+    EngineBackend* self = static_cast<EngineBackend*>(param);
+    self->engine->renderingError.Emit(err);
+
+    // abort if signal was ignored
+    String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x", static_cast<DAVA::uint32>(err));
+    DVASSERT_MSG(0, info.c_str());
+    Logger::Error("%s", info.c_str());
+    abort();
 }
 
 } // namespace Private
