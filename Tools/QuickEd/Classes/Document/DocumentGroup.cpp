@@ -1,15 +1,18 @@
-#include "Document/Document.h"
-#include "Document/DocumentGroup.h"
-#include "Command/CommandStack.h"
+#include "DocumentGroup.h"
+
 #include "Document/CommandsBase/CommandStackGroup.h"
-
+#include "Document/Document.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-
-#include "Debug/DVAssert.h"
-#include "UI/FileSystemView/FileSystemModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
+#include "Project/Project.h"
+#include "UI/DocumentGroupView.h"
+#include "UI/FileSystemView/FileSystemModel.h"
+
+#include "Command/CommandStack.h"
+#include "Debug/DVAssert.h"
 #include "UI/UIPackageLoader.h"
+
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QApplication>
 #include <QMutableListIterator>
@@ -19,9 +22,10 @@
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(QObject* parent)
+DocumentGroup::DocumentGroup(Project* project_, MainWindow::DocumentGroupView* view_, QObject* parent)
     : QObject(parent)
-    , active(nullptr)
+    , project(project_)
+    , view(view_)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
@@ -29,14 +33,29 @@ DocumentGroup::DocumentGroup(QObject* parent)
     commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
     commandStackGroup->undoCommandChanged.Connect([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
     commandStackGroup->redoCommandChanged.Connect([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
+
+    connect(view, &MainWindow::DocumentGroupView::OpenPackageFile, this, &DocumentGroup::AddDocument);
+    connect(this, &DocumentGroup::ActiveDocumentChanged, view, &MainWindow::DocumentGroupView::OnDocumentChanged);
+
+    ConnectToTabBar(view->GetTabBar());
+
+    AttachRedoAction(view->GetActionRedo());
+    AttachUndoAction(view->GetActionUndo());
+
+    AttachSaveAction(view->GetActionSaveDocument());
+    AttachSaveAllAction(view->GetActionSaveAllDocuments());
+
+    AttachCloseDocumentAction(view->GetActionCloseDocument());
+    AttachReloadDocumentAction(view->GetActionReloadDocument());
+
+    view->SetProject(project);
 }
 
-DocumentGroup::~DocumentGroup() = default;
-
-QList<Document*> DocumentGroup::GetDocuments() const
+DocumentGroup::~DocumentGroup()
 {
-    return documents;
-}
+    view->SetProject(nullptr);
+    DisconnectTabBar(view->GetTabBar());
+};
 
 Document* DocumentGroup::GetActiveDocument() const
 {
@@ -82,7 +101,6 @@ void DocumentGroup::AttachUndoAction(QAction* undoAction) const
     undoAction->setEnabled(commandStackGroup->CanUndo());
     connect(this, &DocumentGroup::UndoTextChanged, [undoAction](const QString& text) {
         QString actionText = text.isEmpty() ? "Undo" : "Undo: " + text;
-        undoAction->setText(actionText);
         undoAction->setToolTip(actionText);
     });
     connect(this, &DocumentGroup::CanUndoChanged, undoAction, &QAction::setEnabled);
@@ -94,7 +112,6 @@ void DocumentGroup::AttachRedoAction(QAction* redoAction) const
     redoAction->setEnabled(commandStackGroup->CanRedo());
     connect(this, &DocumentGroup::RedoTextChanged, [redoAction](const QString& text) {
         QString actionText = text.isEmpty() ? "Redo" : "Redo: " + text;
-        redoAction->setText(actionText);
         redoAction->setToolTip(actionText);
     });
     connect(this, &DocumentGroup::CanRedoChanged, redoAction, &QAction::setEnabled);
@@ -357,15 +374,20 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
         commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
+
+    view->SetDocumentActionsEnabled(active != nullptr);
+
     emit ActiveDocumentChanged(document);
     emit ActiveIndexChanged(documents.indexOf(document));
     emit CanSaveChanged(CanSave());
     emit CanCloseChanged(CanClose());
+    emit CanUndoChanged(commandStackGroup->CanUndo());
+    emit CanRedoChanged(commandStackGroup->CanRedo());
 }
 
 void DocumentGroup::SaveAllDocuments()
 {
-    for (auto& document : documents)
+    for (Document* document : documents)
     {
         SaveDocument(document, true);
     }
@@ -502,7 +524,7 @@ void DocumentGroup::ApplyFileChanges()
 {
     QList<Document*> changed;
     QList<Document*> removed;
-    for (const auto& document : changedFiles)
+    for (Document* document : changedFiles)
     {
         if (document->IsDocumentExists())
         {
@@ -555,7 +577,7 @@ void DocumentGroup::SaveDocument(Document* document, bool force)
     QFileInfo fileInfo(document->GetPackageAbsolutePath());
     if (!fileInfo.exists())
     {
-        QString saveFileName = FileDialog::getSaveFileName(qApp->activeWindow(), tr("Save document as"), document->GetPackageAbsolutePath(), "*" + FileSystemModel::GetYamlExtensionString());
+        QString saveFileName = FileDialog::getSaveFileName(qApp->activeWindow(), tr("Save document as"), document->GetPackageAbsolutePath(), "*" + Project::GetUiFileExtension());
         if (!saveFileName.isEmpty())
         {
             FilePath projectPath(saveFileName.toStdString().c_str());
@@ -584,6 +606,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
         Document* document = new Document(packageRef, this);
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
+        connect(this, &DocumentGroup::FontPresetChanged, document, &Document::OnFontPresetChanged, Qt::DirectConnection);
         return document;
     }
     else
@@ -619,4 +642,61 @@ RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
         return builder.BuildPackage();
 
     return RefPtr<PackageNode>();
+}
+
+void DocumentGroup::RefreshControlsStuff()
+{
+    for (Document* document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void DocumentGroup::LanguageChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::RtlChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::BiDiSupportChanged()
+{
+    RefreshControlsStuff();
+}
+
+void DocumentGroup::GlobalStyleClassesChanged()
+{
+    RefreshControlsStuff();
+}
+
+bool DocumentGroup::TryCloseAllDocuments()
+{
+    while (!documents.empty())
+    {
+        if (!TryCloseDocument(documents.first()))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool DocumentGroup::HasUnsavedDocuments() const
+{
+    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](const Document* document) { return document->CanSave(); }) != documents.end();
+
+    return hasUnsaved;
+}
+
+void DocumentGroup::CloseAllDocuments()
+{
+    while (!documents.empty())
+    {
+        CloseDocument(documents.first());
+    }
 }

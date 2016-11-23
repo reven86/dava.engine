@@ -1,7 +1,10 @@
 #include "ApplyMaterialPresetCommand.h"
 
 #include "Classes/Commands2/RECommandIDs.h"
-#include "Classes/Qt/Project/ProjectManager.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
@@ -332,6 +335,9 @@ void ApplyMaterialPresetCommand::StoreMaterialPresetImpl(DAVA::KeyedArchive* arc
 void ApplyMaterialPresetCommand::PrepareSerializationContext(DAVA::SerializationContext& context)
 {
     context.SetScene(scene);
-    context.SetScenePath(ProjectManager::Instance()->GetProjectPath());
+
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    context.SetScenePath(data->GetProjectPath());
     context.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
 }

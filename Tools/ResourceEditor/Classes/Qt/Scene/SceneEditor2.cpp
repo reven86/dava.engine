@@ -1,5 +1,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -9,7 +11,6 @@
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
-#include "Project/ProjectManager.h"
 #include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/Utils/RenderContextGuard.h"
@@ -179,7 +180,14 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
     }
 
     SceneValidator::ExtractEmptyRenderObjects(this);
-    SceneValidator::Instance()->ValidateScene(this, path);
+
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+    validator.ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 

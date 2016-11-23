@@ -39,6 +39,7 @@
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 
 using namespace DAVA;

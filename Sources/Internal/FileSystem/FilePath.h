@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Any.h"
 
 namespace DAVA
 {
@@ -300,4 +301,15 @@ inline FilePath::ePathType FilePath::GetType() const
 {
     return pathType;
 }
+
+template <>
+struct AnyCompare<FilePath>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        const FilePath& filePath1 = v1.Get<FilePath>();
+        const FilePath& filePath2 = v2.Get<FilePath>();
+        return filePath1 == filePath2;
+    }
+};
 } // end namespace DAVA

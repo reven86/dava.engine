@@ -107,7 +107,7 @@ String GetResourceDirName(const String& arch, const String& dirName, const Strin
     return result;
 }
 #endif
-    
+
 #if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
 {
@@ -346,7 +346,7 @@ void FilePath::Initialize(const String& _pathname)
     else
     {
         Logger::FrameworkDebug("[FilePath::Initialize] FilePath was initialized from relative path name (%s)", _pathname.c_str());
-        
+
 #if defined(__DAVAENGINE_ANDROID__)
         absolutePathname = pathname;
 #else //#if defined(__DAVAENGINE_ANDROID__)
@@ -679,6 +679,20 @@ String FilePath::GetSystemPathname(const String& pathname, const ePathType pType
     return NormalizePathname(retPath);
 }
 
+struct IsPathStartingWith
+{
+    const String& start;
+    IsPathStartingWith(const String& p)
+        : start(p)
+    {
+    }
+    bool operator()(const FilePath& p) const
+    {
+        const String& path = p.GetStringValue();
+        return start.find(path) == 0;
+    }
+};
+
 String FilePath::GetFrameworkPath() const
 {
     if (PATH_IN_RESOURCES == pathType)
@@ -694,6 +708,17 @@ String FilePath::GetFrameworkPath() const
     if (!pathInDoc.empty())
     {
         return pathInDoc;
+    }
+
+    // search starting from last added directories
+    auto it = std::find_if(rbegin(resourceFolders), rend(resourceFolders),
+                           IsPathStartingWith(absolutePathname));
+
+    if (it != rend(resourceFolders))
+    {
+        const String& s = it->GetStringValue();
+        String copy = absolutePathname;
+        return copy.replace(0, s.size(), "~res:/");
     }
 
     DVASSERT(false);
@@ -900,7 +925,7 @@ FilePath::ePathType FilePath::GetPathType(const String& pathname)
     {
         return PATH_IN_RESOURCES;
     }
-    
+
 #if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
     if (0 == pathname.find("~zip:"))
     {

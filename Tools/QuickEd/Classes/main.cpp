@@ -1,6 +1,7 @@
 #include "Engine/Engine.h"
 #include "Debug/DVAssertDefaultHandlers.h"
 #include "EditorCore.h"
+#include "Render/RHI/rhi_Type.h"
 
 DAVA::KeyedArchive* CreateOptions()
 {
@@ -33,8 +34,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     engine.gameLoopStarted.Connect([&]()
                                    {
                                        DVASSERT(editorCore == nullptr);
-                                       editorCore = std::make_unique<EditorCore>();
-                                       editorCore->Init(engine);
+                                       editorCore = std::make_unique<EditorCore>(engine);
                                    });
 
     engine.windowCreated.Connect([&](DAVA::Window*)
