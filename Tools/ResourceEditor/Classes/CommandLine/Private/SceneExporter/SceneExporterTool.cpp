@@ -184,7 +184,7 @@ bool SceneExporterTool::PostInitInternal()
         }
         else
         {
-            requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+            requestedGPUs.push_back(gpu);
         }
     }
     if (requestedGPUs.empty())

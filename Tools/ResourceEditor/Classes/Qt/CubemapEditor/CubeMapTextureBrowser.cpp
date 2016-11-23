@@ -3,17 +3,20 @@
 #include "CubemapEditor/CubemapUtils.h"
 #include "Qt/Main/QtUtils.h"
 #include "ui_CubeMapTextureBrowser.h"
-#include "../../StringConstants.h"
-#include "Project/ProjectManager.h"
+#include "Classes/StringConstants.h"
 #include "ImageTools/ImageTools.h"
 
-#include <QScrollBar>
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
 #include "QtTools/FileDialogs/FileDialog.h"
 
-
-#include <qdir>
+#include <QScrollBar>
+#include <QDir>
 
 const int FACE_IMAGE_SIZE = 64;
 
@@ -30,8 +33,10 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 
     ConnectSignals();
 
-    DAVA::FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
-                                                                  ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    DAVA::FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir", data->GetDataSourcePath().GetAbsolutePathname());
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
     ReloadTextures(projectPath.GetAbsolutePathname());
