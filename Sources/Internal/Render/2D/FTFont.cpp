@@ -668,5 +668,4 @@ inline int32 FTInternalFont::FtCeil(int32 val)
 {
     return (((val) + 63) & -64);
 }
-
 };

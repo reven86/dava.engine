@@ -62,7 +62,6 @@ FTManager::~FTManager()
 FT_Error FTManager::LookupFace(FaceID* faceId, FT_Face* face)
 {
     return FTC_Manager_LookupFace(manager, static_cast<FTC_FaceID>(faceId), face);
-    ;
 }
 
 FT_Error FTManager::LookupSize(FaceID* faceId, float32 size, FT_Size* ftsize)
@@ -77,7 +76,6 @@ FT_Error FTManager::LookupSize(FaceID* faceId, float32 size, FT_Size* ftsize)
       0
     };
     return FTC_Manager_LookupSize(manager, &fontScaler, ftsize);
-    ;
 }
 
 FT_Error FTManager::LookupGlyph(FaceID* faceId, float32 size, uint32 glyphIndex, FT_Glyph* glyph)
@@ -92,7 +90,6 @@ FT_Error FTManager::LookupGlyph(FaceID* faceId, float32 size, uint32 glyphIndex,
       0
     };
     return FTC_ImageCache_LookupScaler(glyphcache, &fontScaler, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING, glyphIndex, glyph, 0);
-    ;
 }
 
 uint32 FTManager::LookupGlyphIndex(FaceID* faceId, uint32 codePoint)
