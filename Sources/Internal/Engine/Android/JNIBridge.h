@@ -10,6 +10,7 @@
 #include <jni.h>
 #include <stdexcept>
 
+#include "Functional/Function.h"
 #include "Utils/StringFormat.h"
 #include "Debug/DVAssert.h"
 #include "Math/Rect.h"
