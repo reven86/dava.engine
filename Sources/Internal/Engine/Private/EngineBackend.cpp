@@ -800,15 +800,15 @@ void EngineBackend::DestroySubsystems()
         context->uiScreenManager->Release();
         context->uiScreenManager = nullptr;
     }
-    if (context->fontManager != nullptr)
-    {
-        context->fontManager->Release();
-        context->fontManager = nullptr;
-    }
     if (context->uiControlSystem != nullptr)
     {
         context->uiControlSystem->Release();
         context->uiControlSystem = nullptr;
+    }
+    if (context->fontManager != nullptr)
+    {
+        context->fontManager->Release();
+        context->fontManager = nullptr;
     }
     if (context->animationManager != nullptr)
     {
