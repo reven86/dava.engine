@@ -685,6 +685,22 @@ float32 SoundSystem::GetGroupVolume(const FastName& groupName) const
     return ret;
 }
 
+void SoundSystem::SetAllGroupsSpeed(float32 speed)
+{
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup& group = soundGroups[i];
+
+        group.speed = speed;
+        for (auto& x : group.events)
+        {
+            x->SetSpeed(speed);
+        }
+    }
+}
+
 void SoundSystem::SetGroupSpeed(const FastName& groupName, float32 speed)
 {
     LockGuard<Mutex> lock(soundGroupsMutex);

@@ -188,8 +188,9 @@ void MusicIOSSoundEvent::SetSpeed(float32 _speed)
     if (!FLOAT_EQUAL(_speed, 1.0f))
     {
         // AVAudioPlayer only supports 0.5f - 2.0f range
-        player.rate = Clamp(_speed, 0.5f, 2.0f);
         player.enableRate = YES;
+        player.rate = Clamp(_speed, 0.5f, 2.0f);
+        [player prepareToPlay];
     }
     else
     {

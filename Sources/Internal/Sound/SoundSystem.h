@@ -70,6 +70,7 @@ public:
     void SetGroupVolume(const FastName& groupName, float32 volume);
     float32 GetGroupVolume(const FastName& groupName) const;
 
+    void SetAllGroupsSpeed(float32 speed);
     void SetGroupSpeed(const FastName& groupName, float32 speed);
     float32 GetGroupSpeed(const FastName& groupName) const;
 
