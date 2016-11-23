@@ -60,7 +60,7 @@ YamlNode* UIYamlLoader::CreateRootNode(const FilePath& yamlPathname)
 
 void UIYamlLoader::LoadFontsFromNode(const YamlNode* rootNode)
 {
-    for (MultiMap<String, YamlNode*>::const_iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
+    for (auto t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
     {
         YamlNode* node = t->second;
 
