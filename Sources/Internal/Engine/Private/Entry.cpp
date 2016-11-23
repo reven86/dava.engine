@@ -3,8 +3,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/Exception.h"
 #include "Base/Platform.h"
+#include "Debug/Backtrace.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Logger/Logger.h"
 
 #include <exception>
 
@@ -50,8 +52,15 @@ int main(int argc, char* argv[])
         std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
         return DAVAMain(std::move(cmdargs));
     } catch (const Exception& e) {
-        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
-        (void)e;
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        std::terminate();
+    } catch (const std::exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         std::terminate();
     }
 }
@@ -75,8 +84,15 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
         std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
         return DAVAMain(std::move(cmdargs));
     } catch (const Exception& e) {
-        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
-        (void)e;
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        std::terminate();
+    } catch (const std::exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         std::terminate();
     }
 }

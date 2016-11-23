@@ -10,6 +10,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
+#include "Debug/Backtrace.h"
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
@@ -151,8 +152,17 @@ void PlatformCore::GameThread()
     }
     catch (const Exception& e)
     {
-        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
-        (void)e;
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        std::terminate();
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         std::terminate();
     }
 

@@ -12,9 +12,10 @@
 #include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
+#include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
-#include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
+#include "Platform/SystemTimer.h"
 
 #include <exception>
 
@@ -125,8 +126,17 @@ void PlatformCore::GameThread()
     }
     catch (const Exception& e)
     {
-        // TODO: log unhandled Exception occured in DAVAMain. Do not use DAVA::Logger!!!
-        (void)e;
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        std::terminate();
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         std::terminate();
     }
 }
