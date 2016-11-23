@@ -38,7 +38,7 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 #include "Concurrency/Mutex.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Concurrency/LockGuard.h"
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Utils/UTF8Utils.h"
 
 #if !defined(__DAVAENGINE_COREV2__)

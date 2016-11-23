@@ -4,7 +4,7 @@
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #endif

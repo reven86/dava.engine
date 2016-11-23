@@ -1,6 +1,7 @@
 ﻿#include <cef/include/cef_browser.h>
 #include <regex>
 
+#include "Engine/Engine.h"
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
@@ -8,7 +9,6 @@
 #include "CEFWebViewControl.h"
 #include "CEFDavaResourceHandler.h"
 #include "Utils/Utils.h"
-#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

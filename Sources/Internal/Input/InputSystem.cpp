@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"

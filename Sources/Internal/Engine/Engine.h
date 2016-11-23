@@ -8,6 +8,11 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/EngineContext.h"
 #include "Engine/PlatformApi.h"
+#include "Engine/Window.h"
+
+/**
+    \defgroup engine Engine
+*/
 
 namespace DAVA
 {

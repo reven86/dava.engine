@@ -10,7 +10,7 @@
 
 #include "UI/UIControlSystem.h"
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Render/RHI/rhi_Public.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"

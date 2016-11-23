@@ -1,5 +1,5 @@
 #include <Base/BaseTypes.h>
-#include <Engine/EngineModule.h>
+#include <Engine/Engine.h>
 
 #include "CommandLineApplication.h"
 #include "ArchivePackTool.h"

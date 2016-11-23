@@ -15,7 +15,7 @@
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 #include "UI/Private/iOS/WebViewControliOS.h"

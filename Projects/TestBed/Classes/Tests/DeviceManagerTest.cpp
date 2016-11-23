@@ -2,7 +2,7 @@
 
 #include "Infrastructure/TestBed.h"
 
-#include <Engine/EngineModule.h>
+#include <Engine/Engine.h>
 #include <DeviceManager/DeviceManager.h>
 
 using namespace DAVA;

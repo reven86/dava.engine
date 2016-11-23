@@ -8,7 +8,10 @@
 #import <UIKit/UIKit.h>
 #import "UI/UITextField.h"
 
-#include "Engine/EngineModule.h"
+namespace DAVA
+{
+class Window;
+}
 
 @interface UITextFieldHolder : UIView<UITextFieldDelegate, UITextViewDelegate>
 {

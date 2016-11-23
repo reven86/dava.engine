@@ -9,8 +9,7 @@
 #include "Sound/SoundEvent.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

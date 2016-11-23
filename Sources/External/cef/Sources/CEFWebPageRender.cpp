@@ -5,7 +5,7 @@
 #include "Render/TextureDescriptor.h"
 #include "UI/UIControlSystem.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

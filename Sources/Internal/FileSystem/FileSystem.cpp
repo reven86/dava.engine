@@ -17,7 +17,7 @@
 #include "Concurrency/LockGuard.h"
 #include "PackManager/PackManager.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>

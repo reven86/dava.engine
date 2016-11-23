@@ -12,8 +12,7 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"

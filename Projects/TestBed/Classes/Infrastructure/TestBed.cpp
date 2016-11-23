@@ -1,7 +1,6 @@
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/EngineModule.h"
-
+#include "Engine/Engine.h"
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"

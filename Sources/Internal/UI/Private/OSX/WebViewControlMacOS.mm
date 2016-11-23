@@ -3,7 +3,7 @@
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
