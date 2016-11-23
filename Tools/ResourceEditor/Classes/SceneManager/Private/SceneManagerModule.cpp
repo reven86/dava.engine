@@ -127,6 +127,12 @@ void SceneManagerModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 
 void SceneManagerModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
+#if defined(__DAVAENGINE_DEBUG__)
+    SceneData* sceneData = context->GetData<SceneData>();
+    DVASSERT(sceneData != nullptr);
+    DVASSERT(sceneData->scene.Get() != nullptr);
+#endif
+
     using namespace DAVA::TArc;
     SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
     DVASSERT(tabsModel != nullptr);
@@ -594,11 +600,6 @@ void SceneManagerModule::CreateNewScene()
 {
     using namespace DAVA::TArc;
     ContextManager* contextManager = GetContextManager();
-    DataContext::ContextID newContext = contextManager->CreateContext();
-
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* context = accessor->GetContext(newContext);
-    DVASSERT(context != nullptr);
 
     UI* ui = GetUI();
     WaitDialogParams waitDlgParams;
@@ -612,7 +613,9 @@ void SceneManagerModule::CreateNewScene()
 
     std::unique_ptr<SceneData> sceneData = std::make_unique<SceneData>();
     sceneData->scene = scene;
-    context->CreateData(std::move(sceneData));
+    DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
+    initialData.emplace_back(std::move(sceneData));
+    DataContext::ContextID newContext = contextManager->CreateContext(std::move(initialData));
     contextManager->ActivateContext(newContext);
 }
 
@@ -706,13 +709,12 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
     std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
 
     DAVA::RefPtr<SceneEditor2> scene = OpenSceneImpl(scenePath);
-    DataContext::ContextID newContext = contextManager->CreateContext();
-    DataContext* context = accessor->GetContext(newContext);
-    DVASSERT(context != nullptr);
-
     std::unique_ptr<SceneData> sceneData = std::make_unique<SceneData>();
     sceneData->scene = scene;
-    context->CreateData(std::move(sceneData));
+
+    DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
+    initialData.emplace_back(std::move(sceneData));
+    DataContext::ContextID newContext = contextManager->CreateContext(std::move(initialData));
     contextManager->ActivateContext(newContext);
 }
 

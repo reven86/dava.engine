@@ -31,7 +31,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextCreated(_))
         .WillOnce(Invoke(fn));
 
-        DataContext::ContextID id = GetContextManager()->CreateContext();
+        DataContext::ContextID id = GetContextManager()->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         TEST_VERIFY(id == undeletedContext);
     }
 
@@ -116,7 +116,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
             mng->ActivateContext(id);
         };
 
-        DataContext::ContextID id = mng->CreateContext();
+        DataContext::ContextID id = mng->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         TEST_VERIFY(id == newContext);
 
         TEST_VERIFY(accessor->GetActiveContext() == nullptr);

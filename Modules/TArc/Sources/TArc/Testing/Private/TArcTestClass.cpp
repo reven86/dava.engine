@@ -47,7 +47,7 @@ protected:
     void PostInit() override
     {
         ContextManager* ctxManager = GetContextManager();
-        DataContext::ContextID id = ctxManager->CreateContext();
+        DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         ctxManager->ActivateContext(id);
     }
 };

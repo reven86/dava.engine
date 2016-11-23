@@ -369,7 +369,7 @@ private:
     void RegisterOperation(int operationID, AnyFn&& fn) override
     {
     }
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         DVASSERT(false);
         return DataContext::ContextID();
@@ -510,10 +510,17 @@ public:
         globalOperations.emplace(operationID, fn);
     }
 
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
         DataContext* context = contexts.back().get();
+
+        for (std::unique_ptr<DataNode>& data : initialData)
+        {
+            context->CreateData(std::move(data));
+        }
+        initialData.clear();
+
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->OnContextCreated(context);

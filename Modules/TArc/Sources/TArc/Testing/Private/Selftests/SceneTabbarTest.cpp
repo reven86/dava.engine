@@ -114,7 +114,7 @@ public:
         using namespace DAVA::TArc;
 
         ContextManager* mng = testClass->GetContextManager();
-        contextID = mng->CreateContext();
+        contextID = mng->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         mng->ActivateContext(contextID);
     }
 
@@ -162,7 +162,7 @@ public:
         switch (phase)
         {
         case 0:
-            secondContext = testClass->GetContextManager()->CreateContext();
+            secondContext = testClass->GetContextManager()->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
             break;
         case 1:
             testClass->GetContextManager()->ActivateContext(secondContext);
