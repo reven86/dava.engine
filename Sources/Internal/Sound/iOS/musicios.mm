@@ -190,12 +190,13 @@ void MusicIOSSoundEvent::SetSpeed(float32 _speed)
         // AVAudioPlayer only supports 0.5f - 2.0f range
         player.enableRate = YES;
         player.rate = Clamp(_speed, 0.5f, 2.0f);
-        [player prepareToPlay];
     }
     else
     {
         player.enableRate = NO;
     }
+
+    [player prepareToPlay];
 }
 
 void MusicIOSSoundEvent::SetLoopCount(int32 looping)
