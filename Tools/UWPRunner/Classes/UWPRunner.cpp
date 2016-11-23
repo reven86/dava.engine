@@ -471,7 +471,7 @@ void UWPRunner::NetLogOutput(const String& logString)
     }
 }
 
-DAVA::EngineContext* UWPRunner::GetEngineContext()
+const DAVA::EngineContext* UWPRunner::GetEngineContext() const
 {
     return Engine::Instance()->GetContext();
 }
