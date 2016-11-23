@@ -633,6 +633,8 @@ void SoundSystem::ReleaseAllEventWaveData()
 
 void SoundSystem::SetAllGroupsVolume(float32 volume)
 {
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
     for (size_t i = 0; i < soundGroups.size(); ++i)
     {
         SoundGroup& group = soundGroups[i];

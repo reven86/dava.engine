@@ -84,7 +84,6 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     Engine e;
     e.Init(runmode, modules, appOptions);
 
-    SoundSystem::Instance()->InitFromQualitySettings();
     CheckDeviceInfoValid();
 
     TestBed game(e);
