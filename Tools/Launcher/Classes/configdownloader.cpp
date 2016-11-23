@@ -1,9 +1,11 @@
 #include "configdownloader.h"
 #include "ui_configdownloader.h"
 #include "filemanager.h"
-#include "processhelper.h"
 #include "errormessenger.h"
 #include "applicationmanager.h"
+
+#include "QtHelpers/ProcessHelper.h"
+
 #include <QProcess>
 
 ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)

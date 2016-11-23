@@ -1,11 +1,11 @@
 #include "applicationmanager.h"
 #include "filemanager.h"
 #include "errormessenger.h"
-#include "processhelper.h"
 #include "filemanager.h"
 
 #include "QtHelpers/HelperFunctions.h"
 #include "QtHelpers/ProcessCommunication.h"
+#include "QtHelpers/ProcessHelper.h"
 
 #include <QFile>
 #include <QDebug>

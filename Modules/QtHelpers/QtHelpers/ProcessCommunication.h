@@ -29,6 +29,8 @@ public:
         REJECT,
         UNKNOWN_MESSAGE,
         NOT_INITIALIZED,
+        NOT_RUNNING,
+        NOT_EXISTS,
         SEND_ERROR,
         TIMEOUT_ERROR,
         USER_REPLY = 0xFFFFF

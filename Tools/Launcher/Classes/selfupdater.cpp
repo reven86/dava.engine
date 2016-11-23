@@ -2,8 +2,10 @@
 #include "ui_selfupdater.h"
 #include "filemanager.h"
 #include "ziputils.h"
-#include "processhelper.h"
 #include "errormessenger.h"
+
+#include "QtHelpers/ProcessHelper.h"
+
 #include <QProcess>
 #include <QPushButton>
 #include <QApplication>

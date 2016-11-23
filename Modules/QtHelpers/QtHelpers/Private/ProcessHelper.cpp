@@ -1,9 +1,10 @@
-#include "processhelper.h"
+#include "QtHelpers/ProcessHelper.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <TlHelp32.h>
 #endif
+
 #include <QUrl>
 #include <QDesktopServices>
 #include <QProcess>
@@ -14,37 +15,6 @@ void ProcessHelper::RunProcess(const QString& path)
 {
     QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
 }
-
-//bool ProcessHelper::GetProcessPSN(const QString& path, ProcessSerialNumber& psn)
-//{
-//    psn.highLongOfPSN = kNoProcess;
-//    psn.lowLongOfPSN = kNoProcess;
-
-//    char buffer[400];
-//    CFStringRef key = CFSTR("CFBundleExecutable");
-
-//    OSStatus status = GetNextProcess(&psn);
-//    while (status == 0){
-//        CFDictionaryRef processInfoDict =
-//            ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
-
-//        CFStringRef value = (CFStringRef) CFDictionaryGetValue(processInfoDict, key);
-
-//        CFIndex length = CFStringGetLength(value);
-//        CFIndex maxSize =
-//            CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
-//        CFStringGetCString(value, buffer, maxSize, kCFStringEncodingUTF8);
-
-//        QString curBundle;
-//        curBundle += buffer;
-//        if (path.compare(curBundle) == 0)
-//            return true;
-
-//        status = GetNextProcess(&psn);
-//    }
-
-//    return false;
-//}
 #endif
 
 #ifdef Q_OS_WIN
@@ -56,7 +26,9 @@ void ProcessHelper::RunProcess(const QString& path)
     QProcess::startDetached(path, QStringList(), workingDir);
 }
 
-bool ProcessHelper::GetProcessID(QString path, quint32& dwPID)
+namespace ProcessHelperDetails
+{
+bool GetProcessID(QString path, quint32& dwPID)
 {
     path.replace("/", "\\");
 
@@ -163,7 +135,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     // continue the enumeration
     return (TRUE);
 }
-
+}
 #endif
 
 bool ProcessHelper::IsProcessRuning(const QString& path)
@@ -173,7 +145,7 @@ bool ProcessHelper::IsProcessRuning(const QString& path)
 //    return ProcessHelper::GetProcessPSN(path, psn);
 #elif defined Q_OS_WIN
     quint32 pid = 0;
-    return GetProcessID(path, pid);
+    return ProcessHelperDetails::GetProcessID(path, pid);
 #endif
     return false;
 }
@@ -187,9 +159,9 @@ void ProcessHelper::SetActiveProcess(const QString& path)
 #elif defined Q_OS_WIN
     quint32 pid = 0;
     HWND hWnd = 0;
-    if (GetProcessID(path, pid))
+    if (ProcessHelperDetails::GetProcessID(path, pid))
     {
-        ENUMINFO EnumInfo;
+        ProcessHelperDetails::ENUMINFO EnumInfo;
 
         // set the search parameters
         EnumInfo.PId = pid;
@@ -201,7 +173,7 @@ void ProcessHelper::SetActiveProcess(const QString& path)
         EnumInfo.hEmptyInvisibleWnd = NULL;
 
         // do the search among the top level windows
-        ::EnumWindows((WNDENUMPROC)EnumWindowsProc, (LPARAM)&EnumInfo);
+        ::EnumWindows((WNDENUMPROC)ProcessHelperDetails::EnumWindowsProc, (LPARAM)&EnumInfo);
 
         // return the one found if any
         if (EnumInfo.hWnd != NULL)

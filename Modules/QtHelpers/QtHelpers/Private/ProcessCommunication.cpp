@@ -1,10 +1,12 @@
 #include "QtHelpers/ProcessCommunication.h"
+#include "QtHelpers/ProcessHelper.h"
 
 #include <QTimer>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QApplication>
 #include <QThread>
+#include <QFile>
 #include <QDebug>
 
 namespace ProcessCommunicationDetails
@@ -67,6 +69,10 @@ QString ProcessCommunication::GetReplyString(eReply reply)
         return tr("can not send message");
     case eReply::TIMEOUT_ERROR:
         return tr("required application not responding");
+    case eReply::NOT_EXISTS:
+        return tr("required application is not exist");
+    case eReply::NOT_RUNNING:
+        return tr("required application is not running");
     default:
         return tr("unknown reply");
     }
@@ -77,6 +83,16 @@ void ProcessCommunication::SendAsync(const eMessage messageCode, const QString &
     if (IsInitialized() == false)
     {
         callBack(eReply::NOT_INITIALIZED);
+        return;
+    }
+    if (QFile::exists(targetAppPath))
+    {
+        callBack(eReply::NOT_EXISTS);
+        return;
+    }
+    if (ProcessHelper::IsProcessRuning(targetAppPath))
+    {
+        callBack(eReply::NOT_RUNNING);
         return;
     }
     QJsonObject obj;
