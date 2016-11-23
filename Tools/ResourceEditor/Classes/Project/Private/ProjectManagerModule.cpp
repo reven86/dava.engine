@@ -11,7 +11,7 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 
-#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Engine/EngineContext.h"
@@ -49,8 +49,8 @@ void ProjectManagerModule::PostInit()
     DataContext* globalContext = accessor.GetGlobalContext();
     std::unique_ptr<ProjectManagerData> data = std::make_unique<ProjectManagerData>();
 
-    DAVA::Vector<DAVA::String> extensions = { "sc2" };
-    data->dataSourceSceneFiles.reset(new ProjectStructure(extensions));
+    QStringList extensions = { "sc2" };
+    data->dataSourceSceneFiles.reset(new FileSystemCache(extensions));
     data->spritesPacker.reset(new SpritesPackerModule(&GetUI()));
     data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
@@ -170,7 +170,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     fileSystem->CreateDirectory(data->GetWorkspacePath(), true);
     if (fileSystem->Exists(data->GetDataSourcePath()))
     {
-        data->dataSourceSceneFiles->SetProjectDirectory(data->GetDataSourcePath());
+        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
     }
 
     data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
