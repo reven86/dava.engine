@@ -365,7 +365,7 @@ int DAVAMain(Vector<String> cmdLine)
     e.update.Connect([&e](float32)
                      {
                          int retCode = Process(e);
-                         e.Quit(retCode);
+                         e.QuitAsync(retCode);
                      });
     return e.Run();
 }

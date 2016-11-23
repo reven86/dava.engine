@@ -13,7 +13,7 @@ using namespace DAVA;
 
 int Process(Engine& e)
 {
-    EngineContext* context = e.GetContext();
+    const EngineContext* context = e.GetContext();
     context->logger->SetLogLevel(DAVA::Logger::LEVEL_INFO);
     context->logger->EnableConsoleMode();
 
@@ -41,7 +41,7 @@ int DAVAMain(Vector<String> cmdLine)
     e.update.Connect([&e](float32)
                      {
                          int result = Process(e);
-                         e.Quit(result);
+                         e.QuitAsync(result);
                      });
 
     return e.Run();
