@@ -57,6 +57,7 @@ DAVA_TESTCLASS (StaticTextTest)
 
         if (strings.size() != resultStrings.size())
         {
+            Logger::Error("SplitByWords: strings.size() != resultStrings.size(): %d != %d", strings.size(), resultStrings.size());
             testSuccess = false;
         }
         else
@@ -66,7 +67,10 @@ DAVA_TESTCLASS (StaticTextTest)
             while (it != strings.end() && itResult != resultStrings.end())
             {
                 if (*it != *itResult)
+                {
+                    Logger::Error("SplitByWords: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
                     testSuccess = false;
+                }
                 ++it;
                 ++itResult;
             }
@@ -91,6 +95,7 @@ DAVA_TESTCLASS (StaticTextTest)
 
         if (strings.size() != resultStrings.size())
         {
+            Logger::Error("SplitBySymbols: strings.size() != resultStrings.size(): %d != %d", strings.size(), resultStrings.size());
             testSuccess = false;
         }
         else
@@ -100,7 +105,10 @@ DAVA_TESTCLASS (StaticTextTest)
             while (it != strings.end() && itResult != resultStrings.end())
             {
                 if (*it != *itResult)
+                {
+                    Logger::Error("SplitBySymbols: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
                     testSuccess = false;
+                }
                 ++it;
                 ++itResult;
             }
@@ -126,6 +134,7 @@ DAVA_TESTCLASS (StaticTextTest)
 
         if (strings.size() != resultStrings.size())
         {
+            Logger::Error("SplitByWordsWithNewLine: strings.size() != resultStrings.size(): %d != %d", strings.size(), resultStrings.size());
             testSuccess = false;
         }
         else
@@ -135,7 +144,10 @@ DAVA_TESTCLASS (StaticTextTest)
             while (it != strings.end() && itResult != resultStrings.end())
             {
                 if (*it != *itResult)
+                {
+                    Logger::Error("SplitByWordsWithNewLine: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
                     testSuccess = false;
+                }
                 ++it;
                 ++itResult;
             }
@@ -162,6 +174,7 @@ DAVA_TESTCLASS (StaticTextTest)
 
         if (strings.size() != resultStrings.size())
         {
+            Logger::Error("SplitBySymbolsWithNewLine: strings.size() != resultStrings.size(): %d != %d", strings.size(), resultStrings.size());
             testSuccess = false;
         }
         else
@@ -171,7 +184,10 @@ DAVA_TESTCLASS (StaticTextTest)
             while (it != strings.end() && itResult != resultStrings.end())
             {
                 if (*it != *itResult)
+                {
+                    Logger::Error("SplitBySymbolsWithNewLine: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
                     testSuccess = false;
+                }
                 ++it;
                 ++itResult;
             }
@@ -197,6 +213,7 @@ DAVA_TESTCLASS (StaticTextTest)
 
         if (strings.size() != resultStrings.size())
         {
+            Logger::Error("SplitAndTrimTest: strings.size() != resultStrings.size(): %d != %d", strings.size(), resultStrings.size());
             testSuccess = false;
         }
         else
@@ -207,6 +224,7 @@ DAVA_TESTCLASS (StaticTextTest)
             {
                 if (*it != *itResult)
                 {
+                    Logger::Error("SplitAndTrimTest: *it != *itResult: %s != %s", it->c_str(), itResult->c_str());
                     testSuccess = false;
                     break;
                 }
@@ -246,6 +264,10 @@ DAVA_TESTCLASS (StaticTextTest)
             staticText->SetTextAlign(data.align);
             staticText->SetText(TEST_DATA);
             const WideString& result = staticText->GetVisualText();
+            if (result != data.result)
+            {
+                Logger::Error("TestFitting: %s != %s", result.c_str(), data.result.c_str());
+            }
             TEST_VERIFY(result == data.result);
         }
     }
