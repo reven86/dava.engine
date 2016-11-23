@@ -2,7 +2,6 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
-
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/GPUFamilyDescriptor.h"
