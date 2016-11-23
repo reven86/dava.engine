@@ -1,9 +1,12 @@
-#ifndef __SOUND_BROWSER_H__
-#define __SOUND_BROWSER_H__
+#pragma once
+
+#include "DAVAEngine.h"
+
+#include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/DataProcessing/DataListener.h"
 
 #include <QDialog>
 #include <QTreeWidgetItem>
-#include "DAVAEngine.h"
 
 namespace Ui
 {
@@ -12,7 +15,7 @@ class FMODSoundBrowser;
 
 class SceneEditor2;
 
-class FMODSoundBrowser : public QDialog, public DAVA::Singleton<FMODSoundBrowser>
+class FMODSoundBrowser : public QDialog, public DAVA::Singleton<FMODSoundBrowser>, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -27,8 +30,6 @@ private slots:
     void OnEventSelected(QTreeWidgetItem* item, int column);
     void OnEventDoubleClicked(QTreeWidgetItem* item, int column);
 
-    void OnProjectOpened(const QString&);
-
     void OnAccepted();
     void OnRejected();
 
@@ -40,8 +41,10 @@ private:
 
     void SetSelectedItem(QTreeWidgetItem* item);
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+
     QTreeWidgetItem* selectedItem;
     Ui::FMODSoundBrowser* ui;
-};
 
-#endif // SOUNDBROWSER_H
+    DAVA::TArc::DataWrapper projectDataWrapper;
+};

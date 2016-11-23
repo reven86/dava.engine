@@ -11,6 +11,8 @@
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 
+#include "Render/RHI/rhi_Public.h"
+
 #import <sys/utsname.h>
 #import <UIKit/UIKit.h>
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
@@ -91,10 +93,11 @@ float32 GetDpi(CGRect rect, float32 scale)
     return dpi;
 }
 
-WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend, const KeyedArchive* options)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
+    , engineOptions(options)
 {
 }
 
@@ -115,15 +118,21 @@ bool WindowNativeBridge::CreateWindow()
     [uiwindow makeKeyAndVisible];
 
     renderViewController = [[RenderViewController alloc] initWithBridge:this];
-    renderView = [[RenderView alloc] initWithFrame:rect andBridge:this];
+
+    if (engineOptions->GetInt32("renderer", rhi::RHI_GLES2) == rhi::RHI_METAL)
+        renderView = [[RenderViewMetal alloc] initWithFrame:rect andBridge:this];
+    else
+        renderView = [[RenderViewGL alloc] initWithFrame:rect andBridge:this];
+
     [renderView setContentScaleFactor:scale];
 
     nativeViewPool = [[NativeViewPool alloc] init];
 
     [uiwindow setRootViewController:renderViewController];
 
+    CGRect viewRect = [renderView bounds];
     float32 dpi = GetDpi(rect, scale);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, rect.size.width * scale, rect.size.height * scale, dpi, eFullscreen::On));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, viewRect.size.width * scale, viewRect.size.height * scale, dpi, eFullscreen::On));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }

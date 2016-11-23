@@ -1,9 +1,8 @@
-#ifndef __SCENE_VALIDATOR_H__
-#define __SCENE_VALIDATOR_H__
+#pragma once
 
 #include "DAVAEngine.h"
 
-class SceneValidator : public DAVA::Singleton<SceneValidator>
+class SceneValidator
 {
 public:
     /*
@@ -110,5 +109,3 @@ protected:
     DAVA::FilePath pathForChecking;
     DAVA::String sceneName;
 };
-
-#endif // __SCENE_VALIDATOR_H__

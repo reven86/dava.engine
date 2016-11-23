@@ -27,7 +27,7 @@ public:
     DAVA::FilePath GetLocalizedFontsPath(const DAVA::String& locale) const;
     DAVA::FilePath GetDefaultFontsPath() const;
 signals:
-    void UpdateFontPreset();
+    void FontPresetChanged(const DAVA::String& presetName);
 public slots:
     void RegisterCurrentLocaleFonts();
 

@@ -2,7 +2,6 @@
 #define __METAL_H__
 
 #define RHI_METAL__USE_NATIVE_COMMAND_BUFFERS 0
-#define RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END 0
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 #include <Metal/Metal.h>

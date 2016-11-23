@@ -278,6 +278,8 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleDpiChanged(const Private::MainDispatcherEvent& e)
 {
+    Logger::FrameworkDebug("=========== WINDOW_DPI_CHANGED: dpi=%f", e.dpiEvent.dpi);
+
     dpi = e.dpiEvent.dpi;
     dpiChanged.Emit(this, dpi);
 }

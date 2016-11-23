@@ -1,12 +1,11 @@
 #include "EditorSystems/CursorSystem.h"
-#include <QApplication>
 #include "Engine/Qt/RenderWidget.h"
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
+
 #include <QPixmap>
 #include <QTransform>
-#include "EditorCore.h"
 
 using namespace DAVA;
 
