@@ -281,6 +281,16 @@ public:
         return baseInt + a;
     }
 
+    static const std::string& StaGetStr(ReflectionTestClass* rtc)
+    {
+        return rtc->str;
+    }
+
+    static void StaSetStr(ReflectionTestClass* rtc, const std::string s)
+    {
+        rtc->str = s;
+    }
+
     SimpleStruct* simple;
     std::string str;
 
@@ -317,14 +327,14 @@ protected:
         .Field("aptr", &ReflectionTestClass::aptr)
         .Field("dholder", &ReflectionTestClass::dholder)
         .Field("StaticIntFn", &ReflectionTestClass::GetStaticIntFn, &ReflectionTestClass::SetStaticIntFn)
-        .Field("StaticIntFnFn", DAVA::MakeFunction(&ReflectionTestClass::GetStaticIntFn), DAVA::MakeFunction(&ReflectionTestClass::SetStaticIntFn))
         .Field("StaticCustomFn", &ReflectionTestClass::GetStaticCustomFn, nullptr)
         .Field("StaticCustomRefFn", &ReflectionTestClass::GetStaticCustomRefFn, nullptr)
         .Field("StaticCustomPtrFn", &ReflectionTestClass::GetStaticCustomPtrFn, nullptr)
         .Field("StaticCustomRefConstFn", &ReflectionTestClass::GetStaticCustomRefConstFn, nullptr)
         .Field("StaticCustomPtrConstFn", &ReflectionTestClass::GetStaticCustomPtrConstFn, nullptr)
+        .Field("StaStrConst", &ReflectionTestClass::StaGetStr, nullptr)
+        .Field("StaStr", &ReflectionTestClass::StaGetStr, &ReflectionTestClass::StaSetStr)
         .Field("IntFn", &ReflectionTestClass::GetIntFn, &ReflectionTestClass::SetIntFn)
-        .Field("IntFnFn", DAVA::MakeFunction(&ReflectionTestClass::GetIntFn), DAVA::MakeFunction(&ReflectionTestClass::SetIntFn))
         .Field("IntFnConst", &ReflectionTestClass::GetIntFnConst, nullptr)
         .Field("StrFn", &ReflectionTestClass::GetBaseStr, &ReflectionTestClass::SetBaseStr)
         .Field("CustomFn", &ReflectionTestClass::GetCustomFn, nullptr)
@@ -334,7 +344,10 @@ protected:
         .Field("CustomPtrConstFn", &ReflectionTestClass::GetCustomPtrConstFn, nullptr)
         .Field("Enum", &ReflectionTestClass::GetEnum, &ReflectionTestClass::SetEnum)
         .Field("GetEnumAsInt", &ReflectionTestClass::GetEnumAsInt, &ReflectionTestClass::SetEnumRef)
-        .Field("Lambda", DAVA::Function<int()>([]() { return 1088; }), nullptr)
+        .Field("Lambda", []() { return 1088; }, nullptr)
+        .Field("LambdaStaticInt", []() { return ReflectionTestClass::GetStaticIntFn(); }, [](int v) { return ReflectionTestClass::SetStaticIntFn(v); })
+        .Field("LambdaStrFn", [](ReflectionTestClass* rts) { return rts->GetBaseStr(); }, [](ReflectionTestClass* rts, const std::string& s) { rts->SetBaseStr(s); })
+        .Field("LambdaClsConst", [](ReflectionTestClass* rts) { return rts->str; }, nullptr)
         .Method("SumMethod", &ReflectionTestClass::SumMethod)
         .End();
     }
@@ -610,13 +623,12 @@ DAVA_TESTCLASS (ReflectionTest)
         auto realStaticGetter = DAVA::MakeFunction(&ReflectionTestClass::GetStaticIntFn);
         auto realStaticSetter = DAVA::MakeFunction(&ReflectionTestClass::SetStaticIntFn);
         DoValueSetGetTest(r.GetField("StaticIntFn"), realStaticGetter, realStaticSetter, 111, 222);
-        DoValueSetGetTest(r.GetField("StaticIntFnFn"), realStaticGetter, realStaticSetter, 333, 444);
+        DoValueSetGetTest(r.GetField("LambdaStaticInt"), realStaticGetter, realStaticSetter, 333, 444);
 
         // class set/get
         auto realClassGetter = DAVA::MakeFunction(&t, &ReflectionTestClass::GetIntFn);
         auto realClassSetter = DAVA::MakeFunction(&t, &ReflectionTestClass::SetIntFn);
         DoValueSetGetTest(r.GetField("IntFn"), realClassGetter, realClassSetter, 1111, 2222);
-        DoValueSetGetTest(r.GetField("IntFnFn"), realClassGetter, realClassSetter, 3333, 4444);
 
         // class const set/get
         auto realClassConstGetter = DAVA::MakeFunction(&t, &ReflectionTestClass::GetIntFnConst);
@@ -626,6 +638,7 @@ DAVA_TESTCLASS (ReflectionTest)
         auto realClassStrGetter = DAVA::MakeFunction(&t, &ReflectionTestClass::GetBaseStr);
         auto realClassStrSetter = DAVA::MakeFunction(&t, &ReflectionTestClass::SetBaseStr);
         DoValueSetGetTest(r.GetField("StrFn"), realClassStrGetter, realClassStrSetter, std::string("1111"), std::string("2222"));
+        DoValueSetGetTest(r.GetField("LambdaStrFn"), realClassStrGetter, realClassStrSetter, std::string("1111"), std::string("2222"));
     }
 
     DAVA_TEST (ValueSetGetByPointer)
