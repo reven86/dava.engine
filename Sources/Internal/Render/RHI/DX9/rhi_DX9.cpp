@@ -210,19 +210,13 @@ void dx9_InitCaps()
     {
         if (_DX9_InitParam.renderingNotPossibleFunc)
         {
-            _DX9_InitParam.renderingNotPossibleFunc(RenderingError::UnsupportedHardware);
+            _DX9_InitParam.renderingNotPossibleFunc(RenderingError::UnsupportedShaderModel);
         }
-        else
-        {
-            DVASSERT_MSG(0, "RHI error callback is not set and has been called");
-            abort();
-        }
-        return;
     }
 
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true; // assume having Shader Model 3 or greater
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) >= 3);
     MutableDeviceCaps::Get().isInstancingSupported = true;
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;

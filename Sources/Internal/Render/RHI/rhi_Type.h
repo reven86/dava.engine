@@ -57,7 +57,7 @@ enum Api
 enum class RenderingError : uint32_t
 {
     DriverError,
-    UnsupportedHardware,
+    UnsupportedShaderModel,
 };
 
 enum ProgType

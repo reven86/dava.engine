@@ -4,12 +4,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseObject.h"
-
-namespace rhi
-{
-// forward declaration of RenderingError type for use in callback.
-enum class RenderingError : DAVA::uint32;
-}
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
