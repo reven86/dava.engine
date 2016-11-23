@@ -88,6 +88,7 @@ private:
     void Update(float32 frameDelta);
     void UpdateWindows(float32 frameDelta);
     void EndFrame();
+    void BackgroundUpdate(float32 frameDelta);
 
     void EventHandler(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);

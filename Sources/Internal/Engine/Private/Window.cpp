@@ -169,6 +169,8 @@ void Window::Draw()
     const EngineContext* context = engineBackend->GetContext();
     context->renderSystem2D->BeginFrame();
 
+    draw.Emit(this);
+
 #if defined(__DAVAENGINE_AUTOTESTING__)
     context->autotestingSystem->Draw();
 #endif

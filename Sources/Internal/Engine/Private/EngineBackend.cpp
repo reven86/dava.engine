@@ -344,11 +344,16 @@ int32 EngineBackend::OnFrame()
     }
     else
     {
-        Update(frameDelta);
+        BackgroundUpdate(frameDelta);
     }
 
     globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
+}
+
+void EngineBackend::BackgroundUpdate(float32 frameDelta)
+{
+    engine->backgroundUpdate.Emit(frameDelta);
 }
 
 void EngineBackend::BeginFrame()

@@ -307,15 +307,16 @@ public:
 
 public:
     Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.
-    Signal<> gameLoopStopped; //!< Emited after exiting game loop, application should terminate.
+    Signal<> gameLoopStopped; //!< Emited after exiting game loop, application should prepare to terminate.
     Signal<> cleanup; //!< Last signal emited by Engine, after this signal dava.engine is dead.
     Signal<Window*> windowCreated; //!< Emited when native window is created and renderer is initialized.
-    Signal<Window*> windowDestroyed; //!< Emited when native window is destroyed. After this signal no one should use window.
-    Signal<> beginFrame;
-    Signal<float32> update; //!< Emited on each frame. Note: rendering should be performed on Window::update signal.
-    Signal<> endFrame;
+    Signal<Window*> windowDestroyed; //!< Emited just before native window is destroyed. After this signal no one should use window.
+    Signal<> beginFrame; //!< Emited at the beginning of frame when application is in foreground.
+    Signal<float32> update; //!< Emited on each frame when application is in foreground (not suspended). Note: rendering should be performed on `Window::update`, `Window::draw` signals.
+    Signal<> endFrame; //!< Emited at the end of frame when application is in foreground.
+    Signal<float32> backgroundUpdate; //!< Emited on each frame when application is suspended.
     Signal<> suspended; //!< Emited when application has entered suspended state. This signal is fired only on platforms
-    //!< that support suspending: UWP, iOS, Android. Rendering is stopped but update signal is emited if system permits.
+    //!< that support suspending: Win10, iOS, Android. Rendering is stopped but `backgroundUpdate` signal is emited if system permits.
     Signal<> resumed; //!< Emited when application exits suspended state.
 
 private:

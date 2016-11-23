@@ -46,6 +46,7 @@ public:
     void OnResumed();
 
     void OnUpdateConsole(DAVA::float32 frameDelta);
+    void OnBackgroundUpdate(DAVA::float32 frameDelta);
 
     void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();

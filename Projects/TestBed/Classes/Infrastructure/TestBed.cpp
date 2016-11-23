@@ -110,6 +110,7 @@ TestBed::TestBed(Engine& engine)
     {
         engine.windowCreated.Connect(this, &TestBed::OnWindowCreated);
         engine.windowDestroyed.Connect(this, &TestBed::OnWindowDestroyed);
+        engine.backgroundUpdate.Connect(this, &TestBed::OnBackgroundUpdate);
 
         Window* w = engine.PrimaryWindow();
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
@@ -194,6 +195,17 @@ void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
     {
         Logger::Debug("****** quit");
         engine.QuitAsync(0);
+    }
+}
+
+void TestBed::OnBackgroundUpdate(DAVA::float32 frameDelta)
+{
+    static float32 t = 0.f;
+    t += frameDelta;
+    if (t >= 2.f)
+    {
+        Logger::Debug("****** TestBed::OnBackgroundUpdate");
+        t = 0.f;
     }
 }
 
