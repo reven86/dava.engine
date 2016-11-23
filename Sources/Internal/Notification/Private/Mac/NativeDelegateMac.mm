@@ -1,6 +1,8 @@
 #include "Notification/Private/Mac/NativeDelegateMac.h"
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
 #if defined(__DAVAENGINE_COREV2__)
 
 #import <Foundation/Foundation.h>
