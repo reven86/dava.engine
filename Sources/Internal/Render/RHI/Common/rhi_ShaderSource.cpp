@@ -135,8 +135,6 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 }
 void ShaderSource::InlineFunctions()
 {
-    // find global function declarations
-
     std::vector<sl::HLSLFunction*> global_func_decl;
 
     for (sl::HLSLStatement* statement = ast->GetRoot()->statement; statement; statement = statement->nextStatement)
@@ -154,8 +152,6 @@ void ShaderSource::InlineFunctions()
     {
         sl::HLSLFunction* func_decl = global_func_decl[i];
         std::vector<sl::HLSLFunctionCall*> fcall;
-
-        //-Logger::Info(global_func_decl[i]->name);
 
         class
         FindFunctionCall
@@ -188,7 +184,6 @@ void ShaderSource::InlineFunctions()
         public:
             FindStatementExpression(sl::HLSLFunctionCall* fc)
                 : _fcall(fc)
-                //-                , _cur_expr(nullptr)
                 , _cur_statement(nullptr)
                 , _cur_statement_parent(nullptr)
                 , expr(nullptr)
@@ -207,19 +202,8 @@ void ShaderSource::InlineFunctions()
             virtual void VisitDeclaration(sl::HLSLDeclaration* node)
             {
                 _cur_statement = node;
-
-                //                if( node->assignment )
-                //                    _expr.push_back( node->assignment );
                 HLSLTreeVisitor::VisitDeclaration(node);
             }
-            /*
-            virtual void VisitConstructorExpression(sl::HLSLConstructorExpression* node)
-            {
-                _expr.clear();
-                _expr.push_back(node);
-//                HLSLTreeVisitor::VisitConstructorExpression( node );
-            }
-*/
             virtual void VisitExpressionStatement(sl::HLSLExpressionStatement* node)
             {
                 _cur_statement = node;
@@ -527,8 +511,6 @@ void ShaderSource::InlineFunctions()
             {
                 Logger::Info("  crap!\n");
             }
-
-            //-            ++inlined_cnt;
         } // for each func.call
 
         // remove func definition
@@ -542,8 +524,6 @@ void ShaderSource::InlineFunctions()
         }
 
     } // for each func
-    //-if(inlined_cnt)
-    //-Logger::Info("inlined %u func.call(s)\n",inlined_cnt);
 }
 
 //------------------------------------------------------------------------------
@@ -755,7 +735,6 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                         if (prop.arraySize > 1)
                         {
                             cbuf->isArray = true;
-                            //-                            prop.isBigArray = true;
                         }
                         else
                         {
@@ -804,7 +783,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
-    // rename vertex-input variables to pre-defined names
+    // rename vertex-input variables to pre-defined names (needed by GL-backend)
     {
         sl::HLSLStruct* vinput = ast->FindGlobalStruct("vertex_in");
         if (vinput)
