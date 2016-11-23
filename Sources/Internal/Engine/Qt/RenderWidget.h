@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Platform.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include <QQuickWidget>
 
