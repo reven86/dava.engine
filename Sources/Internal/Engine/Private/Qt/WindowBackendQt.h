@@ -33,7 +33,7 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void AcqureContext();
+    void AcquireContext();
     void ReleaseContext();
     void OnApplicationFocusChanged(bool isInFocus);
 
@@ -106,7 +106,7 @@ private:
     QtEventListener* qtEventListener = nullptr;
 
     class OGLContextBinder;
-    friend void AcqureContextImpl();
+    friend void AcquireContextImpl();
     friend void ReleaseContextImpl();
 
     std::unique_ptr<OGLContextBinder> contextBinder;

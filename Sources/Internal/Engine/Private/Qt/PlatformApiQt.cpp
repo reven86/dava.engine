@@ -11,11 +11,11 @@ namespace PlatformApi
 {
 namespace Qt
 {
-void AcqureWindowContext(Window* targetWindow)
+void AcquireWindowContext(Window* targetWindow)
 {
     using namespace DAVA::Private;
     WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
-    wb->AcqureContext();
+    wb->AcquireContext();
 }
 
 void ReleaseWindowContext(Window* targetWindow)

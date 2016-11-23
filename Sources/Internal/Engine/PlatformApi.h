@@ -20,7 +20,7 @@ namespace PlatformApi
 {
 namespace Qt
 {
-void AcqureWindowContext(Window* targetWindow);
+void AcquireWindowContext(Window* targetWindow);
 void ReleaseWindowContext(Window* targetWindow);
 
 QApplication* GetApplication();

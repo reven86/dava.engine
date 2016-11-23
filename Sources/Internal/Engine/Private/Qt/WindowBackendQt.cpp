@@ -118,7 +118,7 @@ private:
 
 WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
 
-void AcqureContextImpl()
+void AcquireContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->AcquireContext();
@@ -533,9 +533,9 @@ void WindowBackend::DoSetFullscreen(eFullscreen newMode)
     }
 }
 
-void WindowBackend::AcqureContext()
+void WindowBackend::AcquireContext()
 {
-    AcqureContextImpl();
+    AcquireContextImpl();
 }
 
 void WindowBackend::ReleaseContext()
@@ -577,7 +577,7 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcqureContextImpl;
+    params.acquireContextFunc = &AcquireContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());

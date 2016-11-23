@@ -11,7 +11,7 @@ RenderContextGuard::RenderContextGuard()
     if (!engine->IsConsoleMode())
     {
         DAVA::Window* window = engine->PrimaryWindow();
-        DAVA::PlatformApi::Qt::AcqureWindowContext(window);
+        DAVA::PlatformApi::Qt::AcquireWindowContext(window);
     }
 }
 
