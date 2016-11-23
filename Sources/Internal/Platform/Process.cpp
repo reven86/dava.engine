@@ -165,7 +165,7 @@ bool Process::Run(bool showWindow)
         runArgsFlat += ProcessDetails::EscapeSpaces(executablePath.GetAbsolutePathname());
         for (const String& arg : runArgs)
         {
-            runArgsFlat += " " + arg;
+            runArgsFlat += " " + ProcessDetails::EscapeSpaces(arg);
         }
         runArgsFlat += "\"";
 
