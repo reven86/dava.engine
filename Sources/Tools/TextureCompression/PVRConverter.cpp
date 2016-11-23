@@ -235,19 +235,11 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
     // input file
     args.push_back("-i");
     String inputName = GenerateInputName(descriptor, fileToConvert);
-#if defined(__DAVAENGINE_MACOS__)
     args.push_back(inputName);
-#else //defined (__DAVAENGINE_WINDOWS__)
-    args.push_back(String("\"") + inputName + String("\""));
-#endif //MAC-WIN
 
     // output file
     args.push_back("-o");
-#if defined(__DAVAENGINE_MACOS__)
     args.push_back(outputFile.GetAbsolutePathname());
-#else //defined (__DAVAENGINE_WINDOWS__)
-    args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
-#endif //MAC-WIN
 
     // flip for some TGA files
     // PVR converter seems to have a bug:

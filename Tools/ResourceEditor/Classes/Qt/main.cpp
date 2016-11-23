@@ -1,4 +1,4 @@
-#include "Classes/Qt/Application/REApplication.h"
+#include "Classes/Application/REApplication.h"
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {

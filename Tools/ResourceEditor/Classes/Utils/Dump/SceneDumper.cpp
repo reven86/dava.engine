@@ -1,5 +1,6 @@
 #include "Utils/Dump/SceneDumper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
@@ -13,16 +14,13 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 
-using namespace DAVA;
-
-SceneDumper::SceneLinks SceneDumper::DumpLinks(const FilePath& scenePath)
+DAVA::Set<DAVA::FilePath> SceneDumper::DumpLinks(const DAVA::FilePath& scenePath, SceneDumper::eMode mode, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs)
 {
-    SceneLinks links;
-    SceneDumper dumper(scenePath);
+    DAVA::Set<DAVA::FilePath> links;
+    SceneDumper dumper(scenePath, mode, compressedGPUs);
 
     if (nullptr != dumper.scene)
     {
@@ -32,14 +30,16 @@ SceneDumper::SceneLinks SceneDumper::DumpLinks(const FilePath& scenePath)
     return links;
 }
 
-SceneDumper::SceneDumper(const FilePath& scenePath)
+SceneDumper::SceneDumper(const DAVA::FilePath& scenePath, SceneDumper::eMode mode_, const DAVA::Vector<DAVA::eGPUFamily>& compressedGPUs_)
     : scenePathname(scenePath)
+    , compressedGPUs(compressedGPUs_)
+    , mode(mode_)
 {
-    scene = new Scene();
-    if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePathname))
+    scene = new DAVA::Scene();
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePathname))
     {
-        Logger::Error("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str());
-        SafeRelease(scene);
+        DAVA::Logger::Error("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str());
+        DAVA::SafeRelease(scene);
     }
 }
 
@@ -48,11 +48,11 @@ SceneDumper::~SceneDumper()
     SafeRelease(scene);
 }
 
-void SceneDumper::DumpLinksRecursive(Entity* entity, SceneDumper::SceneLinks& links) const
+void SceneDumper::DumpLinksRecursive(DAVA::Entity* entity, DAVA::Set<DAVA::FilePath>& links) const
 {
     //Recursiveness
-    const uint32 count = entity->GetChildrenCount();
-    for (uint32 ch = 0; ch < count; ++ch)
+    const DAVA::uint32 count = entity->GetChildrenCount();
+    for (DAVA::uint32 ch = 0; ch < count; ++ch)
     {
         DumpLinksRecursive(entity->GetChild(ch), links);
     }
@@ -67,31 +67,40 @@ void SceneDumper::DumpLinksRecursive(Entity* entity, SceneDumper::SceneLinks& li
     DumpEffect(GetEffectComponent(entity), links);
 }
 
-void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive* properties, SceneLinks& links) const
+void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive* properties, DAVA::Set<DAVA::FilePath>& links) const
 {
     if (nullptr == properties)
         return;
 
-    auto SaveProp = [&properties, &links](const String& name)
+    auto SaveProp = [&properties, &links](const DAVA::String& name)
     {
-        auto str = properties->GetString(name);
-        links.insert(str);
+        DAVA::String str = properties->GetString(name);
+        if (!str.empty())
+        {
+            links.insert(str);
+        }
     };
 
-    SaveProp(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
     SaveProp("touchdownEffect");
 
-    //save custom colors
-    String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
-    if (!pathname.empty())
+    if (mode == eMode::EXTENDED)
     {
-        FilePath projectPath = ProjectManager::CreateProjectPathFromPath(scenePathname);
-        links.emplace(projectPath + pathname);
+        SaveProp(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+
+        //save custom colors
+        DAVA::String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
+        if (!pathname.empty())
+        {
+            DAVA::FilePath projectPath = ProjectManagerData::CreateProjectPathFromPath(scenePathname);
+            links.emplace(projectPath + pathname);
+        }
     }
 }
 
-void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks& links) const
+void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, DAVA::Set<DAVA::FilePath>& links) const
 {
+    using namespace DAVA;
+
     if (nullptr == renderObject)
         return;
 
@@ -109,7 +118,11 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
     {
         VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(renderObject);
         links.insert(vegetation->GetHeightmapPath());
-        links.insert(vegetation->GetCustomGeometryPath());
+
+        if (mode == eMode::EXTENDED)
+        {
+            links.insert(vegetation->GetCustomGeometryPath());
+        }
 
         Set<DataNode*> dataNodes;
         vegetation->GetDataNodes(dataNodes);
@@ -133,8 +146,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
     const uint32 count = renderObject->GetRenderBatchCount();
     for (uint32 rb = 0; rb < count; ++rb)
     {
-        DAVA::RenderBatch* renderBatch = renderObject->GetRenderBatch(rb);
-        DAVA::NMaterial* material = renderBatch->GetMaterial();
+        RenderBatch* renderBatch = renderObject->GetRenderBatch(rb);
+        NMaterial* material = renderBatch->GetMaterial();
         DumpMaterial(material, links, descriptorPathnames);
     }
 
@@ -169,9 +182,9 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
                     links.insert(descriptor->GetSourceTexturePathname());
                 }
 
-                for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+                for (eGPUFamily gpu : compressedGPUs)
                 {
-                    const auto& compression = descriptor->compression[gpu];
+                    const TextureDescriptor::Compression& compression = descriptor->compression[gpu];
                     if (compression.format != FORMAT_INVALID)
                     {
                         Vector<FilePath> compressedTexureNames;
@@ -184,10 +197,10 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
     }
 }
 
-void SceneDumper::DumpMaterial(DAVA::NMaterial* material, SceneLinks& links, DAVA::Set<DAVA::FilePath>& descriptorPathnames) const
+void SceneDumper::DumpMaterial(DAVA::NMaterial* material, DAVA::Set<DAVA::FilePath>& links, DAVA::Set<DAVA::FilePath>& descriptorPathnames) const
 {
     //Enumerate textures from materials
-    Set<MaterialTextureInfo*> materialTextures;
+    DAVA::Set<DAVA::MaterialTextureInfo*> materialTextures;
 
     while (nullptr != material)
     {
@@ -196,45 +209,46 @@ void SceneDumper::DumpMaterial(DAVA::NMaterial* material, SceneLinks& links, DAV
     }
 
     // enumerate descriptor pathnames
-    for (const MaterialTextureInfo* matTex : materialTextures)
+    for (const DAVA::MaterialTextureInfo* matTex : materialTextures)
     {
         descriptorPathnames.insert(matTex->path);
     }
 }
 
-void SceneDumper::DumpEffect(ParticleEffectComponent* effect, SceneLinks& links) const
+void SceneDumper::DumpEffect(DAVA::ParticleEffectComponent* effect, DAVA::Set<DAVA::FilePath>& links) const
 {
     if (nullptr == effect)
     {
         return;
     }
 
-    SceneLinks gfxFolders;
+    DAVA::Set<DAVA::FilePath> gfxFolders;
 
-    const int32 emittersCount = effect->GetEmittersCount();
-    for (int32 em = 0; em < emittersCount; ++em)
+    const DAVA::int32 emittersCount = effect->GetEmittersCount();
+    for (DAVA::int32 em = 0; em < emittersCount; ++em)
     {
         DumpEmitter(effect->GetEmitterInstance(em), links, gfxFolders);
     }
 
-    for (auto& folder : gfxFolders)
+    for (const DAVA::FilePath& folder : gfxFolders)
     {
-        FilePath flagsTXT = folder + "flags.txt";
-        if (FileSystem::Instance()->Exists(flagsTXT))
+        DAVA::FilePath flagsTXT = folder + "flags.txt";
+        if (DAVA::FileSystem::Instance()->Exists(flagsTXT))
         {
             links.insert(flagsTXT);
         }
     }
 }
 
-void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* instance, SceneLinks& links, SceneLinks& gfxFolders) const
+void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* instance, DAVA::Set<DAVA::FilePath>& links, DAVA::Set<DAVA::FilePath>& gfxFolders) const
 {
+    using namespace DAVA;
     DVASSERT(nullptr != instance);
 
-    auto emitter = instance->GetEmitter();
+    ParticleEmitter* emitter = instance->GetEmitter();
 
     links.insert(emitter->configPath);
-    for (auto layer : emitter->layers)
+    for (ParticleLayer* layer : emitter->layers)
     {
         DVASSERT(nullptr != layer);
 

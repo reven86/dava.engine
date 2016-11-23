@@ -1,6 +1,5 @@
 #include "ui_ImageSplitter.h"
 #include "ImageSplitterDialog/ImageSplitterDialog.h"
-#include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
 #include "SizeDialog.h"
 #include "Main/QtUtils.h"
@@ -8,19 +7,20 @@
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "QtTools/FileDialogs/FileDialog.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include <QMessageBox>
 #include <QFileInfo>
 
 ImageSplitterDialog::ImageSplitterDialog(QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    ui(new Ui::ImageSplitter())
-    ,
-    acceptableSize(0, 0)
+    : QDialog(parent)
+    , ui(new Ui::ImageSplitter())
+    , acceptableSize(0, 0)
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -159,7 +159,7 @@ void ImageSplitterDialog::OnRestoreClicked()
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select image", ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str(),
+    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select image", QString::fromStdString(GetDefaultPath()),
                                                          PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter)
                              .toStdString();
     if (!retPath.IsEmpty())
@@ -185,7 +185,7 @@ void ImageSplitterDialog::OnSaveChannelsClicked()
     DAVA::FilePath savePath = ui->path->text().toStdString();
     if (!DAVA::FileSystem::Instance()->Exists(savePath))
     {
-        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str(), FileDialog::ShowDirsOnly);
+        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", QString::fromStdString(GetDefaultPath()), FileDialog::ShowDirsOnly);
 
         if (folder.isEmpty() || folder.isNull())
         {
@@ -323,5 +323,7 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
 
 DAVA::String ImageSplitterDialog::GetDefaultPath() const
 {
-    return ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetProjectPath().GetAbsolutePathname();
 }

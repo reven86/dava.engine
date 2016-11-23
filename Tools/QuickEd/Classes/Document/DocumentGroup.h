@@ -1,14 +1,16 @@
 #ifndef QUICKED_DOCUMENTGROUP_H
 #define QUICKED_DOCUMENTGROUP_H
 
-#include <QObject>
-#include <QSet>
 #include <QList>
+#include <QObject>
 #include <QPointer>
+#include <QSet>
 
-class Document;
+#include "UI/mainwindow.h"
+
 class CommandStackGroup;
-class PackageBaseNode;
+class Document;
+class PackageNode;
 class QAction;
 class QTabBar;
 
@@ -20,10 +22,9 @@ class DocumentGroup : public QObject
     Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
     Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
-    explicit DocumentGroup(QObject* parent = nullptr);
+    explicit DocumentGroup(Project* project, MainWindow::DocumentGroupView* view, QObject* parent = nullptr);
     ~DocumentGroup();
 
-    QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
 
     bool CanSave() const;
@@ -42,6 +43,16 @@ public:
     void ConnectToTabBar(QTabBar* tabBar);
     void DisconnectTabBar(QTabBar* tabBar);
 
+    void LanguageChanged();
+    void RtlChanged();
+
+    void BiDiSupportChanged();
+    void GlobalStyleClassesChanged();
+
+    bool TryCloseAllDocuments();
+    bool HasUnsavedDocuments() const;
+    void CloseAllDocuments();
+
 signals:
     void ActiveIndexChanged(int index);
     void ActiveDocumentChanged(Document*);
@@ -52,6 +63,7 @@ signals:
     void CanRedoChanged(bool canRedo);
     void UndoTextChanged(const QString& undoText);
     void RedoTextChanged(const QString& redoText);
+    void FontPresetChanged(const DAVA::String& presetName);
 
 public slots:
     void AddDocument(const QString& path);
@@ -92,7 +104,11 @@ private:
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
 
-    Document* active;
+    void RefreshControlsStuff();
+
+    Project* project = nullptr;
+    MainWindow::DocumentGroupView* view = nullptr;
+    Document* active = nullptr;
     QList<Document*> documents;
     std::unique_ptr<CommandStackGroup> commandStackGroup;
     QSet<Document*> changedFiles;

@@ -11,7 +11,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Utils/Random.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 

@@ -283,6 +283,8 @@ public:
 
     File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
 
+    FilePath GetTempDirectoryPath() const;
+
 private:
     bool HasLineEnding(File* f);
 
