@@ -15,10 +15,18 @@
     DAVA::Private::WindowNativeBridge* bridge;
 }
 
-+ (Class)layerClass;
-
 - (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
+@end
+
+///////////////////////////////////////////////////////////////////////
+
+@interface RenderViewMetal : RenderView
++ (Class)layerClass;
+@end
+
+@interface RenderViewGL : RenderView
++ (Class)layerClass;
 @end
 
 #endif // __DAVAENGINE_IPHONE__

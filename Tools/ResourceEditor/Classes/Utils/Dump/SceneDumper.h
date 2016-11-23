@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
