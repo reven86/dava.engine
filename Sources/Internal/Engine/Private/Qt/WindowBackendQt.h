@@ -57,6 +57,8 @@ public:
 
     void TriggerPlatformEvents();
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 

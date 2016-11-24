@@ -141,18 +141,20 @@ void WindowNativeBridge::WindowDidResize()
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
+    float32 surfaceScale = [renderView backbufferScale];
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
+    float32 surfaceScale = [renderView backbufferScale];
     float32 dpi = GetDpi();
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, fullscreen));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
@@ -511,6 +513,19 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
         SetSystemCursorVisible(visible);
     }
 }
+
+void WindowNativeBridge::SetSurfaceScale(const float32 scale)
+{
+    [renderView setBackbufferScale:scale];
+
+    // Workaround to force change backbuffer size
+    [nswindow setContentView:nil];
+    [nswindow setContentView:renderView];
+    [nswindow makeFirstResponder:renderView];
+
+    WindowDidResize();
+}
+
 } // namespace Private
 } // namespace DAVA
 

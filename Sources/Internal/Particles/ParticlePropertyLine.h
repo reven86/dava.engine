@@ -371,19 +371,19 @@ public:
     {
         if (!node)
             return RefPtr<PropertyLine<T>>();
-        const YamlNode* externalVariable = node->Get("externalVariable");
-        if (externalVariable) //ModifiableNode
+        if (node->GetType() == YamlNode::TYPE_MAP)
         {
-            ModifiablePropertyLine<T>* resultingLine(new ModifiablePropertyLine<T>(externalVariable->AsString()));
-            resultingLine->SetValueLine(PropertyLineYamlReader::CreatePropertyLineInternal<T>(node->Get("value_line")));
-            resultingLine->SetModificationLine(PropertyLineYamlReader::CreatePropertyLineInternal<T>(node->Get("modification_line")));
-            resultingLine->SetModifier(0.0f);
-            return RefPtr<PropertyLine<T>>(resultingLine);
+            const YamlNode* externalVariable = node->Get("externalVariable");
+            if (externalVariable) //ModifiableNode
+            {
+                ModifiablePropertyLine<T>* resultingLine(new ModifiablePropertyLine<T>(externalVariable->AsString()));
+                resultingLine->SetValueLine(PropertyLineYamlReader::CreatePropertyLineInternal<T>(node->Get("value_line")));
+                resultingLine->SetModificationLine(PropertyLineYamlReader::CreatePropertyLineInternal<T>(node->Get("modification_line")));
+                resultingLine->SetModifier(0.0f);
+                return RefPtr<PropertyLine<T>>(resultingLine);
+            }
         }
-        else
-        {
-            return CreatePropertyLineInternal<T>(node);
-        }
+        return CreatePropertyLineInternal<T>(node);
     }
 };
 

@@ -42,16 +42,16 @@ public:
     bool HasFocus() const;
 
     /** 
-        Returns dots-per-inch for a monitor, where that window is placed. 
+        Returns dots-per-inch for a monitor, where the window is placed. 
         
-        \remark Use `Window::dpiChanged` signal to know, when window was placed on other monitor with other dpi.
+        \remark Use `Window::dpiChanged` signal to know, when the window was placed on another monitor with different dpi.
     */
     float32 GetDPI() const;
 
     /** 
         Returns size of the window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
-        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
+        if the window was created on a system with high-dpi support (e.g. OSX or Windows 10).
 
         \remark Use `GetSurfaceSize()` to get rendering surface size in pixels.
         \remark Use `Window::sizeChanged` signal to know, when window size was changed.
@@ -59,11 +59,11 @@ public:
     Size2f GetSize() const;
 
     /** 
-        Sets the size of a window's client area. 
+        Sets the size of the window's client area. 
         Window size in screen coordinates may differ from the size in pixels,
-        if the windows was created on system with high-dpi support (e.g. OSX or Windows 10).
+        if the windows was created on a system with high-dpi support (e.g. OSX or Windows 10).
         On some platforms (iOS, Android or Win10 Phone) there is no real window system and
-        as a consequence window size can't be changes, so this function will have no effect.
+        as a consequence window size can't be changed, so this function will have no effect.
 
         \remark Use `Window::sizeChanged` signal to know, when window size was changed.
     */
@@ -74,23 +74,24 @@ public:
          Surface size is in raw pixels.
 
          \remark Use `Window::sizeChanged` signal to know, when window surface size was changed.
-         \remark Use `SetSurfaceScale` to tune surface size.
+         \remark Use `SetSurfaceScaleAsync` to tune surface size.
     */
     Size2f GetSurfaceSize() const;
 
     /** 
         Returns window rendering surface scale. 
-        By default it is 1.0f unit user changes it with `SetSurfaceScale()` method.
+        By default it is 1.0f until user changes it with `SetSurfaceScaleAsync` method.
     */
     float32 GetSurfaceScale() const;
 
     /** 
         Sets window rendering surface scale.
-        Return `true` if scaling was successfully set. Scale value has to be from `0.0f` to `1.0f`.
+        Scale value has to be from `0.0f` to `1.0f`.
         
         \remark This should be used by user to tune rendering surface size for performance reason.
+        \remark On Win32 platform this method will have effect only if DirectX 9 is in use
     */
-    bool SetSurfaceScale(float32 scale);
+    void SetSurfaceScaleAsync(float32 scale);
 
     void Close();
     void SetTitle(const String& title);
@@ -98,8 +99,8 @@ public:
     /** Gets current fullscreen mode */
     eFullscreen GetFullscreen() const;
 
-    /** 
-        Sets fullscreen mode to window. 
+    /**
+        Sets fullscreen mode to window.
         Succeed fullscreen mode changing leads to changing of window size.
     */
     void SetFullscreen(eFullscreen newMode);
@@ -113,8 +114,8 @@ public:
     /** Set cursor capture mode for current Window, see more about modes in eCursorCapture enum class.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        The Window keeps the last mode, and itself releases or captures cursor if need(when it loses or receives focus).
-        If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
+        The Window keeps the last mode, and releases or captures a cursor by itself if needed (when it loses or receives focus).
+        If the last mode is pinning, it will set after any keyboard event (mouse wheel too) or mouse press event inside client area.
     */
     void SetCursorCapture(eCursorCapture mode);
 
@@ -124,7 +125,7 @@ public:
     /** Set cursor visibility for current Window.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        The Window keeps the last state, and itself shows or hides cursor if need(when it loses or receives focus).
+        The Window keeps the last state, and shows or hides a cursor by itself if needed (when it loses or receives focus).
     */
     void SetCursorVisibility(bool visible);
 

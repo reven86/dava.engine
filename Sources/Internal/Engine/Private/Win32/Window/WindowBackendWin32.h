@@ -59,9 +59,13 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
 private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
+    void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);
@@ -133,6 +137,9 @@ private:
     bool isFullscreen = false;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
+
+    float32 surfaceScale = 1.0f;
+
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
