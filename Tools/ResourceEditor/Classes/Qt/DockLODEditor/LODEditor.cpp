@@ -337,7 +337,7 @@ void LODEditor::CreatePlaneLODClicked()
     PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
     if (dialog.exec() == QDialog::Accepted)
     {
-        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...", 0, 0);
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
     }
 }
