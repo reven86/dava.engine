@@ -12,7 +12,7 @@ void StructureWrapperClass::FillCache(const Type* type)
     FillCacheEntries(type);
 
     const TypeInheritance* inheritance = type->GetInheritance();
-    if (NULL != inheritance)
+    if (nullptr != inheritance)
     {
         const Vector<TypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
         for (auto& baseInfo : baseTypesInfo)
@@ -32,6 +32,7 @@ void StructureWrapperClass::FillCacheEntries(const Type* type)
         for (auto& f : structure->fields)
         {
             const ReflectedStructure::Field* field = f.get();
+
             fieldsCache.push_back(field);
             fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
         }
@@ -39,6 +40,7 @@ void StructureWrapperClass::FillCacheEntries(const Type* type)
         for (auto& m : structure->methods)
         {
             const ReflectedStructure::Method* method = m.get();
+
             methodsCache.push_back(method);
             methodsNameIndexes[method->name] = methodsCache.size() - 1;
         }
@@ -80,7 +82,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     Vector<Reflection::Field> ret;
 
     ret.reserve(fieldsCache.size());
-    for (auto field : fieldsCache)
+    for (const ReflectedStructure::Field* field : fieldsCache)
     {
         ret.push_back({ DAVA::Any(field->name), Reflection(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get()) });
     }
@@ -116,7 +118,7 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
     void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
     ret.reserve(methodsCache.size());
-    for (auto m : methodsCache)
+    for (const ReflectedStructure::Method* m : methodsCache)
     {
         ret.push_back({ m->name, m->method.BindThis(this_) });
     }

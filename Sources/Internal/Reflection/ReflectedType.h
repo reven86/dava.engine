@@ -110,7 +110,7 @@ public:
         \throw DAVA::Exception
     */
     template <typename... Args>
-    Any Create(CreatePolicy policy, Args... args) const;
+    Any CreateObject(CreatePolicy policy, Args... args) const;
 
     /**
         Destoy object contained in `v`, by invoking dtor.

@@ -47,7 +47,7 @@ const AnyFn* ReflectedType::GetCtor(const Type* retType) const
 }
 
 template <typename... Args>
-Any ReflectedType::Create(CreatePolicy policy, Args... args) const
+Any ReflectedType::CreateObject(CreatePolicy policy, Args... args) const
 {
     const AnyFn* ctor = nullptr;
 
