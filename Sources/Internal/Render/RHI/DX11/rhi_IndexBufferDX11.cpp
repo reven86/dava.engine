@@ -163,16 +163,16 @@ dx11_IndexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned s
         if (offset + size <= self->size)
         {
             D3D11_MAPPED_SUBRESOURCE rc = {};
-            DX11Command cmd(DX11Command::MAP, self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
-            ExecDX11(&cmd, 1);
-            CHECK_HR(cmd.retval)
+            DX11Command cmd1(DX11Command::MAP, self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
+            ExecDX11(&cmd1, 1);
+            CHECK_HR(cmd1.retval)
 
             if (rc.pData)
             {
                 memcpy(((uint8*)(rc.pData)) + offset, data, size);
 
-                cmd = DX11Command(DX11Command::UNMAP, self->buffer, 0);
-                ExecDX11(&cmd, 1);
+                DX11Command cmd2(DX11Command::UNMAP, self->buffer, 0);
+                ExecDX11(&cmd2, 1);
                 success = true;
             }
         }

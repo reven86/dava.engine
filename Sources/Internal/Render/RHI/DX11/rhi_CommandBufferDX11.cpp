@@ -906,7 +906,7 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
     DX11Command* commandData = reinterpret_cast<DX11Command*>(command->cmdData);
     for (DX11Command *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
     {
-        const uint64* arg = cmd->arg;
+        DAVA::uint64* arg = cmd->arguments.arg;
 
         Trace("exec %i\n", int(cmd->func));
         switch (cmd->func)

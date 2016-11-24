@@ -151,14 +151,19 @@ struct DX11Command
         DEVICE_FIRST_COMMAND = QUERY_INTERFACE
     };
 
+    struct Arguments
+    {
+        DAVA::uint64 arg[12];
+    };
+
     Func func = Func::NOP;
-    DAVA::uint64 arg[12]{};
     HRESULT retval = S_OK;
+    Arguments arguments;
 
     template <class... args>
     DX11Command(Func f, args&&... a)
         : func(f)
-        , arg{ DAVA::uint64(a)... }
+        , arguments({ DAVA::uint64(a)... })
     {
     }
 };
