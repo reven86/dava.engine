@@ -22,7 +22,7 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
         return InnerShow(modalType, content);
     default:
         // should never happen!
-        Logger::Instance()->Error(
+        Logger::Error(
         "Return button id(%d) unknown! Error during handle assert message",
         buttonId);
         return true;

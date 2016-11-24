@@ -96,6 +96,7 @@ struct MainDispatcherEvent final
         float32 height;
         float32 surfaceWidth;
         float32 surfaceHeight;
+        float32 surfaceScale;
         float32 dpi; //< is set only by WINDOW_CREATED
         eFullscreen fullscreen;
     };
@@ -219,7 +220,7 @@ struct MainDispatcherEvent final
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
-    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, eFullscreen fullscreen);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
     static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);

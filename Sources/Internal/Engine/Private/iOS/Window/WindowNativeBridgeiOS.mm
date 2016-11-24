@@ -186,8 +186,9 @@ void WindowNativeBridge::LoadView()
 
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
-    float32 scale = [[ ::UIScreen mainScreen] scale];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, eFullscreen::On));
+    CGSize surfaceSize = [renderView surfaceSize];
+    float32 surfaceScale = [renderView surfaceScale];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceSize.width, surfaceSize.height, surfaceScale, eFullscreen::On));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
@@ -227,6 +228,15 @@ void WindowNativeBridge::TouchesEnded(NSSet* touches)
         e.touchEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
         mainDispatcher->PostEvent(e);
     }
+}
+
+void WindowNativeBridge::SetSurfaceScale(const float32 scale)
+{
+    [renderView setSurfaceScale:scale];
+
+    CGSize size = [renderView frame].size;
+    CGSize surfaceSize = [renderView surfaceSize];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height, scale, eFullscreen::On));
 }
 
 UIImage* RenderUIViewToImage(UIView* view)

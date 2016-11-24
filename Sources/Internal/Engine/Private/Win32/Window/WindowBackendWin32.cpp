@@ -18,6 +18,7 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -161,6 +162,26 @@ void WindowBackend::SetCursorInCenter()
 void WindowBackend::ProcessPlatformEvents()
 {
     uiDispatcher.ProcessEvents();
+}
+
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    if (Renderer::GetAPI() == rhi::RHI_DX9)
+    {
+        surfaceScale = scale;
+
+        const float32 surfaceWidth = lastWidth * surfaceScale;
+        const float32 surfaceHeight = lastHeight * surfaceScale;
+        const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+    }
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -318,12 +339,12 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 width = static_cast<float32>(lastWidth);
         float32 height = static_cast<float32>(lastHeight);
 
-        // on win32 surfaceWidth/surfaceHeight is same as window width/height
-        float32 surfaceWidth = width;
-        float32 surfaceHeight = height;
+        float32 surfaceWidth = width * surfaceScale;
+        float32 surfaceHeight = height * surfaceScale;
+
         eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
     }
 }
 
@@ -352,6 +373,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
@@ -751,8 +775,8 @@ LRESULT WindowBackend::OnCreate()
 
     float32 width = static_cast<float32>(lastWidth);
     float32 height = static_cast<float32>(lastHeight);
-    float32 surfaceWidth = width;
-    float32 surfaceHeight = height;
+    float32 surfaceWidth = width * surfaceScale;
+    float32 surfaceHeight = height * surfaceScale;
     float32 dpi = GetDpi();
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
