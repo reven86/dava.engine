@@ -333,13 +333,14 @@ private:
     ProgType progType = PROG_VERTEX;
     ID3D11Buffer* buf;
     mutable float* value;
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    mutable unsigned updateFrame;
+#else
     mutable float* inst;
     mutable unsigned frame;
 #endif
     unsigned buf_i;
     unsigned regCount;
-    mutable uint32 updatePending : 1;
 };
 
 static RingBuffer _DefConstRingBuf;
@@ -355,7 +356,7 @@ ConstBufDX11::ConstBufDX11()
 #endif
     , buf_i(DAVA::InvalidIndex)
     , regCount(0)
-    , updatePending(true)
+    , updateFrame(0)
 {
 }
 
@@ -421,7 +422,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
         value = (float*)(malloc(regCnt * 4 * sizeof(float)));
         buf_i = bufIndex;
         regCount = regCnt;
-        updatePending = true;
+        updateFrame = _CurFrame;
     }
 }
 
@@ -464,7 +465,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-        updatePending = true;
+        updateFrame = _CurFrame;
 #else
         inst = nullptr;
 #endif
@@ -484,7 +485,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-        updatePending = true;
+        updateFrame = _CurFrame;
 #else
         inst = nullptr;
 #endif
@@ -499,10 +500,9 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
-    if (updatePending)
+    if (updateFrame == _CurFrame)
     {
         context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
-        updatePending = false;
     }
 
     buffer[buf_i] = buf;
@@ -541,7 +541,7 @@ const void* ConstBufDX11::Instance() const
 
 void ConstBufDX11::Invalidate()
 {
-    updatePending = true;
+    updateFrame = _CurFrame;
 }
 
 //==============================================================================
@@ -1056,6 +1056,11 @@ void InvalidateAll()
     }
 }
 
+void InvalidateAllInstances()
+{
+    ++_CurFrame;
+}
+
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
@@ -1073,15 +1078,12 @@ void SetToRHI(Handle cb, const void* instData)
 
     cb11->SetToRHI(instData);
 }
+
 const void* Instance(Handle cb)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
 
     return cb11->Instance();
-}
-void InvalidateAllInstances()
-{
-    ++_CurFrame;
 }
 
 void InitializeRingBuffer(uint32 size)
