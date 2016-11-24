@@ -16,6 +16,7 @@ class MockClientModule : public ClientModule
 public:
     MockClientModule()
     {
+        using namespace ::testing;
         DVASSERT(instance == nullptr);
         instance = this;
 

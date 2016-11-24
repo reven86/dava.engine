@@ -12,6 +12,12 @@
 #include <QTimer>
 #include <gmock/gmock-spec-builders.h>
 
+#if defined(__DAVAENGINE_MACOS__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+#endif
+
 namespace DAVA
 {
 namespace TArc
@@ -53,9 +59,33 @@ protected:
         ctxManager->ActivateContext(id);
     }
 };
+
+bool IsDebuggerPresent()
+{
+#if defined(__DAVAENGINE_WIN32__)
+    return ::IsDebuggerPresent();
+#elif defined(__DAVAENGINE_MACOS__)
+    int mib[4];
+    struct kinfo_proc info;
+    size_t size = sizeof(info);
+
+    info.kp_proc.p_flag = 0;
+
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC;
+    mib[2] = KERN_PROC_PID;
+    mib[3] = getpid();
+
+    sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+
+    return (info.kp_proc.p_flag & P_TRACED) != 0;
+#else
+    return false;
+#endif
+}
 }
 
-const double TestClass::testTimeLimit = 100.0; // seconds
+const double TestClass::testTimeLimit = 10.0; // seconds
 
 TestClass::~TestClass()
 {
@@ -120,9 +150,7 @@ bool TestClass::TestComplete(const String& testName) const
     using namespace std::chrono;
     double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - iter->startTime).count();
     bool checkTimeLimit = true;
-#if defined(__DAVAENGINE_WIN32__)
-    checkTimeLimit = !IsDebuggerPresent();
-#endif
+    checkTimeLimit = !TArcTestClassDetail::IsDebuggerPresent();
     if (checkTimeLimit == true && elapsedSeconds > testTimeLimit)
     {
         TEST_VERIFY(::testing::Mock::VerifyAndClear());
