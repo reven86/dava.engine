@@ -483,7 +483,7 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
 
         default:
             Logger::Error("[MongodbClient::ReadData] Not implemented type: %d", type);
-            DVASSERT(false);
+            //DVASSERT(false);
             break;
         }
     }
