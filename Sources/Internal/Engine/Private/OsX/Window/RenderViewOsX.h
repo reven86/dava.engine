@@ -24,6 +24,8 @@
     NSTrackingArea* trackingArea;
 }
 
+@property DAVA::float32 backbufferScale;
+
 - (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
 @end
