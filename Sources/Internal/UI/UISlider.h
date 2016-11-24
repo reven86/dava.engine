@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-class UIButton;
 class UISlider : public UIControl
 {
 protected:

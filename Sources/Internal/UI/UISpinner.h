@@ -3,7 +3,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "UI/UIButton.h"
 
 namespace DAVA
 {
@@ -115,11 +114,11 @@ public:
     }
     void SetAdapter(SpinnerAdapter* adapter);
 
-    UIButton* GetButtonNext() const
+    UIControl* GetButtonNext() const
     {
         return buttonNext.Get();
     }
-    UIButton* GetButtonPrevious() const
+    UIControl* GetButtonPrevious() const
     {
         return buttonPrevious.Get();
     }
@@ -137,8 +136,8 @@ protected:
 
     SpinnerAdapter* adapter;
 
-    RefPtr<UIButton> buttonNext;
-    RefPtr<UIButton> buttonPrevious;
+    RefPtr<UIControl> buttonNext;
+    RefPtr<UIControl> buttonPrevious;
 
     //we need these 'content' controls to scroll items with slide
     RefPtr<UIControl> content;

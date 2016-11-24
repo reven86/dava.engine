@@ -58,8 +58,8 @@ void SpinnerAdapter::DisplaySelectedData(UISpinner* spinner)
 UISpinner::UISpinner(const Rect& rect)
     : UIControl(rect)
     , adapter(nullptr)
-    , buttonNext(new UIButton())
-    , buttonPrevious(new UIButton())
+    , buttonNext(new UIControl())
+    , buttonPrevious(new UIControl())
     , content(new UIControl())
     , nextContent(new UIControl())
     , contentViewport(new UIControl())
@@ -258,11 +258,11 @@ void UISpinner::AddControl(UIControl* control)
 
     if (control->GetName() == UISPINNER_BUTTON_NEXT_NAME && control != buttonNext.Get())
     {
-        buttonNext = DynamicTypeCheck<UIButton*>(control);
+        buttonNext = control;
     }
     else if (control->GetName() == UISPINNER_BUTTON_PREVIOUS_NAME && control != buttonPrevious.Get())
     {
-        buttonPrevious = DynamicTypeCheck<UIButton*>(control);
+        buttonPrevious = control;
     }
 }
 

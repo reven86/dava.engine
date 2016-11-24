@@ -1,6 +1,5 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "UI/UIControl.h"
-#include "UI/UIButton.h"
 #include "UI/UIStaticText.h"
 #include "UI/UITextField.h"
 #include "UI/UIControlBackground.h"
