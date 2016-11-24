@@ -6,7 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include <AppKit/NSScreen.h>
+#import <AppKit/NSScreen.h>
 
 #include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
@@ -99,6 +99,13 @@ void WindowBackend::SetCursorVisibility(bool visible)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
@@ -124,6 +131,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;

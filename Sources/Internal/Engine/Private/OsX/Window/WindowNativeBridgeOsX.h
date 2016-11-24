@@ -76,6 +76,8 @@ struct WindowNativeBridge final
     static eModifierKeys GetModifierKeys(NSEvent* theEvent);
     static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
+    void SetSurfaceScale(const float32 scale);
+
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;

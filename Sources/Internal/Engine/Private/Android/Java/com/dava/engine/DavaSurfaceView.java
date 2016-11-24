@@ -55,7 +55,7 @@ final class DavaSurfaceView extends SurfaceView
         setOnGenericMotionListener(this);
 */
     }
-
+    
     public Object createNativeControl(String className, long backendPointer)
     {
         try {
@@ -163,7 +163,7 @@ final class DavaSurfaceView extends SurfaceView
         }
 
         int dpi = getDpi();
-
+        
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
