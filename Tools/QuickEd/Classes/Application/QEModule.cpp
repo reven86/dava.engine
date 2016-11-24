@@ -21,8 +21,7 @@ class QEGlobalData : public DAVA::TArc::DataNode
 {
 public:
     QEGlobalData()
-        : editorCore()
-        , windowKey(DAVA::FastName("QuickEd"))
+        : windowKey(DAVA::FastName("QuickEd"))
     {
         editorCore.reset(new EditorCore());
     }
