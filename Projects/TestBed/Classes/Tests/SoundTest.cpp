@@ -1,4 +1,7 @@
 #include "Tests/SoundTest.h"
+#include "UI/Focus/UIFocusComponent.h"
+
+using namespace DAVA;
 
 SoundTest::SoundTest(TestBed& app)
     : BaseScreen(app, "Sound test")

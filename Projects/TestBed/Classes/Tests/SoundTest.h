@@ -13,14 +13,14 @@ protected:
     void LoadResources() override;
 
 private:
-    void OnPlaySoundGroup1(BaseObject* sender, void* data, void* callerData);
-    void OnPlaySoundGroup2(BaseObject* sender, void* data, void* callerData);
-    void OnApplySpeedGroup1(BaseObject* sender, void* data, void* callerData);
-    void OnApplySpeedGroup2(BaseObject* sender, void* data, void* callerData);
+    void OnPlaySoundGroup1(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnPlaySoundGroup2(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnApplySpeedGroup1(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnApplySpeedGroup2(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    UITextField* speedTextFieldGroup1;
-    UITextField* speedTextFieldGroup2;
+    DAVA::UITextField* speedTextFieldGroup1;
+    DAVA::UITextField* speedTextFieldGroup2;
 
-    SoundEvent* eventGroup1;
-    SoundEvent* eventGroup2;
+    DAVA::SoundEvent* eventGroup1;
+    DAVA::SoundEvent* eventGroup2;
 };
