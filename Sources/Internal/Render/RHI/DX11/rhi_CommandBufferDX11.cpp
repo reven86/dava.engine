@@ -938,10 +938,10 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                 ID3D11Query* fqQuery = nullptr;
 
                 D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP };
-                _D3D11_Device->CreateQuery(&desc, &tsQuery); // should we use DX11DeviceCommand here?
+                _D3D11_Device->CreateQuery(&desc, &tsQuery);
 
                 desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-                _D3D11_Device->CreateQuery(&desc, &fqQuery); // should we use DX11DeviceCommand here?
+                _D3D11_Device->CreateQuery(&desc, &fqQuery);
 
                 if (tsQuery && fqQuery)
                 {
@@ -980,76 +980,91 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         break;
         case DX11Command::QUERY_INTERFACE:
         {
+            ValidateDX11Device("QueryInterface");
             cmd->retval = _D3D11_Device->QueryInterface(*(const IID*)(arg[0]), (void**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_DEFERRED_CONTEXT:
         {
+            ValidateDX11Device("CreateDeferredContext");
             cmd->retval = _D3D11_Device->CreateDeferredContext((UINT)arg[0], (ID3D11DeviceContext**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_BLEND_STATE:
         {
+            ValidateDX11Device("CreateBlendState");
             cmd->retval = _D3D11_Device->CreateBlendState((const D3D11_BLEND_DESC*)(arg[0]), (ID3D11BlendState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_SAMPLER_STATE:
         {
+            ValidateDX11Device("CreateSamplerState");
             cmd->retval = _D3D11_Device->CreateSamplerState((const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_RASTERIZER_STATE:
         {
+            ValidateDX11Device("CreateRasterizerState");
             cmd->retval = _D3D11_Device->CreateRasterizerState((const D3D11_RASTERIZER_DESC*)(arg[0]), (ID3D11RasterizerState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_DEPTH_STENCIL_STATE:
         {
+            ValidateDX11Device("CreateDepthStencilState");
             cmd->retval = _D3D11_Device->CreateDepthStencilState((const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_VERTEX_SHADER:
         {
+            ValidateDX11Device("CreateVertexShader");
             cmd->retval = _D3D11_Device->CreateVertexShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11VertexShader**)(arg[3]));
             break;
         }
         case DX11Command::CREATE_PIXEL_SHADER:
         {
+            ValidateDX11Device("CreatePixelShader");
             cmd->retval = _D3D11_Device->CreatePixelShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11PixelShader**)(arg[3]));
             break;
         }
         case DX11Command::CREATE_INPUT_LAYOUT:
         {
+            ValidateDX11Device("CreateInputLayout");
             cmd->retval = _D3D11_Device->CreateInputLayout((const D3D11_INPUT_ELEMENT_DESC*)(arg[0]), (UINT)(arg[1]), (const void*)(arg[2]), (SIZE_T)(arg[3]), (ID3D11InputLayout**)(arg[4]));
             break;
         }
         case DX11Command::CREATE_QUERY:
         {
+            ValidateDX11Device("CreateQuery");
             cmd->retval = _D3D11_Device->CreateQuery((const D3D11_QUERY_DESC*)(arg[0]), (ID3D11Query**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_BUFFER:
         {
+            ValidateDX11Device("CreateBuffer");
             cmd->retval = _D3D11_Device->CreateBuffer((const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_TEXTURE_2D:
         {
+            ValidateDX11Device("CreateTexture2D");
             cmd->retval = _D3D11_Device->CreateTexture2D((const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_RENDER_TARGET_VIEW:
         {
+            ValidateDX11Device("CreateRenderTargetView");
             cmd->retval = _D3D11_Device->CreateRenderTargetView((ID3D11Resource*)(arg[0]), (const D3D11_RENDER_TARGET_VIEW_DESC*)(arg[1]), (ID3D11RenderTargetView**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_DEPTH_STENCIL_VIEW:
         {
+            ValidateDX11Device("CreateDepthStencilView");
             cmd->retval = _D3D11_Device->CreateDepthStencilView((ID3D11Resource*)(arg[0]), (const D3D11_DEPTH_STENCIL_VIEW_DESC*)(arg[1]), (ID3D11DepthStencilView**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_SHADER_RESOURCE_VIEW:
         {
+            ValidateDX11Device("CreateShaderResourceView");
             cmd->retval = _D3D11_Device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
             break;
         }
@@ -1071,6 +1086,41 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
     cmd.cmdCount = cmdCount;
     cmd.forceImmediate = force_immediate;
     RenderLoop::IssueImmediateCommand(&cmd);
+}
+
+HRESULT ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, DAVA::uint32 line)
+{
+    DVASSERT(cmd.func >= DX11Command::DEVICE_FIRST_COMMAND);
+    DVASSERT(cmd.func < DX11Command::DEVICE_LAST_COMMAND);
+
+    if (GetCurrentThreadId() == _DX11_RenderThreadId)
+    {
+        // running on render thread
+        // immediate execution, device validation will occur inside
+        ExecDX11(&cmd, 1, true);
+    }
+    else
+    {
+        // call occured from secondary (non-render thread)
+        // validate device before sending commands to execution
+        ValidateDX11Device(cmdName);
+        ExecDX11(&cmd, 1, false);
+    }
+
+    DX11_ProcessCallResult(cmd.retval, cmdName, fileName, line);
+    return cmd.retval;
+}
+
+void ValidateDX11Device(const char* call)
+{
+    if (_D3D11_Device == nullptr)
+    {
+        DAVA::Logger::Error("DX11 Device is not ready, %s and further calls will be blocked.", call);
+        for (;;)
+        {
+            Sleep(1);
+        }
+    }
 }
 
 static void dx11_EndFrame()

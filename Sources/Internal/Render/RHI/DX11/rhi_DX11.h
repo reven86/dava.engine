@@ -116,6 +116,7 @@ struct DX11Command
     enum Func : uint32_t
     {
         NOP,
+
         MAP,
         UNMAP,
         UPDATE_SUBRESOURCE,
@@ -150,36 +151,21 @@ struct DX11Command
         DEVICE_FIRST_COMMAND = QUERY_INTERFACE
     };
 
-    Func func;
-    uint64 arg[12];
-    HRESULT retval;
+    Func func = Func::NOP;
+    DAVA::uint64 arg[12]{};
+    HRESULT retval = S_OK;
+
+    template <class... args>
+    DX11Command(Func f, args&&... a)
+        : func(f)
+        , arg{ DAVA::uint64(a)... }
+    {
+    }
 };
 
+void ValidateDX11Device(const char* call);
 void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
 
-template <class... args>
-inline HRESULT DX11DeviceCommandImpl(const char* cmdName, const char* fileName, DAVA::uint32 line, DX11Command::Func func, args&&... a)
-{
-    DVASSERT(func >= DX11Command::DEVICE_FIRST_COMMAND);
-    DVASSERT(func < DX11Command::DEVICE_LAST_COMMAND);
-
-    if (_D3D11_Device == nullptr)
-    {
-        DAVA::Logger::Error("DX11 Device is not ready, therefore call is not possible");
-        for (;;)
-        {
-            Sleep(1);
-        }
-    }
-
-    bool immediateExecution = (GetCurrentThreadId() == _DX11_RenderThreadId);
-
-    DX11Command cmd = { func, { uint64_t(a)... } };
-    ExecDX11(&cmd, 1, immediateExecution);
-    DX11_ProcessCallResult(cmd.retval, cmdName, fileName, line);
-
-    return cmd.retval;
-}
-
-#define DX11DeviceCommand(CMD, ...) DX11DeviceCommandImpl(#CMD, __FILE__, __LINE__, CMD, __VA_ARGS__)
+HRESULT ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, DAVA::uint32 line);
+#define DX11DeviceCommand(CMD, ...) ExecDX11DeviceCommand(DX11Command(CMD, __VA_ARGS__), #CMD, __FILE__, __LINE__)
 }

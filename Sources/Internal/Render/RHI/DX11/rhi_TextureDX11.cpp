@@ -355,11 +355,11 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
     {
         DVASSERT(self->tex2d_copy);
 
-        D3D11_MAPPED_SUBRESOURCE res = { 0 };
+        D3D11_MAPPED_SUBRESOURCE res = {};
         DX11Command cmd[] =
         {
-          { DX11Command::COPY_RESOURCE, { uint64(self->tex2d_copy), uint64(self->tex2d) } },
-          { DX11Command::MAP, { uint64(self->tex2d_copy), 0, D3D11_MAP_READ, 0, uint64(&res) } }
+          { DX11Command::COPY_RESOURCE, self->tex2d_copy, self->tex2d },
+          { DX11Command::MAP, self->tex2d_copy, 0, D3D11_MAP_READ, 0, &res }
         };
         ExecDX11(cmd, countof(cmd));
         CHECK_HR(cmd[1].retval);
@@ -409,12 +409,9 @@ dx11_Texture_Unmap(Handle tex)
     {
         DVASSERT(self->tex2d_copy);
 
-        D3D11_MAPPED_SUBRESOURCE res = { 0 };
-        DX11Command cmd[] =
-        {
-          { DX11Command::UNMAP, { uint64(self->tex2d_copy), 0 } }
-        };
-        ExecDX11(cmd, countof(cmd));
+        D3D11_MAPPED_SUBRESOURCE res = {};
+        DX11Command cmd(DX11Command::UNMAP, self->tex2d_copy, 0);
+        ExecDX11(&cmd, 1);
 
         self->isMapped = false;
         self->mappedData = nullptr;
@@ -468,7 +465,7 @@ dx11_Texture_Unmap(Handle tex)
             rc_i = self->mappedLevel;
         }
 
-        DX11Command cmd = { DX11Command::UPDATE_SUBRESOURCE, { uint64(self->tex2d), rc_i, NULL, uint64(self->mappedData), TextureStride(fmt, Size2i(w, h), self->mappedLevel), 0 } };
+        DX11Command cmd(DX11Command::UPDATE_SUBRESOURCE, self->tex2d, rc_i, NULL, self->mappedData, TextureStride(fmt, Size2i(w, h), self->mappedLevel), 0);
         ExecDX11(&cmd, 1);
         self->isMapped = false;
 
