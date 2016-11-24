@@ -4,6 +4,7 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Font.h"
 
 namespace DAVA
 {
