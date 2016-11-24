@@ -40,7 +40,7 @@ FilePath GetOpenFileName(const String& title, const FilePath& pathname, const St
             validator.SetPathForChecking(data->GetProjectPath());
         }
 
-        if (validator.IsPathCorrectForProject(openedPathname))
+        if (validator.IsPathCorrectForProject(openedPathname) == false)
         {
             //Need to Show Error
             DAVA::Logger::Error("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str());
