@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
+#include "Base/Exception.h"
 #include "Concurrency/Thread.h"
 #include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
@@ -25,15 +26,6 @@ using namespace DAVA;
 String GetCurrentArchitecture();
 QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
 FilePath ExtractManifest(const FilePath& package);
-
-void ThrowException(int line, const char* func, const char* file, const char* msg)
-{
-    StringStream ss;
-    ss << "Exception in " << func << " in " << file << "::" << line << ": " << msg;
-    throw std::runtime_error(ss.str());
-}
-
-#define RUNNER_EXCEPTION(msg) ThrowException(__LINE__, __FUNCTION__, __FILE__, msg);
 
 UWPRunner::UWPRunner(const PackageOptions& opt)
     : options(opt)
@@ -59,7 +51,7 @@ void UWPRunner::Run()
 {
     if (GetEngineContext()->netCore == nullptr)
     {
-        RUNNER_EXCEPTION("NetCore module is not created");
+        DAVA_THROW(Exception, "NetCore module is not created");
     }
 
     //Create Qt runner
@@ -90,7 +82,7 @@ void UWPRunner::Run()
     //Check runner state
     if (!runner.isValid())
     {
-        RUNNER_EXCEPTION("Runner core is not valid");
+        DAVA_THROW(Exception, "Runner core is not valid");
     }
 
     Run(runner);
@@ -109,7 +101,7 @@ void UWPRunner::Run(Runner& runner)
         Logger::Info("Installing package...");
         if (!runner.install(true))
         {
-            RUNNER_EXCEPTION("Can't install application package");
+            DAVA_THROW(Exception, "Can't install application package");
             return;
         }
     }
@@ -123,7 +115,7 @@ void UWPRunner::Run(Runner& runner)
     Logger::Info("Starting application...");
     if (!runner.start())
     {
-        RUNNER_EXCEPTION("Can't install application package");
+        DAVA_THROW(Exception, "Can't install application package");
         return;
     }
 
@@ -219,7 +211,7 @@ void UWPRunner::ProcessBundlePackage()
     }
     else
     {
-        RUNNER_EXCEPTION("Can't extract app package from bundle");
+        DAVA_THROW(Exception, "Can't extract app package from bundle");
     }
 }
 
@@ -230,7 +222,7 @@ void UWPRunner::ProcessProfileInfo()
     FilePath manifest = ExtractManifest(options.packageToInstall);
     if (manifest.IsEmpty())
     {
-        RUNNER_EXCEPTION("Can't extract manifest file from package");
+        DAVA_THROW(Exception, "Can't extract manifest file from package");
     }
 
     //figure out if app should be started on mobile device
@@ -247,7 +239,7 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
         bool ipOverUsbConfigured = ConfigureIpOverUsb();
         if (!ipOverUsbConfigured)
         {
-            RUNNER_EXCEPTION("Cannot configure IpOverUSB service");
+            DAVA_THROW(Exception, "Cannot configure IpOverUSB service");
         }
     }
 
@@ -298,7 +290,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"DestinationAddress", desiredAddr))
         {
-            RUNNER_EXCEPTION("Unable to set DestinationAddress");
+            DAVA_THROW(Exception, "Unable to set DestinationAddress");
         }
         changed = true;
     }
@@ -308,7 +300,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"DestinationPort", desiredPort))
         {
-            RUNNER_EXCEPTION("Unable to set DestinationPort");
+            DAVA_THROW(Exception, "Unable to set DestinationPort");
         }
         changed = true;
     }
@@ -318,7 +310,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"LocalAddress", desiredAddr))
         {
-            RUNNER_EXCEPTION("Unable to set LocalAddress");
+            DAVA_THROW(Exception, "Unable to set LocalAddress");
         }
         changed = true;
     }
@@ -328,7 +320,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"LocalPort", desiredPort))
         {
-            RUNNER_EXCEPTION("Unable to set LocalPort");
+            DAVA_THROW(Exception, "Unable to set LocalPort");
         }
         changed = true;
     }
@@ -342,19 +334,19 @@ bool UWPRunner::RestartIpOverUsb()
     SvcHelper service(L"IpOverUsbSvc");
     if (!service.IsInstalled())
     {
-        RUNNER_EXCEPTION("Can't open IpOverUsb service");
+        DAVA_THROW(Exception, "Can't open IpOverUsb service");
     }
 
     //stop it
     if (!service.Stop())
     {
-        RUNNER_EXCEPTION("Can't stop IpOverUsb service");
+        DAVA_THROW(Exception, "Can't stop IpOverUsb service");
     }
 
     //start it
     if (!service.Start())
     {
-        RUNNER_EXCEPTION("Can't start IpOverUsb service");
+        DAVA_THROW(Exception, "Can't start IpOverUsb service");
     }
 
     return true;
@@ -368,7 +360,7 @@ bool UWPRunner::ConfigureIpOverUsb()
     RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     if (!key.IsExist())
     {
-        RUNNER_EXCEPTION("Can't open or create key");
+        DAVA_THROW(Exception, "Can't open or create key");
     }
     needRestart |= key.IsCreated();
 
