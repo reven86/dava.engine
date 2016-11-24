@@ -220,6 +220,7 @@ void ProjectManagerModule::CloseProject()
                 closeAction->setEnabled(false);
             }
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
             data->projectPath = "";
 
             SettingsManager::ResetPerProjectSettings();
