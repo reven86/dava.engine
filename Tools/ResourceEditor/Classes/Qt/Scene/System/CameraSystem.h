@@ -5,8 +5,9 @@
 #include "UI/UIEvent.h"
 
 #include "Base/Introspection.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
-class SceneCameraSystem : public DAVA::SceneSystem
+class SceneCameraSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
     friend class EditorLightSystem;
@@ -14,6 +15,8 @@ class SceneCameraSystem : public DAVA::SceneSystem
 public:
     SceneCameraSystem(DAVA::Scene* scene);
     ~SceneCameraSystem();
+
+    void Draw() override;
 
     DAVA::Camera* GetCurCamera() const;
 
@@ -53,13 +56,11 @@ public:
     void MoveToSelection();
     void MoveToStep(int ofs);
 
-    void EnableSystem();
+    void EnableSystem() override;
 
 private:
     void OnKeyboardInput(DAVA::UIEvent* event);
     void OnWheelInput(DAVA::UIEvent* event);
-
-    void Draw();
 
     void CreateDebugCameras();
     void RecalcCameraAspect();

@@ -1,8 +1,8 @@
-#ifndef __SCENE_WAYEDIT_SYSTEM_H__
-#define __SCENE_WAYEDIT_SYSTEM_H__
+#pragma once
 
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 #include "SystemDelegates.h"
 
@@ -13,7 +13,6 @@
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 
 // editor systems
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
 // delegate
@@ -26,18 +25,23 @@ class SceneEditor2;
 class WayEditSystem : public DAVA::SceneSystem,
                       public EntityModificationSystemDelegate,
                       public StructureSystemDelegate,
-                      public SceneSelectionSystemDelegate
+                      public SelectionSystemDelegate,
+                      public EditorSceneSystem
+
 {
     friend class SceneEditor2;
 
 public:
-    WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* selectionSystem, SceneCollisionSystem* collisionSystem);
+    WayEditSystem(DAVA::Scene* scene, SceneCollisionSystem* collisionSystem);
 
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
+
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
@@ -49,10 +53,6 @@ public:
     void DidRemoved(DAVA::Entity* removedEntity) override;
 
 protected:
-    void Draw();
-
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
-
     DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
 
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent* edgeComponent);
@@ -75,7 +75,6 @@ private:
     SelectableGroup selectedWaypoints;
     SelectableGroup prevSelectedWaypoints;
     SceneEditor2* sceneEditor = nullptr;
-    SceneSelectionSystem* selectionSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;
     DAVA::Vector<DAVA::Entity*> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
@@ -84,5 +83,3 @@ private:
     bool inCloneState = false;
     bool isEnabled = false;
 };
-
-#endif // __SCENE_WAYEDIT_SYSTEM_H__

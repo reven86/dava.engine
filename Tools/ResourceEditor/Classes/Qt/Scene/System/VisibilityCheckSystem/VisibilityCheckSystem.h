@@ -1,15 +1,16 @@
-#ifndef __VISIBILITYCHECKSYSTEM_H__
-#define __VISIBILITYCHECKSYSTEM_H__
+#pragma once
 
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
+
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 namespace DAVA
 {
 class Landscape;
 }
 
-class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
+class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate, public EditorSceneSystem
 {
 public:
     static void ReleaseCubemapRenderTargets();
@@ -25,7 +26,7 @@ public:
 
     void Recalculate();
     void Process(DAVA::float32 timeElapsed) override;
-    void Draw();
+    void Draw() override;
 
     void InvalidateMaterials();
 
@@ -71,5 +72,3 @@ private:
     bool forceRebuildPoints = true;
     bool shouldFixFrame = false;
 };
-
-#endif

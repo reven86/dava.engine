@@ -1,11 +1,19 @@
 #include "ParticleTimeLineWidget.h"
 #include "ParticleTimeLineColumns.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/SelectionData.h"
+#include "Classes/SceneManager/SceneData.h"
+
+#include "Commands2/ParticleEditorCommands.h"
+#include "Scene/SceneSignals.h"
+
+#include "TArc/Core/FieldBinder.h"
+
 #include <QPainter>
 #include <QMouseEvent>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include "Commands2/ParticleEditorCommands.h"
-#include "Scene/SceneSignals.h"
 
 ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     : ScrollZoomWidget(parent)
@@ -18,8 +26,15 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
 {
     gridStyle = GRID_STYLE_LIMITS;
 
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &ParticleTimeLineWidget::OnSelectionChanged));
+    }
+
     auto dispatcher = SceneSignals::Instance();
-    connect(dispatcher, &SceneSignals::SelectionChanged, this, &ParticleTimeLineWidget::OnSelectionChanged);
 
     // Get the notification about changes in Particle Editor items.
     connect(dispatcher, &SceneSignals::ParticleEmitterValueChanged, this, &ParticleTimeLineWidget::OnParticleEmitterValueChanged);
@@ -790,7 +805,21 @@ void ParticleTimeLineWidget::OnParticleEffectStateChanged(SceneEditor2* scene, D
     ResetLayersExtraInfoValues();
 }
 
-void ParticleTimeLineWidget::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void ParticleTimeLineWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
+{
+    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
+    if (selectionAny.CanCast<SelectableGroup>() && (activeContext != nullptr))
+    {
+        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+
+        SceneData* sceneData = activeContext->GetData<SceneData>();
+        SceneEditor2* scene = sceneData->GetScene().Get();
+
+        ProcessSelection(scene, selection);
+    }
+}
+
+void ParticleTimeLineWidget::ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection)
 {
     bool shouldReset = true;
     SCOPE_EXIT
@@ -803,11 +832,11 @@ void ParticleTimeLineWidget::OnSelectionChanged(SceneEditor2* scene, const Selec
         }
     };
 
-    if (selected->GetSize() != 1)
+    if (selection.GetSize() != 1)
         return;
 
     activeScene = scene;
-    const auto& obj = selected->GetFirst();
+    const auto& obj = selection.GetFirst();
     if (obj.CanBeCastedTo<DAVA::Entity>())
     {
         auto entity = obj.AsEntity();
@@ -824,11 +853,11 @@ void ParticleTimeLineWidget::OnSelectionChanged(SceneEditor2* scene, const Selec
         auto instance = obj.Cast<DAVA::ParticleEmitterInstance>();
         HandleEmitterSelected(instance->GetOwner(), instance, nullptr);
     }
-    else if (obj.CanBeCastedTo<DAVA::ParticleLayer>() && (deselected->GetSize() == 1))
+    else if (obj.CanBeCastedTo<DAVA::ParticleLayer>())
     {
-        auto layer = obj.Cast<DAVA::ParticleLayer>();
-        auto instance = deselected->GetFirst().Cast<DAVA::ParticleEmitterInstance>();
-        if ((instance != nullptr) && instance->GetEmitter()->ContainsLayer(layer))
+        DAVA::ParticleLayer* layer = obj.Cast<DAVA::ParticleLayer>();
+        DAVA::ParticleEmitterInstance* instance = scene->particlesSystem->GetLayerOwner(layer);
+        if ((instance != nullptr) && (instance->GetEmitter()->ContainsLayer(layer)))
         {
             shouldReset = false;
             HandleEmitterSelected(instance->GetOwner(), instance, layer);

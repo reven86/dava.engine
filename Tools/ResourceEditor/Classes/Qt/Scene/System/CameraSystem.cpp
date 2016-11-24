@@ -3,7 +3,6 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/CameraSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Qt/Settings/SettingsManager.h"
@@ -31,6 +30,7 @@
 #include "../../Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"
 
+#include "Classes/Selection/Selection.h"
 
 #include <QDebug>
 
@@ -358,29 +358,25 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
 
 void SceneCameraSystem::Draw()
 {
-    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (nullptr != sceneEditor)
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    SceneCollisionSystem* collSystem = sceneEditor->collisionSystem;
+    if (nullptr != collSystem)
     {
-        SceneCollisionSystem* collSystem = sceneEditor->collisionSystem;
-
-        if (nullptr != collSystem)
+        for (DAVA::Entity* entity : sceneCameras)
         {
-            for (auto& entity : sceneCameras)
+            DVASSERT(entity != nullptr);
+            DAVA::Camera* camera = GetCamera(entity);
+            if (nullptr != camera && camera != curSceneCamera)
             {
-                DVASSERT(entity != nullptr);
-                DAVA::Camera* camera = GetCamera(entity);
-                if (nullptr != camera && camera != curSceneCamera)
-                {
-                    DAVA::AABBox3 worldBox;
-                    DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
-                    DVASSERT(!collBox.IsEmpty());
+                DAVA::AABBox3 worldBox;
+                DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
+                DVASSERT(!collBox.IsEmpty());
 
-                    DAVA::Matrix4 transform;
-                    transform.Identity();
-                    transform.SetTranslationVector(camera->GetPosition());
-                    collBox.GetTransformedBox(transform, worldBox);
-                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
-                }
+                DAVA::Matrix4 transform;
+                transform.Identity();
+                transform.SetTranslationVector(camera->GetPosition());
+                collBox.GetTransformedBox(transform, worldBox);
+                sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
             }
         }
     }
@@ -508,10 +504,10 @@ void SceneCameraSystem::UpdateDistanceToCamera()
     const DAVA::Camera* cam = sc->GetCurrentCamera();
     if (cam)
     {
-        const SelectableGroup& selection = sc->selectionSystem->GetSelection();
+        const SelectableGroup& selection = Selection::GetSelection();
         if (!selection.IsEmpty())
         {
-            DAVA::AABBox3 bbox = sc->selectionSystem->GetTransformedBoundingBox(selection);
+            DAVA::AABBox3 bbox = selection.GetTransformedBoundingBox();
             if (!bbox.IsEmpty())
             {
                 distanceToCamera = ((cam->GetPosition() - bbox.GetCenter()).Length()) * cam->GetZoomFactor();
@@ -615,10 +611,10 @@ void SceneCameraSystem::MoveToSelection()
     if (sceneEditor == nullptr)
         return;
 
-    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = Selection::GetSelection();
     if (!selection.IsEmpty())
     {
-        DAVA::AABBox3 bbox = sceneEditor->selectionSystem->GetTransformedBoundingBox(selection);
+        DAVA::AABBox3 bbox = selection.GetTransformedBoundingBox();
         if (!bbox.IsEmpty())
         {
             LookAt(bbox);
@@ -639,5 +635,6 @@ void SceneCameraSystem::MoveToStep(int ofs)
 
 void SceneCameraSystem::EnableSystem()
 {
+    EditorSceneSystem::EnableSystem();
     CreateDebugCameras();
 }

@@ -1,11 +1,12 @@
-#ifndef __EDITOR_MATERIAL_SYSTEM_H__
-#define __EDITOR_MATERIAL_SYSTEM_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "Base/Introspection.h"
 
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
+
 class RECommandNotificationObject;
-class EditorMaterialSystem : public DAVA::SceneSystem
+class EditorMaterialSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
 
@@ -24,6 +25,8 @@ public:
 
     EditorMaterialSystem(DAVA::Scene* scene);
     ~EditorMaterialSystem();
+
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
     const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
 
@@ -63,8 +66,6 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
-
     void AddMaterials(DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
 
@@ -81,5 +82,3 @@ private:
     DAVA::uint32 curViewMode = LIGHTVIEW_ALL;
     bool showLightmapCanvas = false;
 };
-
-#endif // __EDITOR_MATERIAL_SYSTEM_H__

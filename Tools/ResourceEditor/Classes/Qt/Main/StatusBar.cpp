@@ -4,8 +4,12 @@
 
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Commands2/Base/RECommand.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/SceneManager/SceneData.h"
+#include "Classes/Selection/Selection.h"
+#include "Classes/Selection/SelectionData.h"
 
 #include <QLabel>
 #include <QLayout>
@@ -38,6 +42,9 @@ StatusBar::StatusBar(QWidget* parent)
     layout()->setMargin(0);
     layout()->setSpacing(1);
     setStyleSheet("QStatusBar::item {border: none;}");
+
+    selectionWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<SelectionData>());
+    selectionWrapper.SetListener(this);
 }
 
 void StatusBar::SetDistanceToCamera(DAVA::float32 distance)
@@ -58,7 +65,8 @@ void StatusBar::UpdateDistanceToCamera()
         return;
     }
 
-    if (activeScene->selectionSystem->GetSelectionCount() > 0)
+    const SelectableGroup& selection = Selection::GetSelection();
+    if (selection.IsEmpty() == false)
     {
         DAVA::float32 distanceToCamera = activeScene->cameraSystem->GetDistanceToCamera();
         SetDistanceToCamera(distanceToCamera);
@@ -72,29 +80,24 @@ void StatusBar::UpdateDistanceToCamera()
 void StatusBar::SceneActivated(SceneEditor2* scene)
 {
     DVASSERT(scene != nullptr);
-    scene->selectionSystem->AddDelegate(this);
     activeScene = scene;
 
     UpdateDistanceToCamera();
-    UpdateSelectionBoxSize(scene);
+    UpdateSelectionBoxSize();
 }
 
 void StatusBar::SceneDeactivated(SceneEditor2* scene)
 {
     DVASSERT(scene != nullptr);
-    scene->selectionSystem->RemoveDelegate(this);
     activeScene = nullptr;
 }
 
-void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void StatusBar::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    UpdateDistanceToCamera();
-    UpdateSelectionBoxSize(scene);
-}
+    DVASSERT(selectionWrapper == wrapper);
 
-void StatusBar::StructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
-{
-    UpdateSelectionBoxSize(scene);
+    UpdateDistanceToCamera();
+    UpdateSelectionBoxSize();
 }
 
 void StatusBar::UpdateByTimer()
@@ -108,14 +111,16 @@ void StatusBar::OnSceneGeometryChaged(DAVA::uint32 width, DAVA::uint32 height)
     sceneGeometry->setText(QString::fromStdString(DAVA::Format("%u x %u", width, height)));
 }
 
-void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
+void StatusBar::UpdateSelectionBoxSize()
 {
-    if (scene == nullptr)
+    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
+    if (activeContext == nullptr)
     {
         return;
     }
 
-    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
+    SelectionData* selectionData = activeContext->GetData<SelectionData>();
+    const SelectableGroup& selection = selectionData->GetSelection();
     if (selection.IsEmpty())
     {
         selectionBoxSize->setText(QString());
@@ -123,8 +128,18 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
     }
     else
     {
-        OnSelectionBoxChanged(selection.GetIntegralBoundingBox());
         selectionBoxSize->setVisible(true);
+
+        const DAVA::AABBox3& selectionBox = selectionData->GetSelectionBox();
+        if (selectionBox.IsEmpty())
+        {
+            selectionBoxSize->setText("Empty box");
+        }
+        else
+        {
+            DAVA::Vector3 size = selectionBox.GetSize();
+            selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+        }
     }
 }
 
@@ -150,17 +165,4 @@ void StatusBar::UpdateFPS()
     }
 
     lastTimeMS = currentTimeMS;
-}
-
-void StatusBar::OnSelectionBoxChanged(const DAVA::AABBox3& newBox)
-{
-    if (newBox.IsEmpty())
-    {
-        selectionBoxSize->setText("Empty box");
-    }
-    else
-    {
-        DAVA::Vector3 size = newBox.GetSize();
-        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
-    }
 }

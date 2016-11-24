@@ -17,6 +17,12 @@
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
+#include "TArc/Core/FieldBinder.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/SelectionData.h"
+#include "Classes/SceneManager/SceneData.h"
+
 #include "ui_LODEditor.h"
 
 #include <QLabel>
@@ -58,9 +64,16 @@ void LODEditor::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 
 void LODEditor::SetupSceneSignals()
 {
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &LODEditor::OnSelectionChanged));
+    }
+
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &LODEditor::SceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &LODEditor::SceneDeactivated);
-    connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &LODEditor::SceneSelectionChanged);
 }
 
 void LODEditor::SetupInternalUI()
@@ -303,12 +316,14 @@ void LODEditor::SceneDeactivated(SceneEditor2* scene)
     UpdatePanelsUI(nullptr);
 }
 
-void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void LODEditor::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    DVASSERT(scene != nullptr);
-
-    EditorLODSystem* system = scene->editorLODSystem;
-    system->SelectionChanged(selected, deselected);
+    if (selectionAny.CanCast<SelectableGroup>() && (activeScene != nullptr))
+    {
+        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        EditorLODSystem* system = activeScene->editorLODSystem;
+        system->SelectionChanged(selection);
+    }
 }
 
 //ENDOF SCENE SIGNALS

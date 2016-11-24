@@ -1,6 +1,5 @@
 #include "DeveloperTools.h"
 #include "Main/mainwindow.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Commands2/EntityAddCommand.h"
 
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
@@ -11,7 +10,7 @@
 
 #include "Render/Highlevel/SkinnedMesh.h"
 
-#include "DAVAEngine.h"
+#include "Classes/Selection/Selection.h"
 
 #include <QInputDialog>
 
@@ -33,9 +32,10 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
     FastName inGlossinessName("inGlossiness");
     FastName inSpecularityName("inSpecularity");
 
-    if (currentScene->selectionSystem->GetSelectionCount() == 1)
+    const SelectableGroup& selection = Selection::GetSelection();
+    if (selection.GetSize() == 1)
     {
-        Entity* entity = currentScene->selectionSystem->GetFirstSelectionEntity();
+        Entity* entity = selection.GetContent().front().AsEntity();
 
         const Matrix4& matrix = entity->GetLocalTransform();
 

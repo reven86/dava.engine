@@ -1,6 +1,13 @@
 #include "ParticleEditorWidget.h"
 #include "EmitterLayerWidget.h"
 #include "LayerForceWidget.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/SelectionData.h"
+#include "Classes/SceneManager/SceneData.h"
+
+#include "TArc/Core/FieldBinder.h"
+
 #include "ui_mainwindow.h"
 #include <QScrollBar>
 
@@ -17,10 +24,17 @@ ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
     CreateInnerWidgets();
 
     auto dispatcher = SceneSignals::Instance();
-    connect(dispatcher, &SceneSignals::SelectionChanged, this, &ParticleEditorWidget::OnSelectionChanged);
     connect(dispatcher, &SceneSignals::ParticleLayerValueChanged, this, &ParticleEditorWidget::OnParticleLayerValueChanged);
     connect(dispatcher, &SceneSignals::ParticleEmitterLoaded, this, &ParticleEditorWidget::OnParticleEmitterLoaded);
     connect(dispatcher, &SceneSignals::ParticleEmitterSaved, this, &ParticleEditorWidget::OnParticleEmitterSaved);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &ParticleEditorWidget::OnSelectionChanged));
+    }
 }
 
 ParticleEditorWidget::~ParticleEditorWidget()
@@ -167,7 +181,21 @@ void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, DAVA::Part
     SwitchEditorToEmitterMode(scene, effect, emitter);
 }
 
-void ParticleEditorWidget::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void ParticleEditorWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
+{
+    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
+    if (selectionAny.CanCast<SelectableGroup>() && (activeContext != nullptr))
+    {
+        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+
+        SceneData* sceneData = activeContext->GetData<SceneData>();
+        SceneEditor2* scene = sceneData->GetScene().Get();
+
+        ProcessSelection(scene, selection);
+    }
+}
+
+void ParticleEditorWidget::ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection)
 {
     bool shouldReset = true;
     SCOPE_EXIT
@@ -178,14 +206,14 @@ void ParticleEditorWidget::OnSelectionChanged(SceneEditor2* scene, const Selecta
         }
     };
 
-    if (selected->GetSize() != 1)
+    if (selection.GetSize() != 1)
         return;
 
-    const auto& obj = selected->GetFirst();
+    const auto& obj = selection.GetFirst();
     if (obj.CanBeCastedTo<DAVA::Entity>())
     {
-        auto entity = obj.AsEntity();
-        auto effect = static_cast<DAVA::ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
+        DAVA::Entity* entity = obj.AsEntity();
+        DAVA::ParticleEffectComponent* effect = static_cast<DAVA::ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
         if (effect != nullptr)
         {
             shouldReset = false;
@@ -195,23 +223,23 @@ void ParticleEditorWidget::OnSelectionChanged(SceneEditor2* scene, const Selecta
     else if (obj.CanBeCastedTo<DAVA::ParticleEmitterInstance>())
     {
         shouldReset = false;
-        auto instance = obj.Cast<DAVA::ParticleEmitterInstance>();
+        DAVA::ParticleEmitterInstance* instance = obj.Cast<DAVA::ParticleEmitterInstance>();
         SwitchEditorToEmitterMode(scene, instance->GetOwner(), instance);
     }
-    else if (obj.CanBeCastedTo<DAVA::ParticleLayer>() && (deselected->GetSize() == 1))
+    else if (obj.CanBeCastedTo<DAVA::ParticleLayer>())
     {
-        auto layer = obj.Cast<DAVA::ParticleLayer>();
-        auto instance = deselected->GetFirst().Cast<DAVA::ParticleEmitterInstance>();
+        DAVA::ParticleLayer* layer = obj.Cast<DAVA::ParticleLayer>();
+        DAVA::ParticleEmitterInstance* instance = scene->particlesSystem->GetLayerOwner(layer);
         if ((instance != nullptr) && (instance->GetEmitter()->ContainsLayer(layer)))
         {
             shouldReset = false;
             SwitchEditorToLayerMode(scene, instance->GetOwner(), instance, layer);
         }
     }
-    else if (obj.CanBeCastedTo<DAVA::ParticleForce>() && (deselected->GetSize() == 1))
+    else if (obj.CanBeCastedTo<DAVA::ParticleForce>())
     {
-        auto force = obj.Cast<DAVA::ParticleForce>();
-        auto layer = deselected->GetFirst().Cast<DAVA::ParticleLayer>();
+        DAVA::ParticleForce* force = obj.Cast<DAVA::ParticleForce>();
+        DAVA::ParticleLayer* layer = scene->particlesSystem->GetForceOwner(force);
         if (layer != nullptr)
         {
             auto i = std::find(layer->forces.begin(), layer->forces.end(), force);

@@ -520,6 +520,7 @@ void Scene::AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 pr
         systemsToInput.push_back(sceneSystem);
     }
 
+    sceneSystem->SetScene(this);
     RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
 
@@ -530,7 +531,15 @@ void Scene::RemoveSystem(SceneSystem* sceneSystem)
     RemoveSystem(systemsToProcess, sceneSystem);
     RemoveSystem(systemsToInput, sceneSystem);
 
-    DVVERIFY(RemoveSystem(systems, sceneSystem));
+    bool removed = RemoveSystem(systems, sceneSystem);
+    if (removed)
+    {
+        sceneSystem->SetScene(nullptr);
+    }
+    else
+    {
+        DVVERIFY(false);
+    }
 }
 
 bool Scene::RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system)

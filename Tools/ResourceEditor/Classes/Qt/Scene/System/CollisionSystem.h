@@ -1,8 +1,9 @@
-#ifndef __SCENE_COLLISION_SYSTEM_H__
-#define __SCENE_COLLISION_SYSTEM_H__
+#pragma once
 
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
+
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -32,7 +33,7 @@ enum CollisionSystemDrawMode
     CS_DRAW_ALL = 0xFFFFFFFF
 };
 
-class SceneCollisionSystem : public DAVA::SceneSystem
+class SceneCollisionSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
     friend class EntityModificationSystem;
@@ -41,10 +42,16 @@ public:
     SceneCollisionSystem(DAVA::Scene* scene);
     ~SceneCollisionSystem();
 
+    void Process(DAVA::float32 timeElapsed) override;
+    bool Input(DAVA::UIEvent* event) override;
+
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
+
     void SetDrawMode(int mode);
     int GetDrawMode() const;
 
-    DAVA::AABBox3 GetBoundingBox(Selectable::Object* object);
+    DAVA::AABBox3 GetBoundingBox(Selectable::Object* object) const;
 
     const SelectableGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
     const SelectableGroup::CollectionType& ObjectsRayTestFromCamera();
@@ -56,17 +63,14 @@ public:
 
     void UpdateCollisionObject(const Selectable& object);
 
-    void Process(DAVA::float32 timeElapsed) override;
-    bool Input(DAVA::UIEvent* event) override;
-
     const SelectableGroup& ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes);
 
-    void EnableSystem();
+    DAVA::AABBox3 GetUntransformedBoundingBox(Selectable::Object* entity) const;
+
+    void EnableSystem() override;
 
 private:
-    void Draw();
-
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
+    DAVA::AABBox3 GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const;
 
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     void AddEntity(DAVA::Entity* entity) override;
@@ -105,8 +109,6 @@ private:
     bool rayIntersectCached = false;
     bool landIntersectCached = false;
     bool landIntersectCachedResult = false;
-
-    bool enabled = false;
 };
 
 class SceneCollisionDebugDrawer : public btIDebugDraw
@@ -126,5 +128,3 @@ protected:
     int dbgMode;
     DAVA::RenderHelper* drawer;
 };
-
-#endif // __SCENE_COLLISION_SYSTEM_H__

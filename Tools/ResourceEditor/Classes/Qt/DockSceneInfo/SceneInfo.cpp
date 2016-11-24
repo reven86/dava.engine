@@ -10,11 +10,13 @@
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Selection/SelectionData.h"
 
 #include "ImageTools/ImageTools.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 
 #include "TArc/DataProcessing/DataContext.h"
+#include "TArc/Core/FieldBinder.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/TextureDescriptor.h"
@@ -47,10 +49,17 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(signalDispatcher, &SceneSignals::Activated, this, &SceneInfo::SceneActivated);
     connect(signalDispatcher, &SceneSignals::Deactivated, this, &SceneInfo::SceneDeactivated);
     connect(signalDispatcher, &SceneSignals::StructureChanged, this, &SceneInfo::SceneStructureChanged);
-    connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
     connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
     connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
     connect(signalDispatcher, &SceneSignals::QualityChanged, this, &SceneInfo::OnQualityChanged);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneInfo::OnSelectionChanged));
+    }
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -570,13 +579,15 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void SceneInfo::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    ClearSelectionData();
-
-    CollectSelectedRenderObjects(selected);
-
-    RefreshLODInfoForSelection();
+    if (selectionAny.CanCast<SelectableGroup>())
+    {
+        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        ClearSelectionData();
+        CollectSelectedRenderObjects(&selection);
+        RefreshLODInfoForSelection();
+    }
 }
 
 void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)

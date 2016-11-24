@@ -1,12 +1,13 @@
 #include "MaterialEditor.h"
-#include "ui_materialeditor.h"
-
 #include "MaterialModel.h"
 #include "MaterialFilterModel.h"
+
+#include "ui_materialeditor.h"
 
 #include "Main/QtUtils.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/SelectionData.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"
@@ -18,17 +19,18 @@
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/ApplyMaterialPresetCommand.h"
 
-#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
-
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Base/Introspection.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+
+#include "TArc/Core/FieldBinder.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -516,7 +518,14 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &MaterialEditor::sceneActivated);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &MaterialEditor::sceneDeactivated);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &MaterialEditor::commandExecuted);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &MaterialEditor::autoExpand);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, [this](const DAVA::Any&) { autoExpand(); });
+    }
 
     // material tree
     QObject::connect(ui->materialTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(materialSelected(const QItemSelection&, const QItemSelection&)));

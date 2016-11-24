@@ -1,7 +1,7 @@
-#ifndef __TEXT_DRAW_SYSTEM_H__
-#define __TEXT_DRAW_SYSTEM_H__
+#pragma once
 
 #include "CameraSystem.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -12,7 +12,7 @@ namespace DAVA
 class NMaterial;
 }
 
-class TextDrawSystem : public DAVA::SceneSystem
+class TextDrawSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
 public:
     enum class Align : DAVA::uint8
@@ -31,6 +31,8 @@ public:
 public:
     TextDrawSystem(DAVA::Scene* scene, SceneCameraSystem* cameraSystem);
     ~TextDrawSystem();
+
+    void Draw() override;
 
     DAVA::Vector2 ToPos2d(const DAVA::Vector3& pos3d) const;
 
@@ -58,15 +60,10 @@ protected:
 
     using GraphicFontVertexVector = DAVA::Vector<DAVA::GraphicFont::GraphicFontVertex>;
 
-protected:
-    void Draw();
-
     void AdjustPositionBasedOnAlign(DAVA::float32& x, DAVA::float32& y, const DAVA::Size2i& size, Align align);
     void PushNextBatch(const DAVA::Color& color);
 
 private:
-    friend class SceneEditor2;
-
     SceneCameraSystem* cameraSystem = nullptr;
     DAVA::GraphicFont* font = nullptr;
     DAVA::NMaterial* fontMaterial = nullptr;
@@ -78,5 +75,3 @@ inline DAVA::GraphicFont* TextDrawSystem::GetFont() const
 {
     return font;
 }
-
-#endif // GUARD

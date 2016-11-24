@@ -1,10 +1,11 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorParticlesSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Main/mainwindow.h"
+
+#include "Classes/Selection/Selection.h"
 
 // framework
 #include "Base/BaseTypes.h"
@@ -83,7 +84,7 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
 
 void EditorParticlesSystem::Draw()
 {
-    const auto& selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
+    const SelectableGroup& selection = Selection::GetSelection();
     DAVA::Set<DAVA::ParticleEmitterInstance*> selectedEmitterInstances;
     for (auto instance : selection.ObjectsOfType<DAVA::ParticleEmitterInstance>())
     {
@@ -215,13 +216,98 @@ void EditorParticlesSystem::RestartParticleEffects()
 {
     for (DAVA::Entity* entity : entities)
     {
-        DAVA::ParticleEffectComponent* effectComponent = GetEffectComponent(entity);
+        DAVA::ParticleEffectComponent* effectComponent = DAVA::GetEffectComponent(entity);
         DVASSERT(effectComponent);
         if (!effectComponent->IsStopped())
         {
             effectComponent->Restart();
         }
     }
+}
+
+DAVA::ParticleLayer* EditorParticlesSystem::GetForceOwner(DAVA::ParticleForce* force) const
+{
+    std::function<DAVA::ParticleLayer*(DAVA::ParticleEmitter*, DAVA::ParticleForce*)> getForceOwner = [&getForceOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleForce* force) -> DAVA::ParticleLayer*
+    {
+        for (DAVA::ParticleLayer* layer : emitter->layers)
+        {
+            if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+            {
+                return getForceOwner(layer->innerEmitter, force);
+            }
+
+            if (std::find(layer->forces.begin(), layer->forces.end(), force) != layer->forces.end())
+            {
+                return layer;
+            }
+        }
+
+        return nullptr;
+    };
+
+    for (DAVA::Entity* entity : entities)
+    {
+        DAVA::ParticleEffectComponent* effectComponent = DAVA::GetEffectComponent(entity);
+        DAVA::uint32 emittersCount = effectComponent->GetEmittersCount();
+        for (DAVA::uint32 id = 0; id < emittersCount; ++id)
+        {
+            DAVA::ParticleEmitterInstance* emitterInstance = effectComponent->GetEmitterInstance(id);
+            DVASSERT(emitterInstance != nullptr);
+
+            DAVA::ParticleEmitter* emitter = emitterInstance->GetEmitter();
+            DVASSERT(emitter != nullptr);
+
+            DAVA::ParticleLayer* owner = getForceOwner(emitter, force);
+            if (owner != nullptr)
+            {
+                return owner;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+DAVA::ParticleEmitterInstance* EditorParticlesSystem::GetLayerOwner(DAVA::ParticleLayer* layer) const
+{
+    std::function<bool(DAVA::ParticleEmitter*, DAVA::ParticleLayer*)> hasLayerOwner = [&hasLayerOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer) -> bool
+    {
+        for (DAVA::ParticleLayer* l : emitter->layers)
+        {
+            if (l == layer)
+            {
+                return true;
+            }
+
+            if (l->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+            {
+                return hasLayerOwner(l->innerEmitter, layer);
+            }
+        }
+
+        return false;
+    };
+
+    for (DAVA::Entity* entity : entities)
+    {
+        DAVA::ParticleEffectComponent* effectComponent = DAVA::GetEffectComponent(entity);
+        DAVA::uint32 emittersCount = effectComponent->GetEmittersCount();
+        for (DAVA::uint32 id = 0; id < emittersCount; ++id)
+        {
+            DAVA::ParticleEmitterInstance* emitterInstance = effectComponent->GetEmitterInstance(id);
+            DVASSERT(emitterInstance != nullptr);
+
+            DAVA::ParticleEmitter* emitter = emitterInstance->GetEmitter();
+            DVASSERT(emitter != nullptr);
+
+            if (hasLayerOwner(emitter, layer))
+            {
+                return emitterInstance;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 void EditorParticlesSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)

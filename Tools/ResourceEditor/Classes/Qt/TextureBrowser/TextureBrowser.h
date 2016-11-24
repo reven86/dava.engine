@@ -1,14 +1,20 @@
-#ifndef __TEXTURE_BROWSER_H__
-#define __TEXTURE_BROWSER_H__
+#pragma once
 
 #include <QDialog>
 #include <QMap>
-#include "DAVAEngine.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Scene/SceneSignals.h"
 
 #include "TextureInfo.h"
 #include "TextureConvertMode.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class QModelIndex;
 class TextureListDelegate;
@@ -45,16 +51,20 @@ public:
     static QColor gpuColor_DX11;
     static QColor errorColor;
 
+    void InvalidateSelection(const SelectableGroup& selection);
+
 protected:
     void closeEvent(QCloseEvent* e) override;
 
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
 private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+
     Ui::TextureBrowser* ui;
     QtPosSaver posSaver;
 
@@ -138,5 +148,3 @@ private slots:
 
     void textureDescriptorChanged(DAVA::TextureDescriptor* descriptor);
 };
-
-#endif // __TEXTURE_BROWSER_H__

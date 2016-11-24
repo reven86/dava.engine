@@ -198,7 +198,6 @@ private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);
@@ -268,5 +267,6 @@ private:
     DAVA::TArc::UI* tarcUI = nullptr;
     std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
     DAVA::TArc::DataWrapper projectDataWrapper;
+    DAVA::TArc::DataWrapper selectionWrapper;
     QtDelayedExecutor delayedExecutor;
 };

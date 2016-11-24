@@ -5,6 +5,7 @@
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
+#include "Classes/Selection/SelectionModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -174,6 +175,7 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<SceneManagerModule>();
     tarcCore->CreateModule<LaunchModule>();
     tarcCore->CreateModule<MitsubaExporter>();
+    tarcCore->CreateModule<SelectionModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

@@ -6,10 +6,16 @@
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"
 
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/SelectionData.h"
+#include "Classes/SceneManager/SceneData.h"
+
 #include "Scene/SceneHelper.h"
 #include "CubemapEditor/CubemapUtils.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Constants.h"
+
+#include "TArc/Core/FieldBinder.h"
 
 #include "ui_texturebrowser.h"
 
@@ -58,8 +64,15 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     SceneSignals* sceneSignals = SceneSignals::Instance();
     QObject::connect(sceneSignals, &SceneSignals::Activated, this, &TextureBrowser::sceneActivated);
     QObject::connect(sceneSignals, &SceneSignals::Deactivated, this, &TextureBrowser::sceneDeactivated);
-    QObject::connect(sceneSignals, &SceneSignals::SelectionChanged, this, &TextureBrowser::sceneSelectionChanged);
     QObject::connect(sceneSignals, &SceneSignals::CommandExecuted, this, &TextureBrowser::OnCommandExecuted);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &TextureBrowser::OnSelectionChanged));
+    }
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -1058,12 +1071,18 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void TextureBrowser::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (!isHidden())
+    if (selectionAny.CanCast<SelectableGroup>())
     {
-        textureListModel->setHighlight(selected);
+        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        textureListModel->setHighlight(selection);
     }
+}
+
+void TextureBrowser::InvalidateSelection(const SelectableGroup& selection)
+{
+    textureListModel->setHighlight(selection);
 }
 
 void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)

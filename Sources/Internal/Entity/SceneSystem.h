@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE3D_SCENESYSTEM_H__
-#define __DAVAENGINE_SCENE3D_SCENESYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -115,7 +114,10 @@ public:
     }
 
 protected:
-    inline Scene* GetScene() const;
+    friend class Scene;
+
+    Scene* GetScene() const;
+    void SetScene(Scene* scene);
 
 private:
     uint64 requiredComponents;
@@ -130,6 +132,11 @@ inline Scene* SceneSystem::GetScene() const
     return scene;
 }
 
+inline void SceneSystem::SetScene(Scene* scene_)
+{
+    scene = scene_;
+}
+
 inline void SceneSystem::SetRequiredComponents(uint64 _requiredComponents)
 {
     requiredComponents = _requiredComponents;
@@ -139,5 +146,5 @@ inline uint64 SceneSystem::GetRequiredComponents() const
 {
     return requiredComponents;
 }
-};
-#endif //__DAVAENGINE_SCENE3D_SCENESYSTEM_H__
+    
+}
