@@ -248,31 +248,6 @@ uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
     return sampleCount / 2;
 }
 
-void DX11_DeviceCall(const DAVA::Function<HRESULT()>& fn, HRESULT& result, const char* call, const char* fileName, DAVA::uint32 line)
-{
-    if (_D3D11_Device == nullptr)
-    {
-        DAVA::Logger::Error("DX11 Device is not ready, therefor call %s is not possible\nat %s [%u]", call, fileName, line);
-        for (;;)
-        {
-            Sleep(1);
-        }
-    }
-
-    if (GetCurrentThreadId() == _DX11_RenderThreadId)
-    {
-        result = fn();
-    }
-    else
-    {
-        DX11Command cmd = { DX11Command::INVOKE_METHOD, { reinterpret_cast<uintptr_t>(&fn) } };
-        ExecDX11(&cmd, 1);
-        result = cmd.retval;
-    }
-
-    DX11_ProcessCallResult(result, call, fileName, line);
-}
-
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
 {
     if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))

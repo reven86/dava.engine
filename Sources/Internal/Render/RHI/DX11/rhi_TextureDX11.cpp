@@ -104,8 +104,7 @@ ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, Texture
             }
         }
 
-        HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(_D3D11_Device->CreateRenderTargetView(tex2d, &desc, &rtv), hr);
+        HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, tex2d, &desc, &rtv);
         if (SUCCEEDED(hr))
         {
             rt_view.emplace_back(rtv, level, face);
@@ -217,8 +216,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
     Handle handle = InvalidHandle;
     ID3D11Texture2D* tex2d = nullptr;
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d), hr);
+    HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &desc2d, (useInitialData) ? data : nullptr, &tex2d);
     if (SUCCEEDED(hr))
     {
         handle = TextureDX11Pool::Alloc();
@@ -256,8 +254,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             }
 
             ID3D11ShaderResourceView* srv = nullptr;
-            hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->CreateShaderResourceView(tex2d, &srv_desc, &srv), hr);
+            hr = DX11DeviceCommand(DX11Command::CREATE_SHADER_RESOURCE_VIEW, tex2d, &srv_desc, &srv);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_srv = srv;
@@ -272,8 +269,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             desc2d.BindFlags = 0;
             desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-            hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy), hr);
+            hr = DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &desc2d, NULL, &copy);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_copy = copy;
@@ -289,8 +285,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             dsv_desc.ViewDimension = (desc.sampleCount > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
             ID3D11DepthStencilView* dsv = nullptr;
-            hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv), hr);
+            hr = DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, tex2d, &dsv_desc, &dsv);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_dsv = dsv;

@@ -47,7 +47,13 @@ struct RasterizerParamDX11
 struct RasterizerStateDX11
 {
     RasterizerParamDX11 param;
-    ID3D11RasterizerState* state;
+    ID3D11RasterizerState* state = nullptr;
+
+    RasterizerStateDX11(const RasterizerParamDX11& p, ID3D11RasterizerState* st)
+        : param(p)
+        , state(st)
+    {
+    }
 };
 
 //==============================================================================
@@ -154,9 +160,7 @@ static ID3D11RasterizerState* dx11_GetRasterizerState(RasterizerParamDX11 param)
 
     if (!state)
     {
-        D3D11_RASTERIZER_DESC desc;
-        HRESULT hr;
-
+        D3D11_RASTERIZER_DESC desc = {};
         desc.FillMode = (param.wireframe) ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
         desc.FrontCounterClockwise = FALSE;
 
@@ -181,14 +185,10 @@ static ID3D11RasterizerState* dx11_GetRasterizerState(RasterizerParamDX11 param)
         desc.MultisampleEnable = FALSE;
         desc.AntialiasedLineEnable = FALSE;
 
-        DX11_DEVICE_CALL(_D3D11_Device->CreateRasterizerState(&desc, &state), hr);
+        HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_RASTERIZER_STATE, &desc, &state);
         if (SUCCEEDED(hr))
         {
-            RasterizerStateDX11 s;
-
-            s.param = param;
-            s.state = state;
-            _RasterizerStateDX11.push_back(s);
+            _RasterizerStateDX11.emplace_back(param, state);
         }
         else
         {
@@ -229,11 +229,10 @@ static Handle dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         if (!cb->context)
         {
-            HRESULT hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
+            HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &cb->context);
             if (SUCCEEDED(hr))
             {
-                hr = cb->context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)));
+                cb->context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)));
             }
         }
         #endif
@@ -895,13 +894,8 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
 bool dx11_PresentBuffer()
 {
-    // do present
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
-    //still not sure we are to handle all situations with renderingNotPossible here
-
+    DX11_ProcessCallResult(_D3D11_SwapChain->Present(1, 0), __FUNCTION__, __FILE__, __LINE__);
     PerfQueryDX11::EndMeasurment(_D3D11_ImmediateContext);
-
     return true;
 }
 
@@ -940,15 +934,14 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         {
             if (DeviceCaps().isPerfQuerySupported)
             {
-                ID3D11Query *tsQuery = nullptr, *fqQuery = nullptr;
+                ID3D11Query* tsQuery = nullptr;
+                ID3D11Query* fqQuery = nullptr;
 
-                D3D11_QUERY_DESC desc = {};
-                desc.Query = D3D11_QUERY_TIMESTAMP;
-                _D3D11_Device->CreateQuery(&desc, &tsQuery);
+                D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP };
+                _D3D11_Device->CreateQuery(&desc, &tsQuery); // should we use DX11DeviceCommand here?
 
                 desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-                desc.MiscFlags = 0;
-                HRESULT hr = _D3D11_Device->CreateQuery(&desc, &fqQuery);
+                _D3D11_Device->CreateQuery(&desc, &fqQuery); // should we use DX11DeviceCommand here?
 
                 if (tsQuery && fqQuery)
                 {
@@ -985,16 +978,86 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             }
         }
         break;
-
-        case DX11Command::INVOKE_METHOD:
+        case DX11Command::QUERY_INTERFACE:
         {
-            DAVA::Function<HRESULT()>* method = reinterpret_cast<DAVA::Function<HRESULT()>*>(static_cast<uintptr_t>(arg[0]));
-            cmd->retval = (*method)();
+            cmd->retval = _D3D11_Device->QueryInterface(*(const IID*)(arg[0]), (void**)(arg[1]));
+            break;
         }
-        break;
-
+        case DX11Command::CREATE_DEFERRED_CONTEXT:
+        {
+            cmd->retval = _D3D11_Device->CreateDeferredContext((UINT)arg[0], (ID3D11DeviceContext**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_BLEND_STATE:
+        {
+            cmd->retval = _D3D11_Device->CreateBlendState((const D3D11_BLEND_DESC*)(arg[0]), (ID3D11BlendState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_SAMPLER_STATE:
+        {
+            cmd->retval = _D3D11_Device->CreateSamplerState((const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_RASTERIZER_STATE:
+        {
+            cmd->retval = _D3D11_Device->CreateRasterizerState((const D3D11_RASTERIZER_DESC*)(arg[0]), (ID3D11RasterizerState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_DEPTH_STENCIL_STATE:
+        {
+            cmd->retval = _D3D11_Device->CreateDepthStencilState((const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_VERTEX_SHADER:
+        {
+            cmd->retval = _D3D11_Device->CreateVertexShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11VertexShader**)(arg[3]));
+            break;
+        }
+        case DX11Command::CREATE_PIXEL_SHADER:
+        {
+            cmd->retval = _D3D11_Device->CreatePixelShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11PixelShader**)(arg[3]));
+            break;
+        }
+        case DX11Command::CREATE_INPUT_LAYOUT:
+        {
+            cmd->retval = _D3D11_Device->CreateInputLayout((const D3D11_INPUT_ELEMENT_DESC*)(arg[0]), (UINT)(arg[1]), (const void*)(arg[2]), (SIZE_T)(arg[3]), (ID3D11InputLayout**)(arg[4]));
+            break;
+        }
+        case DX11Command::CREATE_QUERY:
+        {
+            cmd->retval = _D3D11_Device->CreateQuery((const D3D11_QUERY_DESC*)(arg[0]), (ID3D11Query**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_BUFFER:
+        {
+            cmd->retval = _D3D11_Device->CreateBuffer((const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_TEXTURE_2D:
+        {
+            cmd->retval = _D3D11_Device->CreateTexture2D((const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_RENDER_TARGET_VIEW:
+        {
+            cmd->retval = _D3D11_Device->CreateRenderTargetView((ID3D11Resource*)(arg[0]), (const D3D11_RENDER_TARGET_VIEW_DESC*)(arg[1]), (ID3D11RenderTargetView**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_DEPTH_STENCIL_VIEW:
+        {
+            cmd->retval = _D3D11_Device->CreateDepthStencilView((ID3D11Resource*)(arg[0]), (const D3D11_DEPTH_STENCIL_VIEW_DESC*)(arg[1]), (ID3D11DepthStencilView**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_SHADER_RESOURCE_VIEW:
+        {
+            cmd->retval = _D3D11_Device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
+            break;
+        }
         default:
-            DVASSERT(!"unknown DX11-cmd");
+        {
+            DAVA::String message = DAVA::Format("Invalid or unsupported DX11 command: %u", cmd->func);
+            DVASSERT_MSG(0, message.c_str());
+        }
         }
     }
 }

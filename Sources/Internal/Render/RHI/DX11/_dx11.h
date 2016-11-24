@@ -40,8 +40,6 @@
 #define CHECK_HR(hr) hr
 #endif
 
-#define DX11_DEVICE_CALL(F, HR) DX11_DeviceCall([&]() -> HRESULT { return (F); }, HR, #F, __FILE__, __LINE__)
-
 namespace rhi
 {
 struct InitParam;
@@ -50,7 +48,6 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 const char* DX11_GetErrorText(HRESULT hr);
 
-void DX11_DeviceCall(const DAVA::Function<HRESULT()>& fn, HRESULT& result, const char* call, const char* fileName, DAVA::uint32 line);
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
 
 extern ID3D11Device* _D3D11_Device;

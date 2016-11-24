@@ -120,7 +120,6 @@ static void ResizeSwapchain()
 
 static void dx11_ResetBlock()
 {
-	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DAVA::LockGuard<DAVA::Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
 
@@ -128,12 +127,13 @@ static void dx11_ResetBlock()
 
     _D3D11_SecondaryContext->ClearState();
     CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
-    cl->Release();
+    if (cl != nullptr)
+    {
+        cl->Release();
+    }
     _D3D11_SecondaryContext->Release();
 
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
-
+    DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
 #else
     rhi::ConstBufferDX11::InvalidateAll();
 #endif
@@ -165,10 +165,9 @@ static void dx11_SuspendRendering()
 #if defined(__DAVAENGINE_WIN_UAP__)
     FrameLoop::RejectFrames();
 
-    IDXGIDevice3* dxgiDevice3 = NULL;
-
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3)), hr);
+    _GUID uuid = __uuidof(IDXGIDevice3);
+    IDXGIDevice3* dxgiDevice3 = nullptr;
+    HRESULT hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice3));
     if (SUCCEEDED(hr))
     {
         _D3D11_ImmediateContext->ClearState();
@@ -297,9 +296,8 @@ void InitDeviceAndSwapChain()
         {
             IDXGIDevice* dxgiDevice = NULL;
             IDXGIAdapter* dxgiAdapter = NULL;
-
-            hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice)), hr);
+            _GUID uuid = __uuidof(IDXGIDevice);
+            hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice));
             if (SUCCEEDED(hr))
             {
                 if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
@@ -317,20 +315,15 @@ void InitDeviceAndSwapChain()
                 }
             }
 
-            hr = E_FAIL;
-            DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)(&_D3D11_Debug)), hr);
-
+            uuid = __uuidof(IDXGIDevice);
+            hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&_D3D11_Debug));
             hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
         }
 
-        hr = E_FAIL;
-        DX11_DEVICE_CALL(_D3D11_Device->CreateRenderTargetView(_D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView), hr);
-
-        hr = E_FAIL;
-        DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+        hr = DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView);
+        hr = DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
 
         D3D11_TEXTURE2D_DESC ds_desc = { 0 };
-
         ds_desc.Width = _DX11_InitParam.width;
         ds_desc.Height = _DX11_InitParam.height;
         ds_desc.MipLevels = 1;
@@ -343,8 +336,8 @@ void InitDeviceAndSwapChain()
         ds_desc.CPUAccessFlags = 0;
         ds_desc.MiscFlags = 0;
 
-        DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&ds_desc, 0, &_D3D11_DepthStencilBuffer), hr);
-        DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(_D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView), hr);
+        DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &ds_desc, 0, &_D3D11_DepthStencilBuffer);
+        DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, _D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView);
     }
 }
 #endif
@@ -394,9 +387,8 @@ void dx11_InitContext()
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     init_device_and_swapchain_uap(_DX11_InitParam.window);
-    HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
     get_device_description(MutableDeviceCaps::Get().deviceDescription);
+    DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
 #else
     InitDeviceAndSwapChain();    
 #endif

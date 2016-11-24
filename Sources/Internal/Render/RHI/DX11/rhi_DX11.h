@@ -1,5 +1,4 @@
-#ifndef __RHI_DX11_H__
-#define __RHI_DX11_H__
+#pragma once
 
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
@@ -110,32 +109,77 @@ void SetupDispatch(Dispatch* dispatch);
 namespace CommandBufferDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-void DiscardAll();
 }
 
-struct
-DX11Command
+struct DX11Command
 {
-    enum Func
+    enum Func : uint32_t
     {
-        NOP = 0,
+        NOP,
+        MAP,
+        UNMAP,
+        UPDATE_SUBRESOURCE,
+        COPY_RESOURCE,
+        SYNC_CPU_GPU,
 
-        MAP = 1,
-        UNMAP = 2,
-        UPDATE_SUBRESOURCE = 3,
-        COPY_RESOURCE = 4,
-        SYNC_CPU_GPU = 5,
+        /*
+         * Device commands (invokes _D3D11_Device method)
+         */
+        QUERY_INTERFACE = 0x1000,
+        CREATE_DEFERRED_CONTEXT,
 
-        INVOKE_METHOD = 6,
+        CREATE_BLEND_STATE,
+        CREATE_SAMPLER_STATE,
+        CREATE_RASTERIZER_STATE,
+        CREATE_DEPTH_STENCIL_STATE,
+
+        CREATE_VERTEX_SHADER,
+        CREATE_PIXEL_SHADER,
+        CREATE_INPUT_LAYOUT,
+
+        CREATE_QUERY,
+        CREATE_BUFFER,
+
+        CREATE_TEXTURE_2D,
+        CREATE_RENDER_TARGET_VIEW,
+        CREATE_DEPTH_STENCIL_VIEW,
+        CREATE_SHADER_RESOURCE_VIEW,
+
+        // service values for range checking
+        DEVICE_LAST_COMMAND,
+        DEVICE_FIRST_COMMAND = QUERY_INTERFACE
     };
 
     Func func;
     uint64 arg[12];
-    long retval;
+    HRESULT retval;
 };
 
 void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
 
-//==============================================================================
+template <class... args>
+inline HRESULT DX11DeviceCommandImpl(const char* cmdName, const char* fileName, DAVA::uint32 line, DX11Command::Func func, args&&... a)
+{
+    DVASSERT(func >= DX11Command::DEVICE_FIRST_COMMAND);
+    DVASSERT(func < DX11Command::DEVICE_LAST_COMMAND);
+
+    if (_D3D11_Device == nullptr)
+    {
+        DAVA::Logger::Error("DX11 Device is not ready, therefore call is not possible");
+        for (;;)
+        {
+            Sleep(1);
+        }
+    }
+
+    bool immediateExecution = (GetCurrentThreadId() == _DX11_RenderThreadId);
+
+    DX11Command cmd = { func, { uint64_t(a)... } };
+    ExecDX11(&cmd, 1, immediateExecution);
+    DX11_ProcessCallResult(cmd.retval, cmdName, fileName, line);
+
+    return cmd.retval;
 }
-#endif // __RHI_DX11_H__
+
+#define DX11DeviceCommand(CMD, ...) DX11DeviceCommandImpl(#CMD, __FILE__, __LINE__, CMD, __VA_ARGS__)
+}

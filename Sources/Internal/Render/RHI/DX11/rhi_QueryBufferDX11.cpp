@@ -206,9 +206,7 @@ void SetQueryIndex(Handle handle, uint32 objectIndex, ID3D11DeviceContext* conte
             {
                 D3D11_QUERY_DESC desc = {};
                 desc.Query = D3D11_QUERY_OCCLUSION;
-
-                HRESULT hr = E_FAIL;
-                DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &iq), hr);
+                DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &iq);
             }
 
             if (iq)
