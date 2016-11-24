@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArc/Core/Core.h"
+#include "TArc/Testing/MockInvoker.h"
 
 #include "UnitTests/TestClass.h"
 
@@ -24,18 +25,19 @@ public:
 
     virtual void CreateTestedModules();
 
-    OperationInvoker* GetMockInvoker();
+    MockInvoker* GetMockInvoker();
     DataContext* GetActiveContext();
     DataContext* GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
     ContextAccessor* GetAccessor();
     ContextManager* GetContextManager();
 
+    QWidget* GetWindow(const WindowKey& wndKey);
     QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
 
 protected:
     std::unique_ptr<Core> core;
-    std::unique_ptr<OperationInvoker> mockInvoker = nullptr;
+    std::unique_ptr<MockInvoker> mockInvoker;
 };
 
 } // namespace TArc

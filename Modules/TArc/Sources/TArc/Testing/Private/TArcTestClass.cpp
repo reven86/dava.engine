@@ -7,6 +7,8 @@
 #include "Engine/NativeService.h"
 #include "UnitTests/UnitTests.h"
 
+#include "Base/Platform.h"
+
 #include <QTimer>
 #include <gmock/gmock-spec-builders.h>
 
@@ -53,7 +55,7 @@ protected:
 };
 }
 
-const double TestClass::testTimeLimit = 10.0; // seconds
+const double TestClass::testTimeLimit = 100.0; // seconds
 
 TestClass::~TestClass()
 {
@@ -64,6 +66,8 @@ TestClass::~TestClass()
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 
     Core* c = core.release();
+    c->SetInvokeListener(nullptr);
+    mockInvoker.reset();
     QTimer::singleShot(0, [c]()
                        {
                            c->OnLoopStopped();
@@ -115,7 +119,11 @@ bool TestClass::TestComplete(const String& testName) const
     DVASSERT(iter != tests.end());
     using namespace std::chrono;
     double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - iter->startTime).count();
-    if (elapsedSeconds > testTimeLimit)
+    bool checkTimeLimit = true;
+#if defined(__DAVAENGINE_WIN32__)
+    checkTimeLimit = !IsDebuggerPresent();
+#endif
+    if (checkTimeLimit == true && elapsedSeconds > testTimeLimit)
     {
         TEST_VERIFY(::testing::Mock::VerifyAndClear());
         return true;
@@ -129,7 +137,7 @@ bool TestClass::TestComplete(const String& testName) const
     return !hasNotSatisfied;
 }
 
-OperationInvoker* TestClass::GetMockInvoker()
+MockInvoker* TestClass::GetMockInvoker()
 {
     return mockInvoker.get();
 }
@@ -159,12 +167,17 @@ DAVA::TArc::ContextManager* TestClass::GetContextManager()
     return core->GetCoreInterface();
 }
 
-QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& objectName)
+QWidget* TestClass::GetWindow(const WindowKey& wndKey)
 {
     UIManager* manager = dynamic_cast<UIManager*>(core->GetUI());
     QWidget* wnd = manager->GetWindow(wndKey);
 
-    return wnd->findChildren<QWidget*>(objectName);
+    return wnd;
+}
+
+QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& objectName)
+{
+    return GetWindow(wndKey)->findChildren<QWidget*>(objectName);
 }
 
 void TestClass::CreateTestedModules()

@@ -202,8 +202,12 @@ void ProjectManagerModule::OpenLastProject()
 {
     ProjectManagerData* data = GetData();
 
-    DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
-    DAVA::FilePath projectPath = propsItem.Get<DAVA::FilePath>(Settings::Internal_LastProjectPath.c_str());
+    DAVA::FilePath projectPath;
+    {
+        DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
+        projectPath = propsItem.Get<DAVA::FilePath>(Settings::Internal_LastProjectPath.c_str());
+    }
+
     if (projectPath.IsEmpty())
     {
         // Back compatibility
@@ -214,7 +218,7 @@ void ProjectManagerModule::OpenLastProject()
     if (!projectPath.IsEmpty())
     {
         DVASSERT(projectPath.IsDirectoryPathname());
-        delayedExecutor.DelayedExecute(DAVA::Bind(&ProjectManagerModule::OpenProjectByPath, this, projectPath));
+        OpenProjectByPath(projectPath);
     }
 }
 

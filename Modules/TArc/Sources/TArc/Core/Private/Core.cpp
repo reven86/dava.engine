@@ -627,6 +627,11 @@ public:
     template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args)
     {
+        if (invokeListener != nullptr)
+        {
+            invokeListener->Invoke(operationId, args...);
+        }
+
         AnyFn fn = FindOperation(operationId);
         if (!fn.IsValid())
         {
@@ -641,11 +646,6 @@ public:
         catch (const DAVA::Exception& e)
         {
             Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
-        }
-
-        if (invokeListener != nullptr)
-        {
-            invokeListener->Invoke(operationId, args...);
         }
     }
 
