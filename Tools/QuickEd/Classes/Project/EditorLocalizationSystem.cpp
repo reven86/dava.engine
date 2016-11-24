@@ -12,14 +12,9 @@ EditorLocalizationSystem::EditorLocalizationSystem(QObject* parent)
 {
 }
 
-QStringList EditorLocalizationSystem::GetAvailableLocaleNames() const
+QStringList EditorLocalizationSystem::GetAvailableLocales() const
 {
-    return availableLocales.keys();
-}
-
-QStringList EditorLocalizationSystem::GetAvailableLocaleValues() const
-{
-    return availableLocales.values();
+    return availableLocales;
 }
 
 void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
@@ -41,40 +36,16 @@ void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
             if (!fileInfo.isDir())
             {
                 QString localeStr = fileInfo.baseName();
-                QString localeName = GetLocaleNameFromStr(localeStr);
-                availableLocales.insert(localeName, localeStr);
+                availableLocales << localeStr;
             }
         }
     }
-}
-
-void EditorLocalizationSystem::SetCurrentLocaleValue(const QString& localeStr)
-{
-    QStringList keys = availableLocales.keys(localeStr);
-    DVASSERT(keys.size() == 1);
-    SetCurrentLocale(keys.front());
 }
 
 void EditorLocalizationSystem::Cleanup()
 {
     availableLocales.clear();
     LocalizationSystem::Instance()->Cleanup();
-}
-
-QString EditorLocalizationSystem::GetLocaleNameFromStr(const QString& localeStr)
-{
-    QLocale locale(localeStr);
-    switch (locale.script())
-    {
-    default:
-        return QLocale::languageToString(locale.language());
-
-    case QLocale::SimplifiedChineseScript:
-        return "Chinese simpl.";
-
-    case QLocale::TraditionalChineseScript:
-        return "Chinese trad.";
-    }
 }
 
 QString EditorLocalizationSystem::GetCurrentLocale() const
@@ -85,9 +56,11 @@ QString EditorLocalizationSystem::GetCurrentLocale() const
 void EditorLocalizationSystem::SetCurrentLocale(const QString& locale)
 {
     DVASSERT(!locale.isEmpty());
-    currentLocale = locale;
     DVASSERT(availableLocales.contains(locale));
-    LocalizationSystem::Instance()->SetCurrentLocale(availableLocales[locale].toStdString());
+
+    currentLocale = locale;
+
+    LocalizationSystem::Instance()->SetCurrentLocale(currentLocale.toStdString());
     LocalizationSystem::Instance()->Init();
 
     emit CurrentLocaleChanged(currentLocale);

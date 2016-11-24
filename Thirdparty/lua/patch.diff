@@ -69,17 +69,24 @@ diff -ur ./lua_source_orig/src/lua.c ./lua_source/src/lua.c
 diff -ur ./lua_source_orig/src/luaconf.h ./lua_source/src/luaconf.h
 --- ./lua_source_orig/src/luaconf.h	2008-02-11 18:25:08.000000000 +0200
 +++ ./lua_source/src/luaconf.h	2016-10-27 11:32:38.522969300 +0300
-@@ -757,7 +757,14 @@
+@@ -757,7 +757,21 @@
  ** without modifying the main part of the file.
  */
  
 -
 +/* on Windows 10 getenv(), system() and LoadLibrary() not availabe */
 +#if defined(LUA_WIN)
++#if !defined(WINAPI_FAMILY_PARTITION)
++#include <winapifamily.h>
++#endif
 +#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 +#define LUA_NO_GETENV
 +#define LUA_NO_SYSTEM
 +#undef LUA_DL_DLL
++#undef lua_popen
++#undef lua_pclose
++#define lua_popen(L,c,m) ((void)((void)c, m), luaL_error(L, LUA_QL("popen") " not supported"), (FILE*)0)
++#define lua_pclose(L,file) ((void)((void)L, file), 0)
 +#endif
 +#endif
  

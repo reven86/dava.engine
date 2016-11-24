@@ -11,7 +11,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 

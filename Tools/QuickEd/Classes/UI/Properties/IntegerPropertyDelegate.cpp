@@ -15,7 +15,7 @@ IntegerPropertyDelegate::~IntegerPropertyDelegate()
 {
 }
 
-QWidget* IntegerPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* IntegerPropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     QSpinBox* spinBox = new QSpinBox(parent);
     spinBox->setObjectName(QString::fromUtf8("spinBox"));

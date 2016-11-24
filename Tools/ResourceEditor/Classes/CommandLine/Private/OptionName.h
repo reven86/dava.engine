@@ -42,6 +42,7 @@ public:
     static const DAVA::String Force;
     static const DAVA::String Mipmaps;
     static const DAVA::String HDTextures;
+    static const DAVA::String Mode;
 
     static const DAVA::String SaveNormals;
     static const DAVA::String CopyConverted;

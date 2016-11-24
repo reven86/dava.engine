@@ -21,6 +21,7 @@ public:
 
     const String& GetCurrentLocale() const;
     void SetCurrentLocale(const String& newLangId);
+    void OverrideDeviceLocale(const String& langId);
     String GetDeviceLocale() const;
 
     String GetCountryCode() const;
@@ -54,6 +55,7 @@ private:
     void UnloadStringFile(const FilePath& fileName);
 
     String langId;
+    String overridenLangId;
     FilePath directoryPath;
 
     struct StringFile

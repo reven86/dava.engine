@@ -108,7 +108,7 @@ def main_convert_3d(): # it's function for external usage
     # export files
     for i in range(0, len(processing)):
         log_time("processfile " + processing[i])
-        params = [executable, '-sceneexporter', '-export', '-indir', dataSourceDir, '-outdir', dataDir, '-processfile', processing[i], '-qualitycfgpath', qualityConfigPath, '-forceclose']
+        params = [executable, '-sceneexporter', '-export', '-indir', dataSourceDir, '-outdir', dataDir, '-processfile', processing[i], '-qualitycfgpath', qualityConfigPath]
         params.extend(gpuParams)
         print "[%s]" % ", ".join(map(str, params))
         os.spawnv(os.P_WAIT, executable, params)
