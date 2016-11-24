@@ -1,8 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Dispatcher/UIDispatcherEvent.h"
 

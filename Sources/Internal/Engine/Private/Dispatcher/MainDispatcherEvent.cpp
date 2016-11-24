@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"

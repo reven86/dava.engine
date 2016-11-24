@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Semaphore.h"

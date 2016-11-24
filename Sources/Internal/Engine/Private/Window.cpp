@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Window.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"

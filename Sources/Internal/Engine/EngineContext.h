@@ -1,8 +1,8 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {

@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/UIDispatcherEvent.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {

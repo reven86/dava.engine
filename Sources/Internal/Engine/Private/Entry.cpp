@@ -1,6 +1,7 @@
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
 #include "Base/Exception.h"
 #include "Base/Platform.h"
 #include "Debug/Backtrace.h"

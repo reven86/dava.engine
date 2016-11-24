@@ -1,3 +1,5 @@
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 

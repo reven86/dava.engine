@@ -1,6 +1,7 @@
+#include "DeviceManager/DeviceManager.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 

@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)

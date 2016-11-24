@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
 #include <bitset>
 
-#include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Math2D.h"
 #include "Math/Rect.h"
