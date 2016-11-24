@@ -748,7 +748,7 @@ void NMaterial::PreCacheFXVariations(const Vector<FastName>& fxNames, const Vect
 
 void NMaterial::RebuildRenderVariants()
 {
-    InvalidateRenderVariants();
+    InvalidateBufferBindings();
 
     HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
