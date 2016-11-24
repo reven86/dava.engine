@@ -149,7 +149,7 @@ protected:
     unsigned            curPerfQuerySet;
     unsigned            firedPerfQuerySet;
 */
-    rhi::HPerfQuerySet perfQuerySet;
+    //-    rhi::HPerfQuerySet perfQuerySet;
     bool perfQuerySetFired;
 
     //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;

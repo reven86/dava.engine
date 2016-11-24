@@ -568,7 +568,7 @@ void GameCore::OnAppStarted()
     if (file)
     {
         rhi::ShaderSource vp(src);
-        uint32 sz = file->GetSize();
+        unsigned sz = file->GetSize();
         char buf[64 * 1024];
 
         DVASSERT(sz < sizeof(buf));
@@ -1258,7 +1258,7 @@ void GameCore::DrawInstancedCube()
     }
     #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1589,7 +1589,7 @@ void GameCore::manticoreDraw()
 
 #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1730,7 +1730,7 @@ void GameCore::visibilityTestDraw()
         packet.queryIndex = 1;
     rhi::AddPacket(pl[0], packet);
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 

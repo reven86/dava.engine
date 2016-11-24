@@ -554,9 +554,25 @@ void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFac
     context->OMSetRenderTargets(1, &rtv, (ds) ? ds->tex2d_dsv : (usesOwnDepthStencil ? nullptr : _D3D11_DepthStencilView));
 }
 
-void SetAsDepthStencil(Handle tex)
+void SetRenderTarget(Handle tex, uint32 level, TextureFace face, ID3D11DeviceContext* context, ID3D11RenderTargetView** rt_view)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
+
+    if (self->lastUnit != DAVA::InvalidIndex)
+    {
+        ID3D11ShaderResourceView* srv[1] = {};
+        context->PSSetShaderResources(self->lastUnit, 1, srv);
+        self->lastUnit = DAVA::InvalidIndex;
+    }
+
+    *rt_view = self->getRenderTargetView(level, face);
+}
+
+void SetDepthStencil(Handle tex, ID3D11DepthStencilView** ds_view)
+{
+    TextureDX11_t* self = TextureDX11Pool::Get(tex);
+
+    *ds_view = self->tex2d_dsv;
 }
 
 Size2i Size(Handle tex)

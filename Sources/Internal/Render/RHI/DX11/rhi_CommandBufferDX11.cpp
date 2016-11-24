@@ -1572,36 +1572,59 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
 
-    const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-    if ((color0.texture != rhi::InvalidHandle) && (color0.texture != rhi::DefaultDepthBuffer))
-    {
-        Handle targetTexture = color0.texture;
-        Handle targetDepth = passCfg.depthStencilBuffer.texture;
-        if (passCfg.UsingMSAA())
-        {
-            targetTexture = color0.multisampleTexture;
-            targetDepth = passCfg.depthStencilBuffer.multisampleTexture;
-        }
-        TextureDX11::SetRenderTarget(targetTexture, targetDepth, color0.textureLevel, color0.textureFace, context);
+    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
+    ID3D11DepthStencilView* ds_view = NULL;
+    unsigned rt_count = 0;
 
-        Size2i sz = TextureDX11::Size(color0.texture);
-        def_viewport.Width = static_cast<float>(sz.dx);
-        def_viewport.Height = static_cast<float>(sz.dy);
-    }
-    else if (passCfg.UsingMSAA())
+    if (passCfg.UsingMSAA())
     {
-        TextureDX11::SetRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureLevel, color0.textureFace, context);
-        Size2i sz = TextureDX11::Size(color0.multisampleTexture);
-        def_viewport.Width = static_cast<float>(sz.dx);
-        def_viewport.Height = static_cast<float>(sz.dy);
+        DVASSERT(passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
+        if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
+            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
     }
     else
     {
-        context->OMSetRenderTargets(1, &_D3D11_RenderTargetView, _D3D11_DepthStencilView);
+        if (passCfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
+            ds_view = _D3D11_DepthStencilView;
+        else if (passCfg.depthStencilBuffer.texture == rhi::InvalidHandle)
+            ds_view = NULL;
+        else
+            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.texture, &ds_view);
     }
 
-    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
-    ID3D11DepthStencilView* ds_view = NULL;
+    memset(rt_view, 0, sizeof(rt_view));
+    rt_view[0] = _D3D11_RenderTargetView;
+
+    for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
+    {
+        if (passCfg.colorBuffer[i].texture != InvalidHandle)
+        {
+            rhi::Handle rt = (passCfg.UsingMSAA()) ? passCfg.colorBuffer[i].multisampleTexture : passCfg.colorBuffer[i].texture;
+
+            TextureDX11::SetRenderTarget(rt, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, context, rt_view + i);
+            ++rt_count;
+        }
+        else
+        {
+            if (i == 0)
+            {
+                rt_view[i] = _D3D11_RenderTargetView;
+                rt_count = 1;
+            }
+
+            break;
+        }
+    }
+
+    context->OMSetRenderTargets(rt_count, rt_view, ds_view);
+
+    if (passCfg.colorBuffer[0].texture != InvalidHandle)
+    {
+        Size2i sz = TextureDX11::Size(passCfg.colorBuffer[0].texture);
+        def_viewport.Width = static_cast<float>(sz.dx);
+        def_viewport.Height = static_cast<float>(sz.dy);
+    }
+
 
     context->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
 
@@ -1625,7 +1648,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
             }
 
             if (clear_color)
-                context->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[0].clearColor);
+                context->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[i].clearColor);
 
             rt_view[i]->Release();
         }
