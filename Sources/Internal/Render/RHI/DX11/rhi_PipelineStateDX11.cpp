@@ -332,15 +332,15 @@ private:
 
     ProgType progType = PROG_VERTEX;
     ID3D11Buffer* buf;
-    mutable float* value;
+    mutable float32* value;
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    mutable unsigned updateFrame;
+    mutable uint32 updateFrame;
 #else
-    mutable float* inst;
-    mutable unsigned frame;
+    mutable float32* inst;
+    mutable uint32 frame;
 #endif
-    unsigned buf_i;
-    unsigned regCount;
+    uint32 buf_i;
+    uint32 regCount;
 };
 
 static RingBuffer _DefConstRingBuf;
