@@ -9,7 +9,6 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
-#include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -105,6 +104,13 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
 void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
     // not supported
@@ -124,6 +130,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     // case UIDispatcherEvent::RESIZE_WINDOW:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;

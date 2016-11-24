@@ -49,6 +49,8 @@ public:
 
     void TriggerPlatformEvents();
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
     void SetCursorCapture(eCursorCapture mode);
@@ -71,6 +73,7 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    void DoSetSurfaceScale(const float32 scale);
     void UIEventHandler(const UIDispatcherEvent& e);
     void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
 
@@ -92,6 +95,10 @@ private:
     std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
     Function<void(jobject)> triggerPlatformEvents;
     Function<jobject(jobject, jstring, jlong)> createNativeControl;
+
+    float32 surfaceScale = 1.0f;
+    float32 windowWidth = 0.0f;
+    float32 windowHeight = 0.0f;
 
     bool firstTimeSurfaceChanged = true;
 

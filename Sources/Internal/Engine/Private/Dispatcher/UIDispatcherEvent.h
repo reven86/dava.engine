@@ -24,6 +24,7 @@ struct UIDispatcherEvent final
         FUNCTOR,
         SET_CURSOR_CAPTURE,
         SET_CURSOR_VISIBILITY,
+        SET_SURFACE_SCALE
     };
 
     struct ResizeEvent
@@ -52,6 +53,11 @@ struct UIDispatcherEvent final
         bool visible;
     };
 
+    struct SetSurfaceScaleEvent
+    {
+        float32 scale;
+    };
+
     UIDispatcherEvent() = default;
     UIDispatcherEvent(eType type)
         : type(type)
@@ -67,6 +73,7 @@ struct UIDispatcherEvent final
         SetFullscreenEvent setFullscreenEvent;
         SetCursorCaptureEvent setCursorCaptureEvent;
         SetCursorVisibilityEvent setCursorVisibilityEvent;
+        SetSurfaceScaleEvent setSurfaceScaleEvent;
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
@@ -76,6 +83,7 @@ struct UIDispatcherEvent final
     static UIDispatcherEvent CreateSetCursorCaptureEvent(eCursorCapture mode);
     static UIDispatcherEvent CreateSetCursorVisibilityEvent(bool visible);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
+    static UIDispatcherEvent CreateSetSurfaceScaleEvent(const float32 scale);
 };
 
 } // namespace Private

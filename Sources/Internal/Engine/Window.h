@@ -165,13 +165,13 @@ public:
         \pre Scale value should be in range (0, 1].
 
         Request has no effect if underlying rendering system does not support surface scaling, as 
-        in the case of DirectX 9 or OpenGL on Win32.
+        in the case of OpenGL on Win32.
 
         Surface scaling is usually used to tune rendering performance by decreasing surface size.
 
         Performed asynchronously, use `sizeChanged` signal and `GetSurfaceScale` method inside signal handler to track scale changing.
     */
-    bool SetSurfaceScaleAsync(float32 scale);
+    void SetSurfaceScaleAsync(float32 scale);
 
     /**
         Set window virtual size.
@@ -205,7 +205,7 @@ public:
     /** Get current window mode: fullscreen or windowed. */
     eFullscreen GetFullscreen() const;
 
-    /** 
+    /**
         Request to switch window to fullscreen or windowed mode.
 
         Request has no effect in these cases:

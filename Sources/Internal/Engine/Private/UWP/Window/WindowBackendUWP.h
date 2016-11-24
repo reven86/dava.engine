@@ -40,6 +40,8 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
     void SetCursorCapture(eCursorCapture mode);

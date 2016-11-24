@@ -85,14 +85,14 @@ void FullscreenTest::LoadResources()
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul +0.1");
     btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulUp));
     AddControl(btn);
 
     btn.reset(new UIButton(Rect(155, 135, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul -0.1");
     btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulDown));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulDown));
     AddControl(btn);
 
     currentScaleText = new UIStaticText(Rect(310, 125, 300, 30));
@@ -220,24 +220,18 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = GetPrimaryWindow()->GetSurfaceScale();
-    if (mul < 2.0f)
-    {
-        mul += 0.1f;
-    }
+    mul += 0.1f;
 
-    mul = GetPrimaryWindow()->GetSurfaceScale();
+    GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = GetPrimaryWindow()->GetSurfaceScale();
-    if (mul > 0.2f)
-    {
-        mul -= 0.1f;
-    }
+    mul -= 0.1f;
 
-    mul = GetPrimaryWindow()->GetSurfaceScale();
+    GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
