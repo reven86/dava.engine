@@ -40,7 +40,7 @@ public:
 
     static const String TYPENAME_FLOAT; // "float"
     static const String TYPENAME_STRING; // "string"
-    static const String TYPENAME_WIDESTRING; // "wideString"
+    static const String TYPENAME_WIDESTRING; // "wideString" during load convert to utf8 string
     static const String TYPENAME_BYTE_ARRAY; // "byteArray"
     static const String TYPENAME_KEYED_ARCHIVE; // "keyedArchive"
     static const String TYPENAME_VECTOR2; // "Vector2"
@@ -397,9 +397,10 @@ public:
 
     /**
 		\brief Function to return wide string value from variable
+		internaly always store utf8 string and convert to WideString
 		\returns value of variable, or generate assert if variable type is different
 	 */
-    const WideString& AsWideString() const;
+    WideString AsWideString() const;
 
     /**
 	 \brief Function to return array from variable
