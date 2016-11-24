@@ -417,7 +417,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                     }
                 }
 
-                error = FT_Glyph_Transform(image, 0, &pen);
+                error = FT_Glyph_Transform(image, nullptr, &pen);
                 if (error == 0)
                 {
                     FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
@@ -595,8 +595,8 @@ void FTInternalFont::Prepare(FT_Face face, FT_Vector* advances)
         Glyph& glyph = glyphs[i];
 
         advances[i] = glyph.image->advance;
-        advances[i].x >>= 10;
-        advances[i].y >>= 10;
+        advances[i].x >>= 10; // Translate advances in
+        advances[i].y >>= 10; // 16.16 to 26.6 format
 
         if (prevAdvance)
         {

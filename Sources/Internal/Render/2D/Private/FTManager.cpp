@@ -69,11 +69,11 @@ FT_Error FTManager::LookupSize(FaceID* faceId, float32 size, FT_Size* ftsize)
     FTC_ScalerRec fontScaler =
     {
       static_cast<FTC_FaceID>(faceId),
-      static_cast<FT_UInt>(size),
-      static_cast<FT_UInt>(size),
-      1,
       0,
-      0
+      static_cast<FT_UInt>(size * 64.f),
+      0,
+      0,
+      FT_UInt(Font::GetDPI())
     };
     return FTC_Manager_LookupSize(manager, &fontScaler, ftsize);
 }
@@ -83,11 +83,11 @@ FT_Error FTManager::LookupGlyph(FaceID* faceId, float32 size, uint32 glyphIndex,
     FTC_ScalerRec fontScaler =
     {
       static_cast<FTC_FaceID>(faceId),
-      static_cast<FT_UInt>(size),
-      static_cast<FT_UInt>(size),
-      1,
       0,
-      0
+      static_cast<FT_UInt>(size * 64.f),
+      0,
+      0,
+      FT_UInt(Font::GetDPI())
     };
     return FTC_ImageCache_LookupScaler(glyphcache, &fontScaler, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING, glyphIndex, glyph, 0);
 }
