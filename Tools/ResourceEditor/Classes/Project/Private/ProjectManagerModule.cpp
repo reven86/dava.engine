@@ -154,6 +154,7 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
 void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 {
     ProjectManagerData* data = GetData();
+    connections.disconnect(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, nullptr, nullptr);
     data->projectPath = incomePath;
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
