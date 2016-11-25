@@ -19,6 +19,8 @@ import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.fmod.FMODAudioDevice;
+
 public final class DavaActivity extends Activity
                                 implements View.OnSystemUiVisibilityChangeListener
 {
@@ -47,6 +49,8 @@ public final class DavaActivity extends Activity
     private DavaSurfaceView primarySurfaceView;
     private DavaSplashView splashView;
     private ViewGroup layout;
+
+    private FMODAudioDevice fmodDevice;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -82,6 +86,8 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
+
+        fmodDevice = new FMODAudioDevice();
         
         Application app = getApplication();
         externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -146,6 +152,7 @@ public final class DavaActivity extends Activity
     protected void onStart()
     {
         Log.d(LOG_TAG, "DavaActivity.onStart");
+        fmodDevice.start();
         super.onStart();
     }
 
@@ -179,6 +186,7 @@ public final class DavaActivity extends Activity
     protected void onStop()
     {
         Log.d(LOG_TAG, "DavaActivity.onStop");
+        fmodDevice.stop();
         super.onStop();
     }
 
@@ -432,5 +440,10 @@ public final class DavaActivity extends Activity
     public void onSystemUiVisibilityChange(int visibility)
     {
         hideNavigationBar();
+    }
+
+    static {
+        System.loadLibrary("fmodex");
+        System.loadLibrary("fmodevent");
     }
 }
