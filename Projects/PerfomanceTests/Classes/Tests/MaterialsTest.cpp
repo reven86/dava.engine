@@ -242,7 +242,7 @@ Entity* MaterialsTest::CreateSpeedTreeEntity(Entity* entity)
     spoRenderObject->AddRenderBatch(spoRenderBatch);
     spoRenderComponent->SetRenderObject(spoRenderObject);
 
-    DAVA::Array<DAVA::float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT> harmonics = {};
+    DAVA::Array<DAVA::float32, SpeedTreeObject::HARMONICS_BUFFER_CAPACITY> harmonics = {};
     harmonics[0] = harmonics[1] = harmonics[2] = 1.f / 0.564188f; //fake SH value to make original object color
     spoRenderObject->SetSphericalHarmonics(harmonics);
 

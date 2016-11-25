@@ -39,12 +39,12 @@ void SpeedTreeObject::SetTreeAnimationParams(const Vector2& trunkOscillationPara
     leafOscillation = leafOscillationParams;
 }
 
-void SpeedTreeObject::SetSphericalHarmonics(const DAVA::Array<float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT>& coeffs)
+void SpeedTreeObject::SetSphericalHarmonics(const DAVA::Array<float32, SpeedTreeObject::HARMONICS_BUFFER_CAPACITY>& coeffs)
 {
     sphericalHarmonics = coeffs;
 }
 
-const DAVA::Array<float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT>& SpeedTreeObject::GetSphericalHarmonics() const
+const DAVA::Array<float32, SpeedTreeObject::HARMONICS_BUFFER_CAPACITY>& SpeedTreeObject::GetSphericalHarmonics() const
 {
     return sphericalHarmonics;
 }
@@ -110,7 +110,7 @@ void SpeedTreeObject::Save(KeyedArchive* archive, SerializationContext* serializ
 {
     RenderObject::Save(archive, serializationContext);
 
-    archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(sphericalHarmonics.data()), HARMONICS_FLOAT_COUNT * sizeof(float32));
+    archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(sphericalHarmonics.data()), HARMONICS_BUFFER_CAPACITY * sizeof(float32));
     archive->SetFloat("sto.lightSmoothing", lightSmoothing);
 }
 
@@ -123,7 +123,7 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
     if (shCount)
         Memcpy(sphericalHarmonics.data(), sphericalArray, shCount * sizeof(Vector3));
     else
-        Memcpy(sphericalHarmonics.data(), sphericalArray, HARMONICS_FLOAT_COUNT * sizeof(float32));
+        Memcpy(sphericalHarmonics.data(), sphericalArray, HARMONICS_BUFFER_CAPACITY * sizeof(float32));
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
 
