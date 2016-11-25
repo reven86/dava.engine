@@ -16,8 +16,6 @@
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
 
-#include <exception>
-
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 namespace DAVA
@@ -155,14 +153,14 @@ void PlatformCore::GameThread()
         ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     }
     catch (const std::exception& e)
     {
         StringStream ss;
         ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     }
 
     using namespace ::Windows::UI::Xaml;

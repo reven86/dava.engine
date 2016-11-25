@@ -9,8 +9,6 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Logger/Logger.h"
 
-#include <exception>
-
 /**
     \ingroup engine
     Entry point of program which uses dava.engine. An application shall implement this global function which designates
@@ -57,12 +55,12 @@ int main(int argc, char* argv[])
         ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     } catch (const std::exception& e) {
         StringStream ss;
         ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     }
 }
 
@@ -89,12 +87,12 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
         ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     } catch (const std::exception& e) {
         StringStream ss;
         ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        std::terminate();
+        throw;
     }
 }
 
