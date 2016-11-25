@@ -73,22 +73,6 @@ void GameCore::SetupTriangle()
     "    output.pos = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
     "    return output;\n"
     "}\n");
-    /*
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "VPROG_IN_END\n"
-    "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "VPROG_OUT_END\n"
-    "\n"
-    "VPROG_BEGIN\n"
-    "\n"
-    "    float3 in_pos = VP_IN_POSITION.xyz;"
-    "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
-    "\n"
-    "VPROG_END\n");
-    */
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
     "fragment_in\n"
@@ -107,20 +91,6 @@ void GameCore::SetupTriangle()
     //    "    output.color = float4(1.0,1.0,1.0,1.0);\n"
     "    return output;\n"
     "};\n");
-    /*
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_END\n"
-    "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
-    "\n"
-    "DECL_FPROG_BUFFER(0,4)\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    FP_OUT_COLOR = float4(FP_Buffer0[0]);\n"
-    "FPROG_END\n");
-    */
     rhi::PipelineState::Descriptor psDesc;
 
     psDesc.vertexLayout.Clear();
@@ -1258,7 +1228,7 @@ void GameCore::DrawInstancedCube()
     }
     #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1589,7 +1559,7 @@ void GameCore::manticoreDraw()
 
 #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1730,7 +1700,7 @@ void GameCore::visibilityTestDraw()
         packet.queryIndex = 1;
     rhi::AddPacket(pl[0], packet);
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 

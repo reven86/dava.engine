@@ -152,9 +152,7 @@ void ShaderSource::InlineFunctions()
         sl::HLSLFunction* func_decl = global_func_decl[i];
         std::vector<sl::HLSLFunctionCall*> fcall;
 
-        class
-        FindFunctionCall
-        : public sl::HLSLTreeVisitor
+        class FindFunctionCall : public sl::HLSLTreeVisitor
         {
         public:
             const char* name;
@@ -176,9 +174,7 @@ void ShaderSource::InlineFunctions()
 
         FindFunctionCall(func_decl->name, &fcall).VisitRoot(ast->GetRoot());
 
-        class
-        FindStatementExpression
-        : public sl::HLSLTreeVisitor
+        class FindStatementExpression : public sl::HLSLTreeVisitor
         {
         public:
             FindStatementExpression(sl::HLSLFunctionCall* fc)
@@ -255,9 +251,7 @@ void ShaderSource::InlineFunctions()
 
             if (find_statement_expression.statement)
             {
-                class
-                FindParentPrev
-                : public sl::HLSLTreeVisitor
+                class FindParentPrev : public sl::HLSLTreeVisitor
                 {
                 public:
                     sl::HLSLStatement* target;

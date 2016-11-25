@@ -64,8 +64,6 @@ protected:
 
     static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
 
-    void test_preprocessor();
-
     bool inited;
 
     struct
@@ -149,7 +147,7 @@ protected:
     unsigned            curPerfQuerySet;
     unsigned            firedPerfQuerySet;
 */
-    rhi::HPerfQuerySet perfQuerySet;
+    //    rhi::HPerfQuerySet perfQuerySet;
     bool perfQuerySetFired;
 
     //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
