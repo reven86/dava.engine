@@ -420,6 +420,7 @@ eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
+    cursorInside = true;
     if (!mouseVisible)
     {
         SetSystemCursorVisible(false);
@@ -432,6 +433,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
+    cursorInside = false;
     if (!mouseVisible)
     {
         SetSystemCursorVisible(true);
@@ -510,7 +512,10 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        SetSystemCursorVisible(visible);
+        if (cursorInside)
+        {
+            SetSystemCursorVisible(visible);
+        }
     }
 }
 

@@ -98,6 +98,12 @@ private:
     void SetSystemCursorCapture(bool capture);
 
     eCursorCapture captureMode = eCursorCapture::OFF;
+    // bug when cursor in hide state (could not be hide)
+    // Steps:
+    // minimalized application, press on appIcon in appBar,
+    // don't moveout mouse pointer from appBar some seconds,
+    // return pointer inside application, call [NsCursor hide] not work
+    bool cursorInside = true;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
