@@ -15,13 +15,13 @@ using DAVA::DynamicMemoryFile;
 using DAVA::Mutex;
 using DAVA::LockGuard;
 
-    #include "PreProcess.h"
+#include "PreProcess.h"
     
-    #include "Parser/sl_Parser.h"
-    #include "Parser/sl_Tree.h"
-    #include "Parser/sl_GeneratorHLSL.h"
-    #include "Parser/sl_GeneratorGLES.h"
-    #include "Parser/sl_GeneratorMSL.h"
+#include "Parser/sl_Parser.h"
+#include "Parser/sl_Tree.h"
+#include "Parser/sl_GeneratorHLSL.h"
+#include "Parser/sl_GeneratorGLES.h"
+#include "Parser/sl_GeneratorMSL.h"
 
 namespace rhi
 {
@@ -127,8 +127,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     {
         delete ast;
         ast = nullptr;
-        DAVA::Logger::Error("Parse error\n");
-        DVASSERT(ast);
+        DAVA::Logger::Error("failed to parse shader source-text");
     }
 
     return success;
