@@ -8,6 +8,11 @@
 #include "Core/Core.h"
 #endif
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#endif
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
 #include <stdio.h>
@@ -44,7 +49,12 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     DVASSERT(context != nullptr);
     pm = context->packManager;
 #else
-    IPackManager* pm = &Core::Instance()->GetPackManager();
+    IPackManager* pm = nullptr;
+    Core* core = Core::Instance();
+    if (core != nullptr)
+    {
+        pm = &(core->GetPackManager());
+    }
 #endif
 
     if (nullptr != pm && pm->IsInitialized())

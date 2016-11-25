@@ -2,11 +2,9 @@
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
 #if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
@@ -41,7 +39,7 @@ private:
     bool isFullscreen;
 
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
-    static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
+    static const uint32 FULLSCREEN_STYLE = WS_POPUP;
 
     void OnMouseMove(int32 x, int32 y);
     void OnMouseWheel(int32 wheelDelta, int32 x, int32 y);
@@ -62,7 +60,7 @@ private:
 
     bool willQuit;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 
     float32 minWindowWidth = 0.0f;

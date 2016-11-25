@@ -73,6 +73,7 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wmacro-redefined"
 #endif
 
 #include "_mcpp.h"
@@ -111,8 +112,6 @@ static char* cat_line(int del_bsl);
 /* Splice the line              */
 static void put_line(char* out, FILE* fp);
 /* Put out a logical line       */
-static void dump_token(int token_type, const char* cp);
-/* Dump a token and its type    */
 
 #define EXP_MAC_IND_MAX 16
 /* Information of current expanding macros for diagnostic   */
@@ -632,8 +631,6 @@ char* out_end /* End of output buffer             */
         cfatal("Buffer overflow scanning token \"%s\"" /* _F_  */
                ,
                *out_pp, 0L, NULL);
-    if (mcpp_debug & TOKEN)
-        dump_token(token_type, *out_pp);
     if (mcpp_mode == POST_STD && token_type != SEP && infile->fp != NULL && (char_type[*infile->bptr & UCHARMAX] & SPA) == 0)
         insert_sep = INSERT_SEP; /* Insert token separator       */
     *out_pp = out;
@@ -664,11 +661,6 @@ int c /* First char of id     */
     if (c == IN_SRC)
     { /* Magic character  */
         *bp++ = c;
-        if ((mcpp_debug & MACRO_CALL) && !in_directive)
-        {
-            *bp++ = get_ch(); /* Its 2-bytes      */
-            *bp++ = get_ch(); /*      argument    */
-        }
         c = get_ch();
     }
 
@@ -1793,13 +1785,6 @@ int get_ch(void)
         squeezews = FALSE;
     }
 
-    if (mcpp_debug & GETC)
-    {
-        mcpp_fprintf(MCPP_DBG, "get_ch(%s) '%c' line %ld, bptr = %d, buffer", file->fp ? cur_fullname : file->real_fname ? file->real_fname : file->filename ? file->filename : "NULL", *file->bptr & UCHARMAX, src_line, (int)(file->bptr - file->buffer));
-        dump_string(NULL, file->buffer);
-        dump_unget("get entrance");
-    }
-
     /*
      * Read a character from the current input logical line or macro.
      * At EOS, either finish the current macro (freeing temporary storage)
@@ -1879,8 +1864,6 @@ int get_ch(void)
         /* Else, it is normal includer file, and marked as 2.   */
         src_line--;
         newlines = 0; /* Clear the blank lines*/
-        if (mcpp_debug & MACRO_CALL) /* Should be re-initialized */
-            com_cat_line.last_line = bsl_cat_line.last_line = 0L;
     }
     else if (file->filename)
     { /* Expanding macro      */
@@ -2101,7 +2084,6 @@ size_t* sizp /* Size of the comment  */
 {
     int c;
     char* saved_sp = NULL;
-    int cat_line = 0; /* Number of catenated lines    */
 
     if (keep_spaces)
     {
@@ -2139,39 +2121,10 @@ size_t* sizp /* Size of the comment  */
             }
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp);
-            if ((mcpp_debug & MACRO_CALL) && compiling)
-            {
-                if (cat_line)
-                {
-                    cat_line++;
-                    com_cat_line.len[cat_line] /* Catenated length */
-                    = com_cat_line.len[cat_line - 1] + strlen(infile->buffer) - 1;
-                    /* '-1' for '\n'        */
-                    com_cat_line.last_line = src_line;
-                }
-            }
             return sp; /* End of comment       */
         case '\n': /* Line-crossing comment*/
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp) - 1; /* '-1' for '\n'    */
-            if ((mcpp_debug & MACRO_CALL) && compiling)
-            {
-                /* Save location informations   */
-                if (cat_line == 0) /* First line of catenation     */
-                    com_cat_line.start_line = src_line;
-                if (cat_line >= MAX_CAT_LINE - 1)
-                {
-                    *sizp = 0; /* Discard the too long comment */
-                    cat_line = 0;
-                    if (warn_level & 4)
-                        cwarn(
-                        "Too long comment, discarded up to here" /* _W4_ */
-                        ,
-                        NULL, 0L, NULL);
-                }
-                cat_line++;
-                com_cat_line.len[cat_line] = com_cat_line.len[cat_line - 1] + strlen(infile->buffer) - 1;
-            }
             if ((saved_sp = sp = get_line(TRUE)) == NULL)
                 return NULL; /* End of file within comment   */
             /* Never happen, because at_eof() supplement closing*/
@@ -2210,13 +2163,10 @@ int in_comment)
     int converted = FALSE;
     int len; /* Line length - alpha  */
     char* ptr;
-    int cat_line = 0; /* Number of catenated lines    */
 
     if (infile == NULL) /* End of a source file */
         return NULL;
     ptr = infile->bptr = infile->buffer;
-    if ((mcpp_debug & MACRO_CALL) && src_line == 0) /* Initialize   */
-        com_cat_line.last_line = bsl_cat_line.last_line = 0L;
 
     while (mcpp_fgets(ptr, (int)(infile->buffer + NBUFF - ptr), infile->fp) != NULL)
     {
@@ -2226,11 +2176,6 @@ int in_comment)
             cwarn("Line number %.0s\"%ld\" got beyond range" /* _W1_ */
                   ,
                   NULL, src_line, NULL);
-        if (mcpp_debug & (TOKEN | GETC))
-        { /* Dump it to MCPP_DBG       */
-            mcpp_fprintf(MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
-            dump_string(NULL, ptr);
-        }
         len = static_cast<int>(strlen(ptr));
         if (NBUFF - 1 <= ptr - infile->buffer + len && *(ptr + len - 1) != '\n')
         {
@@ -2275,16 +2220,6 @@ int in_comment)
                     /* <backslash><newline> (not MBCHAR)    */
                     ptr = infile->bptr += len; /* Splice the lines */
                     wrong_line = TRUE;
-                    if ((mcpp_debug & MACRO_CALL) && compiling)
-                    {
-                        /* Save location informations   */
-                        if (cat_line == 0) /* First line of catenation */
-                            bsl_cat_line.start_line = src_line;
-                        if (cat_line < MAX_CAT_LINE)
-                            /* Record the catenated length  */
-                            bsl_cat_line.len[++cat_line] = strlen(infile->buffer) - 2;
-                        /* Else ignore  */
-                    }
                     continue;
                 }
             }
@@ -2294,15 +2229,6 @@ int in_comment)
                       ,
                       NULL, std_limits.str_len, NULL);
 #endif
-        }
-        if ((mcpp_debug & MACRO_CALL) && compiling)
-        {
-            if (cat_line && cat_line < MAX_CAT_LINE)
-            {
-                bsl_cat_line.len[++cat_line] = strlen(infile->buffer) - 1;
-                /* Catenated length: '-1' for '\n'  */
-                bsl_cat_line.last_line = src_line;
-            }
         }
         return infile->bptr = infile->buffer; /* Logical line */
     }
@@ -2544,9 +2470,6 @@ void unget_ch(void)
         if (infile->bptr < infile->buffer) /* Shouldn't happen */
             cfatal("Bug: Too much pushback", NULL, 0L, NULL); /* _F_  */
     }
-
-    if (mcpp_debug & GETC)
-        dump_unget("after unget");
 }
 
 FILEINFO* unget_string(
@@ -2776,8 +2699,6 @@ const char* arg3 /* Second string argument       */
             case IN_SRC:
                 if (!standard)
                     *tp++ = ' ';
-                if ((mcpp_debug & MACRO_CALL) && !in_directive)
-                    sp += 2; /* Skip two more bytes      */
                 break;
             case MAC_INF:
                 if (mcpp_mode != STD)
@@ -2967,7 +2888,7 @@ const char* text)
 {
     const char* cp;
     const char* chr;
-    int c, c1, c2;
+    int c;
 
     if (why != NULL)
         mcpp_fprintf(MCPP_DBG, " (%s)", why);
@@ -2988,44 +2909,6 @@ const char* text)
         case MAC_PARM:
             c = *cp++ & UCHARMAX; /* Macro parameter number   */
             mcpp_fprintf(MCPP_DBG, "<%d>", c);
-            break;
-        case MAC_INF:
-            if (!(mcpp_mode == STD && (mcpp_debug & MACRO_CALL)))
-                goto no_magic;
-            /* Macro informations inserted by -K option */
-            c2 = *cp++ & UCHARMAX;
-            if (option_flags.v || c2 == MAC_CALL_START || c2 == MAC_ARG_START)
-            {
-                c = ((*cp++ & UCHARMAX) - 1) * UCHARMAX;
-                c += (*cp++ & UCHARMAX) - 1;
-            }
-            switch (c2)
-            {
-            case MAC_CALL_START:
-                mcpp_fprintf(MCPP_DBG, "<MAC%d>", c);
-                break;
-            case MAC_CALL_END:
-                if (option_flags.v)
-                    mcpp_fprintf(MCPP_DBG, "<MAC_END%d>", c);
-                else
-                    chr = "<MAC_END>";
-                break;
-            case MAC_ARG_START:
-                c1 = *cp++ & UCHARMAX;
-                mcpp_fprintf(MCPP_DBG, "<MAC%d:ARG%d>", c, c1 - 1);
-                break;
-            case MAC_ARG_END:
-                if (option_flags.v)
-                {
-                    c1 = *cp++ & UCHARMAX;
-                    mcpp_fprintf(MCPP_DBG, "<ARG_END%d-%d>", c, c1 - 1);
-                }
-                else
-                {
-                    chr = "<ARG_END>";
-                }
-                break;
-            }
             break;
         case DEF_MAGIC:
             if (standard)
@@ -3054,17 +2937,7 @@ const char* text)
         case IN_SRC:
             if (standard)
             {
-                if ((mcpp_debug & MACRO_CALL) && !in_directive)
-                {
-                    int num;
-                    num = ((*cp++ & UCHARMAX) - 1) * UCHARMAX;
-                    num += (*cp++ & UCHARMAX) - 1;
-                    mcpp_fprintf(MCPP_DBG, "<SRC%d>", num);
-                }
-                else
-                {
-                    chr = "<SRC>";
-                }
+                chr = "<SRC>";
             }
             else
             { /* Control character    */
@@ -3083,7 +2956,6 @@ const char* text)
                 break;
             } /* Else fall through    */
         default:
-        no_magic:
             if (c < ' ')
                 mcpp_fprintf(MCPP_DBG, "<^%c>", c + '@');
             else
@@ -3118,22 +2990,6 @@ const char* why)
         dump_string(file->real_fname ? file->real_fname : file->filename ? file->filename : "NULL", file->bptr);
 }
 
-static void dump_token(
-int token_type,
-const char* cp /* Token        */
-)
-/*
- * Dump a token.
- */
-{
-    static const char* const t_type[] = {
-        "NAM", "NUM", "STR", "WSTR", "CHR", "WCHR", "OPE", "SPE", "SEP",
-    };
-
-    mcpp_fputs("token", MCPP_DBG);
-    dump_string(t_type[token_type - NAM], cp);
-}
-
 /*
  * Memory management
  */
@@ -3153,7 +3009,7 @@ enum
 
 static DAVA::FixedSizePoolAllocator* smallBlockAllocator = nullptr;
 static DAVA::FixedSizePoolAllocator* largeBlockAllocator = nullptr;
-static std::atomic<bool> allocatorsInitialized(false);
+static std::atomic<DAVA::uint32> allocatorReferences(0);
 static std::unordered_map<char*, DAVA::uint32> customAllocations;
 
 char* AllocateTracked(DAVA::uint32 size)
@@ -3194,31 +3050,33 @@ void ReleaseTrackedMemory()
 
 void xbegin_allocations()
 {
-    DVASSERT(allocatorsInitialized.load() == false);
-
-    smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
-    largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
-
-    allocatorsInitialized = true;
+    if (allocatorReferences.fetch_add(1) == 0)
+    {
+        smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
+        largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
+    }
 }
 
 void xend_allocations()
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
 
-    ReleaseTrackedMemory();
-
-    delete smallBlockAllocator;
-    delete largeBlockAllocator;
-    smallBlockAllocator = nullptr;
-    largeBlockAllocator = nullptr;
-
-    allocatorsInitialized = false;
+    // fetch_sub returns previously stored value
+    // therefore it should be "1" (and "0" after fetch_sub(1))
+    // in order to actually delete allocators
+    if (allocatorReferences.fetch_sub(1) == 1)
+    {
+        ReleaseTrackedMemory();
+        delete smallBlockAllocator;
+        delete largeBlockAllocator;
+        smallBlockAllocator = nullptr;
+        largeBlockAllocator = nullptr;
+    }
 }
 
 char*(xmalloc)(size_t size)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
     DVASSERT(size > 0);
 
     if (size <= SmallBlockSize)
@@ -3237,7 +3095,7 @@ char*(xmalloc)(size_t size)
 
 void(xfree)(void* ptr)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
 
     if (ptr == nullptr)
         return;
@@ -3258,7 +3116,7 @@ void(xfree)(void* ptr)
 
 char*(xrealloc)(void* ptr, size_t size)
 {
-    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(allocatorReferences > 0);
     DVASSERT(size > 0);
 
     char* newData = xmalloc(size);

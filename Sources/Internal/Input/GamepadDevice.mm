@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -200,3 +202,4 @@ void GamepadDevice::OnControllerConnected(void* gameControllerObject)
 @end
 
 #endif
+#endif // #if !__DAVAENGINE_COREV2__

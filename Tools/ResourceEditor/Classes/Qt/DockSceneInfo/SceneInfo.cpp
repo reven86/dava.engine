@@ -1,21 +1,25 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Project/ProjectManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Scene/SceneSignals.h"
 #include "Qt/Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Scene/System/EditorStatisticsSystem.h"
 #include "Qt/Scene/System/EditorVegetationSystem.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "ImageTools/ImageTools.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
-
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
+
+#include "Render/VisibilityQueryResults.h"
 
 #include <QHeaderView>
 #include <QTimer>
@@ -75,7 +79,6 @@ void SceneInfo::InitializeInfo()
     Initialize3DDrawSection();
     InitializeLODSectionInFrame();
     InitializeLODSectionForSelection();
-    InitializeSpeedTreeInfoSelection();
     InitializeLayersSection();
 
     InitializeVegetationInfoSection();
@@ -150,32 +153,6 @@ void SceneInfo::Refresh3DDrawInfo()
 
     SetChild("Dynamic Param Bind Count", renderStats.dynamicParamBindCount, header2);
     SetChild("Material Param Bind Count", renderStats.materialParamBindCount, header2);
-}
-
-void SceneInfo::InitializeSpeedTreeInfoSelection()
-{
-    QtPropertyData* header = CreateInfoHeader("SpeedTree Info");
-
-    AddChild("SpeedTree Leafs Square", header);
-    AddChild("SpeedTree Leafs Square Div X", header);
-    AddChild("SpeedTree Leafs Square Div Y", header);
-}
-
-void SceneInfo::RefreshSpeedTreeInfoSelection()
-{
-    QtPropertyData* header = GetInfoHeader("SpeedTree Info");
-
-    float32 speedTreeLeafSquare = 0.f, speedTreeLeafSquareDivX = 0.f, speedTreeLeafSquareDivY = 0.f;
-    for (const SpeedTreeInfo& info : speedTreeLeafInfo)
-    {
-        speedTreeLeafSquare += info.leafsSquare;
-        speedTreeLeafSquareDivX += info.leafsSquareDivX;
-        speedTreeLeafSquareDivY += info.leafsSquareDivY;
-    }
-
-    SetChild("SpeedTree Leafs Square", speedTreeLeafSquare, header);
-    SetChild("SpeedTree Leafs Square Div X", speedTreeLeafSquareDivX, header);
-    SetChild("SpeedTree Leafs Square Div Y", speedTreeLeafSquareDivY, header);
 }
 
 void SceneInfo::InitializeLODSectionInFrame()
@@ -281,7 +258,10 @@ void SceneInfo::RefreshLODInfoForSelection()
 
 uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
 {
-    String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    String projectPath = data->GetProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
 
     eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
@@ -342,8 +322,6 @@ void SceneInfo::ClearData()
     particleTexturesSize = 0;
     emittersCount = 0;
     spritesCount = 0;
-
-    speedTreeLeafInfo.clear();
 }
 
 void SceneInfo::ClearSelectionData()
@@ -543,7 +521,6 @@ void SceneInfo::RefreshAllData()
     Refresh3DDrawInfo();
     RefreshLODInfoInFrame();
     RefreshLODInfoForSelection();
-    RefreshSpeedTreeInfoSelection();
 
     RefreshVegetationInfoSection();
 
@@ -595,9 +572,6 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     CollectSelectedRenderObjects(selected);
 
     RefreshLODInfoForSelection();
-
-    CollectSpeedTreeLeafsSquare(selected);
-    RefreshSpeedTreeInfoSelection();
 }
 
 void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
@@ -641,71 +615,6 @@ void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
     {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
     }
-}
-
-void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
-{
-    speedTreeLeafInfo.clear();
-
-    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
-    {
-        RenderObject* ro = GetRenderObject(entity);
-        if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
-            speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
-    }
-}
-
-SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* renderObject)
-{
-    SpeedTreeInfo info;
-    if (renderObject)
-    {
-        bool hasLeafsGeometry = false;
-
-        Vector3 bboxSize = renderObject->GetBoundingBox().GetSize();
-        int32 rbCount = renderObject->GetRenderBatchCount();
-        for (int32 i = 0; i < rbCount; ++i)
-        {
-            RenderBatch* rb = renderObject->GetRenderBatch(i);
-            if (rb->GetMaterial() && rb->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_SPEED_TREE_LEAF))
-            {
-                PolygonGroup* pg = rb->GetPolygonGroup();
-                int32 triangleCount = pg->GetIndexCount() / 3;
-                for (int32 t = 0; t < triangleCount; t++)
-                {
-                    int32 i1, i2, i3;
-                    int32 baseVertexIndex = t * 3;
-                    pg->GetIndex(baseVertexIndex, i1);
-                    pg->GetIndex(baseVertexIndex + 1, i2);
-                    pg->GetIndex(baseVertexIndex + 2, i3);
-
-                    Vector3 v1, v2, v3;
-                    pg->GetCoord(i1, v1);
-                    pg->GetCoord(i2, v2);
-                    pg->GetCoord(i3, v3);
-
-                    v1.z = 0;
-                    v2.z = 0;
-                    v3.z = 0; //ortho projection in XY-plane
-
-                    v2 -= v1;
-                    v3 -= v1;
-                    Vector3 vec = v2.CrossProduct(v3);
-                    float32 len = vec.Length() / 2;
-
-                    info.leafsSquare += len;
-                    hasLeafsGeometry = true;
-                }
-            }
-        }
-
-        if (hasLeafsGeometry)
-        {
-            info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
-            info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
-        }
-    }
-    return info;
 }
 
 void SceneInfo::TexturesReloaded()
@@ -947,10 +856,10 @@ void SceneInfo::InitializeLayersSection()
 {
     QtPropertyData* header = CreateInfoHeader("Fragments Info");
 
-    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+    for (int32 i = 0; i < VisibilityQueryResults::QUERY_INDEX_COUNT; ++i)
     {
-        FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-        AddChild(layerName.c_str(), header);
+        FastName queryName = VisibilityQueryResults::GetQueryIndexName(static_cast<VisibilityQueryResults::eQueryIndex>(i));
+        AddChild(queryName.c_str(), header);
     }
 }
 
@@ -964,13 +873,13 @@ void SceneInfo::RefreshLayersSection()
         static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
         float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
 
-        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        for (int32 i = 0; i < VisibilityQueryResults::QUERY_INDEX_COUNT; ++i)
         {
-            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
+            FastName queryName = VisibilityQueryResults::GetQueryIndexName(static_cast<VisibilityQueryResults::eQueryIndex>(i));
+            uint32 fragmentStats = renderStats.visibilityQueryResults.count(queryName) ? renderStats.visibilityQueryResults[queryName] : 0U;
 
             String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
-            SetChild(layerName.c_str(), str.c_str(), header);
+            SetChild(queryName.c_str(), str.c_str(), header);
         }
     }
 }

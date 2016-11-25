@@ -27,7 +27,7 @@ class Float16Compressor
     static int32 const nanN = (infC + 1) << shift; // minimum flt16 nan as a flt32
     static int32 const maxC = maxN >> shift;
     static int32 const minC = minN >> shift;
-    static int32 const signC = signN >> shiftSign; // flt16 sign bit
+    static int32 const signC = static_cast<uint32>(signN) >> shiftSign; // flt16 sign bit
 
     static int32 const mulN = 0x52000000; // (1 << 23) / minN
     static int32 const mulC = 0x33800000; // minN / (1 << (23 - shift))

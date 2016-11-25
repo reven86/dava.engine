@@ -42,8 +42,6 @@ public:
     {
         DAVA::float32 screenScale = GetScreenScaleFactor();
 
-        [renderView setContentScaleFactor:screenScale];
-
         //detecting physical screen size and initing core system with this size
         const DAVA::DeviceInfo::ScreenInfo& screenInfo = DAVA::DeviceInfo::GetScreenInfo();
         DAVA::int32 width = screenInfo.width;
@@ -61,8 +59,27 @@ public:
         DAVA::int32 physicalWidth = width * screenScale;
         DAVA::int32 physicalHeight = height * screenScale;
 
-        DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-        DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+        CALayer* layer = [renderView layer];
+        if (layer != nil)
+        {
+            if ([layer isKindOfClass:[CAEAGLLayer class]])
+            {
+                CAEAGLLayer* gl = static_cast<CAEAGLLayer*>(layer);
+                [gl setContentsScale:screenScale];
+            }
+            else if ([layer isKindOfClass:[CAMetalLayer class]])
+            {
+                CAMetalLayer* metal = static_cast<CAMetalLayer*>(layer);
+                metal.drawableSize = CGSizeMake(physicalWidth, physicalHeight);
+            }
+            else
+            {
+                DVASSERT(false && "Unknown CALayer kind while setting rendering scale factor");
+            }
+        }
+
+        DAVA::UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(width, height);
+        DAVA::UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(physicalWidth, physicalHeight);
 
         rendererParams.window = [renderView layer];
         rendererParams.width = physicalWidth;

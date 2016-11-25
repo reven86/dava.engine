@@ -75,9 +75,8 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
     {
         if (freeSlot != InvalidUniqueHandle)
         {
+            DVASSERT(freeSlotCount != 0);
             freeSlotCount--;
-
-            DVASSERT(freeSlotCount >= 0);
 
             handle = freeSlot;
         }

@@ -80,7 +80,7 @@ private slots:
 
 private:
     QString GetTemplatePath(DAVA::int32 index) const;
-    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile);
+    bool ExecMaterialLoadingDialog(DAVA::uint32& useChoise, const QString& inputFile);
 
     void initActions();
     void initTemplates();

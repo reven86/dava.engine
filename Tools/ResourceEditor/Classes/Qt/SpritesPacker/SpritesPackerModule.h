@@ -1,5 +1,4 @@
-#ifndef __SPRITES_PACKER_MODULE_H__
-#define __SPRITES_PACKER_MODULE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -12,6 +11,11 @@
 namespace DAVA
 {
 class AssetCacheClient;
+namespace TArc
+{
+class UI;
+class WaitHandle;
+}
 }
 
 class SpritesPacker;
@@ -24,22 +28,16 @@ class SpritesPackerModule final : public QObject
     Q_OBJECT
 
 public:
-    SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations);
+    SpritesPackerModule(DAVA::TArc::UI* ui);
     ~SpritesPackerModule() override;
 
-    QAction* GetReloadAction() const;
-    void SetAction(QAction* reloadSpritesAction);
-
     void RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
+    void RepackWithDialog();
 
     bool IsRunning() const;
 
 signals:
     void SpritesReloaded();
-
-private slots:
-
-    void RepackWithDialog();
 
 private:
     void SetupSpritesPacker(const DAVA::FilePath& projectPath);
@@ -62,7 +60,6 @@ private:
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
-    std::shared_ptr<GlobalOperations> globalOperations;
+    DAVA::TArc::UI* ui = nullptr;
+    std::unique_ptr<DAVA::TArc::WaitHandle> waitDialogHandle;
 };
-
-#endif // __SPRITES_PACKER_MODULE_H__

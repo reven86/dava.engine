@@ -9,7 +9,7 @@ namespace DAVA
 class SceneNodeAnimationKey
 {
 public:
-    float32 time;
+    float32 time = 0;
     Vector3 translation;
     Quaternion rotation;
     Vector3 scale;

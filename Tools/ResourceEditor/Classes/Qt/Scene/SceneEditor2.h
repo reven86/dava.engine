@@ -35,7 +35,7 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"

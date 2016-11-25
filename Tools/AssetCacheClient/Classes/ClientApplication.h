@@ -12,7 +12,7 @@ public:
     ClientApplication();
     ~ClientApplication();
 
-    bool ParseCommandLine(int argc, char* argv[]);
+    bool ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine);
 
     DAVA::AssetCache::Error GetExitCode() const
     {

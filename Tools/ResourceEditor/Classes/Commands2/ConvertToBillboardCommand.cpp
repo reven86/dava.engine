@@ -24,7 +24,7 @@ ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAV
 ConvertToBillboardCommand::~ConvertToBillboardCommand()
 {
     DVASSERT(detachedComponent->GetEntity() == nullptr);
-    SafeDelete(detachedComponent);
+    DAVA::SafeDelete(detachedComponent);
 }
 
 void ConvertToBillboardCommand::Redo()

@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include <libuv/uv.h>
 
 #include "Network/Base/Endpoint.h"

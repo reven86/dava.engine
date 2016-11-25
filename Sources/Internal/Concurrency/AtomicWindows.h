@@ -4,7 +4,6 @@
 #include "Base/Platform.h"
 #ifndef USE_CPP11_CONCURRENCY
 
-#include <intrin.h>
 #include "Concurrency/Atomic.h"
 
 namespace DAVA

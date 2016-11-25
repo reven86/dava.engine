@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-inline Reflection::Reflection(const ReflectedObject& object_, ValueWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
+inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
     : object(object_)
     , vw(vw_)
     , meta(meta_)
@@ -84,6 +84,46 @@ inline Vector<Reflection::Field> Reflection::GetFields() const
     return sw->GetFields(object, vw);
 }
 
+inline bool Reflection::CanAddFields() const
+{
+    return sew->CanAdd(object, vw);
+}
+
+inline bool Reflection::CanInsertFields() const
+{
+    return sew->CanInsert(object, vw);
+}
+
+inline bool Reflection::CanRemoveFields() const
+{
+    return sew->CanRemove(object, vw);
+}
+
+inline bool Reflection::CanCreateFieldValue() const
+{
+    return sew->CanCreateValue(object, vw);
+}
+
+inline Any Reflection::CreateFieldValue() const
+{
+    return sew->CreateValue(object, vw);
+}
+
+inline bool Reflection::AddField(const Any& key, const Any& value) const
+{
+    return sew->AddField(object, vw, key, value);
+}
+
+inline bool Reflection::InsertField(const Any& beforeKey, const Any& key, const Any& value) const
+{
+    return sew->InsertField(object, vw, beforeKey, key, value);
+}
+
+inline bool Reflection::RemoveField(const Any& key) const
+{
+    return sew->RemoveField(object, vw, key);
+}
+
 inline bool Reflection::HasMethods() const
 {
     return sw->HasMethods(object, vw);
@@ -112,15 +152,23 @@ inline const Meta* Reflection::GetMeta() const
 }
 
 template <typename T>
-Reflection::Field Reflection::Create(T* ptr, const Any& key)
+Reflection Reflection::Create(T* ptr, const ReflectedMeta* meta)
 {
+    static ValueWrapperDefault<T> vw;
+
     if (nullptr != ptr)
     {
-        static ValueWrapperDefault<T> vw;
-        return Reflection::Field{ key, Reflection(ReflectedObject(ptr), &vw, ReflectedType::GetByPointer(ptr), nullptr) };
+        const ReflectedType* rtype = ReflectedType::GetByPointer(ptr);
+        return Reflection(ReflectedObject(ptr), &vw, rtype, meta);
     }
 
-    return Reflection::Field();
+    return Reflection();
+}
+
+template <typename T>
+Reflection::Field Reflection::Field::Create(const Any& key, T* ptr, const ReflectedMeta* meta)
+{
+    return Reflection::Field{ key, Reflection::Create(ptr, meta) };
 }
 
 } // namespace DAVA

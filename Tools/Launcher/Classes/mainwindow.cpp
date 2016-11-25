@@ -6,6 +6,7 @@
 #include "selfupdater.h"
 #include "defines.h"
 #include "filemanager.h"
+#include "preferencesdialog.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
 #include "branchesListModel.h"
@@ -108,11 +109,14 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::OnRefreshClicked);
     connect(ui->action_downloadAll, &QAction::triggered, this, &MainWindow::OnInstallAll);
     connect(ui->action_removeAll, &QAction::triggered, this, &MainWindow::OnRemoveAll);
-    connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
+    connect(ui->listView, &QListView::clicked, this, &MainWindow::OnListItemClicked);
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
+
+    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OpenPreferencesEditor);
 
     appManager = new ApplicationManager(this);
     newsDownloader = new FileDownloader(this);
+    configDownloader = new ConfigDownloader(appManager, this);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -128,6 +132,9 @@ MainWindow::MainWindow(QWidget* parent)
     QSettings settings;
     restoreGeometry(settings.value(geometryKey).toByteArray());
     restoreState(settings.value(stateKey).toByteArray());
+
+    FileManager* fileManager = appManager->GetFileManager();
+    ::LoadPreferences(fileManager, configDownloader);
 }
 
 MainWindow::~MainWindow()
@@ -135,6 +142,9 @@ MainWindow::~MainWindow()
     QSettings settings;
     settings.setValue(geometryKey, saveGeometry());
     settings.setValue(stateKey, saveState());
+
+    FileManager* fileManager = appManager->GetFileManager();
+    ::SavePreferences(fileManager, configDownloader);
     SafeDelete(ui);
 }
 
@@ -161,14 +171,16 @@ void MainWindow::OnInstallAll()
 {
     QQueue<UpdateTask> tasks;
     ConfigParser* remoteConfig = appManager->GetRemoteConfig();
+    ConfigParser* localConfig = appManager->GetLocalConfig();
     for (int i = 0, count = ui->tableWidget->rowCount(); i < count; ++i)
     {
         QString appID, insVersionID, avVersionID;
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
-        AppVersion* version = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
-        if (version != nullptr)
+        AppVersion* currentVersion = localConfig->GetAppVersion(selectedBranchID, appID, insVersionID);
+        AppVersion* newVersion = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
+        if (newVersion != nullptr)
         {
-            tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+            tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
         }
     }
 
@@ -206,14 +218,15 @@ void MainWindow::OnInstall(int rowNumber)
     QString appID, insVersionID, avVersionID;
     GetTableApplicationIDs(rowNumber, appID, insVersionID, avVersionID);
 
-    AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
-    if (version == nullptr)
+    AppVersion* newVersion = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
+    if (newVersion == nullptr)
     {
         Q_ASSERT(false);
         return;
     }
+    AppVersion* currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);
     QQueue<UpdateTask> tasks;
-    tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+    tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
 
     ShowUpdateDialog(tasks);
 
@@ -239,10 +252,10 @@ void MainWindow::OnRemove(int rowNumber)
 void MainWindow::OnRefreshClicked()
 {
     ui->action_updateConfiguration->setEnabled(false);
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager* fileManager = appManager->GetFileManager();
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
-    ConfigDownloader downloader(appManager, this);
-    if (downloader.exec() == QDialog::Accepted)
+    if (configDownloader->exec() == QDialog::Accepted)
     {
         CheckUpdates();
     }
@@ -302,6 +315,12 @@ void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QBy
     {
         ui->textBrowser->setHtml(QString(downloadedData));
     }
+}
+
+void MainWindow::OpenPreferencesEditor()
+{
+    FileManager* fileManager = appManager->GetFileManager();
+    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, this);
 }
 
 void MainWindow::ShowTable(const QString& branchID)
@@ -428,7 +447,8 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url);
+            FileManager* fileManager = appManager->GetFileManager();
+            SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)

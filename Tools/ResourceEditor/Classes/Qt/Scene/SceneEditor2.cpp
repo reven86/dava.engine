@@ -1,7 +1,9 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Commands2/Base/RECommandStack.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
@@ -9,12 +11,13 @@
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
-#include "Project/ProjectManager.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
+#include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -41,6 +44,8 @@ SceneEditor2::SceneEditor2()
     : Scene()
     , commandStack(new RECommandStack())
 {
+    DVASSERT(DAVA::Engine::Instance()->IsConsoleMode() == false);
+
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
     SafeRelease(notify);
@@ -138,8 +143,8 @@ SceneEditor2::SceneEditor2()
 
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
     }
 
     selectionSystem->AddDelegate(modifSystem);
@@ -175,7 +180,14 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
     }
 
     SceneValidator::ExtractEmptyRenderObjects(this);
-    SceneValidator::Instance()->ValidateScene(this, path);
+
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+    validator.ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -344,12 +356,18 @@ DAVA::String SceneEditor2::GetRedoText() const
 
 void SceneEditor2::Undo()
 {
-    commandStack->Undo();
+    if (commandStack->CanUndo())
+    {
+        commandStack->Undo();
+    }
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack->Redo();
+    if (commandStack->CanRedo())
+    {
+        commandStack->Redo();
+    }
 }
 
 void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)

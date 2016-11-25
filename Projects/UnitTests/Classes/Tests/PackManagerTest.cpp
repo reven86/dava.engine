@@ -1,4 +1,6 @@
 #include <PackManager/PackManager.h>
+// we need include private file only to call private api in test case
+#include <PackManager/Private/PackManagerImpl.h>
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>
@@ -8,6 +10,7 @@
 #include <Concurrency/Thread.h>
 
 #include "UnitTests/UnitTests.h"
+#include "Engine/Engine.h"
 
 class GameClient
 {
@@ -83,7 +86,11 @@ DAVA_TESTCLASS (PackManagerTest)
             throw std::runtime_error("unknown gpu family");
         }
 
+#if defined(__DAVAENGINE_COREV2__)
+        IPackManager& packManager = *Engine::Instance()->GetContext()->packManager;
+#else
         IPackManager& packManager = Core::Instance()->GetPackManager();
+#endif
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 
@@ -103,9 +110,10 @@ DAVA_TESTCLASS (PackManagerTest)
             GameClient client(packManager);
 
             Logger::Info("wait till packManagerInitialization done");
+
+            size_t oneSecond = 10;
             // wait till initialization done
-            while (packManager.GetInitError() == IPackManager::InitError::AllGood
-                   && packManager.GetInitState() != IPackManager::InitState::Ready)
+            while (!packManager.IsInitialized() && oneSecond-- > 0)
             {
                 Thread::Sleep(100);
 
@@ -115,10 +123,10 @@ DAVA_TESTCLASS (PackManagerTest)
 
                 Logger::Info("updata pack manager");
 
-                packManager.Update();
+                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
-            if (packManager.GetInitError() != IPackManager::InitError::AllGood)
+            if (!packManager.IsInitialized())
             {
                 Logger::Info("can't initialize packManager(remember on build agents network disabled)");
                 return;
@@ -148,7 +156,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 Thread::Sleep(100);
                 // we have to call Update() for downloadManager and packManager cause we in main thread
                 DownloadManager::Instance()->Update();
-                packManager.Update();
+                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
             Logger::Info("finish loading pack");

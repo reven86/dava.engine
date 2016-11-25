@@ -12,20 +12,13 @@ class Entity;
 
 class TransformComponent : public Component
 {
-protected:
-    virtual ~TransformComponent();
-
 public:
-    TransformComponent();
-
     IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT)
 
     inline Matrix4* GetWorldTransformPtr();
     inline const Matrix4& GetWorldTransform();
     inline const Matrix4& GetLocalTransform();
     Matrix4& ModifyLocalTransform();
-
-    inline int32 GetIndex();
 
     void SetLocalTransform(const Matrix4* transform);
     void SetParent(Entity* node);
@@ -35,12 +28,10 @@ public:
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
 private:
-    Matrix4 localMatrix;
-    Matrix4 worldMatrix;
-    Matrix4* parentMatrix;
-    Entity* parent; //Entity::parent should be removed
-
-    int32 index;
+    Matrix4 localMatrix = Matrix4::IDENTITY;
+    Matrix4 worldMatrix = Matrix4::IDENTITY;
+    Matrix4* parentMatrix = nullptr;
+    Entity* parent = nullptr; //Entity::parent should be removed
 
     friend class TransformSystem;
 
@@ -60,11 +51,6 @@ const Matrix4& TransformComponent::GetWorldTransform()
 const Matrix4& TransformComponent::GetLocalTransform()
 {
     return localMatrix;
-}
-
-int32 TransformComponent::GetIndex()
-{
-    return index;
 }
 
 Matrix4* TransformComponent::GetWorldTransformPtr()

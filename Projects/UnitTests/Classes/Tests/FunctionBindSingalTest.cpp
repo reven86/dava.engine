@@ -122,12 +122,14 @@ struct M
 
 struct V
 {
+    virtual ~V() = default;
     virtual int f2virt(int i, long j) = 0;
     char c_[2];
 };
 
 struct C : public M, virtual public V, virtual public A
 {
+    virtual ~C() = default;
     virtual void f2()
     {
     }

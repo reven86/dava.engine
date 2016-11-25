@@ -667,7 +667,11 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
 
     if (verbose)
     {
-        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Applying patch\n\t%s ->\n\t%s\n", origPath.GetAbsolutePathname().c_str(), newPath.GetAbsolutePathname().c_str());
+        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Applying patch #%u\n\t%s, sz = %u ->\n\t%s, sz = %u\n", curPatchIndex, origPath.GetAbsolutePathname().c_str(), curInfo.origSize, newPath.GetAbsolutePathname().c_str(), curInfo.newSize);
+    }
+    else
+    {
+        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Applying patch #%u\n", curPatchIndex);
     }
 
     if (!curInfo.origPath.empty() && !curInfo.newPath.empty() &&
@@ -1031,7 +1035,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
 
     if (ret && verbose)
     {
-        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] \tDone!");
+        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Done!\n");
     }
 
     return ret;

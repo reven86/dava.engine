@@ -1,7 +1,5 @@
 #pragma once
 
-#include "QtTools/Utils/QtConnections.h"
-
 class SceneEditor2;
 class ActiveSceneHolder
 {

@@ -7,6 +7,8 @@
 #include "UI/UIWebView.h"
 #include "CEFWebViewControl.h"
 #include "CEFDavaResourceHandler.h"
+#include "Utils/Utils.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -70,6 +72,7 @@ CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
 #if defined(__DAVAENGINE_COREV2__)
+    onWindowSizeChangedId = Engine::Instance()->PrimaryWindow()->sizeChanged.Connect(this, &CEFWebViewControl::OnWindowSizeChanged);
     webPageRender = new CEFWebPageRender(window);
 #else
     webPageRender = new CEFWebPageRender;
@@ -85,6 +88,10 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 
 void CEFWebViewControl::Deinitialize()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->PrimaryWindow()->sizeChanged.Disconnect(onWindowSizeChangedId);
+#endif
+
     // Close browser and release object
     // If we don't release cefBrowser, dtor of CEFWebViewControl will never be invoked
     cefBrowser->GetHost()->CloseBrowser(true);
@@ -159,7 +166,7 @@ void CEFWebViewControl::SetRect(const Rect& rect)
     }
     // <--- WORKAROUND PART 1 END
 
-    webPageRender->SetViewSize(rect.GetSize());
+    webPageRender->SetViewRect(rect);
     cefBrowser->GetHost()->WasResized();
 
     // WORKAROUND LAST PART 2 BEGIN -->
@@ -427,6 +434,20 @@ int32 ConvertDAVAModifiersToCef(eKeyModifiers modifier)
 int32 ConvertMouseTypeDavaToCef(UIEvent* input)
 {
     int32 mouseType = 0;
+#if defined(__DAVAENGINE_COREV2__)
+    if (input->mouseButton == eMouseButtons::LEFT)
+    {
+        mouseType = cef_mouse_button_type_t::MBT_LEFT;
+    }
+    else if (input->mouseButton == eMouseButtons::MIDDLE)
+    {
+        mouseType = cef_mouse_button_type_t::MBT_MIDDLE;
+    }
+    else if (input->mouseButton == eMouseButtons::RIGHT)
+    {
+        mouseType = cef_mouse_button_type_t::MBT_RIGHT;
+    }
+#else
     if (input->mouseButton == UIEvent::MouseButton::LEFT)
     {
         mouseType = cef_mouse_button_type_t::MBT_LEFT;
@@ -439,6 +460,7 @@ int32 ConvertMouseTypeDavaToCef(UIEvent* input)
     {
         mouseType = cef_mouse_button_type_t::MBT_RIGHT;
     }
+#endif
     return mouseType;
 }
 
@@ -470,10 +492,43 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    switch (currentInput->device)
+    {
+    case eInputDevices::MOUSE:
+        webViewPos = webView.GetAbsolutePosition();
+        switch (currentInput->phase)
+        {
+        case DAVA::UIEvent::Phase::BEGAN:
+        case DAVA::UIEvent::Phase::ENDED:
+            OnMouseClick(currentInput);
+            break;
+        case DAVA::UIEvent::Phase::MOVE:
+        case DAVA::UIEvent::Phase::DRAG:
+            OnMouseMove(currentInput);
+            break;
+        case DAVA::UIEvent::Phase::WHEEL:
+            OnMouseWheel(currentInput);
+            break;
+        default:
+            break;
+        }
+        break;
+    case eInputDevices::KEYBOARD:
+        OnKey(currentInput);
+        break;
+    case eInputDevices::TOUCH_SURFACE:
+        break;
+    case eInputDevices::TOUCH_PAD:
+        break;
+    default:
+        break;
+    }
+#else
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
-        webViewOffSet = webView.GetAbsolutePosition();
+        webViewPos = webView.GetAbsolutePosition();
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -501,14 +556,33 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     default:
         break;
     }
+#endif
+}
+
+void CEFWebViewControl::OnWindowSizeChanged(Window*, Size2f, Size2f)
+{
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(true);
+    }
+    // <--- WORKAROUND PART 1 END
+
+    cefBrowser->GetHost()->NotifyScreenInfoChanged();
+
+    // WORKAROUND LAST PART 2 BEGIN -->
+    // See PART 1 description higher
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(false);
+    }
 }
 
 void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int32 mouseType = CEFDetails::ConvertMouseTypeDavaToCef(input);
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(mouseType);
@@ -522,8 +596,8 @@ void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
@@ -533,8 +607,8 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
     int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);

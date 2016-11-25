@@ -25,6 +25,9 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons);
+    void OnGamepadRemoved(int32 deviceId);
+
 private:
     WindowBackend* ActivityOnCreate();
     void ActivityOnResume();

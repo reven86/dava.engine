@@ -1,8 +1,8 @@
 #include "Base/Platform.h"
 
 #include "Reflection/Private/StructureWrapperClass.h"
-#include "Reflection/Public/ReflectedType.h"
-#include "Reflection/Public/ReflectedObject.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
@@ -215,20 +215,24 @@ void StructureWrapperClass::InitBaseClasses() const
 {
     if (!basesInitialized)
     {
-        auto bases_ = thisType->BaseTypes();
-
-        bases.reserve(bases_.size());
-        for (auto bc : bases_)
-        {
-            ClassBase classBase;
-            classBase.type = bc.first;
-            classBase.castToBaseOP = bc.second;
-            classBase.refType = ReflectedType::GetByType(bc.first);
-
-            bases.emplace_back(std::move(classBase));
-        }
-
         basesInitialized = true;
+
+        const TypeInheritance* ti = thisType->GetInheritance();
+        if (nullptr != ti)
+        {
+            auto bases_ = ti->GetBaseTypes();
+
+            bases.reserve(bases_.size());
+            for (auto& bc : bases_)
+            {
+                ClassBase classBase;
+                classBase.type = bc.first;
+                classBase.castToBaseOP = bc.second;
+                classBase.refType = ReflectedType::GetByType(bc.first);
+
+                bases.emplace_back(std::move(classBase));
+            }
+        }
     }
 }
 

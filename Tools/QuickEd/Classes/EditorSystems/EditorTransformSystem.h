@@ -22,6 +22,8 @@ public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
     ~EditorTransformSystem() override;
 
+    static DAVA::Vector2 GetMinimumSize();
+
 private:
     enum eDirections
     {

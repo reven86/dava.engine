@@ -1,6 +1,12 @@
 
 #compiller flags
 
+append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__" )
+append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__" )
+append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__" )
+append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__" )
+append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__" )
+	
 if( APPLE )
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
@@ -66,7 +72,9 @@ elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
-    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )    
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( OTHER_CODE_SIGN_FLAGS "--deep")
     set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
@@ -142,11 +150,13 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
-if ( MACOS )
-        set(LOCAL_DISABLED_WARNINGS "-Werror")
-endif ()
 
-    set(LOCAL_DISABLED_WARNINGS "-Weverything \
+    if( ANDROID )
+        set( LOCAL_DISABLED_WARNINGS "-Werror " ) 
+    endif()
+
+    set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS}\
+-Weverything \
 -Wno-c++98-compat-pedantic \
 -Wno-newline-eof \
 -Wno-gnu-anonymous-struct \
@@ -201,7 +211,8 @@ endif ()
 -Wno-unused-local-typedef \
 -Wno-nullable-to-nonnull-conversion \
 -Wno-super-class-method-mismatch \
--Wno-nonnull")
+-Wno-nonnull \
+-Wno-gnu-zero-variadic-macro-arguments")
 
 
     if( ANDROID )

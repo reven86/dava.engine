@@ -1,5 +1,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Engine/Qt/RenderWidget.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -9,6 +11,7 @@
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -38,31 +41,41 @@ private:
     EditorSystemsManager* systemManager = nullptr;
 };
 
-EditorSystemsManager::EditorSystemsManager()
+EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     : rootControl(new UIControl())
     , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
+    , renderWidget(renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
-    PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
-    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
+    //this function must be called first when the transformStateChanged will be emitted
+    transformStateChanged.Connect(this, &EditorSystemsManager::OnTransformStateChanged);
+
+    packageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
+    selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     canvasSystemPtr = new CanvasSystem(this);
     systems.emplace_back(canvasSystemPtr);
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
-    systems.emplace_back(new HUDSystem(this));
+    hudSystemPtr = new HUDSystem(this);
+    systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
+
+DAVA::RenderWidget* EditorSystemsManager::GetRenderWidget() const
+{
+    return renderWidget;
+}
 
 UIControl* EditorSystemsManager::GetRootControl() const
 {
@@ -101,19 +114,26 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     {
         rootControl->AddControl(inputLayerControl.Get());
     }
-    EmulationModeChangedSignal.Emit(emulationMode);
+    emulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
 {
-    Vector<ControlNode*> nodesUnderPoint;
-    auto predicate = [point](const ControlNode* node) -> bool {
-        auto control = node->GetControl();
-        DVASSERT(control != nullptr);
-        return control->IsVisible() && control->IsPointInside(point);
-    };
-    CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
+    if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
+    {
+        return selectionSystemPtr->GetCommonNodeUnderPoint(point);
+    }
+    return selectionSystemPtr->GetNearestNodeUnderPoint(point);
+}
+
+void EditorSystemsManager::HighlightNode(ControlNode* node)
+{
+    hudSystemPtr->HighlightNodes({ node });
+}
+
+void EditorSystemsManager::ClearHighlight()
+{
+    hudSystemPtr->HighlightNodes({});
 }
 
 uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
@@ -161,6 +181,11 @@ void EditorSystemsManager::ClearSelection()
     selectionSystemPtr->ClearSelection();
 }
 
+void EditorSystemsManager::SelectNode(ControlNode* node)
+{
+    selectionSystemPtr->SelectNode(node);
+}
+
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
@@ -195,7 +220,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
         else
         {
             editingRootControls.erase(node);
-            EditingRootControlsChanged.Emit(editingRootControls);
+            editingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }
@@ -211,7 +236,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             if (destination == packageControlsNode)
             {
                 editingRootControls.insert(node);
-                EditingRootControlsChanged.Emit(editingRootControls);
+                editingRootControlsChanged.Emit(editingRootControls);
             }
         }
     }
@@ -256,7 +281,16 @@ void EditorSystemsManager::RefreshRootControls()
     if (editingRootControls != newRootControls)
     {
         editingRootControls = newRootControls;
-        EditingRootControlsChanged.Emit(editingRootControls);
+        editingRootControlsChanged.Emit(editingRootControls);
         UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
+    }
+}
+
+void EditorSystemsManager::OnTransformStateChanged(bool inTransformState)
+{
+    if (package != nullptr)
+    {
+        //calling this function can refresh all properties and styles in this node
+        package->SetCanUpdateAll(!inTransformState);
     }
 }

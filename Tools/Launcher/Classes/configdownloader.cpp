@@ -16,6 +16,13 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     ui->setupUi(this);
     connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
     connect(ui->cancelButton, &QPushButton::clicked, this, &ConfigDownloader::OnCancelClicked);
+
+    //init URLS with default;
+    for (int i = 0; i < URLTypesCount; ++i)
+    {
+        eURLType type = static_cast<eURLType>(i);
+        urls[type] = GetDefaultURL(type);
+    }
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -27,16 +34,40 @@ int ConfigDownloader::exec()
 {
     aborted = false;
     appManager->GetRemoteConfig()->Clear();
-    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher" //version, url, news
-                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list" //stirngs
-                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString // favorites
-                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString //all builds
-    ;
+
     for (const QString& str : urls)
     {
         requests << networkManager->get(QNetworkRequest(QUrl(str)));
     }
     return QDialog::exec();
+}
+
+QString ConfigDownloader::GetDefaultURL(eURLType type) const
+{
+    switch (type)
+    {
+    case LauncherInfoURL:
+        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher";
+    case StringsURL:
+        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list";
+    case FavoritesURL:
+        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString;
+    case AllBuildsURL:
+        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString;
+    default:
+        Q_ASSERT(false && "unacceptable request");
+        return QString();
+    }
+}
+
+QString ConfigDownloader::GetURL(eURLType type) const
+{
+    return urls[type];
+}
+
+void ConfigDownloader::SetURL(eURLType type, QString url)
+{
+    urls[type] = url;
 }
 
 void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
@@ -64,7 +95,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();
-        appManager->localConfig.SaveToFile(appManager->localConfigFilePath);
+        appManager->SaveLocalConfig();
         accept();
     }
 }

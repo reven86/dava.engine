@@ -189,7 +189,6 @@ void ClientNetProxy::OnPacketReceived(DAVA::Net::IChannel* channel, const void* 
             }
             case PACKET_STATUS_RESPONSE:
             {
-                StatusResponsePacket* p = static_cast<StatusResponsePacket*>(packet.get());
                 Logger::FrameworkDebug("Response is received: server status is OK");
                 for (ClientNetProxyListener* listener : listeners)
                     listener->OnServerStatusReceived();

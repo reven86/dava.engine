@@ -448,7 +448,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
             return;
         }
-        
+
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
 
         // while we always in landscape mode, but some devices
@@ -476,7 +476,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             width = height;
             height = temp;
         }
-        
+
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {

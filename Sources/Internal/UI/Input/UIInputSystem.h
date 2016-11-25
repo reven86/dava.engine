@@ -7,6 +7,7 @@
 #include "UI/Input/UIActionMap.h"
 #include "UI/Input/UIInputMap.h"
 #include "Functional/Signal.h"
+#include "UI/UISystem.h"
 
 namespace DAVA
 {
@@ -16,16 +17,19 @@ class UIEvent;
 class UIFocusSystem;
 
 class UIInputSystem
+: public UISystem
 {
 public:
     UIInputSystem();
-    ~UIInputSystem();
+    ~UIInputSystem() override;
+
+    void Process(DAVA::float32 elapsedTime) override{};
+
+    void OnControlVisible(UIControl* control) override;
+    void OnControlInvisible(UIControl* control) override;
 
     void SetCurrentScreen(UIScreen* screen);
     void SetPopupContainer(UIControl* popupContainer);
-
-    void OnControlVisible(UIControl* control);
-    void OnControlInvisible(UIControl* control);
 
     void HandleEvent(UIEvent* event);
 
@@ -95,7 +99,6 @@ private:
 
     UIActionMap globalActions;
     UIInputMap globalInputMap;
-    int32 modifiers = 0;
 };
 }
 

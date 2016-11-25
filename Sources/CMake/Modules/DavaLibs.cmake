@@ -1,25 +1,10 @@
 
-macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
-    set(OUTPUT_LIST "")
-    foreach (LIB_FILE ${LIB_LIST})
-        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
-        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
-        if (${LIB_INDEX} EQUAL -1)
-            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
-        endif()
-    endforeach()
-    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
-    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
-endmacro()
-
-
 set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg_ios.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_ios.a
@@ -41,7 +26,6 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg_macos.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_macos.a
@@ -72,7 +56,6 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a"
                                     "-lEGL"
@@ -117,7 +100,6 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libwebp.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libxml_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libyaml_win.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/lua_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/pnglib_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/PVRTexLib32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/ssleay32.lib"
@@ -156,7 +138,6 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libwebp.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libxml_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libyaml_wind.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/lua_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/pnglib_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32.lib"
@@ -192,7 +173,6 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libwebpdecoder.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libxml_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libyaml_win.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/lua_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/pnglib_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/PVRTexLib.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/ssleay32_64.lib"
@@ -233,7 +213,6 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libwebp.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libxml_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libyaml_wind.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/lua_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/pnglib_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
@@ -301,12 +280,6 @@ if( WIN )
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
         )
-
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
-
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_RELEASE "msvcrt.lib"  )
-    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_DEBUG   "msvcrtd.lib" )
 
 endif()
 

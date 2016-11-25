@@ -58,7 +58,7 @@ void TestCore::RunOnlyTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         // First, disable all tests
         for (TestClassInfo& x : testClasses)
@@ -87,7 +87,7 @@ void TestCore::DisableTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         for (const String& testName : testNames)
         {
@@ -191,7 +191,6 @@ Map<String, TestCoverageInfo> TestCore::GetTestCoverage()
         {
             result.emplace(x.name, std::move(x.testedFiles));
         }
-        x.runTest = x.runTest;
     }
     return result;
 }

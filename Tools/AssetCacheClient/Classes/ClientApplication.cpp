@@ -6,7 +6,6 @@
 #include "ClearRequest.h"
 
 ClientApplication::ClientApplication()
-    : cacheClient(true)
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
@@ -19,13 +18,13 @@ ClientApplication::~ClientApplication()
     activeRequest = nullptr;
 }
 
-bool ClientApplication::ParseCommandLine(int argc, char* argv[])
+bool ClientApplication::ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine)
 {
-    if (argc > 1)
+    if (cmdLine.size() > 1)
     {
         for (auto& r : requests)
         {
-            auto commandLineIsOk = r->options.Parse(argc, argv);
+            auto commandLineIsOk = r->options.Parse(cmdLine);
             if (commandLineIsOk)
             {
                 activeRequest = r.get();

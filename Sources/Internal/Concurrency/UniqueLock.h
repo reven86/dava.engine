@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_UNIQUE_LOCK_H__
 #define __DAVAENGINE_UNIQUE_LOCK_H__
 
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
 // indicates adopt lock

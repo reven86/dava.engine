@@ -66,7 +66,7 @@ void SingleComponentSystem::AddEntity(Entity* entity)
     entities.push_back(entity);
     for (int32 id = 0; id < Component::COMPONENT_COUNT; ++id)
     {
-        uint32 flags = 1 << id;
+        uint64 flags = 1LL << id;
         if ((flags & GetRequiredComponents()) == flags)
         {
             uint32 componentsCount = entity->GetComponentCount(id);
@@ -82,7 +82,7 @@ void SingleComponentSystem::RemoveEntity(Entity* entity)
 {
     for (int32 id = 0; id < Component::COMPONENT_COUNT; ++id)
     {
-        uint32 flags = 1 << id;
+        uint64 flags = 1LL << id;
         if ((flags & GetRequiredComponents()) == flags)
         {
             uint32 componentsCount = entity->GetComponentCount(id);
@@ -127,7 +127,7 @@ void MultiComponentSystem::AddEntity(Entity* entity)
 
     for (int32 id = 0; id < Component::COMPONENT_COUNT; ++id)
     {
-        uint32 flags = 1 << id;
+        uint64 flags = 1LL << id;
         if ((flags & GetRequiredComponents()) == flags)
         {
             uint32 componentsCount = entity->GetComponentCount(id);
@@ -143,7 +143,7 @@ void MultiComponentSystem::RemoveEntity(Entity* entity)
 {
     for (int32 id = 0; id < Component::COMPONENT_COUNT; ++id)
     {
-        uint32 flags = 1 << id;
+        uint64 flags = 1LL << id;
         if ((flags & GetRequiredComponents()) == flags)
         {
             uint32 componentsCount = entity->GetComponentCount(id);

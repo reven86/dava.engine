@@ -2,6 +2,7 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
+#include "Engine/EngineTypes.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Autotesting/AutotestingDB.h"
 
@@ -306,8 +307,8 @@ String AutotestingSystemLua::GetDeviceName()
 bool AutotestingSystemLua::IsPhoneScreen()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
-    float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 xInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 yInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
     return sqrtf(xInch * xInch + yInch * yInch) <= 6.5f;
 #else
     return false;
@@ -726,7 +727,7 @@ void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
     touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
 }
@@ -736,7 +737,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     UIEvent touchMove;
     touchMove.touchId = touchId;
     touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchMove.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchMove.point = point;
 
     if (AutotestingSystem::Instance()->IsTouchDown(touchId))
@@ -773,10 +774,15 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 {
     UIEvent clickDown;
     clickDown.phase = UIEvent::Phase::BEGAN;
+#if defined(__DAVAENGINE_COREV2__)
+    clickDown.mouseButton = eMouseButtons::LEFT;
+    clickDown.device = eInputDevices::MOUSE;
+#else
     clickDown.mouseButton = UIEvent::MouseButton::LEFT;
     clickDown.device = UIEvent::Device::MOUSE;
+#endif
     clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickDown.point = point;
     ProcessInput(clickDown);
 }
@@ -784,15 +790,24 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
 {
     UIEvent clickUp;
+#if defined(__DAVAENGINE_COREV2__)
+    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(eMouseButtons::LEFT), clickUp))
+#else
     if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
+#endif
     {
         AutotestingSystem::Instance()->OnError("ClickAction::LeftMouseClickUp click down not found");
     }
     clickUp.phase = UIEvent::Phase::ENDED;
+#if defined(__DAVAENGINE_COREV2__)
+    clickUp.mouseButton = eMouseButtons::LEFT;
+    clickUp.device = eInputDevices::MOUSE;
+#else
     clickUp.mouseButton = UIEvent::MouseButton::LEFT;
     clickUp.device = UIEvent::Device::MOUSE;
+#endif
     clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickUp.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickUp.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickUp.point = point;
     ProcessInput(clickUp);
 }
@@ -803,9 +818,13 @@ void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y
     wheel.wheelDelta.x = x;
     wheel.wheelDelta.y = y;
     wheel.phase = UIEvent::Phase::WHEEL;
+#if defined(__DAVAENGINE_COREV2__)
+    wheel.device = eInputDevices::MOUSE;
+#else
     wheel.device = UIEvent::Device::MOUSE;
+#endif
     wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     wheel.point = point;
     ProcessInput(wheel);
 }

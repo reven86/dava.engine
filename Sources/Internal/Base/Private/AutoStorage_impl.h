@@ -106,7 +106,8 @@ void AutoStorage<Count>::SetShared(T&& value)
 
     Clear();
     type = StorageType::Shared;
-    new (storage.data()) SharedT(new U(std::forward<T>(value)));
+    U* valueCopy = new U(std::forward<T>(value));
+    new (storage.data()) SharedT(valueCopy);
 }
 
 template <size_t Count>
@@ -133,6 +134,7 @@ inline void AutoStorage<Count>::SetData(const void* data, size_t size)
     {
         type = AutoStorage::StorageType::Shared;
         char* arr = new char[size];
+        std::memcpy(arr, data, size);
         new (storage.data()) SharedT(arr, [](char* p) { delete[] p; });
     }
 }

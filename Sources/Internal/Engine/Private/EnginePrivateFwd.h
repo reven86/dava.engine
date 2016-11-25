@@ -1,5 +1,4 @@
 // Utility header with forward declarations of Engine-related public and private classes
-
 namespace DAVA
 {
 class Engine;

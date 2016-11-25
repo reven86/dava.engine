@@ -1,24 +1,47 @@
 #include "GameCore.h"
 
+#include "Engine/Engine.h"
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
-
-#include <fstream>
-#include <algorithm>
+#include "Engine/Window.h"
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
 #include "Tests/LoadingTest.h"
 
+#include <fstream>
+#include <algorithm>
+
 using namespace DAVA;
 
-GameCore::GameCore()
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 768
+
+GameCore::GameCore(DAVA::Engine& e)
+    : engine(e)
 {
+    DVASSERT(instance == nullptr);
+    instance = this;
+
+    engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
+    engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    engine.suspended.Connect(this, &GameCore::OnSuspend);
+    engine.resumed.Connect(this, &GameCore::OnResume);
+    engine.beginFrame.Connect(this, &GameCore::BeginFrame);
+    engine.endFrame.Connect(this, &GameCore::EndFrame);
+    engine.cleanup.Connect(this, &GameCore::Cleanup);
 }
 
 void GameCore::OnAppStarted()
 {
+    VirtualCoordinatesSystem* vcs = engine.GetContext()->uiControlSystem->vcs;
+    vcs->SetVirtualScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    vcs->SetProportionsIsFixed(false);
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH, SCREEN_HEIGHT, "Gfx");
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "Gfx2");
+
     new GraphicsDetect();
     GraphicsDetect::Instance()->ReloadSettings();
     SoundSystem::Instance()->InitFromQualitySettings();
@@ -32,7 +55,7 @@ void GameCore::OnAppStarted()
 
     if (testChain.empty())
     {
-        GameCore::Instance()->Quit();
+        Quit();
     }
 }
 
@@ -46,46 +69,24 @@ void GameCore::OnAppFinished()
         SafeRelease(test);
     }
 
-    Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    Logger::RemoveCustomOutput(&teamCityOutput);
 }
 
 void GameCore::OnSuspend()
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
 }
 
 void GameCore::OnResume()
 {
-    ApplicationCore::OnResume();
 }
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-void GameCore::OnDeviceLocked()
-{
-}
-
-void GameCore::OnBackground()
-{
-}
-
-void GameCore::OnForeground()
-{
-    ApplicationCore::OnForeground();
-}
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
 void GameCore::BeginFrame()
 {
-    ApplicationCore::BeginFrame();
     testFlowController->BeginFrame();
 }
 
 void GameCore::EndFrame()
 {
-    ApplicationCore::EndFrame();
     testFlowController->EndFrame();
 }
 
@@ -157,6 +158,22 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
 
     SafeRelease(mapsParser);
     SafeRelease(testsParser);
+}
+
+void GameCore::OnWindowCreated(DAVA::Window* w)
+{
+    w->SetSize({ SCREEN_WIDTH, SCREEN_HEIGHT });
+    w->SetTitle("Performance Tests");
+
+    // TODO FullScreen
+    //w->SetFullScreen(false);
+}
+
+void GameCore::Cleanup()
+{
+    testChain.clear();
+    testFlowController.reset();
+    instance = nullptr;
 }
 
 String GameCore::GetDeviceName()
@@ -320,6 +337,62 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
 
 void GameCore::Quit()
 {
-    Core::Instance()->ReleaseRenderer();
-    Core::Instance()->Quit();
+    engine.Quit(0);
+}
+
+GameCore* GameCore::instance = nullptr;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+KeyedArchive* CreateOptions()
+{
+    KeyedArchive* appOptions = new KeyedArchive();
+
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetInt32("shader_const_buffer_size", 4 * 1024 * 1024);
+
+    appOptions->SetInt32("max_index_buffer_count", 3 * 1024);
+    appOptions->SetInt32("max_vertex_buffer_count", 3 * 1024);
+    appOptions->SetInt32("max_const_buffer_count", 16 * 1024);
+    appOptions->SetInt32("max_texture_count", 2048);
+    appOptions->SetInt32("max_texture_set_count", 2048);
+    appOptions->SetInt32("max_sampler_state_count", 128);
+    appOptions->SetInt32("max_pipeline_state_count", 1024);
+    appOptions->SetInt32("max_depthstencil_state_count", 256);
+    appOptions->SetInt32("max_render_pass_count", 64);
+    appOptions->SetInt32("max_command_buffer_count", 64);
+    appOptions->SetInt32("max_packet_list_count", 64);
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::ApiIsSupported(rhi::RHI_METAL) ? rhi::RHI_METAL : rhi::RHI_GLES2);
+    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+#else
+    appOptions->SetInt32("bpp", 32);
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#else
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+#endif
+
+    return appOptions;
+}
+
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
+{
+    Vector<String> modules =
+    {
+      "JobManager",
+      "NetCore",
+      "LocalizationSystem",
+      "SoundSystem",
+      "DownloadManager",
+    };
+    DAVA::Engine e;
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
+
+    GameCore core(e);
+    return e.Run();
 }

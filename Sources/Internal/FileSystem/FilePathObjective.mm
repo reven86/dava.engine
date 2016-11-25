@@ -19,7 +19,14 @@ void FilePath::InitializeBundleName()
 #elif defined(__DAVAENGINE_MACOS__)
 void FilePath::InitializeBundleName()
 {
-    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:@"/Contents/Resources/Data/"];
+    
+#if defined(DAVA_MACOS_DATA_PATH)
+    NSString* dataPath = @DAVA_MACOS_DATA_PATH;
+#else
+    NSString* dataPath = @"/Contents/Resources/Data/";
+#endif
+
+    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:dataPath];
     SetBundleName([bundlePath UTF8String]);
 }
 	

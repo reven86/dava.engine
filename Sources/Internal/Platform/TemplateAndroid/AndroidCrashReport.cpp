@@ -80,10 +80,10 @@ JniCrashReporter::JniCrashReporter(JNIEnv* env)
 
     env->ExceptionClear();
     jclass tmpClassID = env->FindClass("com/dava/framework/JNICrashReporter");
-    classID = (jclass)env->NewGlobalRef(tmpClassID);
+    classID = static_cast<jclass>(env->NewGlobalRef(tmpClassID));
 
     jclass tmpStringID = env->FindClass("java/lang/String");
-    stringID = (jclass)env->NewGlobalRef(tmpStringID);
+    stringID = static_cast<jclass>(env->NewGlobalRef(tmpStringID));
     mid = env->GetStaticMethodID(classID, "ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
 
     env->DeleteLocalRef(tmpClassID);

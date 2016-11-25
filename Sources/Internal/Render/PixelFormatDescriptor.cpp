@@ -113,4 +113,10 @@ Size2i PixelFormatDescriptor::GetPixelFormatBlockSize(PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).blockSize;
 }
+
+bool PixelFormatDescriptor::IsFormatSizeByteDivisible(PixelFormat format)
+{
+    PixelFormatDescriptor descriptor = GetPixelFormatDescriptor(format);
+    return (descriptor.pixelSize % 8 == 0 && descriptor.blockSize == Size2i(1, 1));
+}
 }

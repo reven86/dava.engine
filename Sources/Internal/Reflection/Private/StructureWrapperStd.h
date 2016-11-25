@@ -1,6 +1,7 @@
 #pragma once
-#include "Reflection/Public/Wrappers.h"
+#include "Reflection/Wrappers.h"
 #include "Reflection/Private/ValueWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {
@@ -18,7 +19,6 @@ public:
 
     Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
-        Reflection::Field ret;
         if (key.CanCast<size_t>())
         {
             size_t i = key.Cast<size_t>();
@@ -28,11 +28,11 @@ public:
             if (it != c->end())
             {
                 V* v = &(*it);
-                ret = Reflection::Create(v, key);
+                return Reflection::Field::Create(key, v);
             }
         }
 
-        return ret;
+        return Reflection::Field();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -46,7 +46,7 @@ public:
         for (auto& it : *c)
         {
             V* v = &it;
-            ret.emplace_back(Reflection::Create(v, Any(i++)));
+            ret.emplace_back(Reflection::Field::Create(Any(i++), v));
         }
 
         return ret;
@@ -67,7 +67,6 @@ public:
 
     Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
-        Reflection::Field ret;
         if (key.CanCast<K>())
         {
             const K& k = key.Cast<K>();
@@ -79,11 +78,11 @@ public:
                 // std::set values shouldn't be modified
                 // so get const pointer on value
                 const K* v = &(*it);
-                ret = Reflection::Create(v, key);
+                return Reflection::Field::Create(key, v);
             }
         }
 
-        return ret;
+        return Reflection::Field();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -100,7 +99,7 @@ public:
             // std::set values shouldn't be modified
             // so get const pointer on value
             const K* v = &(*it);
-            ret.emplace_back(Reflection::Create(v, Any(*v)));
+            ret.emplace_back(Reflection::Field::Create(Any(*v), v));
         }
 
         return ret;
@@ -122,7 +121,6 @@ public:
 
     Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
-        Reflection::Field ret;
         if (key.CanCast<K>())
         {
             const K& k = key.Cast<K>();
@@ -131,11 +129,11 @@ public:
             if (c->count(k) > 0)
             {
                 V* v = &c->at(k);
-                ret = Reflection::Create(v, key);
+                return Reflection::Field::Create(key, v);
             }
         }
 
-        return ret;
+        return Reflection::Field();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
@@ -148,7 +146,7 @@ public:
         for (auto& pair : *c)
         {
             V* v = &(pair.second);
-            ret.emplace_back(Reflection::Create(v, Any(pair.first)));
+            ret.emplace_back(Reflection::Field::Create(Any(pair.first), v));
         }
 
         return ret;

@@ -165,14 +165,7 @@ void UIList::SetScrollPosition(float32 newScrollPos)
         FullRefresh();
     }
 
-    if (orientation == ORIENTATION_HORIZONTAL)
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
-    else
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
+    scroll->SetPosition(-newScrollPos);
 }
 
 void UIList::ResetScrollPosition()
@@ -466,7 +459,11 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (eInputDevices::MOUSE == currentInput->device)
+#else
         if (UIEvent::Device::MOUSE == currentInput->device)
+#endif
         {
             newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
         }
@@ -508,6 +505,7 @@ void UIList::Input(UIEvent* currentInput)
     }
     break;
     case UIEvent::Phase::ENDED:
+    case UIEvent::Phase::CANCELLED:
     {
         lockTouch = false;
         mainTouch = -1;
@@ -566,7 +564,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
                 }
             }
         }
-        else if (currentInput->touchId == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
+        else if (currentInput->touchId == mainTouch && (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED))
         {
             mainTouch = -1;
             lockTouch = false;
@@ -575,6 +573,14 @@ bool UIList::SystemInput(UIEvent* currentInput)
     }
 
     return UIControl::SystemInput(currentInput);
+}
+
+void UIList::InputCancelled(UIEvent* currentInput)
+{
+    lockTouch = false;
+    mainTouch = -1;
+
+    UIControl::InputCancelled(currentInput);
 }
 
 void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerData)
@@ -635,7 +641,6 @@ void UIList::AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 ind
         r.y = pos;
     }
     cell->SetRect(r);
-    cell->UpdateLayout();
 
     scrollContainer->AddControl(cell);
 }

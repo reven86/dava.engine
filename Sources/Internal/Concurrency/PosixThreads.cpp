@@ -68,7 +68,8 @@ int pthread_mutex_lock(pthread_mutex_t* mutex)
         mutex->critical_section.RecursionCount > 1)
     {
         DVASSERT_MSG(false, "Thread in deadlocked");
-        while (mutex->critical_section.RecursionCount > 1)
+        volatile LONG recursionCount = mutex->critical_section.RecursionCount;
+        while (recursionCount > 1)
         {
         }
     }

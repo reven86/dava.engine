@@ -13,7 +13,7 @@
 #include "Debug/DVAssert.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "Scene/SceneHelper.h"
 

@@ -3,7 +3,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/TextureDescriptor.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 #include "Engine/EngineModule.h"
 
@@ -36,7 +36,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
 
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -147,9 +147,9 @@ void CEFWebPageRender::SetBackgroundTransparency(bool value)
     transparency = value;
 }
 
-void CEFWebPageRender::SetViewSize(Vector2 size)
+void CEFWebPageRender::SetViewRect(const Rect& rect)
 {
-    logicalViewSize = size;
+    logicalViewRect = rect;
 }
 
 void CEFWebPageRender::ShutDown()
@@ -177,22 +177,23 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    rect = CefRect(0, 0, static_cast<int>(logicalViewSize.dx), static_cast<int>(logicalViewSize.dy));
+    rect = CefRect(0, 0, static_cast<int>(logicalViewRect.dx), static_cast<int>(logicalViewRect.dy));
     return true;
 }
 
 bool CEFWebPageRender::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info)
 {
-    const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+    Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
 
-    screen_info.device_scale_factor = screenInfo.scale;
+    screen_info.device_scale_factor = phrect.dx / logicalViewRect.dx;
     screen_info.depth = 32;
     screen_info.depth_per_component = 8;
     screen_info.is_monochrome = 0;
     screen_info.rect.x = 0;
     screen_info.rect.y = 0;
-    screen_info.rect.width = screenInfo.width;
-    screen_info.rect.height = screenInfo.height;
+    screen_info.rect.width = 0;
+    screen_info.rect.height = 0;
     screen_info.available_rect = screen_info.rect;
 
     return true;

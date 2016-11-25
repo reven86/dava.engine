@@ -15,7 +15,6 @@
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
 #include "Job/JobManager.h"
-#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -275,8 +274,8 @@ void AssetCacheServerWindow::OnFolderSelection()
         startPath = QDir::currentPath();
     }
 
-    QString directory = FileDialog::getExistingDirectory(this, "Choose directory", startPath,
-                                                         QFileDialog::ShowDirsOnly);
+    QString directory = QFileDialog::getExistingDirectory(this, "Choose directory", startPath,
+                                                          QFileDialog::ShowDirsOnly);
 
     if (!directory.isEmpty())
     {

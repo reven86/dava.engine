@@ -11,6 +11,11 @@ endif()
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+set ( DAVA_COREV2 1 )
+add_definitions       (
+-D__DAVAENGINE_COREV2__
+)
+
 find_package( DavaFramework REQUIRED )
 
 include_directories   ( "iOSSpecific" )
@@ -26,9 +31,6 @@ set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 set( CommandLineTools        ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.h 
                              ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.cpp )
 
-if( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
-endif()
 if( ANDROID )
     set( PLATFORM_SPECIFIC_FOLDER ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
 
@@ -40,9 +42,7 @@ elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
 
 elseif( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
-
 endif()
 
 define_source ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
@@ -78,7 +78,7 @@ if( NOT DAVA_MEGASOLUTION )
         set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
     endif()
 
-    set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
+    set (TOOLS_DATA ${DAVA_ROOT_DIR}/Tools/Data)
 
     message( "--Performance test data folder: " ${PERFORMANCE_TEST_DATA_SVN} )
 
@@ -110,8 +110,7 @@ if( NOT DAVA_MEGASOLUTION )
 
     message( "============================ Copy resources ============================"  )
 
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${TOOLS_DATA}/Materials ${APP_DATA}/Materials )
 
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/Data ${APP_DATA} )
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/DataSource ${APP_DATA}/../DataSource )
@@ -121,6 +120,11 @@ if( NOT DAVA_MEGASOLUTION )
     execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
     execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 
+endif()
+
+if (ANDROID)
+    # Libraries to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;PerformanceTests")
 endif()
 
 setup_main_executable()

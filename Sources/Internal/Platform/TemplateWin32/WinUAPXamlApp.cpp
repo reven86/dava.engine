@@ -6,7 +6,7 @@
 
 #include "Core/Core.h"
 #include "Render/Renderer.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIScreenManager.h"
 
@@ -1054,13 +1054,13 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     if (isFullscreen_)
     {
         isFullscreen = view->TryEnterFullScreenMode();
-        Logger::Info("!!!!! isFullscreen true , %d", (int)isFullscreen);
+        Logger::Debug("!!!!! isFullscreen true , %d", (int)isFullscreen);
     }
     else
     {
         view->ExitFullScreenMode();
         isFullscreen = false;
-        Logger::Info("!!!!! isFullscreen false , %d", (int)isFullscreen);
+        Logger::Debug("!!!!! isFullscreen false , %d", (int)isFullscreen);
     }
 }
 

@@ -10,7 +10,8 @@
 #include "Sound/FMODSoundStream.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include "Engine/EngineModule.h"
 
@@ -404,7 +405,7 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SoundSystem::Update");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
     if (fmodEventSystem)
     {

@@ -2,14 +2,12 @@
 
 #include <QApplication>
 #include <QCursor>
-#include <QDesktopWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QScreen>
 #include <QTimer>
-
 
 #include "../Helpers/MouseHelper.h"
 #include "DropperShade.h"
@@ -44,30 +42,21 @@ void EyeDropper::OnDone()
 
 void EyeDropper::InitShades()
 {
-    QDesktopWidget* desktop = QApplication::desktop();
-    const int n = desktop->screenCount();
+    QList<QScreen*> screens = QApplication::screens();
+    int screensCount = screens.size();
 
-    ScreenArray screens;
-    screens.reserve(n);
-    for (int i = 0; i < n; i++)
+    shades.resize(screensCount);
+    for (int i = 0; i < screensCount; i++)
     {
-        const QRect& screenRect = desktop->screenGeometry(i);
-        ScreenData data = { i, screenRect };
-        screens.push_back(data);
-    }
-
-    shades.resize(n);
-    for (int i = 0; i < n; i++)
-    {
-        QScreen* screen = QApplication::screens()[i];
+        QScreen* screen = screens[i];
         const double scale = screen->devicePixelRatio();
-        QRect rc = screens[i].rc;
 
-        QPixmap pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
-        pix.setDevicePixelRatio(scale);
+        QRect screenRect = screen->geometry();
+        QPixmap pix = screen->grabWindow(0, screenRect.left(), screenRect.top(), screenRect.width() / scale, screenRect.height() / scale);
+
         const QImage img = pix.toImage();
 
-        DropperShade* shade = new DropperShade(img, screens[i].rc);
+        DropperShade* shade = new DropperShade(img, screenRect);
         shades[i] = shade;
         shade->show();
 

@@ -29,6 +29,12 @@ using AppHandle = uint32;
 #endif
 
 class IPackManager;
+
+namespace Analytics
+{
+class Core;
+}
+
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms.
@@ -251,7 +257,7 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager() const;
-    const ModuleManager& GetModuleManager() const;
+    Analytics::Core& GetAnalyticsCore() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -259,6 +265,8 @@ protected:
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
+
+    static void OnRenderingError(rhi::RenderingError error, void* context);
 
 private:
     KeyedArchive* options;
@@ -285,9 +293,9 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
+    std::unique_ptr<Analytics::Core> analyticsCore;
 };
 
 inline bool Core::IsActive()

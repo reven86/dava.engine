@@ -1,17 +1,21 @@
 #include "../dbg_Draw.h"
-    #include "../rhi_ShaderSource.h"
-    #include "../rhi_ShaderCache.h"
+#include "../Common/PreProcess.h"
+#include "../rhi_ShaderSource.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_Utils.h"
 
-    #include "Math/Matrix4.h"
-    #include "Math/Vector.h"
+#include "Math/Matrix4.h"
+#include "Math/Vector.h"
 using DAVA::Vector3;
 
-    #include <stdio.h>
-    #include <stdarg.h>
+#include "Render/RenderCallbacks.h"
 
-    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    #define _vsnprintf vsnprintf
-    #endif
+#include <stdio.h>
+#include <stdarg.h>
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define _vsnprintf vsnprintf
+#endif
 
 //==============================================================================
 
@@ -146,6 +150,7 @@ inline DbgDraw::Buffer<Vertex, Prim>::Buffer(const char* const name)
     , _v_cnt(0)
     , _name(name)
     , _need_grow(false)
+    , _grow_ttw(0)
 {
 }
 
@@ -439,7 +444,6 @@ DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
             batch.fragmentConstCount = 0;
             batch.primitiveType = Prim;
             batch.primitiveCount = _prim_count(_v_cnt);
-            batch.textureSet = (_small_text) ? dd->_texset_small_font : dd->_texset_normal_font;
 
             switch (Vertex::Format)
             {
@@ -454,6 +458,7 @@ DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
                 batch.vertexConst[0] = dd->_ptc_const;
                 batch.depthStencilState = dd->_ptc_depth_state;
                 batch.samplerState = dd->_ptc_sampler_state;
+                batch.textureSet = (_small_text) ? dd->_texset_small_font : dd->_texset_normal_font;
                 rhi::UpdateConstBuffer4fv(dd->_ptc_const, 0, ortho.data, 4);
                 break;
             }
@@ -522,7 +527,7 @@ void DbgDraw::SetScreenSize(uint32 w, uint32 h)
 
 //------------------------------------------------------------------------------
 
-void DbgDraw::FlushBatched(rhi::HPacketList batchBuf, const Matrix4& view, const Matrix4& projection)
+void DbgDraw::FlushBatched(rhi::HPacketList batchBuf)
 {
     DbgDraw* dd = Instance();
 
@@ -678,8 +683,7 @@ DbgDraw::Text2D(int x, int y, uint32 color, const char* format, ...)
 
 //------------------------------------------------------------------------------
 
-unsigned
-DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
+unsigned DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
 {
     va_list arglist;
     char text[2048] = { 0 };
@@ -852,9 +856,88 @@ void DbgDraw::Rect2D(int left, int top, int right, int bottom, uint32 color)
 
 //------------------------------------------------------------------------------
 
+void DbgDraw::Triangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color)
+{
+    DbgDraw* dd = Instance();
+    DVASSERT(dd->_inited);
+    unsigned v_cnt = 3 * 2;
+    Vertex_PC* v = dd->_line2d_buf.alloc_vertices(v_cnt);
+
+    if (v)
+    {
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0;
+        v->color = color;
+        ++v;
+
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0;
+        v->color = color;
+        ++v;
+
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0;
+        v->color = color;
+        ++v;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void DbgDraw::FilledTriangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color)
+{
+    DbgDraw* dd = Instance();
+    DVASSERT(dd->_inited);
+    unsigned v_cnt = 3;
+    Vertex_PC* v = dd->_tri2d_buf.alloc_vertices(v_cnt);
+
+    if (v)
+    {
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+    }
+}
+
+//------------------------------------------------------------------------------
+
 void DbgDraw::_init()
 {
     // init PTC
+
+    ShaderPreprocessScope preprocessScope;
 
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
@@ -900,7 +983,7 @@ void DbgDraw::_init()
         desc.vertexLayout = vp_pc.ShaderVertexLayout();
         desc.vprogUid = FastName("vp.pc");
         desc.fprogUid = FastName("fp.pc");
-        ///        desc.blend_state.blend_mode = fp_pc.blending();
+        desc.blending = fp_pc.Blending();
 
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, vp_pc.SourceCode());
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, fp_pc.SourceCode());
@@ -912,7 +995,6 @@ void DbgDraw::_init()
     // init small-font texture
     {
         rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
-        descr.needRestore = false; //hmm
         _tex_small_font = rhi::CreateTexture(descr);
 
         if (_tex_small_font)
@@ -933,7 +1015,6 @@ void DbgDraw::_init()
     // init normal-font texture
     {
         rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
-        descr.needRestore = false; //hmm
         _tex_normal_font = rhi::CreateTexture(descr);
 
         if (_tex_normal_font)
@@ -951,14 +1032,6 @@ void DbgDraw::_init()
         }
     }
 
-    // CRAP: hard-coded max vertex count
-    /*
-    _line_buf1.construct( 16*1024 );
-    _line_buf2.construct( 16*1024 );
-    _line_buf3.construct( 16*1024 );
-    _line_buf3.disable_depth_write();
-    _tri3d_buf.construct( 16*1024 );
-*/
     _normal_text2d_buf.construct(4 * 1024);
     _normal_text2d_buf.set_normal_text_size();
     _small_text2d_buf.construct(4 * 1024);
@@ -967,6 +1040,8 @@ void DbgDraw::_init()
     _line2d_buf.construct(1 * 1024);
 
     _permanent_text_small = true;
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &DbgDraw::_restore));
 }
 
 //------------------------------------------------------------------------------
@@ -983,7 +1058,24 @@ void DbgDraw::_uninit()
         _tri2d_buf.destroy();
         _line2d_buf.destroy();
 
+        RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &DbgDraw::_restore));
+
         _inited = false;
+    }
+}
+
+void DbgDraw::_restore()
+{
+    DbgDraw* dd = Instance();
+
+    if (rhi::NeedRestoreTexture(dd->_tex_small_font))
+    {
+        rhi::UpdateTexture(dd->_tex_small_font, Bin__dbg_FontSmall, 0);
+    }
+
+    if (rhi::NeedRestoreTexture(dd->_tex_normal_font))
+    {
+        rhi::UpdateTexture(dd->_tex_normal_font, Bin__dbg_FontNormal, 0);
     }
 }
 

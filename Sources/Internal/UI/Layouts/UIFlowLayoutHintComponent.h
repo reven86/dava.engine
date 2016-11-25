@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include <bitset>
 
 namespace DAVA
 {
@@ -39,7 +40,7 @@ private:
         FLAG_COUNT
     };
 
-    Bitset<eFlags::FLAG_COUNT> flags;
+    std::bitset<eFlags::FLAG_COUNT> flags;
 
 public:
     INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,

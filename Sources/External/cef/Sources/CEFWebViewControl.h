@@ -93,6 +93,7 @@ private:
     void StopLoading();
     bool IsEmail(const String& url);
 
+    void OnWindowSizeChanged(Window*, Size2f, Size2f);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnMouseWheel(UIEvent* input);
@@ -102,12 +103,13 @@ private:
     Window* window = nullptr;
 #endif
     UIWebView& webView;
-    Vector2 webViewOffSet;
+    Vector2 webViewPos;
     IUIWebViewDelegate* delegate = nullptr;
     CefRefPtr<CefBrowser> cefBrowser;
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;
     bool pageLoaded = false;
+    SigConnectionID onWindowSizeChangedId;
 };
 
 } // namespace DAVA

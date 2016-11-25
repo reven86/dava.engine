@@ -29,7 +29,7 @@
    <string>MainWindow</string>
   </property>
   <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks</set>
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QFrame" name="mainFrame">
    <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -222,15 +222,10 @@
    <property name="path" stdset="0">
     <string/>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="File">
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuRecentProjects">
-     <property name="title">
-      <string>Recent Projects</string>
-     </property>
-    </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
       <string>Import</string>
@@ -244,10 +239,6 @@
      <addaction name="actionOnlyOriginalTextures"/>
      <addaction name="actionWithCompressedTextures"/>
     </widget>
-    <addaction name="actionOpenProject"/>
-    <addaction name="menuRecentProjects"/>
-    <addaction name="actionCloseProject"/>
-    <addaction name="separator"/>
     <addaction name="actionNewScene"/>
     <addaction name="actionOpenScene"/>
     <addaction name="actionSaveScene"/>
@@ -421,7 +412,6 @@
      <addaction name="actionReleaseCurrentFrame"/>
     </widget>
     <addaction name="actionEnableCameraLight"/>
-    <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
@@ -479,7 +469,7 @@
     <addaction name="actionToggleUseInstancing"/>
     <addaction name="menuCrash_Produce"/>
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="File"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuQuality"/>
@@ -806,7 +796,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionReloadSprites"/>
    <addaction name="actionReloadShader"/>
    <addaction name="actionConvertModifiedTextures"/>
   </widget>
@@ -942,15 +931,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionOpenProject">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/openproject.png</normaloff>:/QtIcons/openproject.png</iconset>
-   </property>
-   <property name="text">
-    <string>Open Project</string>
    </property>
   </action>
   <action name="actionExportPVRIOS">
@@ -1528,15 +1508,6 @@
     <string>Cubemap Editor</string>
    </property>
   </action>
-  <action name="actionReloadSprites">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/refresh_particle.png</normaloff>:/QtIcons/refresh_particle.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Sprites</string>
-   </property>
-  </action>
   <action name="actionSaveHeightmapToPNG">
    <property name="text">
     <string>Save Heightmap as Image</string>
@@ -1896,14 +1867,6 @@
    </property>
    <property name="toolTip">
     <string>Set Materials LightViewMode</string>
-   </property>
-  </action>
-  <action name="actionCloseProject">
-   <property name="text">
-    <string>Close Project</string>
-   </property>
-   <property name="toolTip">
-    <string>Close Project</string>
    </property>
   </action>
   <action name="actionLightmapCanvas">
@@ -2274,6 +2237,22 @@
   <action name="actionGenerate_Assert">
    <property name="text">
     <string>Generate Assert</string>
+   </property>
+  </action>
+  <action name="actionEnableSounds">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/QtIcons/rspeaker_off.png</normaloff>
+     <normalon>:/QtIcons/rspeaker_on.png</normalon>:/QtIcons/rspeaker_off.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mute</string>
+   </property>
+   <property name="toolTip">
+    <string>Mute scene sounds</string>
    </property>
   </action>
  </widget>

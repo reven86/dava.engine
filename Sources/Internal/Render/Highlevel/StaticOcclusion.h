@@ -94,7 +94,7 @@ private:
         double buildDuration = 0.0;
         uint64 buildStartTime = 0;
         uint64 totalRenderPasses = 0;
-    } stats;
+    } stats; //-V730_NOINIT
 
     void UpdateInfoString();
     void BuildRenderPassConfigsForCurrentBlock();

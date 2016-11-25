@@ -18,11 +18,11 @@ namespace DAVA
 class UIEvent;
 class UIScreen;
 class UI3DView;
+class RenderWidget;
 }
 
 class SceneEditor2;
 class MainTabBar;
-class DavaGLWidget;
 class ScenePreviewDialog;
 class Request;
 class SelectableGroup;
@@ -36,6 +36,7 @@ public:
     explicit SceneTabWidget(QWidget* parent);
     ~SceneTabWidget();
 
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
     int OpenTab();
@@ -53,7 +54,7 @@ public:
     void ShowScenePreview(const DAVA::FilePath& scenePath);
     void HideScenePreview();
 
-    DavaGLWidget* GetDavaWidget() const;
+    DAVA::RenderWidget* GetRenderWidget() const;
 
 signals:
     void CloseTabRequest(int index, Request* closeRequest);
@@ -65,8 +66,7 @@ public slots:
     void TabBarCloseRequest(int index);
     void TabBarCloseCurrentRequest();
     void TabBarDataDropped(const QMimeData* data);
-    void DAVAWidgetDataDropped(const QMimeData* data);
-    void OnDavaGLWidgetResized(int width, int height);
+    void OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height);
 
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects);
@@ -76,11 +76,9 @@ public slots:
 
 protected:
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
-
     bool CloseTabInternal(int index, bool silent);
 
     MainTabBar* tabBar;
-    DavaGLWidget* davaWidget;
     DAVA::UIScreen* davaUIScreen;
     DAVA::UI3DView* dava3DView;
     const int davaUIScreenID = 0;
@@ -94,6 +92,7 @@ protected:
 
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
     ScenePreviewDialog* previewDialog = nullptr;

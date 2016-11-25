@@ -1,13 +1,14 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_DX9.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "rhi_DX9.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_dx9.h"
+#include "_dx9.h"
 
 namespace rhi
 {
@@ -345,7 +346,6 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
             if (self->rt_tex9 == nullptr)
             {
-                DVASSERT(self->rt_tex9 == nullptr);
                 DX9Command cmd1 = { DX9Command::CREATE_TEXTURE, { self->CreationDesc().width, self->CreationDesc().height, 1, 0, DX9_TextureFormat(format), D3DPOOL_SYSTEMMEM, uint64_t(&self->rt_tex9), 0 } };
 
                 ExecDX9(&cmd1, 1, false);

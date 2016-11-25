@@ -60,7 +60,7 @@ bool PngImageExt::Create(uint32 width, uint32 height)
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
     if (internalData)
     {
-        memset(GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
+        Memset(internalData->data, 0, internalData->dataSize);
         return true;
     }
 

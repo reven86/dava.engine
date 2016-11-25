@@ -42,6 +42,7 @@ protected:
 
     void UpdateCleanState();
     void SetCurrentIndex(int32 currentIndex);
+    void EmitCurrentIndexChanged();
 
     static const int32 EMPTY_INDEX = -1;
 
@@ -61,5 +62,6 @@ protected:
     bool isClean = true;
     bool canUndo = false;
     bool canRedo = false;
+    bool hasModifiedCommandsInRemoved = false;
 };
 }

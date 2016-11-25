@@ -44,7 +44,7 @@
 
 namespace DAVA
 {
-SceneFileV2::SceneFileV2()
+SceneFileV2::SceneFileV2() //-V730 no need to init descriptor
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -365,7 +365,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     const bool versionValid = ReadVersionTags(scene->version, file);
     if (!versionValid)
     {
-        Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: ", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -375,7 +375,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
@@ -432,6 +432,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
         }
 
+        NMaterial* globalMaterial = nullptr;
+
         if (header.nodeCount > 0)
         {
             // try to load global material
@@ -450,11 +452,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             if (name == "GlobalMaterial")
             {
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-                NMaterial* globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-
-                scene->SetGlobalMaterial(globalMaterial);
+                globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
-
                 --header.nodeCount;
             }
             else
@@ -462,7 +461,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 const bool res = file->Seek(filePos, File::SEEK_FROM_START);
                 if (!res)
                 {
-                    Logger::Error("SceneFileV2::LoadScene seek failed in file: ", filename.GetAbsolutePathname().c_str());
+                    Logger::Error("SceneFileV2::LoadScene seek failed in file: %s", filename.GetAbsolutePathname().c_str());
                     SetError(ERROR_FILE_READ_ERROR);
                     SafeRelease(archive);
                     return GetError();
@@ -473,9 +472,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         }
 
         serializationContext.ResolveMaterialBindings();
-    }
 
-    ApplyFogQuality();
+        ApplyFogQuality(globalMaterial);
+        scene->SetGlobalMaterial(globalMaterial);
+    }
 
     if (isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
@@ -486,20 +486,17 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         const bool loaded = LoadHierarchy(0, scene, file, 1);
         if (!loaded)
         {
-            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
     }
 
-    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    JobManager::Instance()->WaitMainJobs();
-
     UpdatePolygonGroupRequestedFormatRecursively(scene);
     const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
     if (!contextLoaded)
     {
-        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: ", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_READ_ERROR);
         return GetError();
     }
@@ -519,40 +516,32 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
-void SceneFileV2::ApplyFogQuality()
+void SceneFileV2::ApplyFogQuality(NMaterial* globalMaterial)
 {
-    //RHI_COMPLETE: performance issues with fog
+    QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+    bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
+    bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
 
-    if (!serializationContext.GetScene())
-        return;
-
-    NMaterial* globalMaterial = serializationContext.GetScene()->GetGlobalMaterial();
-    if (globalMaterial)
+    if (globalMaterial != nullptr)
     {
-        QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
-
         if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
             globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
-
         if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
             globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
+    }
 
-        bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
-        bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+    if (removeVertexFog || removeHalfSpaceFog)
+    {
+        Vector<NMaterial*> materials;
+        serializationContext.GetDataNodes(materials);
 
-        if (removeVertexFog || removeHalfSpaceFog)
+        for (NMaterial* material : materials)
         {
-            Vector<NMaterial*> materials;
-            serializationContext.GetDataNodes(materials);
+            if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+                material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
 
-            for (NMaterial* material : materials)
-            {
-                if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
-                    material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
-
-                if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
-                    material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
-            }
+            if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
         }
     }
 }
@@ -596,7 +585,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
             return res;
         }
     }
@@ -935,7 +924,7 @@ void SceneFileV2::FixLodForLodsystem2(Entity* entity)
     ParticleEffectComponent* effect = GetParticleEffectComponent(entity);
     if (lod && ro && !effect)
     {
-        int32 maxLod = ro->GetMaxLodIndex();
+        int32 maxLod = Max(ro->GetMaxLodIndex(), 0);
         for (int32 i = maxLod; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
             lod->SetLodLayerDistance(i, std::numeric_limits<float32>::max());
@@ -1152,9 +1141,10 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity* node)
 
             while (material)
             {
-                /*if (material->HasLocalFlag(FLAG_FOG_EXP))
-                    material->RemoveFlag(FLAG_FOG_EXP);                */
-
+                if (material->HasLocalFlag(FLAG_FOG_EXP))
+                {
+                    material->RemoveFlag(FLAG_FOG_EXP);
+                }
                 if (material->HasLocalFlag(FLAG_TILED_DECAL))
                 {
                     material->AddFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, material->GetLocalFlagValue(FLAG_TILED_DECAL));
@@ -1331,14 +1321,13 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         ConvertAlphatestValueMaterials(rootNode);
     }
 
+    if (header.version < OLD_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
+    }
+
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
 
-    //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
-    //    {
-    //        Entity * node = rootNode->GetChild(k);
-    //        if (node->GetName() == "instance_0")
-    //            node->SetName(rootNodeName);
-    //    }
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
 }

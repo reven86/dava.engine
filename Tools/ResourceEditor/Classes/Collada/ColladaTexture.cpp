@@ -8,7 +8,7 @@
 #include "Utils/Utils.h"
 #include "Qt/Main/QtUtils.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 namespace DAVA
 {

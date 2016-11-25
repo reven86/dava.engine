@@ -30,7 +30,7 @@ public:
     bool DisableLandscapeEdititing();
 
     virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent* event);
+    bool Input(DAVA::UIEvent* event) override;
 
     void SetBrushSize(DAVA::int32 brushSize);
     DAVA::int32 GetBrushSize();
@@ -81,9 +81,7 @@ protected:
     DAVA::Rect GetHeightmapUpdatedRect();
 
     void StoreOriginalHeightmap();
-    void CreateHeightmapUndo();
-
-    void FinishEditing();
+    void FinishEditing(bool applyModification);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

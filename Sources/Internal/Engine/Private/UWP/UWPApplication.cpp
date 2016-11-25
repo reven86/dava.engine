@@ -30,20 +30,13 @@ UWPApplication::UWPApplication(const Vector<String>& cmdargs)
 {
 }
 
-void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
+void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ /*args*/)
 {
-    using namespace ::Platform;
-    using namespace ::Windows::Foundation;
-    using namespace ::Windows::UI::Xaml;
-
-    Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
-    Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
-    UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
-
+    InstallEventHandlers();
     core->OnLaunched();
 }
 
-void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
+void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ /*args*/)
 {
     core->OnActivated();
 }
@@ -53,19 +46,65 @@ void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs
     core->OnWindowCreated(args->Window);
 }
 
-void UWPApplication::OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg)
+void UWPApplication::OnSuspending(::Platform::Object^ /*sender*/, ::Windows::ApplicationModel::SuspendingEventArgs^ /*arg*/)
 {
     core->OnSuspending();
 }
 
-void UWPApplication::OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg)
+void UWPApplication::OnResuming(::Platform::Object^ /*sender*/, ::Platform::Object^ /*arg*/)
 {
     core->OnResuming();
 }
 
-void UWPApplication::OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg)
+void UWPApplication::OnUnhandledException(::Platform::Object^ /*sender*/, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg)
 {
     core->OnUnhandledException(arg);
+}
+
+void UWPApplication::OnBackPressed(::Platform::Object^ /*sender*/, ::Windows::Phone::UI::Input::BackPressedEventArgs^ args)
+{
+    core->OnBackPressed();
+    args->Handled = true;
+}
+
+void UWPApplication::OnBackRequested(::Platform::Object^ /*sender*/, ::Windows::UI::Core::BackRequestedEventArgs^ args)
+{
+    core->OnBackPressed();
+    args->Handled = true;
+}
+
+void UWPApplication::OnGamepadAdded(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad)
+{
+    core->OnGamepadAdded(gamepad);
+}
+
+void UWPApplication::OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad)
+{
+    core->OnGamepadRemoved(gamepad);
+}
+
+void UWPApplication::InstallEventHandlers()
+{
+    using namespace ::Platform;
+    using namespace ::Windows::Foundation;
+    using namespace ::Windows::UI::Xaml;
+    using namespace ::Windows::UI::Core;
+    using namespace ::Windows::Gaming::Input;
+    using namespace ::Windows::Phone::UI::Input;
+    using ::Windows::Foundation::Metadata::ApiInformation;
+
+    Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
+    Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
+    UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
+
+    SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &UWPApplication::OnBackRequested);
+    if (ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1))
+    {
+        HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &UWPApplication::OnBackPressed);
+    }
+
+    Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadAdded);
+    Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadRemoved);
 }
 
 } // namespace Private

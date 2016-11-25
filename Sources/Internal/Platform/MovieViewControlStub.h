@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-
 #if defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"

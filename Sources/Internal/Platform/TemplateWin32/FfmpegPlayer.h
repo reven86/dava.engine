@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 

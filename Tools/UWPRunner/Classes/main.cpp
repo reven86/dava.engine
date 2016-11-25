@@ -1,40 +1,44 @@
-#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Core/Core.h"
+#include "Engine/Engine.h"
 
 #include "UWPRunner.h"
 
-bool succeed = false;
+using namespace DAVA;
 
-int main(int argc, char* argv[])
+int Process(Engine& e)
 {
-    DAVA::Core::RunCmdTool(0, 0, 0);
+    bool succeed = false;
+    PackageOptions options = ParseCommandLine();
+    if (CheckOptions(options))
+    {
+        try
+        {
+            UWPRunner runner(options);
+            runner.Run();
+            succeed = runner.IsSucceed();
+        }
+        catch (std::exception& e)
+        {
+            DAVA::Logger::Error("%s", e.what());
+        }
+    }
+
     return succeed ? 0 : 1;
 }
 
-void FrameworkDidLaunched()
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
-    PackageOptions options = ParseCommandLine();
-    if (!CheckOptions(options))
-    {
-        return;
-    }
+    Engine e;
+    e.Init(eEngineRunMode::CONSOLE_MODE, { "NetCore" }, nullptr);
 
-    try
-    {
-        UWPRunner runner(options);
-        runner.Run();
-        succeed = runner.IsSucceed();
-    }
-    catch (std::exception& e)
-    {
-        DAVA::Logger::Error("%s", e.what());
-    }
-}
+    e.update.Connect([&e](float32)
+                     {
+                         int result = Process(e);
+                         e.Quit(result);
+                     });
 
-void FrameworkWillTerminate()
-{
+    return e.Run();
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

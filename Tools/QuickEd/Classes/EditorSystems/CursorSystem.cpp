@@ -1,12 +1,11 @@
 #include "EditorSystems/CursorSystem.h"
-#include <QApplication>
+#include "Engine/Qt/RenderWidget.h"
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
+
 #include <QPixmap>
 #include <QTransform>
-#include "EditorCore.h"
-#include "QtTools/DavaGLWidget/Davaglwidget.h"
 
 using namespace DAVA;
 
@@ -15,22 +14,22 @@ QMap<QString, QPixmap> CursorSystem::cursorpixes;
 CursorSystem::CursorSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemsManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
+    systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
-    DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->previewWidget->GetGLWidget();
+    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
-        davaGLWidget->UnsetCursor();
+        renderWidget->unsetCursor();
     }
     else
     {
         auto control = areaInfo.owner->GetControl();
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
-        davaGLWidget->SetCursor(QCursor(pixmap));
+        renderWidget->setCursor(QCursor(pixmap));
     }
 }
 

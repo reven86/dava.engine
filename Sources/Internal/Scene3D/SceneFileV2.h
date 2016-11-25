@@ -146,7 +146,7 @@ public:
     void ConvertShadowVolumes(Entity* rootNode, NMaterial* shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity* rootNode);
     void ConvertAlphatestValueMaterials(Entity* rootNode);
-    int32 removedNodeCount;
+    int32 removedNodeCount = 0;
 
     void UpdatePolygonGroupRequestedFormatRecursively(Entity* entity);
     SceneArchive* LoadSceneArchive(const FilePath& filename); //purely load data
@@ -160,8 +160,8 @@ private:
 
     struct Descriptor
     {
-        uint32 size;
-        uint32 fileType; //see enum SceneFileV2::eFileType
+        uint32 size = 0;
+        uint32 fileType = 0; //see enum SceneFileV2::eFileType
     };
     Descriptor descriptor;
 
@@ -188,7 +188,7 @@ private:
     Entity* LoadCamera(Scene* scene, KeyedArchive* archive);
     Entity* LoadLight(Scene* scene, KeyedArchive* archive);
 
-    void ApplyFogQuality();
+    void ApplyFogQuality(DAVA::NMaterial* material);
 
     void WriteDescriptor(File* file, const Descriptor& descriptor) const;
     bool ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);

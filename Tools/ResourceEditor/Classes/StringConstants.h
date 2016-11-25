@@ -62,7 +62,7 @@ static const DAVA::String TILEMASK_EDITOR_BRUSH_SIZE_MIN = "tilemask-editor.brus
 static const DAVA::String TILEMASK_EDITOR_BRUSH_SIZE_MAX = "tilemask-editor.brush-size.max";
 static const DAVA::String TILEMASK_EDITOR_STRENGTH_MIN = "tilemask-editor.strength.min";
 static const DAVA::String TILEMASK_EDITOR_STRENGTH_MAX = "tilemask-editor.strength.max";
-static const DAVA::String TILEMASK_EDITOR_TOOLS_PATH = "~res:/LandscapeEditor/Tools/";
+static const DAVA::String TILEMASK_EDITOR_TOOLS_PATH = "~res:/ResourceEditor/LandscapeEditor/Tools/";
 static const DAVA::String TILEMASK_EDITOR_ENABLE_ERROR = "Error enabling Tile Mask Editor. Make sure there is valid landscape at the scene.";
 static const DAVA::String TILEMASK_EDITOR_DISABLE_ERROR = "Error disabling Tile Mask Editor";
 
@@ -100,7 +100,7 @@ static const DAVA::String HEIGHTMAP_EDITOR_BRUSH_SIZE_MAX = "heightmap-editor.br
 static const DAVA::String HEIGHTMAP_EDITOR_STRENGTH_MAX = "heightmap-editor.strength.max";
 static const DAVA::String HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MIN = "heightmap-editor.average-strength.min";
 static const DAVA::String HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MAX = "heightmap-editor.average-strength.max";
-static const DAVA::String HEIGHTMAP_EDITOR_TOOLS_PATH = "~res:/LandscapeEditor/Tools/";
+static const DAVA::String HEIGHTMAP_EDITOR_TOOLS_PATH = "~res:/ResourceEditor/LandscapeEditor/Tools/";
 static const DAVA::String HEIGHTMAP_EDITOR_ENABLE_ERROR = "Error enabling Height Map editor. Make sure there is valid landscape at the scene.";
 static const DAVA::String HEIGHTMAP_EDITOR_DISABLE_ERROR = "Error disabling Height Map editor.";
 static const DAVA::String HEIGHTMAP_EDITOR_RADIO_COPY_PASTE = "Copy/paste";

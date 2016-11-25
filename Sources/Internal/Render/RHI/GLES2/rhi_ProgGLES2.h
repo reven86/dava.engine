@@ -36,11 +36,13 @@ public:
         };
 
         ConstBuf()
-            : location(-1)
+            : glProg(0)
+            , location(-1)
             , count(0)
             , data(nullptr)
             , inst(nullptr)
             , lastInst(nullptr)
+            , frame(static_cast<uint32>(CurFrame - 1))
         {
         }
         ~ConstBuf()
@@ -102,13 +104,13 @@ private:
 
     ConstBufInfo cbuf[MAX_CONST_BUFFER_COUNT];
     void* cbufLastBoundData[MAX_CONST_BUFFER_COUNT];
-    unsigned texunitLoc[16];
+    unsigned texunitLoc[16]; //-V730_NOINIT
 
     unsigned shader;
     uint32 prog;
     const ProgType type;
-    mutable unsigned texunitInited : 1;
     unsigned texunitCount;
+    mutable unsigned texunitInited : 1;
 };
 
 //==============================================================================
