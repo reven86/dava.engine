@@ -43,7 +43,9 @@ struct InitParam
 
     void (*acquireContextFunc)() = nullptr;
     void (*releaseContextFunc)() = nullptr;
-    void (*renderingNotPossibleFunc)() = nullptr;
+
+    void* renderingErrorCallbackContext = nullptr;
+    void (*renderingErrorCallback)(RenderingError, void*) = nullptr;
 
     InitParam()
         : width(0)
