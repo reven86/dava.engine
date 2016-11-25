@@ -1422,7 +1422,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     READ_CHECK(ReadUI4(in, &readUI4));
     READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
     uint32 bufCount = readUI4;
-    for (const ShaderProp& p : prop)
+    for (const ShaderProp& p : property)
         READ_CHECK(p.bufferindex < bufCount);
 
     buf.resize(bufCount);
