@@ -25,8 +25,8 @@ public:
 
     void BindDynamicParameters(Camera* camera) override;
 
-    void SetSphericalHarmonics(const std::array<float32, HARMONICS_FLOAT_COUNT>& coeffs);
-    const std::array<float32, HARMONICS_FLOAT_COUNT>& GetSphericalHarmonics() const;
+    void SetSphericalHarmonics(const DAVA::Array<float32, HARMONICS_FLOAT_COUNT>& coeffs);
+    const DAVA::Array<float32, HARMONICS_FLOAT_COUNT>& GetSphericalHarmonics() const;
 
     //Interpolate between globally smoothed (0.0) and locally smoothed (1.0) leafs lighting
     void SetLightSmoothing(const float32& smooth);
@@ -43,7 +43,7 @@ protected:
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
-    std::array<float32, HARMONICS_FLOAT_COUNT> sphericalHarmonics;
+    DAVA::Array<float32, HARMONICS_FLOAT_COUNT> sphericalHarmonics;
     float32 lightSmoothing;
 
 public:

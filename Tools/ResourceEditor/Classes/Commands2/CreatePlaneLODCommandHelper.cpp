@@ -276,7 +276,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     SpeedTreeObject* treeObejct = GetSpeedTreeObject(clonedEnity);
     if (treeObejct)
     {
-        std::array<DAVA::float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT> harmonics;
+        DAVA::Array<DAVA::float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT> harmonics;
         harmonics[0] = harmonics[1] = harmonics[2] = 1.f / 0.564188f; //fake SH value to make original object color
         treeObejct->SetSphericalHarmonics(harmonics);
     }
