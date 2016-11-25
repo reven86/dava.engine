@@ -687,6 +687,8 @@ float32 SoundSystem::GetGroupVolume(const FastName& groupName) const
 
 void SoundSystem::SetAllGroupsSpeed(float32 speed)
 {
+    DVASSERT(speed >= 0.0f);
+
     LockGuard<Mutex> lock(soundGroupsMutex);
 
     for (size_t i = 0; i < soundGroups.size(); ++i)
@@ -703,6 +705,8 @@ void SoundSystem::SetAllGroupsSpeed(float32 speed)
 
 void SoundSystem::SetGroupSpeed(const FastName& groupName, float32 speed)
 {
+    DVASSERT(speed >= 0.0f);
+
     LockGuard<Mutex> lock(soundGroupsMutex);
 
     for (size_t i = 0; i < soundGroups.size(); ++i)
