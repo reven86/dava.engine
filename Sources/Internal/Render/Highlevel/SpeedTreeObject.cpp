@@ -6,8 +6,6 @@
 
 namespace DAVA
 {
-    
-#define SPHERICAL_HARMONICS_BASIS_MAX_SIZE 9
 
 const FastName SpeedTreeObject::FLAG_WIND_ANIMATION("WIND_ANIMATION");
 
@@ -17,9 +15,7 @@ SpeedTreeObject::SpeedTreeObject()
 {
     type = TYPE_SPEED_TREE;
 
-    Vector<Vector3> fakeSH(9, Vector3());
-    fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f / 0.564188f; //fake SH value to make original object color
-    SetSphericalHarmonics(fakeSH);
+    sphericalHarmonics = { 1.f / 0.564188f, 1.f / 0.564188f, 1.f / 0.564188f }; //fake SH value to make original object color
 }
 
 SpeedTreeObject::~SpeedTreeObject()
@@ -44,13 +40,12 @@ void SpeedTreeObject::SetTreeAnimationParams(const Vector2& trunkOscillationPara
     leafOscillation = leafOscillationParams;
 }
 
-void SpeedTreeObject::SetSphericalHarmonics(const Vector<Vector3>& coeffs)
+void SpeedTreeObject::SetSphericalHarmonics(const std::array<float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT>& coeffs)
 {
-    DVASSERT(coeffs.size() == SPHERICAL_HARMONICS_BASIS_MAX_SIZE);
     sphericalHarmonics = coeffs;
 }
 
-const Vector<Vector3>& SpeedTreeObject::GetSphericalHarmonics() const
+const std::array<float32, SpeedTreeObject::HARMONICS_FLOAT_COUNT>& SpeedTreeObject::GetSphericalHarmonics() const
 {
     return sphericalHarmonics;
 }
@@ -72,8 +67,7 @@ void SpeedTreeObject::BindDynamicParameters(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
-    DVASSERT(sphericalHarmonics.size() == SPHERICAL_HARMONICS_BASIS_MAX_SIZE);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPHERICAL_HARMONICS, &sphericalHarmonics[0], DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPHERICAL_HARMONICS, sphericalHarmonics.data(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
@@ -117,13 +111,7 @@ void SpeedTreeObject::Save(KeyedArchive* archive, SerializationContext* serializ
 {
     RenderObject::Save(archive, serializationContext);
 
-    int32 shCount = static_cast<int32>(sphericalHarmonics.size());
-    if (shCount)
-    {
-        archive->SetInt32("sto.SHBasisCount", shCount);
-        archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(&sphericalHarmonics[0]), sizeof(Vector3) * shCount);
-    }
-
+    archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(sphericalHarmonics.data()), HARMONICS_FLOAT_COUNT * sizeof(float32));
     archive->SetFloat("sto.lightSmoothing", lightSmoothing);
 }
 
@@ -131,14 +119,16 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
 {
     RenderObject::Load(archive, serializationContext);
 
-    int32 shCount = archive->GetInt32("sto.SHBasisCount");
-    const Vector3* sphericalArray = reinterpret_cast<const Vector3*>(archive->GetByteArray("sto.SHCoeff"));
-    if (sphericalArray && shCount)
-        sphericalHarmonics.assign(sphericalArray, sphericalArray + shCount);
+    const float32* sphericalArray = reinterpret_cast<const float32*>(archive->GetByteArray("sto.SHCoeff"));
+    int32 shCount = archive->GetInt32("sto.SHBasisCount"); //old SpeedTreeObject format
+    if (shCount)
+        memcpy(sphericalHarmonics.data(), sphericalArray, shCount * sizeof(Vector3));
+    else
+        memcpy(sphericalHarmonics.data(), sphericalArray, HARMONICS_FLOAT_COUNT * sizeof(float32));
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
 
-    //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manualy (and save it) to reduce material prebuild count
+    //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manually (and save it) to reduce material prebuild count
     uint32 size = uint32(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {

@@ -11,6 +11,8 @@ class SpeedTreeUpdateSystem;
 class SpeedTreeObject : public RenderObject
 {
 public:
+    static const size_t HARMONICS_FLOAT_COUNT = 4 * 7; //7 registers (float4)
+
     SpeedTreeObject();
     virtual ~SpeedTreeObject();
 
@@ -23,8 +25,8 @@ public:
 
     void BindDynamicParameters(Camera* camera) override;
 
-    void SetSphericalHarmonics(const Vector<Vector3>& coeffs);
-    const Vector<Vector3>& GetSphericalHarmonics() const;
+    void SetSphericalHarmonics(const std::array<float32, HARMONICS_FLOAT_COUNT>& coeffs);
+    const std::array<float32, HARMONICS_FLOAT_COUNT>& GetSphericalHarmonics() const;
 
     //Interpolate between globally smoothed (0.0) and locally smoothed (1.0) leafs lighting
     void SetLightSmoothing(const float32& smooth);
@@ -41,7 +43,7 @@ protected:
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
-    Vector<Vector3> sphericalHarmonics;
+    std::array<float32, HARMONICS_FLOAT_COUNT> sphericalHarmonics;
     float32 lightSmoothing;
 
 public:
