@@ -58,7 +58,7 @@ fragment_out fp_main( fragment_in input )
     #endif
 
     float3 detailPremult = detailImpact.rgb*detailImpact.a;
-    float4 resColor = float4((contourColor.rgb-detailPremult)*contourColor.a+detailPremult, detailImpact.a + contourColor.a);
+    float4 resColor = float4((contourColor.rgb-detailPremult)*contourColor.a+detailPremult, detailImpact.a + contourColor.a - detailImpact.a * contourColor.a);
 
     in_color.rgb *= in_color.a; //as we are using premultipled alpha blending
     resColor = resColor * float4(in_color);
