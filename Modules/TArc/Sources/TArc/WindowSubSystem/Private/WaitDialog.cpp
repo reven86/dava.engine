@@ -44,6 +44,9 @@ WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
     }
 
     dlg->setLayout(layout);
+    dlg->setWindowModality(Qt::WindowModal);
+    originalCursor = dlg->cursor();
+    dlg->setCursor(Qt::BusyCursor);
 }
 
 WaitDialog::~WaitDialog()
@@ -53,6 +56,7 @@ WaitDialog::~WaitDialog()
     {
         QMetaObject::invokeMethod(dlg.data(), "close", WaitDialogDetail::GetConnectionType());
         QMetaObject::invokeMethod(dlg.data(), "deleteLater", WaitDialogDetail::GetConnectionType());
+        dlg->setCursor(originalCursor);
     }
 }
 
@@ -101,12 +105,12 @@ void WaitDialog::Update()
 {
     if (WaitDialogDetail::GetConnectionType() == Qt::DirectConnection)
     {
+        QPoint centerPoint = dlg->geometry().center();
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
         if (dlg != nullptr)
         {
             QRect r = dlg->geometry();
-            QRect screenRect = QApplication::desktop()->screenGeometry(dlg);
-            r.moveCenter(screenRect.center());
+            r.moveCenter(centerPoint);
             dlg->move(r.topLeft());
         }
     }

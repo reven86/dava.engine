@@ -30,6 +30,7 @@ private:
     QPointer<QDialog> dlg;
     QPointer<QProgressBar> progressBar;
     QPointer<QLabel> label;
+    QCursor originalCursor;
 };
 } // namespace TArc
 } // namespace DAVA
