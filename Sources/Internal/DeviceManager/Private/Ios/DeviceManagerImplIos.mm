@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "DeviceManager/DeviceManager.h"

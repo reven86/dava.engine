@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "DeviceManager/Private/Qt/DeviceManagerImplQt.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 
 #include "DeviceManager/DeviceManager.h"

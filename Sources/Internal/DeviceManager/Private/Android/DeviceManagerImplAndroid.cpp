@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "DeviceManager/Private/Android/DeviceManagerImplAndroid.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "DeviceManager/DeviceManager.h"

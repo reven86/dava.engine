@@ -1,8 +1,9 @@
+#include "Input/InputSystem.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
-#include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
