@@ -56,6 +56,12 @@ enum Api
     RHI_API_COUNT
 };
 
+enum class RenderingError : uint32_t
+{
+    DriverError,
+    UnsupportedShaderModel,
+};
+
 enum ProgType
 {
     PROG_VERTEX,

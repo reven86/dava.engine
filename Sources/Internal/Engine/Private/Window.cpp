@@ -302,6 +302,7 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     height = compressedSize.height;
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
+    surfaceScale = compressedSize.surfaceScale;
     dpi = compressedSize.dpi;
     fullscreenMode = compressedSize.fullscreen;
 
@@ -532,6 +533,23 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.keyEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
+}
+
+void Window::SetSurfaceScaleAsync(float32 scale)
+{
+    if (scale <= 0.0f || scale > 1.0f)
+    {
+        DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        return;
+    }
+
+    const float32 currentScale = GetSurfaceScale();
+    if (FLOAT_EQUAL(currentScale, scale))
+    {
+        return;
+    }
+
+    windowBackend->SetSurfaceScaleAsync(scale);
 }
 
 } // namespace DAVA
