@@ -16,6 +16,8 @@ public:
     QString GetLauncherDirectory() const;
     QString GetSelfUpdateTempDirectory() const;
     QString GetTempDownloadFilePath() const;
+    QString CreateZipFile(const QByteArray& dataToWrite, bool* success) const;
+
     QString GetApplicationDirectory(const QString& branchID, const QString& appID) const;
     QString GetBranchDirectory(const QString& branchID) const;
     //this function move all files and folder except folders, which created by Launcher

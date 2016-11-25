@@ -174,7 +174,6 @@ void UpdateDialog::DownloadFinished()
     {
         return;
     }
-    QByteArray readedData = currentDownload->readAll();
     QNetworkReply::NetworkError error = currentDownload->error();
     QString errorString = currentDownload->errorString();
 
@@ -193,15 +192,15 @@ void UpdateDialog::DownloadFinished()
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
         return;
     }
-    FileManager* fileManager = appManager->GetFileManager();
-    const QString& archiveFilepath = fileManager->GetTempDownloadFilePath();
-    QFile outputFile;
-    outputFile.setFileName(archiveFilepath);
-    outputFile.open(QFile::WriteOnly);
-    outputFile.write(readedData);
-
-    QString filePath = outputFile.fileName();
-    outputFile.close();
+    QByteArray readedData = currentDownload->readAll();
+    bool success = false;
+    QString filePath = appManager->GetFileManager()->CreateZipFile(readedData, &success);
+    if (success == false)
+    {
+        UpdateLastLogValue(tr("Can not create archive %1!").arg(filePath));
+        BreakLog();
+        return;
+    }
     UpdateLastLogValue(tr("Download Complete!"));
 
     const UpdateTask& task = tasks.head();

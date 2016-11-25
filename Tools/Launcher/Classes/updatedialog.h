@@ -47,7 +47,6 @@ public:
     ~UpdateDialog();
 
     void UpdateLastLogValue(const QString& log);
-    void BreakLog();
 
 signals:
     void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
@@ -69,6 +68,7 @@ private:
     void AddTopLogValue(const QString& log);
     void AddLogValue(const QString& log);
     void CompleteLog();
+    void BreakLog();
 
     std::unique_ptr<Ui::UpdateDialog> ui;
 

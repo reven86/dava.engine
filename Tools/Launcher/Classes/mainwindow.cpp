@@ -11,6 +11,7 @@
 #include "errormessenger.h"
 #include "branchesListModel.h"
 #include "branchesFilterModel.h"
+#include "CommandListener.h"
 
 #include "QtHelpers/ProcessCommunication.h"
 
@@ -119,6 +120,7 @@ MainWindow::MainWindow(QWidget* parent)
     appManager = new ApplicationManager(this);
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
+    silentUpdater = new CommandListener(appManager, this);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -136,7 +138,7 @@ MainWindow::MainWindow(QWidget* parent)
     restoreState(settings.value(stateKey).toByteArray());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::LoadPreferences(fileManager, configDownloader);
+    ::LoadPreferences(fileManager, configDownloader, silentUpdater);
 }
 
 MainWindow::~MainWindow()
@@ -146,7 +148,7 @@ MainWindow::~MainWindow()
     settings.setValue(stateKey, saveState());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::SavePreferences(fileManager, configDownloader);
+    ::SavePreferences(fileManager, configDownloader, silentUpdater);
     SafeDelete(ui);
 }
 

@@ -14,6 +14,7 @@ class BranchesListModel;
 class QSortFilterProxyModel;
 class FileManager;
 class ConfigDownloader;
+class CommandListener;
 
 namespace Ui
 {
@@ -66,6 +67,7 @@ private:
 
     Ui::MainWindow* ui = nullptr;
     ApplicationManager* appManager = nullptr;
+    CommandListener* silentUpdater = nullptr;
 
     FileDownloader* newsDownloader = nullptr;
     ConfigDownloader* configDownloader = nullptr;

@@ -107,16 +107,6 @@ QString ProcessID(const QString& id)
     return result;
 }
 
-bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
-{
-    QString buildType = entry["build_type"].toString();
-    appVer->id = ProcessID(buildType);
-    appVer->url = entry["artifacts"].toString();
-    appVer->buildNum = entry["build_num"].toString();
-    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
-    return !appVer->id.isEmpty();
-}
-
 bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
 {
     if (appName.isEmpty())
@@ -207,6 +197,16 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 
     return isValid;
 }
+}
+
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
+{
+    QString buildType = entry["build_type"].toString();
+    appVer->id = ProcessID(buildType);
+    appVer->url = entry["artifacts"].toString();
+    appVer->buildNum = entry["build_num"].toString();
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    return !appVer->id.isEmpty();
 }
 
 AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)

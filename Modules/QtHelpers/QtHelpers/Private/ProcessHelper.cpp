@@ -15,6 +15,7 @@ void ProcessHelper::RunProcess(const QString& path)
 {
     QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
 }
+
 #endif
 
 #ifdef Q_OS_WIN

@@ -268,6 +268,29 @@ void FileManager::MakeDirectory(const QString& path)
         QDir().mkpath(path);
 }
 
+bool FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success) const
+{
+    if (success != nullptr)
+    {
+        success = false;
+    }
+
+    const QString& filePath = GetTempDownloadFilePath();
+    QFile outputFile(filePath);
+
+    if (outputFile.open(QFile::WriteOnly))
+    {
+        outputFile.write(dataToWrite) == dataToWrite.size();
+        if (success != nullptr
+            && outputFile.write(dataToWrite) == dataToWrite.size())
+        {
+            success = true;
+        }
+        outputFile.close();
+    }
+    return filePath;
+}
+
 void FileManager::SetFilesDirectory(const QString& newDirPath)
 {
     //we still have a errors with existed temp directories, so lets make sure that those directories are removed
