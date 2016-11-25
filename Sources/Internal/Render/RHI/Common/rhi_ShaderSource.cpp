@@ -134,6 +134,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 }
 void ShaderSource::InlineFunctions()
 {
+    // first, find all global functions that are not entry-point
     std::vector<sl::HLSLFunction*> global_func_decl;
 
     for (sl::HLSLStatement* statement = ast->GetRoot()->statement; statement; statement = statement->nextStatement)
@@ -147,8 +148,10 @@ void ShaderSource::InlineFunctions()
         }
     }
 
+    // then, do the inlining
     for (unsigned i = 0; i != global_func_decl.size(); ++i)
     {
+        // find function-call nodes
         sl::HLSLFunction* func_decl = global_func_decl[i];
         std::vector<sl::HLSLFunctionCall*> fcall;
 
@@ -240,9 +243,11 @@ void ShaderSource::InlineFunctions()
         bool keep_func_def = false;
         if (fcall.size() > 1)
         {
+            // can't inline function if it's called more than once
             fcall.clear();
             keep_func_def = true;
         }
+
         for (unsigned k = 0; k != fcall.size(); ++k)
         {
             FindStatementExpression find_statement_expression(fcall[k]);
@@ -333,6 +338,11 @@ void ShaderSource::InlineFunctions()
                         }
                     }
                 };
+
+                // actual inlining happens here :
+                //  * make block-node with all statements from function-body (and remove original func.declaration)
+                //  * add temp.variables inside block inited with values/expressions of func.call arguments
+                //  * add 'retval' variable (outside func.block), make assignment of function ret.value to this 'retval' variable
 
                 FindParentPrev find_parent_prev;
                 find_parent_prev.target = find_statement_expression.statement;
@@ -502,7 +512,7 @@ void ShaderSource::InlineFunctions()
             }
             else
             {
-                Logger::Info("  crap!\n");
+                DVASSERT(!"kaboom!");
             }
         } // for each func.call
 
@@ -515,7 +525,6 @@ void ShaderSource::InlineFunctions()
             if (func && func_parent)
                 func_parent->nextStatement = func->nextStatement;
         }
-
     } // for each func
 }
 
