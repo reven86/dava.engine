@@ -102,8 +102,7 @@ struct SWCommand_SetQueryIndex : public SWCommandImpl<SWCommand_SetQueryIndex, C
 
 struct SWCommand_IssueTimestamptQuery : public SWCommandImpl<SWCommand_IssueTimestamptQuery, CMD_ISSUE_TIMESTAMP_QUERY>
 {
-    Handle querySet;
-    uint32 timestampIndex;
+    Handle perfQuery;
 } DV_ATTR_PACKED;
 
 struct SWCommand_SetPipelineState : public SWCommandImpl<SWCommand_SetPipelineState, CMD_SET_PIPELINE_STATE>

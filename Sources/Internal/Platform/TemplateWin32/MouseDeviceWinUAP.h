@@ -1,8 +1,6 @@
 #ifndef __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 #define __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Input/MouseDevice.h"

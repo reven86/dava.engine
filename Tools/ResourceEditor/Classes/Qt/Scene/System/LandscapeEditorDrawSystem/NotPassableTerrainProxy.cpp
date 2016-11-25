@@ -33,7 +33,7 @@ NotPassableTerrainProxy::~NotPassableTerrainProxy()
 
 void NotPassableTerrainProxy::LoadColorsArray()
 {
-    DAVA::YamlParser* parser = DAVA::YamlParser::Create("~res:/Configs/LandscapeAngle.yaml");
+    DAVA::YamlParser* parser = DAVA::YamlParser::Create("~res:/ResourceEditor/Configs/LandscapeAngle.yaml");
 
     if (parser != 0)
     {

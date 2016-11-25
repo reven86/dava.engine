@@ -72,6 +72,8 @@ public:
     uint32 startIndex = 0;
     uint32 indexCount = 0;
     uint32 instanceCount = 0;
+    rhi::HPerfQuery perfQueryStart;
+    rhi::HPerfQuery perfQueryEnd;
 
     rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     uint32 vertexLayoutId = rhi::VertexLayout::InvalidUID;

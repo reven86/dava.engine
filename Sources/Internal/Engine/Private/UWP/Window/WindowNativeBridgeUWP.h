@@ -35,8 +35,11 @@ ref struct WindowNativeBridge sealed
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    void SetFullscreen(eFullscreen newMode);
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
+
+    void SetSurfaceScale(const float32 scale);
 
 private:
     void OnTriggerPlatformEvents();
@@ -67,6 +70,8 @@ private:
     WindowBackend* windowBackend = nullptr;
     Window* window = nullptr;
     MainDispatcher* mainDispatcher = nullptr;
+
+    float32 surfaceScale = 1.0f;
 
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;

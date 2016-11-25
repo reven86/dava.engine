@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -11,6 +12,7 @@
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#include <mach/mach.h>
 #if defined(__DAVAENGINE_MACOS__)
 #include <mach/mach_vm.h>
 #endif

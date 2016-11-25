@@ -8,7 +8,8 @@
 #include "Project/Project.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
-#include "EditorCore.h"
+#include <QFileSystemWatcher>
+#include <QFile>
 
 using namespace DAVA;
 using namespace std;
@@ -28,7 +29,6 @@ Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObje
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
-    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
     commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
@@ -118,9 +118,9 @@ bool Document::IsDocumentExists() const
     return fileExists;
 }
 
-Project* Document::GetProject() const
+void Document::OnFontPresetChanged(const DAVA::String& presetName)
 {
-    return project;
+    RefreshAllControlProperties();
 }
 
 void Document::RefreshAllControlProperties()

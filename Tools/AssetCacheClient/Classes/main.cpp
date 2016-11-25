@@ -1,4 +1,3 @@
-#include "Base/Platform.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/LocalizationSystem.h"

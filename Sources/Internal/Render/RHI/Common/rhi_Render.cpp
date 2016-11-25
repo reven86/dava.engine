@@ -6,15 +6,14 @@
 
 #include "Core/Core.h"
 
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "RenderLoop.h"
 #include "FrameLoop.h"
 
 namespace rhi
 {
-static Handle CurFramePerfQuerySet = InvalidHandle;
-
 struct PacketList_t
 {
     struct Desc
@@ -55,10 +54,11 @@ void InitPacketListPool(uint32 maxCount)
     PacketListPool::Reserve(maxCount);
 }
 
-void SetFramePerfQuerySet(HPerfQuerySet hset)
+//------------------------------------------------------------------------------
+
+void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
 {
-    CurFramePerfQuerySet = hset;
-    PerfQuerySet::SetCurrent(hset);
+    FrameLoop::SetFramePerfQueries(startQuery, endQuery);
 }
 
 //------------------------------------------------------------------------------
@@ -184,6 +184,9 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
 
     for (const Packet *p = packet, *p_end = packet + packetCount; p != p_end; ++p)
     {
+        if (p->perfQueryStart.IsValid())
+            rhi::CommandBuffer::IssueTimestampQuery(cmdBuf, p->perfQueryStart);
+
         Handle dsState = (p->depthStencilState != rhi::InvalidHandle) ? p->depthStencilState : pl->defDepthStencilState;
         Handle sState = (p->samplerState != rhi::InvalidHandle) ? p->samplerState : pl->defSamplerState;
 
@@ -297,10 +300,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
             }
         }
 
-        //        if( p->queryIndex != DAVA::InvalidIndex )
-        {
-            rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
-        }
+        rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
 
         if (p->instanceCount)
         {
@@ -326,6 +326,9 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
                 rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
             }
         }
+
+        if (p->perfQueryEnd.IsValid())
+            rhi::CommandBuffer::IssueTimestampQuery(cmdBuf, p->perfQueryEnd);
 
         ++pl->batchIndex;
     }
@@ -372,8 +375,6 @@ void Initialize(Api api, const InitParam& param)
     DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
     int32 bindToProcessor = -1;
     uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
-    if (api == RHI_METAL)
-        renderTreadFrameCount = 0; //no render thread for metal yet
     if (api == RHI_DX11)
     {
         bindToProcessor = 1;

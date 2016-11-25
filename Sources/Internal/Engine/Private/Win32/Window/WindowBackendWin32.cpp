@@ -18,6 +18,7 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -33,6 +34,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    ::memset(&windowPlacement, 0, sizeof(windowPlacement));
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
     defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
@@ -56,7 +59,7 @@ bool WindowBackend::Create(float32 width, float32 height)
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"DAVA_WINDOW",
-                                    windowStyle,
+                                    windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
                                     w,
@@ -92,6 +95,11 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
 void WindowBackend::SetTitle(const String& title)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -156,6 +164,26 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    if (Renderer::GetAPI() == rhi::RHI_DX9)
+    {
+        surfaceScale = scale;
+
+        const float32 surfaceWidth = lastWidth * surfaceScale;
+        const float32 surfaceHeight = lastHeight * surfaceScale;
+        const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+    }
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
     int32 w = static_cast<int32>(width);
@@ -175,6 +203,59 @@ void WindowBackend::DoSetTitle(const char8* title)
 {
     WideString wideTitle = UTF8Utils::EncodeToWideString(title);
     ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
+{
+    if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
+    {
+        return;
+    }
+
+    // Changing of fullscreen mode leads to size changing, so set mode before it applying
+    if (newMode == eFullscreen::On)
+    {
+        isFullscreen = true;
+        SetFullscreenMode();
+    }
+    else
+    {
+        isFullscreen = false;
+        SetWindowedMode();
+    }
+}
+
+void WindowBackend::SetFullscreenMode()
+{
+    // Get window placement which is needed for back to windowed mode
+    ::GetWindowPlacement(hwnd, &windowPlacement);
+
+    // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+    // If it's not yet visible, the style should not be modified
+    // since ShowWindow(..., SW_SHOW) will occur later
+    uint32 style = fullscreenStyle | (::IsWindowVisible(hwnd) == TRUE ? WS_VISIBLE : 0);
+    ::SetWindowLong(hwnd, GWL_STYLE, style);
+
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+    HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    ::GetMonitorInfo(monitor, &monitorInfo);
+
+    ::SetWindowPos(hwnd,
+                   HWND_TOP,
+                   monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.top,
+                   monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                   SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void WindowBackend::SetWindowedMode()
+{
+    ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+    ::SetWindowPlacement(hwnd, &windowPlacement);
+
+    UINT flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, flags);
 }
 
 void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
@@ -241,7 +322,7 @@ void WindowBackend::DoSetCursorVisibility(bool visible)
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
+    ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
 
     *w = rc.right - rc.left;
     *h = rc.bottom - rc.top;
@@ -258,11 +339,12 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 width = static_cast<float32>(lastWidth);
         float32 height = static_cast<float32>(lastHeight);
 
-        // on win32 surfaceWidth/surfaceHeight is same as window width/height
-        float32 surfaceWidth = width;
-        float32 surfaceHeight = height;
+        float32 surfaceWidth = width * surfaceScale;
+        float32 surfaceHeight = height * surfaceScale;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight));
+        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
     }
 }
 
@@ -280,6 +362,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
@@ -288,6 +373,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
@@ -687,11 +775,11 @@ LRESULT WindowBackend::OnCreate()
 
     float32 width = static_cast<float32>(lastWidth);
     float32 height = static_cast<float32>(lastHeight);
-    float32 surfaceWidth = width;
-    float32 surfaceHeight = height;
+    float32 surfaceWidth = width * surfaceScale;
+    float32 surfaceHeight = height * surfaceScale;
     float32 dpi = GetDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }

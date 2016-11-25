@@ -85,7 +85,7 @@ namespace QueryBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch);
 }
-namespace PerfQuerySetMetal
+namespace PerfQueryMetal
 {
 void SetupDispatch(Dispatch* dispatch);
 }

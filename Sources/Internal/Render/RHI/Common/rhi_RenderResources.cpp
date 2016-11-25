@@ -169,36 +169,41 @@ int QueryValue(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::Value(buf, objectIndex);
 }
-HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
+
+//------------------------------------------------------------------------------
+
+HPerfQuery CreatePerfQuery()
 {
-    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
+    return HPerfQuery(PerfQuery::Create());
 }
-void ResetPerfQuerySet(HPerfQuerySet set)
-{
-    PerfQuerySet::Reset(set);
-}
-void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
-{
-    PerfQuerySet::GetStatus(hset, isReady, isValid);
-}
-void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
+
+//------------------------------------------------------------------------------
+
+void DeletePerfQuery(HPerfQuery handle, bool forceImmediate)
 {
     if (forceImmediate)
-        PerfQuerySet::Delete(set);
+        PerfQuery::Delete(handle);
     else
-        RenderLoop::ScheduleResourceDeletion(set, RESOURCE_PERFQUERY_SET);
+        RenderLoop::ScheduleResourceDeletion(handle, RESOURCE_PERFQUERY);
 }
-bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
+
+void ResetPerfQuery(HPerfQuery handle)
 {
-    return PerfQuerySet::GetFreq(set, freq);
+    PerfQuery::Reset(handle);
 }
-bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
+
+//------------------------------------------------------------------------------
+
+bool PerfQueryIsReady(HPerfQuery handle)
 {
-    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
+    return PerfQuery::IsReady(handle);
 }
-bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
+
+//------------------------------------------------------------------------------
+
+uint64 PerfQueryTimeStamp(HPerfQuery handle)
 {
-    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
+    return PerfQuery::Value(handle);
 }
 
 //------------------------------------------------------------------------------

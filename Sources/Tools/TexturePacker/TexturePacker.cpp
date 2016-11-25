@@ -255,9 +255,9 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
 
     for (uint32 imageNum = 0; imageNum < finalImages.size(); ++imageNum)
     {
-        char temp[256];
-        sprintf(temp, "%s%d", basename, imageNum);
-        FilePath textureName = outputPath + temp;
+        std::stringstream name;
+        name << basename << imageNum << texturePostfix;
+        FilePath textureName = outputPath + name.str();
         ExportImage(finalImages[imageNum], imageExportKeys, textureName);
     }
 
@@ -380,6 +380,11 @@ void TexturePacker::SetMaxTextureSize(uint32 _maxTextureSize)
 void TexturePacker::SetAlgorithms(const Vector<PackingAlgorithm>& algorithms)
 {
     packAlgorithms = algorithms;
+}
+
+void TexturePacker::SetTexturePostfix(const String& postfix)
+{
+    texturePostfix = postfix;
 }
 
 uint8 GetPixelParameterAt(const Vector<String>& gpuParams, uint8 gpuParamPosition, PixelFormat& pixelFormat)

@@ -17,6 +17,16 @@ enum class eEngineRunMode : int32
 
 /**
     \ingroup engine
+    Constants that name fullscreen modes.
+*/
+enum class eFullscreen : uint32
+{
+    On = 0, //<! Full screen mode on
+    Off, //<! Full screen mode off (windowed mode)
+};
+
+/**
+    \ingroup engine
     Constants that name supported input device types.
     Bitwise operators can be applied to enum members (|, |=, &, &=, ^, ^=, ~).
 */

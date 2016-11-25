@@ -41,6 +41,9 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    eFullscreen GetFullscreen() const;
+    void SetFullscreen(eFullscreen newMode);
+
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
@@ -56,14 +59,22 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
 private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
+    void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetFullscreen(eFullscreen newMode);
+
+    void SetFullscreenMode();
+    void SetWindowedMode();
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
     void UpdateClipCursor();
@@ -123,8 +134,12 @@ private:
 
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
+    bool isFullscreen = false;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
+
+    float32 surfaceScale = 1.0f;
+
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
@@ -132,11 +147,13 @@ private:
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;
     Vector<TOUCHINPUT> touchInput;
+    WINDOWPLACEMENT windowPlacement;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;
-    static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD windowedStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD fullscreenStyle = WS_POPUP;
     static const DWORD windowExStyle = 0;
 };
 
@@ -158,6 +175,11 @@ inline WindowNativeService* WindowBackend::GetNativeService() const
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {
     // No custom render params
+}
+
+inline eFullscreen WindowBackend::GetFullscreen() const
+{
+    return isFullscreen ? eFullscreen::On : eFullscreen::Off;
 }
 
 } // namespace Private

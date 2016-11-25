@@ -1,177 +1,47 @@
 #include "PreProcess.h"
-
 #include "../rhi_Type.h"
+#include "../rhi_ShaderSource.h"
 #include "rhi_Utils.h"
 
-#include "MCPP/mcpp_lib.h"
+    #include "MCPP/mcpp_lib.h"
+    #include <stdio.h>
+    #include <stdarg.h>
 
-#include <stdio.h>
-#include <stdarg.h>
-
-static std::string* _PreprocessedText = nullptr;
-
-//------------------------------------------------------------------------------
-
-static int
-_mcpp__fputc(int ch, OUTDEST dst)
+ShaderPreprocessScope::ShaderPreprocessScope()
 {
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            _PreprocessedText->push_back(static_cast<char>(ch));
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return ch;
+    mcpp__startup();
 }
 
-//------------------------------------------------------------------------------
-
-static int
-_mcpp__fputs(const char* str, OUTDEST dst)
+ShaderPreprocessScope::~ShaderPreprocessScope()
 {
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            *_PreprocessedText += str;
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return 0;
+    mcpp__shutdown();
 }
-
-//------------------------------------------------------------------------------
-
-static int
-_mcpp__fprintf(OUTDEST dst, const char* format, ...)
-{
-    va_list arglist;
-    char buf[2048];
-    int count = 0;
-
-    va_start(arglist, format);
-    count = vsnprintf(buf, countof(buf), format, arglist);
-    va_end(arglist);
-
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            *_PreprocessedText += buf;
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return count;
-}
-
-//------------------------------------------------------------------------------
-
-void PreProcessText(const char* text, std::string* result)
-{
-    const char* argv[] =
-    {
-      "<mcpp>", // we just need first arg
-      "-P", // do not output #line directives
-      // it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
-      //        "-C",       // keep comments
-      MCPP_Text
-    };
-
-    _PreprocessedText = result;
-    {
-        mcpp__startup();
-        mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
-        mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-        mcpp_lib_main(countof(argv), const_cast<char**>(argv));
-        mcpp__cleanup();
-        mcpp__shutdown();
-    }
-    _PreprocessedText = nullptr;
-}
-
-//------------------------------------------------------------------------------
 
 void PreProcessText(const char* text, const char** arg, unsigned argCount, std::string* result)
 {
-    if (text)
-    {
-        const char* argv[128];
-        int argc = 0;
-        DVASSERT(argCount < countof(argv) - 2);
+    DVASSERT(text);
+    const char* argv[128];
+    int argc = 0;
+    DVASSERT(argCount < countof(argv) - 2);
 
-        argv[argc++] = "<mcpp>"; // we just need first arg
-        argv[argc++] = "-P"; // do not output #line directives
-        // it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
-        //        argv[argc++] = "-C";    // keep comments
-        for (const char **a = arg, **a_end = arg + argCount; a != a_end; ++a)
-            argv[argc++] = *a;
-        argv[argc++] = MCPP_Text;
+    argv[argc++] = "<mcpp>"; // we just need first arg
+    argv[argc++] = "-P"; // do not output #line directives
+    for (const char **a = arg, **a_end = arg + argCount; a != a_end; ++a)
+        argv[argc++] = *a;
+    argv[argc++] = MCPP_Text;
 
-        _PreprocessedText = result;
-        {
-            mcpp__startup();
-            mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
-            mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-            mcpp_lib_main(argc, const_cast<char**>(argv));
-            mcpp__cleanup();
-            mcpp__shutdown();
-        }
-        _PreprocessedText = nullptr;
-    }
-    else
+    char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
+    _mcpp_preprocessed_text.buffer = localBuffer;
+    _mcpp_preprocessed_text.pos = 0;
     {
-        *result = "";
+        mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
+        mcpp_set_out_func(&mcpp_fputc_impl, &mcpp_fputs_impl, &mcpp_fprintf_impl);
+        mcpp_lib_main(argc, const_cast<char**>(argv));
+        mcpp__cleanup();
     }
+    *result = std::string(localBuffer);
+    _mcpp_preprocessed_text.buffer = nullptr;
+    _mcpp_preprocessed_text.pos = 0;
 }
 
 //------------------------------------------------------------------------------

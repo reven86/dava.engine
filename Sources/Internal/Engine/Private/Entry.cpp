@@ -1,6 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
 

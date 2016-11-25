@@ -494,6 +494,8 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
     dx11_Texture_Unmap(tex);
 }
 
+//==============================================================================
+
 bool dx11_Texture_NeedRestore(Handle tex)
 {
     return false;
@@ -593,7 +595,6 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     UINT fromIndex = D3D11CalcSubresource(0, 0, 1);
     context->ResolveSubresource(toResource, toIndex, fromResource, fromIndex, fromFormat);
 
-    fromResource->Release();
     toResource->Release();
 }
 }

@@ -2,6 +2,10 @@ macro( coverage_processing  )
 
 if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
 
+    if( NOT COVERAGE_ARGS )
+        set( COVERAGE_ARGS "''" )
+    endif()
+
     string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )
     string(REPLACE "\"" "" DAVA_FOLDERS "${DAVA_FOLDERS}" )
 

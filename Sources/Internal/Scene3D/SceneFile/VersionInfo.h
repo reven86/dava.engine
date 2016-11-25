@@ -11,9 +11,6 @@
 
 namespace DAVA
 {
-static const int32 SCENE_FILE_CURRENT_VERSION = 20;
-static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
-
 static const int32 CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION = 8;
 static const int32 COMPONENTS_BY_NAME_SAVE_SCENE_VERSION = 10;
 static const int32 OLD_LODS_SCENE_VERSION = 11;
@@ -25,6 +22,10 @@ static const int32 ALPHATEST_VALUE_FLAG_SCENE_VERSION = 17;
 static const int32 RHI_SCENE_VERSION = 18;
 static const int32 FIXED_VEGETATION_SCENE_VERSION = 19;
 static const int32 LODSYSTEM2 = 20;
+static const int32 OLD_MATERIAL_FLAGS_SCENE_VERSION = 21;
+
+static const int32 SCENE_FILE_CURRENT_VERSION = OLD_MATERIAL_FLAGS_SCENE_VERSION;
+static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 
 class VersionInfo
 : public Singleton<VersionInfo>

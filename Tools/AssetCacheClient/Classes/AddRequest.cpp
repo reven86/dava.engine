@@ -33,7 +33,15 @@ DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
         {
             std::shared_ptr<Vector<uint8>> data = std::make_shared<Vector<uint8>>();
 
-            auto dataSize = file->GetSize();
+            uint64 dataSize64 = file->GetSize();
+            if (dataSize64 > std::numeric_limits<uint32>::max())
+            {
+                Logger::Error("%s File (%s) size is bigger than 2^32", __FUNCTION__, path.GetStringValue().c_str());
+                return AssetCache::Error::READ_FILES;
+            }
+
+            uint32 dataSize = static_cast<uint32>(dataSize64);
+
             data.get()->resize(dataSize);
 
             auto read = file->Read(data.get()->data(), dataSize);

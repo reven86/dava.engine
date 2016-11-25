@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "Utils/Dump/SceneDumper.h"
 
 class DumpTool : public REConsoleModuleCommon
 {
@@ -23,4 +24,7 @@ private:
     DAVA::String filename;
     DAVA::FilePath inFolder;
     DAVA::FilePath outFile;
+
+    DAVA::Vector<DAVA::eGPUFamily> compressedGPUs;
+    SceneDumper::eMode mode = SceneDumper::eMode::REQUIRED;
 };

@@ -226,7 +226,7 @@ void CreateDeviceResources()
         }
     }
 
-    DAVA::Logger::Info("detected GPUs (%u) :", adapter.size());
+    DAVA::Logger::Info("Detected GPUs (%u) :", adapter.size());
     for (unsigned i = 0; i != adapter.size(); ++i)
     {
         DXGI_ADAPTER_DESC desc = { 0 };
@@ -237,7 +237,8 @@ void CreateDeviceResources()
 
             ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
 
-            DAVA::Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
+            DAVA::Logger::Info("\tGPU [%u] : \"%s\", Vendor: %04X, Device: %04X, SybSystem: %04X",
+                               i, info, desc.VendorId, desc.DeviceId, desc.SubSysId);
 
             if (!defAdapter)
             {

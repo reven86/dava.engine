@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
+#include "Base/Platform.h"
 
 extern "C"
 {

@@ -2,11 +2,9 @@
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
 #if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
@@ -62,7 +60,7 @@ private:
 
     bool willQuit;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 
     float32 minWindowWidth = 0.0f;

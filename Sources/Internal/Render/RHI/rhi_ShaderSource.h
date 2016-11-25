@@ -10,6 +10,8 @@ namespace DAVA
 class File;
 }
 
+#define RHI_SHADER_SOURCE_BUFFER_SIZE 65536
+
 namespace rhi
 {
 using DAVA::uint32;

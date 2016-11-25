@@ -188,7 +188,7 @@ private:
     Entity* LoadCamera(Scene* scene, KeyedArchive* archive);
     Entity* LoadLight(Scene* scene, KeyedArchive* archive);
 
-    void ApplyFogQuality();
+    void ApplyFogQuality(DAVA::NMaterial* material);
 
     void WriteDescriptor(File* file, const Descriptor& descriptor) const;
     bool ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);

@@ -195,7 +195,6 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         bool downScaled = ImageConvert::DownscaleTwiceBillinear(format, format,
                                                                 curImage->data, curImage->width, curImage->height, ImageUtils::GetPitchInBytes(curImage->width, format),
                                                                 halfImage->GetData(), halfWidth, halfHeight, ImageUtils::GetPitchInBytes(halfWidth, format), isNormalMap);
-
         if (!downScaled)
         {
             hasErrors = true;

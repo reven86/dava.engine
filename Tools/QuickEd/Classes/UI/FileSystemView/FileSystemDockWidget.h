@@ -14,7 +14,6 @@ class QFileSystemModel;
 class QInputDialog;
 class QItemSelection;
 class QMouseEvent;
-class ProjectStructure;
 
 class FileSystemDockWidget : public QDockWidget
 {
@@ -24,13 +23,11 @@ public:
     explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
 
-    void SetProjectDir(const QString& path);
+    void SetResourceDirectory(const QString& path);
+    void SelectFile(const QString& filePath);
 
 signals:
     void OpenPackageFile(const QString& path);
-
-public slots:
-    void FindInFiles();
 
 private slots:
     void onDoubleClicked(const QModelIndex& index);
@@ -44,15 +41,12 @@ private slots:
     void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    void OnDirectoryLoaded();
     void OnFixPrototypes();
 
 private:
     void RefreshActions();
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
-
-    void ShowAndSelectFile(const QString& filePath);
 
     enum ePathType
     {
@@ -71,14 +65,6 @@ private:
     QAction* openFileAction = nullptr;
     QAction* copyInternalPathToFileAction = nullptr;
 
-    QAction* findInFilesAction = nullptr;
     QAction* fixPrototypesAction = nullptr;
-
     QPoint menuInvokePos = QPoint(-1, -1);
-
-    bool isAvailable = false;
-
-    std::unique_ptr<ProjectStructure> projectStructure;
-    //we set current index asyncronysly, when model emits signal "directoryLoaded"
-    QPersistentModelIndex indexToSetCurrent;
 };

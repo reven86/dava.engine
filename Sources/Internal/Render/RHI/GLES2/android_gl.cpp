@@ -33,6 +33,14 @@ PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE glRenderbufferStorageMultisample = nul
 PFNGL_DEBUGMESSAGECONTROLKHRPROC glDebugMessageControl;
 PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
+PFNGLGENQUERIESEXTPROC glGenQueries = nullptr;
+PFNGLDELETEQUERIESEXTPROC glDeleteQueries = nullptr;
+PFNGLBEGINQUERYEXTPROC glBeginQuery = nullptr;
+PFNGLENDQUERYEXTPROC glEndQuery = nullptr;
+PFNGLQUERYCOUNTEREXTPROC glQueryCounter = nullptr;
+PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuiv = nullptr;
+PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64v = nullptr;
+
 static const EGLint contextAttribs[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,
     EGL_NONE
@@ -116,13 +124,14 @@ void android_gl_reset(void* _window, GLint width, GLint height)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
 
-    _nativeWindow = static_cast<ANativeWindow*>(_window);
-    if (nullptr != _nativeWindow || backingWidth != width || backingHeight != height)
+    ANativeWindow* nativeWindow = static_cast<ANativeWindow*>(_window);
+    if (nullptr != nativeWindow && (_nativeWindow != nativeWindow || backingWidth != width || backingHeight != height))
     {
         needRecreateSurface = true;
         backingWidth = width;
         backingHeight = height;
     }
+    _nativeWindow = nativeWindow;
 }
 
 bool android_gl_checkSurface()

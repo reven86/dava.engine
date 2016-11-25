@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Base/TemplateHelpers.h"
 
 using namespace DAVA;
 

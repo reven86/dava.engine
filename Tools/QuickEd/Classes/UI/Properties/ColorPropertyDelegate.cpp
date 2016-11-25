@@ -22,7 +22,7 @@ ColorPropertyDelegate::~ColorPropertyDelegate()
 {
 }
 
-QWidget* ColorPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* ColorPropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     lineEdit = new QLineEdit(parent); //will be deleted outside this class
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));

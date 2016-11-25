@@ -22,13 +22,14 @@ using DAVA::Size2i;
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
+static const uint64 NonreliableQueryValue = uint64(-1);
 
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
-    RESOURCE_PERFQUERY_SET = 14,
+    RESOURCE_PERFQUERY = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -78,7 +79,9 @@ enum
     MAX_RENDER_TARGET_COUNT = 2,
     MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT = 8,
     MAX_VERTEX_TEXTURE_SAMPLER_COUNT = 2,
-    MAX_VERTEX_STREAM_COUNT = 4
+    MAX_VERTEX_STREAM_COUNT = 4,
+    MAX_SHADER_PROPERTY_COUNT = 1024,
+    MAX_SHADER_CONST_BUFFER_COUNT = 1024,
 };
 
 //------------------------------------------------------------------------------
@@ -788,11 +791,11 @@ struct RenderPassConfig
 
     AntialiasingType antialiasingType = AntialiasingType::NONE;
 
-    Viewport viewport;
     Handle queryBuffer = InvalidHandle;
-    uint32 PerfQueryIndex0 = DAVA::InvalidIndex;
-    uint32 PerfQueryIndex1 = DAVA::InvalidIndex;
-    uint32 priority = 0;
+    Handle perfQueryStart = InvalidHandle;
+    Handle perfQueryEnd = InvalidHandle;
+    Viewport viewport;
+    int32 priority = 0;
     uint32 invertCulling = 0;
 
     bool IsValid() const

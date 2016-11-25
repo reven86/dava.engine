@@ -120,6 +120,11 @@ void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
     // Android windows are always stretched to display size
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on Android
+}
+
 void WindowBackend::Close(bool appIsTerminating)
 {
     if (appIsTerminating)
@@ -175,6 +180,22 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    surfaceScale = scale;
+
+    const float32 surfaceWidth = windowWidth * scale;
+    const float32 surfaceHeight = windowHeight * scale;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, eFullscreen::On));
+}
+
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
 {
     jobject object = nullptr;
@@ -206,6 +227,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     {
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
@@ -254,8 +278,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         mainDispatcher->PostEvent(e);
     }
 
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
+    windowWidth = static_cast<float32>(width);
+    windowHeight = static_cast<float32>(height);
+
     if (firstTimeSurfaceChanged)
     {
         uiDispatcher.LinkToCurrentThread();
@@ -272,12 +297,15 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfaceWidth, surfaceHeight, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceWidth, surfaceHeight));
+        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, eFullscreen::On));
     }
 }
 

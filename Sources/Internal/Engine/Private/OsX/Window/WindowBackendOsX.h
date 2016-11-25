@@ -33,6 +33,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -44,6 +45,8 @@ public:
 
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
+
+    void SetSurfaceScaleAsync(const float32 scale);
 
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);

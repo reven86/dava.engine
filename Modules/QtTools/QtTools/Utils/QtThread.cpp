@@ -1,7 +1,5 @@
 #include "QtThread.h"
 
-#include "Base/Platform.h"
-
 QtThread::QtThread(QObject* parent /*= nullptr*/)
     : QThread(parent)
 {

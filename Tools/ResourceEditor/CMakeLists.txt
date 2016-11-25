@@ -13,15 +13,13 @@ set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG
 
 include ( CMake-common )
 
-if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR})
-
-    if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
-    endif()
-    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
+    set( DEPLOY_ROOT ${DEPLOY_DIR} )
+    set( DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME} )
+    set( DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME} )
+    set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
 endif()
+
 
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
@@ -135,7 +133,9 @@ set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources "DataQt"
                 GROUP_SOURCE Generated )
 
-set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA         "Data = ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} = ${CMAKE_CURRENT_LIST_DIR}/Data" )
+
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} )
@@ -147,9 +147,10 @@ ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
+convert_graphics()
+
 setup_main_executable()
 
-convert_graphics()
 
 DEPLOY_SCRIPT (            COPY_WIN32  ${BEAST_DLL}
                            COPY_WIN64  ${BEAST_DLL}
@@ -159,9 +160,14 @@ if (DEPLOY)
     if (NOT WIN32)
         set(BEAST_DIR "")
     endif()
+
+    if( NOT DEPLOY_BEAST_DIR )
+        set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
+    endif()
+
     ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
-            "${DEPLOY_ROOT}"
+            "${DEPLOY_BEAST_DIR}"
             "${BEAST_DIR}"
         )
 endif()

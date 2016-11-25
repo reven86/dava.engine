@@ -179,6 +179,19 @@ inline bool IsWhitespace(char8 t)
     return (std::isspace(t) != 0);
 }
 
+/**
+check whether given `string` has at least one whitespace symbol in it
+*/
+inline bool HasWhitespace(const String& string)
+{
+    for (char8 c : string)
+    {
+        if (IsWhitespace(c))
+            return true;
+    }
+    return false;
+}
+
 inline bool StartsWith(const String& str, const String& substr)
 {
     if (str.length() < substr.length())

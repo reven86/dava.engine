@@ -10,7 +10,6 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
-#include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -22,7 +21,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , bridge(new WindowNativeBridge(this))
+    , bridge(new WindowNativeBridge(this, engineBackend->GetOptions()))
     , nativeService(new WindowNativeService(bridge.get()))
 {
 }
@@ -77,6 +76,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on iOS
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -95,6 +99,13 @@ void WindowBackend::TriggerPlatformEvents()
 void WindowBackend::ProcessPlatformEvents()
 {
     uiDispatcher.ProcessEvents();
+}
+
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)
@@ -116,6 +127,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     // case UIDispatcherEvent::RESIZE_WINDOW:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;

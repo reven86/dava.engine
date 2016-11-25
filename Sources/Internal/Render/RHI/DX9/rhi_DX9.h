@@ -42,11 +42,21 @@ void QueryComplete(Handle buf);
 bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryPool();
+void ReleaseAll();
 }
 
-namespace PerfQuerySetDX9
+namespace PerfQueryDX9
 {
 void SetupDispatch(Dispatch* dispatch);
+
+void IssueTimestampQuery(Handle handle);
+void BeginMeasurment();
+void EndMeasurment();
+
+void ReleaseAll();
+
+void ObtainPerfQueryMeasurment();
+void ReleasePerfQueryPool();
 }
 
 namespace PipelineStateDX9
@@ -157,6 +167,8 @@ DX9Command
 
         CREATE_RENDER_TARGET,
         CREARE_DEPTHSTENCIL_SURFACE,
+
+        SYNC_CPU_GPU,
     };
 
     Func func;

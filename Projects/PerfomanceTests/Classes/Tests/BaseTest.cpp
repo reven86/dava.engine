@@ -100,6 +100,10 @@ void BaseTest::UpdateUI()
     framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", GetTestFrameNumber())));
 }
 
+#if defined(__DAVAENGINE_APPLE__)
+#include <mach/mach.h>
+#endif
+
 uint32 BaseTest::GetAllocatedMemory()
 {
     uint32 memory = 0;

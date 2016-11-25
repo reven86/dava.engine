@@ -1,5 +1,5 @@
 #include "ClipboardImplWin32.h"
-
+#include "Base/Platform.h"
 #include <WinUser.h>
 
 namespace DAVA

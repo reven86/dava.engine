@@ -21,7 +21,7 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve);
 class Connection final : public Net::IChannelListener
 {
 public:
-    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
+    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport = Net::TRANSPORT_TCP, uint32 timeoutMs = 5 * 1000);
     ~Connection();
 
     const Net::Endpoint& GetEndpoint() const;
@@ -34,7 +34,7 @@ public:
     void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override;
 
 private:
-    bool Connect(Net::eNetworkRole _role, Net::eTransportType transport);
+    bool Connect(Net::eNetworkRole _role, Net::eTransportType transport, uint32 timeoutMs);
     void DisconnectBlocked();
 
     static Net::IChannelListener* Create(uint32 serviceId, void* context);

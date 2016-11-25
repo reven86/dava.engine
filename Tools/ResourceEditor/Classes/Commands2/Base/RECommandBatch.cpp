@@ -2,6 +2,7 @@
 
 #include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
+#include "Base/TemplateHelpers.h"
 #include "Commands2/RECommandIDs.h"
 #include "Commands2/Base/RECommand.h"
 

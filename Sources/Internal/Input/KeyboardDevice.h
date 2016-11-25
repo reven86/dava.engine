@@ -2,7 +2,7 @@
 #define __DAVAENGINE_KEYBOARD_DEVICE_H__
 
 #include "Base/BaseObject.h"
-
+#include <bitset>
 #include "Engine/Private/EnginePrivateFwd.h"
 
 /**
@@ -186,8 +186,8 @@ private:
 
     void PrepareKeyTranslator();
 
-    Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> currentFrameKeyStatus;
-    Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
+    std::bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> currentFrameKeyStatus;
+    std::bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
     mutable Array<uint32, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> backCodeTranslator;

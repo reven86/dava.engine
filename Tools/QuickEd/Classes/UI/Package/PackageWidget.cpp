@@ -15,7 +15,6 @@
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
 #include "Model/YamlPackageSerializer.h"
-#include "EditorCore.h"
 #include "Document/Document.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
