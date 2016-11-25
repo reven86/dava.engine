@@ -4,6 +4,7 @@
 #include "TArc/WindowSubSystem/UI.h"
 
 #include <QPointer>
+#include <QCursor>
 
 class QDialog;
 class QProgressBar;

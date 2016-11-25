@@ -10,8 +10,6 @@
 #include <QApplication>
 #include <QThread>
 #include <QMetaObject>
-#include <QDesktopWidget>
-#include <QApplication>
 
 namespace DAVA
 {
