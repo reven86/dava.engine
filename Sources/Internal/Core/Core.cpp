@@ -29,6 +29,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
 #include "UI/UIControlSystem.h"
+#include "Engine/EngineSettings.h"
 
 #include "Network/NetCore.h"
 #include "MemoryManager/MemoryProfiler.h"
@@ -228,8 +229,8 @@ void Core::CreateSingletons()
 
     DeviceInfo::InitializeScreenInfo();
 
+    new EngineSettings();
     new LocalizationSystem();
-
     new SystemTimer();
     new Random();
     new AnimationManager();
@@ -331,7 +332,7 @@ void Core::ReleaseSingletons()
 //SoundSystem::Instance()->Release();
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     LocalizationSystem::Instance()->Release();
-    //  Logger::FrameworkDebug("[Core::Release] successfull");
+    EngineSettings::Instance()->Release();
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();

@@ -33,7 +33,7 @@ public:
     template <typename T>
     ReflectedMeta(Meta<T>&& meta)
     {
-        Emplace(meta);
+        Emplace(std::move(meta));
     }
 
     template <typename Meta>

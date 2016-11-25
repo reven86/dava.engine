@@ -1,6 +1,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
+#include "Engine/EngineSettings.h"
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -117,6 +118,8 @@ TestBed::TestBed(Engine& engine)
 
         engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
     }
+
+    engine.GetContext()->settings->Load("~res:/EngineSettings.yaml");
 }
 
 void TestBed::OnGameLoopStarted()
