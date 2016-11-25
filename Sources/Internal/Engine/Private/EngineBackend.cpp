@@ -21,6 +21,7 @@
 #include "Debug/Private/ImGui.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Input/InputSystem.h"
@@ -75,6 +76,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+    context->settings = new EngineSettings();
 }
 
 EngineBackend::~EngineBackend()
@@ -708,6 +710,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
+    delete context->settings;
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
 
