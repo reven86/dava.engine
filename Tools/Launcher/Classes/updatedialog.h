@@ -23,8 +23,8 @@ struct UpdateTask
     UpdateTask(const QString& branch, const QString& app, const AppVersion* currentVersion_, const AppVersion& newVersion_, bool isSelfUpdate_ = false, bool isRemove_ = false)
         : branchID(branch)
         , appID(app)
-        , currentVersion(currentVersion_)
         , newVersion(newVersion_)
+        , currentVersion(currentVersion_)
         , isSelfUpdate(isSelfUpdate_)
         , isRemoveBranch(isRemove_)
     {

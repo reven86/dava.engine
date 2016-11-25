@@ -162,7 +162,7 @@ void REModule::UnpackHelpDoc()
         DAVA::Logger::FrameworkDebug("Unpacking Help...");
         try
         {
-            DAVA::ResourceArchive helpRA("~res:/Help.docs");
+            DAVA::ResourceArchive helpRA("~res:/ResourceEditor/Help.docs");
             engineContext.fileSystem->DeleteDirectory(docsPath);
             engineContext.fileSystem->CreateDirectory(docsPath, true);
             helpRA.UnpackToFolder(docsPath);

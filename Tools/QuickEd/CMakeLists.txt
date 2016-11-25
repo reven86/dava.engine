@@ -74,7 +74,9 @@ set                           ( UiList       ${UI_LIST} )
 
 define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
 
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA         "Data = ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} = ${CMAKE_CURRENT_LIST_DIR}/Data" )
+
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST})
@@ -83,8 +85,6 @@ set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
-list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
-
+convert_graphics()
 setup_main_executable()
 
-convert_graphics()

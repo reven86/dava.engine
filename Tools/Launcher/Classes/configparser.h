@@ -23,6 +23,7 @@ struct AppVersion
     QString cmd;
     QString url;
     QString buildNum;
+    bool isToolSet = false;
 
     static AppVersion LoadFromYamlNode(const YAML::Node* node);
 };
@@ -32,11 +33,13 @@ struct Application
     Application()
     {
     }
-    Application(const QString& _id)
-        : id(_id)
+    Application(const QString& id_)
+        : id(id_)
     {
     }
 
+    //in a fact it is an ID to be displayed in UI
+    // old name was not changed to save capability with other code
     QString id;
 
     int GetVerionsCount() const
@@ -106,8 +109,11 @@ public:
     void SaveToFile(const QString& filePath) const;
 
     void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
+
     void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
 
+    static QStringList GetToolsetApplications();
+    QStringList GetTranslatedToolsetApplications() const;
     int GetBranchCount();
     QString GetBranchID(int index);
 
@@ -145,6 +151,8 @@ public:
     void UpdateApplicationsNames();
 
 private:
+    void InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version);
+
     bool ParseJSON(const QByteArray& configData);
 
     QString launcherVersion;

@@ -315,6 +315,7 @@ function TupState.New(userConf)
         adreno = "adreno%.",
         dx11 = "dx11%."
     }
+    conf.baseGpu = userConf.baseGpu or "mali"
 
     conf.unusedPackName = userConf.unusedPackName or "__unused__"
     conf.delimiter = userConf.delimiter or "#"
@@ -502,10 +503,15 @@ function TupState.BuildLists(self)
     for pi, pack in pairs(self.packs) do
         for gpu, files in pairs(pack.files) do
             if pack.is_base == true then
-                for index, file in pairs(files) do
-                    local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
-                    baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
-                    tup.rule(file, self.cmd.fwdep .. " merge %\"f -o %\"o", {baseOutput})
+                -- copy only files with mached GPU or common files
+                if gpu == self.conf.baseGpu or gpu == self.conf.commonGpu then
+                    for index, file in pairs(files) do
+                        local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
+                        baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
+                        -- ganerate rool to copy files from base pack into specified base-directory
+                        -- using framework dep tool to create destination directory
+                        tup.rule(file, self.cmd.fwdep .. " merge %\"f -o %\"o", {baseOutput}) 
+                    end
                 end
             else
                 local packGroup = self:GetPackGroup(pack.name, gpu)

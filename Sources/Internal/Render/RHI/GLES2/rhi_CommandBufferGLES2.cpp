@@ -486,6 +486,7 @@ CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
     , usingDefaultFrameBuffer(true)
+    , skipPassPerfQueries(false)
     , sync(InvalidHandle)
 {
 }

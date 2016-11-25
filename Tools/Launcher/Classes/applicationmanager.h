@@ -30,7 +30,7 @@ public:
 
     void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
-    bool RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID);
+    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
     bool RemoveBranch(const QString& branchID);
 
     bool ShouldShowNews();
@@ -38,9 +38,10 @@ public:
     void ParseRemoteConfigData(const QByteArray& data);
     void SaveLocalConfig() const;
 
-    QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
+    QString GetApplicationDirectory(QString branchID, QString appID, bool isToolSet, bool mustExist = true) const;
     FileManager* GetFileManager() const;
 
+    //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
 public slots:

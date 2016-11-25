@@ -1,7 +1,7 @@
 RenderTechnique:
     RenderPass:
         Name: "2d"
-        Shader: "~res:/LandscapeEditor/Materials/CustomColors/CustomColors"
+        Shader: "~res:/ResourceEditor/LandscapeEditor/Materials/CustomColors/CustomColors"
         UniqueDefines: []
         RenderState:
             alphaFunc: "CMP_ALWAYS"
