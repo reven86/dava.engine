@@ -24,6 +24,7 @@
 #include "DeviceManager/DeviceManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Input/InputSystem.h"
@@ -117,7 +118,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     //  - FileSystem, to load config files with init options
     //  - DeviceManager, to check what hatdware is available
     context->logger = new Logger;
-
+    context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
     context->fileSystem->SetDefaultDocumentsDirectory();
@@ -777,6 +778,11 @@ void EngineBackend::DestroySubsystems()
     {
         delete context->analyticsCore;
         context->analyticsCore = nullptr;
+    }
+    if (context->settings != nullptr)
+    {
+        delete context->settings;
+        context->settings = nullptr;
     }
     if (context->moduleManager != nullptr)
     {

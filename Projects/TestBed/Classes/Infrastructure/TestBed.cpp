@@ -1,6 +1,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include "Engine/Engine.h"
+#include "Engine/EngineSettings.h"
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
@@ -116,6 +117,8 @@ TestBed::TestBed(Engine& engine)
         w->SetTitleAsync("[Testbed] The one who owns a minigun fears not");
         w->SetSizeAsync({ 1024.f, 768.f });
     }
+
+    engine.GetContext()->settings->Load("~res:/EngineSettings.yaml");
 }
 
 void TestBed::OnGameLoopStarted()

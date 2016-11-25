@@ -326,11 +326,6 @@ void AutotestingSystem::Update(float32 timeElapsed)
         if (timeBeforeExit <= 0.0f)
         {
             needExitApp = false;
-            String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
-            if (server != AutotestingDB::DB_ERROR_STR_VALUE)
-            {
-                AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
-            }
             JobManager::Instance()->WaitWorkerJobs();
 #if defined(__DAVAENGINE_COREV2__)
             Engine::Instance()->QuitAsync(0);
