@@ -33,9 +33,11 @@ namespace rhi
 //==============================================================================
 
 static Dispatch DispatchDX11 = {};
-
 static ResetParam resetParams;
 static DAVA::Mutex resetParamsSync;
+
+const UINT DX11_BackBuffersCount = 3; // TODO : make shared variable across DX11 code
+const DXGI_FORMAT DX11_BackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 
 //------------------------------------------------------------------------------
 
@@ -113,9 +115,36 @@ static void dx11_Uninitialize()
     PerfQueryDX11::ReleasePerfQueryPool();
 }
 
+void DX11_CreateSizeDependentResources(UINT w, UINT h)
+{
+    HRESULT hr = _D3D11_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)(&_D3D11_SwapChainBuffer));
+    DX11_ProcessCallResult(hr, "_D3D11_SwapChain->GetBuffer", __FILE__, __LINE__);
+
+    D3D11_TEXTURE2D_DESC ds_desc = {};
+    ds_desc.Width = w;
+    ds_desc.Height = h;
+    ds_desc.MipLevels = 1;
+    ds_desc.ArraySize = 1;
+    ds_desc.Format = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
+    ds_desc.SampleDesc.Count = 1;
+    ds_desc.Usage = D3D11_USAGE_DEFAULT;
+    ds_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &ds_desc, 0, &_D3D11_DepthStencilBuffer);
+    DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView);
+    DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, _D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView);
+}
+
 static void ResizeSwapchain()
 {
-    //todo - not implemented yet
+    DAVA::SafeRelease(_D3D11_RenderTargetView);
+    DAVA::SafeRelease(_D3D11_DepthStencilBuffer);
+    DAVA::SafeRelease(_D3D11_DepthStencilView);
+    DAVA::SafeRelease(_D3D11_SwapChainBuffer);
+
+    HRESULT hr = _D3D11_SwapChain->ResizeBuffers(DX11_BackBuffersCount, resetParams.width, resetParams.height, DX11_BackBufferFormat, 0);
+    DX11_ProcessCallResult(hr, "_D3D11_SwapChain->ResizeBuffers", __FILE__, __LINE__);
+
+    DX11_CreateSizeDependentResources(resetParams.width, resetParams.height);
 }
 
 static void dx11_ResetBlock()
@@ -189,13 +218,11 @@ static void dx11_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
 void InitDeviceAndSwapChain()
 {
     HRESULT hr;
-    DWORD flags = 0;
 #if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
 #else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
 #endif
-    DXGI_SWAP_CHAIN_DESC swapchain_desc = { 0 };
     IDXGIAdapter* defAdapter = NULL;
 
     // enumerate adapters
@@ -254,90 +281,65 @@ void InitDeviceAndSwapChain()
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
 #endif
 
+    DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
     swapchain_desc.BufferDesc.Width = _DX11_InitParam.width;
     swapchain_desc.BufferDesc.Height = _DX11_InitParam.height;
-    swapchain_desc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapchain_desc.BufferDesc.Format = DX11_BackBufferFormat;
     swapchain_desc.BufferDesc.RefreshRate.Numerator = 0;
     swapchain_desc.BufferDesc.RefreshRate.Denominator = 0;
     swapchain_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
     swapchain_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
-
     swapchain_desc.SampleDesc.Count = 1;
     swapchain_desc.SampleDesc.Quality = 0;
-
-    swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; //DXGI_USAGE_BACK_BUFFER;
-    swapchain_desc.BufferCount = 2;
-
+    swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchain_desc.BufferCount = DX11_BackBuffersCount;
     swapchain_desc.OutputWindow = (HWND)_DX11_InitParam.window;
     swapchain_desc.Windowed = (_DX11_InitParam.fullScreen) ? FALSE : TRUE;
-
     swapchain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     swapchain_desc.Flags = 0;
 
-    hr = D3D11CreateDeviceAndSwapChain(
-    defAdapter, (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, NULL,
-    flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
-    &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+    DWORD deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
+
+    hr = D3D11CreateDeviceAndSwapChain(defAdapter, (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, NULL,
+                                       deviceFlags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
+                                       &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
 
     if (FAILED(hr))
     {
         // fall back to 'default' adapter
-        hr = D3D11CreateDeviceAndSwapChain(
-        NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
-        flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
-        &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+        hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, feature, countof(feature),
+                                           D3D11_SDK_VERSION, &swapchain_desc, &_D3D11_SwapChain, &_D3D11_Device,
+                                           &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
     }
 
     if (SUCCEEDED(hr))
     {
-        hr = _D3D11_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)(&_D3D11_SwapChainBuffer));
-
+        IDXGIDevice* dxgiDevice = nullptr;
+        IDXGIAdapter* dxgiAdapter = nullptr;
+        _GUID uuid = __uuidof(IDXGIDevice);
+        hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice));
         if (SUCCEEDED(hr))
         {
-            IDXGIDevice* dxgiDevice = NULL;
-            IDXGIAdapter* dxgiAdapter = NULL;
-            _GUID uuid = __uuidof(IDXGIDevice);
-            hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice));
-            if (SUCCEEDED(hr))
+            if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
             {
-                if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
+                DXGI_ADAPTER_DESC desc = { 0 };
+
+                if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
                 {
-                    DXGI_ADAPTER_DESC desc = { 0 };
-
-                    if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
-                    {
-                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, MutableDeviceCaps::Get().deviceDescription,
-                                              countof(MutableDeviceCaps::Get().deviceDescription), NULL, NULL);
-
-                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X",
-                                     MutableDeviceCaps::Get().deviceDescription, desc.VendorId, desc.DeviceId);
-                    }
+                    ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, MutableDeviceCaps::Get().deviceDescription,
+                                          countof(MutableDeviceCaps::Get().deviceDescription), NULL, NULL);
+                    Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X",
+                                 MutableDeviceCaps::Get().deviceDescription, desc.VendorId, desc.DeviceId);
                 }
             }
-
-            uuid = __uuidof(IDXGIDevice);
-            hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&_D3D11_Debug));
-            hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
         }
 
-        hr = DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView);
-        hr = DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
+        uuid = __uuidof(IDXGIDevice);
+        hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&_D3D11_Debug));
+        hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
 
-        D3D11_TEXTURE2D_DESC ds_desc = { 0 };
-        ds_desc.Width = _DX11_InitParam.width;
-        ds_desc.Height = _DX11_InitParam.height;
-        ds_desc.MipLevels = 1;
-        ds_desc.ArraySize = 1;
-        ds_desc.Format = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
-        ds_desc.SampleDesc.Count = 1;
-        ds_desc.SampleDesc.Quality = 0;
-        ds_desc.Usage = D3D11_USAGE_DEFAULT;
-        ds_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        ds_desc.CPUAccessFlags = 0;
-        ds_desc.MiscFlags = 0;
-
-        DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &ds_desc, 0, &_D3D11_DepthStencilBuffer);
-        DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, _D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView);
+        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
+        DX11_CreateSizeDependentResources(_DX11_InitParam.width, _DX11_InitParam.height);
     }
 }
 #endif

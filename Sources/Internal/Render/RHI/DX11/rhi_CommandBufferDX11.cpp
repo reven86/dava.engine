@@ -938,10 +938,10 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                 ID3D11Query* fqQuery = nullptr;
 
                 D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP };
-                _D3D11_Device->CreateQuery(&desc, &tsQuery);
+                DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &tsQuery);
 
                 desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-                _D3D11_Device->CreateQuery(&desc, &fqQuery);
+                DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &fqQuery);
 
                 if (tsQuery && fqQuery)
                 {
