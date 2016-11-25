@@ -130,8 +130,7 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
 
-    connect(renderWidget, &RenderWidget::Resized, scrollAreaController,
-            static_cast<void (ScrollAreaController::*)(int32, int32)>(&ScrollAreaController::SetViewSize));
+    renderWidget->resized.Connect(scrollAreaController, static_cast<void (ScrollAreaController::*)(DAVA::uint32, DAVA::uint32)>(&ScrollAreaController::SetViewSize));
 
     CreateActions();
 }

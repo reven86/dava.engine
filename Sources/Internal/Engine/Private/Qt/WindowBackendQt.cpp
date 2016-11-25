@@ -25,6 +25,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <QObject>
+#include <QQuickWidget>
 
 namespace DAVA
 {
@@ -280,13 +281,13 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 namespace WindowBackendDetails
 {
 //there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
-void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* application)
+void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QWindow* wnd, QApplication* application)
 {
     QDesktopWidget* desktop = application->desktop();
     int screenNumber = desktop->screenNumber(renderWidget);
     DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
 
-    QWindow* parent = renderWidget->quickWindow();
+    QWindow* parent = wnd;
     while (parent->parent() != nullptr)
     {
         parent = parent->parent();
@@ -305,10 +306,10 @@ void WindowBackend::OnCreated()
     // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
     // I don't know what we can do with this.
     // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
-    QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
+    QOpenGLContext* context = renderWidget->GetQQuickWindow()->openglContext();
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, renderWidget->GetQQuickWindow(), engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->logicalDpiX();
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
@@ -521,7 +522,7 @@ void WindowBackend::DoSetTitle(const char8* title)
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
-    QQuickWindow* quickWindow = renderWidget->quickWindow();
+    QQuickWindow* quickWindow = renderWidget->GetQQuickWindow();
     if (quickWindow == nullptr)
     {
         return;
@@ -556,7 +557,7 @@ void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
     {
-        renderWidget->quickWindow()->update();
+        renderWidget->GetQQuickWindow()->update();
     }
 }
 
@@ -584,7 +585,7 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.acquireContextFunc = &AcqureContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
-    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
+    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->GetQQuickWindow()->renderTarget()->handle());
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

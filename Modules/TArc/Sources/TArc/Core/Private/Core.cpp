@@ -30,6 +30,7 @@
 #include <QApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QIcon>
 
 namespace DAVA
 {

@@ -89,8 +89,7 @@ void SceneTabWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
     setMinimumHeight(renderWidget->minimumHeight() + tabBar->sizeHint().height());
 
     layout()->addWidget(renderWidget);
-
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneTabWidget::OnRenderWidgetResized);
+    renderWidget->resized.Connect(this, &SceneTabWidget::OnRenderWidgetResized);
 }
 
 void SceneTabWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)

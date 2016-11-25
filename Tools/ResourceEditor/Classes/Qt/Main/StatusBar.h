@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Functional/SignalBase.h"
 #include "Scene/System/SystemDelegates.h"
 
 #include <QStatusBar>
@@ -8,7 +9,7 @@
 class QLabel;
 class SceneEditor2;
 class SelectableGroup;
-class StatusBar final : public QStatusBar, public SceneSelectionSystemDelegate
+class StatusBar final : public QStatusBar, public SceneSelectionSystemDelegate, public DAVA::TrackedObject
 {
     Q_OBJECT
 

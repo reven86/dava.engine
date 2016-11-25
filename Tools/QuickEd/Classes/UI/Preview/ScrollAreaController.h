@@ -7,13 +7,14 @@
 
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
 class Vector2;
 }
 
-class ScrollAreaController : public QObject
+class ScrollAreaController : public QObject, public DAVA::TrackedObject
 {
     Q_OBJECT
 public:
@@ -40,7 +41,7 @@ public:
 
 public slots:
     void SetViewSize(const QSize& size);
-    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
+    void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);
     void SetPosition(const QPoint& position);
     void UpdateCanvasContentSize();
     void SetScale(float scale);

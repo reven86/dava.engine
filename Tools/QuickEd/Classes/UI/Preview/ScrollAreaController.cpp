@@ -140,7 +140,7 @@ void ScrollAreaController::SetScale(float arg)
     }
 }
 
-void ScrollAreaController::SetViewSize(int32 width, int32 height)
+void ScrollAreaController::SetViewSize(uint32 width, uint32 height)
 {
     SetViewSize(QSize(width, height));
 }

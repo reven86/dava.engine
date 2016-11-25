@@ -3,6 +3,7 @@
 #include "UI/UI3DView.h"
 
 #include "FileSystem/FilePath.h"
+#include "Functional/SignalBase.h"
 
 #include <QMap>
 #include <QTabBar>
@@ -28,7 +29,7 @@ class Request;
 class SelectableGroup;
 class GlobalOperations;
 
-class SceneTabWidget : public QWidget
+class SceneTabWidget : public QWidget, public DAVA::TrackedObject
 {
     Q_OBJECT
 

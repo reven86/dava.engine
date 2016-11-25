@@ -301,8 +301,7 @@ void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
     deleteSelection->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
     renderWidget->addAction(deleteSelection);
-
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    renderWidget->resized.Connect(ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 void QtMainWindow::OnRenderingInitialized()
