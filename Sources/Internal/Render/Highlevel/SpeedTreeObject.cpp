@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-
 const FastName SpeedTreeObject::FLAG_WIND_ANIMATION("WIND_ANIMATION");
 
 SpeedTreeObject::SpeedTreeObject()
