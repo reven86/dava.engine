@@ -207,11 +207,21 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
 void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
-    bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+
+    // System does not send Activated event in these cases:
+    //  - resume after suspend
+    //  - lock (Win+L) and unlock screen
+    // So consider that window gains focus if window becomes visible and here add check to prevent sending multiple
+    // WINDOW_FOCUS_CHANGED events to main dispatcher.
+    bool gotFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
+    if (hasFocus != gotFocus)
+    {
+        hasFocus = gotFocus;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    }
     if (!hasFocus)
     {
-        if (captureMode == eCursorCapture::PINNING)
+        if (captureMode != eCursorCapture::OFF)
         {
             SetCursorCapture(eCursorCapture::OFF);
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
@@ -223,6 +233,11 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, arg->Visible));
+    if (arg->Visible)
+    {
+        hasFocus = true;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    }
 }
 
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)

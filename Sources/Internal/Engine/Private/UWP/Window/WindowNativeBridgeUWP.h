@@ -94,6 +94,7 @@ private:
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
 
     ::Windows::UI::Core::CoreCursor ^ defaultCursor = ref new ::Windows::UI::Core::CoreCursor(::Windows::UI::Core::CoreCursorType::Arrow, 0);
+    bool hasFocus = false;
     bool mouseVisible = true;
     eCursorCapture captureMode = eCursorCapture::OFF;
     uint32 mouseMoveSkipCount = 0;
