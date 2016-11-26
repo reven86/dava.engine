@@ -42,6 +42,12 @@ UIControl* UIPackage::GetPrototype(const FastName& name) const
             return prototype;
     }
 
+    for (UIControl* control : controls) // temporary code for supporting old yaml files
+    {
+        if (control->GetName() == name)
+            return control;
+    }
+
     return nullptr;
 }
 
@@ -79,10 +85,10 @@ UIControl* UIPackage::GetControl(const FastName& name) const
             return control;
     }
 
-    for (UIControl* control : prototypes)
+    for (UIControl* prototype : prototypes) // temporary code for supporting old yaml files
     {
-        if (control->GetName() == name)
-            return control;
+        if (prototype->GetName() == name)
+            return prototype;
     }
 
     return nullptr;
