@@ -13,7 +13,6 @@ class Document;
 class PackageNode;
 class QAction;
 class QTabBar;
-
 class Project;
 
 class DocumentGroup : public QObject
