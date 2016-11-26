@@ -80,6 +80,10 @@ void WindowNativeBridge::SetTitle(const char8* title)
     [nsTitle release];
 }
 
+void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
+{
+}
+
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
 {
     bool isFullscreenRequested = newMode == eFullscreen::On;

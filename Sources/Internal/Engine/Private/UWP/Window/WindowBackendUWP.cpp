@@ -39,6 +39,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     // Fullscreen mode cannot be changed on phones
@@ -110,6 +115,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        bridge->SetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         bridge->SetFullscreen(e.setFullscreenEvent.mode);

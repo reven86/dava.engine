@@ -216,6 +216,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -264,6 +269,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         DoSetFullscreen(e.setFullscreenEvent.mode);
@@ -518,6 +526,11 @@ void WindowBackend::DoCloseWindow()
 void WindowBackend::DoSetTitle(const char8* title)
 {
     renderWidget->setWindowTitle(title);
+}
+
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
+{
+    renderWidget->setMinimumSize(static_cast<int>(width), static_cast<int>(height));
 }
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)

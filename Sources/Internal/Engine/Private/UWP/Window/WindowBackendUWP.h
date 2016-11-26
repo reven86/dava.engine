@@ -27,6 +27,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);

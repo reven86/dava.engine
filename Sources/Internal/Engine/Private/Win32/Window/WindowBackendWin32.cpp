@@ -94,6 +94,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -205,6 +210,12 @@ void WindowBackend::DoSetTitle(const char8* title)
 {
     WideString wideTitle = UTF8Utils::EncodeToWideString(title);
     ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
+{
+    minWidth = static_cast<int>(width);
+    minHeight = static_cast<int>(height);
 }
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
@@ -364,6 +375,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
+        break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         DoSetFullscreen(e.setFullscreenEvent.mode);
         break;
@@ -436,9 +450,8 @@ LRESULT WindowBackend::OnExitSizeMove()
 
 LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 {
-    // Limit minimum window size to some reasonable value
-    minMaxInfo->ptMinTrackSize.x = 128;
-    minMaxInfo->ptMinTrackSize.y = 128;
+    minMaxInfo->ptMinTrackSize.x = minWidth;
+    minMaxInfo->ptMinTrackSize.y = minHeight;
     return 0;
 }
 

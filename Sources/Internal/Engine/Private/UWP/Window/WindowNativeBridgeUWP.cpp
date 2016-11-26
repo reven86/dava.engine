@@ -136,6 +136,14 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
+void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
+{
+    using ::Windows::Foundation::Size;
+    using ::Windows::UI::ViewManagement::ApplicationView;
+
+    ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(width, height));
+}
+
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);

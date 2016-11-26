@@ -44,7 +44,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
-
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
@@ -67,6 +67,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetMinimumSize(float32 width, float32 height);
     void DoSetFullscreen(eFullscreen newMode);
 
     // RenderWidget::Delegate

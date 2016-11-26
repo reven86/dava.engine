@@ -74,6 +74,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to iOS window
+}
+
 void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
 {
     // Fullscreen mode cannot be changed on iOS

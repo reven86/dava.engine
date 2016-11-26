@@ -37,8 +37,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
-
-    eFullscreen GetFullscreen() const;
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
@@ -68,6 +67,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetMinimumSize(float32 width, float32 height);
     void DoSetFullscreen(eFullscreen newMode);
 
     void SetFullscreenMode();
@@ -131,6 +131,8 @@ private:
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
     bool isFullscreen = false;
+    int minWidth = 128;
+    int minHeight = 128;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
 
@@ -166,11 +168,6 @@ inline HWND WindowBackend::GetHWND() const
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {
     // No custom render params
-}
-
-inline eFullscreen WindowBackend::GetFullscreen() const
-{
-    return isFullscreen ? eFullscreen::On : eFullscreen::Off;
 }
 
 } // namespace Private

@@ -14,6 +14,14 @@ UIDispatcherEvent UIDispatcherEvent::CreateResizeEvent(float32 width, float32 he
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateMinimumSizeEvent(float32 width, float32 height)
+{
+    UIDispatcherEvent e(SET_MINIMUM_SIZE);
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
+    return e;
+}
+
 UIDispatcherEvent UIDispatcherEvent::CreateCloseEvent()
 {
     UIDispatcherEvent e(CLOSE_WINDOW);

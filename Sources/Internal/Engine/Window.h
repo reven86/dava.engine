@@ -143,6 +143,18 @@ public:
     void SetSizeAsync(Size2f size);
 
     /**
+        Set the smallest size, in DIPs, of window client area.
+
+        Smallest and default minimum size is 128x128. Setting minimum size to {0, 0} applies default minimum size {128x128}.
+
+        Minimum window size setting is applied only to platforms which support window size changing, usually desktops.
+        Some platforms limit largest minimum size, e.g. Win10 limits largest minimum size to 500x500 DIPs.
+
+        If preferred minimum size is larger than current window size window is resized to given minimum size.
+    */
+    void SetMinimumSize(Size2f size);
+
+    /**
          Return window rendering surface size in physical pixels.
 
          Surface size depends on window size together with DPI (or more precisely DIP size) and surface scale factor.

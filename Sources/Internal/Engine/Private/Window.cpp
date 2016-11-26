@@ -43,6 +43,19 @@ void Window::SetSizeAsync(Size2f sz)
     }
 }
 
+void Window::SetMinimumSize(Size2f size)
+{
+    DVASSERT(size.dx >= 0.f && size.dy >= 0.f);
+
+    if (!engineBackend->IsEmbeddedGUIMode())
+    {
+        size.dx = std::max(size.dx, 128.f);
+        size.dy = std::max(size.dy, 128.f);
+
+        windowBackend->SetMinimumSize(size);
+    }
+}
+
 void Window::SetVirtualSize(float32 w, float32 h)
 {
     uiControlSystem->vcs->SetVirtualScreenSize(static_cast<int32>(w), static_cast<int32>(h));

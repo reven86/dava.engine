@@ -152,6 +152,11 @@ void WindowBackend::SetTitle(const String& title)
     // Android window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to android
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
