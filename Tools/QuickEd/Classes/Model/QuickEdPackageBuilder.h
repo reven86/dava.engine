@@ -14,8 +14,6 @@ class IntrospectionProperty;
 class QuickEdPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    static DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> replaces;
-
     QuickEdPackageBuilder();
     virtual ~QuickEdPackageBuilder();
 
@@ -80,6 +78,4 @@ private:
 
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;
-
-    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypeInfo;
 };

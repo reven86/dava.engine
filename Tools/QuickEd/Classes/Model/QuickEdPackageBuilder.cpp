@@ -27,8 +27,6 @@ using namespace DAVA;
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> QuickEdPackageBuilder::replaces;
-
 QuickEdPackageBuilder::QuickEdPackageBuilder()
     : currentObject(nullptr)
     , currentSection(nullptr)
@@ -146,10 +144,6 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packag
                 if (prototypeNode == nullptr)
                 {
                     prototypeNode = importedPackage->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
-                    if (prototypeNode)
-                    {
-                        replaces[importedPackage->GetPath().GetFrameworkPath()].insert(prototypeName);
-                    }
                 }
                 break;
             }
@@ -206,12 +200,10 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
         switch (controlPlace)
         {
         case TO_CONTROLS:
-            //                DVASSERT(controlsStack.empty());
             rootControls.push_back(SafeRetain(lastControl));
             break;
 
         case TO_PROTOTYPES:
-            //                DVASSERT(controlsStack.empty());
             prototypes.push_back(SafeRetain(lastControl));
             break;
 
@@ -417,7 +409,6 @@ ControlNode* QuickEdPackageBuilder::FindPrototype(const DAVA::String& name) cons
     {
         if (control->GetName() == name)
         {
-            replaces[packagePath.GetFrameworkPath()].insert(name);
             return control;
         }
     }

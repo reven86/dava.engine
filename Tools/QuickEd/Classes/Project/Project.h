@@ -66,7 +66,6 @@ public:
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
 
     bool TryCloseAllDocuments();
-    void FindPrototypes();
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
