@@ -361,7 +361,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             uint32 count = childrenNode->GetCount();
             for (uint32 i = 0; i < count; i++)
-                LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_OTHER_CONTROL, builder);
+                LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
         }
 
         control->LoadFromYamlNodeCompleted();

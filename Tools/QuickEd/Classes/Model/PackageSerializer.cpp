@@ -113,8 +113,8 @@ void PackageSerializer::VisitPackage(PackageNode* node)
     if (!prototypes.empty())
     {
         BeginArray("Prototypes");
-        for (ControlNode* control : prototypes)
-            control->Accept(this);
+        for (ControlNode* prototype : prototypes)
+            prototype->Accept(this);
         EndArray();
     }
 

@@ -31,7 +31,7 @@ public:
     {
         TO_PROTOTYPES,
         TO_CONTROLS,
-        TO_OTHER_CONTROL
+        TO_PREVIOUS_CONTROL
     };
 
     AbstractUIPackageBuilder();

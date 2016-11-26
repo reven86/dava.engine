@@ -276,7 +276,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
 
-        case TO_OTHER_CONTROL:
+        case TO_PREVIOUS_CONTROL:
         {
             DVASSERT(!controlsStack.empty());
             UIControl* control = controlsStack.back()->control.Get();

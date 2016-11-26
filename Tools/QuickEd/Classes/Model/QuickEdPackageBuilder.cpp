@@ -207,7 +207,7 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
             prototypes.push_back(SafeRetain(lastControl));
             break;
 
-        case TO_OTHER_CONTROL:
+        case TO_PREVIOUS_CONTROL:
             DVASSERT(!controlsStack.empty());
             controlsStack.back().node->Add(lastControl);
             break;
@@ -346,7 +346,10 @@ RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
         for (PackageNode* declinedPackage : declinedPackages)
         {
             if (control->IsDependsOnPackage(declinedPackage))
+            {
                 canInsert = false;
+                break;
+            }
         }
 
         if (canInsert)

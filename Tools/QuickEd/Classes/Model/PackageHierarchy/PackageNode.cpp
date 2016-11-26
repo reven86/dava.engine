@@ -25,8 +25,8 @@ PackageNode::PackageNode(const FilePath& aPath)
 {
     name = path.GetBasename();
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, false);
-    prototypes = new PackageControlsNode(this, true);
+    packageControlsNode = new PackageControlsNode(this, "Controls");
+    prototypes = new PackageControlsNode(this, "Prototypes");
     styleSheets = new StyleSheetsNode(this);
     packageContext = new UIControlPackageContext();
 }

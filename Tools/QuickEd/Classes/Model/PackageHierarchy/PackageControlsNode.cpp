@@ -9,9 +9,9 @@
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageNode* _parent, bool prototypes_)
-    : ControlsContainerNode(_parent)
-    , prototypes(prototypes_)
+PackageControlsNode::PackageControlsNode(PackageNode* parent_, String name_)
+    : ControlsContainerNode(parent_)
+    , name(name_)
 {
 }
 
@@ -77,7 +77,7 @@ void PackageControlsNode::Accept(PackageVisitor* visitor)
 
 String PackageControlsNode::GetName() const
 {
-    return prototypes ? "Prototypes" : "Controls";
+    return name;
 }
 
 bool PackageControlsNode::IsEditingSupported() const
