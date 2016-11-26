@@ -17,17 +17,18 @@ namespace Private
 {
 ref struct WindowNativeBridge sealed
 {
-    internal :
+internal :
     WindowNativeBridge(WindowBackend* windowBackend);
 
     void* GetHandle() const;
 
     void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_);
 
-    void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
+    void AddXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl);
+    void RemoveXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl);
+    void PositionXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
     void UnfocusXamlControl();
+    ::Windows::UI::Xaml::Input::Pointer^ GetLastPressedPointer() const;
 
     void TriggerPlatformEvents();
 
@@ -54,9 +55,10 @@ private:
 
     void OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerCaptureLost(::Platform::Object^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs^ arg);
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
-    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args);
 
     eModifierKeys GetModifierKeys() const;
     static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
@@ -76,6 +78,7 @@ private:
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
     ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
+    ::Windows::UI::Xaml::Input::Pointer^ lastPressedPointer = nullptr;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;
@@ -86,6 +89,7 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenCompositionScaleChanged;
     ::Windows::Foundation::EventRegistrationToken tokenPointerPressed;
     ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerCaptureLost;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
     ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;

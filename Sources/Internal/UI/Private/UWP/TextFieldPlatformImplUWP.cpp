@@ -690,10 +690,15 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
 
 void TextFieldPlatformImpl::OnGotFocus()
 {
+    using ::Windows::UI::Xaml::Input::Pointer;
     using ::Windows::UI::ViewManagement::InputPane;
 
 #if defined(__DAVAENGINE_COREV2__)
-// TODO: core->XamlApplication()->CaptureTextBox(nativeControl);
+    Pointer^ lastPressedPointer = PlatformApi::Win10::GetLastPressedPointer(window);
+    if (lastPressedPointer != nullptr)
+    {
+        nativeControl->CapturePointer(lastPressedPointer);
+    }
 #else
     core->XamlApplication()->CaptureTextBox(nativeControl);
 #endif

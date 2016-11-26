@@ -41,6 +41,13 @@ void UnfocusXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ x
     wb->bridge->UnfocusXamlControl();
 }
 
+::Windows::UI::Xaml::Input::Pointer^ GetLastPressedPointer(Window* targetWindow)
+{
+    using namespace DAVA::Private;
+    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    return wb->bridge->GetLastPressedPointer();
+}
+
 } // namespace Win10
 } // namespace PlatformApi
 } // namespace DAVA

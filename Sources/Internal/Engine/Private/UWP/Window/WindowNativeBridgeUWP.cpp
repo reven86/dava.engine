@@ -53,12 +53,12 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
     xamlWindow->Activate();
 }
 
-void WindowNativeBridge::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::AddXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     xamlCanvas->Children->Append(xamlControl);
 }
 
-void WindowNativeBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::RemoveXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     unsigned int index = 0;
     for (auto x = xamlCanvas->Children->First(); x->HasCurrent; x->MoveNext(), ++index)
@@ -71,7 +71,7 @@ void WindowNativeBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlCo
     }
 }
 
-void WindowNativeBridge::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
+void WindowNativeBridge::PositionXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
 {
     xamlCanvas->SetLeft(xamlControl, x);
     xamlCanvas->SetTop(xamlControl, y);
@@ -82,6 +82,11 @@ void WindowNativeBridge::UnfocusXamlControl()
     // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
     // So use dummy offscreen control that steals focus
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
+}
+
+::Windows::UI::Xaml::Input::Pointer^ WindowNativeBridge::GetLastPressedPointer() const
+{
+    return lastPressedPointer;
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
@@ -322,6 +327,8 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
 
+    lastPressedPointer = arg->Pointer;
+
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
@@ -348,6 +355,8 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
 
+    lastPressedPointer = nullptr;
+
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
@@ -367,6 +376,11 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         uint32 touchId = pointerPoint->PointerId;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, touchId, x, y, modifierKeys));
     }
+}
+
+void WindowNativeBridge::OnPointerCaptureLost(::Platform::Object^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs^ arg)
+{
+    OnPointerReleased(sender, arg);
 }
 
 void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
@@ -421,7 +435,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
 }
 
-void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
+void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args)
 {
     if (mouseMoveSkipCount > 0)
     {
@@ -557,6 +571,7 @@ void WindowNativeBridge::InstallEventHandlers()
 
     tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerPressed);
     tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
+    tokenPointerCaptureLost = xamlSwapChainPanel->PointerCaptureLost += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
 }
@@ -580,6 +595,7 @@ void WindowNativeBridge::UninstallEventHandlers()
 
     xamlSwapChainPanel->PointerPressed -= tokenPointerPressed;
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
+    xamlSwapChainPanel->PointerCaptureLost -= tokenPointerCaptureLost;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
 
