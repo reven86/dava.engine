@@ -64,7 +64,7 @@ public:
 
     void SetGPUFormat(DAVA::eGPUFamily gpu);
 
-    void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
+    void WaitStart(const QString& title, const QString& message, int min, int max);
     void WaitSetMessage(const QString& messsage);
     void WaitSetValue(int value);
     bool IsWaitDialogOnScreen() const;
@@ -81,7 +81,7 @@ public:
 
     void CallAction(ID id, DAVA::Any&& args) override;
     QWidget* GetGlobalParentWidget() const override;
-    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100) override;
+    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min, DAVA::uint32 max) override;
     bool IsWaitDialogVisible() const override;
     void HideWaitDialog() override;
     void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;

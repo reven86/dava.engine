@@ -202,8 +202,17 @@ void DX9CheckMultisampleSupport()
 
 void dx9_InitCaps()
 {
-    D3DCAPS9 caps;
+    D3DCAPS9 caps = {};
     _D3D9_Device->GetDeviceCaps(&caps);
+
+    DWORD shaderModel = DAVA::Min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
+    if (shaderModel < 3)
+    {
+        if (_DX9_InitParam.renderingErrorCallback)
+        {
+            _DX9_InitParam.renderingErrorCallback(RenderingError::UnsupportedShaderModel, _DX9_InitParam.renderingErrorCallbackContext);
+        }
+    }
 
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
