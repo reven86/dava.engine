@@ -64,8 +64,9 @@ String FormatNodeNames(const DAVA::Vector<T*>& nodes)
 }
 }
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document* _document)
-    : document(_document)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Project* project_, Document* document_)
+    : project(project_)
+    , document(document_)
     , packageNode(document->GetPackage())
 {
 }
@@ -83,7 +84,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
             QuickEdPackageBuilder builder;
-            if (UIPackageLoader(document->GetProject()->GetPrototypes()).LoadPackage(path, &builder))
+            if (UIPackageLoader(project->GetPrototypes()).LoadPackage(path, &builder))
             {
                 RefPtr<PackageNode> importedPackage = builder.BuildPackage();
                 if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
@@ -507,7 +508,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
         builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
     }
 
-    if (UIPackageLoader(document->GetProject()->GetPrototypes()).LoadPackage(parser->GetRootNode(), "", &builder))
+    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), "", &builder))
     {
         const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
         const Vector<ControlNode*>& controls = builder.GetRootControls();

@@ -58,8 +58,6 @@ public:
     bool IsDocumentExists() const;
     void RefreshAllControlProperties();
 
-    Project* GetProject() const;
-
 signals:
     void FileChanged(Document* document);
     void CanSaveChanged(bool canSave);
@@ -84,8 +82,6 @@ private:
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;
-
-    Project* project;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

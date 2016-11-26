@@ -51,7 +51,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
-    , projectStructure(new FileSystemCache(QStringList() << "yaml"))
+    , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
@@ -82,7 +82,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
     uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
 
-    projectStructure->TrackDirectory(uiResourcesPath);
+    fileSystemCache->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
 
     view->SetProjectActionsEnabled(true);
@@ -127,7 +127,7 @@ Project::~Project()
     view->SetProjectActionsEnabled(false);
 
     view->SetResourceDirectory(QString());
-    projectStructure->UntrackDirectory(uiResourcesPath);
+    fileSystemCache->UntrackDirectory(uiResourcesPath);
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
@@ -139,6 +139,11 @@ Project::~Project()
 Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
 {
     return properties.GetLibraryPackages();
+}
+
+const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& Project::GetPrototypes() const
+{
+    return properties.GetPrototypes();
 }
 
 std::tuple<ResultList, ProjectProperties> Project::ParseProjectPropertiesFromFile(const QString& projectFile)
@@ -298,7 +303,7 @@ bool Project::TryCloseAllDocuments()
 
 void Project::OnFindFileInProject()
 {
-    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);
+    QString filePath = FindFileDialog::GetFilePath(fileSystemCache.get(), "yaml", view->mainWindow);
     if (filePath.isEmpty())
     {
         return;
@@ -325,4 +330,100 @@ const QString& Project::GetProjectDirectory() const
 const QString& Project::GetProjectName() const
 {
     return projectName;
+}
+
+#include "Model/QuickEdPackageBuilder.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/YamlPackageSerializer.h"
+#include "UI/UIPackageLoader.h"
+
+void Project::FindPrototypes()
+{
+    using namespace DAVA;
+
+    QStringList files = fileSystemCache->GetFiles("yaml");
+    int index = 0;
+    for (QString& pathStr : files)
+    {
+        FilePath path(pathStr.toStdString());
+        index++;
+        int pct = (index * 100) / files.size();
+        if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 &&
+            path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
+        {
+            QuickEdPackageBuilder builder;
+            Logger::Debug(">> (%d) %s", pct, path.GetFrameworkPath().c_str());
+            if (UIPackageLoader().LoadPackage(path, &builder))
+            {
+                Logger::Debug("  [loaded]");
+                RefPtr<PackageNode> pack = builder.BuildPackage();
+                if (pack.Valid())
+                {
+                    Logger::Debug("  controls: %d", pack->GetPackageControlsNode()->GetCount());
+                }
+            }
+            else
+            {
+                DVASSERT(false);
+                Logger::Debug("  [failed]");
+            }
+        }
+    }
+
+    Vector<std::pair<String, Vector<String>>> replaces;
+    for (auto it : QuickEdPackageBuilder::replaces)
+    {
+        std::pair<String, Vector<String>> prototypes;
+        prototypes.first = it.first;
+        for (auto it2 : it.second)
+        {
+            prototypes.second.push_back(it2);
+        }
+
+        std::sort(prototypes.second.begin(), prototypes.second.end());
+        replaces.push_back(prototypes);
+    }
+
+    std::sort(replaces.begin(), replaces.end(), [](std::pair<String, Vector<String>>& p1, std::pair<String, Vector<String>>& p2) {
+        return p1.first < p2.first;
+    });
+
+    Logger::Debug("!!!! PROTOTYPES");
+    for (auto it : replaces)
+    {
+        //Logger::Debug("REPLACING (%d): %s", pct, it.first.c_str());
+        printf(" - {file: \"%s\", prototypes: [", it.first.c_str());
+
+        bool first = true;
+        for (auto it2 : it.second)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                printf(", ");
+            }
+            printf("\"%s\"", it2.c_str());
+        }
+        printf("]}\n");
+        //        QuickEdPackageBuilder builder(true);
+        //        if (UIPackageLoader().LoadPackage(it.first, &builder))
+        //        {
+        //            RefPtr<PackageNode> pack = builder.BuildPackage();
+        //            if (pack.Valid())
+        //            {
+        //                YamlPackageSerializer serializer;
+        //                serializer.SerializePackage(pack.Get());
+        //                serializer.WriteToFile(pack->GetPath());
+        //            }
+        //        }
+
+        //        for (auto it2 : it.second)
+        //        {
+        //            Logger::Debug("  PR: %s", it2.c_str());
+        //        }
+    }
 }

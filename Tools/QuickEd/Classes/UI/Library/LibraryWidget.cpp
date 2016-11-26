@@ -16,11 +16,11 @@ void LibraryWidget::OnDocumentChanged(Document* document)
 {
     if (document != nullptr)
     {
-        libraryModel->SetPackageNode(document->GetProject(), document->GetPackage());
+        libraryModel->SetPackageNode(document->GetPackage());
     }
     else
     {
-        libraryModel->SetPackageNode(nullptr, nullptr);
+        libraryModel->SetPackageNode(nullptr);
     }
 
     treeView->expandAll();
@@ -30,4 +30,9 @@ void LibraryWidget::OnDocumentChanged(Document* document)
 void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages)
 {
     libraryModel->SetLibraryPackages(libraryPackages);
+}
+
+void LibraryWidget::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes)
+{
+    libraryModel->SetPrototypes(prototypes);
 }

@@ -13,7 +13,6 @@
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/QuickEdPackageBuilder.h"
-#include "Project/Project.h"
 
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
@@ -109,6 +108,11 @@ void LibraryModel::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& librar
     libraryPackagePaths = libraryPackagePaths_;
 }
 
+void LibraryModel::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes_)
+{
+    prototypes = prototypes_;
+}
+
 Qt::ItemFlags LibraryModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
@@ -182,7 +186,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
     return nullptr;
 }
 
-void LibraryModel::SetPackageNode(Project* project, PackageNode* package_)
+void LibraryModel::SetPackageNode(PackageNode* package_)
 {
     for (QStandardItem* item : libraryRootItems)
     {
@@ -207,7 +211,7 @@ void LibraryModel::SetPackageNode(Project* project, PackageNode* package_)
     if (package != nullptr)
     {
         package->AddListener(this);
-        BuildModel(project);
+        BuildModel();
     }
 }
 
@@ -249,14 +253,14 @@ QModelIndex LibraryModel::indexByNode(const void* node, const QStandardItem* ite
     return QModelIndex();
 }
 
-void LibraryModel::BuildModel(Project* project)
+void LibraryModel::BuildModel()
 {
     int32 index = 0;
     for (const FilePath& path : libraryPackagePaths)
     {
         QuickEdPackageBuilder builder;
         PackageNode* package = nullptr;
-        if (UIPackageLoader(project->GetPrototypes()).LoadPackage(path, &builder))
+        if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
         {
             RefPtr<PackageNode> libraryPackage = builder.BuildPackage();
             package = SafeRetain(libraryPackage.Get());

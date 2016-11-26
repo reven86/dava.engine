@@ -18,10 +18,9 @@ using namespace placeholders;
 Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
-    , commandExecutor(new QtModelPackageCommandExecutor(this))
+    , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
-    , project(project_)
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
