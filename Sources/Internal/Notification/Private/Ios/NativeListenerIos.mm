@@ -28,9 +28,11 @@ NativeListener::~NativeListener()
 void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
 #if defined(__IPHONE_8_0)
-    //[[[UIDevice currentDevice] systemVersion] compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
-    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1)
+    NSString* version = [[UIDevice currentDevice] systemVersion];
+    if ([[[UIDevice currentDevice] systemVersion] compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
     {
+        // https://developer.apple.com/reference/uikit/uiapplication/1622932-registerusernotificationsettings
+        // available 8.0 and later
         if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
         {
             [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
