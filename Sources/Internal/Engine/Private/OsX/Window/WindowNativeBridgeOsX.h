@@ -94,8 +94,8 @@ struct WindowNativeBridge final
     uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
 
 private:
-    void SetSystemCursorVisible(bool visible);
     void SetSystemCursorCapture(bool capture);
+    void UpdateSystemCursorVisible();
 
     eCursorCapture captureMode = eCursorCapture::OFF;
     // bug when cursor in hide state (could not be hide)

@@ -421,10 +421,7 @@ eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
     cursorInside = true;
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(false);
-    }
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(true);
@@ -434,10 +431,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
     cursorInside = false;
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(true);
-    }
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(false);
@@ -468,23 +462,6 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
     }
 }
 
-void WindowNativeBridge::SetSystemCursorVisible(bool visible)
-{
-    static bool mouseVisibleState = true;
-    if (mouseVisibleState != visible)
-    {
-        mouseVisibleState = visible;
-        if (visible)
-        {
-            [NSCursor unhide];
-        }
-        else
-        {
-            [NSCursor hide];
-        }
-    }
-}
-
 void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 {
     if (capture)
@@ -507,15 +484,30 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
     }
 }
 
+void WindowNativeBridge::UpdateSystemCursorVisible()
+{
+    bool visible = !cursorInside || mouseVisible;
+    static bool mouseVisibleState = true;
+    if (mouseVisibleState != visible)
+    {
+        mouseVisibleState = visible;
+        if (visible)
+        {
+            [NSCursor unhide];
+        }
+        else
+        {
+            [NSCursor hide];
+        }
+    }
+}
+
 void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        if (cursorInside)
-        {
-            SetSystemCursorVisible(visible);
-        }
+        UpdateSystemCursorVisible();
     }
 }
 
