@@ -23,8 +23,7 @@ public:
     void Quit();
 
     // Forwarded methods from UWPApplication
-    void OnLaunched();
-    void OnActivated();
+    void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();

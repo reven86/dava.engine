@@ -25,6 +25,8 @@ protected:
     void OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args) override;
 
 private:
+    void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
+
     void OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg);
     void OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg);

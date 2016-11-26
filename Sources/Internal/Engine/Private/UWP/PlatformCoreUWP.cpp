@@ -75,9 +75,12 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunched()
+void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
 {
-    if (!gameThreadRunning)
+    using namespace ::Windows::ApplicationModel::Activation;
+
+    ApplicationExecutionState prevExecState = args->PreviousExecutionState;
+    if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
     {
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
         gameThread->Start();
@@ -85,13 +88,7 @@ void PlatformCore::OnLaunched()
         // TODO: make Thread detachable
         //gameThread->Detach();
         //gameThread->Release();
-
-        gameThreadRunning = true;
     }
-}
-
-void PlatformCore::OnActivated()
-{
 }
 
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)

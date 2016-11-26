@@ -28,15 +28,28 @@ UWPApplication::UWPApplication(Vector<String> cmdargs)
 {
 }
 
-void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ /*args*/)
+void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    InstallEventHandlers();
-    core->OnLaunched();
+    OnLaunchedOrActivated(args);
 }
 
-void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ /*args*/)
+void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
 {
-    core->OnActivated();
+    OnLaunchedOrActivated(args);
+}
+
+void UWPApplication::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
+{
+    using ::Windows::ApplicationModel::Activation::ApplicationExecutionState;
+
+    ApplicationExecutionState prevExecState = args->PreviousExecutionState;
+    if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
+    {
+        // Install event handlers only if application is not running
+        InstallEventHandlers();
+    }
+
+    core->OnLaunchedOrActivated(args);
 }
 
 void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args)
