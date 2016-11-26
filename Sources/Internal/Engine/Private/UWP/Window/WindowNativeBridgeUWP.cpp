@@ -38,6 +38,13 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
 
     // Limit minimum window size to some reasonable value
     ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
+    ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
+
+    if (PlatformCore::IsPhoneContractPresent())
+    {
+        using ::Windows::UI::ViewManagement::StatusBar;
+        StatusBar::GetForCurrentView()->HideAsync();
+    }
 
     CreateBaseXamlUI();
     InstallEventHandlers();

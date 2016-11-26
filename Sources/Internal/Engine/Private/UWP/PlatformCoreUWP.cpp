@@ -82,12 +82,6 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
     ApplicationExecutionState prevExecState = args->PreviousExecutionState;
     if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
     {
-        if (IsPhoneContractPresent())
-        {
-            using ::Windows::UI::ViewManagement::StatusBar;
-            StatusBar::GetForCurrentView()->HideAsync();
-        }
-
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
         gameThread->Start();
         gameThread->BindToProcessor(0);
