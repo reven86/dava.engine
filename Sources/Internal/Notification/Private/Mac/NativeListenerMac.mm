@@ -1,4 +1,4 @@
-#include "Notification/Private/Mac/NativeDelegateMac.h"
+#include "Notification/Private/Mac/NativeListenerMac.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -19,18 +19,18 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(DAVA::LocalNotificationController& controller)
+NativeListener::NativeListener(DAVA::LocalNotificationController& controller)
     : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterNSApplicationDelegateListener(this);
 }
 
-NativeDelegate::~NativeDelegate()
+NativeListener::~NativeListener()
 {
     Engine::Instance()->GetNativeService()->UnregisterNSApplicationDelegateListener(this);
 }
 
-void NativeDelegate::applicationDidFinishLaunching(NSNotification* notification)
+void NativeListener::applicationDidFinishLaunching(NSNotification* notification)
 {
     //using namespace DAVA;
     NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
@@ -46,16 +46,14 @@ void NativeDelegate::applicationDidFinishLaunching(NSNotification* notification)
             Engine::Instance()->RunAsyncOnMainThread(func);
         }
     }
-    Logger::Debug("NativeDelegateMac::applicationDidFinishLaunching");
 }
 
-void NativeDelegate::applicationDidBecomeActive()
+void NativeListener::applicationDidBecomeActive()
 {
-    Logger::Debug("NativeDelegateMac::applicationDidBecomeActive");
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
 }
 
-void NativeDelegate::didActivateNotification(NSUserNotification* notification)
+void NativeListener::didActivateNotification(NSUserNotification* notification)
 {
     //using namespace DAVA;
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
@@ -70,7 +68,6 @@ void NativeDelegate::didActivateNotification(NSUserNotification* notification)
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
     }
-    Logger::Debug("NativeDelegateMac::didActivateNotification");
 }
 } // namespace Private
 } //  namespace DAVA

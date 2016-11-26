@@ -5,6 +5,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 
+#include "Functional/Function.h"
 #include <jni.h>
 #include <android/log.h>
 
@@ -14,10 +15,10 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeDelegate final
+struct NativeListener final
 {
-    NativeDelegate(LocalNotificationController& controller);
-    ~NativeDelegate();
+    NativeListener(LocalNotificationController& controller);
+    ~NativeListener();
 
 private:
     jobject instance;

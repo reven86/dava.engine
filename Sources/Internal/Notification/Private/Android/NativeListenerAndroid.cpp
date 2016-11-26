@@ -1,4 +1,4 @@
-#include "Notification/Private/Android/NativeDelegateAndroid.h"
+#include "Notification/Private/Android/NativeListenerAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -14,7 +14,7 @@
 
 extern "C"
 {
-JNIEXPORT void JNICALL Java_com_dava_engine_NativeDelegate_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid)
+JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid)
 {
     DAVA::String uidStr = DAVA::JNI::JavaStringToString(uid);
     auto function = [uidStr]()
@@ -29,27 +29,28 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(LocalNotificationController& controller)
+NativeListener::NativeListener(LocalNotificationController& controller)
 {
     try
     {
         instance = nullptr;
         JNIEnv* env = JNI::GetEnv();
-        JNI::JavaClass clazz("com/dava/engine/NativeDelegate");
+        JNI::JavaClass clazz("com/dava/engine/Notification/NativeListener");
         release = clazz.GetMethod<void>("release");
         jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "()V");
         jobject obj = env->NewObject(clazz, classConstructor);
         instance = env->NewGlobalRef(obj);
+        env->DeleteLocalRef(obj);
     }
     catch (const JNI::Exception& e)
     {
-        Logger::Error("[NativeDelegate] failed to init java bridge: %s", e.what());
+        Logger::Error("[NativeListener] failed to init java bridge: %s", e.what());
         DVASSERT_MSG(false, e.what());
         return;
     }
 }
 
-NativeDelegate::~NativeDelegate()
+NativeListener::~NativeListener()
 {
     if (instance != nullptr)
     {

@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.dava.engine.DavaActivity;
 import com.dava.engine.DavaNotificationProvider;
 
-public class NativeDelegate extends DavaActivity.ActivityListenerImpl
+public class NativeListener extends DavaActivity.ActivityListenerImpl
 {
     public static native void nativeNewIntent(String uid);
 
@@ -22,16 +22,15 @@ public class NativeDelegate extends DavaActivity.ActivityListenerImpl
         DavaActivity.instance().unregisterActivityListener(this);
     }
 
-    public NativeDelegate()
+    public NativeListener()
     {
-        Log.d(DavaActivity.LOG_TAG, "NativeDelegate.begin");
         DavaActivity.instance().runOnUiThread(new Runnable() {
             @Override public void run()
             {
                 RegisterListener();
             }
         });
-        Log.d(DavaActivity.LOG_TAG, "NativeDelegate.<init> Create class instance.");
+        Log.d(DavaActivity.LOG_TAG, "NativeListener.<init> Create class instance.");
     }
 
     void release()

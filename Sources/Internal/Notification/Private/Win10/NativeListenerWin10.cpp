@@ -1,4 +1,4 @@
-#include "Notification/Private/Win10/NativeDelegateWin10.h"
+#include "Notification/Private/Win10/NativeListenerWin10.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -13,18 +13,18 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(LocalNotificationController& controller)
+NativeListener::NativeListener(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterXamlApplicationListener(this);
 }
 
-NativeDelegate::~NativeDelegate()
+NativeListener::~NativeListener()
 {
     Engine::Instance()->GetNativeService()->UnregisterXamlApplicationListener(this);
 }
 
-void NativeDelegate::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
+void NativeListener::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
 {
     using namespace DAVA;
     String arguments = UTF8Utils::EncodeToUTF8(launchArgs->Arguments->Data());

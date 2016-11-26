@@ -12,10 +12,10 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeDelegate : public UIApplicationDelegateListener
+struct NativeListener : public UIApplicationDelegateListener
 {
-    NativeDelegate(LocalNotificationController& controller);
-    virtual ~NativeDelegate();
+    NativeListener(LocalNotificationController& controller);
+    virtual ~NativeListener();
     void didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions) override;
     void applicationDidBecomeActive() override;
     void didReceiveLocalNotification(UILocalNotification* notification) override;

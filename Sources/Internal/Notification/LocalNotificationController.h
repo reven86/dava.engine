@@ -13,7 +13,7 @@ class LocalNotificationProgress;
 
 namespace Private
 {
-struct NativeDelegate;
+struct NativeListener;
 } // namespace Private
 
 class LocalNotificationController : public Singleton<LocalNotificationController>
@@ -39,7 +39,7 @@ private:
     Mutex notificationsListMutex;
     List<LocalNotification*> notificationsList;
 #if defined(__DAVAENGINE_COREV2__)
-    std::unique_ptr<Private::NativeDelegate> nativeDelegate;
+    std::unique_ptr<Private::NativeListener> nativeListener;
 #endif
 };
 } // namespace DAVA

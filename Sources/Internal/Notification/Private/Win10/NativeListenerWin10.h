@@ -13,10 +13,10 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeDelegate : public XamlApplicationListener
+struct NativeListener : public XamlApplicationListener
 {
-    NativeDelegate(LocalNotificationController& controller);
-    virtual ~NativeDelegate();
+    NativeListener(LocalNotificationController& controller);
+    virtual ~NativeListener();
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs) override;
 
 private:

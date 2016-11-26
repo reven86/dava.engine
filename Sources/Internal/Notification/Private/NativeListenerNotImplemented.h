@@ -1,16 +1,22 @@
-#include "Notification/Private/NativeDelegateNotImplemented.h"
+#pragma once
+
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
 #if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
+class LocalNotificationController;
+
 namespace Private
 {
-NativeDelegate::NativeDelegate(LocalNotificationController& controller)
+struct NativeListener
 {
-}
+    NativeListener(LocalNotificationController& controller);
+};
 } // namespace Private
 } // namespace DAVA
+
 #endif // __DAVAENGINE_COREV2__
 #endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)

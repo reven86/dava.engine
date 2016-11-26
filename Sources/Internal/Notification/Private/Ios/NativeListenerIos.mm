@@ -1,4 +1,4 @@
-#include "Notification/Private/Ios/NativeDelegateIos.h"
+#include "Notification/Private/Ios/NativeListenerIos.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -14,23 +14,27 @@ namespace DAVA
 {
 namespace Private
 {
-NativeDelegate::NativeDelegate(LocalNotificationController& controller)
+NativeListener::NativeListener(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
     Engine::Instance()->GetNativeService()->RegisterUIApplicationDelegateListener(this);
 }
 
-NativeDelegate::~NativeDelegate()
+NativeListener::~NativeListener()
 {
     Engine::Instance()->GetNativeService()->UnregisterUIApplicationDelegateListener(this);
 }
 
-void NativeDelegate::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
+void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
 #if defined(__IPHONE_8_0)
-    if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+    //[[[UIDevice currentDevice] systemVersion] compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1)
     {
-        [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
+        if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+        {
+            [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
+        }
     }
 #endif
     UILocalNotification* notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
@@ -48,12 +52,12 @@ void NativeDelegate::didFinishLaunchingWithOptions(UIApplication* application, N
     }
 }
 
-void NativeDelegate::applicationDidBecomeActive()
+void NativeListener::applicationDidBecomeActive()
 {
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
 }
 
-void NativeDelegate::didReceiveLocalNotification(UILocalNotification* notification)
+void NativeListener::didReceiveLocalNotification(UILocalNotification* notification)
 {
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
     if (uid != nil && [uid length] != 0)
@@ -64,7 +68,6 @@ void NativeDelegate::didReceiveLocalNotification(UILocalNotification* notificati
         };
         Engine::Instance()->RunAsyncOnMainThread(func);
     }
-    DAVA::Logger::Debug("NativeDelegateIos::didActivateNotification");
 }
 } // namespace Private
 } // namespace DAVA

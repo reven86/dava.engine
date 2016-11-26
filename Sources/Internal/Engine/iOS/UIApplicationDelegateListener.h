@@ -2,9 +2,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
