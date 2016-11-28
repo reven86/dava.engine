@@ -1,21 +1,12 @@
-#include <QFile>
-#include <QFileInfo>
-#include <QTextStream>
-#include <QAction>
-#include <QVariant>
-#include <QGroupBox>
-#include <QDialogButtonBox>
-#include <QDebug>
-
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"
 
 #include "MaterialModel.h"
 #include "MaterialFilterModel.h"
 
-#include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"
@@ -36,9 +27,22 @@
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
-#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
 
 #include "Base/Introspection.h"
+
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
+#include <QAction>
+#include <QVariant>
+#include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QDebug>
+#include <QScrollBar>
+#include <QMenu>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QBoxLayout>
 
 namespace UIName
 {
@@ -412,8 +416,10 @@ private:
         QtPropertyDataInspDynamic* dynamicData = dynamic_cast<QtPropertyDataInspDynamic*>(data);
         if (dynamicData)
         {
-            QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
-            DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            DVASSERT(data != nullptr);
+            QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
+            DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
 
             // calculate appropriate default path
             if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
@@ -600,11 +606,14 @@ void MaterialEditor::initTemplates()
     {
         QStandardItemModel* templatesModel = new QStandardItemModel(this);
 
-        const DAVA::Vector<MaterialTemplateInfo>& templates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
+        ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(projectManagerData != nullptr);
+        const DAVA::Vector<MaterialTemplateInfo>* templates = projectManagerData->GetMaterialTemplatesInfo();
+
         QStandardItem* emptyItem = new QStandardItem(QString());
         templatesModel->appendRow(emptyItem);
 
-        for (const MaterialTemplateInfo& t : templates)
+        for (const MaterialTemplateInfo& t : *templates)
         {
             QStandardItem* item = new QStandardItem();
             item->setText(t.name.c_str());
@@ -1170,11 +1179,14 @@ void MaterialEditor::OnMaterialSave(bool checked)
 
         if (!outputFile.isEmpty() && (nullptr != activeScene))
         {
+            ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+            DVASSERT(data != nullptr);
+
             lastSavePath = outputFile.toLatin1().data();
 
             DAVA::SerializationContext materialContext;
             materialContext.SetScene(activeScene);
-            materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
+            materialContext.SetScenePath(data->GetProjectPath());
             materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
 
             DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());

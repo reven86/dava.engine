@@ -6,16 +6,15 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
-#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Settings/SettingsManager.h"
 #include "StringConstants.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Base/FastName.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
-
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
@@ -253,7 +252,12 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
         materials.erase(globalMaterial);
     }
 
-    const DAVA::Vector<MaterialTemplateInfo>& materialTemplates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
+    const DAVA::Vector<MaterialTemplateInfo>* materialTemplates = nullptr;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data != nullptr)
+    {
+        materialTemplates = data->GetMaterialTemplatesInfo();
+    }
 
     DAVA::FastName textureNames[] = {
         DAVA::NMaterialTextureName::TEXTURE_ALBEDO,
@@ -320,11 +324,11 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
         }
 
         const DAVA::FastName& fxName = (*it)->GetEffectiveFXName();
-        if (fxName.IsValid() && !materialTemplates.empty() && fxName != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+        if (fxName.IsValid() && materialTemplates && !materialTemplates->empty() && fxName != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
             // ShadowVolume material is non-assignable and it's okey
             bool templateFound = false;
-            for (const MaterialTemplateInfo& materialTemplate : materialTemplates)
+            for (const MaterialTemplateInfo& materialTemplate : *materialTemplates)
             {
                 if (0 == materialTemplate.path.compare(fxName.c_str()))
                 {
@@ -358,7 +362,12 @@ void SceneValidator::ValidateLandscape(DAVA::Landscape* landscape)
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), DAVA::String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
-        DAVA::String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->GetDataSourcePath());
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        DAVA::String path = landscape->GetHeightmapPathname().GetAbsolutePathname();
+        if (data != nullptr)
+        {
+            path = landscape->GetHeightmapPathname().GetRelativePathname(data->GetDataSourcePath());
+        }
         PushLogMessage(nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }
 }

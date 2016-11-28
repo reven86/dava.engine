@@ -464,7 +464,7 @@ void CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
     DAVA::FileSystem::Instance()->CreateDirectory(dataPath, true);
     DAVA::FileSystem::Instance()->CreateDirectory(datasourcePath, true);
 
-    DAVA::FileSystem::Instance()->CopyFile("~res:/quality.template.yaml", dataPath + "quality.yaml", true);
+    DAVA::FileSystem::Instance()->CopyFile("~res:/ResourceEditor/quality.template.yaml", dataPath + "quality.yaml", true);
 }
 
 void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)

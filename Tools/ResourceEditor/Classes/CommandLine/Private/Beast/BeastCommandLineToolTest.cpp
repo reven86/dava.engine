@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModuleTestExecute.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
@@ -15,7 +15,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 namespace BCLTestDetail
 {
@@ -104,14 +104,14 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         };
 
         tool.reset(new BeastCommandLineTool(cmdLine));
-        CommandLineModuleTestExecute::InitModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::InitModule(tool.get());
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
     {
         if (tool)
         {
-            testCompleted = CommandLineModuleTestExecute::ProcessModule(tool.get());
+            testCompleted = DAVA::TArc::ConsoleModuleTestExecution::ProcessModule(tool.get());
         }
     }
 
@@ -119,7 +119,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     {
         if (testCompleted && tool)
         {
-            CommandLineModuleTestExecute::FinalizeModule(tool.get());
+            DAVA::TArc::ConsoleModuleTestExecution::FinalizeModule(tool.get());
 
             TestScene();
             CommandLineModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);

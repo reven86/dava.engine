@@ -398,6 +398,26 @@ File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint
     return File::Create(frameworkPath, attributes);
 }
 
+FilePath FileSystem::GetTempDirectoryPath() const
+{
+#ifdef __DAVAENGINE_WIN_UAP__
+    auto folder = Windows::Storage::ApplicationData::Current->TemporaryFolder;
+    const wchar_t* ptr = folder->Path->Data();
+    return FilePath(ptr);
+#else
+    static const char* envNames[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR" };
+    for (const char* envName : envNames)
+    {
+        const char* tmp = std::getenv(envName);
+        if (tmp != nullptr)
+        {
+            return FilePath(tmp);
+        }
+    }
+    return FilePath();
+#endif
+}
+
 const FilePath& FileSystem::GetCurrentWorkingDirectory()
 {
     String path;

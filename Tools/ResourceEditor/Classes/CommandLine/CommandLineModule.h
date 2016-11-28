@@ -6,12 +6,10 @@
 
 #include "CommandLine/ProgramOptions.h"
 
-#include "TArcCore/ConsoleModule.h"
+#include "TArc/Core/ConsoleModule.h"
 
 class CommandLineModule : public DAVA::TArc::ConsoleModule
 {
-    friend class CommandLineModuleTestExecute;
-
 public:
     CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);
 
@@ -37,5 +35,5 @@ protected:
 
 inline int CommandLineModule::GetExitCode() const
 {
-    return (result == DAVA::Result::RESULT_SUCCESS ? 0 : -1);
+    return (result.type == DAVA::Result::RESULT_SUCCESS ? 0 : -1);
 }

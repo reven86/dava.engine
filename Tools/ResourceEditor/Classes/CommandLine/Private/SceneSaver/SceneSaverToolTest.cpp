@@ -1,12 +1,12 @@
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModuleTestExecute.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileList.h"
 #include "Render/TextureDescriptor.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 namespace SSTestDetail
 {
@@ -94,7 +94,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
             };
 
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-            CommandLineModuleTestExecute::ExecuteModule(tool.get());
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::newScenePathnameStr));
 
@@ -126,7 +126,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::scenePathnameStr));
 
@@ -154,7 +154,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "Data/quality.yaml"));
 

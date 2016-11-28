@@ -1,13 +1,13 @@
 #include "CommandLine/ImageSplitterTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModuleTestExecute.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Utils/Random.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 
@@ -53,7 +53,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<ImageSplitterTool>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         auto testChannel = [](const String& channelName, uint8 channelValue)
         {
@@ -132,7 +132,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<ImageSplitterTool>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         ScopedPtr<Image> rgbaImage(ImageSystem::LoadSingleMip(ISTTestDetail::rgbaImagePathname));
         if (rgbaImage)

@@ -1,6 +1,6 @@
 #include "CommandLine/SceneImageDump.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModuleTestExecute.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
@@ -12,7 +12,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 
@@ -57,7 +57,7 @@ DAVA_TARC_TESTCLASS(SceneImageDumpTest)
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneImageDump>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         ImageInfo info = ImageSystem::GetImageInfo(SIDTestDetail::outPathnameStr);
         TEST_VERIFY(info.IsEmpty() == false);

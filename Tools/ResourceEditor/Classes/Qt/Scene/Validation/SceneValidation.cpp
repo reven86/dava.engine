@@ -1,6 +1,6 @@
 #include "Qt/Scene/Validation/SceneValidation.h"
 #include "Qt/Scene/SceneHelper.h"
-#include "QtTools/ProjectInformation/MaterialTemplatesInfo.h"
+#include "Project/ProjectManagerData.h"
 
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -248,20 +248,9 @@ bool IsAssignableMaterialTemplate(const FastName& materialTemplatePath)
 
 int32 GetCollisionTypeID(const char* collisionTypeName)
 {
-    // copied from EditorConfig.yaml
-    // temporary. should be replaced after implementaion of resource system or alike
-    static const Vector<String>& collisionTypes = {
-        "No Collision",
-        "Tree",
-        "Bush",
-        "Fragile Proj",
-        "Fragile ^Proj",
-        "Falling",
-        "Building",
-        "Invisible Wall",
-        "SpeedTree",
-        "Water"
-    };
+    ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(projectManagerData != nullptr);
+    const Vector<String>& collisionTypes = projectManagerData->GetEditorConfig()->GetComboPropertyValues("CollisionType");
 
     for (int32 i = 0; i < collisionTypes.size(); ++i)
     {
@@ -465,7 +454,10 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         materials.erase(globalMaterial);
     }
 
-    const Vector<MaterialTemplateInfo>& materialTemplates = MaterialTemplatesInfo::Instance()->GetTemplatesInfo();
+    ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(projectManagerData != nullptr);
+    const Vector<MaterialTemplateInfo>* materialTemplates = projectManagerData->GetMaterialTemplatesInfo();
+    DVASSERT(materialTemplates != nullptr);
 
     for (NMaterial* material : materials)
     {
@@ -486,7 +478,7 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         const FastName& materialTemplatePath = material->GetEffectiveFXName();
         if (materialTemplatePath.IsValid() && Details::IsAssignableMaterialTemplate(materialTemplatePath))
         {
-            const MaterialTemplateInfo* materialTemplate = Details::GetTemplateByPath(materialTemplates, materialTemplatePath);
+            const MaterialTemplateInfo* materialTemplate = Details::GetTemplateByPath(*materialTemplates, materialTemplatePath);
             if (materialTemplate)
             {
                 if (!materialTemplate->qualities.empty() && !qualityGroupIsSet)

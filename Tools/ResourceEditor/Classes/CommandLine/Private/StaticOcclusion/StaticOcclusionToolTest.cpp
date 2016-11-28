@@ -1,6 +1,6 @@
 #include "CommandLine/StaticOcclusionTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "CommandLine/Private/CommandLineModuleTestExecute.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -8,7 +8,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 
-#include "Testing/TArcUnitTests.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 namespace SOTestDetail
 {
@@ -64,7 +64,7 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 0);
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<StaticOcclusionTool>(cmdLine);
-        CommandLineModuleTestExecute::ExecuteModule(tool.get());
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 1);
 

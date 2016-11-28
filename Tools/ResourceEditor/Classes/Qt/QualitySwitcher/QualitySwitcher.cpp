@@ -1,6 +1,5 @@
 #include "Main/mainwindow.h"
 #include "QualitySwitcher.h"
-#include "Project/ProjectManager.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "MaterialEditor/MaterialEditor.h"
 

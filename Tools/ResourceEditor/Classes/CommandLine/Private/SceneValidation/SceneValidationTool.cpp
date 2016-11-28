@@ -1,8 +1,7 @@
 #include "CommandLine/SceneValidationTool.h"
 #include "Qt/Scene/Validation/SceneValidation.h"
 #include "Qt/Scene/Validation/ValidationProgressConsumer.h"
-#include "Qt/Project/ConsoleProject.h"
-#include "Qt/Project/ProjectManager.h"
+#include "Project/ProjectResources.h"
 #include "CommandLine/Private/OptionName.h"
 
 #include "Scene3D/Scene.h"
@@ -122,7 +121,7 @@ bool SceneValidationTool::PostInitInternal()
 
 void SceneValidationTool::UpdateResult(DAVA::Result newResult)
 {
-    if (newResult != DAVA::Result::RESULT_SUCCESS)
+    if (newResult.type != DAVA::Result::RESULT_SUCCESS)
     {
         result = newResult;
     }
@@ -143,13 +142,13 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         scenePathes.push_back(scenePath);
     }
 
-    ConsoleProject consoleProject;
+    ProjectResources project(GetAccessor());
 
     ValidationProgressToLog progressToLog;
 
     for (const FilePath& scenePath : scenePathes)
     {
-        consoleProject.OpenProject(ProjectManager::CreateProjectPathFromPath(scenePath));
+        project.LoadProject(ProjectManagerData::CreateProjectPathFromPath(scenePath));
 
         ScopedPtr<Scene> scene(new Scene);
         if (DAVA::SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePath))

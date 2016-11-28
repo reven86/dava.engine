@@ -1,4 +1,6 @@
 #include "AddSwitchEntityDialog.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
 #include "Main/mainwindow.h"
@@ -8,9 +10,11 @@
 #include "Classes/Commands2/EntityAddCommand.h"
 #include "Commands2/EntityRemoveCommand.h"
 #include "SwitchEntityCreator.h"
-#include "Project/ProjectManager.h"
 
 #include "ui_BaseAddEntityDialog.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
 #include <QLabel>
 
 AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
@@ -18,7 +22,9 @@ AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
 {
     setAcceptDrops(true);
     setAttribute(Qt::WA_DeleteOnClose, true);
-    DAVA::FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    DAVA::FilePath defaultPath(data->GetDataSourcePath());
 
     SceneEditor2* scene = sceneHolder.GetScene();
     if (scene)

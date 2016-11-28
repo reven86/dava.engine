@@ -2,6 +2,7 @@
 #include "../rhi_ShaderSource.h"
 #include "../rhi_ShaderCache.h"
 #include "rhi_Utils.h"
+#include "PreProcess.h"
 
 namespace rhi
 {
@@ -1101,7 +1102,10 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     std::string txt;
     std::vector<uint8>* bin = nullptr;
 
-    PreProcessSource(targetApi, srcText, &txt);
+    {
+        ShaderPreprocessScope preprocessScope;
+        PreProcessSource(targetApi, srcText, &txt);
+    }
 
     for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {

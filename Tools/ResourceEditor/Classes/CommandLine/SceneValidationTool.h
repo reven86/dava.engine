@@ -14,6 +14,8 @@ private:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
 
+    ProjectManagerData* GetProjectManagerData();
+
     void UpdateResult(DAVA::Result);
     void EnableAllValidations();
 
