@@ -203,6 +203,11 @@ void TextFieldPlatformImpl::Initialize()
 {
     uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     properties.createNew = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
+#endif
 }
 
 void TextFieldPlatformImpl::OwnerIsDying()
@@ -216,14 +221,20 @@ void TextFieldPlatformImpl::OwnerIsDying()
     // UITextField that owns this impl is in process of destruction and native control is no longer needed,
     // so remove it from hierarchy. But do not delete reference to it as some methods running in other threads
     // can use native control, e.g. thread where rendering to texture is being performed.
-    if (nativeControlHolder != nullptr)
+    if (window != nullptr)
     {
-        auto self{ shared_from_this() };
-        window->RunOnUIThreadAsync([this, self]() {
-            InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-            InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
-            PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
-        });
+        if (nativeControlHolder != nullptr)
+        {
+            auto self{ shared_from_this() };
+            window->RunOnUIThreadAsync([this, self]() {
+                InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
+                InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
+                PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
+            });
+        }
+
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
     }
 #endif
 }
@@ -240,12 +251,15 @@ void TextFieldPlatformImpl::SetVisible(bool isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunOnUIThreadAsync([this, self]() {
-                if (nativeControl != nullptr)
-                {
-                    SetNativeVisible(false);
-                }
-            });
+            if (window != nullptr)
+            {
+                window->RunOnUIThreadAsync([this, self]() {
+                    if (nativeControl != nullptr)
+                    {
+                        SetNativeVisible(false);
+                    }
+                });
+            }
 #else
             core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
@@ -295,11 +309,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     if (properties.rect != rect)
     {
-        properties.rect = rect;
-        properties.rectInWindowSpace = VirtualToWindow(rect);
-        properties.rectChanged = true;
-        properties.rectAssigned = true;
-        properties.anyPropertyChanged = true;
+        SetRect(rect);
     }
 
     if (properties.createNew || properties.anyPropertyChanged || properties.focusChanged)
@@ -323,6 +333,15 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
         properties.focusChanged = false;
         properties.ClearChangedFlags();
     }
+}
+
+void TextFieldPlatformImpl::SetRect(const Rect& rect)
+{
+    properties.rect = rect;
+    properties.rectInWindowSpace = VirtualToWindow(rect);
+    properties.rectChanged = true;
+    properties.rectAssigned = true;
+    properties.anyPropertyChanged = true;
 }
 
 void TextFieldPlatformImpl::SetText(const WideString& text)
@@ -377,7 +396,9 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
-    properties.fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    properties.fontSize = vcs->ConvertVirtualToInputX(virtualFontSize);
+    properties.virtualFontSize = virtualFontSize;
     properties.fontSizeChanged = true;
     properties.fontSizeAssigned = true;
     properties.anyPropertyChanged = true;
@@ -876,6 +897,18 @@ void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::Inp
     }
 }
 
+void TextFieldPlatformImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    SetRect(properties.rect);
+    SetFontSize(properties.virtualFontSize);
+}
+
+void TextFieldPlatformImpl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+    window = nullptr;
+}
+
 void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
 {
     rectInWindowSpace = props.rectInWindowSpace;
@@ -1197,14 +1230,14 @@ bool TextFieldPlatformImpl::IsMultiline() const
 
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-    return coordSystem->ConvertVirtualToInput(srcRect);
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    return vcs->ConvertVirtualToInput(srcRect);
 }
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-    return coordSystem->ConvertInputToVirtual(srcRect);
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    return vcs->ConvertInputToVirtual(srcRect);
 }
 
 void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)

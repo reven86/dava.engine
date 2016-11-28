@@ -179,26 +179,34 @@ void WebViewControl::OwnerIsDying()
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 
-    if (nativeWebView != nullptr)
+    if (window != nullptr)
     {
+        if (nativeWebView != nullptr)
+        {
 #if defined(__DAVAENGINE_COREV2__)
-        auto self{ shared_from_this() };
-        window->RunOnUIThreadAsync([this, self]() {
-            nativeWebView->NavigationStarting -= tokenNavigationStarting;
-            nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
-            PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
-        });
+            auto self{ shared_from_this() };
+            window->RunOnUIThreadAsync([this, self]() {
+                nativeWebView->NavigationStarting -= tokenNavigationStarting;
+                nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+                PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
+            });
 #else
         // Compiler complains of capturing nativeWebView data member in lambda
-        WebView ^ p = nativeWebView;
-        Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-        Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+            WebView ^ p = nativeWebView;
+            Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
+            Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
 
-        core->RunOnUIThread([p, tokenNS, tokenNC]() {
-            // We don't need blocking call here
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
+            core->RunOnUIThread([p, tokenNS, tokenNC]() {
+                // We don't need blocking call here
+                p->NavigationStarting -= tokenNS;
+                p->NavigationCompleted -= tokenNC;
+            });
+#endif
+        }
+
+#if defined(__DAVAENGINE_COREV2__)
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
 #endif
     }
 }
@@ -211,6 +219,11 @@ void WebViewControl::Initialize(const Rect& rect)
     properties.rectInWindowSpace = VirtualToWindow(rect);
     properties.rectChanged = true;
     properties.anyPropertyChanged = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+#endif
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
@@ -264,12 +277,15 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunOnUIThreadAsync([this, self]() {
-                if (nativeWebView != nullptr)
-                {
-                    SetNativePositionAndSize(rectInWindowSpace, true);
-                }
-            });
+            if (window != nullptr)
+            {
+                window->RunOnUIThreadAsync([this, self]() {
+                    if (nativeWebView != nullptr)
+                    {
+                        SetNativePositionAndSize(rectInWindowSpace, true);
+                    }
+                });
+            }
 #else
             core->RunOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
@@ -470,6 +486,19 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
 #endif
 }
 
+void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    properties.rectInWindowSpace = VirtualToWindow(properties.rect);
+    properties.rectChanged = true;
+    properties.anyPropertyChanged = true;
+}
+
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+    window = nullptr;
+}
+
 void WebViewControl::ProcessProperties(const WebViewProperties& props)
 {
     rectInWindowSpace = props.rectInWindowSpace;
@@ -604,8 +633,8 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-    return coordSystem->ConvertVirtualToInput(srcRect);
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    return vcs->ConvertVirtualToInput(srcRect);
 }
 
 void WebViewControl::RenderToTexture()

@@ -68,12 +68,18 @@ MovieViewControl::~MovieViewControl()
 void MovieViewControl::OwnerIsDying()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    if (nativeControl != nullptr)
+    if (window != nullptr)
     {
-        auto self{ shared_from_this() };
-        window->RunOnUIThreadAsync([this, self]() {
-            PlatformApi::Win10::RemoveXamlControl(window, nativeControl);
-        });
+        if (nativeControl != nullptr)
+        {
+            auto self{ shared_from_this() };
+            window->RunOnUIThreadAsync([this, self]() {
+                PlatformApi::Win10::RemoveXamlControl(window, nativeControl);
+            });
+        }
+
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
     }
 #endif
 }
@@ -81,6 +87,11 @@ void MovieViewControl::OwnerIsDying()
 void MovieViewControl::Initialize(const Rect& rect)
 {
     properties.createNew = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &MovieViewControl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &MovieViewControl::OnWindowDestroyed);
+#endif
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
@@ -105,12 +116,15 @@ void MovieViewControl::SetVisible(bool isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunOnUIThreadAsync([this, self]() {
-                if (nativeControl != nullptr)
-                {
-                    SetNativeVisible(false);
-                }
-            });
+            if (window != nullptr)
+            {
+                window->RunOnUIThreadAsync([this, self]() {
+                    if (nativeControl != nullptr)
+                    {
+                        SetNativeVisible(false);
+                    }
+                });
+            }
 #else
             core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
@@ -431,6 +445,19 @@ void MovieViewControl::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedEventAr
     TellPlayingStatus(false);
     String errMessage = WStringToString(args->ErrorMessage->Data());
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
+}
+
+void MovieViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    properties.rectInWindowSpace = VirtualToWindow(properties.rect);
+    properties.rectChanged = true;
+    properties.anyPropertyChanged = true;
+}
+
+void MovieViewControl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+    window = nullptr;
 }
 
 } // namespace DAVA
