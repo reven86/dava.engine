@@ -1026,15 +1026,11 @@ void WinUAPXamlApp::PrepareScreenSize()
     }
     if (!isPhoneApiDetected)
     {
+        ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::Auto;
         if (!isFull)
         {
             // in units of effective (view) pixels
             ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Size(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
-            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
-        }
-        else
-        {
-            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::FullScreen;
         }
         SetFullScreen(isFull);
     }
