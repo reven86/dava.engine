@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-static DAVA::String androidLogTag = "";
+static DAVA::String androidLogTag = "DAVA";
 
 int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 {
