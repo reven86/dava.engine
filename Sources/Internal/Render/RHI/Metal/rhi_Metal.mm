@@ -191,10 +191,10 @@ bool Metal_CheckSurface()
 void metal_Initialize(const InitParam& param)
 {
     _Metal_InitParam = param;
-    int ringBufferSize = 4 * 1024 * 1024;
+    int ringBufferSize = 2 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 2); //TODO: 2 is for release 3.1 only, in 3.2 we will decrease this in game configuration and set corresponding multiplier here (supposed 3) (now supposed 4 as metal now can work in render thread as well)
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 4);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
