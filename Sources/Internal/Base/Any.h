@@ -15,12 +15,12 @@ namespace DAVA
     The class Any is a type-safe container for single value of any type.
     Stored value is always copied into internal storage. Implementations is encouraged to 
     avoid dynamic allocations for small objects, but such an optimization may only
-    be applied to types that for which  std::is_nothrow_move_constructible returns true.
+    be applied to types for which std::is_nothrow_move_constructible returns true.
     \remark This class cannot be inherited.
 
     Any can be copied.
     - Internal storage with trivial value will also be copied.
-    - Internal storage with complex types will be shared by the way as `std::shared_ptr` do.
+    - Internal storage with complex type will be shared the same way as `std::shared_ptr` do.
 
     Typical usage:
     ```
@@ -59,7 +59,7 @@ public:
 
     /** 
         Constructor. 
-        \remark `notAny` Used to prevent creating Any from other Any. Shouldn't be specified by user.
+        \remark `notAny` is used to prevent creating Any from the other Any. Shouldn't be specified by user.
     */
     template <typename T>
     Any(T&& value, NotAny<T> notAny = true);

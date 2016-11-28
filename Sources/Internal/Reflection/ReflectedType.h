@@ -16,7 +16,7 @@ class StructureWrapper;
         - type `T` compile-time structure 
         - type `T` runtime structure
 
-    Typically `ReflectedType` should be used for creating or destroing objects with type `T`.
+    Typically `ReflectedType` should be used for creating or destroying objects with type `T`.
     Object can be created with different policies: by value, by pointer etc. 
 
     \code
@@ -32,7 +32,7 @@ class StructureWrapper;
     }
     \endcode
 
-    Also it holds info about type static(registred by user) structure `ReflectedStructure` and 
+    Also it holds info about type static(registered by user) structure `ReflectedStructure` and 
     runtime structure wrapper `StructureWrapper`, which are internally used by `Reflection` class.
     The user is encouraged to use `Reflection` class instead of using this info directly. However,
     there may be cases when user have to use `ReflectedStructure`, e.g. for performance reason:
@@ -74,31 +74,31 @@ public:
     const Type* GetType() const;
 
     /** 
-        Return registred permanent name for that type.
-        If name wasn't registred empty string will be returned. Permanent name can be registred
-        will ReflectionTypeDB::RegisterPermanentName method.
+        Return registered permanent name for that type.
+        If name wasn't registered empty string will be returned. Permanent name can be registered
+        with ReflectionTypeDB::RegisterPermanentName method.
     */
     const String& GetPermanentName() const;
 
-    /** Return registred structure for that type. */
+    /** Return registered structure for that type. */
     const ReflectedStructure* GetStrucutre() const;
 
-    /** Return registred structure for that type. */
+    /** Return registered structure for that type. */
     const StructureWrapper* GetStrucutreWrapper() const;
 
-    /** Returns all registred ctors. */
+    /** Returns all registered ctors. */
     Vector<const AnyFn*> GetCtors() const;
 
     /** 
-        Returns first registred ctor, that match specified arguments `Args` and return type `retType`. 
+        Returns first registered ctor, that matches specified arguments `Args` and return type `retType`. 
         If ctor isn't found `nullptr` will be returned.
     */
     template <typename... Args>
     const AnyFn* GetCtor(const Type* retType = nullptr) const;
 
     /** 
-        Returns registred dtor. 
-        If there is no registred dtor, `nullptr` will be returned. 
+        Returns registered dtor. 
+        If there is no registered dtor, `nullptr` will be returned. 
     */
     const AnyFn* GetDtor() const;
 
