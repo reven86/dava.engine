@@ -2,18 +2,15 @@
 
 #include "Base/Platform.h"
 
-// #pragma warning(disable : 4005)
-
 #if !defined(__DAVAENGINE_WIN_UAP__)
 #define _WIN32_WINNT 0x0601
 #endif
 
 #include <windows.h>
 
-// #pragma warning(disable : 7 9 193 271 304 791)
-
 #include <dxgi.h>
 #include <d3d11_1.h>
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include <DXGI1_3.h>
 #endif
@@ -23,21 +20,10 @@
 #include "Debug/DVAssert.h"
 
 #define RHI_DX11__FORCE_9X_PROFILE 0
-#define RHI_DX11__ENABLE_ERROR_CHECK 1
-
-#if RHI_DX11__ENABLE_ERROR_CHECK
-
-#define CHECK_HR(hr) do { \
-    if (FAILED(hr)) { \
-        DAVA::Logger::Error("D3D11Error at %s: %d\n%s", __FILE__, __LINE__, DX11_GetErrorText(hr)); \
-    } } while (0)
-
-    #else
-#define CHECK_HR(hr) hr
-#endif
 
 namespace rhi
 {
+bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const DAVA::uint32 line);
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
 
 const char* DX11_GetErrorText(HRESULT hr);

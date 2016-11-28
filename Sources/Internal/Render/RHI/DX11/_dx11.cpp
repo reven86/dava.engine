@@ -380,6 +380,16 @@ uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
     return sampleCount / 2;
 }
 
+bool DX11_CheckResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
+{
+    if (FAILED(hr))
+    {
+        DAVA::Logger::Error("D3D11Error at %s: %d\n%s\nCondition: %s", fileName, line, DX11_GetErrorText(hr), call);
+        return false;
+    }
+    return true;
+}
+
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
 {
     if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))

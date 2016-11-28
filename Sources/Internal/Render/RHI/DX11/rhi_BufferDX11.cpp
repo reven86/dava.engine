@@ -33,8 +33,8 @@ bool BufferDX11_t::Create(UINT inSize, Usage inUsage, DXGI_FORMAT inFormat, UINT
         data.SysMemPitch = inSize;
     }
 
-    HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_BUFFER, &desc11, (inInitialData ? &data : nullptr), &buffer);
-    return SUCCEEDED(hr) && (buffer != nullptr);
+    bool commandExecuted = DX11DeviceCommand(DX11Command::CREATE_BUFFER, &desc11, (inInitialData ? &data : nullptr), &buffer);
+    return commandExecuted && (buffer != nullptr);
 }
 
 void BufferDX11_t::Destroy()
@@ -55,15 +55,10 @@ bool BufferDX11_t::Update(const void* inData, DAVA::uint32 inOffset, DAVA::uint3
     DVASSERT(inOffset + inSize <= bufferSize);
     DVASSERT(isMapped == false);
 
-    if ((inSize == 7168) || (bufferSize == 7168))
-        printf(".");
-
     D3D11_MAPPED_SUBRESOURCE rc = {};
     DX11Command cmd1(DX11Command::MAP, buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
     ExecDX11(&cmd1, 1);
-    CHECK_HR(cmd1.retval);
-
-    bool success = SUCCEEDED(cmd1.retval) && (rc.pData != nullptr);
+    bool success = DX11Check(cmd1.retval) && (rc.pData != nullptr);
     if (success)
     {
         memcpy(reinterpret_cast<uint8*>(rc.pData) + inOffset, inData, inSize);
@@ -88,8 +83,7 @@ void* BufferDX11_t::Map(DAVA::uint32 inOffset, DAVA::uint32 inSize)
 
             D3D11_MAPPED_SUBRESOURCE rc = {};
             HRESULT hr = _D3D11_SecondaryContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
-            CHECK_HR(hr);
-            if (SUCCEEDED(hr) && (rc.pData != nullptr))
+            if (DX11Check(hr) && (rc.pData != nullptr))
             {
                 isMapped = true;
                 ptr = rc.pData;
@@ -97,14 +91,10 @@ void* BufferDX11_t::Map(DAVA::uint32 inOffset, DAVA::uint32 inSize)
         }
         else
         {
-            if ((inSize == 7168) || (bufferSize == 7168))
-                printf(".");
-
             if (mappedData == nullptr)
                 mappedData = ::malloc(bufferSize);
 
             isMapped = true;
-
             ptr = mappedData;
         }
     }
@@ -113,13 +103,10 @@ void* BufferDX11_t::Map(DAVA::uint32 inOffset, DAVA::uint32 inSize)
         D3D11_MAPPED_SUBRESOURCE rc = {};
         DX11Command cmd(DX11Command::MAP, buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
         ExecDX11(&cmd, 1);
-
-        CHECK_HR(cmd.retval);
-        if (SUCCEEDED(cmd.retval) && (rc.pData != nullptr))
+        if (DX11Check(cmd.retval) && (rc.pData != nullptr))
         {
             DVASSERT(inOffset + inSize <= rc.RowPitch);
             DVASSERT(bufferSize <= rc.RowPitch);
-
             ptr = rc.pData;
             isMapped = true;
         }
@@ -162,7 +149,7 @@ void BufferDX11_t::ResolvePendingUpdate(ID3D11DeviceContext* context)
 
     D3D11_MAPPED_SUBRESOURCE rc = {};
     HRESULT hr = context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
-    if (SUCCEEDED(hr) && rc.pData)
+    if (DX11Check(hr) && rc.pData)
     {
         DVASSERT(bufferSize <= rc.RowPitch);
         memcpy(rc.pData, mappedData, bufferSize);

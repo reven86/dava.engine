@@ -213,7 +213,7 @@ void CreateDeviceResources()
         0x4D4F4351  // Qualcomm*/
     };
 
-    if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)))
+    if (DX11Check(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)))
     {
         IDXGIAdapter* a = NULL;
 
@@ -228,7 +228,7 @@ void CreateDeviceResources()
     {
         DXGI_ADAPTER_DESC desc = { 0 };
 
-        if (SUCCEEDED(adapter[i]->GetDesc(&desc)))
+        if (DX11Check(adapter[i]->GetDesc(&desc)))
         {
             char info[128];
 
@@ -314,7 +314,7 @@ void CreateDeviceResources()
 
         if (!m_dxgiAdapter)
         {
-            if (SUCCEEDED(device.Get()->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
+            if (DX11Check(device.Get()->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
                 dxgiDevice->GetAdapter(&m_dxgiAdapter);
         }
 
@@ -322,7 +322,7 @@ void CreateDeviceResources()
         {
             DXGI_ADAPTER_DESC desc = { 0 };
 
-            if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
+            if (DX11Check(m_dxgiAdapter->GetDesc(&desc)))
             {
                 char info[128];
 
@@ -388,9 +388,7 @@ bool CreateWindowSizeDependentResources()
 
         // If the swap chain already exists, resize it.
         HRESULT hr = m_swapChain->ResizeBuffers(backBuffersCount, swapchainBufferWidth, swapchainBufferHeight, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
-
-        CHECK_HR(hr);
-
+        DX11Check(hr);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
             // If the device was removed for any reason, a new device and swap chain will need to be created.
@@ -694,8 +692,8 @@ void get_device_description(char* dst)
 {
     if (m_dxgiAdapter)
     {
-        DXGI_ADAPTER_DESC desc = { 0 };
-        if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
+        DXGI_ADAPTER_DESC desc = {};
+        if (DX11Check(m_dxgiAdapter->GetDesc(&desc)))
         {
             ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, dst, 128, NULL, NULL);
         }

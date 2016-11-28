@@ -36,8 +36,8 @@ static Handle dx11_DepthStencilState_Create(const DepthStencilState::Descriptor&
     Handle handle = InvalidHandle;
 
     ID3D11DepthStencilState* localState = nullptr;
-    HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_STATE, &ds_desc, &localState);
-    if (SUCCEEDED(hr) && (localState != nullptr))
+    bool commandExecuted = DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_STATE, &ds_desc, &localState);
+    if (commandExecuted && (localState != nullptr))
     {
         handle = DepthStencilStateDX11Pool::Alloc();
         DepthStencilStateDX11_t* state = DepthStencilStateDX11Pool::Get(handle);

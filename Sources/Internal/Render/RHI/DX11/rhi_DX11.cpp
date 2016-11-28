@@ -154,7 +154,7 @@ static void dx11_ResetBlock()
 
         _D3D11_SecondaryContext->ClearState();
         ID3D11CommandList* commandList = nullptr;
-        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &commandList));
+        DX11Check(_D3D11_SecondaryContext->FinishCommandList(FALSE, &commandList));
         DAVA::SafeRelease(commandList);
         _D3D11_SecondaryContext->Release();
 
@@ -188,8 +188,7 @@ static void dx11_SuspendRendering()
 
     _GUID uuid = __uuidof(IDXGIDevice3);
     IDXGIDevice3* dxgiDevice3 = nullptr;
-    HRESULT hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice3));
-    if (SUCCEEDED(hr))
+    if (DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice3)))
     {
         _D3D11_ImmediateContext->ClearState();
         dxgiDevice3->Trim();
@@ -227,7 +226,7 @@ void InitDeviceAndSwapChain()
           0x1002 // ATI
         };
 
-        if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&factory)))
+        if (DX11Check(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&factory)))
         {
             IDXGIAdapter* a = NULL;
 
@@ -242,7 +241,7 @@ void InitDeviceAndSwapChain()
         {
             DXGI_ADAPTER_DESC desc = { 0 };
 
-            if (SUCCEEDED(adapter[i]->GetDesc(&desc)))
+            if (DX11Check(adapter[i]->GetDesc(&desc)))
             {
                 char info[128];
 
@@ -304,19 +303,18 @@ void InitDeviceAndSwapChain()
                                            &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
     }
 
-    if (SUCCEEDED(hr))
+    if (DX11Check(hr))
     {
         IDXGIDevice* dxgiDevice = nullptr;
         IDXGIAdapter* dxgiAdapter = nullptr;
         _GUID uuid = __uuidof(IDXGIDevice);
-        hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice));
-        if (SUCCEEDED(hr))
+        if (DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice)))
         {
-            if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
+            if (DX11Check(dxgiDevice->GetAdapter(&dxgiAdapter)))
             {
-                DXGI_ADAPTER_DESC desc = { 0 };
+                DXGI_ADAPTER_DESC desc = {};
 
-                if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+                if (DX11Check(dxgiAdapter->GetDesc(&desc)))
                 {
                     ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, MutableDeviceCaps::Get().deviceDescription,
                                           countof(MutableDeviceCaps::Get().deviceDescription), NULL, NULL);

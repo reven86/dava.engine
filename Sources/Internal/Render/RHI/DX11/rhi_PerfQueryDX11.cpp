@@ -61,8 +61,7 @@ static Handle dx11_PerfQuery_Create()
         DVASSERT(perfQuery->query == nullptr);
 
         D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP };
-        HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &perfQuery->query);
-        if (FAILED(hr))
+        if (!DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &perfQuery->query))
         {
             PerfQueryDX11Pool::Free(handle);
             handle = InvalidHandle;
@@ -249,13 +248,10 @@ void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context)
     {
         PerfQueryFrameDX11* frame = *fit;
 
-        if (!frame->freq)
+        if (frame->freq == 0)
         {
-            D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
-            HRESULT hr = context->GetData(frame->freqQuery, &data, sizeof(data), 0);
-            CHECK_HR(hr);
-
-            if (hr == S_OK)
+            D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data = {};
+            if (DX11Check(context->GetData(frame->freqQuery, &data, sizeof(data), 0)))
             {
                 frame->isFreqValid = !data.Disjoint;
                 frame->freq = data.Frequency;
@@ -269,10 +265,9 @@ void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context)
 
             DVASSERT(query->isUsed);
 
-            if (!query->timestamp)
+            if (query->timestamp == 0)
             {
-                HRESULT hr = context->GetData(query->query, &(query->timestamp), sizeof(uint64), 0);
-                CHECK_HR(hr);
+                DX11Check(context->GetData(query->query, &(query->timestamp), sizeof(uint64), 0));
             }
 
             if (frame->freq && query->timestamp)

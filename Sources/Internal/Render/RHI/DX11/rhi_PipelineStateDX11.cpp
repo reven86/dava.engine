@@ -322,12 +322,10 @@ void ConstBufDX11::Construct(ProgType ptype, uint32 bufIndex, uint32 regCnt)
     desc.ByteWidth = regCnt * 4 * sizeof(float);
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-    HRESULT hr = DX11DeviceCommand(DX11Command::CREATE_BUFFER, &desc, NULL, &buffer);
-    if (SUCCEEDED(hr))
+    if (DX11DeviceCommand(DX11Command::CREATE_BUFFER, &desc, NULL, &buffer))
     {
-        progType = ptype;
         value = new float[4 * regCnt];
+        progType = ptype;
         buf_i = bufIndex;
         regCount = regCnt;
         updatePending = true;
@@ -371,7 +369,7 @@ bool ConstBufDX11::SetConst(uint32 const_i, uint32 const_sub_i, const float* dat
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
-        updatePending = !_DX11_UseHardwareCommandBuffers;
+        updatePending = _DX11_UseHardwareCommandBuffers;
         inst = nullptr;
         success = true;
     }
@@ -383,7 +381,8 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBuff
 {
     if (updatePending)
     {
-        context->UpdateSubresource(buffer, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+        DVASSERT(_DX11_UseHardwareCommandBuffers);
+        context->UpdateSubresource(buffer, 0, nullptr, value, regCount * 4 * sizeof(float), 0);
         updatePending = false;
     }
     outBuffer[buf_i] = buffer;
@@ -539,34 +538,28 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     hr = D3DCompile((const char*)(&vprog_bin[0]), vprog_bin.size(), "vprog", nullptr, nullptr, "vp_main", vsFeatureLevel,
                     D3DCOMPILE_OPTIMIZATION_LEVEL2, 0, &vp_code, &vp_err);
 
-    if (SUCCEEDED(hr))
+    if (DX11Check(hr))
     {
-        hr = DX11DeviceCommand(DX11Command::CREATE_VERTEX_SHADER, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader));
-        if (SUCCEEDED(hr))
+        if (DX11DeviceCommand(DX11Command::CREATE_VERTEX_SHADER, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader)))
         {
-            ID3D11ShaderReflection* reflection = NULL;
-            D3D11_SHADER_DESC desc = { 0 };
-
+            D3D11_SHADER_DESC desc = {};
+            ID3D11ShaderReflection* reflection = nullptr;
             hr = D3DReflect(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
-
-            if (SUCCEEDED(hr))
+            if (DX11Check(hr))
             {
                 hr = reflection->GetDesc(&desc);
-
-                if (SUCCEEDED(hr))
+                if (DX11Check(hr))
                 {
                     ps->vertexBufCount = desc.ConstantBuffers;
 
                     for (uint32 b = 0; b != desc.ConstantBuffers; ++b)
                     {
                         ID3D11ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(b);
-
                         if (cb)
                         {
-                            D3D11_SHADER_BUFFER_DESC cb_desc;
-
+                            D3D11_SHADER_BUFFER_DESC cb_desc = {};
                             hr = cb->GetDesc(&cb_desc);
-                            if (SUCCEEDED(hr))
+                            if (DX11Check(hr))
                             {
                                 ps->vertexBufRegCount[b] = cb_desc.Size / (4 * sizeof(float));
                             }
@@ -597,19 +590,17 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     hr = D3DCompile((const char*)(&fprog_bin[0]), fprog_bin.size(), "fprog", nullptr, nullptr, "fp_main", fsFeatureLevel,
                     D3DCOMPILE_OPTIMIZATION_LEVEL2, 0, &fp_code, &fp_err);
 
-    if (SUCCEEDED(hr))
+    if (DX11Check(hr))
     {
-        hr = DX11DeviceCommand(DX11Command::CREATE_PIXEL_SHADER, fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader));
-        if (SUCCEEDED(hr))
+        if (DX11DeviceCommand(DX11Command::CREATE_PIXEL_SHADER, fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader)))
         {
             ID3D11ShaderReflection* reflection = nullptr;
             hr = D3DReflect(fp_code->GetBufferPointer(), fp_code->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
-
-            if (SUCCEEDED(hr))
+            if (DX11Check(hr))
             {
                 D3D11_SHADER_DESC desc = {};
                 hr = reflection->GetDesc(&desc);
-                if (SUCCEEDED(hr))
+                if (DX11Check(hr))
                 {
                     ps->fragmentBufCount = desc.ConstantBuffers;
                     for (uint32 b = 0; b != desc.ConstantBuffers; ++b)
@@ -619,7 +610,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
                         {
                             D3D11_SHADER_BUFFER_DESC cb_desc = {};
                             hr = cb->GetDesc(&cb_desc);
-                            if (SUCCEEDED(hr))
+                            if (DX11Check(hr))
                             {
                                 ps->fragmentBufRegCount[b] = cb_desc.Size / (4 * sizeof(float));
                             }
@@ -681,8 +672,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
             bs_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
             bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
             bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-            hr = DX11DeviceCommand(DX11Command::CREATE_BLEND_STATE, &bs_desc, &ps->blendState);
-            if (SUCCEEDED(hr))
+            if (DX11DeviceCommand(DX11Command::CREATE_BLEND_STATE, &bs_desc, &ps->blendState))
             {
                 ps->desc = desc;
                 success = true;

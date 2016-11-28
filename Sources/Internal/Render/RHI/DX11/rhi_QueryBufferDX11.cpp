@@ -86,15 +86,10 @@ static void dx11_Check_Query_Results(QueryBufferDX11_t* buf)
     {
         ID3D11Query* iq = buf->pendingQueries[q].first;
         uint32 resultIndex = buf->pendingQueries[q].second;
-
-        HRESULT hr = _D3D11_ImmediateContext->GetData(iq, &val, sizeof(uint64), D3D11_ASYNC_GETDATA_DONOTFLUSH);
-        CHECK_HR(hr);
-
-        if (hr == S_OK)
+        if (DX11Check(_D3D11_ImmediateContext->GetData(iq, &val, sizeof(uint64), D3D11_ASYNC_GETDATA_DONOTFLUSH)))
         {
             buf->results[resultIndex] += static_cast<uint32>(val);
             QueryDX11Pool.push_back(buf->pendingQueries[q].first);
-
             buf->pendingQueries[q] = buf->pendingQueries.back();
             buf->pendingQueries.pop_back();
         }
