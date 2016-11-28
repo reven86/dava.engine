@@ -13,7 +13,6 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Main/Guards.h"
 #include "Main/QTUtils.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
@@ -41,6 +40,7 @@
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "TArc/DataProcessing/DataContext.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
 #include "FileSystem/VariantType.h"
 
@@ -1181,7 +1181,7 @@ void SceneTree::CollapseAll()
     QTreeView::collapseAll();
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(isInSelectionSync, true);
 
         QModelIndexList indexList = selectionModel()->selection().indexes();
         for (int i = 0; i < indexList.size(); ++i)
@@ -1209,7 +1209,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex& index)
 
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(isInSelectionSync, true);
 
         // if selected items were inside collapsed item, remove them from selection
         QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -1247,13 +1247,13 @@ void SceneTree::TreeItemExpanded(const QModelIndex& index)
 
 void SceneTree::SyncSelectionToTree()
 {
+    SCOPED_VALUE_GUARD(bool, isInSelectionSync, true, void());
+
     SceneEditor2* curScene = treeModel->GetScene();
-    if (isInSelectionSync || (curScene == nullptr))
+    if (curScene == nullptr)
     {
         return;
     }
-
-    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
     using TSelectionMap = DAVA::Map<QModelIndex, DAVA::Vector<QModelIndex>>;
     TSelectionMap toSelect;
@@ -1322,10 +1322,7 @@ void SceneTree::SyncSelectionToTree()
 
 void SceneTree::SyncSelectionFromTree()
 {
-    if (isInSelectionSync)
-        return;
-
-    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+    SCOPED_VALUE_GUARD(bool, isInSelectionSync, true, void());
 
     SceneEditor2* curScene = treeModel->GetScene();
     if (nullptr != curScene)

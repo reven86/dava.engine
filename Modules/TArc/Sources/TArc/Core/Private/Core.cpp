@@ -710,7 +710,7 @@ private:
     {
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->OnContextWillChanged(currentContext, newOne);
+            module->OnContextWillBeChanged(currentContext, newOne);
         }
     }
 
@@ -718,7 +718,7 @@ private:
     {
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->OnContextDidChanged(currentContext, oldOne);
+            module->OnContextWasChanged(currentContext, oldOne);
         }
     }
 

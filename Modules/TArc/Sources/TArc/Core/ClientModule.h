@@ -25,10 +25,10 @@ protected:
     virtual void OnContextDeleted(DataContext* context)
     {
     }
-    virtual void OnContextWillChanged(DataContext* current, DataContext* newOne)
+    virtual void OnContextWillBeChanged(DataContext* current, DataContext* newOne)
     {
     }
-    virtual void OnContextDidChanged(DataContext* current, DataContext* oldOne)
+    virtual void OnContextWasChanged(DataContext* current, DataContext* oldOne)
     {
     }
     virtual void OnWindowClosed(const WindowKey& key)

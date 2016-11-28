@@ -1,8 +1,11 @@
 #include "TArc/Testing/TArcTestClass.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "TArc/Testing/MockClientModule.h"
 #include "TArc/Testing/MockControllerModule.h"
 #include "TArc/Controls/SceneTabbar.h"
+
+#include "UnitTests/UnitTests.h"
 
 #include <QtTest/QTest>
 
@@ -20,7 +23,7 @@ struct Tab
     DAVA_REFLECTION(Tab)
     {
         DAVA::ReflectionRegistrator<Tab>::Begin()
-        .Field(SceneTabbar::tabTitlePropertyName, &Tab::title)
+        .Field(DAVA::TArc::SceneTabbar::tabTitlePropertyName, &Tab::title)
         .End();
     }
 };
@@ -34,8 +37,8 @@ public:
     DAVA_VIRTUAL_REFLECTION(TabsModel, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<TabsModel>::Begin()
-        .Field(SceneTabbar::activeTabPropertyName, &TabsModel::activeTab)
-        .Field(SceneTabbar::tabsPropertyName, &TabsModel::tabs)
+        .Field(DAVA::TArc::SceneTabbar::activeTabPropertyName, &TabsModel::activeTab)
+        .Field(DAVA::TArc::SceneTabbar::tabsPropertyName, &TabsModel::tabs)
         .End();
     }
 };
@@ -46,10 +49,11 @@ QString tabbarObjectName = QString("tabbar");
 class Tag
 {
 };
+
 class TabbarModule : public DAVA::TArc::MockClientModule<Tag>
 {
 public:
-    void OnContextCreatedImpl(DataContext* context) override
+    void OnContextCreatedImpl(DAVA::TArc::DataContext* context) override
     {
         TabsModel* model = GetAccessor()->GetGlobalContext()->GetData<TabsModel>();
         Tab tab;
@@ -57,17 +61,17 @@ public:
         model->tabs[context->GetID()] = tab;
     }
 
-    void OnContextDeletedImpl(DataContext* context) override
+    void OnContextDeletedImpl(DAVA::TArc::DataContext* context) override
     {
         TabsModel* model = GetAccessor()->GetGlobalContext()->GetData<TabsModel>();
         model->tabs.erase(context->GetID());
     }
 
-    void OnContextWillChangedImpl(DataContext* current, DataContext* newOne) override
+    void OnContextWillBeChangedImpl(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override
     {
     }
 
-    void OnContextDidChangedImpl(DataContext* current, DataContext* oldOne) override
+    void OnContextWasChangedImpl(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override
     {
         TabsModel* model = GetAccessor()->GetGlobalContext()->GetData<TabsModel>();
         model->activeTab = current->GetID();
@@ -79,7 +83,7 @@ public:
 
         DAVA::TArc::UI* ui = GetUI();
 
-        SceneTabbar* tabbar = new SceneTabbar(GetAccessor(), DAVA::Reflection::Create(GetAccessor()->GetGlobalContext()->GetData<TabsModel>()));
+        DAVA::TArc::SceneTabbar* tabbar = new DAVA::TArc::SceneTabbar(GetAccessor(), DAVA::Reflection::Create(GetAccessor()->GetGlobalContext()->GetData<TabsModel>()));
         DAVA::TArc::PanelKey panelKey(tabbarObjectName, DAVA::TArc::CentralPanelInfo());
         ui->AddView(wndKey, panelKey, tabbar);
     }
@@ -298,32 +302,34 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
 {
     DAVA_TEST (CreateTabTest)
     {
+        using namespace ::testing;
         using namespace SceneTabbarDetail;
 
         TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
         ::testing::InSequence sequence;
         EXPECT_CALL(*module, OnContextCreated(_))
         .WillOnce(Invoke(module, &TabbarModule::OnContextCreatedImpl));
-        EXPECT_CALL(*module, OnContextWillChanged(_, _))
-        .WillOnce(Invoke(module, &TabbarModule::OnContextWillChangedImpl));
-        EXPECT_CALL(*module, OnContextDidChanged(_, _))
-        .WillOnce(Invoke(module, &TabbarModule::OnContextDidChangedImpl));
+        EXPECT_CALL(*module, OnContextWillBeChanged(_, _))
+        .WillOnce(Invoke(module, &TabbarModule::OnContextWillBeChangedImpl));
+        EXPECT_CALL(*module, OnContextWasChanged(_, _))
+        .WillOnce(Invoke(module, &TabbarModule::OnContextWasChangedImpl));
 
         test = new CreateTabTestProxy(this);
     }
 
     DAVA_TEST (SwitchContextInCodeTest)
     {
+        using namespace ::testing;
         using namespace SceneTabbarDetail;
 
         TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
         ::testing::InSequence sequence;
         EXPECT_CALL(*module, OnContextCreated(_))
         .WillOnce(Invoke(module, &TabbarModule::OnContextCreatedImpl));
-        EXPECT_CALL(*module, OnContextWillChanged(_, _))
-        .WillOnce(Invoke(module, &TabbarModule::OnContextWillChangedImpl));
-        EXPECT_CALL(*module, OnContextDidChanged(_, _))
-        .WillOnce(Invoke(module, &TabbarModule::OnContextDidChangedImpl));
+        EXPECT_CALL(*module, OnContextWillBeChanged(_, _))
+        .WillOnce(Invoke(module, &TabbarModule::OnContextWillBeChangedImpl));
+        EXPECT_CALL(*module, OnContextWasChanged(_, _))
+        .WillOnce(Invoke(module, &TabbarModule::OnContextWasChangedImpl));
 
         test = new SwitchContextInCode(this);
     }
@@ -336,13 +342,14 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
 
     DAVA_TEST (TearDownContextTest)
     {
+        using namespace ::testing;
         using namespace SceneTabbarDetail;
 
         TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
-        ::testing::InSequence sequence;
-        EXPECT_CALL(*module, OnContextWillChanged(_, nullptr))
+        InSequence sequence;
+        EXPECT_CALL(*module, OnContextWillBeChanged(_, nullptr))
         .WillOnce(Return());
-        EXPECT_CALL(*module, OnContextDidChanged(nullptr, _))
+        EXPECT_CALL(*module, OnContextWasChanged(nullptr, _))
         .WillOnce(Return());
         EXPECT_CALL(*module, OnContextDeleted(_))
         .Times(2);
@@ -370,7 +377,7 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
     SceneTabbarDetail::TestProxy* test = nullptr;
 
     BEGIN_TESTED_MODULES()
-    DECLARE_TESTED_MODULE(MockControllerModule);
+    DECLARE_TESTED_MODULE(DAVA::TArc::MockControllerModule);
     DECLARE_TESTED_MODULE(SceneTabbarDetail::TabbarModule);
     END_TESTED_MODULES()
 };

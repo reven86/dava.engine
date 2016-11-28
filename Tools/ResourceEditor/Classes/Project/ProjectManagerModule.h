@@ -1,14 +1,17 @@
 #pragma once
 
+#include "Classes/Qt/Main/RecentMenuItems.h"
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
-class RecentMenuItems;
 class ProjectManagerData;
 class ProjectManagerModule : public DAVA::TArc::ClientModule
 {
+public:
+    ~ProjectManagerModule();
+
 protected:
     void PostInit() override;
 

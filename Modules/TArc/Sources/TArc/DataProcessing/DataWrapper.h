@@ -45,11 +45,11 @@ private:
     DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
-    void ClearListener();
+    void ClearListener(DataListener* listenerForCheck);
 
     void Sync(bool notifyListener);
     void SyncWithEditor(const Reflection& etalonData);
-    void NotifyListeners(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
+    void NotifyListener(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
     Reflection GetData() const;
 
 private:

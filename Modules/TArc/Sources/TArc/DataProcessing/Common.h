@@ -9,7 +9,7 @@ namespace TArc
 {
 struct FieldDescriptor
 {
-    const ReflectedType* type;
+    const ReflectedType* type = nullptr;
     FastName fieldName;
 };
 } // namespace TArc

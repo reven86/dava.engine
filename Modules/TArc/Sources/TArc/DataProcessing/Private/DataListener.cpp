@@ -10,7 +10,7 @@ DataListener::~DataListener()
     wrappers.clear();
     for (DataWrapper& wrapper : wrappersCopy)
     {
-        wrapper.ClearListener();
+        wrapper.ClearListener(this);
     }
 }
 

@@ -143,7 +143,7 @@ private:
 class FieldBinder::Impl
 {
 public:
-    ContextAccessor* accessor;
+    ContextAccessor* accessor = nullptr;
     Vector<UniversalDataListener> listeners;
 };
 

@@ -23,7 +23,7 @@ public:
     ///         "Title": castable to DAVA::String
     ///         "Tooltip": castable to DAVA::String [optional]
     SceneTabbar(ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
-    ~SceneTabbar();
+    ~SceneTabbar() = default;
 
     Signal<uint64> closeTab;
     static const char* activeTabPropertyName;

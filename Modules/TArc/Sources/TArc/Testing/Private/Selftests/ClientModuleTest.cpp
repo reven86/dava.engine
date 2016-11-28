@@ -2,9 +2,6 @@
 #include "TArc/Testing/MockClientModule.h"
 #include "TArc/Testing/MockControllerModule.h"
 
-using namespace DAVA::TArc;
-using namespace ::testing;
-
 struct CMTTag
 {
 };
@@ -12,8 +9,8 @@ struct CMTTag
 DAVA_TARC_TESTCLASS(ClientModuleTest)
 {
     BEGIN_TESTED_MODULES()
-    DECLARE_TESTED_MODULE(MockControllerModule)
-    DECLARE_TESTED_MODULE(MockClientModule<CMTTag>)
+    DECLARE_TESTED_MODULE(DAVA::TArc::MockControllerModule)
+    DECLARE_TESTED_MODULE(DAVA::TArc::MockClientModule<CMTTag>)
     END_TESTED_MODULES()
 
     BEGIN_FILES_COVERED_BY_TESTS()
@@ -23,6 +20,9 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (CreateContextTest)
     {
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
         auto fn = [this](DataContext* ctx)
         {
             undeletedContext = ctx->GetID();
@@ -37,6 +37,9 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (ActivateContext)
     {
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
         DataContext::ContextID becomeUnactiveContext = DataContext::Empty;
         DataContext::ContextID becomeActiveContext = DataContext::Empty;
         DataContext::ContextID newContext = DataContext::Empty;
@@ -92,16 +95,16 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
             TEST_VERIFY(newContext == ctx->GetID());
         };
 
-        ON_CALL(*MockClientModule<CMTTag>::instance, OnContextWillChanged(_, _))
+        ON_CALL(*MockClientModule<CMTTag>::instance, OnContextWillBeChanged(_, _))
         .WillByDefault(Invoke(willChangedFn));
-        ON_CALL(*MockClientModule<CMTTag>::instance, OnContextDidChanged(_, _))
+        ON_CALL(*MockClientModule<CMTTag>::instance, OnContextWasChanged(_, _))
         .WillByDefault(Invoke(didChangedFn));
 
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextCreated(_))
         .WillOnce(Invoke(fn));
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextWillChanged(_, _))
+        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextWillBeChanged(_, _))
         .Times(5);
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDidChanged(_, _))
+        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextWasChanged(_, _))
         .Times(5);
         EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDeleted(_))
         .WillOnce(Invoke(verifyFn));
@@ -153,6 +156,9 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (DeleteContextTest)
     {
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
         auto verifyFn = [this](DataContext* ctx)
         {
             TEST_VERIFY(ctx->GetID() == undeletedContext);
@@ -203,5 +209,5 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         TEST_VERIFY(GetAccessor()->GetActiveContext() == nullptr);
     }
 
-    DataContext::ContextID undeletedContext = DataContext::Empty;
+    DAVA::TArc::DataContext::ContextID undeletedContext = DAVA::TArc::DataContext::Empty;
 };

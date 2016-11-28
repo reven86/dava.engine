@@ -66,7 +66,7 @@ void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<E
         }
     }
 
-    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
+    emitters.emplace_back(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName);
 }
 }
 

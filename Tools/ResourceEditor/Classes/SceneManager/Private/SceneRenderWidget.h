@@ -74,7 +74,7 @@ private:
 
     DAVA::TArc::QtConnections connections;
     DAVA::RenderWidget* renderWidget = nullptr;
-    ScenePreviewDialog* previewDialog = nullptr;
+    DAVA::RefPtr<ScenePreviewDialog> previewDialog;
 
     IWidgetDelegate* widgetDelegate = nullptr;
 };

@@ -885,7 +885,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 void QtMainWindow::UpdateModificationActionsState()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    bool isMultiple = (nullptr != scene) && (scene->modifSystem->GetTransformableSelection().GetSize() > 1);
+    bool isMultiple = (scene.Get() != nullptr) && (scene->modifSystem->GetTransformableSelection().GetSize() > 1);
 
     // modificationWidget determines inside, if values could be modified and enables/disables itself
     modificationWidget->ReloadValues();
@@ -969,7 +969,7 @@ void QtMainWindow::OnImportSpeedTreeXML()
 void QtMainWindow::OnUndo()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->Undo();
     }
@@ -978,7 +978,7 @@ void QtMainWindow::OnUndo()
 void QtMainWindow::OnRedo()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->Redo();
     }
@@ -989,7 +989,7 @@ void QtMainWindow::OnEditorGizmoToggle(bool show)
     ui->actionShowEditorGizmo->setChecked(show);
     SettingsManager::Instance()->SetValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(show));
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (scene != nullptr)
+    if (scene.Get() != nullptr)
     {
         scene->SetHUDVisible(show);
     }
@@ -1013,7 +1013,7 @@ void QtMainWindow::OnViewLightmapCanvas(bool show)
 void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->selectionSystem->SetSelectionAllowed(allow);
     }
@@ -1064,7 +1064,7 @@ void QtMainWindow::EnableSounds(bool toEnable)
 void QtMainWindow::OnSelectMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->modifSystem->SetTransformType(Selectable::TransformType::Disabled);
         LoadModificationState(scene.Get());
@@ -1074,7 +1074,7 @@ void QtMainWindow::OnSelectMode()
 void QtMainWindow::OnMoveMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->modifSystem->SetTransformType(Selectable::TransformType::Translation);
         LoadModificationState(scene.Get());
@@ -1084,7 +1084,7 @@ void QtMainWindow::OnMoveMode()
 void QtMainWindow::OnRotateMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->modifSystem->SetTransformType(Selectable::TransformType::Rotation);
         LoadModificationState(scene.Get());
@@ -1094,7 +1094,7 @@ void QtMainWindow::OnRotateMode()
 void QtMainWindow::OnScaleMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->modifSystem->SetTransformType(Selectable::TransformType::Scale);
         LoadModificationState(scene.Get());
@@ -1104,7 +1104,7 @@ void QtMainWindow::OnScaleMode()
 void QtMainWindow::OnPivotCenterMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::ObjectCenter);
         LoadModificationState(scene.Get());
@@ -1114,7 +1114,7 @@ void QtMainWindow::OnPivotCenterMode()
 void QtMainWindow::OnPivotCommonMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::CommonCenter);
         LoadModificationState(scene.Get());
@@ -1136,7 +1136,7 @@ void QtMainWindow::OnManualModifMode()
 void QtMainWindow::OnPlaceOnLandscape()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         DAVA::Entity* landscapeEntity = FindLandscapeEntity(scene.Get());
         if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
@@ -1152,7 +1152,7 @@ void QtMainWindow::OnPlaceOnLandscape()
 void QtMainWindow::OnSnapToLandscape()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         DAVA::Entity* landscapeEntity = FindLandscapeEntity(scene.Get());
         if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
@@ -1170,7 +1170,7 @@ void QtMainWindow::OnSnapToLandscape()
 void QtMainWindow::OnResetTransform()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         scene->modifSystem->ResetTransform(scene->selectionSystem->GetSelection());
     }
@@ -1191,7 +1191,7 @@ void QtMainWindow::OnUnlockTransform()
 void QtMainWindow::OnCenterPivotPoint()
 {
     DAVA::RefPtr<SceneEditor2> curScene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != curScene)
+    if (curScene.Get() != nullptr)
     {
         curScene->modifSystem->MovePivotCenter(curScene->selectionSystem->GetSelection());
     }
@@ -1200,7 +1200,7 @@ void QtMainWindow::OnCenterPivotPoint()
 void QtMainWindow::OnZeroPivotPoint()
 {
     DAVA::RefPtr<SceneEditor2> curScene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != curScene)
+    if (curScene.Get() != nullptr)
     {
         curScene->modifSystem->MovePivotZero(curScene->selectionSystem->GetSelection());
     }
@@ -1221,7 +1221,7 @@ void QtMainWindow::OnTextureBrowser()
     DAVA::RefPtr<SceneEditor2> sceneEditor = MainWindowDetails::GetCurrentScene();
 
     SelectableGroup selectedEntities;
-    if (nullptr != sceneEditor)
+    if (sceneEditor.Get() != nullptr)
     {
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
     }
@@ -1234,7 +1234,7 @@ void QtMainWindow::OnTextureBrowser()
 void QtMainWindow::OnSceneLightMode()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (nullptr != scene)
+    if (scene.Get() != nullptr)
     {
         if (ui->actionEnableCameraLight->isChecked())
         {
@@ -1912,7 +1912,7 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
                                                    QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
                                                    QString(scenePath.GetAbsolutePathname().c_str()),
                                                    PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-    DAVA::FilePath selectedPathname = PathnameToDAVAStyle(filePath);
+    DAVA::FilePath selectedPathname(filePath.toStdString());
     DAVA::Entity* landscape = FindLandscapeEntity(sceneEditor.Get());
     if (selectedPathname.IsEmpty() || nullptr == landscape)
     {
@@ -2032,7 +2032,7 @@ void QtMainWindow::OnTilemaskEditor()
 void QtMainWindow::OnForceFirstLod(bool enabled)
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (scene == nullptr)
+    if (scene.Get() == nullptr)
     {
         ui->actionForceFirstLODonLandscape->setChecked(false);
         return;
@@ -2270,7 +2270,7 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
         SettingsManager::SetValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType(newMode));
     }
 
-    if (nullptr != MainWindowDetails::GetCurrentScene())
+    if (MainWindowDetails::GetCurrentScene().Get() != nullptr)
     {
         MainWindowDetails::GetCurrentScene()->materialSystem->SetLightViewMode(newMode);
     }
@@ -2318,7 +2318,7 @@ void QtMainWindow::OnAddWindEntity()
 void QtMainWindow::OnAddPathEntity()
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (!scene)
+    if (scene.Get() == nullptr)
         return;
 
     DAVA::ScopedPtr<DAVA::Entity> pathEntity(new DAVA::Entity());
@@ -2342,7 +2342,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
             return false;
         }
 
-        REGlobal::GetInvoker()->Invoke(REGlobal::ReloadTexturesOperation.ID, eGPUFamily::GPU_ORIGIN);
+        REGlobal::GetInvoker()->Invoke(REGlobal::ReloadTexturesOperation.ID, DAVA::eGPUFamily::GPU_ORIGIN);
     }
 
     return Settings::GetGPUFormat() == DAVA::GPU_ORIGIN;
@@ -2463,7 +2463,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
     if (conv.CanConvert<DAVA::Entity*>())
     {
         DAVA::RefPtr<SceneEditor2> currentScene = MainWindowDetails::GetCurrentScene();
-        if (nullptr != currentScene)
+        if (currentScene.Get() != nullptr)
         {
             auto vec = conv.GetPointers<DAVA::Entity*>();
             if (!vec.empty())
@@ -2553,7 +2553,7 @@ void QtMainWindow::RemoveSelection()
 bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    DVASSERT_MSG(scene != nullptr, "Switching visibility tool requires an opened scene");
+    DVASSERT_MSG(scene.Get() != nullptr, "Switching visibility tool requires an opened scene");
 
     DAVA::int32 enabledTools = scene->GetEnabledTools();
     if (enabled && (enabledTools != 0))

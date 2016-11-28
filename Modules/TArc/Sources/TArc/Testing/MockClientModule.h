@@ -28,10 +28,10 @@ public:
         .WillByDefault(Invoke(this, &MockClientModule::OnContextDeletedImpl));
         ON_CALL(*this, OnWindowClosed(_))
         .WillByDefault(Invoke(this, &MockClientModule::OnWindowClosedImpl));
-        ON_CALL(*this, OnContextWillChanged(_, _))
-        .WillByDefault(Invoke(this, &MockClientModule::OnContextWillChangedImpl));
-        ON_CALL(*this, OnContextDidChanged(_, _))
-        .WillByDefault(Invoke(this, &MockClientModule::OnContextDidChangedImpl));
+        ON_CALL(*this, OnContextWillBeChanged(_, _))
+        .WillByDefault(Invoke(this, &MockClientModule::OnContextWillBeChangedImpl));
+        ON_CALL(*this, OnContextWasChanged(_, _))
+        .WillByDefault(Invoke(this, &MockClientModule::OnContextWasChangedImpl));
         ON_CALL(*this, PostInit())
         .WillByDefault(Invoke(this, &MockClientModule::PostInitImpl));
     }
@@ -47,8 +47,8 @@ public:
     MOCK_METHOD1(OnContextCreated, void(DataContext* context));
     MOCK_METHOD1(OnContextDeleted, void(DataContext* context));
     MOCK_METHOD1(OnWindowClosed, void(const WindowKey& key));
-    MOCK_METHOD2(OnContextWillChanged, void(DataContext* current, DataContext* newOne));
-    MOCK_METHOD2(OnContextDidChanged, void(DataContext* current, DataContext* oldOne));
+    MOCK_METHOD2(OnContextWillBeChanged, void(DataContext* current, DataContext* newOne));
+    MOCK_METHOD2(OnContextWasChanged, void(DataContext* current, DataContext* oldOne));
     MOCK_METHOD0(PostInit, void());
 
     virtual void OnContextCreatedImpl(DataContext* context)
@@ -60,10 +60,10 @@ public:
     virtual void OnWindowClosedImpl(const WindowKey& key)
     {
     }
-    virtual void OnContextWillChangedImpl(DataContext* current, DataContext* newOne)
+    virtual void OnContextWillBeChangedImpl(DataContext* current, DataContext* newOne)
     {
     }
-    virtual void OnContextDidChangedImpl(DataContext* current, DataContext* oldOne)
+    virtual void OnContextWasChangedImpl(DataContext* current, DataContext* oldOne)
     {
     }
     virtual void PostInitImpl()

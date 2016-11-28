@@ -218,7 +218,7 @@ bool CustomColorsPanel::SaveTexture()
         break;
     }
 
-    selectedPathname = PathnameToDAVAStyle(filePath);
+    selectedPathname = DAVA::FilePath(filePath.toStdString());
 
     if (selectedPathname.IsEmpty())
     {

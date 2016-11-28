@@ -28,8 +28,8 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
-    void OnContextWillChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
-    void OnContextDidChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
+    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
+    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
 
     void PostInit() override;

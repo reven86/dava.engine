@@ -41,7 +41,7 @@ private:
     }
 };
 
-bool TabDescriptor::operator==(const TabDescriptor& other) const
+inline bool TabDescriptor::operator==(const TabDescriptor& other) const
 {
     return tabTitle == other.tabTitle &&
     tabTooltip == other.tabTooltip;

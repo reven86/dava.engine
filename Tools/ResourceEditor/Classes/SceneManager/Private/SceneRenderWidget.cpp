@@ -1,14 +1,20 @@
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
 #include "Classes/SceneManager/Private/SceneTabsModel.h"
+#include "Classes/SceneManager/SceneData.h"
+#include "Classes/Deprecated/ScenePreviewDialog.h"
+
+#include "Classes/Qt/Scene/SceneSignals.h"
 
 #include "TArc/Controls/SceneTabbar.h"
 
 #include "UI/Focus/UIFocusComponent.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/EngineContext.h"
+#include "Reflection/ReflectedType.h"
 #include "Functional/Function.h"
 #include "Base/StaticSingleton.h"
-#include "Deprecated/ScenePreviewDialog.h"
+
+#include <QVBoxLayout>
 
 SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget_, IWidgetDelegate* widgetDelegate_)
     : accessor(accessor_)
@@ -51,18 +57,17 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
 SceneRenderWidget::~SceneRenderWidget()
 {
-    if (previewDialog != nullptr)
+    if (previewDialog.Get() != nullptr)
     {
         previewDialog->RemoveFromParent();
     }
-    SafeRelease(previewDialog);
 }
 
 void SceneRenderWidget::ShowPreview(const DAVA::FilePath& scenePath)
 {
-    if (!previewDialog)
+    if (previewDialog.Get() == nullptr)
     {
-        previewDialog = new ScenePreviewDialog();
+        previewDialog.Set(new ScenePreviewDialog());
     }
 
     if (scenePath.IsEqualToExtension(".sc2"))
@@ -77,7 +82,7 @@ void SceneRenderWidget::ShowPreview(const DAVA::FilePath& scenePath)
 
 void SceneRenderWidget::HidePreview()
 {
-    if (previewDialog && previewDialog->GetParent())
+    if (previewDialog.Get() != nullptr && previewDialog->GetParent())
     {
         previewDialog->Close();
     }

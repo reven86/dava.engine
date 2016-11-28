@@ -1,3 +1,4 @@
+#include "Classes/Application/REGlobal.h"
 #include "Main/RecentMenuItems.h"
 #include "Settings/SettingsManager.h"
 

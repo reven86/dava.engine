@@ -81,11 +81,17 @@ void DataWrapper::SetContext(DataContext* context)
     impl->activeContext = context;
 }
 
-void DataWrapper::ClearListener()
+void DataWrapper::ClearListener(DataListener* listenerForCheck)
 {
     if (impl == nullptr)
     {
         return;
+    }
+
+    DVASSERT(listenerForCheck == impl->listener);
+    if (impl->listener == impl->nextListenerToSet)
+    {
+        impl->nextListenerToSet = nullptr;
     }
 
     impl->listener = nullptr;
@@ -160,7 +166,7 @@ void DataWrapper::Sync(bool notifyListener)
             {
                 impl->cachedValues.push_back(field.ref.GetValue());
             }
-            NotifyListeners(notifyListener);
+            NotifyListener(notifyListener);
         }
         else
         {
@@ -197,7 +203,7 @@ void DataWrapper::Sync(bool notifyListener)
 
             if (!fieldNames.empty())
             {
-                NotifyListeners(notifyListener, fieldNames);
+                NotifyListener(notifyListener, fieldNames);
             }
         }
     }
@@ -206,7 +212,7 @@ void DataWrapper::Sync(bool notifyListener)
         if (!impl->cachedValues.empty() || listenerWasChanged == true)
         {
             impl->cachedValues.clear();
-            NotifyListeners(notifyListener);
+            NotifyListener(notifyListener);
         }
     }
 }
@@ -241,7 +247,7 @@ void DataWrapper::SyncWithEditor(const Reflection& etalonData)
     }
 }
 
-void DataWrapper::NotifyListeners(bool sendNotify, const Vector<Any>& fields)
+void DataWrapper::NotifyListener(bool sendNotify, const Vector<Any>& fields)
 {
     if (sendNotify == false)
         return;

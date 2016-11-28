@@ -35,6 +35,9 @@
 #include <QList>
 #include <QString>
 #include <QShortcut>
+#include <QtGlobal>
+#include <QUrl>
+#include <QMimeData>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -67,9 +70,9 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     DAVA::Texture::SetGPULoadingOrder({ family });
 
     QtMainWindow* wnd = qobject_cast<QtMainWindow*>(GetUI()->GetWindow(REGlobal::MainWindowKey));
+    DVASSERT(wnd != nullptr);
     if (wnd != nullptr)
     {
-        DVASSERT(wnd != nullptr);
         wnd->OnRenderingInitialized();
     }
 }
@@ -149,7 +152,7 @@ void SceneManagerModule::OnContextDeleted(DAVA::TArc::DataContext* context)
     tabsModel->tabs.erase(context->GetID());
 }
 
-void SceneManagerModule::OnContextWillChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
+void SceneManagerModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
 {
     using namespace DAVA::TArc;
     if (current == nullptr)
@@ -161,7 +164,7 @@ void SceneManagerModule::OnContextWillChanged(DAVA::TArc::DataContext* current, 
     data->scene->Deactivate();
 }
 
-void SceneManagerModule::OnContextDidChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
+void SceneManagerModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
     using namespace DAVA::TArc;
     if (current == nullptr)
@@ -515,12 +518,10 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         gpuFormatActions.push_back(action);
     };
 
-    createGpuAction(DAVA::GPU_POWERVR_IOS);
-    createGpuAction(DAVA::GPU_POWERVR_ANDROID);
-    createGpuAction(DAVA::GPU_TEGRA);
-    createGpuAction(DAVA::GPU_MALI);
-    createGpuAction(DAVA::GPU_ADRENO);
-    createGpuAction(DAVA::GPU_DX11);
+    for (int gpu = 0; gpu < DAVA::eGPUFamily::GPU_DEVICE_COUNT; ++gpu)
+    {
+        createGpuAction(static_cast<DAVA::eGPUFamily>(gpu));
+    }
 
     // Separator
     {
@@ -789,7 +790,7 @@ void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
     waitDlgParams.message = QStringLiteral("Save with Children.\nPlease wait...");
     ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
 
-    DAVA::FilePath folder = PathnameToDAVAStyle(path);
+    DAVA::FilePath folder(path.toStdString());
     folder.MakeDirectoryPathname();
 
     SceneSaver sceneSaver;
@@ -1113,7 +1114,7 @@ bool SceneManagerModule::CanCloseScene(SceneData* data)
         return false;
     }
 
-    if (answer == QMessageBox::No)
+    if (answer == ModalMessageParams::No)
     {
         if (toolsFlags)
         {

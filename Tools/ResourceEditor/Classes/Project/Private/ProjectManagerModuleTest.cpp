@@ -1,6 +1,7 @@
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/LaunchModule.h"
+#include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Settings/Settings.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 
@@ -17,8 +18,7 @@
 #include <QTest>
 
 #include <gmock/gmock.h>
-
-using namespace ::testing;
+#include "Base/Any.h"
 
 DAVA_TARC_TESTCLASS(ProjectManagerTests)
 {
@@ -45,6 +45,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
     DAVA_TEST (LaunchAppTest)
     {
+        using namespace ::testing;
         // prepare test environment
         {
             DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(PROPS_KEY);
@@ -90,10 +91,11 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
     DAVA_TEST (CloseProject)
     {
+        using namespace ::testing;
         using namespace DAVA::TArc;
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(REGlobal::CloseAllScenesOperation.ID, _))
-        .WillOnce(Invoke([this](int id, const Any& arg1)
+        .WillOnce(Invoke([this](int id, const DAVA::Any& arg1)
                          {
                              TEST_VERIFY(arg1.CanCast<bool>());
                              TEST_VERIFY(arg1.Cast<bool>() == true);

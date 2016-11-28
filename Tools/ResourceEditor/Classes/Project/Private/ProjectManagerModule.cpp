@@ -5,8 +5,6 @@
 #include "Classes/Qt/Settings/Settings.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/Main/QtUtils.h"
-#include "Classes/Qt/Main/RecentMenuItems.h"
 #include "Deprecated/EditorConfig.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
@@ -28,6 +26,8 @@ namespace ProjectManagerDetails
 {
 const DAVA::String PROPERTIES_KEY = "ProjectManagerProperties";
 }
+
+ProjectManagerModule::~ProjectManagerModule() = default;
 
 void ProjectManagerModule::PostInit()
 {
@@ -138,7 +138,7 @@ void ProjectManagerModule::OpenProject()
     QString dirPath = GetUI()->GetExistingDirectory(REGlobal::MainWindowKey, dirDialogParams);
     if (!dirPath.isEmpty())
     {
-        DAVA::FilePath path = DAVA::FilePath(PathnameToDAVAStyle(dirPath));
+        DAVA::FilePath path(dirPath.toStdString());
         path.MakeDirectoryPathname();
         OpenProjectByPath(path);
     }

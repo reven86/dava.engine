@@ -12,7 +12,8 @@ namespace DAVA
 namespace TArc
 {
 SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* parent /* = nullptr */)
-    : model(model_)
+    : QTabBar(parent)
+    , model(model_)
 {
     DataWrapper::DataAccessor accessorFn(this, &SceneTabbar::GetSceneTabsModel);
     modelWrapperWrapper = accessor->CreateWrapper(accessorFn);
@@ -24,11 +25,6 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
 #if defined(__DAVAENGINE_WIN32__)
     QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), this), &QShortcut::activated, DAVA::MakeFunction(this, &SceneTabbar::OnCloseCurrentTab));
 #endif
-}
-
-SceneTabbar::~SceneTabbar()
-{
-    modelWrapperWrapper.SetListener(nullptr);
 }
 
 void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
