@@ -255,17 +255,17 @@ void UISwitch::ChangeVisualState()
     BringChildBack(isLeftSelected ? buttonLeft.Get() : buttonRight.Get());
 }
 
-float32 UISwitch::GetToggleUttermostPosition()
+float32 UISwitch::GetToggleUttermostPosition() const
 {
     return isLeftSelected ? GetToggleLeftPosition() : GetToggleRightPosition();
 }
 
-float32 UISwitch::GetToggleLeftPosition()
+float32 UISwitch::GetToggleLeftPosition() const
 {
     return buttonLeft->relativePosition.x + toggle->GetPivotPoint().x;
 }
 
-float32 UISwitch::GetToggleRightPosition()
+float32 UISwitch::GetToggleRightPosition() const
 {
     return buttonRight->relativePosition.x - toggle->size.dx + toggle->GetPivotPoint().x;
 }
