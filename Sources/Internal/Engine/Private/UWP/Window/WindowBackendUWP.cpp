@@ -82,6 +82,13 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     // Method executes in context of XAML::Window's UI thread
@@ -115,6 +122,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;

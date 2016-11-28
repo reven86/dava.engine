@@ -339,7 +339,7 @@ void QtMainWindow::SetupWidget()
     ui->scrollAreaWidgetContents->Init(globalOperations);
 }
 
-void QtMainWindow::WaitStart(const QString& title, const QString& message, int min /* = 0 */, int max /* = 100 */)
+void QtMainWindow::WaitStart(const QString& title, const QString& message, int min, int max)
 {
     DVASSERT(waitDialog == nullptr);
 
@@ -347,7 +347,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.message = message;
     params.min = min;
     params.max = max;
-    params.needProgressBar = false;
+    params.needProgressBar = min != max;
     waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
     DAVA::TArc::WaitDialog* dialog = dynamic_cast<DAVA::TArc::WaitDialog*>(waitDialog.get());
     dialog->beforeDestroy.Connect([this](DAVA::TArc::WaitHandle* handle)
@@ -1652,7 +1652,7 @@ void QtMainWindow::OnConvertModifiedTextures()
         return;
     }
 
-    WaitStart("Conversion of modified textures.", "Checking for modified textures.");
+    WaitStart("Conversion of modified textures.", "Checking for modified textures.", 0, 0);
     DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>> textures;
     int filesToUpdate = SceneHelper::EnumerateModifiedTextures(scene.Get(), textures);
 

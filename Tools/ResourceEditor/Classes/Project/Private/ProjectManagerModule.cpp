@@ -174,6 +174,7 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
 void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 {
     ProjectManagerData* data = GetData();
+    connections.disconnect(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, nullptr, nullptr);
     data->projectPath = incomePath;
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
@@ -232,6 +233,7 @@ void ProjectManagerModule::CloseProject()
         if (GetAccessor()->GetContextCount() == 0)
         {
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
             data->projectPath = "";
 
             SettingsManager::ResetPerProjectSettings();
