@@ -1,12 +1,14 @@
 #include "CommandListener.h"
 #include "applicationmanager.h"
 #include "errormessenger.h"
+#include "silentupdater.h"
 
 #include "defines.h"
 
 #include <QTimer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QNetworkRequest>
 
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -14,17 +16,20 @@
 #include <QJsonObject>
 
 #include <QProcess>
+#include <QDir>
 
 CommandListener::CommandListener(ApplicationManager* appManager_, QObject* parent /* = nullptr */)
     : QObject(parent)
+    , silentUpdater(new SilentUpdater(appManager_, this))
     , applicationManager(appManager_)
     , updateTimer(new QTimer(this))
     , networkManager(new QNetworkAccessManager(this))
 {
-    updateTimer->setSingleShot(false);
-    updateTimer->setInterval(90 * 1000);
+    updateTimer->setSingleShot(true);
+    updateTimer->setInterval(1 * 1000);
     connect(updateTimer, &QTimer::timeout, this, &CommandListener::GetCommands);
     connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::GotReply);
+    updateTimer->start();
 }
 
 QString CommandListener::GetProtocolKey() const
@@ -65,6 +70,10 @@ void CommandListener::ProcessCommand(const QJsonObject& object)
     {
         SilentUpdate(object, commandIDStr);
     }
+    else
+    {
+        SendReply(FAILURE, commandIDStr, QString("Unknown command: %1").arg(typeStr));
+    }
 }
 
 void CommandListener::SendReply(eResult result, const QString& commandID, const QString& message)
@@ -80,7 +89,7 @@ void CommandListener::SendReply(eResult result, const QString& commandID, const 
     data.append("&message='");
     data.append(message);
     data.append("'");
-    networkManager->post(QNetworkRequest(QUrl(urlStr)), data);
+    Post(urlStr, data);
 
     if (result != SUCCESS)
     {
@@ -97,7 +106,15 @@ void CommandListener::GetCommands()
     data.append(key.isEmpty() ? "NULL" : key);
     data.append("&os=");
     data.append(platformString);
-    networkManager->post(QNetworkRequest(QUrl(urlStr)), data);
+    Post(urlStr, data);
+}
+
+void CommandListener::Post(const QString& urlStr, const QByteArray& data)
+{
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlStr));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    networkManager->post(request, data);
 }
 
 void CommandListener::GotReply(QNetworkReply* reply)
@@ -110,7 +127,9 @@ void CommandListener::GotReply(QNetworkReply* reply)
     }
 
     QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parseError);
+    QByteArray readedData = reply->readAll();
+    qDebug() << readedData;
+    QJsonDocument document = QJsonDocument::fromJson(readedData, &parseError);
     if (parseError.error != QJsonParseError::NoError)
     {
         SendReply(FAILURE, "Can not parse JSON reply, error is: " + parseError.errorString());
@@ -122,13 +141,13 @@ void CommandListener::GotReply(QNetworkReply* reply)
     {
         SetProtocolKey(keyValue.toString());
     }
-    else if (keyValue.isUndefined() == false)
+    else if (keyValue.isNull() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(keyValue.type()));
         SendReply(FAILURE, "Can not parse key from reply, expect a string, got type " + jsonValueTypeStr);
     }
     QJsonValue commandsValue = rootObj["commands"];
-    if (commandsValue.isArray() == false && commandsValue.isUndefined() == false)
+    if (commandsValue.isArray() == false && commandsValue.isNull() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(commandsValue.type()));
         SendReply(FAILURE, "Can not parse commands from reply, expects an array, got type " + jsonValueTypeStr);
@@ -149,7 +168,7 @@ void CommandListener::GotReply(QNetworkReply* reply)
         }
     }
     QJsonValue commandResultValue = rootObj["command_result"];
-    if (commandsValue.isArray() == false && commandsValue.isUndefined() == false)
+    if (commandResultValue.isArray() == false && commandResultValue.isNull() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(commandResultValue.type()));
         SendReply(FAILURE, "Can not parse command result from reply, expects an array, got type " + jsonValueTypeStr);
@@ -168,10 +187,14 @@ void CommandListener::OnProcessFinished(int exitCode, QProcess::ExitStatus exitS
         ErrorMessenger::LogMessage(QtWarningMsg, "Internal error: got Process Finished not from process");
         return;
     }
+    process->deleteLater();
+
     QString commandID = startedCommandIDs[process];
+    startedCommandIDs.remove(process);
     if (commandID.isEmpty())
     {
         ErrorMessenger::LogMessage(QtWarningMsg, "Internal error: process is not registered");
+        return;
     }
     QByteArray standardOutput = process->readAllStandardOutput();
     QByteArray standardError = process->readAllStandardError();
@@ -179,7 +202,26 @@ void CommandListener::OnProcessFinished(int exitCode, QProcess::ExitStatus exitS
     QString reply = QString("process exit code: %1\nprocess exit status: %2\nstandard output: %3\nstandard error: %4");
     reply = reply.arg(exitCode).arg(static_cast<int>(exitStatus)).arg(QString(standardOutput)).arg(QString(standardError));
     SendReply(result, commandID, reply);
+}
+
+void CommandListener::OnProcessError(QProcess::ProcessError error)
+{
+    QProcess* process = qobject_cast<QProcess*>(sender());
+    if (process == nullptr)
+    {
+        ErrorMessenger::LogMessage(QtWarningMsg, "Internal error: got Process Error not from process");
+        return;
+    }
     process->deleteLater();
+
+    QString commandID = startedCommandIDs[process];
+    if (commandID.isEmpty())
+    {
+        ErrorMessenger::LogMessage(QtWarningMsg, "Internal error: process is not registered");
+        return;
+    }
+    QString reply = QString("Error occured while launching process. Qt error code is %1").arg(static_cast<int>(error));
+    SendReply(FAILURE, commandID, reply);
 }
 
 void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString& commandID)
@@ -193,11 +235,13 @@ void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString
     }
 
     QString cmd = commandValue.toString();
+    ErrorMessenger::LogMessage(QtDebugMsg, "launched command from BA-manager: " + cmd);
     QProcess* process = new QProcess();
     connect(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, &CommandListener::OnProcessFinished);
+    connect(process, &QProcess::errorOccurred, this, &CommandListener::OnProcessError);
     startedCommandIDs[process] = commandID;
-    process->start(cmd, QProcess::ReadWrite);
+    process->start("cmd.exe /c " + cmd, QProcess::ReadWrite);
 }
 
 void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString& commandID)
@@ -219,4 +263,22 @@ void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString&
         return;
     }
     QString branchName = branchNameValue.toString();
+
+    QJsonValue appNameValue = requestObj["build_name"];
+    if (appNameValue.isString() == false)
+    {
+        QString jsonValueTypeStr = QString::number(static_cast<int>(appNameValue.type()));
+        SendReply(FAILURE, commandID, "Can not parse branch name from command, expect a string, got type " + jsonValueTypeStr);
+        return;
+    }
+    QString appName = appNameValue.toString();
+    appName = applicationManager->GetString(appName);
+    AppVersion newVersion;
+    ::FillAppFields(&newVersion, requestObj, IsToolset(appName));
+    AppVersion* installedVersion = applicationManager->GetInstalledVersion(branchName, appName);
+    SilentUpdateTask::CallBack callBack = [this](bool success, const QString& message) {
+        SendReply(success ? SUCCESS : FAILURE, message);
+    };
+    SilentUpdateTask task(branchName, appName, installedVersion, newVersion, callBack);
+    silentUpdater->AddTask(std::move(task));
 }

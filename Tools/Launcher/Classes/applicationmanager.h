@@ -23,15 +23,20 @@ public:
 
     ConfigParser* GetLocalConfig();
     ConfigParser* GetRemoteConfig();
+    AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID);
 
     ProcessCommunication* GetProcessCommunicationModule() const;
+
+    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
     void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
+    void RunApplication(const QString& branchID, const QString& appID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
     bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
     bool RemoveBranch(const QString& branchID);
+    bool PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, QStringList& appsToRestart);
 
     bool ShouldShowNews();
     void NewsShowed();
@@ -44,11 +49,13 @@ public:
     //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
-public slots:
-    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
-
 private:
     void LoadLocalConfig(const QString& configPath);
+    bool TryStopApp(const QString& runPath) const;
+
+    //before call this function check that app is not running
+    void RemoveApplicationImpl(const QString& branchID, const QString& appID);
+
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;

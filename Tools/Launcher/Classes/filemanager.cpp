@@ -167,6 +167,7 @@ FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, co
     QDir outDir(pathOut);
     if (!outDir.exists())
     {
+        ErrorMessenger::LogMessage(QtWarningMsg, "Can not create entrie list: out dir is not exist!");
         return entryList;
     }
 #ifdef Q_OS_WIN
@@ -183,6 +184,7 @@ FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, co
         }
         else
         {
+            ErrorMessenger::LogMessage(QtWarningMsg, "Can not create entrie list: can not open file " + infoFilePath + "!");
             return entryList;
         }
     }
@@ -253,6 +255,10 @@ bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString&
     for (const QPair<QFileInfo, QString>& entry : entryList)
     {
         success &= FileManagerDetails::MoveEntry(entry.first, entry.second);
+        if (success == false)
+        {
+            ErrorMessenger::LogMessage(QtWarningMsg, QString("Can not move entry ") + entry.first.absoluteFilePath() + " to " + entry.second);
+        }
     }
     return success;
 }
@@ -268,11 +274,11 @@ void FileManager::MakeDirectory(const QString& path)
         QDir().mkpath(path);
 }
 
-bool FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success) const
+QString FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success) const
 {
     if (success != nullptr)
     {
-        success = false;
+        *success = false;
     }
 
     const QString& filePath = GetTempDownloadFilePath();
@@ -280,11 +286,10 @@ bool FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success) co
 
     if (outputFile.open(QFile::WriteOnly))
     {
-        outputFile.write(dataToWrite) == dataToWrite.size();
         if (success != nullptr
             && outputFile.write(dataToWrite) == dataToWrite.size())
         {
-            success = true;
+            *success = true;
         }
         outputFile.close();
     }

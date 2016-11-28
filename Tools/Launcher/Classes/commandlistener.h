@@ -6,6 +6,7 @@
 #include <QString>
 #include <QProcess>
 
+class SilentUpdater;
 class ApplicationManager;
 class QTimer;
 class QNetworkAccessManager;
@@ -19,8 +20,9 @@ class CommandListener : public QObject
 public:
     enum eResult
     {
-        SUCCESS,
-        FAILURE
+        //this values is BA-manager ret-code requirements
+        SUCCESS = 2,
+        FAILURE = 3
     };
     CommandListener(ApplicationManager* appManager, QObject* parent = nullptr);
 
@@ -32,12 +34,17 @@ public:
 
 private slots:
     void GetCommands();
+
     void GotReply(QNetworkReply* reply);
     void OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void OnProcessError(QProcess::ProcessError error);
 
 private:
     void LaunchProcess(const QJsonObject& requestObj, const QString& commandIDValue);
     void SilentUpdate(const QJsonObject& requestObj, const QString& commandIDValue);
+    void Post(const QString& urlStr, const QByteArray& data);
+
+    SilentUpdater* silentUpdater = nullptr;
     ApplicationManager* applicationManager = nullptr;
     QTimer* updateTimer = nullptr;
     QNetworkAccessManager* networkManager = nullptr;

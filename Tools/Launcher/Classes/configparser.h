@@ -11,7 +11,11 @@
 QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue = "");
 QStringList GetArrayValueFromYamlNode(const YAML::Node* node);
 
+struct AppVersion;
+class QJsonObject;
+
 bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset);
+bool IsToolset(const QString& appName);
 
 class ConfigParser;
 

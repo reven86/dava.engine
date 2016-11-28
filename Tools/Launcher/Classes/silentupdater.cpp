@@ -1,129 +1,113 @@
 #include "silentupdater.h"
 #include "applicationmanager.h"
+#include "filemanager.h"
 
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
-SilentUpdater::SilentUpdater(ApplicationManager* appManager, SilentUpdateTask&& task_, QObject* parent)
+namespace SilentUpdaterDetails
+{
+class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
+{
+public:
+    UpdateDialogZipFunctor(const QString& errorMessage_, SilentUpdateTask::CallBack callBackFunction_)
+        : errorMessage(errorMessage_)
+        , callBackFunction(callBackFunction_)
+    {
+    }
+
+    ~UpdateDialogZipFunctor() override = default;
+
+private:
+    void OnError(const ZipError& zipError) override
+    {
+        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
+        callBackFunction(false, errorMessage + "\nerror text is: " + zipError.GetErrorString());
+    }
+
+private:
+    QString errorMessage;
+    SilentUpdateTask::CallBack callBackFunction;
+};
+}
+
+SilentUpdater::SilentUpdater(ApplicationManager* appManager, QObject* parent)
     : QObject(parent)
-    , applicationManager(appManager)
-    , task(std::move(task_))
+    , appManager(appManager)
 {
     networkManager = new QNetworkAccessManager(this);
-    connect(networkManager, &QNetworkAccessManager::finished, this, &SilentUpdater::OnDownloadFinished);
-    connect(networkManager, &QNetworkAccessManager::networkAccessibleChanged, this, &UpdateDialog::OnNetworkAccessibleChanged);
+    connect(networkManager, &QNetworkAccessManager::networkAccessibleChanged, this, &SilentUpdater::OnNetworkAccessibleChanged);
+}
 
-    QString url = task.newVersion.url;
-    currentReply = networkManager->get(QNetworkRequest(QUrl(url)));
+SilentUpdater::~SilentUpdater()
+{
+    canStartNextTask = false;
+    tasks.clear();
+    networkManager->disconnect(this);
+    appManager = nullptr;
+}
+
+void SilentUpdater::AddTask(SilentUpdateTask&& task)
+{
+    tasks.append(std::move(task));
+    StartNextTask();
 }
 
 void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 {
-    deleteLater();
-    currentReply->deleteLater();
-    CallBack onFinished = task.onFinished;
+    canStartNextTask = true;
+    if (currentReply == nullptr)
+    {
+        return;
+    }
+    reply->deleteLater();
+    SilentUpdateTask task = tasks.dequeue();
+    if (reply != currentReply)
+    {
+        task.onFinished(false, "Internal error: got wrong reply");
+        return;
+    }
+
     if (currentReply->error() != QNetworkReply::NoError)
     {
-        onFinished(false, currentReply->errorString());
+        task.onFinished(false, "Can not download remote archive, error is " + currentReply->errorString());
         return;
     }
-    QByteArray readedData = currentDownload->readAll();
+
+    QByteArray readedData = currentReply->readAll();
     bool success = false;
-    QString filePath = appManager->GetFileManager()->CreateZipFile(readedData, &success);
+    FileManager* fileManager = appManager->GetFileManager();
+    QString archivePath = fileManager->CreateZipFile(readedData, &success);
     if (success == false)
     {
-        onFinished(false, tr("Can not create archive %1!").arg(filePath));
+        task.onFinished(false, "Can not write archive to file " + archivePath);
         return;
     }
-    bool needRelaunch = false;
-
-    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
-    if (task.currentVersion != nullptr)
+    QStringList applicationsToRestart;
+    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, applicationsToRestart);
+    if (canRemoveCorrectrly == false)
     {
-        QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
-        QString runPath = appDir + localAppPath;
-
-        if (ProcessHelper::IsProcessRuning(runPath))
-        {
-            //i will burn in hell if i wlil not modify this code
-            //AssetCacheServer is working on background, so we need to stop it and relaunch later
-            if (task.appID == "AssetCacheServer")
-            {
-                AddLogValue(tr("Stopping AssetCacheServer..."));
-                ProcessCommunication* processCommunication = appManager->GetProcessCommunicationModule();
-                ProcessCommunication::eReply reply = processCommunication->SendSync(ProcessCommunication::eMessage::QUIT, runPath);
-                if (reply == ProcessCommunication::eReply::ACCEPT)
-                {
-                    UpdateLastLogValue(tr("Waiting for AssetCacheServer will be stopped..."));
-                    QElapsedTimer timer;
-                    timer.start();
-                    const int maxWaitTime = 10000; //10 secs;
-                    bool isStillRunning = true;
-                    while (timer.elapsed() < maxWaitTime && isStillRunning)
-                    {
-                        isStillRunning = ProcessHelper::IsProcessRuning(runPath);
-                        QThread::msleep(100);
-                    }
-                    if (isStillRunning == false)
-                    {
-                        UpdateLastLogValue(tr("Asset cache server stopped"));
-                        CompleteLog();
-                        needRelaunch = true;
-                    }
-                    else
-                    {
-                        UpdateLastLogValue(tr("Asset cache server was not stopped till %1 seconds").arg(maxWaitTime / 1000));
-                        BreakLog();
-                        return;
-                    }
-                }
-                else
-                {
-                    UpdateLastLogValue(tr("Can not stop asset cache server, last error was %1").arg(ProcessCommunication::GetReplyString(reply)));
-                    BreakLog();
-                    return;
-                }
-            }
-            else
-            {
-                do
-                {
-                    if (ErrorMessenger::ShowRetryDlg(task.appID, runPath, true) == QMessageBox::Cancel)
-                    {
-                        AddLogValue(tr("Updating failed!"));
-                        BreakLog();
-                        return;
-                    }
-                } while (ProcessHelper::IsProcessRuning(runPath));
-            }
-        }
+        task.onFinished(false, "Can not remove installed applications");
+        return;
     }
-    FileManager::DeleteDirectory(appDir);
 
-    AddLogValue(tr("Unpacking archive..."));
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
 
-    ui->cancelButton->setEnabled(false);
     ZipUtils::CompressedFilesAndSizes files;
-    if (ListArchive(filePath, files)
-        && UnpackArchive(filePath, appDir, files))
+    SilentUpdaterDetails::UpdateDialogZipFunctor listZipFunctor("Error while listing archive", task.onFinished);
+    SilentUpdaterDetails::UpdateDialogZipFunctor unpackZipFunctor("Error while unpacking archive", task.onFinished);
+
+    if (ZipUtils::GetFileList(archivePath, files, listZipFunctor)
+        && ZipUtils::UnpackZipArchive(archivePath, appDir, files, unpackZipFunctor))
     {
-        emit AppInstalled(task.branchID, task.appID, task.newVersion);
-        UpdateLastLogValue("Unpack Complete!");
-        CompleteLog();
+        appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
     }
     else
     {
-        UpdateLastLogValue("Unpack Fail!");
-        BreakLog();
+        return;
     }
-    ui->cancelButton->setEnabled(true);
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
-
-    tasks.dequeue();
-    if (needRelaunch)
-    {
-        appManager->RunApplication(task.branchID, task.appID, task.newVersion.id);
-    }
+    task.onFinished(true, "Success");
     StartNextTask();
 }
 
@@ -131,8 +115,24 @@ void SilentUpdater::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAcc
 {
     if (accessible == QNetworkAccessManager::NotAccessible)
     {
-        currentReply->abort();
-        currentReply->deleteLater();
-        task.onFinished(false, "Network was disabled");
+        if (currentReply != nullptr)
+        {
+            currentReply->abort();
+            currentReply->deleteLater();
+            SilentUpdateTask task = tasks.dequeue();
+            task.onFinished(false, "Network was disabled");
+        }
     }
+}
+
+void SilentUpdater::StartNextTask()
+{
+    if (canStartNextTask == false)
+    {
+        return;
+    }
+    canStartNextTask = false;
+    const SilentUpdateTask& task = tasks.last();
+    QString url = task.newVersion.url;
+    currentReply = networkManager->get(QNetworkRequest(QUrl(url)));
 }

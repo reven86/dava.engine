@@ -13,7 +13,7 @@ namespace PreferencesDialogDetails
 const char* propertyKey = "urlType";
 const char* settingsFileName = "LauncherPreferences.json";
 const char* filesDirectoryKey = "storage path";
-const char* launcherProtocolKey = "protocol key";
+const char* launcherProtocolKey = "BA-manager key";
 const QMap<ConfigDownloader::eURLType, QString> urlKeys = {
     { ConfigDownloader::LauncherInfoURL, "launcherInfo url" },
     { ConfigDownloader::StringsURL, "launcher strings url" },
@@ -32,11 +32,11 @@ void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDo
     }
 }
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* silentUpdater)
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener)
 {
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
-    rootObject[PreferencesDialogDetails::launcherProtocolKey] = silentUpdater->GetProtocolKey();
+    rootObject[PreferencesDialogDetails::launcherProtocolKey] = commandListener->GetProtocolKey();
     for (auto iter = PreferencesDialogDetails::urlKeys.cbegin(); iter != PreferencesDialogDetails::urlKeys.cend(); ++iter)
     {
         rootObject[iter.value()] = configDownloader->GetURL(iter.key());
@@ -54,7 +54,7 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     }
 }
 
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* silentUpdater)
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener)
 {
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);
@@ -89,7 +89,7 @@ void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     QJsonValue protocolKeyValue = rootObject[PreferencesDialogDetails::launcherProtocolKey];
     if (protocolKeyValue.isString())
     {
-        silentUpdater->SetProtocolKey(protocolKeyValue.toString());
+        commandListener->SetProtocolKey(protocolKeyValue.toString());
     }
 }
 

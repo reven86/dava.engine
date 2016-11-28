@@ -467,7 +467,6 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         {
             //application update
             UpdateDialog dialog(tasks, appManager, this);
-            connect(&dialog, &UpdateDialog::AppInstalled, appManager, &ApplicationManager::OnAppInstalled);
             dialog.exec();
         }
     }
