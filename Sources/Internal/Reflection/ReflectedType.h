@@ -113,7 +113,7 @@ public:
     Any CreateObject(CreatePolicy policy, Args... args) const;
 
     /**
-        Destoy object contained in `v`, by invoking dtor.
+        Destroy object contained in `v`, by invoking dtor.
         Destruction is performed on `v` contained object:
         - If `v` contains object "by value" just `Any::Clear()` will be innoked. 
         - If `v` contains object "by pointer" dtor will be called.
@@ -129,6 +129,6 @@ protected:
     std::unique_ptr<ReflectedStructure> structure;
     std::unique_ptr<StructureWrapper> structureWrapper;
 
-    ReflectedType(const Type* rttiType_);
+    ReflectedType(const Type* type_);
 };
 } // namespace DAVA

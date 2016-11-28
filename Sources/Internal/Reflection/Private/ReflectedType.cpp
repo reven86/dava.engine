@@ -4,8 +4,8 @@ namespace DAVA
 {
 ReflectedType::~ReflectedType() = default;
 
-ReflectedType::ReflectedType(const Type* rttiType_)
-    : type(rttiType_)
+ReflectedType::ReflectedType(const Type* type_)
+    : type(type_)
 {
 }
 

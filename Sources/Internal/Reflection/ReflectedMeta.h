@@ -26,7 +26,7 @@ public:
     template <typename T>
     ReflectedMeta(Meta<T>&& meta);
 
-    template <typename Meta>
+    template <typename T>
     bool HasMeta() const;
 
     template <typename T>

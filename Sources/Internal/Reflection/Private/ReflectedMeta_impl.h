@@ -24,10 +24,10 @@ inline ReflectedMeta::ReflectedMeta(Meta<T>&& meta)
     Emplace(std::move(meta));
 }
 
-template <typename Meta>
+template <typename T>
 bool ReflectedMeta::HasMeta() const
 {
-    return metas.count(Type::Instance<Meta>()) > 0;
+    return metas.count(Type::Instance<T>()) > 0;
 }
 
 template <typename T>

@@ -3,16 +3,16 @@
 namespace DAVA
 {
 List<std::unique_ptr<ReflectedType>> ReflectedTypeDB::customReflectedTypes;
-UnorderedMap<const Type*, ReflectedType*> ReflectedTypeDB::rtTypeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rtTypeNameToReflectedTypeMap;
+UnorderedMap<const Type*, ReflectedType*> ReflectedTypeDB::typeToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedTypeDB::typeNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
 
 const ReflectedType* ReflectedTypeDB::GetByRtType(const Type* type)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rtTypeToReflectedTypeMap.find(type);
-    if (it != rtTypeToReflectedTypeMap.end())
+    auto it = typeToReflectedTypeMap.find(type);
+    if (it != typeToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -24,8 +24,8 @@ const ReflectedType* ReflectedTypeDB::GetByRtTypeName(const String& rttiName)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = rtTypeNameToReflectedTypeMap.find(rttiName);
-    if (it != rtTypeNameToReflectedTypeMap.end())
+    auto it = typeNameToReflectedTypeMap.find(rttiName);
+    if (it != typeNameToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -53,11 +53,11 @@ ReflectedType* ReflectedTypeDB::CreateCustomType(const Type* type, const String&
 
     String rttiName(type->GetName());
 
-    DVASSERT(rtTypeToReflectedTypeMap.count(type) == 0 && "ReflectedType with specified RttiType already exists");
-    DVASSERT(rtTypeNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
+    DVASSERT(typeToReflectedTypeMap.count(type) == 0 && "ReflectedType with specified RttiType already exists");
+    DVASSERT(typeNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
 
-    rtTypeToReflectedTypeMap[type] = ret;
-    rtTypeNameToReflectedTypeMap[rttiName] = ret;
+    typeToReflectedTypeMap[type] = ret;
+    typeNameToReflectedTypeMap[rttiName] = ret;
 
     RegisterPermanentName(ret, permanentName);
 

@@ -101,8 +101,8 @@ ReflectedType* ReflectedTypeDB::Edit()
         ret->type = Type::Instance<DecayT>();
         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
 
-        rtTypeToReflectedTypeMap[ret->type] = ret;
-        rtTypeNameToReflectedTypeMap[String(ret->type->GetName())] = ret;
+        typeToReflectedTypeMap[ret->type] = ret;
+        typeNameToReflectedTypeMap[String(ret->type->GetName())] = ret;
 
         ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
