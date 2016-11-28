@@ -69,7 +69,7 @@ void SpeedTreeImportDialog::OnOk()
 
     //import all trees
     {
-        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...", 0, 0);
         for (size_t i = 0; i < xmlFiles.size(); ++i)
         {
             SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);

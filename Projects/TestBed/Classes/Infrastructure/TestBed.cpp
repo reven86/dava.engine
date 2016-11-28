@@ -1,6 +1,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
+#include "Engine/EngineSettings.h"
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -33,6 +34,7 @@
 #include "Tests/UILoggingTest.h"
 #include "Tests/ProfilerTest.h"
 #include "Tests/ImGuiTest.h"
+#include "Tests/SoundTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -117,6 +119,8 @@ TestBed::TestBed(Engine& engine)
 
         engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
     }
+
+    engine.GetContext()->settings->Load("~res:/EngineSettings.yaml");
 }
 
 void TestBed::OnGameLoopStarted()
@@ -235,6 +239,7 @@ void TestBed::RegisterTests()
     new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
+    new SoundTest(*this);
     //$UNITTEST_CTOR
 }
 

@@ -56,7 +56,7 @@ public:
 
     enum RenderMode
     {
-        RENDERMODE_NO_INSTANCING,
+        RENDERMODE_NO_INSTANCING = 0,
         RENDERMODE_INSTANCING,
         RENDERMODE_INSTANCING_MORPHING,
     };

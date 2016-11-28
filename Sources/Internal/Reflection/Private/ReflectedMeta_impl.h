@@ -21,7 +21,7 @@ inline ReflectedMeta::ReflectedMeta(ReflectedMeta&& rm)
 template <typename T>
 inline ReflectedMeta::ReflectedMeta(Meta<T>&& meta)
 {
-    Emplace(meta);
+    Emplace(std::move(meta));
 }
 
 template <typename Meta>
