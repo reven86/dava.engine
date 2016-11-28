@@ -10,7 +10,6 @@
 namespace rhi
 {
 ID3D11Device* _D3D11_Device = nullptr;
-
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
@@ -18,15 +17,13 @@ ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
 D3D_FEATURE_LEVEL _D3D11_FeatureLevel = D3D_FEATURE_LEVEL_9_1;
 ID3D11DeviceContext* _D3D11_ImmediateContext = nullptr;
-
 ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
-
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
-
 InitParam _DX11_InitParam;
 DWORD _DX11_RenderThreadId = 0;
+bool _DX11_UseHardwareCommandBuffers = false;
 
 const char* DX11_GetErrorText(HRESULT hr)
 {
@@ -129,8 +126,7 @@ const char* DX11_GetErrorText(HRESULT hr)
         return "DXGI_ERROR_SDK_COMPONENT_MISSING: The operation depends on an SDK component that is missing or mismatched.";
     }
 
-    static char text[1024];
-
+    static char text[1024] = {};
     _snprintf(text, sizeof(text), "unknown D3D9 error (%08X)\n", (unsigned)hr);
     return text;
 }
@@ -210,9 +206,145 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format)
         return DXGI_FORMAT_R32G32_FLOAT;
     case TEXTURE_FORMAT_RGBA32F:
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+    default:
+        DVASSERT_MSG(0, "Invalid TextureFormat provided");
     }
 
     return DXGI_FORMAT_UNKNOWN;
+}
+
+D3D11_COMPARISON_FUNC DX11_CmpFunc(CmpFunc func)
+{
+    switch (func)
+    {
+    case CMP_NEVER:
+        return D3D11_COMPARISON_NEVER;
+    case CMP_LESS:
+        return D3D11_COMPARISON_LESS;
+    case CMP_EQUAL:
+        return D3D11_COMPARISON_EQUAL;
+    case CMP_LESSEQUAL:
+        return D3D11_COMPARISON_LESS_EQUAL;
+    case CMP_GREATER:
+        return D3D11_COMPARISON_GREATER;
+    case CMP_NOTEQUAL:
+        return D3D11_COMPARISON_NOT_EQUAL;
+    case CMP_GREATEREQUAL:
+        return D3D11_COMPARISON_GREATER_EQUAL;
+    case CMP_ALWAYS:
+        return D3D11_COMPARISON_ALWAYS;
+    default:
+        DVASSERT_MSG(0, "Invalid CmpFunc provided");
+    }
+
+    return D3D11_COMPARISON_ALWAYS;
+}
+
+D3D11_STENCIL_OP DX11_StencilOp(StencilOperation op)
+{
+    switch (op)
+    {
+    case STENCILOP_KEEP:
+        return D3D11_STENCIL_OP_KEEP;
+    case STENCILOP_ZERO:
+        return D3D11_STENCIL_OP_ZERO;
+    case STENCILOP_REPLACE:
+        return D3D11_STENCIL_OP_REPLACE;
+    case STENCILOP_INVERT:
+        return D3D11_STENCIL_OP_INVERT;
+    case STENCILOP_INCREMENT_CLAMP:
+        return D3D11_STENCIL_OP_INCR_SAT;
+    case STENCILOP_DECREMENT_CLAMP:
+        return D3D11_STENCIL_OP_DECR_SAT;
+    case STENCILOP_INCREMENT_WRAP:
+        return D3D11_STENCIL_OP_INCR;
+    case STENCILOP_DECREMENT_WRAP:
+        return D3D11_STENCIL_OP_DECR;
+    default:
+        DVASSERT_MSG(0, "Invalid StencilOperation provided");
+    }
+    return D3D11_STENCIL_OP_KEEP;
+}
+
+D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, DAVA::uint32 anisotropy)
+{
+    switch (mip_filter)
+    {
+    case TEXMIPFILTER_NONE:
+    case TEXMIPFILTER_NEAREST:
+    {
+        if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
+            return D3D11_FILTER_MIN_MAG_MIP_POINT;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_LINEAR)
+            return D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_NEAREST)
+            return D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_LINEAR)
+            return D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+    }
+    break;
+
+    case TEXMIPFILTER_LINEAR:
+    {
+        if (anisotropy > 1)
+            return D3D11_FILTER_ANISOTROPIC;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
+            return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_LINEAR)
+            return D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_NEAREST)
+            return D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_LINEAR)
+            return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    }
+    break;
+
+    default:
+        DVASSERT_MSG(0, "Invalid TextureMipFilter provided");
+    }
+
+    return D3D11_FILTER_MIN_MAG_MIP_POINT;
+}
+
+D3D11_TEXTURE_ADDRESS_MODE DX11_TextureAddrMode(TextureAddrMode mode)
+{
+    switch (mode)
+    {
+    case TEXADDR_WRAP:
+        return D3D11_TEXTURE_ADDRESS_WRAP;
+    case TEXADDR_CLAMP:
+        return D3D11_TEXTURE_ADDRESS_CLAMP;
+    case TEXADDR_MIRROR:
+        return D3D11_TEXTURE_ADDRESS_MIRROR;
+    default:
+        DVASSERT_MSG(0, "Invalid TextureAddrMode provided");
+    }
+
+    return D3D11_TEXTURE_ADDRESS_WRAP;
+}
+
+D3D11_BLEND DX11_BlendOp(BlendOp op)
+{
+    switch (op)
+    {
+    case BLENDOP_ZERO:
+        return D3D11_BLEND_ZERO;
+    case BLENDOP_ONE:
+        return D3D11_BLEND_ONE;
+    case BLENDOP_SRC_ALPHA:
+        return D3D11_BLEND_SRC_ALPHA;
+    case BLENDOP_INV_SRC_ALPHA:
+        return D3D11_BLEND_INV_SRC_ALPHA;
+    case BLENDOP_SRC_COLOR:
+        return D3D11_BLEND_SRC_COLOR;
+    case BLENDOP_DST_COLOR:
+        return D3D11_BLEND_DEST_COLOR;
+    default:
+        DVASSERT_MSG(0, "Invalid BlendOp provided");
+    }
+
+    return D3D11_BLEND_ONE;
 }
 
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)

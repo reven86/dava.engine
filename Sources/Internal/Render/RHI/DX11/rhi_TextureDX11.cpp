@@ -4,16 +4,8 @@
 #include "../Common/rhi_Utils.h"
 #include "rhi_DX11.h"
 
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
-using DAVA::Logger;
-
-#include "_dx11.h"
-
 namespace rhi
 {
-//==============================================================================
-
 struct RenderTargetViewDX11_t
 {
     ID3D11RenderTargetView* view = nullptr;
@@ -179,9 +171,9 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     D3D11_SUBRESOURCE_DATA data[128] = {};
     DVASSERT(countof(data) <= countof(desc.initialData));
 
-    for (unsigned s = 0; s != desc2d.ArraySize; ++s)
+    for (uint32 s = 0; s != desc2d.ArraySize; ++s)
     {
-        for (unsigned m = 0; m != desc.levelCount; ++m)
+        for (uint32 m = 0; m != desc.levelCount; ++m)
         {
             uint32 di = s * desc.levelCount + m;
             if (desc.initialData[di])
@@ -340,8 +332,7 @@ static void dx11_Texture_Delete(Handle tex)
 
 //------------------------------------------------------------------------------
 
-static void*
-dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
+static void* dx11_Texture_Map(Handle tex, uint32 level, TextureFace face)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
@@ -394,8 +385,7 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Texture_Unmap(Handle tex)
+static void dx11_Texture_Unmap(Handle tex)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 

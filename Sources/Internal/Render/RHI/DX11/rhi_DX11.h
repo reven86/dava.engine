@@ -16,20 +16,19 @@ namespace VertexBufferDX11
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context);
+void SetToRHI(Handle vb, uint32 stream_i, uint32 offset, uint32 stride, ID3D11DeviceContext* context);
 }
 
 namespace IndexBufferDX11
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle vb, unsigned offset, ID3D11DeviceContext* context);
+void SetToRHI(Handle vb, uint32 offset, ID3D11DeviceContext* context);
 }
 
 namespace QueryBufferDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-
 void SetQueryIndex(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 void QueryComplete(Handle buf, ID3D11DeviceContext* context);
 bool QueryIsCompleted(Handle buf);
@@ -42,14 +41,9 @@ namespace PerfQueryDX11
 void IssueTimestampQuery(Handle handle, ID3D11DeviceContext* context);
 void BeginMeasurment(ID3D11DeviceContext* context);
 void EndMeasurment(ID3D11DeviceContext* context);
-
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
 void DeferredPerfQueriesIssued(const std::vector<Handle>& queries);
 void IssueTimestampQueryDeferred(Handle handle, ID3D11DeviceContext* context);
-#endif
-
 void SetupDispatch(Dispatch* dispatch);
-
 void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context);
 void ReleasePerfQueryPool();
 }
@@ -57,9 +51,9 @@ void ReleasePerfQueryPool();
 namespace PipelineStateDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-unsigned VertexLayoutStride(Handle ps, unsigned stream_i);
-unsigned VertexLayoutStreamCount(Handle ps);
-void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount);
+uint32 VertexLayoutStride(Handle ps, uint32 stream_i);
+uint32 VertexLayoutStreamCount(Handle ps);
+void GetConstBufferCount(Handle ps, uint32* vertexBufCount, uint32* fragmentBufCount);
 void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 }
 
@@ -69,13 +63,10 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
 void InvalidateAll();
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer);
-#else
 void SetToRHI(Handle cb, const void* instData);
 const void* Instance(Handle cb);
 void InvalidateAllInstances();
-#endif
 }
 
 namespace TextureDX11

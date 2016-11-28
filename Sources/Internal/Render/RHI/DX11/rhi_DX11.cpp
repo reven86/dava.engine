@@ -17,7 +17,6 @@ using DAVA::Logger;
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include "uap_dx11.h"
 #include "Platform/DeviceInfo.h"
@@ -30,8 +29,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
 namespace rhi
 {
-//==============================================================================
-
 static Dispatch DispatchDX11 = {};
 static ResetParam resetParams;
 static DAVA::Mutex resetParamsSync;
@@ -79,19 +76,15 @@ static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
 
 //------------------------------------------------------------------------------
 
-static bool _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
+static bool _IsValidIntelCardDX11(uint32 vendor_id, uint32 device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
-
             // These guys are prehistoric :)
-
             (device_id == 0x2572) || // 865G
             (device_id == 0x3582) || // 855GM
             (device_id == 0x2562) || // 845G
             (device_id == 0x3577) || // 830M
-
             // These are from 2005 and later
-
             (device_id == 0x2A02) || // GM965 Device 0
             (device_id == 0x2A03) || // GM965 Device 1
             (device_id == 0x29A2) || // G965 Device 0
@@ -136,54 +129,53 @@ void DX11_CreateSizeDependentResources(UINT w, UINT h)
 
 static void ResizeSwapchain()
 {
+    DAVA::LockGuard<DAVA::Mutex> lock(resetParamsSync);
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+    resize_swapchain_uap(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
+
+#else
     DAVA::SafeRelease(_D3D11_RenderTargetView);
     DAVA::SafeRelease(_D3D11_DepthStencilBuffer);
     DAVA::SafeRelease(_D3D11_DepthStencilView);
     DAVA::SafeRelease(_D3D11_SwapChainBuffer);
-
     HRESULT hr = _D3D11_SwapChain->ResizeBuffers(DX11_BackBuffersCount, resetParams.width, resetParams.height, DX11_BackBufferFormat, 0);
     DX11_ProcessCallResult(hr, "_D3D11_SwapChain->ResizeBuffers", __FILE__, __LINE__);
-
     DX11_CreateSizeDependentResources(resetParams.width, resetParams.height);
+#endif
 }
 
 static void dx11_ResetBlock()
 {
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
-    DAVA::LockGuard<DAVA::Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
-
-    ID3D11CommandList* cl = nullptr;
-
-    _D3D11_SecondaryContext->ClearState();
-    CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
-    if (cl != nullptr)
+    if (_DX11_UseHardwareCommandBuffers)
     {
-        cl->Release();
-    }
-    _D3D11_SecondaryContext->Release();
+        DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
 
-    DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
-#else
-    rhi::ConstBufferDX11::InvalidateAll();
-#endif
+        _D3D11_SecondaryContext->ClearState();
+        ID3D11CommandList* commandList = nullptr;
+        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &commandList));
+        DAVA::SafeRelease(commandList);
+        _D3D11_SecondaryContext->Release();
+
+        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
+    }
+    else
+    {
+        rhi::ConstBufferDX11::InvalidateAll();
+    }
 
     ID3D11RenderTargetView* view[] = { nullptr };
     _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
-
-    resetParamsSync.Lock();
-#if defined(__DAVAENGINE_WIN_UAP__)
-    resize_swapchain_uap(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
-#else
     ResizeSwapchain();
-#endif
-    resetParamsSync.Unlock();
 }
 
 static void dx11_Reset(const ResetParam& param)
 {
-    resetParamsSync.Lock();
-    resetParams = param;
-    resetParamsSync.Unlock();
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(resetParamsSync);
+        resetParams = param;
+    }
     RenderLoop::SetResetPending();
 }
 
@@ -246,7 +238,7 @@ void InitDeviceAndSwapChain()
         }
 
         Logger::Info("detected GPUs (%u) :", adapter.size());
-        for (unsigned i = 0; i != adapter.size(); ++i)
+        for (uint32 i = 0; i != adapter.size(); ++i)
         {
             DXGI_ADAPTER_DESC desc = { 0 };
 
@@ -260,7 +252,7 @@ void InitDeviceAndSwapChain()
 
                 if (!defAdapter)
                 {
-                    for (unsigned k = 0; k != countof(preferredVendorID); ++k)
+                    for (uint32 k = 0; k != countof(preferredVendorID); ++k)
                     {
                         if (desc.VendorId == preferredVendorID[k])
                         {
@@ -372,13 +364,17 @@ void dx11_InitCaps()
     if (MutableDeviceCaps::Get().isPerfQuerySupported)
     {
         ID3D11Query* freqQuery = nullptr;
-        D3D11_QUERY_DESC desc = {};
-        desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+        D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP_DISJOINT };
         _D3D11_Device->CreateQuery(&desc, &freqQuery);
         MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
-
         DAVA::SafeRelease(freqQuery);
     }
+
+    D3D11_FEATURE_DATA_THREADING threadingData = {};
+    _D3D11_Device->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threadingData, sizeof(threadingData));
+    _DX11_UseHardwareCommandBuffers = threadingData.DriverCommandLists && threadingData.DriverConcurrentCreates;
+
+    DAVA::Logger::Info("DX11: hardware command buffers enabled: %d", static_cast<int32>(_DX11_UseHardwareCommandBuffers));
 }
 
 //------------------------------------------------------------------------------
@@ -392,14 +388,15 @@ void dx11_InitContext()
     get_device_description(MutableDeviceCaps::Get().deviceDescription);
     DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
 #else
-    InitDeviceAndSwapChain();    
+    InitDeviceAndSwapChain();
 #endif
 
     dx11_InitCaps();
 
-    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
-    ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
-    #endif
+    if (!_DX11_UseHardwareCommandBuffers)
+    {
+        ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
+    }
 }
 
 bool dx11_CheckSurface()
@@ -447,7 +444,6 @@ void dx11_Initialize(const InitParam& param)
         ConstBufferDX11::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureDX11::Init(param.maxTextureCount);
-    //    ConstBufferDX11::InitializeRingBuffer( param.ringBufferSize );
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

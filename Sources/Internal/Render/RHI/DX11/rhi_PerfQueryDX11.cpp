@@ -1,27 +1,16 @@
 #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Pool.h"
 #include "../rhi_Public.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX11.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_dx11.h"
+#include "rhi_DX11.h"
 
 namespace rhi
 {
-//==============================================================================
-
 class PerfQueryDX11_t
 {
 public:
     struct Desc
     {
     };
-    PerfQueryDX11_t() = default;
-    ~PerfQueryDX11_t() = default;
-
     ID3D11Query* query = nullptr;
     uint64 timestamp = 0;
     uint64 freq = 0;
@@ -193,7 +182,6 @@ void SetupDispatch(Dispatch* dispatch)
 
 //==============================================================================
 
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
 void DeferredPerfQueriesIssued(const std::vector<Handle>& queries)
 {
     if (!queries.empty())
@@ -219,7 +207,6 @@ void IssueTimestampQueryDeferred(Handle handle, ID3D11DeviceContext* context)
         perfQuery->isReady = 0;
     }
 }
-#endif
 
 //==============================================================================
 

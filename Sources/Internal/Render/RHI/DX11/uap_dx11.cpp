@@ -1,4 +1,3 @@
-#include "_dx11.h"
 #include "rhi_DX11.h"
 #include "../rhi_Public.h"
 #include "../Common/rhi_Utils.h"
@@ -6,9 +5,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Concurrency/Thread.h"
-
 #include "uap_dx11.h"
-
 #include <agile.h>
 #include <Windows.ui.xaml.media.dxinterop.h>
 #include <DirectXMath.h>
@@ -227,7 +224,7 @@ void CreateDeviceResources()
     }
 
     DAVA::Logger::Info("Detected GPUs (%u) :", adapter.size());
-    for (unsigned i = 0; i != adapter.size(); ++i)
+    for (uint32 i = 0; i != static_cast<uint32_t>(adapter.size()); ++i)
     {
         DXGI_ADAPTER_DESC desc = { 0 };
 
@@ -242,7 +239,7 @@ void CreateDeviceResources()
 
             if (!defAdapter)
             {
-                for (unsigned k = 0; k != countof(preferredVendorID); ++k)
+                for (uint32 k = 0; k != countof(preferredVendorID); ++k)
                 {
                     if (desc.VendorId == preferredVendorID[k])
                     {

@@ -1,24 +1,17 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX11.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_dx11.h"
+#include "../Common/rhi_Pool.h"
+#include "rhi_DX11.h"
 
 namespace rhi
 {
-//==============================================================================
-
-class
-QueryBufferDX11_t
+class QueryBufferDX11_t
 {
 public:
     QueryBufferDX11_t()
         : curObjectIndex(DAVA::InvalidIndex)
-        , bufferCompleted(false){};
+        , bufferCompleted(false)
+          {
+          };
     ~QueryBufferDX11_t(){};
 
     std::vector<std::pair<ID3D11Query*, uint32>> pendingQueries;
@@ -34,8 +27,7 @@ std::vector<ID3D11Query*> QueryDX11Pool;
 
 //==============================================================================
 
-static Handle
-dx11_QueryBuffer_Create(uint32 maxObjectCount)
+static Handle dx11_QueryBuffer_Create(uint32 maxObjectCount)
 {
     Handle handle = QueryBufferDX11Pool::Alloc();
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
@@ -50,8 +42,7 @@ dx11_QueryBuffer_Create(uint32 maxObjectCount)
     return handle;
 }
 
-static void
-dx11_QueryBuffer_Delete(Handle handle)
+static void dx11_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
     DVASSERT(buf);
@@ -67,8 +58,7 @@ dx11_QueryBuffer_Delete(Handle handle)
     QueryBufferDX11Pool::Free(handle);
 }
 
-static void
-dx11_QueryBuffer_Reset(Handle handle)
+static void dx11_QueryBuffer_Reset(Handle handle)
 {
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
     DVASSERT(buf);
@@ -87,8 +77,7 @@ dx11_QueryBuffer_Reset(Handle handle)
     buf->bufferCompleted = false;
 }
 
-static void
-dx11_Check_Query_Results(QueryBufferDX11_t* buf)
+static void dx11_Check_Query_Results(QueryBufferDX11_t* buf)
 {
     int32 pendingCount = static_cast<int32>(buf->pendingQueries.size());
     uint64 val = 0;
@@ -112,8 +101,7 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
     }
 }
 
-static bool
-dx11_QueryBuffer_IsReady(Handle handle)
+static bool dx11_QueryBuffer_IsReady(Handle handle)
 {
     bool ready = false;
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
@@ -128,8 +116,7 @@ dx11_QueryBuffer_IsReady(Handle handle)
     return ready;
 }
 
-static bool
-dx11_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
+static bool dx11_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
@@ -153,8 +140,7 @@ dx11_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
     return ready;
 }
 
-static int
-dx11_QueryBuffer_Value(Handle handle, uint32 objectIndex)
+static int dx11_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
     DVASSERT(buf);
