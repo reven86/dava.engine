@@ -280,6 +280,11 @@ public:
     static RingBuffer defaultRingBuffer;
     static uint32 currentFrame;
 
+    enum : uint32
+    {
+        REGISTER_SIZE = 4 * sizeof(float)
+    };
+
 public:
     struct Desc
     {
@@ -319,12 +324,12 @@ void ConstBufDX11::Construct(ProgType ptype, uint32 bufIndex, uint32 regCnt)
     DVASSERT(regCnt);
 
     D3D11_BUFFER_DESC desc = {};
-    desc.ByteWidth = regCnt * 4 * sizeof(float);
+    desc.ByteWidth = regCnt * REGISTER_SIZE;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     if (DX11DeviceCommand(DX11Command::CREATE_BUFFER, &desc, NULL, &buffer))
     {
-        value = new float[4 * regCnt];
+        value = reinterpret_cast<float*>(calloc(regCnt, REGISTER_SIZE));
         progType = ptype;
         buf_i = bufIndex;
         regCount = regCnt;
@@ -335,10 +340,14 @@ void ConstBufDX11::Construct(ProgType ptype, uint32 bufIndex, uint32 regCnt)
 void ConstBufDX11::Destroy()
 {
     DAVA::SafeRelease(buffer);
-    DAVA::SafeDeleteArray(value);
+    if (value)
+        ::free(value);
 
+    frame = 0;
     regCount = 0;
     inst = nullptr;
+    value = nullptr;
+    updatePending = false;
     buf_i = DAVA::InvalidIndex;
 }
 
@@ -349,32 +358,28 @@ uint32 ConstBufDX11::ConstCount()
 
 bool ConstBufDX11::SetConst(uint32 const_i, uint32 const_count, const float* data)
 {
-    bool success = false;
+    DVASSERT(const_i + const_count <= regCount);
 
-    if (const_i + const_count <= regCount)
-    {
-        memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
-        updatePending = !_DX11_UseHardwareCommandBuffers;
+    memcpy(value + 4 * const_i, data, const_count * REGISTER_SIZE);
+    if (_DX11_UseHardwareCommandBuffers)
+        updatePending = true;
+    else
         inst = nullptr;
-        success = true;
-    }
 
-    return success;
+    return true;
 }
 
 bool ConstBufDX11::SetConst(uint32 const_i, uint32 const_sub_i, const float* data, uint32 dataCount)
 {
-    bool success = false;
+    DVASSERT(const_i <= regCount && const_sub_i < 4);
 
-    if (const_i <= regCount && const_sub_i < 4)
-    {
-        memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
-        updatePending = _DX11_UseHardwareCommandBuffers;
+    memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+    if (_DX11_UseHardwareCommandBuffers)
+        updatePending = true;
+    else
         inst = nullptr;
-        success = true;
-    }
 
-    return success;
+    return true;
 }
 
 void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBuffer)
@@ -382,7 +387,7 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBuff
     if (updatePending)
     {
         DVASSERT(_DX11_UseHardwareCommandBuffers);
-        context->UpdateSubresource(buffer, 0, nullptr, value, regCount * 4 * sizeof(float), 0);
+        context->UpdateSubresource(buffer, 0, nullptr, value, regCount * REGISTER_SIZE, 0);
         updatePending = false;
     }
     outBuffer[buf_i] = buffer;
@@ -390,7 +395,7 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBuff
 
 void ConstBufDX11::SetToRHI(const void* instData)
 {
-    _D3D11_ImmediateContext->UpdateSubresource(buffer, 0, NULL, instData, regCount * 4 * sizeof(float), 0);
+    _D3D11_ImmediateContext->UpdateSubresource(buffer, 0, nullptr, instData, regCount * REGISTER_SIZE, 0);
 
     if (progType == PROG_VERTEX)
         _D3D11_ImmediateContext->VSSetConstantBuffers(buf_i, 1, &buffer);
@@ -402,9 +407,8 @@ const void* ConstBufDX11::Instance()
 {
     if ((inst == nullptr) || (frame != currentFrame))
     {
-        DAVA::uint32 sizeInBytes = 4 * regCount * sizeof(float);
-        inst = defaultRingBuffer.Alloc(sizeInBytes);
-        memcpy(inst, value, sizeInBytes);
+        inst = defaultRingBuffer.Alloc(regCount * REGISTER_SIZE);
+        memcpy(inst, value, regCount * REGISTER_SIZE);
         frame = currentFrame;
     }
     return inst;
@@ -430,39 +434,39 @@ static void DumpShaderText(const char* code, uint32 code_sz)
 
     src_line[line_cnt++] = src;
     for (char* s = src; *s;)
-    {
-        if (*s == '\n')
         {
-            *s = 0;
-            ++s;
-
-            while (*s && (/**s == '\n'  ||  */ *s == '\r'))
+            if (*s == '\n')
             {
                 *s = 0;
                 ++s;
+
+                while (*s && (/**s == '\n'  ||  */ *s == '\r'))
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if (!(*s))
+                    break;
+
+                src_line[line_cnt] = s;
+                ++line_cnt;
             }
-
-            if (!(*s))
-                break;
-
-            src_line[line_cnt] = s;
-            ++line_cnt;
+            else if (*s == '\r')
+            {
+                *s = ' ';
+            }
+            else
+            {
+                ++s;
+            }
         }
-        else if (*s == '\r')
+
+        for (uint32 i = 0; i != line_cnt; ++i)
         {
-            *s = ' ';
-        }
-        else
-        {
-            ++s;
+            DAVA::Logger::Info("%4u |  %s", 1 + i, src_line[i]);
         }
     }
-
-    for (uint32 i = 0; i != line_cnt; ++i)
-    {
-        DAVA::Logger::Info("%4u |  %s", 1 + i, src_line[i]);
-    }
-}
 
 struct PipelineStateDX11_t
 {
@@ -475,19 +479,22 @@ struct PipelineStateDX11_t
     Handle CreateConstBuffer(ProgType type, uint32 buf_i);
 
     PipelineState::Descriptor desc;
-    ID3D10Blob* vpCode = nullptr;
-    ID3D11VertexShader* vertexShader = nullptr;
-    ID3D11PixelShader* pixelShader = nullptr;
-    ID3D11InputLayout* inputLayout = nullptr;
-    ID3D11BlendState* blendState = nullptr;
-    uint32 vertexBufCount = 0;
+
+    ID3D11InputLayout* inputLayout;
+    ID3D11VertexShader* vertexShader;
+    ID3D11PixelShader* pixelShader;
+    ID3D11BlendState* blendState;
+    ID3D10Blob* vpCode;
+
+    uint32 vertexBufCount;
     uint32 vertexBufRegCount[16];
-    uint32 fragmentBufCount = 0;
+    uint32 fragmentBufCount;
     uint32 fragmentBufRegCount[16];
+
     VertexLayout vertexLayout;
-    std::vector<LayoutInfo> altLayout;
-    std::vector<uint8> dbgVertexSrc;
-    std::vector<uint8> dbgPixelSrc;
+    DAVA::Vector<LayoutInfo> altLayout;
+    DAVA::Vector<uint8> dbgVertexSrc;
+    DAVA::Vector<uint8> dbgPixelSrc;
 };
 
 typedef ResourcePool<PipelineStateDX11_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false> PipelineStateDX11Pool;
@@ -521,7 +528,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     DAVA::Logger::Info("create PS");
     DAVA::Logger::Info("  vprog= %s", desc.vprogUid.c_str());
     DAVA::Logger::Info("  fprog= %s", desc.vprogUid.c_str());
-    DAVA::desc.vertexLayout.Dump();
+    desc.vertexLayout.Dump();
 #endif
 
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
@@ -542,11 +549,11 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         if (DX11DeviceCommand(DX11Command::CREATE_VERTEX_SHADER, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader)))
         {
-            D3D11_SHADER_DESC desc = {};
             ID3D11ShaderReflection* reflection = nullptr;
             hr = D3DReflect(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
             if (DX11Check(hr))
             {
+                D3D11_SHADER_DESC desc = {};
                 hr = reflection->GetDesc(&desc);
                 if (DX11Check(hr))
                 {
@@ -561,7 +568,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
                             hr = cb->GetDesc(&cb_desc);
                             if (DX11Check(hr))
                             {
-                                ps->vertexBufRegCount[b] = cb_desc.Size / (4 * sizeof(float));
+                                ps->vertexBufRegCount[b] = cb_desc.Size / ConstBufDX11::REGISTER_SIZE;
                             }
                         }
                     }
@@ -612,7 +619,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
                             hr = cb->GetDesc(&cb_desc);
                             if (DX11Check(hr))
                             {
-                                ps->fragmentBufRegCount[b] = cb_desc.Size / (4 * sizeof(float));
+                                ps->fragmentBufRegCount[b] = cb_desc.Size / ConstBufDX11::REGISTER_SIZE;
                             }
                         }
                     }
@@ -689,41 +696,28 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     return handle;
 }
 
-//------------------------------------------------------------------------------
-
 static void dx11_PipelineState_Delete(Handle ps)
 {
     PipelineStateDX11Pool::Free(ps);
 }
 
-//------------------------------------------------------------------------------
-
 static Handle dx11_PipelineState_CreateVertexConstBuffer(Handle ps, uint32 buf_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
-
     return ps11->CreateConstBuffer(PROG_VERTEX, buf_i);
 }
-
-//------------------------------------------------------------------------------
 
 static Handle dx11_PipelineState_CreateFragmentConstBuffer(Handle ps, uint32 buf_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
-
     return ps11->CreateConstBuffer(PROG_FRAGMENT, buf_i);
 }
-
-//------------------------------------------------------------------------------
 
 static bool dx11_ConstBuffer_SetConst(Handle cb, uint32 const_i, uint32 const_count, const float* data)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
-
     return cb11->SetConst(const_i, const_count, data);
 }
-
-//------------------------------------------------------------------------------
 
 static bool dx11_ConstBuffer_SetConst1fv(Handle cb, uint32 const_i, uint32 const_sub_i, const float* data, uint32 dataCount)
 {
@@ -732,12 +726,9 @@ static bool dx11_ConstBuffer_SetConst1fv(Handle cb, uint32 const_i, uint32 const
     return cb11->SetConst(const_i, const_sub_i, data, dataCount);
 }
 
-//------------------------------------------------------------------------------
-
 void dx11_ConstBuffer_Delete(Handle cb)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
-
     cb11->Destroy();
     ConstBufDX11Pool::Free(cb);
 }
@@ -761,11 +752,11 @@ void PipelineStateDX11::SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContex
     }
     else
     {
-        for (std::vector<PipelineStateDX11_t::LayoutInfo>::iterator l = ps11->altLayout.begin(), l_end = ps11->altLayout.end(); l != l_end; ++l)
+        for (const PipelineStateDX11_t::LayoutInfo& l : ps11->altLayout)
         {
-            if (l->layoutUID == layoutUID)
+            if (l.layoutUID == layoutUID)
             {
-                layout11 = l->inputLayout;
+                layout11 = l.inputLayout;
                 break;
             }
         }
@@ -795,9 +786,9 @@ void PipelineStateDX11::SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContex
     }
 
     context->IASetInputLayout(layout11);
-    context->VSSetShader(ps11->vertexShader, NULL, 0);
-    context->PSSetShader(ps11->pixelShader, NULL, 0);
-    context->OMSetBlendState(ps11->blendState, NULL, 0xFFFFFFFF);
+    context->VSSetShader(ps11->vertexShader, nullptr, 0);
+    context->PSSetShader(ps11->pixelShader, nullptr, 0);
+    context->OMSetBlendState(ps11->blendState, nullptr, 0xFFFFFFFF);
 }
 
 uint32 PipelineStateDX11::VertexLayoutStride(Handle ps, uint32 stream_i)
