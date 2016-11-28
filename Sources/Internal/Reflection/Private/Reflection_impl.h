@@ -165,6 +165,21 @@ Reflection Reflection::Create(T* ptr, const ReflectedMeta* meta)
     return Reflection();
 }
 
+inline bool Reflection::operator==(const Reflection& other) const
+{
+    return object == other.object;
+}
+
+inline bool Reflection::operator!=(const Reflection& other) const
+{
+    return object != other.object;
+}
+
+inline bool Reflection::operator<(const Reflection& other) const
+{
+    return object < other.object;
+}
+
 template <typename T>
 Reflection::Field Reflection::Field::Create(const Any& key, T* ptr, const ReflectedMeta* meta)
 {

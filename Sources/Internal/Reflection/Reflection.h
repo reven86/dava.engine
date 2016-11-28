@@ -163,6 +163,10 @@ public:
     template <typename T>
     static Reflection Create(T* ptr, const ReflectedMeta* meta = nullptr);
 
+    bool operator==(const Reflection& other) const;
+    bool operator!=(const Reflection& other) const;
+    bool operator<(const Reflection& other) const;
+
 private:
     const ValueWrapper* vw = nullptr;
     const StructureWrapper* sw = nullptr;

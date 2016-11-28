@@ -30,6 +30,10 @@ public:
 
     ReflectedObject Deref() const;
 
+    bool operator==(const ReflectedObject& other) const;
+    bool operator!=(const ReflectedObject& other) const;
+    bool operator<(const ReflectedObject& other) const;
+
 protected:
     void* ptr = nullptr;
     const Type* type = nullptr;
@@ -101,6 +105,26 @@ inline ReflectedObject ReflectedObject::Deref() const
     }
 
     return ret;
+}
+
+inline bool ReflectedObject::operator==(const ReflectedObject& other) const
+{
+    return ptr == other.ptr &&
+    type == other.type;
+}
+
+inline bool ReflectedObject::operator!=(const ReflectedObject& other) const
+{
+    return ptr != other.ptr ||
+    type != other.type;
+}
+
+inline bool ReflectedObject::operator<(const ReflectedObject& other) const
+{
+    if (ptr != other.ptr)
+        return ptr < other.ptr;
+
+    return type < other.type;
 }
 
 } // namespace DAVA
