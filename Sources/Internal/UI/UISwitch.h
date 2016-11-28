@@ -75,6 +75,8 @@ protected:
     void ReleaseControls();
 
     float32 GetToggleUttermostPosition();
+    float32 GetToggleLeftPosition();
+    float32 GetToggleRightPosition();
     void CheckToggleSideChange(UIEvent* inputEvent = NULL);
     void ChangeVisualState();
 

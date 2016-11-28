@@ -189,9 +189,13 @@ void UISwitch::Input(UIEvent* currentInput)
 
             float32 leftBound = buttonLeft->relativePosition.x;
             float32 rightBound = buttonRight->relativePosition.x;
-            if (newToggleLeftEdge < leftBound || newToggleLeftEdge + toggle->size.dx > rightBound)
+            if (newToggleLeftEdge < leftBound)
             {
-                toggle->relativePosition.x = GetToggleUttermostPosition();
+                toggle->relativePosition.x = GetToggleLeftPosition();
+            }
+            else if (newToggleLeftEdge + toggle->size.dx > rightBound)
+            {
+                toggle->relativePosition.x = GetToggleRightPosition();
             }
             else
             {
@@ -253,11 +257,17 @@ void UISwitch::ChangeVisualState()
 
 float32 UISwitch::GetToggleUttermostPosition()
 {
-    float32 leftBound = buttonLeft->relativePosition.x;
-    float32 rightBound = buttonRight->relativePosition.x;
-    float32 result = isLeftSelected ? leftBound : rightBound - toggle->size.dx;
-    result += toggle->GetPivotPoint().x;
-    return result;
+    return isLeftSelected ? GetToggleLeftPosition() : GetToggleRightPosition();
+}
+
+float32 UISwitch::GetToggleLeftPosition()
+{
+    return buttonLeft->relativePosition.x + toggle->GetPivotPoint().x;
+}
+
+float32 UISwitch::GetToggleRightPosition()
+{
+    return buttonRight->relativePosition.x - toggle->size.dx + toggle->GetPivotPoint().x;
 }
 
 void UISwitch::CheckToggleSideChange(UIEvent* inputEvent /*= NULL*/)
