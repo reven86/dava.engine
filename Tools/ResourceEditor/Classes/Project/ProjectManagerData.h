@@ -8,7 +8,7 @@
 #include <QString>
 #include <QVector>
 
-class ProjectStructure;
+class FileSystemCache;
 class SpritesPackerModule;
 class EditorConfig;
 
@@ -36,7 +36,7 @@ public:
     DAVA::FilePath GetWorkspacePath() const;
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
-    const ProjectStructure* GetDataSourceSceneFiles() const;
+    const FileSystemCache* GetDataSourceSceneFiles() const;
     const EditorConfig* GetEditorConfig() const;
     const DAVA::Vector<MaterialTemplateInfo>* GetMaterialTemplatesInfo() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
@@ -50,7 +50,7 @@ private:
     friend class ProjectManagerModule;
     friend class ProjectResources;
 
-    std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
+    std::unique_ptr<FileSystemCache> dataSourceSceneFiles;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::unique_ptr<EditorConfig> editorConfig;
     DAVA::Vector<MaterialTemplateInfo> materialTemplatesInfo;

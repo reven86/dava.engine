@@ -93,8 +93,8 @@ ProjectResources::ProjectResources(DAVA::TArc::ContextAccessor& accessor)
     DAVA::TArc::DataContext* globalContext = accessor.GetGlobalContext();
     std::unique_ptr<ProjectManagerData> data(new ProjectManagerData);
 
-    DAVA::Vector<DAVA::String> extensions = { "sc2" };
-    data->dataSourceSceneFiles.reset(new ProjectStructure(extensions));
+    QStringList extensions = { "sc2" };
+    data->dataSourceSceneFiles.reset(new FileSystemCache(extensions));
     data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
 }
@@ -133,7 +133,7 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
         DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
         if (fileSystem->Exists(data->GetDataSourcePath()))
         {
-            data->dataSourceSceneFiles->SetProjectDirectory(data->GetDataSourcePath());
+            data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
         }
 
         data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
@@ -147,6 +147,7 @@ void ProjectResources::UnloadProject()
     if (!data->projectPath.IsEmpty())
     {
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+        data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
         data->projectPath = "";
     }
 }

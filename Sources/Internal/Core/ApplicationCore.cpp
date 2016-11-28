@@ -86,11 +86,14 @@ void ApplicationCore::EndFrame()
     Renderer::EndFrame();
 }
 
-void ApplicationCore::OnRenderingIsNotPossible()
+void ApplicationCore::OnRenderingIsNotPossible(rhi::RenderingError error)
 {
-    DVASSERT(!"Rendering is not possible and no handler found. Application will likely crash or hang now.");
-    Logger::Error("Rendering is not possible and no handler found. Application will likely crash or hang now.");
-    // should we add exit(1) here?
+    String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x",
+                         static_cast<DAVA::uint32>(error));
+
+    DVASSERT_MSG(0, info.c_str());
+    Logger::Error("%s", info.c_str());
+    abort();
 }
 
 void ApplicationCore::OnSuspend()

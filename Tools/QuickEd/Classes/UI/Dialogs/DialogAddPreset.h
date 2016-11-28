@@ -1,17 +1,28 @@
-#ifndef __DIALOG_ADD_PRESET_H__
-#define __DIALOG_ADD_PRESET_H__
+#pragma once
+#include <QDialog>
+#include <memory>
 
-#include "ui_DialogAddPreset.h"
+namespace Ui
+{
+class DialogAddPreset;
+}
 
-class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
+class EditorFontSystem;
+
+class DialogAddPreset : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogAddPreset(const QString& originalPresetName, QWidget* parent = nullptr);
-    ~DialogAddPreset() = default;
+    explicit DialogAddPreset(EditorFontSystem* editorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
+    ~DialogAddPreset();
+
+    QString GetPresetName() const;
+
 private slots:
     void OnNewPresetNameChanged();
     void OnAccept();
-};
 
-#endif // __DIALOG_ADD_PRESET_H__
+private:
+    std::unique_ptr<Ui::DialogAddPreset> ui;
+    EditorFontSystem* editorFontSystem = nullptr;
+};

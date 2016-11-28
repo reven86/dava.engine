@@ -191,6 +191,8 @@ void PreviewWidget::CreateActions()
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
+    SaveSystemsContextAndClear();
+
     DVASSERT(nullptr != systemsManager);
     continuousUpdater->Stop();
     SaveContext();
@@ -206,6 +208,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
         systemsManager->packageNodeChanged.Emit(document->GetPackage());
         LoadContext();
     }
+
+    LoadSystemsContext(arg);
 }
 
 void PreviewWidget::SaveSystemsContextAndClear()

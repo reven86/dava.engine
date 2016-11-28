@@ -63,7 +63,7 @@ void EditorFontSystem::SetFont(const String& presetName, const String& locale, F
         FontManager::Instance()->UnregisterFont(oldFont);
         FontManager::Instance()->RegisterFont(font);
         FontManager::Instance()->SetFontName(font, presetName);
-        emit UpdateFontPreset();
+        emit FontPresetChanged(presetName);
     }
     font->Release();
 }
@@ -134,7 +134,7 @@ void EditorFontSystem::RegisterCurrentLocaleFonts()
     auto it = localizedFonts.find(currentFontLocale);
     const auto& fonts = it != localizedFonts.end() ? it->second : localizedFonts.at(defaultFontLocale);
     FontManager::Instance()->RegisterFonts(fonts);
-    emit UpdateFontPreset();
+    emit FontPresetChanged(String());
 }
 
 void EditorFontSystem::ClearFonts(Map<String, Font*>& fonts)

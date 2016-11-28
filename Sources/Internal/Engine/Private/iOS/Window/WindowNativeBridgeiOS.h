@@ -8,6 +8,7 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "FileSystem/KeyedArchive.h"
 
 @class UIWindow;
 @class UIView;
@@ -35,7 +36,7 @@ namespace Private
 // WindowNativeBridge is friend of iOS's WindowBackend
 struct WindowNativeBridge final
 {
-    WindowNativeBridge(WindowBackend* windowBackend);
+    WindowNativeBridge(WindowBackend* windowBackend, const KeyedArchive* engineOptions);
     ~WindowNativeBridge();
 
     void* GetHandle() const;
@@ -51,6 +52,8 @@ struct WindowNativeBridge final
 
     UIView* GetUIViewFromPool(const char8* className);
     void ReturnUIViewToPool(UIView* view);
+
+    void SetSurfaceScale(const float32 scale);
 
     //////////////////////////////////////////////////////////////////////////
     // Notifications from RenderViewController
@@ -73,6 +76,8 @@ struct WindowNativeBridge final
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;
+
+    const KeyedArchive* engineOptions = nullptr;
 };
 
 } // namespace Private

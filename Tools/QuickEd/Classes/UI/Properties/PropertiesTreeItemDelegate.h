@@ -9,6 +9,13 @@
 #include "FileSystem/VariantType.h"
 class AbstractPropertyDelegate;
 class QToolButton;
+class Project;
+
+class PropertiesContext
+{
+public:
+    const Project* project = nullptr;
+};
 
 class PropertiesTreeItemDelegate : public QStyledItemDelegate
 {
@@ -17,11 +24,13 @@ public:
     PropertiesTreeItemDelegate(QObject* parent = NULL);
     ~PropertiesTreeItemDelegate();
 
-    virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    virtual void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    virtual void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
     virtual AbstractPropertyDelegate* GetCustomItemDelegateForIndex(const QModelIndex& index) const;
+
+    void SetProject(const Project* project);
 
     void emitCommitData(QWidget* editor);
     void emitCloseEditor(QWidget* editor, QAbstractItemDelegate::EndEditHint hint);
@@ -29,6 +38,8 @@ public:
 protected:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
+
+    PropertiesContext context;
 
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
     QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;

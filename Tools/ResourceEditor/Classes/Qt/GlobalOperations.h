@@ -35,7 +35,7 @@ class WaitDialogGuard
 {
 public:
     WaitDialogGuard(std::shared_ptr<GlobalOperations> globalOperations_, const DAVA::String& tittle,
-                    const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100)
+                    const DAVA::String& message, DAVA::uint32 min, DAVA::uint32 max)
         : globalOperations(globalOperations_)
     {
         DVASSERT(globalOperations != nullptr);

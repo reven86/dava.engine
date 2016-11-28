@@ -7,17 +7,21 @@
 #include "EditorSystems/SelectionContainer.h"
 
 class ControlNode;
-class StyleSheetNode;
 class Document;
 class PackageBaseNode;
+class Project;
 class PropertiesModel;
+class PropertiesTreeItemDelegate;
 class QtModelPackageCommandExecutor;
+class StyleSheetNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
     PropertiesWidget(QWidget* parent = nullptr);
+
+    void SetProject(const Project* project);
 
 public slots:
     void UpdateModel(PackageBaseNode* node);
@@ -54,6 +58,7 @@ private:
     QAction* removeAction = nullptr;
 
     PropertiesModel* propertiesModel = nullptr;
+    PropertiesTreeItemDelegate* propertiesItemsDelegate = nullptr;
 
     DAVA::Map<DAVA::String, bool> itemsState;
 
