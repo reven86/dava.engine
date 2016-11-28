@@ -49,7 +49,7 @@ public:
 protected:
     void SetupTriangle();
     void SetupCube();
-    void SetupRT();
+    void rtInit();
 
     void SetupInstancedCube();
     void DrawInstancedCube();

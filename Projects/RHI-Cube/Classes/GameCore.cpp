@@ -335,10 +335,9 @@ void GameCore::SetupCube()
     cube_angle = 0;
 }
 
-void GameCore::SetupRT()
+void GameCore::rtInit()
 {
     rtQuad.vb = rhi::HVertexBuffer(rhi::VertexBuffer::Create(3 * 2 * sizeof(VertexPT)));
-    //-    rtQuad.ib = rhi::InvalidHandle;
 
     const VertexPT v[2 * 3] =
     {
@@ -357,46 +356,46 @@ void GameCore::SetupRT()
 
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-copy"),
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "    VPROG_IN_TEXCOORD\n"
-    "VPROG_IN_END\n"
-    "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
-    "VPROG_OUT_END\n"
-    "\n"
-    "DECL_VPROG_BUFFER(0,16)\n"
-    "DECL_VPROG_BUFFER(1,16)\n"
-    "\n"
-    "VPROG_BEGIN\n"
-    "\n"
-    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
-    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
-    "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
-    "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
-    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
-    "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
-    "    VP_OUT(uv)        = in_texcoord;\n"
-    "\n"
-    "VPROG_END\n");
+    "vertex_in\n"
+    "{\n"
+    "    float4 position : POSITION;\n"
+    "    float2 uv : TEXCOORD0;\n"
+    "};\n"
+    "vertex_out\n"
+    "{\n"
+    "    float4 position : SV_POSITION;\n"
+    "    float2 uv : TEXCOORD0;\n"
+    "};\n"
+    "[unique] property float4x4 ViewProjection;\n"
+    "[shared] property float4x4 World;\n"
+    "vertex_out vp_main( vertex_in input )\n"
+    "{\n"
+    "    vertex_out output;\n"
+    "    float4 wpos = mul( float4(input.position.xyz,1.0), World );\n"
+    "    output.position = mul( wpos, ViewProjection );\n"
+    "    output.uv = input.uv;\n"
+    "    return output;\n"
+    "}\n"
+    );
+
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-copy"),
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_TEXCOORD0(uv,2)\n"
-    "FPROG_IN_END\n"
-    "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
-    "\n"
-    "DECL_FP_SAMPLER2D(0)\n"
-    "\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    FP_OUT_COLOR = FP_TEXTURE2D( 0, FP_IN(uv) );\n"
-    "FPROG_END\n");
+    "fragment_in\n"
+    "{\n"
+    "    float2 uv : TEXCOORD0;\n"
+    "};\n"
+    "fragment_out\n"
+    "{\n"
+    "    float4 color : SV_TARGET0;"
+    "};\n"
+    "uniform sampler2D Image;\n"
+    "fragment_out fp_main( fragment_in input )\n"
+    "{\n"
+    "    fragment_out output;\n"
+    "    output.color = tex2D( Image, input.uv );"
+    "    return output;\n"
+    "}\n"
+    );
 
     rtQuad.ps = rhi::HPipelineState(rhi::PipelineState::Create(psDesc));
     rtQuad.vp_const[0] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer(rtQuad.ps, 0));
@@ -428,7 +427,6 @@ void GameCore::SetupRT()
 
     rtQuadBatch.vertexStreamCount = 1;
     rtQuadBatch.vertexStream[0] = rtQuad.vb;
-    //-    rtQuadBatch.indexBuffer         = rhi::InvalidHandle;
     rtQuadBatch.vertexConstCount = 2;
     rtQuadBatch.vertexConst[0] = rtQuad.vp_const[0];
     rtQuadBatch.vertexConst[1] = rtQuad.vp_const[1];
@@ -530,6 +528,7 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+    /*
     //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.sl";
     const char* src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/water-fp.sl";
     //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/ShadowVolume/shadowvolume-vp.sl";
@@ -547,17 +546,16 @@ void GameCore::OnAppStarted()
 
         std::vector<std::string> defines;
 
-        /*        
-        defines.push_back( "VERTEX_LIT" );
-        defines.push_back( "1" );
-        defines.push_back( "NORMALIZED_BLINN_PHONG" );
-        defines.push_back( "1" );        
-*/
-        /*
-        defines.push_back("FOG_LINEAR");defines.push_back("1");
-        defines.push_back("SKINNING");defines.push_back("1");
-        defines.push_back("VERTEX_FOG");defines.push_back("1");
-*/
+//        defines.push_back( "VERTEX_LIT" );
+//        defines.push_back( "1" );
+//        defines.push_back( "NORMALIZED_BLINN_PHONG" );
+//        defines.push_back( "1" );        
+
+        
+//        defines.push_back("FOG_LINEAR");defines.push_back("1");
+//        defines.push_back("SKINNING");defines.push_back("1");
+//        defines.push_back("VERTEX_FOG");defines.push_back("1");
+
         defines.push_back("PIXEL_LIT");
         defines.push_back("1");
         defines.push_back("REAL_REFLECTION");
@@ -570,7 +568,7 @@ void GameCore::OnAppStarted()
             vp.Dump();
         }
     }
-
+*/
     /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -654,153 +652,7 @@ void GameCore::OnAppStarted()
     SetupCube();
     //SetupInstancedCube();
     //    SetupTank();
-    //SetupRT();
-
-    //    perfQuerySet = rhi::CreatePerfQuerySet(16);
-    //    perfQuerySetFired = false;
-
-    //    sceneRenderTest.reset(new SceneRenderTestV3());
-
-    /*
-    // ShaderSource smoke-test
-    const char*  fp_src =
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_TEXCOORD0(uv,2)\n"
-    "FPROG_IN_TEXCOORD1(color,4)\n"
-    "FPROG_IN_END\n"
-    "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
-    "\n"
-    "property float4 tfactor : unique,dynamic :   def_value=1,1,1,1 ;\n"
-    "property float4 bla[3]  : unique,dynamic :    ;\n"
-    "property float2 scale   : unique,dynamic :    ;\n"
-    "property float  aa      : unique,dynamic :    ;\n"
-    "property float  bb      : unique,dynamic :    ;\n"
-    "\n"
-    "DECL_FP_SAMPLER2D(albedo)\n"
-    "DECL_FP_SAMPLER2D(albedo2)\n"
-    "\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    float4  diffuse = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
-    "    float4  diffuse2 = FP_TEXTURE2D( albedo2, FP_IN(uv) );\n"
-    "    FP_OUT_COLOR = tfactor * FP_IN(color);\n"
-    "FPROG_END\n"
-    "blending : src=src_alpha dst=inv_src_alpha\n"
-    ;
-
-    rhi::ShaderSource   fp;
-
-    fp.Construct( rhi::PROG_FRAGMENT, fp_src );
-    Logger::Info( "\n\n====================" );
-    fp.Dump();
-*/
-    /*
-    // ShaderSource smoke-test
-    const char*  vp_src =
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "    VPROG_IN_NORMAL\n"
-    "    VPROG_IN_TEXCOORD\n"
-    "VPROG_IN_END\n"
-    "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
-    "    VPROG_OUT_TEXCOORD1(color,4)\n"
-    "VPROG_OUT_END\n"
-    "\n"
-//    "property float4x4 ViewProjection : shared,dynamic : ui_hidden=yes ;\n"
-//    "property float4x4 World : unique,dynamic : ui_hidden=yes ;\n"
-"property float4x4 worldViewProjMatrix : unique,dynamic : ui_hidden=yes ;\n"
-"property float2 uvOffset : unique,static : ui_hidden=yes ;\n"
-"property float2 uvScale : unique,static : ui_hidden=yes ;\n"
-    "DECL_FP_SAMPLER2D(stuff)\n"
-    ""
-    "VPROG_BEGIN\n"
-    "\n"
-    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
-    "    float3 in_normal   = VP_IN_NORMAL;\n"
-    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
-    "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
-    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
-    "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
-    "    VP_OUT_POSITION   = mul( wpos, ViewProjection ) + VP_TEXTURE2D( stuff, in_texcoord );\n"
-    "    VP_OUT(uv)        = in_texcoord;\n"
-    "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
-    "\n"
-    "VPROG_END\n";
-
-    rhi::ShaderSource   vp;
-
-    vp.Construct( rhi::PROG_VERTEX, vp_src );
-    Logger::Info( "\n\n====================" );
-    vp.Dump();
-*/
-    /*
-    const char*  vp_src =
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "    VPROG_IN_NORMAL\n"
-    "    VPROG_IN_TEXCOORD\n"
-    "VPROG_IN_END\n"
-    "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
-    "    VPROG_OUT_TEXCOORD1(color,4)\n"
-    "VPROG_OUT_END\n"
-    "\n"
-    "property float4x4 ViewProjection : shared,dynamic : ui_hidden=yes ;\n"
-    "property float4x4 World : unique,dynamic : ui_hidden=yes ;\n"
-    "\n"
-    "VPROG_BEGIN\n"
-    "\n"
-    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
-    "    float3 in_normal   = VP_IN_NORMAL;\n"
-    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
-    "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
-    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
-    "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
-    "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
-    "    VP_OUT(uv)        = in_texcoord;\n"
-    "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
-    "\n"
-    "VPROG_END\n";
-
-    const char*  fp_src =
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_TEXCOORD0(uv,2)\n"
-    "FPROG_IN_TEXCOORD1(color,4)\n"
-    "FPROG_IN_END\n"
-    "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
-    "\n"
-    "property float4 tfactor : unique,dynamic : ;"
-    "\n"
-    "DECL_FP_SAMPLER2D(albedo)\n"
-    "\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    float4  diffuse = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
-    "    FP_OUT_COLOR = tfactor * FP_IN(color);\n"
-    "FPROG_END\n";
-
-    rhi::ShaderSource   vp;
-    rhi::ShaderSource   fp;
-
-    vp.Construct( rhi::PROG_VERTEX, vp_src );
-    Logger::Info( "\n\n====================" );
-    vp.Dump();
-
-    fp.Construct( rhi::PROG_FRAGMENT, fp_src );
-    Logger::Info( "\n\n====================" );
-    fp.Dump();
-*/
+    rtInit();
 
     inited = true;
 }
@@ -1244,9 +1096,9 @@ void GameCore::Draw()
 
     //    sceneRenderTest->Render();
     //rhiDraw();
-    manticoreDraw();
+    //manticoreDraw();
     //DrawInstancedCube();
-    //rtDraw();
+    rtDraw();
     //    visibilityTestDraw();
 }
 
