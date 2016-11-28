@@ -15,28 +15,18 @@ class EditorLocalizationSystem : public QObject
 public:
     explicit EditorLocalizationSystem(QObject* parent = nullptr);
 
-    QStringList GetAvailableLocaleNames() const;
-    QStringList GetAvailableLocaleValues() const;
+    QStringList GetAvailableLocales() const;
+    QString GetCurrentLocale() const;
+    void SetCurrentLocale(const QString& localeStr);
 
     void SetDirectory(const QDir& dir);
-    void SetCurrentLocaleValue(const QString& localeStr);
     void Cleanup();
-
-private:
-    static QString GetLocaleNameFromStr(const QString& localeStr);
-    QMap<QString, QString> availableLocales;
-
-    //properties section
-public:
-    QString GetCurrentLocale() const;
-
-public slots:
-    void SetCurrentLocale(const QString& locale);
 
 signals:
     void CurrentLocaleChanged(const QString& locale);
 
 private:
+    QStringList availableLocales;
     QString currentLocale;
 };
 

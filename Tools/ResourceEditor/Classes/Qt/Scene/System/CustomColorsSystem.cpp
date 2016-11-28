@@ -12,11 +12,15 @@
 #include "Scene/SceneSignals.h"
 #include "Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
-#include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
@@ -271,7 +275,13 @@ void CustomColorsSystem::SetBrushSize(DAVA::int32 brushSize, bool updateDrawSyst
 
 void CustomColorsSystem::SetColor(DAVA::int32 colorIndex)
 {
-    DAVA::Vector<DAVA::Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data == nullptr)
+    {
+        return;
+    }
+
+    DAVA::Vector<DAVA::Color> customColors = data->GetEditorConfig()->GetColorPropertyValues("LandscapeCustomColors");
     if (colorIndex >= 0 && colorIndex < static_cast<DAVA::int32>(customColors.size()))
     {
         drawColor = customColors[colorIndex];
@@ -461,7 +471,10 @@ DAVA::String CustomColorsSystem::GetRelativePathToProjectPath(const DAVA::FilePa
     if (absolutePath.IsEmpty())
         return DAVA::String();
 
-    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    return absolutePath.GetRelativePathname(data->GetProjectPath());
 }
 
 DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::String& relativePath)
@@ -469,7 +482,9 @@ DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::St
     if (relativePath.empty())
         return DAVA::FilePath();
 
-    return ProjectManager::Instance()->GetProjectPath() + relativePath;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetProjectPath() + relativePath;
 }
 
 DAVA::int32 CustomColorsSystem::GetBrushSize()

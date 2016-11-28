@@ -54,6 +54,12 @@ enum Api
     RHI_METAL
 };
 
+enum class RenderingError : uint32_t
+{
+    DriverError,
+    UnsupportedShaderModel,
+};
+
 enum ProgType
 {
     PROG_VERTEX,
@@ -79,7 +85,9 @@ enum
     MAX_RENDER_TARGET_COUNT = 2,
     MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT = 8,
     MAX_VERTEX_TEXTURE_SAMPLER_COUNT = 2,
-    MAX_VERTEX_STREAM_COUNT = 4
+    MAX_VERTEX_STREAM_COUNT = 4,
+    MAX_SHADER_PROPERTY_COUNT = 1024,
+    MAX_SHADER_CONST_BUFFER_COUNT = 1024,
 };
 
 //------------------------------------------------------------------------------

@@ -57,6 +57,8 @@ public:
 
     void TriggerPlatformEvents();
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
@@ -73,6 +75,7 @@ private:
     void OnDestroyed() override;
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, bool isFullScreen) override;
+    void OnDpiChanged(float32 dpi) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;

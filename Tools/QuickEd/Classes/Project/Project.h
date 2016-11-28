@@ -1,73 +1,93 @@
 #ifndef QUICKED__PROJECT_H__
 #define QUICKED__PROJECT_H__
 
-#include <QObject>
-#include "Project/EditorFontSystem.h"
-#include "Project/EditorLocalizationSystem.h"
+#include "ProjectProperties.h"
+
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
 
-class PackageNode;
-class QFileInfo;
+#include <QObject>
+#include <QVector>
+#include <QPair>
 
-class Project : public QObject, public DAVA::InspBase
+#include "UI/mainwindow.h"
+
+class EditorFontSystem;
+class EditorLocalizationSystem;
+class DocumentGroup;
+class MainWindow;
+class SpritesPacker;
+class FileSystemCache;
+class MacOSSymLinkRestorer;
+
+namespace DAVA
+{
+class AssetCacheClient;
+class YamlNode;
+}
+
+class Project : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
-    Q_PROPERTY(QString projectPath READ GetProjectPath NOTIFY ProjectPathChanged)
-    Q_PROPERTY(QString projectName READ GetProjectName NOTIFY ProjectNameChanged)
-
 public:
-    explicit Project(QObject* parent = nullptr);
+    static std::tuple<DAVA::ResultList, ProjectProperties> ParseProjectPropertiesFromFile(const QString& projectFile);
+    static bool EmitProjectPropertiesToFile(const ProjectProperties& settings);
+
+    static const QStringList& GetFontsFileExtensionFilter();
+    static const QString& GetGraphicsFileExtension();
+    static const QString& Get3dFileExtension();
+    static const QString& GetUiFileExtension();
+
+    Project(MainWindow::ProjectView* view, const ProjectProperties& properties);
     ~Project();
-    bool Open(const QString& path);
-    void Close();
-    bool CanOpenProject(const QString& path) const;
+
+    void SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient);
+
+    QString GetProjectPath() const;
+    const QString& GetProjectDirectory() const;
+    const QString& GetProjectName() const;
+    QString GetResourceDirectory() const;
+
+    QString RestoreSymLinkInFilePath(const QString& filePath) const;
+
+    QStringList GetAvailableLanguages() const;
+    QString GetCurrentLanguage() const;
+    void SetCurrentLanguage(const QString& newLanguageCode);
+
+    const QStringList& GetDefaultPresetNames() const;
 
     EditorFontSystem* GetEditorFontSystem() const;
-    EditorLocalizationSystem* GetEditorLocalizationSystem() const;
-    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
-    static const QString& GetScreensRelativePath();
-    static const QString& GetProjectFileName();
-    QString CreateNewProject(DAVA::Result* result = nullptr);
 
-private:
-    bool OpenInternal(const QString& path);
+    void SetRtl(bool isRtl);
+    void SetBiDiSupport(bool support);
+    void SetGlobalStyleClasses(const QString& classesStr);
 
-    EditorFontSystem* editorFontSystem;
-    EditorLocalizationSystem* editorLocalizationSystem;
+    DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
 
-    //properties
-public:
-    bool IsOpen() const;
-    QString GetProjectPath() const;
-    QString GetProjectName() const;
-
-    QStringList GetProjectsHistory() const;
+    bool TryCloseAllDocuments();
 
 signals:
-    void IsOpenChanged(bool arg);
-    void ProjectPathChanged(QString arg);
-    void ProjectNameChanged(QString arg);
+    void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
-    void SetProjectPath(QString arg);
-    void SetProjectName(QString arg);
-    void SetIsOpen(bool arg);
+    void OnReloadSprites();
+    void OnReloadSpritesFinished();
+    void OnFindFileInProject();
 
-    bool isOpen = false;
-    DAVA::FilePath projectPath;
-    DAVA::Vector<DAVA::FilePath> libraryPackages;
-    QString projectName;
-    DAVA::String projectsHistory;
-    DAVA::uint32 projectsHistorySize;
+    ProjectProperties properties;
+    const QString projectDirectory;
+    const QString projectName;
+    QString uiResourcesPath;
 
-public:
-    INTROSPECTION(Project,
-                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                  //maximum size of projects history
-                  MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                  )
+    MainWindow::ProjectView* view = nullptr;
+    std::unique_ptr<EditorFontSystem> editorFontSystem;
+    std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
+    std::unique_ptr<DocumentGroup> documentGroup;
+    std::unique_ptr<SpritesPacker> spritesPacker;
+    std::unique_ptr<FileSystemCache> projectStructure;
+#if defined(__DAVAENGINE_MACOS__)
+    std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
+#endif
 };
 
 #endif // QUICKED__PROJECT_H__

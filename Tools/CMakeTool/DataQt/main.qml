@@ -79,8 +79,6 @@ ApplicationWindow {
         }
     }
 
-    property int maxHistoryLength: 10;
-
     function addProjectToHistory() {
         var found = false;
         var source = rowLayout_sourceFolder.path;
@@ -100,6 +98,14 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
+        
+        //now update current history, because we load fields from it.
+        for(var j = 0; j < history.length; ++j) {
+            if(history[j].source === source) {
+                history[j] = newItem;
+            }
+        }
+        
         if(found) {
             //add item to top and remove it
             --i;
@@ -112,9 +118,6 @@ ApplicationWindow {
             //add to combobox and to history
             history.push(newItem)
             rowLayout_sourceFolder.item.addString(source)
-        }
-        if(historyToSave.length > maxHistoryLength) {
-            historyToSave = historyToSave.slice(historyToSave.length, maxHistoryLength);
         }
     }
 
@@ -252,14 +255,6 @@ ApplicationWindow {
                         placeholderText: qsTr("path to source folder")
                         onTextChanged: {
                             updateOutputString();
-                        }
-                    }
-                    Connections {
-                        target: rowLayout_sourceFolder
-                        onPathChanged: {
-                            var path = rowLayout_sourceFolder.path;
-                            path = path.replace(/(\/|\\)+$/, "");
-                            rowLayout_buildFolder.path = path + "/_build" ;
                         }
                     }
                 }

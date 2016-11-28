@@ -11,6 +11,7 @@ struct Result
     enum ResultType
     {
         RESULT_SUCCESS,
+        RESULT_WARNING,
         RESULT_FAILURE,
         RESULT_ERROR
     };
@@ -26,7 +27,7 @@ struct Result
 
 inline Result::operator bool() const
 {
-    return type == RESULT_SUCCESS;
+    return type == RESULT_SUCCESS || type == RESULT_WARNING;
 }
 
 class ResultList

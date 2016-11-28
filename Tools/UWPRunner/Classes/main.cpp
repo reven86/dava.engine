@@ -1,4 +1,3 @@
-#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Engine/Engine.h"
@@ -31,7 +30,7 @@ int Process(Engine& e)
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
+    e.Init(eEngineRunMode::CONSOLE_MODE, { "NetCore" }, nullptr);
 
     e.update.Connect([&e](float32)
                      {

@@ -207,12 +207,13 @@ static void gles_check_GL_extensions()
         MutableDeviceCaps::Get().isPerfQuerySupported = strstr(ext, "EXT_timer_query") != nullptr || _GLES2_TimeStampQuerySupported;
     }
 
+    int majorVersion = 2;
+    int minorVersion = 0;
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
         DAVA::Logger::Info("OpenGL version: %s", version);
 
-        int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
         if (dotChar && dotChar != version && *(dotChar + 1))
         {
@@ -331,7 +332,7 @@ static void gles_check_GL_extensions()
 
     // allow multisampling only on NVIDIA Tegra GPU
     // and if functions were loaded
-    if (runningOnTegra && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
+    if (runningOnTegra && (majorVersion >= 3) && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
 #endif
     {
         GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
