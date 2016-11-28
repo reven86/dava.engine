@@ -155,6 +155,11 @@ void SkeletonSystem::RebuildSkeleton(Entity* entity)
 {
     SkeletonComponent* component = GetSkeletonComponent(entity);
     DVASSERT(component);
+    if (!component->needRebuild)
+        return;
+
+    component->needRebuild = false;
+
     /*convert joint configs to joints*/
     component->jointsCount = component->GetConfigJointsCount();
 
