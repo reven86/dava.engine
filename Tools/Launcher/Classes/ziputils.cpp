@@ -37,8 +37,16 @@ QString ZipError::GetErrorString() const
         return QObject::tr("Archiver tool was not found. Please, reinstall application");
     case PROCESS_FAILED_TO_START:
         return QObject::tr("Failed to launch archiver");
-    case PROCESS_FAILED_TO_FINISH:
-        return QObject::tr("Archiver failed to get list of files from archive");
+    case PROCESS_CRASHED:
+        return QObject::tr("Archiver crashed");
+    case PROCESS_TIMEDOUT:
+        return QObject::tr("Archiver crashed by time out");
+    case PROCESS_READ_ERROR:
+        return QObject::tr("Failed to read output from archiver");
+    case PROCESS_WRITE_ERROR:
+        return QObject::tr("Failed to write to archiver");
+    case PROCESS_UNKNOWN_ERROR:
+        return QObject::tr("Archiver crashed with an unknown error");
     case PARSE_ERROR:
         return QObject::tr("Unknown format of archiver output");
     case ARCHIVE_IS_EMPTY:
@@ -51,7 +59,7 @@ QString ZipError::GetErrorString() const
     }
 }
 
-namespace ZIP_UTILS_LOCAL
+namespace ZipUtilsDetails
 {
 ZipError* GetDefaultZipError()
 {
@@ -59,13 +67,38 @@ ZipError* GetDefaultZipError()
     localError.error = ZipError::NO_ERRORS; //prevouis requester can break state of this varaiable
     return &localError;
 }
+
+void ApplyProcessErrorToZipError(ZipError* zipError, QProcess::ProcessError processError)
+{
+    switch (processError)
+    {
+    case QProcess::FailedToStart:
+        zipError->error = ZipError::PROCESS_FAILED_TO_START;
+        break;
+    case QProcess::Crashed:
+        zipError->error = ZipError::PROCESS_CRASHED;
+        break;
+    case QProcess::Timedout:
+        zipError->error = ZipError::PROCESS_TIMEDOUT;
+        break;
+    case QProcess::ReadError:
+        zipError->error = ZipError::PROCESS_READ_ERROR;
+        break;
+    case QProcess::WriteError:
+        zipError->error = ZipError::PROCESS_WRITE_ERROR;
+        break;
+    default:
+        zipError->error = ZipError::PROCESS_UNKNOWN_ERROR;
+        break;
+    }
 }
+} //namespace ZipUtilsDetails
 
 bool ZipUtils::IsArchiveValid(const QString& archivePath, ZipError* err)
 {
     if (err == nullptr)
     {
-        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
+        err = ZipUtilsDetails::GetDefaultZipError();
     }
     QString processAddr = GetArchiverPath();
     if (!QFile::exists(processAddr))
@@ -90,7 +123,7 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
 {
     if (err == nullptr)
     {
-        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
+        err = ZipUtilsDetails::GetDefaultZipError();
     }
     Q_ASSERT(err->error == ZipError::NO_ERRORS);
 
@@ -107,21 +140,19 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
             }
         }
     });
-    QEventLoop loop;
-    QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
+    QEventLoop eventLoop;
+    QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), [&eventLoop, err](int exitCode, QProcess::ExitStatus exitStatus) {
+        err->error = (exitCode == 0 && exitStatus == QProcess::NormalExit) ? err->NO_ERRORS : err->PROCESS_CRASHED;
+        eventLoop.quit();
+    });
+    QObject::connect(&zipProcess, &QProcess::errorOccurred, [&eventLoop, err](QProcess::ProcessError error) {
+        ZipUtilsDetails::ApplyProcessErrorToZipError(err, error);
+        eventLoop.quit();
+    });
 
     zipProcess.start(processAddr, arguments);
-    if (!zipProcess.waitForStarted(5000))
-    {
-        err->error = ZipError::PROCESS_FAILED_TO_START;
-        return false;
-    }
-    loop.exec();
-    if (zipProcess.exitStatus() == QProcess::CrashExit)
-    {
-        err->error = ZipError::PROCESS_FAILED_TO_FINISH;
-        return false;
-    }
+    eventLoop.exec();
+
     return err->error == ZipError::NO_ERRORS;
 }
 
