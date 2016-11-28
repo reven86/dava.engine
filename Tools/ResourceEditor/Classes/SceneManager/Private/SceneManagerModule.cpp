@@ -898,8 +898,6 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
 
             for (; it != end; ++it)
             {
-                it->second->ReloadAs(gpu);
-
                 QString message = QString("Reloading texture:%1");
 #if defined(USE_FILEPATH_IN_MAP)
                 message = message.arg(it->first.GetAbsolutePathname().c_str());
@@ -908,6 +906,8 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
 #endif //#if defined(USE_FILEPATH_IN_MAP)
                 waitHandle->SetMessage(message);
                 waitHandle->SetProgressValue(progress++);
+
+                it->second->ReloadAs(gpu);
             }
 
             TextureCache::Instance()->ClearCache();
