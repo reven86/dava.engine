@@ -418,6 +418,10 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
     {
         RefreshControlStylesAndLayout(packageControlsNode->Get(i));
     }
+    for (int32 i = 0; i < prototypes->GetCount(); i++)
+    {
+        RefreshControlStylesAndLayout(prototypes->Get(i));
+    }
 }
 
 void PackageNode::SetCanUpdateAll(bool canUpdate)
