@@ -5,7 +5,6 @@
 
 #include "Base/Exception.h"
 #include "Engine/Window.h"
-#include "Engine/UWP/XamlApplicationListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
@@ -13,6 +12,7 @@
 
 #include "Debug/Backtrace.h"
 #include "Platform/SystemTimer.h"
+#include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
@@ -47,13 +47,15 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    if (savedLaunchArgs != nullptr)
+    if (savedActivatedEventArgs != nullptr)
     {
-        // Here notify listeners about OnLaunched
-        engineBackend->GetPrimaryWindow()->RunAsyncOnUIThread([ this, savedLaunchArgs = savedLaunchArgs ]() {
-            NotifyListeners(ON_LAUNCHED, savedLaunchArgs);
+        // Here notify listeners about OnLaunched or OnActivated occured before entering game loop.
+        // Notification will come on first frame
+        engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([ this, args = savedActivatedEventArgs ]() {
+            using ::Windows::ApplicationModel::Activation::ActivationKind;
+            NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
         });
-        savedLaunchArgs = nullptr;
+        savedActivatedEventArgs = nullptr;
     }
 
     engineBackend->OnGameLoopStarted();
@@ -105,13 +107,13 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
         //gameThread->Detach();
         //gameThread->Release();
 
-        // Save launch arguments if game thread is not runnnig yet and notify listeners later
-        // when dava.engine is initialized and listeners have had chance to register.
-        savedLaunchArgs = launchArgs;
+        // Save activated event arguments to notify listeners later just before entering game loop to ensure
+        // that dava.engine and game have intialized and listeners have had chance to register.
+        savedActivatedEventArgs = args;
     }
     else
     {
-        NotifyListeners(ON_LAUNCHED, launchArgs);
+        NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
     }
 }
 
@@ -162,9 +164,14 @@ void PlatformCore::OnDpiChanged()
     engineBackend->UpdateDisplayConfig();
 }
 
-void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* listener)
+void PlatformCore::RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
 {
     DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
     if (it == end(xamlApplicationListeners))
     {
@@ -172,8 +179,12 @@ void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* list
     }
 }
 
-void PlatformCore::UnregisterXamlApplicationListener(XamlApplicationListener* listener)
+void PlatformCore::UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
 {
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
     if (it != end(xamlApplicationListeners))
     {
@@ -212,14 +223,22 @@ void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ 
     using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
     using ::Windows::ApplicationModel::Activation::IActivatedEventArgs;
 
-    for (auto i = begin(xamlApplicationListeners), e = end(xamlApplicationListeners); i != e;)
+    Vector<PlatformApi::Win10::XamlApplicationListener*> listenersCopy;
     {
-        XamlApplicationListener* l = *i;
-        ++i;
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(xamlApplicationListeners.size());
+        std::copy(xamlApplicationListeners.begin(), xamlApplicationListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Win10::XamlApplicationListener* l : listenersCopy)
+    {
         switch (type)
         {
         case ON_LAUNCHED:
             l->OnLaunched(static_cast<LaunchActivatedEventArgs ^>(arg1));
+            break;
+        case ON_ACTIVATED:
+            l->OnActivated(static_cast<IActivatedEventArgs ^>(arg1));
             break;
         default:
             break;

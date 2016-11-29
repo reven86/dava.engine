@@ -101,6 +101,8 @@ TestBed::TestBed(Engine& engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
+    using namespace DAVA;
+
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
@@ -111,7 +113,7 @@ TestBed::TestBed(Engine& engine)
     engine.GetNativeService()->RegisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
     nativeDelegate.reset(new NativeDelegateWin10());
-    engine.GetNativeService()->RegisterXamlApplicationListener(nativeDelegate.get());
+    PlatformApi::Win10::RegisterXamlApplicationListener(nativeDelegate.get());
 #endif
 
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
@@ -159,6 +161,8 @@ void TestBed::OnGameLoopStarted()
 
 void TestBed::OnGameLoopStopped()
 {
+    using namespace DAVA;
+
     Logger::Debug("****** TestBed::OnGameLoopStopped");
 
     for (auto testScreen : screens)
@@ -175,7 +179,7 @@ void TestBed::OnGameLoopStopped()
 #elif defined(__DAVAENGINE_IPHONE__)
     engine.GetNativeService()->UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    engine.GetNativeService()->UnregisterXamlApplicationListener(nativeDelegate.get());
+    PlatformApi::Win10::UnregisterXamlApplicationListener(nativeDelegate.get());
 #endif
 }
 
@@ -183,15 +187,7 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
-// clang-format off
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__) || \
-      defined(__DAVAENGINE_IPHONE__) || \
-      defined(__DAVAENGINE_WIN_UAP__)
     nativeDelegate.reset();
-#endif
-    // clang-format on
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)

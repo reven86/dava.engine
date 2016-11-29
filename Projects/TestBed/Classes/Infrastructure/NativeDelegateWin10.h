@@ -4,11 +4,12 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include <Engine/UWP/XamlApplicationListener.h>
+#include <Engine/PlatformApi.h>
 
-struct NativeDelegateWin10 : public DAVA::XamlApplicationListener
+struct NativeDelegateWin10 : public DAVA::PlatformApi::Win10::XamlApplicationListener
 {
-    void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs) override;
+    void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args) override;
 };
 
 #endif // __DAVAENGINE_WIN_UAP__
