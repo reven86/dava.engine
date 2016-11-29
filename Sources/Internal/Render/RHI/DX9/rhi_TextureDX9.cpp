@@ -498,7 +498,7 @@ void SetToRHI(Handle tex, unsigned unit_i)
     self->lastUnit = unit_i;
 }
 
-void SetAsRenderTarget(Handle tex)
+void SetAsRenderTarget(Handle tex, unsigned target_i)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
 
@@ -508,7 +508,7 @@ void SetAsRenderTarget(Handle tex)
         self->lastUnit = DAVA::InvalidIndex;
     }
 
-    DX9_CALL(_D3D9_Device->SetRenderTarget(0, self->surf9), "SetRenderTarget");
+    DX9_CALL(_D3D9_Device->SetRenderTarget(target_i, self->surf9), "SetRenderTarget");
 }
 
 void SetAsDepthStencil(Handle tex)

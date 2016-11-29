@@ -508,6 +508,36 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
+                _D3D9_TargetCount = 0;
+                for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
+                {
+                    if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle)
+                    {
+                        if (i == 0)
+                        {
+                            DVASSERT(_D3D9_BackBuf == nullptr);
+                            _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
+                        }
+
+                        TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].texture, i);
+                        ++_D3D9_TargetCount;
+                    }
+                    else
+                    {
+                        if (i == 0)
+                            _D3D9_TargetCount = 1;
+                        break;
+                    }
+                }
+
+                if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
+                {
+                    DVASSERT(_D3D9_DepthBuf == nullptr);
+                    _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
+
+                    TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.texture);
+                }
+                /*
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
                 if ((color0.texture != rhi::InvalidHandle) || passCfg.UsingMSAA())
                 {
@@ -537,7 +567,7 @@ void CommandBufferDX9_t::Execute()
                     }
                     TextureDX9::SetAsDepthStencil(targetDepthStencil);
                 }
-
+*/
                 IDirect3DSurface9* rt = nullptr;
                 _D3D9_Device->GetRenderTarget(0, &rt);
                 if (rt != nullptr)
@@ -616,6 +646,10 @@ void CommandBufferDX9_t::Execute()
                     _D3D9_DepthBuf->Release();
                     _D3D9_DepthBuf = nullptr;
                 }
+
+                for (unsigned i = 1; i != _D3D9_TargetCount; ++i)
+                    _D3D9_Device->SetRenderTarget(i, NULL);
+                _D3D9_TargetCount = 1;
             }
         }
         break;
