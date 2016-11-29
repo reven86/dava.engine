@@ -8,6 +8,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
+#include "Engine/Private/UWP/DllImportUWP.h"
 
 #include "Debug/Backtrace.h"
 #include "Platform/SystemTimer.h"
@@ -30,6 +31,11 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend_)
 {
     using ::Windows::Foundation::Metadata::ApiInformation;
     isPhoneContractPresent = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+
+    if (!isPhoneContractPresent)
+    {
+        DllImportUWP::Initialize();
+    }
 }
 
 PlatformCore::~PlatformCore() = default;
