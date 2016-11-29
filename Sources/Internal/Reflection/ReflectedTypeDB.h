@@ -44,8 +44,8 @@ protected:
     static ReflectedType* Edit();
 
     static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
-    static UnorderedMap<const Type*, ReflectedType*> rtTypeToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> rtTypeNameToReflectedTypeMap;
+    static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
+    static UnorderedMap<String, ReflectedType*> typeNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
