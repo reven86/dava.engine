@@ -60,6 +60,7 @@ private:
 
     bool Write(const QByteArray &data);
     QJsonObject Read();
+    bool Flush();
 
     QSharedMemory sharedMemory;
     QTimer *pollTimer;

@@ -47,7 +47,7 @@ ProcessCommunication::ProcessCommunication(QObject* parent)
 
 ProcessCommunication::~ProcessCommunication()
 {
-    if (sharedMemory.detach())
+    if (sharedMemory.detach() == false)
     {
         qWarning() << "Process communication module can not detach from shared memory, reason is" << sharedMemory.errorString();
     }
@@ -85,12 +85,12 @@ void ProcessCommunication::SendAsync(const eMessage messageCode, const QString &
         callBack(eReply::NOT_INITIALIZED);
         return;
     }
-    if (QFile::exists(targetAppPath))
+    if (QFile::exists(targetAppPath) == false)
     {
         callBack(eReply::NOT_EXISTS);
         return;
     }
-    if (ProcessHelper::IsProcessRuning(targetAppPath))
+    if (ProcessHelper::IsProcessRuning(targetAppPath) == false)
     {
         callBack(eReply::NOT_RUNNING);
         return;
@@ -120,16 +120,15 @@ ProcessCommunication::eReply ProcessCommunication::SendSync(const eMessage messa
 {
     bool haveAnswer = false;
     eReply reply;
-    CallbackFunction callBack = [&haveAnswer, &reply](eReply replyFromClient){
+    QEventLoop loop;
+
+    CallbackFunction callBack = [&haveAnswer, &reply, &loop](eReply replyFromClient){
         reply = replyFromClient;
         haveAnswer = true;
+        loop.quit();
     };
     SendAsync(messagCode, targetAppPath, callBack);
-    //whithout an answer this loop will be stopped by timeout
-    while (haveAnswer == false)
-    {
-        QThread::msleep(100);
-    }
+    loop.exec();
     return reply;
 }
 
@@ -146,7 +145,7 @@ bool ProcessCommunication::IsInitialized() const
 void ProcessCommunication::Poll()
 {
     QJsonObject object = Read();
-    if (object.isEmpty())
+    if (object.isEmpty() == false)
     {
         bool gotReply = false;
 
@@ -163,6 +162,7 @@ void ProcessCommunication::Poll()
                 iterator.remove();
                 //we got reply for sent message
                 gotReply = true;
+                Flush();
             }
         }
 
@@ -234,21 +234,19 @@ bool ProcessCommunication::Unlock()
 bool ProcessCommunication::Write(const QByteArray &data)
 {
     bool success = false;
-    if (Lock() != false)
+    if (data.size() > ProcessCommunicationDetails::maxDataSize)
+    {
+        qWarning() << "Process communication module can not send data biggest than max size";
+    }
+    else if (Lock() != false)
     {
         void* pureData = sharedMemory.data();
         if (pureData != nullptr)
         {
-
-            if (data.size() > ProcessCommunicationDetails::maxDataSize)
-            {
-                qWarning() << "Process communication module can not send data biggest than max size";
-            }
-            else
-            {
-                memcpy(pureData, data.data(), data.size());
-                success = true;
-            }
+            int dataToWriteSize = data.size();
+            memcpy(pureData, data.data(), dataToWriteSize);
+            memset(static_cast<char*>(pureData) + dataToWriteSize, '\0', ProcessCommunicationDetails::maxDataSize - dataToWriteSize);
+            success = true;
         }
         else
         {
@@ -268,7 +266,6 @@ QJsonObject ProcessCommunication::Read()
         if (pureData != nullptr)
         {
             data += QByteArray(reinterpret_cast<const char*>(pureData), ProcessCommunicationDetails::maxDataSize);
-            memset(const_cast<void*>(pureData), '\0', ProcessCommunicationDetails::maxDataSize);
         }
         else
         {
@@ -299,6 +296,16 @@ QJsonObject ProcessCommunication::Read()
         qWarning() << "Process communication module can not write shared memory. Last error is" << sharedMemory.errorString();
     }
     return QJsonObject();
+}
+
+bool ProcessCommunication::Flush()
+{
+    bool success = Write(QByteArray());
+    if (success == false)
+    {
+        qWarning() << "Can not flush data buffer, possible to loss data";
+    }
+    return success;
 }
 
 ProcessCommunication::MessageDetails::MessageDetails(CallbackFunction callBack_)
