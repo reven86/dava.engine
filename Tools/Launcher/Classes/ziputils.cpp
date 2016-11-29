@@ -47,6 +47,8 @@ QString ZipError::GetErrorString() const
         return QObject::tr("Failed to write to archiver");
     case PROCESS_UNKNOWN_ERROR:
         return QObject::tr("Archiver crashed with an unknown error");
+    case PROCESS_FAILED:
+        return QObject::tr("Archiver reports about error in current archive");
     case PARSE_ERROR:
         return QObject::tr("Unknown format of archiver output");
     case ARCHIVE_IS_EMPTY:
@@ -132,7 +134,8 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
     QObject::connect(&zipProcess, &QProcess::readyReadStandardOutput, [&zipProcess, callback, err]() {
         while (zipProcess.canReadLine())
         {
-            callback(zipProcess.readLine());
+            QByteArray line = zipProcess.readLine();
+            callback(line);
             if (err->error != ZipError::NO_ERRORS) //callback can produce errors
             {
                 zipProcess.kill();
@@ -142,7 +145,10 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
     });
     QEventLoop eventLoop;
     QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), [&eventLoop, err](int exitCode, QProcess::ExitStatus exitStatus) {
-        err->error = (exitCode == 0 && exitStatus == QProcess::NormalExit) ? err->NO_ERRORS : err->PROCESS_CRASHED;
+        if (err->error == ZipError::NO_ERRORS && (exitCode != 0 || exitStatus != QProcess::NormalExit))
+        {
+            err->error = err->PROCESS_FAILED;
+        }
         eventLoop.quit();
     });
     QObject::connect(&zipProcess, &QProcess::errorOccurred, [&eventLoop, err](QProcess::ProcessError error) {

@@ -26,23 +26,26 @@ public:
     };
     CommandListener(ApplicationManager* appManager, QObject* parent = nullptr);
 
+    void GetCommands();
+
     QString GetProtocolKey() const;
     void SetProtocolKey(const QString& key);
-    void ProcessCommand(const QJsonObject& object);
 
-    void SendReply(eResult result = SUCCESS, const QString& commandID = "0", const QString& message = "Success");
 
 private slots:
-    void GetCommands();
 
     void GotReply(QNetworkReply* reply);
     void OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void OnProcessError(QProcess::ProcessError error);
 
 private:
+    void ProcessCommand(const QJsonObject& object);
+    void Post(const QString& urlStr, const QByteArray& data);
+    void SendReply(eResult result, const QString& commandID, const QString& message);
+    void SendReply(eResult result, const QString& message);
+
     void LaunchProcess(const QJsonObject& requestObj, const QString& commandIDValue);
     void SilentUpdate(const QJsonObject& requestObj, const QString& commandIDValue);
-    void Post(const QString& urlStr, const QByteArray& data);
 
     SilentUpdater* silentUpdater = nullptr;
     ApplicationManager* applicationManager = nullptr;

@@ -54,7 +54,7 @@ private:
     bool TryStopApp(const QString& runPath) const;
 
     //before call this function check that app is not running
-    void RemoveApplicationImpl(const QString& branchID, const QString& appID);
+    bool RemoveApplicationImpl(const QString& branchID, const QString& appID);
 
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 

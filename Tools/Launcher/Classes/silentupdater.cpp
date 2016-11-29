@@ -8,27 +8,27 @@
 namespace SilentUpdaterDetails
 {
 class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
-{
-public:
-    UpdateDialogZipFunctor(const QString& errorMessage_, SilentUpdateTask::CallBack callBackFunction_)
-        : errorMessage(errorMessage_)
-        , callBackFunction(callBackFunction_)
     {
-    }
+    public:
+        UpdateDialogZipFunctor(const QString& errorMessage_, SilentUpdateTask::CallBack callBackFunction_)
+            : errorMessage(errorMessage_)
+            , callBackFunction(callBackFunction_)
+        {
+        }
 
-    ~UpdateDialogZipFunctor() override = default;
+        ~UpdateDialogZipFunctor() override = default;
 
-private:
-    void OnError(const ZipError& zipError) override
-    {
-        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-        callBackFunction(false, errorMessage + "\nerror text is: " + zipError.GetErrorString());
-    }
+    private:
+        void OnError(const ZipError& zipError) override
+        {
+            Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
+            callBackFunction(false, errorMessage + "\nerror text is: " + zipError.GetErrorString());
+        }
 
-private:
-    QString errorMessage;
-    SilentUpdateTask::CallBack callBackFunction;
-};
+    private:
+        QString errorMessage;
+        SilentUpdateTask::CallBack callBackFunction;
+    };
 }
 
 SilentUpdater::SilentUpdater(ApplicationManager* appManager, QObject* parent)
@@ -37,6 +37,7 @@ SilentUpdater::SilentUpdater(ApplicationManager* appManager, QObject* parent)
 {
     networkManager = new QNetworkAccessManager(this);
     connect(networkManager, &QNetworkAccessManager::networkAccessibleChanged, this, &SilentUpdater::OnNetworkAccessibleChanged);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &SilentUpdater::OnDownloadFinished);
 }
 
 SilentUpdater::~SilentUpdater()
@@ -55,26 +56,23 @@ void SilentUpdater::AddTask(SilentUpdateTask&& task)
 
 void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 {
-    canStartNextTask = true;
-    if (currentReply == nullptr)
-    {
-        return;
-    }
     reply->deleteLater();
+    //this situation occurs on network error
+    if (tasks.isEmpty())
+    {
+        return;
+    }
+
+    canStartNextTask = true;
+
     SilentUpdateTask task = tasks.dequeue();
-    if (reply != currentReply)
+    if (reply->error() != QNetworkReply::NoError)
     {
-        task.onFinished(false, "Internal error: got wrong reply");
+        task.onFinished(false, "Can not download remote archive, error is " + reply->errorString());
         return;
     }
 
-    if (currentReply->error() != QNetworkReply::NoError)
-    {
-        task.onFinished(false, "Can not download remote archive, error is " + currentReply->errorString());
-        return;
-    }
-
-    QByteArray readedData = currentReply->readAll();
+    QByteArray readedData = reply->readAll();
     bool success = false;
     FileManager* fileManager = appManager->GetFileManager();
     QString archivePath = fileManager->CreateZipFile(readedData, &success);
@@ -119,8 +117,12 @@ void SilentUpdater::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAcc
         {
             currentReply->abort();
             currentReply->deleteLater();
-            SilentUpdateTask task = tasks.dequeue();
-            task.onFinished(false, "Network was disabled");
+            currentReply = nullptr;
+            while (tasks.isEmpty() == false)
+            {
+                SilentUpdateTask task = tasks.dequeue();
+                task.onFinished(false, "Network was disabled");
+            }
         }
     }
 }
@@ -132,6 +134,10 @@ void SilentUpdater::StartNextTask()
         return;
     }
     canStartNextTask = false;
+    if (tasks.isEmpty())
+    {
+        return;
+    }
     const SilentUpdateTask& task = tasks.last();
     QString url = task.newVersion.url;
     currentReply = networkManager->get(QNetworkRequest(QUrl(url)));

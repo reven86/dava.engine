@@ -15,12 +15,15 @@ public:
         NOT_AN_ARCHIVE,
         ARHIVE_DAMAGED,
         ARCHIVER_NOT_FOUND,
+        //errors from QProcess::ProcessError
         PROCESS_FAILED_TO_START,
         PROCESS_CRASHED,
         PROCESS_TIMEDOUT,
         PROCESS_READ_ERROR,
         PROCESS_WRITE_ERROR,
         PROCESS_UNKNOWN_ERROR,
+        //process return non-zero code or crashed
+        PROCESS_FAILED,
         PARSE_ERROR,
         ARCHIVE_IS_EMPTY,
         OUT_DIRECTORY_NOT_EXISTS

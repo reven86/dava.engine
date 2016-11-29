@@ -23,6 +23,7 @@
 #include <QLabel>
 #include <QVariant>
 #include <QComboBox>
+#include <QShortcut>
 
 static const QString stateKey = "mainWindow_state";
 static const QString geometryKey = "mainWindow_geometry";
@@ -120,7 +121,10 @@ MainWindow::MainWindow(QWidget* parent)
     appManager = new ApplicationManager(this);
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
-    silentUpdater = new CommandListener(appManager, this);
+    commandListener = new CommandListener(appManager, this);
+    QShortcut* shortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), this);
+    shortCut->setContext(Qt::ApplicationShortcut);
+    connect(shortCut, &QShortcut::activated, commandListener, &CommandListener::GetCommands);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -138,7 +142,7 @@ MainWindow::MainWindow(QWidget* parent)
     restoreState(settings.value(stateKey).toByteArray());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::LoadPreferences(fileManager, configDownloader, silentUpdater);
+    ::LoadPreferences(fileManager, configDownloader, commandListener);
 }
 
 MainWindow::~MainWindow()
@@ -148,7 +152,7 @@ MainWindow::~MainWindow()
     settings.setValue(stateKey, saveState());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::SavePreferences(fileManager, configDownloader, silentUpdater);
+    ::SavePreferences(fileManager, configDownloader, commandListener);
     SafeDelete(ui);
 }
 

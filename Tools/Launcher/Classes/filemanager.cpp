@@ -284,10 +284,11 @@ QString FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success)
     const QString& filePath = GetTempDownloadFilePath();
     QFile outputFile(filePath);
 
-    if (outputFile.open(QFile::WriteOnly))
+    if (outputFile.open(QFile::WriteOnly | QFile::Truncate))
     {
+        qint64 written = outputFile.write(dataToWrite);
         if (success != nullptr
-            && outputFile.write(dataToWrite) == dataToWrite.size())
+            && written != -1)
         {
             *success = true;
         }

@@ -177,9 +177,6 @@ void UpdateDialog::DownloadFinished()
     QNetworkReply::NetworkError error = currentDownload->error();
     QString errorString = currentDownload->errorString();
 
-    currentDownload->deleteLater();
-    currentDownload = nullptr;
-
     if (error == QNetworkReply::OperationCanceledError)
     {
         return;
@@ -193,6 +190,9 @@ void UpdateDialog::DownloadFinished()
         return;
     }
     QByteArray readedData = currentDownload->readAll();
+    currentDownload->deleteLater();
+    currentDownload = nullptr;
+
     bool success = false;
     FileManager* fileManager = appManager->GetFileManager();
     QString filePath = fileManager->CreateZipFile(readedData, &success);
@@ -236,12 +236,12 @@ void UpdateDialog::DownloadFinished()
     ui->cancelButton->setEnabled(true);
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
-    tasks.dequeue();
 
     for (const QString& appToRestart : applicationsToRestart)
     {
         appManager->RunApplication(task.branchID, appToRestart);
     }
+    tasks.dequeue();
 
     StartNextTask();
 }

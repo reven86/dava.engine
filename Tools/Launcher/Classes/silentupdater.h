@@ -50,6 +50,7 @@ private:
     bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);
 
     QNetworkAccessManager* networkManager = nullptr;
+    //we hold this variable to avoid Qt bug. When network becomes to incaccessible state we dont receive DownloadFinished.
     QNetworkReply* currentReply = nullptr;
     ApplicationManager* appManager = nullptr;
     QQueue<SilentUpdateTask> tasks;

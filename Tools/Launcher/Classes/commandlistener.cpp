@@ -29,7 +29,7 @@ CommandListener::CommandListener(ApplicationManager* appManager_, QObject* paren
     updateTimer->setInterval(1 * 1000);
     connect(updateTimer, &QTimer::timeout, this, &CommandListener::GetCommands);
     connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::GotReply);
-    updateTimer->start();
+    //updateTimer->start();
 }
 
 QString CommandListener::GetProtocolKey() const
@@ -89,12 +89,18 @@ void CommandListener::SendReply(eResult result, const QString& commandID, const 
     data.append("&message='");
     data.append(message);
     data.append("'");
+    qDebug() << "reply data: " << data;
     Post(urlStr, data);
 
     if (result != SUCCESS)
     {
         ErrorMessenger::LogMessage(QtWarningMsg, message);
     }
+}
+
+void CommandListener::SendReply(eResult result, const QString& message)
+{
+    SendReply(result, "0", message);
 }
 
 void CommandListener::GetCommands()
@@ -163,7 +169,7 @@ void CommandListener::GotReply(QNetworkReply* reply)
             }
             else
             {
-                SendReply(FAILURE, "Got a command, which is not object");
+                SendReply(FAILURE, "Got a command, which not an object");
             }
         }
     }
@@ -246,15 +252,6 @@ void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString
 
 void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString& commandID)
 {
-    QJsonValue buildNameValue = requestObj["build_name"];
-    if (buildNameValue.isString() == false)
-    {
-        QString jsonValueTypeStr = QString::number(static_cast<int>(buildNameValue.type()));
-        SendReply(FAILURE, commandID, "Can not parse build name from command, expect a string, got type " + jsonValueTypeStr);
-        return;
-    }
-    QString buildName = buildNameValue.toString();
-
     QJsonValue branchNameValue = requestObj["branchName"];
     if (branchNameValue.isString() == false)
     {
@@ -276,8 +273,8 @@ void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString&
     AppVersion newVersion;
     ::FillAppFields(&newVersion, requestObj, IsToolset(appName));
     AppVersion* installedVersion = applicationManager->GetInstalledVersion(branchName, appName);
-    SilentUpdateTask::CallBack callBack = [this](bool success, const QString& message) {
-        SendReply(success ? SUCCESS : FAILURE, message);
+    SilentUpdateTask::CallBack callBack = [this, commandID](bool success, const QString& message) {
+        SendReply(success ? SUCCESS : FAILURE, commandID, message);
     };
     SilentUpdateTask task(branchName, appName, installedVersion, newVersion, callBack);
     silentUpdater->AddTask(std::move(task));
