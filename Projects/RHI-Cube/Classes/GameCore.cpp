@@ -641,7 +641,7 @@ void GameCore::OnAppStarted()
     if (file)
     {
         rhi::ShaderSource vp(src);
-        uint32 sz = file->GetSize();
+        unsigned sz = file->GetSize();
         char buf[64 * 1024];
 
         DVASSERT(sz < sizeof(buf));
