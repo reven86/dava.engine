@@ -9,9 +9,12 @@ namespace Private
 {
 namespace DllImportUWP
 {
-MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc) = nullptr;
-MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod) = nullptr;
-MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod) = nullptr;
+MMRESULT(WINAPI* timeGetDevCaps)
+(LPTIMECAPS ptc, UINT cbtc) = nullptr;
+MMRESULT(WINAPI* timeBeginPeriod)
+(UINT uPeriod) = nullptr;
+MMRESULT(WINAPI* timeEndPeriod)
+(UINT uPeriod) = nullptr;
 
 void Initialize()
 {
@@ -19,7 +22,8 @@ void Initialize()
     VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
     HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
 
-    HMODULE(WINAPI * LoadLibraryW)(LPCWSTR lpLibFileName);
+    HMODULE(WINAPI * LoadLibraryW)
+    (LPCWSTR lpLibFileName);
     LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
 
     if (LoadLibraryW)
@@ -31,7 +35,7 @@ void Initialize()
             timeBeginPeriod = reinterpret_cast<decltype(timeBeginPeriod)>(GetProcAddress(hWinmm, "timeBeginPeriod"));
             timeEndPeriod = reinterpret_cast<decltype(timeEndPeriod)>(GetProcAddress(hWinmm, "timeEndPeriod"));
         }
-    }   
+    }
 }
 }
 }

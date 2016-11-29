@@ -1,5 +1,6 @@
 #include "WinSystemTimer.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WINDOWS__)
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -20,9 +21,9 @@ void EnableHighResolutionTimer(bool enable)
     using namespace DllImportUWP;
 
     const bool timerServiceAvailable =
-        timeBeginPeriod != nullptr &&
-        timeEndPeriod != nullptr &&
-        timeGetDevCaps != nullptr;
+    timeBeginPeriod != nullptr &&
+    timeEndPeriod != nullptr &&
+    timeGetDevCaps != nullptr;
 #endif
 
     if (timerServiceAvailable)
@@ -42,4 +43,5 @@ void EnableHighResolutionTimer(bool enable)
 }
 }
 
+#endif
 #endif

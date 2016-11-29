@@ -255,7 +255,6 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     {
         EnableHighResolutionTimer(hasFocus);
     }
-
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
