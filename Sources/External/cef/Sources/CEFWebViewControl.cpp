@@ -439,7 +439,6 @@ int32 ConvertDAVAModifiersToCef(eKeyModifiers modifier)
 int32 ConvertMouseTypeDavaToCef(UIEvent* input)
 {
     int32 mouseType = 0;
-#if defined(__DAVAENGINE_COREV2__)
     if (input->mouseButton == eMouseButtons::LEFT)
     {
         mouseType = cef_mouse_button_type_t::MBT_LEFT;
@@ -452,20 +451,6 @@ int32 ConvertMouseTypeDavaToCef(UIEvent* input)
     {
         mouseType = cef_mouse_button_type_t::MBT_RIGHT;
     }
-#else
-    if (input->mouseButton == UIEvent::MouseButton::LEFT)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_LEFT;
-    }
-    else if (input->mouseButton == UIEvent::MouseButton::MIDDLE)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_MIDDLE;
-    }
-    else if (input->mouseButton == UIEvent::MouseButton::RIGHT)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_RIGHT;
-    }
-#endif
     return mouseType;
 }
 
@@ -497,7 +482,6 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-#if defined(__DAVAENGINE_COREV2__)
     switch (currentInput->device)
     {
     case eInputDevices::MOUSE:
@@ -529,39 +513,6 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     default:
         break;
     }
-#else
-    switch (currentInput->device)
-    {
-    case DAVA::UIEvent::Device::MOUSE:
-        webViewPos = webView.GetAbsolutePosition();
-        switch (currentInput->phase)
-        {
-        case DAVA::UIEvent::Phase::BEGAN:
-        case DAVA::UIEvent::Phase::ENDED:
-            OnMouseClick(currentInput);
-            break;
-        case DAVA::UIEvent::Phase::MOVE:
-        case DAVA::UIEvent::Phase::DRAG:
-            OnMouseMove(currentInput);
-            break;
-        case DAVA::UIEvent::Phase::WHEEL:
-            OnMouseWheel(currentInput);
-            break;
-        default:
-            break;
-        }
-        break;
-    case DAVA::UIEvent::Device::KEYBOARD:
-        OnKey(currentInput);
-        break;
-    case DAVA::UIEvent::Device::TOUCH_SURFACE:
-        break;
-    case DAVA::UIEvent::Device::TOUCH_PAD:
-        break;
-    default:
-        break;
-    }
-#endif
 }
 
 void CEFWebViewControl::OnWindowSizeChanged(Window*, Size2f, Size2f)

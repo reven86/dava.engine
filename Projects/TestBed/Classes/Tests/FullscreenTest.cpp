@@ -339,7 +339,7 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
-            if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
+            if (currentInput->mouseButton == eMouseButtons::MIDDLE)
             {
                 w->SetCursorCapture(eCursorCapture::OFF);
                 w->SetCursorVisibility(true);

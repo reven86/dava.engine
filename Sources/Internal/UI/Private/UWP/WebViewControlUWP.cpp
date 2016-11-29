@@ -179,7 +179,9 @@ void WebViewControl::OwnerIsDying()
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 
+#if defined(__DAVAENGINE_COREV2__)
     if (window != nullptr)
+#endif
     {
         if (nativeWebView != nullptr)
         {
@@ -496,7 +498,9 @@ void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f su
 void WebViewControl::OnWindowDestroyed(Window* w)
 {
     OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
     window = nullptr;
+#endif
 }
 
 void WebViewControl::ProcessProperties(const WebViewProperties& props)
@@ -633,7 +637,11 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     return vcs->ConvertVirtualToInput(srcRect);
 }
 

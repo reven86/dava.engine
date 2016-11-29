@@ -147,15 +147,15 @@ void InputSystem::ProcessInputEvent(UIEvent* event)
 {
     for (InputCallback& iCallBack : callbacks)
     {
-        if (event->device == UIEvent::Device::KEYBOARD && (iCallBack.devices & INPUT_DEVICE_KEYBOARD))
+        if (event->device == eInputDevices::KEYBOARD && (iCallBack.devices & INPUT_DEVICE_KEYBOARD))
         {
             iCallBack(event);
         }
-        else if (event->device == UIEvent::Device::GAMEPAD && (iCallBack.devices & INPUT_DEVICE_JOYSTICK))
+        else if (event->device == eInputDevices::GAMEPAD && (iCallBack.devices & INPUT_DEVICE_JOYSTICK))
         {
             iCallBack(event);
         }
-        else if ((event->device == UIEvent::Device::TOUCH_SURFACE || event->device == UIEvent::Device::MOUSE) && (iCallBack.devices & INPUT_DEVICE_TOUCH))
+        else if ((event->device == eInputDevices::TOUCH_SURFACE || event->device == eInputDevices::MOUSE) && (iCallBack.devices & INPUT_DEVICE_TOUCH))
         {
             iCallBack(event);
         }

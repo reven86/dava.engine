@@ -457,7 +457,9 @@ void MovieViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f 
 void MovieViewControl::OnWindowDestroyed(Window* w)
 {
     OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
     window = nullptr;
+#endif
 }
 
 } // namespace DAVA

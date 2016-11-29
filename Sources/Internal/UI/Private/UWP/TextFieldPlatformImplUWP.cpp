@@ -396,7 +396,11 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     properties.fontSize = vcs->ConvertVirtualToInputX(virtualFontSize);
     properties.virtualFontSize = virtualFontSize;
     properties.fontSizeChanged = true;
@@ -906,7 +910,9 @@ void TextFieldPlatformImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Si
 void TextFieldPlatformImpl::OnWindowDestroyed(Window* w)
 {
     OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
     window = nullptr;
+#endif
 }
 
 void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
@@ -1230,13 +1236,21 @@ bool TextFieldPlatformImpl::IsMultiline() const
 
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     return vcs->ConvertVirtualToInput(srcRect);
 }
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     return vcs->ConvertInputToVirtual(srcRect);
 }
 
