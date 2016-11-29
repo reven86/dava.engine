@@ -6,19 +6,16 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Material/NMaterial.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/FileSystem.h"
 
-namespace SceneValidation
+namespace SceneValidationDetails
 {
 using namespace DAVA;
 
-namespace Details
-{
 void CollectEntitiesByName(const Entity* entity, MultiMap<FastName, const Entity*>& container)
 {
     for (int32 i = 0; i < entity->GetChildrenCount(); ++i)
@@ -184,8 +181,6 @@ void CompareEffects(const Entity* entity1, const Entity* entity2, ValidationProg
     DVASSERT(entity1 != nullptr);
     DVASSERT(entity2 != nullptr);
 
-    bool effectsAreEqual = true;
-
     Vector<const Entity*> childEffects1;
     Vector<const Entity*> childEffects2;
     entity1->GetChildEntitiesWithComponent(childEffects1, Component::PARTICLE_EFFECT_COMPONENT, false);
@@ -246,9 +241,8 @@ bool IsAssignableMaterialTemplate(const FastName& materialTemplatePath)
     return materialTemplatePath != NMaterialName::SHADOW_VOLUME;
 }
 
-int32 GetCollisionTypeID(const char* collisionTypeName)
+int32 GetCollisionTypeID(const char* collisionTypeName, ProjectManagerData* projectManagerData)
 {
-    ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(projectManagerData != nullptr);
     const Vector<String>& collisionTypes = projectManagerData->GetEditorConfig()->GetComboPropertyValues("CollisionType");
 
@@ -282,10 +276,17 @@ String MaterialPrettyName(NMaterial* material)
     return prettyName;
 }
 
-} // namespace Details
+} // namespace SceneValidationDetails
 
-void ValidateMatrices(Scene* scene, ValidationProgress& validationProgress)
+SceneValidation::SceneValidation(ProjectManagerData* data)
+    : projectManagerData(data)
 {
+}
+
+void SceneValidation::ValidateMatrices(DAVA::Scene* scene, ValidationProgress& validationProgress)
+{
+    using namespace DAVA;
+
     validationProgress.Started("Validating matrices");
 
     DVASSERT(scene);
@@ -341,14 +342,16 @@ void ValidateMatrices(Scene* scene, ValidationProgress& validationProgress)
     validationProgress.Finished();
 }
 
-void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
+void SceneValidation::ValidateSameNames(DAVA::Scene* scene, ValidationProgress& validationProgress)
 {
+    using namespace DAVA;
+
     validationProgress.Started("Validating same names");
 
     DVASSERT(scene);
 
     MultiMap<FastName, const Entity*> entitiesByName;
-    Details::CollectEntitiesByName(scene, entitiesByName);
+    SceneValidationDetails::CollectEntitiesByName(scene, entitiesByName);
 
     MultiMap<FastName, const Entity*>::const_iterator currentIter = entitiesByName.begin();
 
@@ -363,9 +366,9 @@ void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
                  rangeNextIter != rangePair.second;
                  ++rangeNextIter)
             {
-                Details::CompareCustomProperties(rangePair.first->second, rangeNextIter->second, validationProgress);
-                Details::CompareSoundComponents(rangePair.first->second, rangeNextIter->second, validationProgress);
-                Details::CompareEffects(rangePair.first->second, rangeNextIter->second, validationProgress);
+                SceneValidationDetails::CompareCustomProperties(rangePair.first->second, rangeNextIter->second, validationProgress);
+                SceneValidationDetails::CompareSoundComponents(rangePair.first->second, rangeNextIter->second, validationProgress);
+                SceneValidationDetails::CompareEffects(rangePair.first->second, rangeNextIter->second, validationProgress);
             }
         }
 
@@ -375,14 +378,16 @@ void ValidateSameNames(Scene* scene, ValidationProgress& validationProgress)
     validationProgress.Finished();
 }
 
-void ValidateCollisionProperties(Scene* scene, ValidationProgress& validationProgress)
+void SceneValidation::ValidateCollisionProperties(DAVA::Scene* scene, ValidationProgress& validationProgress)
 {
+    using namespace DAVA;
+
     validationProgress.Started("Validating collision types");
 
     DVASSERT(scene);
 
-    int32 collisionTypeWaterId = Details::GetCollisionTypeID("Water");
-    int32 collisionTypeSpeedTreeId = Details::GetCollisionTypeID("SpeedTree");
+    int32 collisionTypeWaterId = SceneValidationDetails::GetCollisionTypeID("Water", projectManagerData);
+    int32 collisionTypeSpeedTreeId = SceneValidationDetails::GetCollisionTypeID("SpeedTree", projectManagerData);
 
     Vector<Entity*> container;
     scene->GetChildEntitiesWithComponent(container, Component::CUSTOM_PROPERTIES_COMPONENT);
@@ -409,7 +414,7 @@ void ValidateCollisionProperties(Scene* scene, ValidationProgress& validationPro
     validationProgress.Finished();
 }
 
-void ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgress)
+void SceneValidation::ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgress)
 {
     validationProgress.Started("Validating textures relevance");
 
@@ -440,8 +445,10 @@ void ValidateTexturesRelevance(Scene* scene, ValidationProgress& validationProgr
     validationProgress.Finished();
 }
 
-void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgress)
+void SceneValidation::ValidateMaterialsGroups(DAVA::Scene* scene, ValidationProgress& validationProgress)
 {
+    using namespace DAVA;
+
     validationProgress.Started("Validating material groups");
 
     DVASSERT(scene);
@@ -454,8 +461,6 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         materials.erase(globalMaterial);
     }
 
-    ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(projectManagerData != nullptr);
     const Vector<MaterialTemplateInfo>* materialTemplates = projectManagerData->GetMaterialTemplatesInfo();
     DVASSERT(materialTemplates != nullptr);
 
@@ -464,11 +469,11 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         const FastName& materialGroup = material->GetQualityGroup();
         bool qualityGroupIsSet = false;
 
-        String materialName = Details::MaterialPrettyName(material);
+        String materialName = SceneValidationDetails::MaterialPrettyName(material);
 
         if (materialGroup.IsValid())
         {
-            qualityGroupIsSet = Details::IsKnownMaterialQualityGroup(materialGroup);
+            qualityGroupIsSet = SceneValidationDetails::IsKnownMaterialQualityGroup(materialGroup);
             if (!qualityGroupIsSet)
             {
                 validationProgress.Alerted(Format("Material %s has unknown quality group '%s'", materialName.c_str(), materialGroup.c_str()));
@@ -476,9 +481,9 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
         }
 
         const FastName& materialTemplatePath = material->GetEffectiveFXName();
-        if (materialTemplatePath.IsValid() && Details::IsAssignableMaterialTemplate(materialTemplatePath))
+        if (materialTemplatePath.IsValid() && SceneValidationDetails::IsAssignableMaterialTemplate(materialTemplatePath))
         {
-            const MaterialTemplateInfo* materialTemplate = Details::GetTemplateByPath(*materialTemplates, materialTemplatePath);
+            const MaterialTemplateInfo* materialTemplate = SceneValidationDetails::GetTemplateByPath(*materialTemplates, materialTemplatePath);
             if (materialTemplate)
             {
                 if (!materialTemplate->qualities.empty() && !qualityGroupIsSet)
@@ -494,5 +499,4 @@ void ValidateMaterialsGroups(Scene* scene, ValidationProgress& validationProgres
     }
 
     validationProgress.Finished();
-}
 }

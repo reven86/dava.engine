@@ -13,13 +13,13 @@ class ContextAccessor;
 /**
 class is responsible at reading some project-related resources
 */
-class ProjectResources
+class ProjectResources final
 {
 public:
     /**
     creates ProjectManagerData and some editor-independent fields in it
     */
-    ProjectResources(DAVA::TArc::ContextAccessor&);
+    ProjectResources(DAVA::TArc::ContextAccessor*);
 
     /**
     unloads project data
@@ -39,5 +39,5 @@ public:
 private:
     ProjectManagerData* GetProjectManagerData();
 
-    DAVA::TArc::ContextAccessor& accessor;
+    DAVA::TArc::ContextAccessor* accessor;
 };

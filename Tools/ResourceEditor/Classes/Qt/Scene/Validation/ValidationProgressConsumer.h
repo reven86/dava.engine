@@ -3,41 +3,36 @@
 #include "Base/BaseTypes.h"
 #include "Logger/Logger.h"
 
-namespace SceneValidation
-{
-using namespace DAVA;
-
 class ValidationProgressConsumer
 {
 public:
-    virtual void ValidationStarted(const String& validationTitle){};
-    virtual void ValidationAlert(const String& alertMessage){};
+    virtual void ValidationStarted(const DAVA::String& validationTitle){};
+    virtual void ValidationAlert(const DAVA::String& alertMessage){};
     virtual void ValidationDone(){};
 };
 
 class ValidationProgressToLog : public ValidationProgressConsumer
 {
 protected:
-    void ValidationStarted(const String& title) override;
-    void ValidationAlert(const String& alertMessage) override;
+    void ValidationStarted(const DAVA::String& title) override;
+    void ValidationAlert(const DAVA::String& alertMessage) override;
     void ValidationDone() override;
 
 private:
-    String validationTitle;
+    DAVA::String validationTitle;
 };
 
-inline void ValidationProgressToLog::ValidationStarted(const String& title)
+inline void ValidationProgressToLog::ValidationStarted(const DAVA::String& title)
 {
     validationTitle = title;
 }
 
-inline void ValidationProgressToLog::ValidationAlert(const String& alertMessage)
+inline void ValidationProgressToLog::ValidationAlert(const DAVA::String& alertMessage)
 {
-    Logger::Warning("%s: %s", validationTitle.c_str(), alertMessage.c_str());
+    DAVA::Logger::Warning("%s: %s", validationTitle.c_str(), alertMessage.c_str());
 }
 
 inline void ValidationProgressToLog::ValidationDone()
 {
-    Logger::Info("%s: done ", validationTitle.c_str());
-}
+    DAVA::Logger::Info("%s: done ", validationTitle.c_str());
 }

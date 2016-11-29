@@ -130,7 +130,6 @@ void SceneValidationTool::UpdateResult(DAVA::Result newResult)
 DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
 {
     using namespace DAVA;
-    using namespace SceneValidation;
 
     Vector<FilePath> scenePathes;
     if (!scenesListPath.IsEmpty())
@@ -142,7 +141,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         scenePathes.push_back(scenePath);
     }
 
-    ProjectResources project(GetAccessor());
+    ProjectResources project(&GetAccessor());
 
     ValidationProgressToLog progressToLog;
 
@@ -155,11 +154,16 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
         {
             Logger::Info("Validating scene '%s'", scenePath.GetAbsolutePathname().c_str());
 
+            ProjectManagerData* data = GetAccessor().GetGlobalContext()->GetData<ProjectManagerData>();
+            DVASSERT(data != nullptr);
+
+            SceneValidation validation(data);
+
             if (validateMatrices)
             {
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
-                SceneValidation::ValidateMatrices(scene, validationProgress);
+                validation.ValidateMatrices(scene, validationProgress);
                 UpdateResult(validationProgress.GetResult());
             }
 
@@ -167,7 +171,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
             {
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
-                SceneValidation::ValidateSameNames(scene, validationProgress);
+                validation.ValidateSameNames(scene, validationProgress);
                 UpdateResult(validationProgress.GetResult());
             }
 
@@ -175,7 +179,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
             {
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
-                SceneValidation::ValidateCollisionProperties(scene, validationProgress);
+                validation.ValidateCollisionProperties(scene, validationProgress);
                 UpdateResult(validationProgress.GetResult());
             }
 
@@ -183,7 +187,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
             {
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
-                SceneValidation::ValidateTexturesRelevance(scene, validationProgress);
+                validation.ValidateTexturesRelevance(scene, validationProgress);
                 UpdateResult(validationProgress.GetResult());
             }
 
@@ -191,7 +195,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneValidationTool::OnFrameInternal()
             {
                 ValidationProgress validationProgress;
                 validationProgress.SetProgressConsumer(&progressToLog);
-                SceneValidation::ValidateMaterialsGroups(scene, validationProgress);
+                validation.ValidateMaterialsGroups(scene, validationProgress);
                 UpdateResult(validationProgress.GetResult());
             }
         }

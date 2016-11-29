@@ -56,9 +56,10 @@ void SceneValidationDialog::SaveOptions()
 
 void SceneValidationDialog::Validate()
 {
-    using namespace SceneValidation;
-
     DVASSERT(DAVA::Thread::IsMainThread());
+
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    SceneValidation validation(data);
 
     ui->validateButton->setEnabled(false);
 
@@ -68,35 +69,35 @@ void SceneValidationDialog::Validate()
     {
         ValidationProgress validationProgress;
         validationProgress.SetProgressConsumer(&progressToLog);
-        ValidateMatrices(scene, validationProgress);
+        validation.ValidateMatrices(scene, validationProgress);
     }
 
     if (ui->sameNamesCheckBox->isChecked())
     {
         ValidationProgress validationProgress;
         validationProgress.SetProgressConsumer(&progressToLog);
-        ValidateSameNames(scene, validationProgress);
+        validation.ValidateSameNames(scene, validationProgress);
     }
 
     if (ui->collisionsCheckBox->isChecked())
     {
         ValidationProgress validationProgress;
         validationProgress.SetProgressConsumer(&progressToLog);
-        ValidateCollisionProperties(scene, validationProgress);
+        validation.ValidateCollisionProperties(scene, validationProgress);
     }
 
     if (ui->relevanceCheckBox->isChecked())
     {
         ValidationProgress validationProgress;
         validationProgress.SetProgressConsumer(&progressToLog);
-        ValidateTexturesRelevance(scene, validationProgress);
+        validation.ValidateTexturesRelevance(scene, validationProgress);
     }
 
     if (ui->materialGroupsCheckBox->isChecked())
     {
         ValidationProgress validationProgress;
         validationProgress.SetProgressConsumer(&progressToLog);
-        ValidateMaterialsGroups(scene, validationProgress);
+        validation.ValidateMaterialsGroups(scene, validationProgress);
     }
 
     ui->validateButton->setEnabled(true);

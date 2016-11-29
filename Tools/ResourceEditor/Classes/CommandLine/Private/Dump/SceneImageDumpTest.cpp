@@ -1,18 +1,16 @@
 #include "CommandLine/SceneImageDump.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
-
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 

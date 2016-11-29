@@ -8,8 +8,12 @@ namespace DAVA
 class Scene;
 }
 
-namespace SceneValidation
+class ProjectManagerData;
+
+class SceneValidation
 {
+public:
+    SceneValidation(ProjectManagerData* data);
 /**
     For all parent models (i.e. models at which `scene` entities are referenced with "referenceToOwner" property)
     function checks whether local & world matrices are identity.
@@ -49,4 +53,7 @@ void ValidateTexturesRelevance(DAVA::Scene* scene, ValidationProgress& progress)
     The progress and result of validating are available through `progress` variable
 */
 void ValidateMaterialsGroups(DAVA::Scene* scene, ValidationProgress& progress);
+
+private:
+ProjectManagerData* projectManagerData = nullptr;
 };

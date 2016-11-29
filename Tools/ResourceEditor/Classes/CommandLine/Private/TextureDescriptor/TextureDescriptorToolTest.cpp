@@ -1,6 +1,8 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
@@ -11,10 +13,6 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Utils/Random.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
-
-#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include <memory>
 

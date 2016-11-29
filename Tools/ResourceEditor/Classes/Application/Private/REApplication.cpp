@@ -216,10 +216,6 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule<SceneSaverTool>(cmdLine);
     }
-    else if (toolKey == SceneExporterTool::Key)
-    {
-        tarcCore->CreateModule<SceneExporterTool>(cmdLine);
-    }
     else if (toolKey == SceneValidationTool::Key)
     {
         tarcCore->CreateModule<SceneValidationTool>(cmdLine);

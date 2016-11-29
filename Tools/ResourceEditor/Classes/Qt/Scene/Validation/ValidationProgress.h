@@ -4,8 +4,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/Result.h"
 
-namespace SceneValidation
-{
 class ValidationProgressConsumer;
 
 class ValidationProgress
@@ -32,5 +30,4 @@ inline void ValidationProgress::SetProgressConsumer(ValidationProgressConsumer* 
 inline DAVA::Result ValidationProgress::GetResult() const
 {
     return result;
-}
 }

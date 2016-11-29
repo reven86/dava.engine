@@ -1,15 +1,12 @@
 #include "CommandLine/SceneExporterTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
-
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileList.h"
-
 #include "Render/TextureDescriptor.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 #include <functional>
 

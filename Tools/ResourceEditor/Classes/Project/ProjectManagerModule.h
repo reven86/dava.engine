@@ -2,6 +2,7 @@
 
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
+#include "Project/ProjectResources.h"
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
 

@@ -4,6 +4,7 @@
 
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
@@ -14,8 +15,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 namespace BCLTestDetail
 {

@@ -1,6 +1,7 @@
 #include "CommandLine/SceneValidationTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "TextureCompression/TextureConverter.h"
 
@@ -12,8 +13,6 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterial.h"
 
-#include "TArc/Testing/TArcUnitTests.h"
-
 DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 {
     DAVA::String projectStr = "~doc:/Test/SceneValidationTool/";
@@ -23,14 +22,12 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
     {
         CommandLineModuleTestUtils::CreateProjectInfrastructure(projectStr);
         DAVA::TArc::TestClass::SetUp(testName);
-        REGlobal::InitTArcCore(core->GetCoreInterface());
     }
 
     void TearDown(const DAVA::String& testName) override
     {
         CommandLineModuleTestUtils::ClearTestFolder(projectStr);
         DAVA::TArc::TestClass::TearDown(testName);
-        REGlobal::InitTArcCore(nullptr);
     }
 
     DAVA_TEST (CorrectMatricesTest)

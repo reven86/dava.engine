@@ -1,12 +1,11 @@
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
 #include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileList.h"
 #include "Render/TextureDescriptor.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 namespace SSTestDetail
 {

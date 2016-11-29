@@ -46,7 +46,7 @@ void ProjectManagerModule::PostInit()
 {
     using namespace DAVA::TArc;
 
-    projectResources.reset(new ProjectResources(GetAccessor()));
+    projectResources.reset(new ProjectResources(&GetAccessor()));
 
     ProjectManagerData* data = GetAccessor().GetGlobalContext()->GetData<ProjectManagerData>();
     data->spritesPacker.reset(new SpritesPackerModule(&GetUI()));

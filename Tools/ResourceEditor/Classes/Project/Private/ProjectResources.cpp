@@ -87,10 +87,10 @@ void LoadMaterialTemplatesInfo(Vector<MaterialTemplateInfo>& templates)
 }
 }
 
-ProjectResources::ProjectResources(DAVA::TArc::ContextAccessor& accessor)
+ProjectResources::ProjectResources(DAVA::TArc::ContextAccessor* accessor)
     : accessor(accessor)
 {
-    DAVA::TArc::DataContext* globalContext = accessor.GetGlobalContext();
+    DAVA::TArc::DataContext* globalContext = accessor->GetGlobalContext();
     std::unique_ptr<ProjectManagerData> data(new ProjectManagerData);
 
     QStringList extensions = { "sc2" };
@@ -102,13 +102,13 @@ ProjectResources::ProjectResources(DAVA::TArc::ContextAccessor& accessor)
 ProjectResources::~ProjectResources()
 {
     UnloadProject();
-    DAVA::TArc::DataContext* globalContext = accessor.GetGlobalContext();
+    DAVA::TArc::DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->DeleteData<ProjectManagerData>();
 }
 
 ProjectManagerData* ProjectResources::GetProjectManagerData()
 {
-    DAVA::TArc::DataContext* ctx = accessor.GetGlobalContext();
+    DAVA::TArc::DataContext* ctx = accessor->GetGlobalContext();
     return ctx->GetData<ProjectManagerData>();
 }
 
@@ -127,7 +127,7 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
 
         DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
 
-        DAVA::EngineContext* engineCtx = accessor.GetEngineContext();
+        DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
         engineCtx->soundSystem->InitFromQualitySettings();
 
         DAVA::FileSystem* fileSystem = engineCtx->fileSystem;

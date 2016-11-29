@@ -2,8 +2,6 @@
 #include "Qt/Scene/Validation/ValidationProgressConsumer.h"
 #include "Debug/DVAssert.h"
 
-namespace SceneValidation
-{
 void ValidationProgress::Started(const DAVA::String& title)
 {
     DVASSERT(consumer != nullptr);
@@ -22,5 +20,4 @@ void ValidationProgress::Finished()
 {
     DVASSERT(consumer != nullptr);
     consumer->ValidationDone();
-}
 }
