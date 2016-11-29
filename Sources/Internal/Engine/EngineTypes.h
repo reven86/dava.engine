@@ -51,47 +51,13 @@ DAVA_DEFINE_ENUM_BITWISE_OPERATORS(eInputDevices)
 /**
     \ingroup engine
     Translate integer value to `eInputDevices` enumeration with respect to pre-corev2 device constants values.
-    
-    This function is introduced for compatibility reason between corev1 and corev2.
+
+    This function is introduced for compatibility reason between corev1 and corev2 as game saves `eInputDevices`
+    values on server.
 
     If integer value does not correspond to any `eInputDevices` enumeration returns `eInputDevices::UNKNOWN`.
 */
-inline eInputDevices TranslateUIntToInputDevice(uint32 value)
-{
-    static const struct
-    {
-        uint32 intValue;
-        eInputDevices enumValue;
-    } mapping[] = {
-        // corev1 values
-        {0, eInputDevices::UNKNOWN},
-        {1, eInputDevices::TOUCH_SURFACE},
-        {2, eInputDevices::MOUSE},
-        {3, eInputDevices::KEYBOARD},
-        {4, eInputDevices::GAMEPAD},
-        {5, eInputDevices::PEN},
-        {6, eInputDevices::TOUCH_PAD},
-
-        // corev2 values
-        {static_cast<uint32>(eInputDevices::TOUCH_SURFACE), eInputDevices::TOUCH_SURFACE},
-        {static_cast<uint32>(eInputDevices::MOUSE), eInputDevices::MOUSE},
-        {static_cast<uint32>(eInputDevices::KEYBOARD), eInputDevices::KEYBOARD},
-        {static_cast<uint32>(eInputDevices::GAMEPAD), eInputDevices::GAMEPAD},
-        {static_cast<uint32>(eInputDevices::PEN), eInputDevices::PEN},
-        {static_cast<uint32>(eInputDevices::TOUCH_PAD), eInputDevices::TOUCH_PAD},
-    };
-
-    eInputDevices result = eInputDevices::UNKNOWN;
-    for (const auto& m : mapping)
-    {
-        if (m.intValue == value)
-        {
-            result = m.enumValue;
-            break;
-        }
-    }
-    return result;
-}
+eInputDevices TranslateUIntToInputDevice(uint32 value);
 
 /**
     \ingroup engine
