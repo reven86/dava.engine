@@ -519,7 +519,7 @@ void DLC::StepCheckInfoFinish(uint32 id, DownloadStatus status)
             else
             {
                 Logger::FrameworkDebugToFile(logsFilePath, "DLC: error %d", downloadError);
-                if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
+                if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError || DLE_CONTENT_NOT_FOUND == downloadError)
                 {
                     // connection problem
                     Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't connect to remote host.");
@@ -609,7 +609,7 @@ void DLC::StepCheckPatchFinish(uint32 id, DownloadStatus status)
                 }
                 else
                 {
-                    if (DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
+                    if (DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull || DLE_CONTENT_NOT_FOUND == downloadErrorFull)
                     {
                         // connection problem
                         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Can't connect.");
@@ -660,7 +660,7 @@ void DLC::StepCheckMetaFinish(uint32 id, DownloadStatus status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(dlcContext.remoteMetaDownloadId, downloadError);
 
-            if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
+            if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError || DLE_CONTENT_NOT_FOUND == downloadError)
             {
                 // connection problem
                 Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't connect do download Meta.");
