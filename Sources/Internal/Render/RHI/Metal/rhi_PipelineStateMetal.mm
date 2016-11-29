@@ -553,11 +553,8 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
     Handle handle = PipelineStateMetalPool::Alloc();
     PipelineStateMetal_t* ps = PipelineStateMetalPool::Get(handle);
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     //    Logger::Info("metal_PipelineState_Create");
     //    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());

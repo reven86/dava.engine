@@ -447,11 +447,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     bool doAdd = true;
     uint32 vprogSrcHash;
     uint32 fprogSrcHash;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     vprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&vprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&vprog_bin[0]))));
     fprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&fprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&fprog_bin[0]))));
@@ -601,11 +598,8 @@ gles2_PipelineState_Create(const PipelineState::Descriptor& desc)
     Handle handle = PipelineStateGLES2Pool::Alloc();
     ;
     PipelineStateGLES2_t* ps = PipelineStateGLES2Pool::Get(handle);
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     if (PipelineStateGLES2_t::AcquireProgram(desc, &(ps->prog)))
     {

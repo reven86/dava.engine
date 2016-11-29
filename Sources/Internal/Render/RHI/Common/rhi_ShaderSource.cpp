@@ -122,6 +122,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
         if (success)
             InlineFunctions();
+
+        // ugly workaround to save some memory
+        GetSourceCode(HostApi());
+        delete ast;
+        ast = nullptr;
     }
     else
     {

@@ -15,8 +15,8 @@ void Unitialize();
 void Clear();
 void Load(const char* binFileName);
 
-bool GetProg(const DAVA::FastName& uid, std::vector<uint8>* bin);
-void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText);
+const std::vector<uint8>& GetProg(const DAVA::FastName& uid);
+//void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText);
 void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize);
 
 } // namespace ShaderCache

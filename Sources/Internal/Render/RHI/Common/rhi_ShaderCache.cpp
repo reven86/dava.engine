@@ -43,22 +43,19 @@ void Load(const char* binFileName)
 
 //------------------------------------------------------------------------------
 
-bool GetProg(const DAVA::FastName& uid, std::vector<uint8>* bin)
+const std::vector<uint8>& GetProg(const DAVA::FastName& uid)
 {
-    bool success = false;
+    static const std::vector<uint8> empty(0);
 
     for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
         if (_ProgInfo[i].uid == uid)
         {
-            bin->clear();
-            bin->insert(bin->begin(), _ProgInfo[i].bin.begin(), _ProgInfo[i].bin.end());
-            success = true;
-            break;
+            return _ProgInfo[i].bin;
         }
     }
 
-    return success;
+    return empty;
 }
 
 //------------------------------------------------------------------------------
@@ -862,7 +859,7 @@ static const char* _ShaderDefine_DX11 =
 ;
 */
 //------------------------------------------------------------------------------
-
+/*
 void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)
 {
     ShaderSource src;
@@ -876,7 +873,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
         //DAVA::Logger::Info(code.c_str());
     }
 }
-
+*/
 //------------------------------------------------------------------------------
 
 void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize)

@@ -668,8 +668,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     Handle handle = PipelineStateDX11Pool::Alloc();
     PipelineStateDX11_t* ps = PipelineStateDX11Pool::Get(handle);
     HRESULT hr;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
     ID3D10Blob* vp_code = nullptr;
     ID3D10Blob* vp_err = nullptr;
     ID3D10Blob* fp_code = nullptr;
@@ -681,9 +681,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     Logger::Info("  fprog= %s", desc.vprogUid.c_str());
     desc.vertexLayout.Dump();
 #endif
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
-
+    
 #if 0
 	DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
 	DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
