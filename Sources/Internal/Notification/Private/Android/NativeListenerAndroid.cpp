@@ -35,7 +35,7 @@ NativeListener::NativeListener(LocalNotificationController& controller)
     {
         instance = nullptr;
         JNIEnv* env = JNI::GetEnv();
-        JNI::JavaClass clazz("com/dava/engine/Notification/NativeListener");
+        JNI::JavaClass clazz("com/dava/engine/notification/NativeListener");
         release = clazz.GetMethod<void>("release");
         jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "()V");
         jobject obj = env->NewObject(clazz, classConstructor);
