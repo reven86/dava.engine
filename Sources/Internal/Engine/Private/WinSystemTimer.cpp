@@ -1,5 +1,6 @@
 #include "WinSystemTimer.h"
-#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WINDOWS__)
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include "UWP/DllImportUWP.h"
@@ -40,3 +41,5 @@ void EnableHighResolutionTimer(bool enable)
 }
 }
 }
+
+#endif
