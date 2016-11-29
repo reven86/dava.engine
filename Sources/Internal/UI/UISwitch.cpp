@@ -78,7 +78,7 @@ UISwitch::UISwitch(const Rect& rect)
     Vector2 newPivotPoint = buttonRight->GetPivotPoint();
     newPivotPoint.x = leftAndRightSize.dx;
     buttonRight->SetPivotPoint(newPivotPoint);
-    buttonRight->SetPosition(Vector2(size.x, buttonRight->relativePosition.y));
+    buttonRight->SetPosition(Vector2(size.x, buttonRight->GetPosition().y));
 }
 
 UISwitch::~UISwitch()
@@ -93,7 +93,7 @@ void UISwitch::InitControls()
     BringChildFront(toggle.Get());
     CheckToggleSideChange();
     float32 toggleXPosition = GetToggleUttermostPosition();
-    toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
+    toggle->SetPosition(Vector2(toggleXPosition, toggle->GetPosition().y));
     ChangeVisualState(); //forcing visual state change cause it can be skipped in CheckToggleSideChange()
 }
 
@@ -187,20 +187,22 @@ void UISwitch::Input(UIEvent* currentInput)
             float32 newToggleX = touchPos.x - dragAnchorX;
             float32 newToggleLeftEdge = newToggleX - toggle->GetPivotPoint().x;
 
-            float32 leftBound = buttonLeft->relativePosition.x;
-            float32 rightBound = buttonRight->relativePosition.x;
+            float32 leftBound = buttonLeft->GetPosition().x;
+            float32 rightBound = buttonRight->GetPosition().x;
+            Vector2 togglePos = toggle->GetPosition();
             if (newToggleLeftEdge < leftBound)
             {
-                toggle->relativePosition.x = GetToggleLeftPosition();
+                togglePos.x = GetToggleLeftPosition();
             }
-            else if (newToggleLeftEdge + toggle->size.dx > rightBound)
+            else if (newToggleLeftEdge + toggle->GetSize().dx > rightBound)
             {
-                toggle->relativePosition.x = GetToggleRightPosition();
+                togglePos.x = GetToggleRightPosition();
             }
             else
             {
-                toggle->relativePosition.x = newToggleX;
+                togglePos.x = newToggleX;
             }
+            toggle->SetPosition(togglePos);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED)
@@ -229,7 +231,7 @@ void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)
     InternalSetIsLeftSelected(aIsLeftSelected, true);
     float32 toggleXPosition = GetToggleUttermostPosition();
     toggle->StopAnimations(UISWITCH_MOVE_ANIMATION_TRACK);
-    toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
+    toggle->SetPosition(Vector2(toggleXPosition, toggle->GetPosition().y));
 }
 
 void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent* inputEvent /*= NULL*/)
@@ -262,19 +264,19 @@ float32 UISwitch::GetToggleUttermostPosition() const
 
 float32 UISwitch::GetToggleLeftPosition() const
 {
-    return buttonLeft->relativePosition.x + toggle->GetPivotPoint().x;
+    return buttonLeft->GetPosition().x + toggle->GetPivotPoint().x;
 }
 
 float32 UISwitch::GetToggleRightPosition() const
 {
-    return buttonRight->relativePosition.x - toggle->size.dx + toggle->GetPivotPoint().x;
+    return buttonRight->GetPosition().x - toggle->GetSize().dx + toggle->GetPivotPoint().x;
 }
 
 void UISwitch::CheckToggleSideChange(UIEvent* inputEvent /*= NULL*/)
 {
-    float32 leftBound = buttonLeft->relativePosition.x;
-    float32 rightBound = buttonRight->relativePosition.x;
-    float32 toggleCenter = toggle->relativePosition.x - toggle->GetPivotPoint().x + toggle->size.dx / 2;
+    float32 leftBound = buttonLeft->GetPosition().x;
+    float32 rightBound = buttonRight->GetPosition().x;
+    float32 toggleCenter = toggle->GetPosition().x - toggle->GetPivotPoint().x + toggle->GetSize().dx / 2;
     float32 toggleSpaceCenter = (leftBound + rightBound) / 2;
     InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true, inputEvent);
 }
