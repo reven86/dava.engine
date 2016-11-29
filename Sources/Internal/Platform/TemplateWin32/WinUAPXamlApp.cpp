@@ -1026,6 +1026,7 @@ void WinUAPXamlApp::PrepareScreenSize()
     }
     if (!isPhoneApiDetected)
     {
+        // Need change this property on value by default, because Windows save it from last run.
         ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::Auto;
         if (!isFull)
         {
