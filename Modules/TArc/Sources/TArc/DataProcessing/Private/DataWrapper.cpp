@@ -128,7 +128,6 @@ void DataWrapper::SetListener(DataListener* listener)
     impl->nextListenerToSet = listener;
 }
 
-
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();
