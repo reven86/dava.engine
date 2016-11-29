@@ -24,7 +24,7 @@ void Initialize();
 extern MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc);
 extern MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod);
 extern MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod);
-}
+} // namespace DllImportUWP
 } // namespace Private
 } // namespace DAVA
 

@@ -19,9 +19,9 @@ void EnableHighResolutionTimer(bool enable)
     using namespace DllImportUWP;
 
     const bool timerServiceAvailable =
-        DllImportUWP::timeBeginPeriod != nullptr &&
-        DllImportUWP::timeEndPeriod != nullptr &&
-        DllImportUWP::timeGetDevCaps != nullptr;
+        timeBeginPeriod != nullptr &&
+        timeEndPeriod != nullptr &&
+        timeGetDevCaps != nullptr;
 #endif
 
     if (timerServiceAvailable)
