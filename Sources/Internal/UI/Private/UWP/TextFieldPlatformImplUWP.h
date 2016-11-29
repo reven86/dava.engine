@@ -16,9 +16,8 @@ class Sprite;
 class UIGeometricData;
 class UITextField;
 class UITextFieldDelegate;
-#if defined(__DAVAENGINE_COREV2__)
 class Window;
-#else
+#if !defined(__DAVAENGINE_COREV2__)
 class CorePlatformWinUAP;
 #endif
 
