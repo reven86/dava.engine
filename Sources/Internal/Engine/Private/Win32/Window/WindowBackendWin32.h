@@ -1,18 +1,15 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <bitset>
 
+#include "Base/Platform.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
@@ -40,15 +37,14 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
-
-    eFullscreen GetFullscreen() const;
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
     HWND GetHWND() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -59,14 +55,19 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
+    void SetSurfaceScaleAsync(const float32 scale);
+
 private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
+    void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetMinimumSize(float32 width, float32 height);
     void DoSetFullscreen(eFullscreen newMode);
 
     void SetFullscreenMode();
@@ -123,7 +124,6 @@ private:
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     HWND hwnd = nullptr;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
     bool hasFocus = false;
@@ -131,8 +131,13 @@ private:
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
     bool isFullscreen = false;
+    int minWidth = 128;
+    int minHeight = 128;
     int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 lastHeight = 0;
+
+    float32 surfaceScale = 1.0f;
+
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
@@ -160,19 +165,9 @@ inline HWND WindowBackend::GetHWND() const
     return hwnd;
 }
 
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
-}
-
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {
     // No custom render params
-}
-
-inline eFullscreen WindowBackend::GetFullscreen() const
-{
-    return isFullscreen ? eFullscreen::On : eFullscreen::Off;
 }
 
 } // namespace Private

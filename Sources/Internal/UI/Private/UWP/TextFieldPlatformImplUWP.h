@@ -16,9 +16,8 @@ class Sprite;
 class UIGeometricData;
 class UITextField;
 class UITextFieldDelegate;
-#if defined(__DAVAENGINE_COREV2__)
 class Window;
-#else
+#if !defined(__DAVAENGINE_COREV2__)
 class CorePlatformWinUAP;
 #endif
 
@@ -47,6 +46,7 @@ class TextFieldPlatformImpl : public std::enable_shared_from_this<TextFieldPlatf
         int32 keyboardType = 0;
         int32 caretPosition = 0;
         float32 fontSize = 0.0f;
+        float32 virtualFontSize = 0.0f;
 
         bool anyPropertyChanged : 1;
         bool rectChanged : 1;
@@ -99,6 +99,8 @@ public:
     void CloseKeyboard();
 
     void UpdateRect(const Rect& rect);
+
+    void SetRect(const Rect& rect);
 
     void SetText(const WideString& text);
     void GetText(WideString& text) const;
@@ -184,6 +186,10 @@ private: // Event handlers
     void OnKeyboardHiding(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
     void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
+    // Signal handlers
+    void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
+    void OnWindowDestroyed(Window* w);
+
 private:
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
@@ -215,6 +221,9 @@ private:
     WideString lastProgrammaticText;
     TextFieldProperties properties;
     bool programmaticTextChange = false;
+
+    size_t windowSizeChangedConnection = 0;
+    size_t windowDestroyedConnection = 0;
 
     static Windows::UI::Xaml::Style ^ customTextBoxStyle;
     static Windows::UI::Xaml::Style ^ customPasswordBoxStyle;

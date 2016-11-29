@@ -1,16 +1,17 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
-#include "Engine/UWP/NativeServiceUWP.h"
 #include "Engine/UWP/XamlApplicationListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
+#include "Engine/Private/UWP/DllImportUWP.h"
 
+#include "Debug/Backtrace.h"
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
@@ -23,11 +24,19 @@ namespace DAVA
 {
 namespace Private
 {
+bool PlatformCore::isPhoneContractPresent = false;
+
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , dispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
+    using ::Windows::Foundation::Metadata::ApiInformation;
+    isPhoneContractPresent = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+
+    if (!isPhoneContractPresent)
+    {
+        DllImportUWP::Initialize();
+    }
 }
 
 PlatformCore::~PlatformCore() = default;
@@ -82,9 +91,12 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
+void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
-    if (!gameThreadRunning)
+    using namespace ::Windows::ApplicationModel::Activation;
+
+    ApplicationExecutionState prevExecState = args->PreviousExecutionState;
+    if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
     {
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
         gameThread->Start();
@@ -92,8 +104,6 @@ void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAct
         // TODO: make Thread detachable
         //gameThread->Detach();
         //gameThread->Release();
-
-        gameThreadRunning = true;
 
         // Save launch arguments if game thread is not runnnig yet and notify listeners later
         // when dava.engine is initialized and listeners have had chance to register.
@@ -103,10 +113,6 @@ void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAct
     {
         NotifyListeners(ON_LAUNCHED, launchArgs);
     }
-}
-
-void PlatformCore::OnActivated()
-{
 }
 
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
@@ -151,6 +157,11 @@ void PlatformCore::OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ /*gamepa
     dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
+void PlatformCore::OnDpiChanged()
+{
+    engineBackend->UpdateDisplayConfig();
+}
+
 void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* listener)
 {
     DVASSERT(listener != nullptr);
@@ -172,8 +183,25 @@ void PlatformCore::UnregisterXamlApplicationListener(XamlApplicationListener* li
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline = engineBackend->GetCommandLine();
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(engineBackend->GetCommandLine());
+    }
+    catch (const Exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();

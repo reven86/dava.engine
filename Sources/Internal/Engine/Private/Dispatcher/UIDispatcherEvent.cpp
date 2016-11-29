@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/UIDispatcherEvent.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -9,6 +9,14 @@ namespace Private
 UIDispatcherEvent UIDispatcherEvent::CreateResizeEvent(float32 width, float32 height)
 {
     UIDispatcherEvent e(RESIZE_WINDOW);
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateMinimumSizeEvent(float32 width, float32 height)
+{
+    UIDispatcherEvent e(SET_MINIMUM_SIZE);
     e.resizeEvent.width = width;
     e.resizeEvent.height = height;
     return e;
@@ -56,6 +64,13 @@ UIDispatcherEvent UIDispatcherEvent::CreateFunctorEvent(const Function<void()>& 
 {
     UIDispatcherEvent e(FUNCTOR);
     e.functor = functor;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateSetSurfaceScaleEvent(const float32 scale)
+{
+    UIDispatcherEvent e(SET_SURFACE_SCALE);
+    e.setSurfaceScaleEvent.scale = scale;
     return e;
 }
 

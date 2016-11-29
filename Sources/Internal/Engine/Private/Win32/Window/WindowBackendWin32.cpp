@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
@@ -9,7 +8,6 @@
 #include <ShellScalingAPI.h>
 
 #include "Engine/Window.h"
-#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
@@ -18,6 +16,7 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -30,8 +29,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);
@@ -96,6 +94,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -104,6 +107,11 @@ void WindowBackend::SetFullscreen(eFullscreen newMode)
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -163,6 +171,26 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    if (Renderer::GetAPI() == rhi::RHI_DX9)
+    {
+        surfaceScale = scale;
+
+        const float32 surfaceWidth = lastWidth * surfaceScale;
+        const float32 surfaceHeight = lastHeight * surfaceScale;
+        const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+    }
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
     int32 w = static_cast<int32>(width);
@@ -182,6 +210,12 @@ void WindowBackend::DoSetTitle(const char8* title)
 {
     WideString wideTitle = UTF8Utils::EncodeToWideString(title);
     ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
+{
+    minWidth = static_cast<int>(width);
+    minHeight = static_cast<int>(height);
 }
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
@@ -318,12 +352,12 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 width = static_cast<float32>(lastWidth);
         float32 height = static_cast<float32>(lastHeight);
 
-        // on win32 surfaceWidth/surfaceHeight is same as window width/height
-        float32 surfaceWidth = width;
-        float32 surfaceHeight = height;
+        float32 surfaceWidth = width * surfaceScale;
+        float32 surfaceHeight = height * surfaceScale;
+
         eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
     }
 }
 
@@ -341,6 +375,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
+        break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         DoSetFullscreen(e.setFullscreenEvent.mode);
         break;
@@ -352,6 +389,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
@@ -410,9 +450,8 @@ LRESULT WindowBackend::OnExitSizeMove()
 
 LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 {
-    // Limit minimum window size to some reasonable value
-    minMaxInfo->ptMinTrackSize.x = 128;
-    minMaxInfo->ptMinTrackSize.y = 128;
+    minMaxInfo->ptMinTrackSize.x = minWidth;
+    minMaxInfo->ptMinTrackSize.y = minHeight;
     return 0;
 }
 
@@ -665,7 +704,8 @@ LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
     {
         eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
         MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
     }
     else if (pointerInfo.pointerType == PT_TOUCH)
     {
@@ -686,15 +726,16 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
     eModifierKeys modifierKeys = GetModifierKeys();
     if (pointerInfo.pointerType == PT_MOUSE)
     {
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
         if (pointerInfo.ButtonChangeType != POINTER_CHANGE_NONE)
         {
             // First mouse button down (and last mouse button up) comes with WM_POINTERDOWN/WM_POINTERUP, other mouse clicks come here
             bool isPressed = false;
             eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
         }
-        if (captureMode == eCursorCapture::PINNING)
+        if (isRelative)
         {
             return OnMouseMoveRelativeEvent(x, y);
         }
@@ -751,8 +792,8 @@ LRESULT WindowBackend::OnCreate()
 
     float32 width = static_cast<float32>(lastWidth);
     float32 height = static_cast<float32>(lastHeight);
-    float32 surfaceWidth = width;
-    float32 surfaceHeight = height;
+    float32 surfaceWidth = width * surfaceScale;
+    float32 surfaceHeight = height * surfaceScale;
     float32 dpi = GetDpi();
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
@@ -839,7 +880,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_POINTERHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
         POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
@@ -859,12 +899,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_MOUSEHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
-        int32 x = GET_X_LPARAM(lparam);
-        int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(deltaX, deltaY, x, y);
+
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
@@ -933,6 +974,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
         lresult = OnDpiChanged(suggestedRect);
+    }
+    else if (message == WM_DISPLAYCHANGE)
+    {
+        engineBackend->UpdateDisplayConfig();
     }
     else
     {

@@ -3,6 +3,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DeviceInfo.h"
@@ -325,13 +326,10 @@ void AutotestingSystem::Update(float32 timeElapsed)
         if (timeBeforeExit <= 0.0f)
         {
             needExitApp = false;
-            String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
-            if (server != AutotestingDB::DB_ERROR_STR_VALUE)
-            {
-                AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
-            }
             JobManager::Instance()->WaitWorkerJobs();
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+            Engine::Instance()->QuitAsync(0);
+#else
             Core::Instance()->Quit();
 #endif
         }
@@ -427,7 +425,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->QuitAsync(0);
+#else
     Core::Instance()->Quit();
 #endif
 }
@@ -471,11 +471,7 @@ void AutotestingSystem::ClickSystemBack()
 {
     Logger::Info("AutotestingSystem::ClickSystemBack");
     UIEvent keyEvent;
-#if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
-#else
-    keyEvent.device = UIEvent::Device::KEYBOARD;
-#endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);

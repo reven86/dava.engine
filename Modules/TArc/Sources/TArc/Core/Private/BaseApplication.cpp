@@ -40,7 +40,7 @@ int BaseApplication::RunImpl()
     {
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
-        EngineContext* engineContext = e.GetContext();
+        const EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
         Init(engineContext);
 
@@ -58,7 +58,7 @@ int BaseApplication::RunImpl()
     }
 }
 
-void BaseApplication::Init(EngineContext* /*engineContext*/)
+void BaseApplication::Init(const EngineContext* /*engineContext*/)
 {
 }
 

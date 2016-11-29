@@ -154,7 +154,7 @@ bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* a
 
     engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(engineBackend->GetPrimaryWindow());
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create();
 
     objcInterop = [[ObjectiveCInterop alloc] init:this];

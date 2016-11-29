@@ -52,7 +52,7 @@ public:
         AddModule(new T(std::forward<Args>(args)...));
     }
 
-    DAVA_DEPRECATED(EngineContext* GetEngineContext());
+    DAVA_DEPRECATED(const EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
 
 private:

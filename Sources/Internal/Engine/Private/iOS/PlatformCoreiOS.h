@@ -20,8 +20,6 @@ public:
     PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
@@ -38,24 +36,14 @@ public:
 private:
     int32 OnFrame();
 
-    // Allows CoreNativeBridge class to access Window's WindowBackend instance
-    // as CoreNativeBridge cannot make friends with Window class
-    static WindowBackend* GetWindowBackend(Window* window);
-
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
 
     std::unique_ptr<CoreNativeBridge> bridge;
-    std::unique_ptr<NativeService> nativeService;
 
     // Friends
     friend struct CoreNativeBridge;
 };
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 } // namespace Private
 } // namespace DAVA

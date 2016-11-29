@@ -1,9 +1,8 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -18,16 +17,13 @@ public:
     PlatformCore(EngineBackend* engineBackend_);
     ~PlatformCore();
 
-    NativeService* GetNativeService() const;
-
     void Init();
     void Run();
     void PrepareToQuit();
     void Quit();
 
     // Forwarded methods from UWPApplication
-    void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs);
-    void OnActivated();
+    void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args);
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();
@@ -35,6 +31,9 @@ public:
     void OnBackPressed();
     void OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ gamepad);
     void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
+    void OnDpiChanged();
+
+    static bool IsPhoneContractPresent();
 
     void RegisterXamlApplicationListener(XamlApplicationListener* listener);
     void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
@@ -50,18 +49,18 @@ private:
 
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
-    std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
 
     List<XamlApplicationListener*> xamlApplicationListeners;
+    static bool isPhoneContractPresent;
     ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ savedLaunchArgs = nullptr;
 };
 
-inline NativeService* PlatformCore::GetNativeService() const
+inline bool PlatformCore::IsPhoneContractPresent()
 {
-    return nativeService.get();
+    return isPhoneContractPresent;
 }
 
 } // namespace Private

@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Window.h"
-#include "Engine/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
@@ -18,7 +17,6 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , dispatcher(engineBackend->GetDispatcher())
     , bridge(new CoreNativeBridge(this))
-    , nativeService(new NativeService(bridge.get()))
 {
 }
 
@@ -50,11 +48,6 @@ void PlatformCore::Quit()
 int32 PlatformCore::OnFrame()
 {
     return engineBackend->OnFrame();
-}
-
-WindowBackend* PlatformCore::GetWindowBackend(Window* window)
-{
-    return window->GetBackend();
 }
 
 } // namespace Private

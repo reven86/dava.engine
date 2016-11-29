@@ -159,7 +159,7 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
         abort();
     }
 
-    Vector<String> cmdargs = GetCommandArgs(cmdline);
+    cmdargs = GetCommandArgs(cmdline);
     engineBackend = new EngineBackend(cmdargs);
 
     externalDocumentsDir = std::move(externalFilesDir);
