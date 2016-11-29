@@ -287,14 +287,8 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
 
-    uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
-    uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
-
     UpdateVirtualCoordinatesSystem();
-
     engineBackend->OnWindowCreated(this);
-
-    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
@@ -328,10 +322,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         if (windowBackend->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
-
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
-
-            uiControlSystem->vcs->ScreenSizeChanged();
         }
     }
 }

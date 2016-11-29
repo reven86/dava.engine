@@ -160,6 +160,8 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
+    w->SetVirtualSize(1024, 768);
+    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     w->GetUIControlSystem()->SetClearColor(Color::Black);
 
     testListScreen = new TestListScreen();
