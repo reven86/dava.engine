@@ -476,6 +476,7 @@ void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)
     builder.AddWater(SceneBuilder::WITH_REF_TO_OWNER);
     builder.AddSky(SceneBuilder::WITH_REF_TO_OWNER);
     builder.AddVegetation(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddLights(SceneBuilder::WITH_REF_TO_OWNER);
     builder.AddStaticOcclusion(SceneBuilder::WITH_REF_TO_OWNER);
 }
 
@@ -573,7 +574,7 @@ Entity* SceneBuilder::AddVegetation(R2OMode mode)
     return vegetation;
 }
 
-Entity* SceneBuilder::AddStaticOcclusion(R2OMode mode)
+Entity* SceneBuilder::AddLights(R2OMode mode)
 {
     ScopedPtr<Entity> lights(Detail::CreateLightsEntity(scenePathname));
     scene->AddNode(lights);
@@ -584,6 +585,19 @@ Entity* SceneBuilder::AddStaticOcclusion(R2OMode mode)
     }
 
     return lights;
+}
+
+Entity* SceneBuilder::AddStaticOcclusion(R2OMode mode)
+{
+    ScopedPtr<Entity> occlusion(Detail::CreateStaticOcclusionEntity(scenePathname));
+    scene->AddNode(occlusion);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(occlusion);
+    }
+
+    return occlusion;
 }
 
 void SceneBuilder::AddR2O(Entity* entity)

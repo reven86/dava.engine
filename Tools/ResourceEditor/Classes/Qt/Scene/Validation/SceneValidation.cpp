@@ -241,10 +241,22 @@ bool IsAssignableMaterialTemplate(const FastName& materialTemplatePath)
     return materialTemplatePath != NMaterialName::SHADOW_VOLUME;
 }
 
-int32 GetCollisionTypeID(const char* collisionTypeName, ProjectManagerData* projectManagerData)
+int32 GetCollisionTypeID(const char* collisionTypeName)
 {
-    DVASSERT(projectManagerData != nullptr);
-    const Vector<String>& collisionTypes = projectManagerData->GetEditorConfig()->GetComboPropertyValues("CollisionType");
+    // copied from EditorConfig.yaml
+    // temporary. should be replaced after implementaion of resource system or alike
+    static const Vector<String>& collisionTypes = {
+        "No Collision",
+        "Tree",
+        "Bush",
+        "Fragile Proj",
+        "Fragile ^Proj",
+        "Falling",
+        "Building",
+        "Invisible Wall",
+        "SpeedTree",
+        "Water"
+    };
 
     for (int32 i = 0; i < collisionTypes.size(); ++i)
     {
@@ -386,8 +398,8 @@ void SceneValidation::ValidateCollisionProperties(DAVA::Scene* scene, Validation
 
     DVASSERT(scene);
 
-    int32 collisionTypeWaterId = SceneValidationDetails::GetCollisionTypeID("Water", projectManagerData);
-    int32 collisionTypeSpeedTreeId = SceneValidationDetails::GetCollisionTypeID("SpeedTree", projectManagerData);
+    int32 collisionTypeWaterId = SceneValidationDetails::GetCollisionTypeID("Water");
+    int32 collisionTypeSpeedTreeId = SceneValidationDetails::GetCollisionTypeID("SpeedTree");
 
     Vector<Entity*> container;
     scene->GetChildEntitiesWithComponent(container, Component::CUSTOM_PROPERTIES_COMPONENT);

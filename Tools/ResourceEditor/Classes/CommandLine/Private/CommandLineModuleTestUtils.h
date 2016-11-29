@@ -64,6 +64,7 @@ public:
     Entity* AddWater(R2OMode mode = WITHOUT_REF_TO_OWNER);
     Entity* AddSky(R2OMode mode = WITHOUT_REF_TO_OWNER);
     Entity* AddVegetation(R2OMode mode = WITHOUT_REF_TO_OWNER);
+    Entity* AddLights(R2OMode mode = WITHOUT_REF_TO_OWNER);
     Entity* AddStaticOcclusion(R2OMode mode = WITHOUT_REF_TO_OWNER);
 
     /*

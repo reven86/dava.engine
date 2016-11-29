@@ -17,15 +17,18 @@ DAVA_TARC_TESTCLASS(SceneValidationToolTest)
 {
     DAVA::String projectStr = "~doc:/Test/SceneValidationTool/";
     DAVA::String scenePathnameStr = projectStr + "DataSource/3d/Scene/testScene.sc2";
+    std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard;
 
     void SetUp(const DAVA::String& testName) override
     {
+        guard = CommandLineModuleTestUtils::CreateTextureGuard({ DAVA::eGPUFamily::GPU_ORIGIN });
         CommandLineModuleTestUtils::CreateProjectInfrastructure(projectStr);
         DAVA::TArc::TestClass::SetUp(testName);
     }
 
     void TearDown(const DAVA::String& testName) override
     {
+        guard.reset();
         CommandLineModuleTestUtils::ClearTestFolder(projectStr);
         DAVA::TArc::TestClass::TearDown(testName);
     }
