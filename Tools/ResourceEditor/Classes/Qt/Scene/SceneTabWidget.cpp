@@ -13,6 +13,8 @@
 
 #include "Platform/SystemTimer.h"
 #include "Engine/Qt/RenderWidget.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>
@@ -434,7 +436,10 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
 
 void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    const EngineContext* ctx = engine->GetContext();
+    ctx->uiControlSystem->vcs->SetVirtualScreenSize(width, height);
+    ctx->uiControlSystem->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
 
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
