@@ -289,6 +289,8 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     UpdateVirtualCoordinatesSystem();
     engineBackend->OnWindowCreated(this);
+
+    sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
