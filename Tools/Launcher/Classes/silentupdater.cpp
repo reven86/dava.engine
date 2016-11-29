@@ -8,27 +8,27 @@
 namespace SilentUpdaterDetails
 {
 class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
+{
+public:
+    UpdateDialogZipFunctor(const QString& errorMessage_, SilentUpdateTask::CallBack callBackFunction_)
+        : errorMessage(errorMessage_)
+        , callBackFunction(callBackFunction_)
     {
-    public:
-        UpdateDialogZipFunctor(const QString& errorMessage_, SilentUpdateTask::CallBack callBackFunction_)
-            : errorMessage(errorMessage_)
-            , callBackFunction(callBackFunction_)
-        {
-        }
+    }
 
-        ~UpdateDialogZipFunctor() override = default;
+    ~UpdateDialogZipFunctor() override = default;
 
-    private:
-        void OnError(const ZipError& zipError) override
-        {
-            Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-            callBackFunction(false, errorMessage + "\nerror text is: " + zipError.GetErrorString());
-        }
+private:
+    void OnError(const ZipError& zipError) override
+    {
+        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
+        callBackFunction(false, errorMessage + "\nerror text is: " + zipError.GetErrorString());
+    }
 
-    private:
-        QString errorMessage;
-        SilentUpdateTask::CallBack callBackFunction;
-    };
+private:
+    QString errorMessage;
+    SilentUpdateTask::CallBack callBackFunction;
+};
 }
 
 SilentUpdater::SilentUpdater(ApplicationManager* appManager, QObject* parent)

@@ -31,7 +31,6 @@ public:
     QString GetProtocolKey() const;
     void SetProtocolKey(const QString& key);
 
-
 private slots:
 
     void GotReply(QNetworkReply* reply);

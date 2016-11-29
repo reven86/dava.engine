@@ -236,7 +236,6 @@ void UpdateDialog::DownloadFinished()
     ui->cancelButton->setEnabled(true);
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
-
     for (const QString& appToRestart : applicationsToRestart)
     {
         appManager->RunApplication(task.branchID, appToRestart);
