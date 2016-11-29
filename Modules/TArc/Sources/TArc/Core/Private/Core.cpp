@@ -177,6 +177,11 @@ protected:
 
     void SyncWrappers()
     {
+        if (recursiveSyncGuard == true)
+        {
+            return;
+        }
+        recursiveSyncGuard = true;
         size_t index = 0;
         while (index < wrappers.size())
         {
@@ -193,11 +198,13 @@ protected:
         {
             wrapper.Sync(true);
         }
+        recursiveSyncGuard = false;
     }
 
 protected:
     Engine& engine;
     Core* core;
+    bool recursiveSyncGuard = false;
 
     std::unique_ptr<DataContext> globalContext;
     Vector<std::unique_ptr<DataContext>> contexts;
