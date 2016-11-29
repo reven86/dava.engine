@@ -1,12 +1,12 @@
 package com.dava.engine.notification;
-import com.dava.engine;
+import com.dava.engine.DavaActivity;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
 
 import com.dava.engine.DavaActivity;
-import com.dava.engine.DavaNotificationProvider;
+import com.dava.engine.notification.DavaNotificationProvider;
 
 public class NativeListener extends DavaActivity.ActivityListenerImpl
 {

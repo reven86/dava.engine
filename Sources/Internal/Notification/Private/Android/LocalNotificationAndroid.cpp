@@ -13,7 +13,7 @@ namespace DAVA
 {
 LocalNotificationAndroid::LocalNotificationAndroid(const String& _id)
 #if defined(__DAVAENGINE_COREV2__)
-    : notificationProvider("com/dava/engine/DavaNotificationProvider")
+    : notificationProvider("com/dava/engine/notification/DavaNotificationProvider")
 #else
     : notificationProvider("com/dava/framework/JNINotificationProvider")
 #endif
