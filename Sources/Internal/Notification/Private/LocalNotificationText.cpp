@@ -7,4 +7,4 @@ void LocalNotificationText::ImplShow()
 {
     impl->ShowText(title, text, useSound);
 }
-}
+} // namespace DAVA

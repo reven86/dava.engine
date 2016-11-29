@@ -2,8 +2,8 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
 #if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
 
 namespace DAVA
 {
@@ -18,5 +18,5 @@ struct NativeListener
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_COREV2__
 #endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
+#endif // defined(__DAVAENGINE_COREV2__)

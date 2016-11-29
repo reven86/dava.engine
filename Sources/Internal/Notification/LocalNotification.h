@@ -60,4 +60,4 @@ inline bool LocalNotification::IsVisible() const
 {
     return isVisible;
 }
-}
+} // namespace DAVA

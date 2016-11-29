@@ -17,4 +17,4 @@ void LocalNotificationDelayed::Post()
 {
     impl->PostDelayedNotification(title, text, delaySeconds, useSound);
 }
-}
+} // namespace DAVA

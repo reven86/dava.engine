@@ -39,5 +39,5 @@ void LocalNotificationNotImplemented::PostDelayedNotification(const WideString& 
 void LocalNotificationNotImplemented::RemoveAllDelayedNotifications()
 {
 }
-}
-#endif
+} // namespace DAVA
+#endif // defined(__DAVAENGINE_WIN32__)

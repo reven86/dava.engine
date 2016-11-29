@@ -27,4 +27,4 @@ public:
 protected:
     DAVA::String notificationId;
 };
-}
+} // namespace DAVA

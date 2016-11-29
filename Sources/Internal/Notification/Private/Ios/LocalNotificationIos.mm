@@ -115,4 +115,4 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationIOS(_id);
 }
 }
-#endif
+#endif // defined(__DAVAENGINE_IPHONE__)

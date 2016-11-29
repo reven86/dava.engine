@@ -77,4 +77,4 @@ const DAVA::String& LocalNotification::GetId() const
 {
     return impl->GetId();
 }
-}
+} // namespace DAVA

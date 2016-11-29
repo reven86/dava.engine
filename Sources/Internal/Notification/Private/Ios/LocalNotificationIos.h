@@ -30,4 +30,4 @@ public:
 };
 }
 
-#endif //__DAVAENGINE_IPHONE__
+#endif // defined(__DAVAENGINE_IPHONE__)

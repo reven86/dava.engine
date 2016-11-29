@@ -1,7 +1,7 @@
 #include "Notification/Private/Ios/NativeListenerIos.h"
 
-#if defined(__DAVAENGINE_IPHONE__)
 #if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #import <Foundation/Foundation.h>
 
@@ -73,5 +73,5 @@ void NativeListener::didReceiveLocalNotification(UILocalNotification* notificati
 }
 } // namespace Private
 } // namespace DAVA
-#endif // __DAVAENGINE_COREV2__
-#endif // __DAVAENGINE_IPHONE__
+#endif // defined(__DAVAENGINE_IPHONE__)
+#endif // defined(__DAVAENGINE_COREV2__)

@@ -22,6 +22,6 @@ public:
     void PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound) override;
     void RemoveAllDelayedNotifications() override;
 };
-}
+} // namespace DAVA
 
-#endif //__DAVAENGINE_WIN32__
+#endif // defined(__DAVAENGINE_WIN32__)

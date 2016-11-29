@@ -24,4 +24,4 @@ private:
 private:
     int delaySeconds;
 };
-}
+} // namespace DAVA

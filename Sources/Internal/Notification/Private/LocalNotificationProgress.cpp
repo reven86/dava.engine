@@ -37,4 +37,4 @@ void LocalNotificationProgress::ImplShow()
 {
     impl->ShowProgress(title, text, total, progress, useSound);
 }
-}
+} // namespace DAVA

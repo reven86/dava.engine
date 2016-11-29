@@ -30,4 +30,4 @@ public:
 };
 }
 
-#endif //__DAVAENGINE_MACOS__
+#endif // defined(__DAVAENGINE_MACOS__)

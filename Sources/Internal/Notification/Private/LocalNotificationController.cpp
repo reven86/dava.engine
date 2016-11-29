@@ -174,4 +174,4 @@ void LocalNotificationController::RemoveAllDelayedNotifications()
     notification->RemoveAllDelayedNotifications();
     SafeRelease(notification);
 }
-}
+} // namespace DAVA

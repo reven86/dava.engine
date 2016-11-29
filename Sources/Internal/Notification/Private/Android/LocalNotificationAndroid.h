@@ -34,5 +34,5 @@ private:
     Function<void(jstring, jstring, jstring, jint, jboolean)> notifyDelayed;
     Function<void()> removeAllDelayedNotifications;
 };
-}
-#endif //__DAVAENGINE_ANDROID__
+} // namespace DAVA
+#endif // defined(__DAVAENGINE_ANDROID__)

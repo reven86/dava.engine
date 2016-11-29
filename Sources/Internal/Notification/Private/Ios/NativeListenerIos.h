@@ -2,8 +2,8 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_IPHONE__)
 #if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/iOS/UIApplicationDelegateListener.h"
 namespace DAVA
@@ -25,5 +25,5 @@ private:
 };
 } // namespace Private
 } // namespace DAVA
-#endif // __DAVAENGINE_COREV2__
-#endif // __DAVAENGINE_MACOS__
+#endif // defined(__DAVAENGINE_MACOS__)
+#endif // defined(__DAVAENGINE_COREV2__)

@@ -23,4 +23,4 @@ private:
     uint32 total;
     uint32 progress;
 };
-}
+} // namespace DAVA

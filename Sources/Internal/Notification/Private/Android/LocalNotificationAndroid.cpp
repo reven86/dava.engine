@@ -106,7 +106,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationAndroid(_id);
 }
-}
+} // namespace DAVA
 
 #if !defined(__DAVAENGINE_COREV2__)
 extern "C"
@@ -118,6 +118,6 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotific
     env->ReleaseStringUTFChars(uid, str);
 }
 }
-#endif //  !defined(__DAVAENGINE_COREV2__)
+#endif // !defined(__DAVAENGINE_COREV2__)
 
-#endif
+#endif // defined(__DAVAENGINE_ANDROID__)
