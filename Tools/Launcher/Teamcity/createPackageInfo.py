@@ -17,6 +17,7 @@ def process_files(arg, dirname, names):
     for fullname in names:
         pathname = fullpath + "/" + fullname;
         relPath = os.path.relpath(pathname, deployDir); 
+        print(pathname + "\t" + unicode(relPath + '\n'));
         changesFile.write(unicode(relPath + '\n'))
   
 if len(sys.argv) < 2:

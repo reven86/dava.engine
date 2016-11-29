@@ -122,7 +122,7 @@ void SceneTabWidget::ReleaseDAVAUI()
 int SceneTabWidget::OpenTab()
 {
     DVASSERT(globalOperations);
-    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.");
+    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.", 0, 0);
 
     DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
     scenePath.ReplaceExtension(".sc2");
@@ -151,7 +151,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
         return -1;
     }
 
-    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname());
+    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname(), 0, 0);
 
     tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
@@ -492,7 +492,7 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
                     }
                 }
 
-                WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString());
+                WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString(), 0, 0);
                 if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
                 {
                     curScene->structureSystem->Add(path.toStdString(), pos);

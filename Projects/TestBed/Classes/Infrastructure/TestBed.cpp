@@ -34,6 +34,7 @@
 #include "Tests/ProfilerTest.h"
 #include "Tests/ImGuiTest.h"
 #include "Tests/DeviceManagerTest.h"
+#include "Tests/SoundTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -255,6 +256,7 @@ void TestBed::RegisterTests()
     new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
+    new SoundTest(*this);
     //$UNITTEST_CTOR
 }
 

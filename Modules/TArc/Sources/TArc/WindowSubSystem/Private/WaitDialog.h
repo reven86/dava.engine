@@ -4,6 +4,7 @@
 #include "TArc/WindowSubSystem/UI.h"
 
 #include <QPointer>
+#include <QCursor>
 
 class QDialog;
 class QProgressBar;
@@ -30,6 +31,7 @@ private:
     QPointer<QDialog> dlg;
     QPointer<QProgressBar> progressBar;
     QPointer<QLabel> label;
+    QCursor originalCursor;
 };
 } // namespace TArc
 } // namespace DAVA

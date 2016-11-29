@@ -80,11 +80,28 @@ void SoundSystem::SetListenerOrientation(const Vector3& forward, const Vector3& 
 {
 }
 
+void SoundSystem::SetAllGroupsVolume(float32 volume)
+{
+}
+
 void SoundSystem::SetGroupVolume(const FastName& groupName, float32 volume)
 {
 }
 
-float32 SoundSystem::GetGroupVolume(const FastName& groupName)
+float32 SoundSystem::GetGroupVolume(const FastName& groupName) const
+{
+    return 0.0f;
+}
+
+void SoundSystem::SetAllGroupsSpeed(float32 speed)
+{
+}
+
+void SoundSystem::SetGroupSpeed(const FastName& groupName, float32 speed)
+{
+}
+
+float32 SoundSystem::GetGroupSpeed(const FastName& groupName) const
 {
     return 0.0f;
 }

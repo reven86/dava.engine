@@ -31,6 +31,8 @@ public:
 
     virtual void SetVolume(float32 volume);
 
+    virtual void SetSpeed(float32 speed);
+
     virtual void SetPosition(const Vector3& position);
     virtual void SetDirection(const Vector3& direction);
     virtual void UpdateInstancesPosition();

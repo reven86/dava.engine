@@ -748,6 +748,8 @@ void NMaterial::PreCacheFXVariations(const Vector<FastName>& fxNames, const Vect
 
 void NMaterial::RebuildRenderVariants()
 {
+    InvalidateBufferBindings();
+
     HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
     flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
@@ -783,7 +785,6 @@ void NMaterial::RebuildRenderVariants()
         renderVariants[variantDescr.passName] = variant;
     }
 
-    ClearLocalBuffers();
     activeVariantName = FastName();
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
@@ -818,7 +819,8 @@ void NMaterial::CollectConfigTextures(const MaterialConfig& config, Set<Material
 
 void NMaterial::RebuildBindings()
 {
-    ClearLocalBuffers();
+    InvalidateBufferBindings();
+
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
@@ -920,6 +922,8 @@ void NMaterial::RebuildBindings()
 
 void NMaterial::RebuildTextureBindings()
 {
+    InvalidateTextureBindings();
+
     const AnisotropyQuality* anisotropicQuality =
     QualitySettingsSystem::Instance()->GetAnisotropyQuality(QualitySettingsSystem::Instance()->GetCurAnisotropyQuality());
 
