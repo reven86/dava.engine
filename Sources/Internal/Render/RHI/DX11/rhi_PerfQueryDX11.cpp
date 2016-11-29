@@ -1,13 +1,9 @@
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_Pool.h"
-#include "../rhi_Public.h"
 #include "rhi_DX11.h"
 
 namespace rhi
 {
-class PerfQueryDX11_t
+struct PerfQueryDX11_t
 {
-public:
     struct Desc
     {
     };
@@ -18,9 +14,9 @@ public:
     uint32 isReady : 1;
     uint32 isFreqValid : 1;
 };
+using PerfQueryDX11Pool = ResourcePool<PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false>;
+RHI_IMPL_POOL(PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false);
 
-namespace PerfQueryDX11
-{
 struct PerfQueryFrameDX11
 {
     ID3D11Query* freqQuery = nullptr;
@@ -29,19 +25,13 @@ struct PerfQueryFrameDX11
     bool isFreqValid = false;
 };
 
+namespace PerfQueryDX11
+{
 PerfQueryFrameDX11* NextPerfQueryFrame();
-void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context);
-void ReleasePerfQueryPool();
+DAVA::List<PerfQueryFrameDX11*> pendingPerfQueryFrameDX11;
+DAVA::Vector<PerfQueryFrameDX11*> perfQueryFramePoolDX11;
+PerfQueryFrameDX11* currentPerfQueryFrameDX11 = nullptr;
 }
-
-//==============================================================================
-
-typedef ResourcePool<PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false> PerfQueryDX11Pool;
-RHI_IMPL_POOL(PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false);
-
-DAVA::List<PerfQueryDX11::PerfQueryFrameDX11*> pendingPerfQueryFrameDX11;
-DAVA::Vector<PerfQueryDX11::PerfQueryFrameDX11*> perfQueryFramePoolDX11;
-PerfQueryDX11::PerfQueryFrameDX11* currentPerfQueryFrameDX11 = nullptr;
 
 //==============================================================================
 

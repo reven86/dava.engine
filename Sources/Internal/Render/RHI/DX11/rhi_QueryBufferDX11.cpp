@@ -1,25 +1,14 @@
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_Pool.h"
 #include "rhi_DX11.h"
 
 namespace rhi
 {
-class QueryBufferDX11_t
+struct QueryBufferDX11_t
 {
-public:
-    QueryBufferDX11_t()
-        : curObjectIndex(DAVA::InvalidIndex)
-        , bufferCompleted(false)
-          {
-          };
-    ~QueryBufferDX11_t(){};
-
     std::vector<std::pair<ID3D11Query*, uint32>> pendingQueries;
     std::vector<uint32> results;
-    uint32 curObjectIndex;
-    uint32 bufferCompleted : 1;
+    uint32 curObjectIndex = DAVA::InvalidIndex;
+    bool bufferCompleted = false;
 };
-
 typedef ResourcePool<QueryBufferDX11_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferDX11Pool;
 RHI_IMPL_POOL(QueryBufferDX11_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 

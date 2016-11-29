@@ -1,3 +1,4 @@
+#include "Concurrency/LockGuard.h"
 #include "rhi_BufferDX11.h"
 
 namespace rhi

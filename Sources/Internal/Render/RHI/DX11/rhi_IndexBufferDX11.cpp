@@ -1,9 +1,10 @@
 #include "rhi_BufferDX11.h"
+#include "../Common/rhi_Pool.h"
 
 namespace rhi
 {
-using IndexBufferDX11Pool = ResourcePool<BufferDX11_t, RESOURCE_VERTEX_BUFFER, IndexBuffer::Descriptor, true>;
-RHI_IMPL_POOL(BufferDX11_t, RESOURCE_VERTEX_BUFFER, IndexBuffer::Descriptor, true);
+using IndexBufferDX11Pool = ResourcePool<BufferDX11_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true>;
+RHI_IMPL_POOL(BufferDX11_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true);
 
 static Handle dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {

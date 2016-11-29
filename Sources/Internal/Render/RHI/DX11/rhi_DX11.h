@@ -1,12 +1,6 @@
 #pragma once
 
-#include "../rhi_Public.h"
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_BackendImpl.h"
-#include "_dx11.h"
-
-struct ID3D11DeviceContext;
-struct ID3D11Buffer;
+#include "rhi_TypesDX11.h"
 
 namespace rhi
 {
@@ -59,6 +53,7 @@ void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 
 namespace ConstBufferDX11
 {
+Handle Alloc(ProgType ptype, uint32 bufIndex, uint32 regCnt);
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
@@ -95,74 +90,52 @@ void SetToRHI(Handle state, ID3D11DeviceContext* context);
 namespace RenderPassDX11
 {
 void SetupDispatch(Dispatch* dispatch);
+void RejectCommandBuffersAndRelease(Handle handle);
 }
 
 namespace CommandBufferDX11
 {
+void BindHardwareCommandBufferDispatch(Dispatch* dispatch);
+void BindSoftwareCommandBufferDispatch(Dispatch* dispatch);
+
+Handle Allocate(const RenderPassConfig& passConfig, bool isFirstInPass, bool isLastInPass);
+void ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumber);
+void SignalAndRelease(Handle handle);
+}
+
+namespace SyncObjectDX11
+{
+bool IsAlive(Handle handle);
+void SetProperties(Handle handle, DAVA::uint32 frameNumber, bool signaled, bool used);
+void SetSignaledAndUsedProperties(Handle handle, bool signaled, bool used);
+void SetFrameNumberAndSignaledProperties(Handle handle, DAVA::uint32 frameNumber, bool signaled);
+void CheckFrameAndSignalUsed(DAVA::uint32 frameNumber);
+
 void SetupDispatch(Dispatch* dispatch);
 }
 
-struct DX11Command
-{
-    enum Func : uint32_t
-    {
-        NOP,
-
-        MAP,
-        UNMAP,
-        UPDATE_SUBRESOURCE,
-        COPY_RESOURCE,
-        SYNC_CPU_GPU,
-
-        /*
-         * Device commands (invokes _D3D11_Device method)
-         */
-        QUERY_INTERFACE = 0x1000,
-        CREATE_DEFERRED_CONTEXT,
-
-        CREATE_BLEND_STATE,
-        CREATE_SAMPLER_STATE,
-        CREATE_RASTERIZER_STATE,
-        CREATE_DEPTH_STENCIL_STATE,
-
-        CREATE_VERTEX_SHADER,
-        CREATE_PIXEL_SHADER,
-        CREATE_INPUT_LAYOUT,
-
-        CREATE_QUERY,
-        CREATE_BUFFER,
-
-        CREATE_TEXTURE_2D,
-        CREATE_RENDER_TARGET_VIEW,
-        CREATE_DEPTH_STENCIL_VIEW,
-        CREATE_SHADER_RESOURCE_VIEW,
-
-        // service values for range checking
-        DEVICE_LAST_COMMAND,
-        DEVICE_FIRST_COMMAND = QUERY_INTERFACE
-    };
-
-    struct Arguments
-    {
-        DAVA::uint64 arg[12];
-    };
-
-    Func func = Func::NOP;
-    HRESULT retval = S_OK;
-    Arguments arguments;
-
-    template <class... args>
-    DX11Command(Func f, args&&... a)
-        : func(f)
-        , arguments({ DAVA::uint64(a)... })
-    {
-    }
-};
-
 void ValidateDX11Device(const char* call);
 void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
-
 bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, DAVA::uint32 line);
+bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const DAVA::uint32 line);
+void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
+uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
+
+extern ID3D11Device* _D3D11_Device;
+extern IDXGISwapChain* _D3D11_SwapChain;
+extern ID3D11Texture2D* _D3D11_SwapChainBuffer;
+extern ID3D11RenderTargetView* _D3D11_RenderTargetView;
+extern ID3D11Texture2D* _D3D11_DepthStencilBuffer;
+extern ID3D11DepthStencilView* _D3D11_DepthStencilView;
+extern D3D_FEATURE_LEVEL _D3D11_FeatureLevel;
+extern ID3D11DeviceContext* _D3D11_ImmediateContext;
+extern ID3D11DeviceContext* _D3D11_SecondaryContext;
+extern DAVA::Mutex _D3D11_SecondaryContextSync;
+extern ID3D11Debug* _D3D11_Debug;
+extern ID3DUserDefinedAnnotation* _D3D11_UserAnnotation;
+extern InitParam _DX11_InitParam;
+extern DWORD _DX11_RenderThreadId;
+extern bool _DX11_UseHardwareCommandBuffers;
 
 #define DX11DeviceCommand(CMD, ...) ExecDX11DeviceCommand(DX11Command(CMD, __VA_ARGS__), #CMD, __FILE__, __LINE__)
 #define DX11Check(HR) DX11_CheckResult(HR, #HR, __FILE__, __LINE__)

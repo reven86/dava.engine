@@ -1,30 +1,7 @@
-#include <dxgiformat.h>
-#include "_dx11.h"
-#include <stdio.h>
-
-#include "../rhi_Public.h"
-#include "../Common/rhi_Utils.h"
-
-//==============================================================================
+#include "rhi_DX11.h"
 
 namespace rhi
 {
-ID3D11Device* _D3D11_Device = nullptr;
-IDXGISwapChain* _D3D11_SwapChain = nullptr;
-ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
-ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
-ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
-ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
-D3D_FEATURE_LEVEL _D3D11_FeatureLevel = D3D_FEATURE_LEVEL_9_1;
-ID3D11DeviceContext* _D3D11_ImmediateContext = nullptr;
-ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
-DAVA::Mutex _D3D11_SecondaryContextSync;
-ID3D11Debug* _D3D11_Debug = nullptr;
-ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
-InitParam _DX11_InitParam;
-DWORD _DX11_RenderThreadId = 0;
-bool _DX11_UseHardwareCommandBuffers = false;
-
 const char* DX11_GetErrorText(HRESULT hr)
 {
     switch (hr)
@@ -345,80 +322,6 @@ D3D11_BLEND DX11_BlendOp(BlendOp op)
     }
 
     return D3D11_BLEND_ONE;
-}
-
-uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
-{
-    DXGI_FORMAT depthFormat = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
-    const DXGI_FORMAT formatsToCheck[] = { DXGI_FORMAT_B8G8R8A8_UNORM, depthFormat };
-
-    uint32 sampleCount = 2;
-
-    for (uint32 s = 0; (sampleCount <= 8); ++s, sampleCount *= 2)
-    {
-        UINT numQualityLevels = 0;
-        for (uint32 f = 0; f < countof(formatsToCheck); ++f)
-        {
-            UINT formatSupport = 0;
-            HRESULT hr = device->CheckFormatSupport(formatsToCheck[f], &formatSupport);
-            if (formatSupport & D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
-            {
-                hr = device->CheckMultisampleQualityLevels(formatsToCheck[f], sampleCount, &numQualityLevels);
-                if (FAILED(hr) || (numQualityLevels == 0))
-                {
-                    break;
-                }
-            }
-        }
-        if (numQualityLevels == 0)
-        {
-            DAVA::Logger::Info("DX11 max multisample samples: %u", sampleCount / 2);
-            break;
-        }
-    }
-
-    return sampleCount / 2;
-}
-
-bool DX11_CheckResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
-{
-    if (FAILED(hr))
-    {
-        DAVA::Logger::Error("D3D11Error at %s: %d\n%s\nCondition: %s", fileName, line, DX11_GetErrorText(hr), call);
-        return false;
-    }
-    return true;
-}
-
-void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
-{
-    if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))
-    {
-        const char* actualError = DX11_GetErrorText(hr);
-        const char* reason = DX11_GetErrorText(_D3D11_Device->GetDeviceRemovedReason());
-
-        DAVA::String info = DAVA::Format("DX11 Device removed/reset\n%s\nat %s [%u]:\n\n%s\n\n%s", call, fileName, line, actualError, reason);
-
-    #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
-        // write to log if asserts are disabled
-        DAVA::Logger::Error(info.c_str());
-    #else
-        // assert will automatically write to log
-        DVASSERT_MSG(0, info.c_str());
-    #endif
-
-        if (_DX11_InitParam.renderingErrorCallback)
-        {
-            _DX11_InitParam.renderingErrorCallback(RenderingError::DriverError, _DX11_InitParam.renderingErrorCallbackContext);
-        }
-
-        _D3D11_Device = nullptr;
-    }
-    else if (FAILED(hr))
-    {
-        const char* errorText = DX11_GetErrorText(hr);
-        DAVA::Logger::Error("DX11 Device call %s\nat %s [%u] failed:\n%s", call, fileName, line, errorText);
-    }
 }
 
 } // namespace rhi

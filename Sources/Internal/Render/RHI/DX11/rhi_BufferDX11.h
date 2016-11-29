@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_Pool.h"
 #include "rhi_DX11.h"
 
 namespace rhi

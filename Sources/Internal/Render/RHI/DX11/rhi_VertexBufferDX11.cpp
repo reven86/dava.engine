@@ -1,4 +1,5 @@
 #include "rhi_BufferDX11.h"
+#include "../Common/rhi_Pool.h"
 
 namespace rhi
 {
@@ -70,4 +71,3 @@ void VertexBufferDX11::SetToRHI(Handle vbh, uint32 stream_i, uint32 offset, uint
     context->IASetVertexBuffers(stream_i, 1, vb, vb_stride, vb_offset);
 }
 }
-

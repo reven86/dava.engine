@@ -4,15 +4,24 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Logger/Logger.h"
 #include "Concurrency/Thread.h"
-#include "uap_dx11.h"
 #include <agile.h>
 #include <Windows.ui.xaml.media.dxinterop.h>
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
 
-using namespace rhi;
+namespace DAVA
+{
+namespace UWPWorkaround
+{
+bool enableSurfaceSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
+}
+}
+
+namespace rhi
+{
 using namespace Microsoft::WRL;
 
 static Windows::UI::Xaml::Controls::SwapChainPanel ^ m_swapChainPanel = nullptr;
@@ -37,14 +46,6 @@ DirectX::XMFLOAT4X4 m_orientationTransform3D;
 Windows::Graphics::Display::DisplayOrientations m_nativeOrientation;
 Windows::Graphics::Display::DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
-
-namespace DAVA
-{
-namespace UWPWorkaround
-{
-bool enableSurfaceSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
-}
-}
 
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
@@ -644,7 +645,9 @@ void HandleDeviceLost()
     CreateWindowSizeDependentResources();
 }
 
-void init_device_and_swapchain_uap(void* panel)
+namespace uap
+{
+void InitDeviceAndSwapChain(void* panel)
 {
     using ::Windows::UI::Xaml::Controls::SwapChainPanel;
     Windows::Foundation::Size backBufferSize(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height));
@@ -674,7 +677,7 @@ void init_device_and_swapchain_uap(void* panel)
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void resize_swapchain_uap(int32 width, int32 height, float32 scaleX, float32 scaleY)
+void ResizeSwapChain(int32 width, int32 height, float32 scaleX, float32 scaleY)
 {
     SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));
@@ -688,7 +691,7 @@ void resize_swapchain_uap(int32 width, int32 height, float32 scaleX, float32 sca
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void get_device_description(char* dst)
+void GetDeviceDescription(char* dst)
 {
     if (m_dxgiAdapter)
     {
@@ -698,6 +701,8 @@ void get_device_description(char* dst)
             ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, dst, 128, NULL, NULL);
         }
     }
+}
+}
 }
 
 #endif

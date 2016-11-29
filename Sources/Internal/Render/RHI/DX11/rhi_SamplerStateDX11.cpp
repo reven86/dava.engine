@@ -1,7 +1,3 @@
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_Pool.h"
-#include "../rhi_Public.h"
-#include "Debug/DVAssert.h"
 #include "rhi_DX11.h"
 
 namespace rhi
@@ -13,8 +9,7 @@ struct SamplerStateDX11_t
     ID3D11SamplerState* fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     ID3D11SamplerState* vertexSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
 };
-
-typedef ResourcePool<SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false> SamplerStateDX11Pool;
+using SamplerStateDX11Pool = ResourcePool<SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false>;
 RHI_IMPL_POOL(SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false);
 
 static void dx11_SamplerState_Delete(Handle hstate)

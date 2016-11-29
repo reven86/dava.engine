@@ -1,7 +1,3 @@
-#include "../Common/rhi_Private.h"
-#include "../Common/rhi_Pool.h"
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
 #include "rhi_DX11.h"
 
 namespace rhi
@@ -11,8 +7,7 @@ struct DepthStencilStateDX11_t
     ID3D11DepthStencilState* state = nullptr;
     UINT stencilRef = 0;
 };
-
-typedef ResourcePool<DepthStencilStateDX11_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilState::Descriptor, false> DepthStencilStateDX11Pool;
+using DepthStencilStateDX11Pool = ResourcePool<DepthStencilStateDX11_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilState::Descriptor, false>;
 RHI_IMPL_POOL(DepthStencilStateDX11_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilState::Descriptor, false);
 
 static Handle dx11_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
