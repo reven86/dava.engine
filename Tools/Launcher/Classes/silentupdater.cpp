@@ -82,7 +82,7 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
         return;
     }
     QStringList applicationsToRestart;
-    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, applicationsToRestart);
+    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, true, applicationsToRestart);
     if (canRemoveCorrectrly == false)
     {
         task.onFinished(false, "Can not remove installed applications");
@@ -95,17 +95,19 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
     SilentUpdaterDetails::UpdateDialogZipFunctor listZipFunctor("Error while listing archive", task.onFinished);
     SilentUpdaterDetails::UpdateDialogZipFunctor unpackZipFunctor("Error while unpacking archive", task.onFinished);
 
+    //if zip operation fails, callback will be triggered by zipFunctor
     if (ZipUtils::GetFileList(archivePath, files, listZipFunctor)
         && ZipUtils::UnpackZipArchive(archivePath, appDir, files, unpackZipFunctor))
     {
         appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
+        task.onFinished(true, "Success");
     }
-    else
-    {
-        return;
-    }
+
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
-    task.onFinished(true, "Success");
+    for (const QString& appToRestart : applicationsToRestart)
+    {
+        appManager->RunApplication(task.branchID, appToRestart);
+    }
     StartNextTask();
 }
 

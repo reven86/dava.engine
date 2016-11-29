@@ -206,7 +206,7 @@ void UpdateDialog::DownloadFinished()
 
     const UpdateTask& task = tasks.head();
     QStringList applicationsToRestart;
-    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, applicationsToRestart);
+    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, false, applicationsToRestart);
     if (canRemoveCorrectrly == false)
     {
         UpdateLastLogValue("Removing applications Failed!");

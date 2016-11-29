@@ -99,7 +99,7 @@ bool ApplicationManager::TryStopApp(const QString& runPath) const
     return false;
 }
 
-bool ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QString& appID)
+bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent)
 {
     AppVersion* version = GetInstalledVersion(branchID, appID);
     if (version == nullptr)
@@ -107,17 +107,55 @@ bool ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QS
         return true;
     }
     QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
-    bool success = FileManager::DeleteDirectory(appDirPath);
-    if (success)
+    if (appDirPath.isEmpty())
+    {
+        return true;
+    }
+    QString runPath = appDirPath + GetLocalAppPath(version, appID);
+    bool triedToStopProgrammly = false;
+    while (ProcessHelper::IsProcessRuning(runPath))
+    {
+        if (triedToStopProgrammly == false && appID.contains("assetcacheserver", Qt::CaseInsensitive))
+        {
+            if (TryStopApp(runPath))
+            {
+                return true;
+            }
+            else
+            {
+                triedToStopProgrammly = true;
+            }
+        }
+        if (silent)
+        {
+            return false;
+        }
+        int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
+        if (result == QMessageBox::Cancel)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent)
+{
+    AppVersion* version = GetInstalledVersion(branchID, appID);
+    if (version == nullptr)
+    {
+        return;
+    }
+    QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
+    if (FileManager::DeleteDirectory(appDirPath))
     {
         localConfig.RemoveApplication(branchID, appID, version->id);
         SaveLocalConfig();
     }
-    else
+    else if (silent == false)
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_FILE, "Can not remove directory " + appDirPath + "\nApplication need to be reinstalled!\nIf this error occurs again - remove directory by yourself, please");
     }
-    return success;
 }
 
 void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
@@ -371,7 +409,7 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
         ErrorMessenger::ShowNotificationDlg("Application is already launched.");
 }
 
-bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, bool canReject)
+bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, bool canReject, bool silent)
 {
     Application* app = localConfig.GetApplication(branchID, appID);
     if (app == nullptr)
@@ -384,47 +422,12 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         return true;
     }
 
-    auto canRemoveApp = [this, canReject](const QString& branchID, const QString& appID) -> bool {
-        AppVersion* version = GetInstalledVersion(branchID, appID);
-        if (version == nullptr)
-        {
-            return true;
-        }
-        QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
-        if (appDirPath.isEmpty())
-        {
-            return true;
-        }
-        QString runPath = appDirPath + GetLocalAppPath(version, appID);
-        bool triedToStopProgrammly = false;
-        while (ProcessHelper::IsProcessRuning(runPath))
-        {
-            if (triedToStopProgrammly == false && appID.contains("assetcacheserver", Qt::CaseInsensitive))
-            {
-                if (TryStopApp(runPath))
-                {
-                    return true;
-                }
-                else
-                {
-                    triedToStopProgrammly = true;
-                }
-            }
-            int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
-            if (result == QMessageBox::Cancel)
-            {
-                return false;
-            }
-        }
-        return true;
-    };
-
     if (version->isToolSet)
     {
         //check that we can remove folder "toolset" first
         for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
         {
-            if (canRemoveApp(branchID, fakeAppID) == false)
+            if (CanRemoveApp(branchID, fakeAppID, canReject, silent) == false)
             {
                 ErrorMessenger::LogMessage(QtWarningMsg, "Can not remove application " + fakeAppID + " from branch " + branchID);
                 return false;
@@ -434,20 +437,17 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         //right now we call DeleteDirectory three times for one folder. This is required by design of ApplicationManager and ConfigParser classes
         for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
         {
-            if (RemoveApplicationImpl(branchID, fakeAppID) == false)
-            {
-                return false;
-            }
+            RemoveApplicationImpl(branchID, fakeAppID, silent);
         }
     }
     else
     {
-        if (canRemoveApp(branchID, appID) == false)
+        if (CanRemoveApp(branchID, appID, canReject, silent) == false)
         {
             ErrorMessenger::LogMessage(QtWarningMsg, "Can not remove application " + appID + " from branch " + branchID);
             return false;
         }
-        return RemoveApplicationImpl(branchID, appID);
+        RemoveApplicationImpl(branchID, appID, silent);
     }
     return true;
 }
@@ -483,7 +483,7 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
     return true;
 }
 
-bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, QStringList& appsToRestart)
+bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, bool silent, QStringList& appsToRestart)
 {
     //we need to remove all toolset applications, whether they was installed or not
     auto needRestartLater = [this](const QString& branchID, const QString& appName) {
@@ -509,7 +509,7 @@ bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID,
             {
                 appsToRestart.push_back(appName);
             }
-            if (false == RemoveApplication(branchID, appName, false))
+            if (false == RemoveApplication(branchID, appName, false, silent))
             {
                 return false;
             }
@@ -523,6 +523,6 @@ bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID,
             appsToRestart.push_back(appID);
         }
         //if current application is a part of toolset, all toolset applications will be removed.
-        return RemoveApplication(branchID, appID, false);
+        return RemoveApplication(branchID, appID, false, silent);
     }
 }

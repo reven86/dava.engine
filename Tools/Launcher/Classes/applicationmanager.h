@@ -34,9 +34,10 @@ public:
     void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
     void RunApplication(const QString& branchID, const QString& appID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
-    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
+    //TODO:  silent need to be removed, all dialogs must be displayed on the client side
+    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject, bool silent);
     bool RemoveBranch(const QString& branchID);
-    bool PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, QStringList& appsToRestart);
+    bool PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, bool silent, QStringList& appsToRestart);
 
     bool ShouldShowNews();
     void NewsShowed();
@@ -52,9 +53,10 @@ public:
 private:
     void LoadLocalConfig(const QString& configPath);
     bool TryStopApp(const QString& runPath) const;
+    bool CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent);
 
     //before call this function check that app is not running
-    bool RemoveApplicationImpl(const QString& branchID, const QString& appID);
+    void RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent);
 
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 
