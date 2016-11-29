@@ -436,8 +436,7 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
 
 void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    DAVA::Engine* engine = DAVA::Engine::Instance();
-    const EngineContext* ctx = engine->GetContext();
+    const DAVA::EngineContext* ctx = DAVA::GetEngineContext();
     ctx->uiControlSystem->vcs->SetVirtualScreenSize(width, height);
     ctx->uiControlSystem->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
 
