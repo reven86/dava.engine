@@ -95,7 +95,6 @@ ProjectResources::ProjectResources(DAVA::TArc::ContextAccessor* accessor)
 
     QStringList extensions = { "sc2" };
     data->dataSourceSceneFiles.reset(new FileSystemCache(extensions));
-    data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
 }
 
@@ -135,8 +134,6 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
         {
             data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
         }
-
-        data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
     }
 }
 

@@ -50,6 +50,7 @@ void ProjectManagerModule::PostInit()
 
     ProjectManagerData* data = GetAccessor().GetGlobalContext()->GetData<ProjectManagerData>();
     data->spritesPacker.reset(new SpritesPackerModule(&GetUI()));
+    data->editorConfig.reset(new EditorConfig());
 
     CreateActions();
     RegisterOperations();
@@ -153,6 +154,8 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     connections.disconnect(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, nullptr, nullptr);
 
     projectResources->LoadProject(incomePath);
+
+    data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
 
     DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
