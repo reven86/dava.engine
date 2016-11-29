@@ -719,7 +719,7 @@ void TextFieldPlatformImpl::OnGotFocus()
     using ::Windows::UI::ViewManagement::InputPane;
 
 #if defined(__DAVAENGINE_COREV2__)
-    Pointer^ lastPressedPointer = PlatformApi::Win10::GetLastPressedPointer(window);
+    Pointer ^ lastPressedPointer = PlatformApi::Win10::GetLastPressedPointer(window);
     if (lastPressedPointer != nullptr)
     {
         nativeControl->CapturePointer(lastPressedPointer);

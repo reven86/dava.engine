@@ -91,7 +91,7 @@ void WindowNativeBridge::UnfocusXamlControl()
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
 }
 
-::Windows::UI::Xaml::Input::Pointer^ WindowNativeBridge::GetLastPressedPointer() const
+::Windows::UI::Xaml::Input::Pointer ^ WindowNativeBridge::GetLastPressedPointer() const
 {
     return lastPressedPointer;
 }
@@ -393,7 +393,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     }
 }
 
-void WindowNativeBridge::OnPointerCaptureLost(::Platform::Object^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs^ arg)
+void WindowNativeBridge::OnPointerCaptureLost(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     OnPointerReleased(sender, arg);
 }

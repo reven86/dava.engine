@@ -43,7 +43,7 @@ void AddXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ xamlC
 void RemoveXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ xamlControl);
 void PositionXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
 void UnfocusXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ xamlControl);
-::Windows::UI::Xaml::Input::Pointer^ GetLastPressedPointer(Window* targetWindow);
+::Windows::UI::Xaml::Input::Pointer ^ GetLastPressedPointer(Window* targetWindow);
 
 } // namespace Win10
 } // namespace PlatformApi

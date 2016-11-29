@@ -193,7 +193,7 @@ void WebViewControl::OwnerIsDying()
                 PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
             });
 #else
-        // Compiler complains of capturing nativeWebView data member in lambda
+            // Compiler complains of capturing nativeWebView data member in lambda
             WebView ^ p = nativeWebView;
             Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
             Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;

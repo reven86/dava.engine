@@ -75,7 +75,7 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
+void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
     using namespace ::Windows::ApplicationModel::Activation;
 
