@@ -310,7 +310,7 @@ private:
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
-    void HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e);
+    void HandleCursorCaptureLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);

@@ -130,9 +130,12 @@ void Window::SetCursorCapture(eCursorCapture mode)
             if (cursorCapture != mode)
             {
                 cursorCapture = mode;
-                windowBackend->SetCursorCapture(mode);
-                // Hide cursor in pinning
-                windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
+                waitInputActivation = !hasFocus && cursorCapture != eCursorCapture::OFF;
+                if (!waitInputActivation)
+                {
+                    windowBackend->SetCursorCapture(mode);
+                    windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
+                }
             }
         }
     }
@@ -151,7 +154,11 @@ void Window::SetCursorVisibility(bool visible)
         {
             // Remember visibility state but prevent cursor showing in pinning
             cursorVisible = visible;
-            windowBackend->SetCursorVisibility(visible && cursorCapture != eCursorCapture::PINNING);
+            waitInputActivation = !hasFocus && !cursorVisible;
+            if (!waitInputActivation)
+            {
+                windowBackend->SetCursorVisibility(visible && cursorCapture != eCursorCapture::PINNING);
+            }
         }
     }
 }
@@ -254,7 +261,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         HandleWindowDestroyed(e);
         break;
     case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
-        HandleCursorCaptuleLost(e);
+        HandleCursorCaptureLost(e);
         break;
     default:
         break;
@@ -302,7 +309,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     engineBackend->DeinitRender(this);
 }
 
-void Window::HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e)
+void Window::HandleCursorCaptureLost(const Private::MainDispatcherEvent& e)
 {
     // If the native window loses the cursor capture, restore it and visibility when input activated.
     waitInputActivation = true;
