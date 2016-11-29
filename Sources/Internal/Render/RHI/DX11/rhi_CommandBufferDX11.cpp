@@ -1572,6 +1572,57 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
 
+    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
+    unsigned rt_count = 0;
+    ID3D11DepthStencilView* ds_view = NULL;
+
+    memset(rt_view, 0, sizeof(rt_view));
+
+    if (passCfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
+    {
+        ds_view = _D3D11_DepthStencilView;
+    }
+    else if (passCfg.depthStencilBuffer.texture == rhi::InvalidHandle)
+    {
+        if (passCfg.UsingMSAA())
+            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
+        else
+            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.texture, &ds_view);
+    }
+
+    for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
+    {
+        if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle)
+        {
+            if (passCfg.UsingMSAA())
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, context, rt_view + i);
+            else
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].texture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, context, rt_view + i);
+
+            ++rt_count;
+        }
+        else
+        {
+            if (i == 0)
+            {
+                rt_view[0] = _D3D11_RenderTargetView;
+                rt_count = 1;
+            }
+
+            break;
+        }
+    }
+
+    context->OMSetRenderTargets(rt_count, rt_view, ds_view);
+
+    if (passCfg.colorBuffer[0].texture != rhi::InvalidHandle)
+    {
+        Size2i sz = (passCfg.UsingMSAA()) ? TextureDX11::Size(passCfg.colorBuffer[0].multisampleTexture) : TextureDX11::Size(passCfg.colorBuffer[0].texture);
+
+        def_viewport.Width = static_cast<float>(sz.dx);
+        def_viewport.Height = static_cast<float>(sz.dy);
+    }
+    /*
     const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
     if ((color0.texture != rhi::InvalidHandle) && (color0.texture != rhi::DefaultDepthBuffer))
     {
@@ -1599,9 +1650,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     {
         context->OMSetRenderTargets(1, &_D3D11_RenderTargetView, _D3D11_DepthStencilView);
     }
-
-    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
-    ID3D11DepthStencilView* ds_view = NULL;
+*/
 
     context->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
 
@@ -1625,7 +1674,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
             }
 
             if (clear_color)
-                context->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[0].clearColor);
+                context->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[i].clearColor);
 
             rt_view[i]->Release();
         }

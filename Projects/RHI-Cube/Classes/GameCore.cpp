@@ -417,25 +417,129 @@ void GameCore::rtInit()
 
     colorDesc.isRenderTarget = true;
 
-    rtColor = rhi::Texture::Create(colorDesc);
+    rtColor0 = rhi::Texture::Create(colorDesc);
+    rtColor1 = rhi::Texture::Create(colorDesc);
     rtDepthStencil = rhi::Texture::Create(depthDesc);
 
     rhi::TextureSetDescriptor tsDesc;
 
     tsDesc.fragmentTextureCount = 1;
-    tsDesc.fragmentTexture[0] = rhi::HTexture(rtColor);
+    tsDesc.fragmentTexture[0] = rhi::HTexture(rtColor0);
 
-    rtQuadBatch.vertexStreamCount = 1;
-    rtQuadBatch.vertexStream[0] = rtQuad.vb;
-    rtQuadBatch.vertexConstCount = 2;
-    rtQuadBatch.vertexConst[0] = rtQuad.vp_const[0];
-    rtQuadBatch.vertexConst[1] = rtQuad.vp_const[1];
-    rtQuadBatch.fragmentConstCount = 0;
-    rtQuadBatch.renderPipelineState = rtQuad.ps;
-    rtQuadBatch.samplerState = rtQuad.samplerState;
-    rtQuadBatch.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-    rtQuadBatch.primitiveCount = 2;
-    rtQuadBatch.textureSet = rhi::AcquireTextureSet(tsDesc);
+    rtQuadBatch0.vertexStreamCount = 1;
+    rtQuadBatch0.vertexStream[0] = rtQuad.vb;
+    rtQuadBatch0.vertexConstCount = 2;
+    rtQuadBatch0.vertexConst[0] = rtQuad.vp_const[0];
+    rtQuadBatch0.vertexConst[1] = rtQuad.vp_const[1];
+    rtQuadBatch0.fragmentConstCount = 0;
+    rtQuadBatch0.renderPipelineState = rtQuad.ps;
+    rtQuadBatch0.samplerState = rtQuad.samplerState;
+    rtQuadBatch0.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    rtQuadBatch0.primitiveCount = 2;
+    rtQuadBatch0.textureSet = rhi::AcquireTextureSet(tsDesc);
+}
+
+void GameCore::mrtInit()
+{
+    cube_mrt.vb = cube.vb;
+    cube_mrt.v_cnt = cube.v_cnt;
+    cube_mrt.texSet = cube.texSet;
+    cube_mrt.vb_layout = cube.vb_layout;
+
+    rhi::ShaderCache::UpdateProg(
+    rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded-mrt"),
+    "vertex_in\n"
+    "{\n"
+    "    float3 pos    : POSITION;\n"
+    "    float3 normal : NORMAL;\n"
+    "    float2 uv     : TEXCOORD;\n"
+    "};\n"
+    "\n"
+    "vertex_out\n"
+    "{\n"
+    "    float4 pos    : SV_POSITION;\n"
+    "    float2 uv     : TEXCOORD0;\n"
+    "    float4 color  : TEXCOORD1;\n"
+    "};\n"
+    "\n"
+    "[global] property float4x4 ViewProjection;\n"
+    "[unique] property float4x4 World;\n"
+    "\n"
+    "vertex_out\n"
+    "vp_main( vertex_in input )\n"
+    "{\n"
+    "    vertex_out output;\n"
+    "\n"
+    "    float4 wpos = mul( float4(input.pos.x,input.pos.y,input.pos.z,1.0), World );\n"
+    //    "    float  i    = dot( float3(0,0,-1), normalize(mul(float3(input.normal),(float3x3)World)) );\n"
+    "    float  i    = dot( float3(0,0,-1), normalize(mul( float4(input.normal.x,input.normal.y,input.normal.z,0.0), World).xyz) );\n"
+    "\n"
+    "    output.pos    = mul( wpos, ViewProjection );\n"
+    "    output.uv     = input.uv;\n"
+    "    output.color  = float4(i,i,i,i);\n"
+    "\n"
+    "    return output;\n"
+    "}\n"
+    );
+    rhi::ShaderCache::UpdateProg(
+    rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded-mrt"),
+    "fragment_in\n"
+    "{\n"
+    "    float2 uv     : TEXCOORD0;\n"
+    "    float4 color  : TEXCOORD1;\n"
+    "};\n"
+    "\n"
+    "fragment_out\n"
+    "{\n"
+    "    float4 color0  : SV_TARGET0;\n"
+    "    float4 color1  : SV_TARGET1;\n"
+    "};\n"
+    "\n"
+    "[unique] property float4 Tint;\n"
+    "uniform sampler2D Albedo;\n"
+    "\n"
+    "fragment_out\n"
+    "fp_main( fragment_in input )\n"
+    "{\n"
+    "    fragment_out output;\n"
+    "    float4       diffuse = tex2D( Albedo, input.uv );\n"
+    "\n"
+    "    output.color0 = diffuse * input.color * Tint;\n"
+    "    output.color1 = input.color;\n"
+    "    return output;\n"
+    "}\n"
+    );
+
+    rhi::PipelineState::Descriptor psDesc;
+
+    psDesc.vertexLayout.Clear();
+    psDesc.vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    psDesc.vprogUid = FastName("vp-shaded-mrt");
+    psDesc.fprogUid = FastName("fp-shaded-mrt");
+
+    cube_mrt.ps = rhi::HPipelineState(rhi::PipelineState::Create(psDesc));
+    cube_mrt.vp_const[0] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer(cube_mrt.ps, 0));
+    cube_mrt.vp_const[1] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer(cube_mrt.ps, 1));
+    cube_mrt.fp_const = rhi::HConstBuffer(rhi::PipelineState::CreateFragmentConstBuffer(cube_mrt.ps, 0));
+
+    rhi::TextureSetDescriptor tsDesc;
+
+    tsDesc.fragmentTextureCount = 1;
+    tsDesc.fragmentTexture[0] = rhi::HTexture(rtColor1);
+
+    rtQuadBatch1.vertexStreamCount = 1;
+    rtQuadBatch1.vertexStream[0] = rtQuad.vb;
+    rtQuadBatch1.vertexConstCount = 2;
+    rtQuadBatch1.vertexConst[0] = rtQuad.vp_const[0];
+    rtQuadBatch1.vertexConst[1] = rtQuad.vp_const[1];
+    rtQuadBatch1.fragmentConstCount = 0;
+    rtQuadBatch1.renderPipelineState = rtQuad.ps;
+    rtQuadBatch1.samplerState = rtQuad.samplerState;
+    rtQuadBatch1.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    rtQuadBatch1.primitiveCount = 2;
+    rtQuadBatch1.textureSet = rhi::AcquireTextureSet(tsDesc);
 }
 
 void GameCore::SetupTank()
@@ -653,6 +757,7 @@ void GameCore::OnAppStarted()
     //SetupInstancedCube();
     //    SetupTank();
     rtInit();
+    mrtInit();
 
     inited = true;
 }
@@ -1098,7 +1203,8 @@ void GameCore::Draw()
     //rhiDraw();
     //manticoreDraw();
     //DrawInstancedCube();
-    rtDraw();
+    //rtDraw();
+    mrtDraw();
     //    visibilityTestDraw();
 }
 
@@ -1582,7 +1688,7 @@ void GameCore::rtDraw()
         float clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
 
     #if USE_RT
-        pass_desc.colorBuffer[0].texture = rtColor;
+        pass_desc.colorBuffer[0].texture = rtColor0;
         pass_desc.depthStencilBuffer.texture = rtDepthStencil;
     #endif
         pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -1630,7 +1736,6 @@ void GameCore::rtDraw()
 
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = cube.vb;
-        //-    packet.indexBuffer          = rhi::InvalidHandle;
         packet.renderPipelineState = cube.ps;
         packet.vertexConstCount = 2;
         packet.vertexConst[0] = cube.vp_const[0];
@@ -1713,7 +1818,172 @@ void GameCore::rtDraw()
         rhi::ConstBuffer::SetConst(rtQuad.vp_const[0], 0, 4, view_proj.data);
         rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
 
-        rhi::AddPacket(pl, rtQuadBatch);
+        rhi::AddPacket(pl, rtQuadBatch0);
+
+        rhi::EndPacketList(pl);
+        rhi::RenderPass::End(pass);
+    }
+    #endif
+
+    #undef USE_SECOND_CB
+    #undef USE_RT
+}
+
+void GameCore::mrtDraw()
+{
+    #define USE_SECOND_CB 0
+    #define USE_RT 1
+
+    // draw scene into render-target
+    {
+        rhi::RenderPassConfig pass_desc;
+        float clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
+
+    #if USE_RT
+        pass_desc.colorBuffer[0].texture = rtColor0;
+        pass_desc.colorBuffer[1].texture = rtColor1;
+        pass_desc.depthStencilBuffer.texture = rtDepthStencil;
+
+        pass_desc.colorBuffer[1].loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.colorBuffer[1].storeAction = rhi::STOREACTION_STORE;
+        pass_desc.colorBuffer[1].clearColor[0] = 0.15f;
+        pass_desc.colorBuffer[1].clearColor[1] = 0.15f;
+        pass_desc.colorBuffer[1].clearColor[2] = 0.15f;
+        pass_desc.colorBuffer[1].clearColor[3] = 1.0f;
+    #endif
+        pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        pass_desc.colorBuffer[0].clearColor[0] = 0.25f;
+        pass_desc.colorBuffer[0].clearColor[1] = 0.25f;
+        pass_desc.colorBuffer[0].clearColor[2] = 0.35f;
+        pass_desc.colorBuffer[0].clearColor[3] = 1.0f;
+        pass_desc.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+
+        rhi::HPacketList pl[2];
+    #if USE_SECOND_CB
+        rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 2, pl);
+    #else
+        rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, pl);
+    #endif
+
+        rhi::RenderPass::Begin(pass);
+        rhi::BeginPacketList(pl[0]);
+
+        uint64 cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+        uint64 dt = cube_t1 - cube_t0;
+
+        cube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
+        cube_t0 = cube_t1;
+
+        Matrix4 world;
+        Matrix4 view_proj;
+
+        world.Identity();
+        world.CreateRotation(Vector3(0, 1, 0), cube_angle);
+        //    world.CreateRotation( Vector3(1,0,0), cube_angle );
+        world.SetTranslationVector(Vector3(0, 0, 5));
+        //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+
+        view_proj.Identity();
+        view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
+
+        rhi::ConstBuffer::SetConst(cube_mrt.fp_const, 0, 1, clr);
+        rhi::ConstBuffer::SetConst(cube_mrt.vp_const[0], 0, 4, view_proj.data);
+        rhi::ConstBuffer::SetConst(cube_mrt.vp_const[1], 0, 4, world.data);
+
+        rhi::Packet packet;
+
+        packet.vertexStreamCount = 1;
+        packet.vertexStream[0] = cube_mrt.vb;
+        packet.renderPipelineState = cube_mrt.ps;
+        packet.vertexConstCount = 2;
+        packet.vertexConst[0] = cube_mrt.vp_const[0];
+        packet.vertexConst[1] = cube_mrt.vp_const[1];
+        packet.fragmentConstCount = 1;
+        packet.fragmentConst[0] = cube_mrt.fp_const;
+        packet.textureSet = cube_mrt.texSet;
+        packet.samplerState = cube_mrt.samplerState;
+        packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        packet.primitiveCount = 12;
+
+        rhi::UpdateConstBuffer4fv(cube_mrt.fp_const, 0, clr, 1);
+        rhi::UpdateConstBuffer4fv(cube_mrt.vp_const[0], 0, view_proj.data, 4);
+        rhi::UpdateConstBuffer4fv(cube_mrt.vp_const[1], 0, world.data, 4);
+        rhi::AddPacket(pl[0], packet);
+
+    #if USE_SECOND_CB
+        {
+            const float w = 5.0f;
+            const unsigned row_cnt = 30;
+            const unsigned col_cnt = 7;
+
+            rhi::BeginPacketList(pl[1]);
+            for (unsigned z = 0; z != row_cnt; ++z)
+            {
+                for (unsigned i = 0; i != col_cnt; ++i)
+                {
+                    const uint32 c = (z * col_cnt + i + 1) * 0x775511; // 0x15015
+                    const uint8* cc = (const uint8*)(&c);
+                    const float clr2[] = { float(cc[2]) / 255.0f, float(cc[1]) / 255.0f, float(cc[0]) / 255.0f, 1.0f };
+
+                    world.Identity();
+                    world.CreateRotation(Vector3(1, 0, 0), cube_angle);
+                    world.SetTranslationVector(Vector3(-0.5f * w + float(i) * (w / float(col_cnt)), 1, 10 + float(z) * w));
+
+                    rhi::UpdateConstBuffer4fv(cube_mrt.fp_const, 0, clr2, 1);
+                    //            rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
+                    rhi::UpdateConstBuffer4fv(cube_mrt.vp_const[1], 0, world.data, 4);
+                    rhi::AddPacket(pl[1], packet);
+                }
+            }
+            rhi::EndPacketList(pl[1]);
+        }
+    #endif
+
+        rhi::EndPacketList(pl[0]);
+        rhi::RenderPass::End(pass);
+    }
+
+// draw render-target contents on-screen
+    #if USE_RT
+    {
+        rhi::RenderPassConfig pass_desc;
+
+        pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        pass_desc.colorBuffer[0].clearColor[0] = 0.15f;
+        pass_desc.colorBuffer[0].clearColor[1] = 0.15f;
+        pass_desc.colorBuffer[0].clearColor[2] = 0.25f;
+        pass_desc.colorBuffer[0].clearColor[3] = 1.0f;
+        pass_desc.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+
+        rhi::HPacketList pl;
+        rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, &pl);
+
+        rhi::RenderPass::Begin(pass);
+        rhi::BeginPacketList(pl);
+
+        Matrix4 world;
+        Matrix4 view_proj;
+        float ratio = float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy);
+
+        world = Matrix4::MakeRotation(Vector3(0, 1, 0), (30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+        world.SetTranslationVector(Vector3(-2, 0, 15));
+
+        view_proj.Identity();
+        view_proj.BuildProjectionFovLH(75.0f, ratio, 1.0f, 1000.0f);
+
+        rhi::ConstBuffer::SetConst(rtQuad.vp_const[0], 0, 4, view_proj.data);
+        rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+
+        rhi::AddPacket(pl, rtQuadBatch0);
+
+        world = Matrix4::MakeRotation(Vector3(0, 1, 0), (-30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+        world.SetTranslationVector(Vector3(2, 0, 15));
+        rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+        rhi::AddPacket(pl, rtQuadBatch1);
 
         rhi::EndPacketList(pl);
         rhi::RenderPass::End(pass);
