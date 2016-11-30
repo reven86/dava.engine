@@ -65,7 +65,12 @@ public:
     ~Component() override;
 
     virtual uint32 GetType() const = 0;
+
+    /**
+    Clone component. Then add cloned component to specified `toEntity` if `toEntity` is not nullptr. Return cloned component.
+    */
     virtual Component* Clone(Entity* toEntity) = 0;
+
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
@@ -73,7 +78,7 @@ public:
     virtual void SetEntity(Entity* entity);
 
     /**
-         \brief This function should be implemented in each node that have data nodes inside it.
+        \brief This function should be implemented in each node that have data nodes inside it.
      */
     virtual void GetDataNodes(Set<DataNode*>& dataNodes);
     /**
@@ -84,7 +89,7 @@ public:
     }
 
     /**
-         \brief Function to get data nodes of requested type to specific container you provide.
+        \brief Function to get data nodes of requested type to specific container you provide.
      */
     template <template <typename> class Container, class T>
     void GetDataNodes(Container<T>& container);

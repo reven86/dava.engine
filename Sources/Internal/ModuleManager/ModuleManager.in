@@ -8,30 +8,42 @@ namespace DAVA
 
 @IMODULE_INIT_POINTERS@
 @IMODULE_GET_MODULE_CODE@
-    ModuleManager::ModuleManager()
-        : pointersToModules( new PointersToModules )
-    {
-    }
+ModuleManager::ModuleManager(Engine* engine)
+: pointersToModules( new PointersToModules )
+{
+@IMODULE_CTOR_CODE@
+}
 
-    ModuleManager::~ModuleManager()
+ModuleManager::~ModuleManager()
+{
+    for(auto it = rbegin(modules); it != rend(modules); ++it)
     {
-        ResetModules();
+        delete *it;
     }
+    modules.clear();
+}
 
-    void ModuleManager::InitModules()
+void ModuleManager::InitModules()
+{
+	for (IModule* module : modules)
     {
-@IMODULE_INIT_CODE@
-    }
+		 module->Init();
+	}
+}
     
-    void  ModuleManager::ResetModules()
+void ModuleManager::ShutdownModules()
+{
+    for (auto it = rbegin(modules); it != rend(modules); ++it)
     {
-        for (IModule* module : modules)
-        {
-            module->Shutdown();
-            delete module;
-        }
-        modules.clear();
+        (*it)->Shutdown();
     }
+
+    for(auto it = rbegin(modules); it != rend(modules); ++it)
+    {
+        delete *it;
+    }
+    modules.clear();
+}
     
 
 }

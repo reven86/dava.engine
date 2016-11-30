@@ -20,6 +20,7 @@ public:
     static const FastName TEXTURED_VERTEXCOLOR_ALPHABLEND;
     static const FastName DECAL_OPAQUE;
     static const FastName TEXTURED_OPAQUE;
+    static const FastName TEXTURED_OPAQUE_NOCULL;
     static const FastName TEXTURED_VERTEXCOLOR_OPAQUE;
     static const FastName DETAIL_ALPHABLEND;
     static const FastName SHADOWRECT;
@@ -64,6 +65,8 @@ public:
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
+
+    static const FastName WATER_ALL_QUALITIES;
 };
 
 class NMaterialTextureName

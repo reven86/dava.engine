@@ -1,11 +1,11 @@
 #ifndef __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 #define __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Input/MouseDevice.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -21,6 +21,8 @@ private:
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 }
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN_UAP__
 

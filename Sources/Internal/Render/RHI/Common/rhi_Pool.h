@@ -125,7 +125,7 @@ private:
         void CaptureBacktrace()
         {
             memset(backtrace, sizeof(backtrace), 0);
-            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MAX_BACKTRACE_SIZE));
+            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetBacktrace(backtrace, MAX_BACKTRACE_SIZE));
         }
 #endif
     };
@@ -163,8 +163,7 @@ ResourcePool<T, RT, DT, nr>::Reserve(unsigned maxCount)
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, class DT, bool nr>
-inline Handle
-ResourcePool<T, RT, DT, nr>::Alloc()
+inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
@@ -204,16 +203,13 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
     ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
 
-    DVASSERT(handle != InvalidHandle);
-
     return handle;
 }
 
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
-inline void
-ResourcePool<T, RT, DT, nr>::Free(Handle h)
+inline void ResourcePool<T, RT, DT, nr>::Free(Handle h)
 {
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
     uint32 type = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
@@ -231,17 +227,18 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
 }
 
 //------------------------------------------------------------------------------
+#define HANDLE_DECOMPOSE(h) ((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT), ((h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT), ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT)
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
 {
-    DVASSERT(h != InvalidHandle);
-    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+    DVASSERT_MSG(h != InvalidHandle, DAVA::Format("Pool<%d>::Get - InvalidHandle", RT).c_str());
+    DVASSERT_MSG(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
-    DVASSERT(index < ObjectCount);
+    DVASSERT_MSG(index < ObjectCount, DAVA::Format("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     Entry* e = Object + index;
-    DVASSERT(e->allocated);
-    DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
+    DVASSERT_MSG(e->allocated, DAVA::Format("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
+    DVASSERT_MSG(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT), DAVA::Format("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) current valid generation is %d", int32(RT), HANDLE_DECOMPOSE(h), e->generation).c_str());
 
     return &(e->object);
 }
@@ -338,7 +335,7 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
             Entry* entry = i.GetEntry();
             for (uint32 frame = Entry::FRAMES_TO_SKIP; frame < entry->backtraceFrameCount; ++frame)
             {
-                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(entry->backtrace[frame]);
+                DAVA::String symbol = DAVA::Debug::GetFrameSymbol(entry->backtrace[frame]);
                 DAVA::Logger::Error(symbol.c_str());
             }
             ++unrestored;

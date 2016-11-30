@@ -30,11 +30,8 @@ public:
 
     void Release()
     {
-        if (this)
-        {
-            delete this;
-            instance = nullptr;
-        }
+        delete this;
+        instance = nullptr;
     }
 
 private:

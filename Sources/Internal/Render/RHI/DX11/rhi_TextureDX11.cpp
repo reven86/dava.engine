@@ -1,13 +1,14 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_DX11.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "../Common/rhi_Utils.h"
+#include "rhi_DX11.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_dx11.h"
+#include "_dx11.h"
 
 namespace rhi
 {
@@ -103,9 +104,8 @@ ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, Texture
             }
         }
 
-        HRESULT hr = _D3D11_Device->CreateRenderTargetView(tex2d, &desc, &rtv);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRenderTargetView(tex2d, &desc, &rtv), hr);
         if (SUCCEEDED(hr))
         {
             rt_view.emplace_back(rtv, level, face);
@@ -215,11 +215,10 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
         }
     }
 
-    ID3D11Texture2D* tex2d = nullptr;
-    HRESULT hr = _D3D11_Device->CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d);
-    CHECK_HR(hr)
-
     Handle handle = InvalidHandle;
+    ID3D11Texture2D* tex2d = nullptr;
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d), hr);
     if (SUCCEEDED(hr))
     {
         handle = TextureDX11Pool::Alloc();
@@ -257,9 +256,8 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             }
 
             ID3D11ShaderResourceView* srv = nullptr;
-            hr = _D3D11_Device->CreateShaderResourceView(tex2d, &srv_desc, &srv);
-            CHECK_HR(hr)
-
+            hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateShaderResourceView(tex2d, &srv_desc, &srv), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_srv = srv;
@@ -274,9 +272,8 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             desc2d.BindFlags = 0;
             desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-            hr = _D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy);
-            CHECK_HR(hr)
-
+            hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_copy = copy;
@@ -292,9 +289,8 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             dsv_desc.ViewDimension = (desc.sampleCount > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
             ID3D11DepthStencilView* dsv = nullptr;
-            hr = _D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv);
-            CHECK_HR(hr)
-
+            hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_dsv = dsv;
@@ -500,6 +496,13 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
 
 //==============================================================================
 
+bool dx11_Texture_NeedRestore(Handle tex)
+{
+    return false;
+}
+
+//==============================================================================
+
 namespace TextureDX11
 {
 void Init(uint32 maxCount)
@@ -514,6 +517,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Map = &dx11_Texture_Map;
     dispatch->impl_Texture_Unmap = &dx11_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx11_Texture_Update;
+    dispatch->impl_Texture_NeedRestore = &dx11_Texture_NeedRestore;
 }
 
 void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
@@ -591,7 +595,6 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     UINT fromIndex = D3D11CalcSubresource(0, 0, 1);
     context->ResolveSubresource(toResource, toIndex, fromResource, fromIndex, fromFormat);
 
-    fromResource->Release();
     toResource->Release();
 }
 }

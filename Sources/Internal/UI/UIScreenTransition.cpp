@@ -31,7 +31,7 @@ void UIScreenTransition::CreateRenderTargets()
         return;
     }
 
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
 
     Size2i physicalTargetSize = vcs->GetPhysicalScreenSize();
 
@@ -107,7 +107,7 @@ void UIScreenTransition::Draw(const UIGeometricData& geometricData)
         RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 
         drawState.SetScale(0.5f, 1.0f);
-        drawState.SetPosition((VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx) / 2.0f, 0);
+        drawState.SetPosition((UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx) / 2.0f, 0);
 
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }

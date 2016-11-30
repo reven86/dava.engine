@@ -329,7 +329,7 @@ DAVA_TESTCLASS (NetworkTest)
         TEST_VERIFY("239.192.100.1" == IPAddress("239.192.100.1").ToString());
 
         // Test address
-        TEST_VERIFY(IPAddress("192.168.0.4") == IPAddress("192.168.0.4"));
+        TEST_VERIFY(IPAddress("192.168.0.4") == IPAddress("192.168.0.4")); //-V501 test operator==
         TEST_VERIFY(String("192.168.0.4") == IPAddress("192.168.0.4").ToString());
         TEST_VERIFY(IPAddress("192.168.0.4").ToString() == IPAddress::FromString("192.168.0.4").ToString());
         TEST_VERIFY(false == IPAddress("192.168.0.4").IsUnspecified());
@@ -345,7 +345,7 @@ DAVA_TESTCLASS (NetworkTest)
         TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress("192.168.1.45"));
         TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress::FromString("192.168.1.45"));
 
-        TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234));
+        TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234)); //-V501 test operator==
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1235))); // Different ports
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234))); // Different addressess
     }

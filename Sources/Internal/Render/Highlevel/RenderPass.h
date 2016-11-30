@@ -68,14 +68,6 @@ protected:
         PixelFormat format = PixelFormat::FORMAT_INVALID;
     } renderTargetProperties;
 
-#ifdef __DAVAENGINE_RENDERSTATS__
-
-    void ProcessVisibilityQuery();
-
-    Deque<rhi::HQueryBuffer> queryBuffers;
-
-#endif
-
 public:
     INTROSPECTION(RenderPass,
                   COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
@@ -125,7 +117,7 @@ public:
 
 protected:
     Camera *passMainCamera, *passDrawCamera;
-    float32 waterLevel;
+    float32 waterLevel = 0;
 };
 
 class WaterReflectionRenderPass : public WaterPrePass

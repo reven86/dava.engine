@@ -89,8 +89,8 @@ void UpdateDialog::OnCancelClicked()
 {
     if (currentDownload != nullptr)
         currentDownload->abort();
-
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager* fileManager = appManager->GetFileManager();
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     close();
 }
@@ -135,7 +135,7 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            currentDownload = networkManager->get(QNetworkRequest(QUrl(task.version.url)));
+            currentDownload = networkManager->get(QNetworkRequest(QUrl(task.newVersion.url)));
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
             connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
@@ -189,8 +189,8 @@ void UpdateDialog::DownloadFinished()
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
         return;
     }
-
-    const QString& archiveFilepath = FileManager::GetTempDownloadFilePath();
+    FileManager* fileManager = appManager->GetFileManager();
+    const QString& archiveFilepath = fileManager->GetTempDownloadFilePath();
     QFile outputFile;
     outputFile.setFileName(archiveFilepath);
     outputFile.open(QFile::WriteOnly);
@@ -200,24 +200,41 @@ void UpdateDialog::DownloadFinished()
     outputFile.close();
 
     const UpdateTask& task = tasks.head();
-
-    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
-    QString runPath = appDir + task.version.runPath;
-    while (ProcessHelper::IsProcessRuning(runPath))
-        ErrorMessenger::ShowRetryDlg(false);
-
-    FileManager::DeleteDirectory(appDir);
+    bool canRemoveCorrectrly = true;
+    //we need to remove toolset application, whether they was in toolset or not
+    if (task.newVersion.isToolSet)
+    {
+        QStringList toolsetApps = appManager->GetLocalConfig()->GetTranslatedToolsetApplications();
+        for (auto iter = toolsetApps.begin(); iter != toolsetApps.end() && canRemoveCorrectrly; ++iter)
+        {
+            canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, *iter, false);
+        }
+    }
+    else
+    {
+        //if current application is a part of toolset, all toolset applications will be removed.
+        canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, task.appID, false);
+    }
+    if (canRemoveCorrectrly == false)
+    {
+        UpdateLastLogValue("Removing applications Failed!");
+        BreakLog();
+        return;
+    }
 
     UpdateLastLogValue(tr("Download Complete!"));
 
     AddLogValue(tr("Unpacking archive..."));
+
+    //create path to a new version directory
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
 
     ui->cancelButton->setEnabled(false);
     ZipUtils::CompressedFilesAndSizes files;
     if (ListArchive(filePath, files)
         && UnpackArchive(filePath, appDir, files))
     {
-        emit AppInstalled(task.branchID, task.appID, task.version);
+        emit AppInstalled(task.branchID, task.appID, task.newVersion);
         UpdateLastLogValue("Unpack Complete!");
         CompleteLog();
     }
@@ -227,7 +244,7 @@ void UpdateDialog::DownloadFinished()
         BreakLog();
     }
     ui->cancelButton->setEnabled(true);
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     tasks.dequeue();
     StartNextTask();

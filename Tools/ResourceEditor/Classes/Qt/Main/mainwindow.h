@@ -9,7 +9,12 @@
 #include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
-#include "DAVAEngine.h"
+#include "TArc/DataProcessing/DataListener.h"
+#include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/WindowSubSystem/UI.h"
+
+#include "QtTools/Utils/ShortcutChecker.h"
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -28,7 +33,13 @@ class PropertyPanel;
 class DeviceListController;
 class SpritesPackerModule;
 class ErrorDialogOutput;
-class QtMainWindow : public QMainWindow, public GlobalOperations
+
+namespace DAVA
+{
+class RenderWidget;
+}
+
+class QtMainWindow : public QMainWindow, public GlobalOperations, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -40,11 +51,11 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(QWidget* parent = 0);
+    explicit QtMainWindow(DAVA::TArc::UI* tarcUI, QWidget* parent = 0);
     ~QtMainWindow();
 
-    Ui::MainWindow* GetUI();
-    SceneTabWidget* GetSceneWidget();
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnRenderingInitialized();
     SceneEditor2* GetCurrentScene();
 
     bool OpenScene(const QString& path);
@@ -53,7 +64,7 @@ public:
 
     void SetGPUFormat(DAVA::eGPUFamily gpu);
 
-    void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
+    void WaitStart(const QString& title, const QString& message, int min, int max);
     void WaitSetMessage(const QString& messsage);
     void WaitSetValue(int value);
     bool IsWaitDialogOnScreen() const;
@@ -70,23 +81,23 @@ public:
 
     void CallAction(ID id, DAVA::Any&& args) override;
     QWidget* GetGlobalParentWidget() const override;
-    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100) override;
+    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min, DAVA::uint32 max) override;
     bool IsWaitDialogVisible() const override;
     void HideWaitDialog() override;
     void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
 
+    void CloseAllScenes();
+
     // qt actions slots
 public slots:
-    void OnProjectOpen();
-    void OnProjectClose();
     void OnSceneNew();
     void OnSceneOpen();
+    void OnSceneOpenQuickly();
     void OnSceneSave();
     void OnSceneSaveAs();
     void OnSceneSaveToFolder();
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
-    void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
@@ -104,6 +115,8 @@ public slots:
     void OnReleaseVisibilityFrame();
 
     void OnEnableDisableShadows(bool enable);
+
+    void EnableSounds(bool enable);
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);
@@ -190,7 +203,7 @@ public slots:
 
     void OnSnapCameraToLandscape(bool);
 
-    void SetupTitle();
+    void SetupTitle(const DAVA::String& projectPath);
 
     void RestartParticleEffects();
     bool SetVisibilityToolEnabledIfPossible(bool);
@@ -198,7 +211,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    void closeEvent(QCloseEvent* event);
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
@@ -221,16 +233,11 @@ protected:
 
     static void SetActionCheckedSilently(QAction* action, bool checked);
 
-    void OpenProject(const DAVA::FilePath& projectPath);
-
     void OnSceneSaveAsInternal(bool saveWithCompressed);
 
     void SaveAllSceneEmitters(SceneEditor2* scene) const;
 
 private slots:
-    void ProjectOpened(const QString& path);
-    void ProjectClosed();
-
     void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -251,7 +258,6 @@ private slots:
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;
-    QtWaitDialog* waitDialog;
     QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
@@ -288,6 +294,8 @@ private:
     bool IsSavingAllowed();
     // <--
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+
     //Need for any debug functionality
     QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
@@ -295,15 +303,22 @@ private:
     QPointer<DeviceListController> deviceListController;
 
     RecentMenuItems recentFiles;
-    RecentMenuItems recentProjects;
 
 #if defined(NEW_PROPERTY_PANEL)
     wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
-    std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
+
+#if defined(__DAVAENGINE_MACOS__)
+    ShortcutChecker shortcutChecker;
+#endif
+
+    DAVA::TArc::UI* tarcUI = nullptr;
+    std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
+    DAVA::TArc::DataWrapper projectDataWrapper;
+    QtDelayedExecutor delayedExecutor;
 
 private:
     struct EmitterDescriptor

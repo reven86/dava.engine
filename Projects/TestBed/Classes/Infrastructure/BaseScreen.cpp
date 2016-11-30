@@ -35,7 +35,7 @@ void BaseScreen::LoadResources()
 
     font->SetSize(30);
 
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     exitButton = new UIButton(Rect(static_cast<DAVA::float32>(screenSize.dx - 300), static_cast<DAVA::float32>(screenSize.dy - 30), 300.0, 30.0));
     exitButton->SetStateFont(0xFF, font);
     exitButton->SetStateFontColor(0xFF, Color::White);

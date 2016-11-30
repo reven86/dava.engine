@@ -105,7 +105,7 @@ void LoadingTest::LoadResources()
     loadingText->SetFont(font18);
     loadingText->SetTextColor(Color(0.f, 1.f, 0.f, 1.f));
     loadingText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    loadingText->SetRect(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    loadingText->SetRect(DAVA::UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect());
     AddControl(loadingText);
 
     testText = new UIStaticText();

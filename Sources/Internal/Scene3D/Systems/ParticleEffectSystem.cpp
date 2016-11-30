@@ -10,7 +10,8 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -27,7 +28,7 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
         materialKey += 1 << 4;
     if (enableFrameBlend)
         materialKey += 1 << 5;
-    materialKey += static_cast<uint32>(texture->handle) << 6;
+    materialKey += static_cast<uint32>(texture->handle) << 6; //-V629 uint32->uint64 is ok
 
     Map<uint64, NMaterial*>::iterator it = materialMap.find(materialKey);
     if (it != materialMap.end()) //return existing
@@ -43,7 +44,9 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
             material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
 
         if ((!enableFog) || (is2DMode)) //inverse logic to suspend vertex fog inherited from global material
+        {
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
+        }
 
         if (is2DMode)
             material->AddFlag(NMaterialFlagName::FLAG_FORCE_2D_MODE, 1);
@@ -254,7 +257,7 @@ void ParticleEffectSystem::ImmediateEvent(Component* component, uint32 event)
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("ParticleEffectSystem::Process");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_PARTICLE_SYSTEM);
 
     if (timeElapsed == 0.f)
     {

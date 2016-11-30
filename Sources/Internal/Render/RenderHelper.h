@@ -73,8 +73,8 @@ private:
     };
     struct DrawCommand
     {
-        DrawCommand(eDrawCommandID _id)
-            : id(_id)
+        DrawCommand(eDrawCommandID _id) //-V730
+        : id(_id)
         {
         }
 

@@ -330,6 +330,8 @@ private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
     void Setup2DMatrices();
 
+    void AddPacket(rhi::Packet& packet);
+
     Rect TransformClipRect(const Rect& rect, const Matrix4& transformMatrix);
 
     inline bool IsRenderTargetPass()

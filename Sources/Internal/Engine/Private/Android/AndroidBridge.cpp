@@ -298,7 +298,7 @@ const String& AndroidBridge::GetInternalDocumentsDir()
     return androidBridge->internalDocumentsDir;
 }
 
-const String& AndroidBridge::GetApplicatiionPath()
+const String& AndroidBridge::GetApplicationPath()
 {
     return androidBridge->appPath;
 }

@@ -22,7 +22,7 @@ public:
     DAVA::Vector<DAVA::Color> colorListValues;
 };
 
-class EditorConfig : public DAVA::Singleton<EditorConfig>
+class EditorConfig
 {
 public:
     EditorConfig();
@@ -43,20 +43,20 @@ public:
 
     void ParseConfig(const DAVA::FilePath& filePath);
 
-    const DAVA::Vector<DAVA::String>& GetProjectPropertyNames();
-    const DAVA::Vector<DAVA::String>& GetComboPropertyValues(const DAVA::String& nameStr);
-    const DAVA::Vector<DAVA::Color>& GetColorPropertyValues(const DAVA::String& nameStr);
+    const DAVA::Vector<DAVA::String>& GetProjectPropertyNames() const;
+    const DAVA::Vector<DAVA::String>& GetComboPropertyValues(const DAVA::String& nameStr) const;
+    const DAVA::Vector<DAVA::Color>& GetColorPropertyValues(const DAVA::String& nameStr) const;
 
-    bool HasProperty(const DAVA::String& propertyName);
-    DAVA::int32 GetPropertyValueType(const DAVA::String& propertyName);
-    DAVA::VariantType* GetPropertyDefaultValue(const DAVA::String& propertyName);
+    bool HasProperty(const DAVA::String& propertyName) const;
+    DAVA::int32 GetPropertyValueType(const DAVA::String& propertyName) const;
+    const DAVA::VariantType* GetPropertyDefaultValue(const DAVA::String& propertyName) const;
 
 protected:
     void ClearConfig();
 
-    PropertyDescription* GetPropertyDescription(const DAVA::String& propertyName);
+    const PropertyDescription* GetPropertyDescription(const DAVA::String& propertyName) const;
 
-    DAVA::int32 GetValueTypeFromPropertyType(DAVA::int32 propertyType);
+    DAVA::int32 GetValueTypeFromPropertyType(DAVA::int32 propertyType) const;
     DAVA::int32 ParseType(const DAVA::String& typeStr);
 
     DAVA::Vector<DAVA::String> propertyNames;

@@ -15,7 +15,7 @@
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
     , copyPasteFrom(-1.f, -1.f)
     , copyPasteTo(-1.f, -1.f)
 {
@@ -70,7 +70,7 @@ bool HeightmapEditorSystem::DisableLandscapeEdititing()
         return true;
     }
 
-    FinishEditing();
+    FinishEditing(false);
 
     selectionSystem->SetLocked(false);
     modifSystem->SetLocked(false);
@@ -95,16 +95,16 @@ void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
+bool HeightmapEditorSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -128,13 +128,13 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
                     {
                         copyPasteFrom = GetHeightmapPositionFromCursor();
                         copyPasteTo = DAVA::Vector2(-1.f, -1.f);
-                        return;
+                        return false;
                     }
                     else
                     {
                         if (copyPasteFrom == DAVA::Vector2(-1.f, -1.f))
                         {
-                            return;
+                            return false;
                         }
                         copyPasteTo = GetHeightmapPositionFromCursor();
                         StoreOriginalHeightmap();
@@ -158,22 +158,29 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
             break;
 
         case DAVA::UIEvent::Phase::ENDED:
-            FinishEditing();
+            FinishEditing(true);
             break;
 
         default:
             break;
         }
     }
+    return false;
 }
 
-void HeightmapEditorSystem::FinishEditing()
+void HeightmapEditorSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)
     {
         if (drawingType != HEIGHTMAP_DROPPER)
         {
-            CreateHeightmapUndo();
+            if (applyModification)
+            {
+                SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+                DVASSERT(scene);
+                scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
+            }
+            SafeRelease(originalHeightmap);
         }
         editingIsEnabled = false;
     }
@@ -313,14 +320,6 @@ void HeightmapEditorSystem::StoreOriginalHeightmap()
     DVASSERT(originalHeightmap == NULL);
     originalHeightmap = editorHeightmap->Clone(NULL);
     ResetAccumulatorRect(heightmapUpdatedRect);
-}
-
-void HeightmapEditorSystem::CreateHeightmapUndo()
-{
-    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-    DVASSERT(scene);
-    scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
-    SafeRelease(originalHeightmap);
 }
 
 void HeightmapEditorSystem::SetBrushSize(DAVA::int32 brushSize)

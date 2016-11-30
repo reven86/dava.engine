@@ -6,7 +6,6 @@
 
     #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
     #include "rhi_GLES2.h"
     #include "_gl.h"
@@ -86,6 +85,7 @@ ProgGLES2::ProgGLES2(ProgType t)
     : type(t)
     , prog(0)
     , shader(0)
+    , texunitCount(0)
     , texunitInited(false)
 {
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
@@ -260,7 +260,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
     }
 
     prog = progUid;
-    texunitInited = false;
+    texunitInited = true;
 }
 
 //------------------------------------------------------------------------------
@@ -678,8 +678,7 @@ void SetToRHI(const Handle cb, uint32 progUid, const void* instData)
     self->SetToRHI(progUid, instData);
 }
 
-const void*
-Instance(Handle cb)
+const void* Instance(Handle cb)
 {
     const ProgGLES2::ConstBuf* self = ConstBufGLES2Pool::Get(cb);
 

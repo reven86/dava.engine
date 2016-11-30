@@ -15,8 +15,8 @@ public:
     AddSwitchEntityDialog(QWidget* parent = 0);
     ~AddSwitchEntityDialog();
 
-    void accept();
-    void reject();
+    void accept() override;
+    void reject() override;
 
 protected:
     void GetPathEntities(DAVA::Vector<DAVA::Entity*>& entities, SceneEditor2* editor);

@@ -27,18 +27,21 @@ public:
     String GetHTTPProxyHost();
     String GetHTTPNonProxyHosts();
     int32 GetHTTPProxyPort();
-    DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
     String GetCarrierName();
 
-private:
+#if !defined(__DAVAENGINE_COREV2__)
     DeviceInfo::ScreenInfo screenInfo;
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    void InitializeScreenInfo();
+#endif
+
+private:
     struct DeviceInfoObjcBridge;
     std::unique_ptr<DeviceInfoObjcBridge> bridge;
 };

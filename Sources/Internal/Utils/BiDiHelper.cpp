@@ -231,7 +231,7 @@ BiDiHelper::BiDiHelper()
 
 BiDiHelper::~BiDiHelper()
 {
-    SAFE_DELETE(wrapper);
+    SafeDelete(wrapper);
 }
 
 bool BiDiHelper::PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL) const

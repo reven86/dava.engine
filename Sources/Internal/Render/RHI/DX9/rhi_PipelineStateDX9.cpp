@@ -1,20 +1,21 @@
-#include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../rhi_ShaderCache.h"
-    #include "rhi_DX9.h"
+    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_DX9.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
 using DAVA::uint8;
 
-    #include "_dx9.h"
-    #include <D3DX9Shader.h>
+#include "_dx9.h"
+#include <D3DX9Shader.h>
 
-    #include <vector>
+#include <vector>
 
 namespace rhi
 {
@@ -33,8 +34,7 @@ std::vector<VDeclDX9> VDeclDX9::_VDecl;
 
 static RingBuffer _DX9_DefConstRingBuf;
 
-static void
-DumpShaderTextDX9(const char* code, unsigned code_sz)
+static void DumpShaderTextDX9(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -89,8 +89,7 @@ DumpShaderTextDX9(const char* code, unsigned code_sz)
 
 //------------------------------------------------------------------------------
 
-IDirect3DVertexDeclaration9*
-VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
+IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
 {
     IDirect3DVertexDeclaration9* vdecl = nullptr;
 
@@ -211,8 +210,7 @@ VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
 
 //==============================================================================
 
-class
-PipelineStateDX9_t
+class PipelineStateDX9_t
 {
 public:
     PipelineStateDX9_t()
@@ -242,7 +240,7 @@ public:
         void SetToRHI(const void* inst_data) const;
 
     private:
-        ProgType progType;
+        ProgType progType = PROG_VERTEX;
         float* value;
         mutable float* inst;
         unsigned reg;
@@ -1050,8 +1048,7 @@ void InitializeRingBuffer(uint32 size)
     _DX9_DefConstRingBuf.Initialize(size);
 }
 
-const void*
-InstData(Handle cb)
+const void* Instance(Handle cb)
 {
     PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get(cb);
 

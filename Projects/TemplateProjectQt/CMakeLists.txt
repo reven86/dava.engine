@@ -33,11 +33,11 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
-find_package          ( NgtTools      REQUIRED )
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
-
+find_package          ( QtHelpers REQUIRED )
+find_package          ( QtTools REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
@@ -77,5 +77,4 @@ set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
-set( LIBRARIES                  NgtTools)
 setup_main_executable()

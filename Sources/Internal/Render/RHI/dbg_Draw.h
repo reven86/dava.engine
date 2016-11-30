@@ -27,7 +27,7 @@ public:
     static void Uninitialize();
 
     static void SetScreenSize(uint32 w, uint32 h);
-    static void FlushBatched(rhi::HPacketList batchBuf, const Matrix4& view, const Matrix4& projection);
+    static void FlushBatched(rhi::HPacketList batchBuf);
     static void SetNormalTextSize();
     static void SetSmallTextSize();
 
@@ -37,6 +37,8 @@ public:
     static void Line2D(int x1, int y1, int x2, int y2, uint32 color);
     static void Rect2D(int left, int top, int right, int bottom, uint32 color);
     static void FilledRect2D(int left, int top, int right, int bottom, uint32 color);
+    static void Triangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color);
+    static void FilledTriangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color);
 
 public:
     enum
@@ -56,6 +58,7 @@ private:
 
     void _init();
     void _uninit();
+    void _restore();
     Vertex_PC* _alloc_pc_vertices(unsigned count);
 
     struct
@@ -109,9 +112,7 @@ private:
     };
 
     template <typename Vertex, rhi::PrimitiveType Prim>
-    class
-    Buffer
-    : public BufferBase
+    class Buffer : public BufferBase
     {
     public:
         Buffer(const char* const name = "");
@@ -169,7 +170,7 @@ private:
         FontTextureSize = 128
     };
 
-    bool _permanent_text_small;
+    bool _permanent_text_small = true;
 
     rhi::HPipelineState _ptc_pipeline_state;
     rhi::HConstBuffer _ptc_const;

@@ -62,7 +62,7 @@ uint32 GetDataSize(const Vector<Image*>& imageSet)
 
     for (const Image* image : imageSet)
     {
-        dataSize += Image::GetSizeInBytes(image->width, image->height, image->format);
+        dataSize += ImageUtils::GetSizeInBytes(image->width, image->height, image->format);
     }
 
     return dataSize;
@@ -489,7 +489,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
             {
                 uint32 mipWidth = Max(pvrFile->header.u32Width >> mip, 1u);
                 uint32 mipHeight = Max(pvrFile->header.u32Height >> mip, 1u);
-                uint32 mipDataSize = Image::GetSizeInBytes(mipWidth, mipHeight, pxFormat);
+                uint32 mipDataSize = ImageUtils::GetSizeInBytes(mipWidth, mipHeight, pxFormat);
 
                 if (mip < fromMipMap)
                 {

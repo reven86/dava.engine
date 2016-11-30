@@ -15,6 +15,16 @@ WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
 {
 }
 
+void WindowNativeService::AcqureContext()
+{
+    windowBackend->AcqureContext();
+}
+
+void WindowNativeService::ReleaseContext()
+{
+    windowBackend->ReleaseContext();
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__

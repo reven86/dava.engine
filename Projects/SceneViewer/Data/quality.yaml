@@ -72,7 +72,7 @@ materials:
  -
   group: "Landscape"
   quality: ["HIGH", "MEDIUM", "LOW"]
-  default: "HIGH"
+  default: "MEDIUM"
 
  -
   group: "Particle"

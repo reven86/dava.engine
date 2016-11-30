@@ -215,6 +215,7 @@ protected:
 
     void Input(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
+    void InputCancelled(UIEvent* currentInput) override;
 
     Vector<UIListCell*>* GetStoreVector(const String& cellIdentifier);
     void AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 index);

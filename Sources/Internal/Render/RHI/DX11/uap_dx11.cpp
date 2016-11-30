@@ -1,6 +1,7 @@
 #include "_dx11.h"
 #include "rhi_DX11.h"
 #include "../rhi_Public.h"
+#include "../Common/rhi_Utils.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -40,18 +41,22 @@ Windows::Graphics::Display::DisplayOrientations m_nativeOrientation;
 Windows::Graphics::Display::DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
 
-static bool useSwapchainSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
+namespace DAVA
+{
+namespace UWPWorkaround
+{
+bool enableSurfaceSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
+}
+}
 
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
-void CreateWindowSizeDependentResources();
+bool CreateWindowSizeDependentResources();
 void SetSwapChainPanel(Windows::UI::Xaml::Controls::SwapChainPanel ^ panel);
 void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale);
 void SetCurrentOrientation(Windows::Graphics::Display::DisplayOrientations currentOrientation);
 void ValidateDevice();
 void HandleDeviceLost();
-void Trim();
-void Present();
 
 // Constants used to calculate screen rotations.
 namespace ScreenRotation
@@ -221,7 +226,7 @@ void CreateDeviceResources()
         }
     }
 
-    DAVA::Logger::Info("detected GPUs (%u) :", adapter.size());
+    DAVA::Logger::Info("Detected GPUs (%u) :", adapter.size());
     for (unsigned i = 0; i != adapter.size(); ++i)
     {
         DXGI_ADAPTER_DESC desc = { 0 };
@@ -232,7 +237,8 @@ void CreateDeviceResources()
 
             ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
 
-            DAVA::Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
+            DAVA::Logger::Info("\tGPU [%u] : \"%s\", Vendor: %04X, Device: %04X, SybSystem: %04X",
+                               i, info, desc.VendorId, desc.DeviceId, desc.SubSysId);
 
             if (!defAdapter)
             {
@@ -289,18 +295,18 @@ void CreateDeviceResources()
         // http://go.microsoft.com/fwlink/?LinkId=286690
         ThrowIfFailed(
             D3D11CreateDevice(
-                nullptr,
-                D3D_DRIVER_TYPE_WARP, // Create a WARP device instead of a hardware device.
-                0,
-                creationFlags,
-                featureLevels,
-                ARRAYSIZE(featureLevels),
-                D3D11_SDK_VERSION,
-                &device,
-                &m_d3dFeatureLevel,
-                &context
-                )
-            );
+            nullptr,
+            D3D_DRIVER_TYPE_WARP, // Create a WARP device instead of a hardware device.
+            0,
+            creationFlags,
+            featureLevels,
+            ARRAYSIZE(featureLevels),
+            D3D11_SDK_VERSION,
+            &device,
+            &m_d3dFeatureLevel,
+            &context
+        )
+        );
     }
 #endif
 
@@ -325,7 +331,7 @@ void CreateDeviceResources()
 
                 ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
 
-                useSwapchainSizeWorkaround = strstr(info, "AMD Radeon HD") && info[strlen(info) - 1] == 'G';
+                DAVA::UWPWorkaround::enableSurfaceSizeWorkaround |= strstr(info, "AMD Radeon HD") && info[strlen(info) - 1] == 'G';
 
                 DAVA::Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
             }
@@ -351,11 +357,9 @@ void CreateDeviceResources()
     context.As(&m_d3dContext));
 }
 
-void CreateWindowSizeDependentResources()
+bool CreateWindowSizeDependentResources()
 {
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Lock();
-
+    const UINT backBuffersCount = 3;
     // Prevent zero size DirectX content from being created.
     m_backbufferSize.Width = std::max(m_backbufferSize.Width, 1.f);
     m_backbufferSize.Height = std::max(m_backbufferSize.Height, 1.f);
@@ -370,7 +374,7 @@ void CreateWindowSizeDependentResources()
     m_d3dRenderTargetSize.Height = swapDimensions ? m_backbufferSize.Width : m_backbufferSize.Height;
 
     uint32 swapchainBufferWidth = lround(m_d3dRenderTargetSize.Width);
-    uint32 swapchainBufferHeight = useSwapchainSizeWorkaround ? lround(m_d3dRenderTargetSize.Height) + 1 : lround(m_d3dRenderTargetSize.Height);
+    uint32 swapchainBufferHeight = lround(m_d3dRenderTargetSize.Height) + (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround ? 1 : 0);
 
     if (m_swapChain != nullptr)
     {
@@ -386,14 +390,9 @@ void CreateWindowSizeDependentResources()
         m_d3dContext->Flush();
 
         // If the swap chain already exists, resize it.
-        HRESULT hr = m_swapChain->ResizeBuffers(
-        2, // Double-buffered swap chain.
-        swapchainBufferWidth,
-        swapchainBufferHeight,
-        DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
-        0);
+        HRESULT hr = m_swapChain->ResizeBuffers(backBuffersCount, swapchainBufferWidth, swapchainBufferHeight, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 
-        CHECK_HR(hr)
+        CHECK_HR(hr);
 
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
@@ -402,7 +401,7 @@ void CreateWindowSizeDependentResources()
 
             // Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method
             // and correctly set up the new device.
-            return;
+            return false;
         }
         else
         {
@@ -412,7 +411,7 @@ void CreateWindowSizeDependentResources()
     else
     {
         // Otherwise, create a new one using the same adapter as the existing Direct3D device.
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
+        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.Width = swapchainBufferWidth; // Match the size of the window.
         swapChainDesc.Height = swapchainBufferHeight;
         swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
@@ -420,7 +419,7 @@ void CreateWindowSizeDependentResources()
         swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 3; // Use triple-buffering to minimize latency.
+        swapChainDesc.BufferCount = backBuffersCount; // Use triple-buffering to minimize latency.
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
         swapChainDesc.Flags = 0;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -428,24 +427,40 @@ void CreateWindowSizeDependentResources()
 
         // This sequence obtains the DXGI factory that was used to create the Direct3D device above.
         ComPtr<IDXGIDevice1> dxgiDevice;
-        ThrowIfFailed(
-        m_d3dDevice.As(&dxgiDevice));
+        ThrowIfFailed(m_d3dDevice.As(&dxgiDevice));
 
         ComPtr<IDXGIAdapter> dxgiAdapter;
-        ThrowIfFailed(
-        dxgiDevice->GetAdapter(&dxgiAdapter));
+        ThrowIfFailed(dxgiDevice->GetAdapter(&dxgiAdapter));
 
         ComPtr<IDXGIFactory2> dxgiFactory;
-        ThrowIfFailed(
-        dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
+        ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
 
         // When using XAML interop, the swap chain must be created for composition.
-        ThrowIfFailed(
-        dxgiFactory->CreateSwapChainForComposition(
-        m_d3dDevice.Get(),
-        &swapChainDesc,
-        nullptr,
-        &m_swapChain));
+        try
+        {
+            ThrowIfFailed(dxgiFactory->CreateSwapChainForComposition(m_d3dDevice.Get(), &swapChainDesc, nullptr, &m_swapChain));
+        }
+        catch (...)
+        {
+            m_dxgiAdapter.Reset();
+            m_d3dContext.Reset();
+            m_d3Debug.Reset();
+            m_d3UserAnnotation.Reset();
+            m_d3dDevice.Reset();
+
+            if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+            {
+                DAVA::Logger::Error("DX11: failed to create swapchain even with workaround. Terminating application.");
+            }
+            else
+            {
+                DAVA::Logger::Error("DX11: failed to create swapchain, attempting with workaround...");
+                DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
+            }
+            return false;
+        }
+
+        DVASSERT(m_swapChain != nullptr);
 
         // Associate swap chain with SwapChainPanel
         // UI changes will need to be dispatched back to the UI thread
@@ -454,18 +469,14 @@ void CreateWindowSizeDependentResources()
         m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
                                                    // Get backing native interface for SwapChainPanel
                                                    ComPtr<ISwapChainPanelNative> panelNative;
-                                                   ThrowIfFailed(
-                                                   reinterpret_cast<IUnknown*>(m_swapChainPanel)->QueryInterface(IID_PPV_ARGS(&panelNative)));
-
-                                                   ThrowIfFailed(
-                                                   panelNative->SetSwapChain(m_swapChain.Get()));
+                                                   ThrowIfFailed(reinterpret_cast<IUnknown*>(m_swapChainPanel)->QueryInterface(IID_PPV_ARGS(&panelNative)));
+                                                   ThrowIfFailed(panelNative->SetSwapChain(m_swapChain.Get()));
                                                },
                                                                                                        Platform::CallbackContext::Any));
 
         // Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
         // ensures that the application will only render after each VSync, minimizing power consumption.
-        ThrowIfFailed(
-        dxgiDevice->SetMaximumFrameLatency(1));
+        ThrowIfFailed(dxgiDevice->SetMaximumFrameLatency(1));
     }
 
 // Set the proper orientation for the swap chain, and generate 2D and
@@ -476,29 +487,29 @@ void CreateWindowSizeDependentResources()
 #if 0
     switch (displayRotation)
     {
-    case DXGI_MODE_ROTATION_IDENTITY:
-        m_orientationTransform3D = ScreenRotation::Rotation0;
-        break;
+        case DXGI_MODE_ROTATION_IDENTITY:
+            m_orientationTransform3D = ScreenRotation::Rotation0;
+            break;
 
-    case DXGI_MODE_ROTATION_ROTATE90:
-        m_orientationTransform3D = ScreenRotation::Rotation270;
-        break;
+        case DXGI_MODE_ROTATION_ROTATE90:
+            m_orientationTransform3D = ScreenRotation::Rotation270;
+            break;
 
-    case DXGI_MODE_ROTATION_ROTATE180:
-        m_orientationTransform3D = ScreenRotation::Rotation180;
-        break;
+        case DXGI_MODE_ROTATION_ROTATE180:
+            m_orientationTransform3D = ScreenRotation::Rotation180;
+            break;
 
-    case DXGI_MODE_ROTATION_ROTATE270:
-        m_orientationTransform3D = ScreenRotation::Rotation90;
-        break;
+        case DXGI_MODE_ROTATION_ROTATE270:
+            m_orientationTransform3D = ScreenRotation::Rotation90;
+            break;
 
-    default:
-        throw ref new Platform::FailureException();
+        default:
+            throw ref new Platform::FailureException();
     }
 
     ThrowIfFailed(
         m_swapChain->SetRotation(displayRotation)
-        );
+    );
 #endif
 
     ComPtr<IDXGISwapChain2> spSwapChain2;
@@ -552,24 +563,13 @@ void CreateWindowSizeDependentResources()
 
     m_d3dContext->RSSetViewports(1, &m_screenViewport);
 
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+    return true;
 }
 
 // This method is called when the XAML control is created (or re-created).
 void SetSwapChainPanel(Windows::UI::Xaml::Controls::SwapChainPanel ^ panel)
 {
-    //DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
-
     m_swapChainPanel = panel;
-    //m_logicalSize = Windows::Foundation::Size(static_cast<float>(panel->ActualWidth), static_cast<float>(panel->ActualHeight));
-    //m_nativeOrientation = currentDisplayInformation->NativeOrientation;
-    //m_currentOrientation = currentDisplayInformation->CurrentOrientation;
-    //m_compositionScaleX = panel->CompositionScaleX;
-    //m_compositionScaleY = panel->CompositionScaleY;
-    //m_dpi = currentDisplayInformation->LogicalDpi;
-
-    //CreateWindowSizeDependentResources();
 }
 
 // This method is called in the event handler for the SizeChanged event.
@@ -645,80 +645,33 @@ void ValidateDevice()
 void HandleDeviceLost()
 {
     m_swapChain = nullptr;
-
-    //     if (m_deviceNotify != nullptr)
-    //     {
-    //         m_deviceNotify->OnDeviceLost();
-    //     }
-
     CreateDeviceResources();
     CreateWindowSizeDependentResources();
-
-    //     if (m_deviceNotify != nullptr)
-    //     {
-    //         m_deviceNotify->OnDeviceRestored();
-    //     }
-}
-
-// Call this method when the app suspends. It provides a hint to the driver that the app
-// is entering an idle state and that temporary buffers can be reclaimed for use by other apps.
-void Trim()
-{
-#if 0
-    ComPtr<IDXGIDevice3> dxgiDevice;
-    m_d3dDevice.As(&dxgiDevice);
-
-    dxgiDevice->Trim();
-#endif
-}
-
-// Present the contents of the swap chain to the screen.
-void Present()
-{
-#if 0
-    // The first argument instructs DXGI to block until VSync, putting the application
-    // to sleep until the next VSync. This ensures we don't waste any cycles rendering
-    // frames that will never be displayed to the screen.
-    HRESULT hr = m_swapChain->Present(1, 0);
-
-    // Discard the contents of the render target.
-    // This is a valid operation only when the existing contents will be entirely
-    // overwritten. If dirty or scroll rects are used, this call should be removed.
-    m_d3dContext->DiscardView(m_d3dRenderTargetView.Get());
-
-    // Discard the contents of the depth stencil.
-    m_d3dContext->DiscardView(m_d3dDepthStencilView.Get());
-
-    // If the device was removed either by a disconnection or a driver upgrade, we 
-    // must recreate all device resources.
-    if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
-    {
-        HandleDeviceLost();
-    }
-    else
-    {
-        ThrowIfFailed(hr);
-    }
-#endif
 }
 
 void init_device_and_swapchain_uap(void* panel)
 {
     using ::Windows::UI::Xaml::Controls::SwapChainPanel;
-    SwapChainPanel ^ swapChain = reinterpret_cast<SwapChainPanel ^>(panel);
+    Windows::Foundation::Size backBufferSize(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height));
+    Windows::Foundation::Size backBufferScale(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
+    SetBackBufferSize(backBufferSize, backBufferScale);
+    SetSwapChainPanel(reinterpret_cast<SwapChainPanel ^>(panel));
 
     CreateDeviceResources();
-    SetSwapChainPanel(swapChain);
-    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)),
-                      Windows::Foundation::Size(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY));
-    CreateWindowSizeDependentResources();
+    if (!CreateWindowSizeDependentResources() && DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+    {
+        CreateDeviceResources();
+        if (!CreateWindowSizeDependentResources())
+        {
+            abort();
+        }
+    }
 
     _D3D11_Device = m_d3dDevice.Get();
     _D3D11_ImmediateContext = m_d3dContext.Get();
     _D3D11_FeatureLevel = m_d3dFeatureLevel;
     _D3D11_Debug = m_d3Debug.Get();
     _D3D11_UserAnnotation = m_d3UserAnnotation.Get();
-
     _D3D11_SwapChain = m_swapChain.Get();
     _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
     _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
@@ -726,13 +679,11 @@ void init_device_and_swapchain_uap(void* panel)
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
+void resize_swapchain_uap(int32 width, int32 height, float32 scaleX, float32 scaleY)
 {
     SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));
 
-    rhi::CommandBufferDX11::DiscardAll();
-    rhi::ConstBufferDX11::InvalidateAll();
     CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();

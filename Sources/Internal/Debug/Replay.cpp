@@ -80,7 +80,7 @@ void Replay::RecordEvent(const UIEvent* ev)
     Write(ev->phase);
     Write(ev->controlState);
     Write(ev->tapCount);
-    Write(static_cast<uint32>(ev->device));
+    Write(ev->device);
 }
 
 void Replay::RecordSeed(const uint32 seed)
@@ -188,7 +188,11 @@ UIEvent Replay::PlayEvent()
     ev.tapCount = Read<uint32>();
     if (!isPlayback)
         return ev;
+#if defined(__DAVAENGINE_COREV2__)
+    ev.device = Read<eInputDevices>();
+#else
     ev.device = Read<UIEvent::Device>();
+#endif
     if (!isPlayback)
         return ev;
 

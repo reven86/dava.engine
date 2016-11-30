@@ -261,16 +261,39 @@ void SceneCameraSystem::Process(float timeElapsed)
     MoveAnimate(timeElapsed);
 }
 
-void SceneCameraSystem::Input(DAVA::UIEvent* event)
+bool SceneCameraSystem::Input(DAVA::UIEvent* event)
 {
     switch (event->phase)
     {
     case DAVA::UIEvent::Phase::KEY_DOWN:
+    case DAVA::UIEvent::Phase::KEY_DOWN_REPEAT:
         OnKeyboardInput(event);
+        break;
+    case DAVA::UIEvent::Phase::WHEEL:
+        OnWheelInput(event);
         break;
     default:
         break;
     }
+    return false;
+}
+
+void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)
+{
+    bool moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
+    if (!moveCamera)
+        return;
+
+    DAVA::int32 reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
+    DAVA::float32 moveIntence = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveIntensity).AsFloat();
+    int offset = event->wheelDelta.y * moveIntence;
+#ifdef Q_OS_MAC
+    offset *= reverse * -1;
+#else
+    offset *= reverse;
+#endif
+
+    MoveToStep(offset);
 }
 
 void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)

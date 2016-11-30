@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
@@ -58,7 +56,7 @@ private:
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
     uint32 textureDataLen = 0;
-    eMovieScalingMode scaling;
+    eMovieScalingMode scaling = scalingModeNone;
 };
 }
 

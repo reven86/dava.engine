@@ -15,11 +15,12 @@ enum ErrorID
     ERROR_IS_RUNNING,
     ERROR_UPDATE,
     ERROR_PATH,
+    ERROR_FILE,
     ERROR_COUNT
 };
 void ShowErrorMessage(ErrorID id, const QString& addInfo);
 void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString& addInfo = "");
-int ShowRetryDlg(bool canCancel);
+int ShowRetryDlg(const QString& appName, const QString& appPath, bool canCancel);
 void ShowNotificationDlg(const QString& info);
 
 void LogMessage(QtMsgType, const QString& msg);

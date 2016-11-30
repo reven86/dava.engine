@@ -11,6 +11,16 @@ namespace DAVA
 {
 static const FastName FMOD_SYSTEM_EVENTANGLE_PARAMETER("(event angle)");
 
+static float32 SpeedToPitchInOctaves(const float32 speed)
+{
+    // For using with FMOD::Event::setPitch & FMOD_EVENT_PITCHUNITS_OCTAVES
+    // 0.0f -> default frequency
+    // +1 octave -> x2 frequency
+    // -1 octave -> x1/2 frequency
+
+    return std::log2f(speed);
+}
+
 FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
     :
     is3D(false)
@@ -57,8 +67,8 @@ bool FMODSoundEvent::Trigger()
         if (fmodEventInfo)
         {
             // http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
-            DVASSERT(position == position && "position is NaN");
-            DVASSERT(direction == direction && "direction is NaN");
+            DVASSERT(position == position && "position is NaN"); //-V501 check for NaN
+            DVASSERT(direction == direction && "direction is NaN"); //-V501 check for NaN
             if (isDirectional)
             {
                 DVASSERT(direction.Length() > 0.f);
@@ -77,6 +87,10 @@ bool FMODSoundEvent::Trigger()
         ApplyParamsToEvent(fmodEvent);
 
         FMOD_VERIFY(fmodEvent->setVolume(volume));
+
+        const float pitch = SpeedToPitchInOctaves(speed);
+        FMOD_VERIFY(fmodEvent->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
+
         FMOD_RESULT startResult = fmodEvent->start();
 
         if (startResult == FMOD_OK)
@@ -134,6 +148,22 @@ void FMODSoundEvent::SetVolume(float32 _volume)
         for (size_t i = 0; i < instancesCount; ++i)
         {
             FMOD_VERIFY(instancesCopy[i]->setVolume(volume));
+        }
+    }
+}
+
+void FMODSoundEvent::SetSpeed(float32 _speed)
+{
+    if (speed != _speed)
+    {
+        speed = _speed;
+
+        Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
+        size_t instancesCount = instancesCopy.size();
+        for (size_t i = 0; i < instancesCount; ++i)
+        {
+            float pitch = SpeedToPitchInOctaves(speed);
+            FMOD_VERIFY(instancesCopy[i]->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
         }
     }
 }

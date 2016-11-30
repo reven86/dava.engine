@@ -2,6 +2,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "UI/UIEvent.h"
 
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
@@ -57,5 +59,7 @@ bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
 }
 
 } // namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN_UAP__

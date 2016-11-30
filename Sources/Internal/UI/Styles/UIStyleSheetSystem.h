@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "UIStyleSheetStructs.h"
+#include "UI/UISystem.h"
 
 namespace DAVA
 {
@@ -13,16 +14,20 @@ struct UIStyleSheetSelector;
 class VariantType;
 
 class UIStyleSheetSystem
+: public UISystem
 {
 public:
     UIStyleSheetSystem();
-    ~UIStyleSheetSystem();
+    ~UIStyleSheetSystem() override;
+
+    void Process(DAVA::float32 elapsedTime) override{};
 
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false);
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
     bool HasGlobalClass(const FastName& clazz) const;
     void SetGlobalTaggedClass(const FastName& tag, const FastName& clazz);
+    FastName GetGlobalTaggedClass(const FastName& tag) const;
     void ResetGlobalTaggedClass(const FastName& tag);
     void ClearGlobalClasses();
 

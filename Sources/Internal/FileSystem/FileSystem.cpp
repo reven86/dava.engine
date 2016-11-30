@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 
 #include "Base/Platform.h"
+#include "Base/Exception.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -26,6 +27,7 @@
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
 #include <direct.h>
 #include <io.h>
@@ -153,8 +155,8 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
     File* srcFile = File::Create(existingFile, File::OPEN | File::READ);
     File* dstFile = File::Create(newFile, File::WRITE | File::CREATE);
 
-    Logger::Info("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
-                 newFile.GetStringValue().c_str(), srcFile, dstFile);
+    Logger::Debug("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
+                  newFile.GetStringValue().c_str(), srcFile, dstFile);
 
     if (srcFile && dstFile)
     {
@@ -270,8 +272,19 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    int res = FileAPI::RemoveFile(filePath.GetNativeAbsolutePathname().c_str());
-    return (res == 0);
+    const auto& fileName = filePath.GetNativeAbsolutePathname();
+    int res = FileAPI::RemoveFile(fileName.c_str());
+    if (res == 0)
+    {
+        return true;
+    }
+
+    if (errno == ENOENT) // no such file
+    {
+        return false;
+    }
+    Logger::Error("can't delete file %s cause: %s", filePath.GetStringValue().c_str(), strerror(errno));
+    return false;
 }
 
 bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
@@ -384,6 +397,26 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
     return File::Create(frameworkPath, attributes);
+}
+
+FilePath FileSystem::GetTempDirectoryPath() const
+{
+#ifdef __DAVAENGINE_WIN_UAP__
+    auto folder = Windows::Storage::ApplicationData::Current->TemporaryFolder;
+    const wchar_t* ptr = folder->Path->Data();
+    return FilePath(ptr);
+#else
+    static const char* envNames[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR" };
+    for (const char* envName : envNames)
+    {
+        const char* tmp = std::getenv(envName);
+        if (tmp != nullptr)
+        {
+            return FilePath(tmp);
+        }
+    }
+    return FilePath();
+#endif
 }
 
 const FilePath& FileSystem::GetCurrentWorkingDirectory()
@@ -793,7 +826,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetInternalStoragePathname();
 #endif
 }
@@ -803,7 +836,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetExternalStoragePathname();
 #endif
 }
@@ -1067,7 +1100,7 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
     {
         if (fullSize > std::numeric_limits<uint32>::max())
         {
-            throw std::runtime_error("size of file: more 4Gb use 64 bit version");
+            DAVA_THROW(DAVA::Exception, "size of file: more 4Gb use 64 bit version");
         }
         size = static_cast<uint32>(fullSize);
         return true;

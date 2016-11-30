@@ -10,7 +10,7 @@
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
     appOptions->SetString("title", "TemplateTArc");
@@ -30,17 +30,15 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     DAVA::Engine e;
-    e.SetOptions(appOptions);
-
     if (cmdline.size() > 1 && cmdline[1] == "selftest")
     {
-        e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+        e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules, appOptions);
         DAVA::TArc::TestCore testCore(e);
         return e.Run();
     }
 
     bool isConsoleMode = cmdline.size() > 1;
-    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE : DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE : DAVA::eEngineRunMode::GUI_EMBEDDED, modules, appOptions);
     DAVA::TArc::Core core(e);
 
     if (isConsoleMode)

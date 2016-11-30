@@ -1,27 +1,40 @@
 #include "../rhi_ShaderSource.h"
-    
-    #include "Logger/Logger.h"
+#include "rhi_Utils.h"
+#include "Logger/Logger.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
+#include "Debug/ProfilerCPU.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+
 using DAVA::Logger;
-    #include "FileSystem/DynamicMemoryFile.h"
-    #include "FileSystem/FileSystem.h"
-using DAVA::DynamicMemoryFile;
-    #include "Utils/Utils.h"
-    #include "Debug/CPUProfiler.h"
-    #include "Concurrency/Mutex.h"
-    #include "Concurrency/LockGuard.h"
 using DAVA::Mutex;
 using DAVA::LockGuard;
 
-    #include "PreProcess.h"
+#include "PreProcess.h"
 
-    #define RHI__USE_STD_REGEX 0
-    #define RHI__OPTIMIZED_REGEX 1
+#define RHI__USE_STD_REGEX 0
+#define RHI__OPTIMIZED_REGEX 1
 
-    #if RHI__USE_STD_REGEX
-        #include <regex>
-    #else
-        #include "RegExp.h"
-    #endif
+#if RHI__USE_STD_REGEX
+    #include <regex>
+#else
+    #include "RegExp.h"
+#endif
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+
+#endif
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+
+#define stricmp _strcmpi
+
+#endif
 
 namespace rhi
 {
@@ -72,11 +85,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
+    ShaderPreprocessScope preprocessScope;
+
     bool success = false;
     std::vector<std::string> def;
     const char* argv[128];
     int argc = 0;
-    std::string src;
 
     // pre-process source text with #defines, if any
 
@@ -90,14 +104,14 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     }
     for (unsigned i = 0; i != def.size(); ++i)
         argv[argc++] = def[i].c_str();
-    SetPreprocessCurFile(fileName.c_str());
-    PreProcessText(srcText, argv, argc, &src);
 
     // parse properties/samplers
 
-    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1), DAVA::File::READ));
+    std::string src;
+    SetPreprocessCurFile(fileName.c_str());
+    PreProcessText(srcText, argv, argc, &src);
 
-    if (in)
+    DAVA::ScopedPtr<DAVA::UnmanagedMemoryFile> in(new DAVA::UnmanagedMemoryFile(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1)));
     {
         #if RHI__USE_STD_REGEX
         std::regex prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
@@ -113,54 +127,59 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         std::regex colormask_re(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         std::regex comment_re("^\\s*//.*");
         #else
-        RegExp prop_re;
-        RegExp proparr_re;
-        RegExp fsampler2d_re;
-        RegExp vsampler2d_re;
-        RegExp samplercube_re;
-        RegExp ftexture2d_re;
-        RegExp vtexture2d_re;
-        RegExp texturecube_re;
-        RegExp blend_re;
-        RegExp blending2_re;
-        RegExp colormask_re;
-        RegExp comment_re;
+        static RegExp prop_re;
+        static RegExp proparr_re;
+        static RegExp fsampler2d_re;
+        static RegExp vsampler2d_re;
+        static RegExp samplercube_re;
+        static RegExp ftexture2d_re;
+        static RegExp vtexture2d_re;
+        static RegExp texturecube_re;
+        static RegExp blend_re;
+        static RegExp blending2_re;
+        static RegExp colormask_re;
+        static RegExp comment_re;
 
+        static bool compileRegexps = true;
+        if (compileRegexps)
+        {
 #if !(RHI__OPTIMIZED_REGEX)
-        prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
-        ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
-        blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
-        colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
-        comment_re.compile("^\\s*//.*");
+            prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+            proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+            fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+            vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+            samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+            ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+            blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
+            colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
+            comment_re.compile("^\\s*//.*");
 #else
-        prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
-        proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
-        fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
-        vsampler2d_re.compile("DECL_VP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
-        samplercube_re.compile("DECL_FP_SAMPLERCUBE\\s*\\(\\s*(\\w+)\\s*\\)");
-        ftexture2d_re.compile("FP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
-        vtexture2d_re.compile("VP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
-        texturecube_re.compile("FP_TEXTURECUBE\\s*\\(\\s*(\\w+)\\s*\\,");
-        blend_re.compile("BLEND_MODE\\s*\\(\\s*(\\w+)\\s*\\)");
-        blending2_re.compile("blending\\s*\\:\\s*src=(\\w+)\\s+dst=(\\w+)");
-        colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
-        comment_re.compile("^\\s*//.*");
+            prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
+            proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
+            fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+            vsampler2d_re.compile("DECL_VP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+            samplercube_re.compile("DECL_FP_SAMPLERCUBE\\s*\\(\\s*(\\w+)\\s*\\)");
+            ftexture2d_re.compile("FP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+            vtexture2d_re.compile("VP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+            texturecube_re.compile("FP_TEXTURECUBE\\s*\\(\\s*(\\w+)\\s*\\,");
+            blend_re.compile("BLEND_MODE\\s*\\(\\s*(\\w+)\\s*\\)");
+            blending2_re.compile("blending\\s*\\:\\s*src=(\\w+)\\s+dst=(\\w+)");
+            colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
+            comment_re.compile("^\\s*//.*");
+            compileRegexps = false;
 #endif
+        }
         #endif
 
         _Reset();
 
         while (!in->IsEof())
         {
-            char line[4 * 1024];
-            uint32 lineLen = in->ReadLine(line, sizeof(line));
+            char line[4 * 1024] = {};
+            in->ReadLine(line, sizeof(line));
             #if RHI__USE_STD_REGEX
             std::cmatch match;
             bool isComment = std::regex_match(line, match, comment_re);
@@ -1018,6 +1037,7 @@ bool ShaderSource::Load(DAVA::File* in)
     READ_CHECK(vdecl.Load(in));
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_PROPERTY_COUNT);
     prop.resize(readUI4);
     for (unsigned p = 0; p != prop.size(); ++p)
     {
@@ -1045,7 +1065,12 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
-    buf.resize(readUI4);
+    READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
+    uint32 bufCount = readUI4;
+    for (const ShaderProp& p : prop)
+        READ_CHECK(p.bufferindex < bufCount);
+
+    buf.resize(bufCount);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
         READ_CHECK(ReadUI4(in, &readUI4));
@@ -1058,6 +1083,7 @@ bool ShaderSource::Load(DAVA::File* in)
     }
 
     READ_CHECK(ReadUI4(in, &readUI4));
+    READ_CHECK(readUI4 <= (rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT + rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT))
     sampler.resize(readUI4);
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
@@ -1286,7 +1312,7 @@ void ShaderSource::Dump() const
 {
     Logger::Info("src-code:");
 
-    char src[64 * 1024];
+    char src[RHI_SHADER_SOURCE_BUFFER_SIZE];
     char* src_line[1024];
     unsigned line_cnt = 0;
 
@@ -1519,32 +1545,33 @@ void ShaderSourceCache::Load(const char* fileName)
             if (!success)
             {
                 Clear();
+                Logger::Error("ShaderSource-Cache failed to load, ignoring cached shaders\n");
             }
         };
         
 #define READ_CHECK(exp) if (!exp) { success = false; return; }
 
-        uint32 readUI4 = 0;
-        READ_CHECK(ReadUI4(file, &readUI4));
+        uint32 formatVersion = 0;
+        READ_CHECK(ReadUI4(file, &formatVersion));
 
-        if (readUI4 == FormatVersion)
+        if (formatVersion == FormatVersion)
         {
             LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-            READ_CHECK(ReadUI4(file, &readUI4));
-            Entry.resize(readUI4);
+            uint32 entryCount = 0;
+            READ_CHECK(ReadUI4(file, &entryCount));
+            Entry.reserve(entryCount);
             Logger::Info("loading cached-shaders (%u): ", Entry.size());
 
-            for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
+            for (uint32 i = 0; i < entryCount; ++i)
             {
                 std::string str;
+                uint32 hash = 0;
                 READ_CHECK(ReadS0(file, &str));
+                READ_CHECK(ReadUI4(file, &hash));
+                Entry.push_back({ FastName(str.c_str()), hash, new ShaderSource() });
 
-                e->uid = FastName(str.c_str());
-                READ_CHECK(ReadUI4(file, &e->srcHash));
-                e->src = new ShaderSource();
-
-                READ_CHECK(e->src->Load(file));
+                READ_CHECK(Entry.back().src->Load(file));
             }
         }
         else

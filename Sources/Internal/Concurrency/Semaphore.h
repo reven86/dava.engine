@@ -2,6 +2,7 @@
 #define __DAVAENGINE_SEMAPHORE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)

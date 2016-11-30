@@ -9,7 +9,8 @@
 #include <QNetworkReply>
 #include <QQueue>
 
-class ConfigDownloader;
+class FileManager;
+struct AppVersion;
 class ApplicationManager : public QObject
 {
     Q_OBJECT
@@ -25,27 +26,35 @@ public:
 
     void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
-    bool RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID);
+    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
     bool RemoveBranch(const QString& branchID);
 
     bool ShouldShowNews();
     void NewsShowed();
-    QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
+    void ParseRemoteConfigData(const QByteArray& data);
+    void SaveLocalConfig() const;
+
+    QString GetApplicationDirectory(QString branchID, QString appID, bool isToolSet, bool mustExist = true) const;
+    FileManager* GetFileManager() const;
+
+    //this is a helper to get executable file name
+    static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
 public slots:
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 private:
     void LoadLocalConfig(const QString& configPath);
-    void ParseRemoteConfigData(const QByteArray& data);
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
+
+    QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 
     QString localConfigFilePath;
 
     ConfigParser localConfig;
     ConfigParser remoteConfig;
 
-    friend class ConfigDownloader;
+    FileManager* fileManager = nullptr;
 };
 
 #endif // APPLICATIONMANAGER_H

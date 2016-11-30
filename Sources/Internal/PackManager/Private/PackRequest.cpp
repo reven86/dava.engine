@@ -5,6 +5,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "DLC/DLC.h"
+#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -69,12 +70,15 @@ void PackRequest::AskFooter()
                     {
                         if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
                         {
-                            throw std::runtime_error("can't get size of file on server side");
+                            DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
                         }
                     }
                     else
                     {
-                        throw std::runtime_error("can't get size of superpack from server");
+                        String err = DLC::ToString(error);
+                        Logger::Error("can't get size of superpack from server: %s,\ntry again", err.c_str());
+                        // try again
+                        Restart();
                     }
                 }
             }
@@ -84,7 +88,7 @@ void PackRequest::AskFooter()
     {
         if (fullSizeServerData < sizeof(PackFormat::PackFile))
         {
-            throw std::runtime_error("too small superpack on server");
+            DAVA_THROW(DAVA::Exception, "too small superpack on server");
         }
 
         uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
@@ -109,33 +113,39 @@ void PackRequest::GetFooter()
             dm->GetError(downloadTaskId, error);
             if (DLE_NO_ERROR == error)
             {
-                uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerOnServer.info), sizeof(footerOnServer.info));
+                PackFormat::PackFile::FooterBlock::Info& info = footerOnServer.info;
+                uint32 crc32 = CRC32::ForBuffer(&info, sizeof(info));
                 if (crc32 != footerOnServer.infoCrc32)
                 {
-                    throw std::runtime_error("downloaded superpack footer is broken: " + packManagerImpl->GetSuperPackUrl());
+                    Logger::Error("downloaded superpack footer crc32 not match, url: %s\ntry again", packManagerImpl->GetSuperPackUrl().c_str());
+                    Restart();
                 }
-
-                if (packManagerImpl->GetInitFooter().infoCrc32 != footerOnServer.infoCrc32)
+                else if (packManagerImpl->GetServerFooterCrc32() != footerOnServer.infoCrc32)
                 {
                     // server Superpack changed during current session
-                    throw std::runtime_error("during pack request server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
+                    Logger::Error("during current session server superpack file changed, crc32 not match, url: %s\n, try reinitialization for PM", packManagerImpl->GetSuperPackUrl().c_str());
+                    Restart();
+                    packManagerImpl->RetryInit();
                 }
-
-                StartLoadingPackFile();
+                else
+                {
+                    StartLoadingPackFile();
+                }
             }
             else
             {
                 rootPack->state = IPackManager::Pack::Status::ErrorLoading;
                 rootPack->downloadError = error;
-                rootPack->otherErrorMsg = "can't load superpack footer";
+                rootPack->otherErrorMsg = "can't load superpack footer: " + DLC::ToString(error);
 
-                packManagerImpl->requestProgressChanged.Emit(*this);
+                Logger::Error("%s\ntry again", rootPack->otherErrorMsg.c_str());
+                Restart();
             }
         }
     }
     else
     {
-        throw std::runtime_error("can't get status for download task");
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
     }
 }
 
@@ -175,7 +185,10 @@ bool PackRequest::IsLoadingPackFileFinished()
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
-    dm->GetStatus(subRequest.taskId, status);
+    if (!dm->GetStatus(subRequest.taskId, status))
+    {
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
+    }
     uint64 progress = 0;
     switch (status)
     {
@@ -187,17 +200,17 @@ bool PackRequest::IsLoadingPackFileFinished()
             {
                 if (total == 0) // empty file pack (never be)
                 {
-                    // skip current iteration  pack.downloadProgress = 1.0f;
+                    currentPack.downloadProgress = 1.0f;
                 }
                 else
                 {
-                    currentPack.downloadProgress = std::min(1.0f, static_cast<float32>(progress) / total);
-                    currentPack.downloadedSize = static_cast<uint32>(progress);
-                    currentPack.totalSize = static_cast<uint32>(total);
-                    // fire event on update progress
-                    packManagerImpl->packDownloadChanged.Emit(currentPack);
-                    packManagerImpl->requestProgressChanged.Emit(*this);
+                    currentPack.downloadProgress = static_cast<float32>(progress) / total;
                 }
+                currentPack.downloadedSize = progress;
+                currentPack.totalSize = total;
+                // fire event on update progress
+                packManagerImpl->packDownloadChanged.Emit(currentPack);
+                packManagerImpl->requestProgressChanged.Emit(*this);
             }
         }
         break;
@@ -209,13 +222,22 @@ bool PackRequest::IsLoadingPackFileFinished()
         {
             if (DLE_NO_ERROR == downloadError)
             {
-                result = true;
-
                 dm->GetProgress(subRequest.taskId, progress);
 
-                currentPack.downloadProgress = 1.0f;
-                currentPack.downloadedSize = progress;
-                packManagerImpl->packDownloadChanged.Emit(currentPack);
+                if (progress != currentPack.totalSizeFromDB)
+                {
+                    Logger::Error("size not match for downloaded pack: %s,\ntry again", currentPack.name.c_str());
+                    Restart();
+                }
+                else
+                {
+                    result = true;
+                    currentPack.downloadProgress = 1.0f;
+                    currentPack.downloadedSize = progress;
+                    currentPack.totalSize = progress;
+                    packManagerImpl->packDownloadChanged.Emit(currentPack);
+                    packManagerImpl->requestProgressChanged.Emit(*this);
+                }
             }
             else
             {
@@ -230,15 +252,16 @@ bool PackRequest::IsLoadingPackFileFinished()
                     rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
-                subRequest.status = SubRequest::Error;
+                FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + currentPack.name + RequestManager::packPostfix;
 
-                packManagerImpl->packStateChanged.Emit(currentPack);
+                FileSystem::Instance()->DeleteFile(packPath);
+
+                Restart();
             }
-            packManagerImpl->requestProgressChanged.Emit(*this);
         }
         else
         {
-            throw std::runtime_error(Format("can't get download error code for pack file for pack: %s", subRequest.pack->name.c_str()));
+            DAVA_THROW(DAVA::Exception, Format("can't get download error code for pack file for pack: %s", subRequest.pack->name.c_str()));
         }
     }
     break;
@@ -279,16 +302,16 @@ void PackRequest::StartCheckHash()
 
     if (!FileSystem::Instance()->IsFile(packPath))
     {
-        throw std::runtime_error("can't find just downloaded pack: " + packPath.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't find just downloaded pack: " + packPath.GetStringValue());
     }
 
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
     if (realCrc32FromPack != currentPack.hashFromDB)
     {
-        currentPack.otherErrorMsg = "pack crc32 from meta not match crc32 from local DB";
-
-        SetErrorStatusAndFireSignal(subRequest, currentPack);
+        Logger::Error("pack crc32 from meta not match crc32 from local DB\ntry again");
+        FileSystem::Instance()->DeleteFile(packPath);
+        Restart();
     }
     else
     {
@@ -313,7 +336,17 @@ void PackRequest::MountPack()
     {
         FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + pack.name + RequestManager::packPostfix;
         FileSystem* fs = FileSystem::Instance();
-        fs->Mount(packPath, "Data/");
+        try
+        {
+            fs->Mount(packPath, "Data/");
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("can't mount downloaded pack: %s", ex.what());
+            fs->DeleteFile(packPath);
+            Restart();
+            return;
+        }
     }
 
     subRequest.status = SubRequest::Mounted;
@@ -333,7 +366,7 @@ void PackRequest::GoToNextSubRequest()
 
 void PackRequest::Start()
 {
-    // do nothing
+    Restart();
 }
 
 void PackRequest::Stop()
@@ -349,9 +382,8 @@ void PackRequest::Stop()
             {
                 DownloadManager* dm = DownloadManager::Instance();
                 dm->Cancel(subRequest.taskId);
-
+                subRequest.taskId = 0;
                 // start loading again this subRequest on resume
-
                 subRequest.status = SubRequest::Wait;
             }
             break;
@@ -362,11 +394,11 @@ void PackRequest::Stop()
     }
 }
 
-void PackRequest::ClearSuperpackData()
+void PackRequest::Restart()
 {
     fullSizeServerData = 0;
     downloadTaskId = 0;
-    std::memset(&footerOnServer, 0, sizeof(footerOnServer));
+    Memset(&footerOnServer, 0, sizeof(footerOnServer));
 
     SubRequest& subRequest = dependencies.at(0);
     subRequest.status = SubRequest::AskFooter;
@@ -375,6 +407,7 @@ void PackRequest::ClearSuperpackData()
 void PackRequest::Update()
 {
     DVASSERT(Thread::IsMainThread());
+    DVASSERT(packManagerImpl->IsInitialized());
 
     if (!IsDone() && !IsError())
     {
@@ -383,7 +416,7 @@ void PackRequest::Update()
         switch (subRequest.status)
         {
         case SubRequest::Wait:
-            ClearSuperpackData();
+            Restart();
             break;
         case SubRequest::AskFooter:
             AskFooter(); // continue ask footer
@@ -414,6 +447,7 @@ void PackRequest::Update()
 
 void PackRequest::ChangePriority(float32 newPriority)
 {
+    rootPack->priority = newPriority;
     for (SubRequest& subRequest : dependencies)
     {
         IPackManager::Pack& pack = *subRequest.pack;

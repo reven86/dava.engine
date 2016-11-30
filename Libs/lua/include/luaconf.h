@@ -757,7 +757,21 @@ union luai_Cast { double l_d; long l_l; };
 ** without modifying the main part of the file.
 */
 
-
+/* on Windows 10 getenv(), system() and LoadLibrary() not availabe */
+#if defined(LUA_WIN)
+#if !defined(WINAPI_FAMILY_PARTITION)
+#include <winapifamily.h>
+#endif
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define LUA_NO_GETENV
+#define LUA_NO_SYSTEM
+#undef LUA_DL_DLL
+#undef lua_popen
+#undef lua_pclose
+#define lua_popen(L,c,m) ((void)((void)c, m), luaL_error(L, LUA_QL("popen") " not supported"), (FILE*)0)
+#define lua_pclose(L,file) ((void)((void)L, file), 0)
+#endif
+#endif
 
 #endif
 

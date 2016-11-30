@@ -170,5 +170,7 @@
         <file>QtIcons/path.png</file>
         <file>QtIcons/snapcamera.png</file>
         <file>QtIcons/grab-image.png</file>
+        <file>QtIcons/rspeaker_off.png</file>
+        <file>QtIcons/rspeaker_on.png</file>
     </qresource>
 </RCC>

@@ -17,7 +17,7 @@ void SelectSceneScreen::LoadResources()
     BaseScreen::LoadResources();
 
     Rect screenRect = GetRect();
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = DAVA::UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     screenRect.dx = static_cast<float32>(screenSize.dx);
     screenRect.dy = static_cast<float32>(screenSize.dy);
     SetRect(screenRect);

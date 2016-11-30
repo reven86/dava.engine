@@ -33,11 +33,11 @@
 #include "Commands2/ConvertPathCommands.h"
 #include "Commands2/ConvertToBillboardCommand.h"
 
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
+#include "Qt/Settings/SettingsManager.h"
 #include "PropertyEditorStateHelper.h"
-#include "Qt/Project/ProjectManager.h"
 
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
@@ -50,6 +50,9 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
@@ -60,6 +63,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
 {
     DAVA::Function<void()> fn(this, &PropertyEditor::ResetProperties);
     propertiesUpdater = new LazyUpdater(fn, this);
+    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &PropertyEditor::UpdateSelectionLazy), this);
 
     if (connectToSceneSignals)
     {
@@ -110,24 +114,13 @@ void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<Gl
 
 void PropertyEditor::SetEntities(const SelectableGroup* selected)
 {
-    ClearCurrentNodes();
-    SCOPE_EXIT
+    SelectableGroup group = ExtractEntities(selected);
+    if (group != curNodes)
     {
+        ClearCurrentNodes();
+        curNodes = group;
         ResetProperties();
         SaveScheme("~doc:/PropEditorDefault.scheme");
-    };
-
-    if (selected == nullptr || selected->IsEmpty())
-        return;
-
-    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
-    {
-        GetOrCreateCustomProperties(entity);
-    }
-
-    for (const auto& item : selected->GetContent())
-    {
-        curNodes.Add(item.GetContainedObject(), item.GetBoundingBox());
     }
 }
 
@@ -213,6 +206,38 @@ void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtP
             }
         }
     }
+}
+
+void PropertyEditor::UpdateSelectionLazy()
+{
+    SceneEditor2* activeScene = sceneHolder.GetScene();
+    if (activeScene)
+    {
+        SetEntities(&activeScene->selectionSystem->GetSelection());
+    }
+    else
+    {
+        SetEntities(nullptr);
+    }
+}
+
+SelectableGroup PropertyEditor::ExtractEntities(const SelectableGroup* selection)
+{
+    SelectableGroup entities;
+    if (selection == nullptr || selection->IsEmpty())
+        return entities;
+
+    for (auto entity : selection->ObjectsOfType<DAVA::Entity>())
+    {
+        GetOrCreateCustomProperties(entity);
+    }
+
+    for (const auto& item : selection->GetContent())
+    {
+        entities.Add(item.GetContainedObject(), item.GetBoundingBox());
+    }
+
+    return entities;
 }
 
 void PropertyEditor::ResetProperties()
@@ -735,7 +760,7 @@ void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
 
 void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
-    SetEntities(selected);
+    selectionUpdater->Update();
 }
 
 template <typename T>
@@ -1586,8 +1611,11 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
 
 QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
 {
-    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
-    DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
+    DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+
     if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();

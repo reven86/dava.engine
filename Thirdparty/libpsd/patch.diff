@@ -1,0 +1,53 @@
+diff -ur ./libpsd_source_original/include/psd_config.h ./libpsd_source/include/psd_config.h
+--- ./libpsd_source_original/include/psd_config.h	2007-02-24 19:06:08.000000000 +0200
++++ ./libpsd_source/include/psd_config.h	2016-09-28 22:05:52.000000000 +0300
+@@ -1,12 +1,13 @@
+ #ifndef __PSD_CONFIG_H__
+ #define __PSD_CONFIG_H__
+ 
++// PATCHED: removed libjpeg, libxml and libexif dependencies
+ 
+ // we need libjpeg to get the thumbnail
+ // You can download libjpeg from http://sourceforge.net/projects/libjpeg
+-#if 1
+-#define PSD_INCLUDE_LIBJPEG
+-#endif
++// #if 1
++// #define PSD_INCLUDE_LIBJPEG
++// #endif
+ 
+ 
+ // Photoshop CS and CS2 use the zip arithmetic for data uncompression (compression = 3)
+@@ -27,22 +28,22 @@
+ // but we seldom use the XMP metadata to get the information of PSD file,
+ // so you don't have to define this macro
+ // You can download libxml from http://sourceforge.net/projects/libxml
+-#if 1
+-#if defined(PSD_GET_ALL_IMAGE_RESOURCE)
+-#define PSD_INCLUDE_LIBXML
+-#endif
+-#endif
++// #if 1
++// #if defined(PSD_GET_ALL_IMAGE_RESOURCE)
++// #define PSD_INCLUDE_LIBXML
++// #endif
++// #endif
+ 
+ 
+ // we need libexif to get the exif info
+ // Exif: Exchangeable image file format for Digital Still Cameras
+ // http://www.pima.net/standards/it10/PIMA15740/exif.htm
+ // You can download EXIF Tag Parsing Library from http://sourceforge.net/projects/libexif
+-#if 1
+-#if defined(PSD_GET_ALL_IMAGE_RESOURCE)
+-#define PSD_INCLUDDE_LIBEXIF
+-#endif
+-#endif
++// #if 1
++// #if defined(PSD_GET_ALL_IMAGE_RESOURCE)
++// #define PSD_INCLUDDE_LIBEXIF
++// #endif
++// #endif
+ 
+ 
+ // get path resource

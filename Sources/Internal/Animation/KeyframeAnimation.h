@@ -52,7 +52,7 @@ public:
 private:
     int32* var;
     KeyframeData* data;
-    KeyframeData::Keyframe* currentFrame;
+    KeyframeData::Keyframe* currentFrame = nullptr;
 };
 };
 #endif // __DAVAENGINE_KEYFRAME_ANIMATION_H__

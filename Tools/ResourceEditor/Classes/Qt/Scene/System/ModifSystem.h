@@ -49,7 +49,7 @@ public:
     bool ModifCanStartByMouse(const SelectableGroup& objects) const;
 
     void RemoveEntity(DAVA::Entity* entity) override;
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
 
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);

@@ -7,7 +7,8 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
@@ -32,7 +33,7 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Update")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE)
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
@@ -58,7 +59,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Draw")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW)
 
     Renderer::GetRenderStats().Reset();
 
@@ -73,16 +74,26 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("Core::BeginFrame")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_BEGIN_FRAME)
 
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("Core::EndFrame")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_END_FRAME)
 
     Renderer::EndFrame();
+}
+
+void ApplicationCore::OnRenderingIsNotPossible(rhi::RenderingError error)
+{
+    String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x",
+                         static_cast<DAVA::uint32>(error));
+
+    DVASSERT_MSG(0, info.c_str());
+    Logger::Error("%s", info.c_str());
+    abort();
 }
 
 void ApplicationCore::OnSuspend()

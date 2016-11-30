@@ -30,7 +30,7 @@ public:
 
 private:
     Vector<RenderObject*> renderObjectArray;
-    Camera* camera;
+    Camera* camera = nullptr;
 };
 
 } // ns

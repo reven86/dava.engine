@@ -1,4 +1,5 @@
 #include "Base/GlobalEnum.h"
+#include "Engine/EngineTypes.h"
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/Entity.h"
@@ -361,6 +362,15 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+ENUM_DECLARE(eModifierKeys)
+{
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::SHIFT), "SHIFT");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::CONTROL), "CTRL");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::ALT), "ALT");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::COMMAND), "CMD");
+};
+#else
 ENUM_DECLARE(UIEvent::Modifier)
 {
     ENUM_ADD_DESCR(UIEvent::Modifier::SHIFT_DOWN, "SHIFT");
@@ -368,6 +378,7 @@ ENUM_DECLARE(UIEvent::Modifier)
     ENUM_ADD_DESCR(UIEvent::Modifier::ALT_DOWN, "ALT");
     ENUM_ADD_DESCR(UIEvent::Modifier::COMMAND_DOWN, "CMD");
 };
+#endif
 
 ENUM_DECLARE(rhi::TextureAddrMode)
 {

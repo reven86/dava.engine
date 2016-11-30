@@ -36,12 +36,15 @@ void PlatformCore::Run()
 
 void PlatformCore::PrepareToQuit()
 {
-    // As quit is not supported on iOS so do nothing
+    engineBackend->PostAppTerminate(true);
 }
 
 void PlatformCore::Quit()
 {
-    // Quit is not supported on iOS
+    engineBackend->OnGameLoopStopped();
+    engineBackend->OnEngineCleanup();
+
+    std::exit(engineBackend->GetExitCode());
 }
 
 int32 PlatformCore::OnFrame()

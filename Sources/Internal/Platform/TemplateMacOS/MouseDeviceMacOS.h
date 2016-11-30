@@ -7,12 +7,14 @@
 
 #include "Input/MouseDevice.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceMacOS : public MouseDeviceInterface
 {
 public:
-    MouseDeviceMacOS() = default;
+    MouseDeviceMacOS();
     ~MouseDeviceMacOS();
 
     void SetMode(eCaptureMode newMode) override;
@@ -38,9 +40,16 @@ private:
     void OSXShowCursor();
     void OSXHideCursor();
     void* GetOrCreateBlankCursor();
+    
+#if defined(__DAVAENGINE_STEAM__)
+    SigConnectionID steamOverlayActivationConnId;
+    void OnSteamActivation(bool active);
+#endif
 };
 
 } //  namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_MACOS__
 

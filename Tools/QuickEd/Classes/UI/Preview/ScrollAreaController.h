@@ -27,7 +27,7 @@ public:
 
     void SetNestedControl(DAVA::UIControl* nestedControl);
     void SetMovableControl(DAVA::UIControl* movableControl);
-    void AdjustScale(float newScale, QPointF mousePos);
+    void AdjustScale(float newScale, const QPointF& mousePos);
 
     QSize GetCanvasSize() const;
     QSize GetViewSize() const;
@@ -39,17 +39,18 @@ public:
     QPoint GetMaximumPos() const;
 
 public slots:
-    void SetViewSize(QSize size);
-    void SetPosition(QPoint position);
+    void SetViewSize(const QSize& size);
+    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
+    void SetPosition(const QPoint& position);
     void UpdateCanvasContentSize();
     void SetScale(float scale);
 
 signals:
-    void CanvasSizeChanged(QSize canvasSize);
-    void ViewSizeChanged(QSize size);
-    void PositionChanged(QPoint position);
+    void CanvasSizeChanged(const QSize& canvasSize);
+    void ViewSizeChanged(const QSize& size);
+    void PositionChanged(const QPoint& position);
     void ScaleChanged(float scale);
-    void NestedControlPositionChanged(QPoint position);
+    void NestedControlPositionChanged(const QPoint& position);
 
 private:
     void UpdatePosition();

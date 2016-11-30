@@ -32,6 +32,7 @@
 #include "Vector4PropertyDelegate.h"
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
+#include "Project/Project.h"
 
 using namespace DAVA;
 
@@ -56,20 +57,23 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
+    const QString& gfxExtension = Project::GetGraphicsFileExtension();
+    const QString& particleExtension = Project::Get3dFileExtension();
+
     propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
-    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
+    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
 
-    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-detail"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-gradient"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
 }
 
@@ -105,7 +109,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
     {
         PropertyWidget* editorWidget = new PropertyWidget(parent);
         editorWidget->setObjectName(QString::fromUtf8("editorWidget"));
-        QWidget* editor = currentDelegate->createEditor(editorWidget, option, sourceIndex);
+        QWidget* editor = currentDelegate->createEditor(editorWidget, context, option, sourceIndex);
         if (!editor)
         {
             DAVA::SafeDelete(editorWidget);
@@ -209,6 +213,11 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
     }
 
     return nullptr;
+}
+
+void PropertiesTreeItemDelegate::SetProject(const Project* project)
+{
+    context.project = project;
 }
 
 void PropertiesTreeItemDelegate::emitCommitData(QWidget* editor)

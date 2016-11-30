@@ -11,6 +11,9 @@
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Platform/DeviceInfo.h"
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerOverlay.h"
+#include "VisibilityQueryResults.h"
 
 namespace DAVA
 {
@@ -30,18 +33,11 @@ RenderStats stats;
 rhi::ResetParam resetParams;
 }
 
-static Mutex renderCmdExecSync;
-
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!initialized);
 
     api = _api;
-
-    if (nullptr == params.FrameCommandExecutionSync)
-    {
-        params.FrameCommandExecutionSync = &renderCmdExecSync;
-    }
 
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
@@ -57,7 +53,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 
     initialized = true;
 
-    //must be called after setting ininialized in true
+    //must be called after setting initialized in true
     Vector<eGPUFamily> gpuLoadingOrder;
     gpuLoadingOrder.push_back(DeviceInfo::GetGPUFamily());
 #if defined(__DAVAENGINE_ANDROID__)
@@ -74,6 +70,7 @@ void Uninitialize()
 {
     DVASSERT(initialized);
 
+    VisibilityQueryResults::Cleanup();
     FXCache::Uninitialize();
     ShaderDescriptorCache::Uninitialize();
     rhi::ShaderCache::Unitialize();
@@ -168,8 +165,22 @@ void BeginFrame()
 
 void EndFrame()
 {
+    VisibilityQueryResults::EndFrame();
     DynamicBufferAllocator::EndFrame();
+
+    if (ProfilerOverlay::globalProfilerOverlay)
+        ProfilerOverlay::globalProfilerOverlay->OnFrameEnd();
+
+    if (ProfilerGPU::globalProfiler)
+        ProfilerGPU::globalProfiler->OnFrameEnd();
+
     rhi::Present();
+
+    for (uint32 i = 0; i < uint32(VisibilityQueryResults::QUERY_INDEX_COUNT); ++i)
+    {
+        VisibilityQueryResults::eQueryIndex queryIndex = VisibilityQueryResults::eQueryIndex(i);
+        stats.visibilityQueryResults[VisibilityQueryResults::GetQueryIndexName(queryIndex)] = VisibilityQueryResults::GetResult(queryIndex);
+    }
 
     stats.drawIndexedPrimitive = StatSet::StatValue(rhi::stat_DIP);
     stats.drawPrimitive = StatSet::StatValue(rhi::stat_DP);
@@ -216,6 +227,6 @@ void RenderStats::Reset()
     visibleRenderObjects = 0U;
     occludedRenderObjects = 0U;
 
-    queryResults.clear();
+    visibilityQueryResults.clear();
 }
 }

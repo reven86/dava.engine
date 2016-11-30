@@ -56,7 +56,7 @@ public:
     int32 startIdx = 0;
     uint32 keyCount = 0;
     SceneNodeAnimationKey* keys = nullptr;
-    SceneNodeAnimationKey currentValue;
+    SceneNodeAnimationKey currentValue; //-V730_NOINIT
     Matrix4 invPose;
     bool apply = true;
 

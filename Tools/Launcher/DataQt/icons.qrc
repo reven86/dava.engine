@@ -8,5 +8,8 @@
         <file>Icons/run.png</file>
         <file>Icons/ok.png</file>
         <file>Icons/url.png</file>
+        <file>Icons/settings.png</file>
+        <file>Icons/openfolder.png</file>
+        <file>Icons/undo.png</file>
     </qresource>
 </RCC>

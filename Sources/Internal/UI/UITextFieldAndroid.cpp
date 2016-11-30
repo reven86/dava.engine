@@ -6,7 +6,6 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/FocusHelpers.h"
 #include "Utils/UTF8Utils.h"
@@ -54,7 +53,7 @@ JniTextField::JniTextField(uint32_t id)
 
 void JniTextField::Create(Rect controlRect)
 {
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -69,7 +68,7 @@ void JniTextField::Destroy()
 
 void JniTextField::UpdateRect(const Rect& controlRect)
 {
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -92,7 +91,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
-    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputY(size));
+    setFontSize(id, UIControlSystem::Instance()->vcs->ConvertVirtualToInputY(size));
 }
 
 void JniTextField::SetIsPassword(bool isPassword)

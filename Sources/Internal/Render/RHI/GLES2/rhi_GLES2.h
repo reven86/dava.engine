@@ -2,7 +2,7 @@
 #define __RHI_GLES2_H__
 
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 
 namespace rhi
 {
@@ -39,9 +39,16 @@ bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryObjectsPool();
 }
-namespace PerfQuerySetGLES2
+namespace PerfQueryGLES2
 {
 void SetupDispatch(Dispatch* dispatch);
+
+void ObtainPerfQueryResults();
+
+void IssueQuery(Handle handle);
+void SkipQuery(Handle handle);
+
+void ReleaseQueryObjectsPool();
 }
 
 namespace TextureGLES2
@@ -105,14 +112,7 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
-void InitializeRenderThreadGLES2(uint32 frameCount);
-void UninitializeRenderThreadGLES2();
-
-void SuspendGLES2();
-void ResumeGLES2();
-
-struct
-GLCommand
+struct GLCommand
 {
     enum Func
     {
@@ -155,6 +155,7 @@ GLCommand
         COMPILE_SHADER,
         ATTACH_SHADER,
         LINK_PROGRAM,
+        DETACH_SHADER,
         GET_SHADER_IV,
         GET_SHADER_INFO_LOG,
         GET_PROGRAM_IV,
@@ -167,7 +168,9 @@ GLCommand
         GET_QUERYOBJECT_UIV,
         DELETE_QUERIES,
 
-        GET_QUERY_RESULT_NO_WAIT
+        GET_QUERY_RESULT_NO_WAIT,
+
+        SYNC_CPU_GPU
     };
 
     Func func;

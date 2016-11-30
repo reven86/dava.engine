@@ -1,5 +1,6 @@
-#ifndef __RESOURCEEDITORQT__QTWAITDIALOG__
-#define __RESOURCEEDITORQT__QTWAITDIALOG__
+#pragma once
+
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include <QDialog>
 #include <QLabel>
@@ -42,14 +43,14 @@ protected slots:
     void WaitCanceled();
 
 private:
+    void ResetImpl();
     void processEvents();
 
     void Setup(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel);
     Ui::QtWaitDialog* ui;
+    QtDelayedExecutor executor;
 
     bool wasCanceled = false;
     bool isRunnedFromExec = false;
     QEventLoop loop;
 };
-
-#endif // __RESOURCEEDITORQT__MAINWAITDIALOG__

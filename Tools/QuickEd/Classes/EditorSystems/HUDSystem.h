@@ -11,6 +11,8 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
+    void HighlightNodes(const DAVA::Vector<ControlNode*>& node);
+
 private:
     enum eSearchOrder
     {
@@ -23,7 +25,6 @@ private:
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
-    void OnNodesHovered(const DAVA::Vector<ControlNode*>& node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
@@ -54,6 +55,7 @@ private:
     bool inEmulationMode = false;
     SortedPackageBaseNodeSet rootControls;
     bool isPlacedOnScreen = false;
+    bool inTransformState = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

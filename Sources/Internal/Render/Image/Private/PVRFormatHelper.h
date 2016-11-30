@@ -1,7 +1,5 @@
 #pragma once
 
-
-#include "Base/Platform.h"
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "Render/Image/ImageSystem.h"

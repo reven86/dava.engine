@@ -1,6 +1,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/File.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/VariantType.h"
@@ -195,17 +196,8 @@ bool KeyedArchive::Load(const uint8* data, uint32 size)
 
 bool KeyedArchive::LoadFromYamlFile(const FilePath& pathName)
 {
-    YamlParser* parser = YamlParser::Create(pathName);
-    if (nullptr == parser)
-    {
-        return false;
-    }
-
-    YamlNode* rootNode = parser->GetRootNode();
-    bool retValue = LoadFromYamlNode(rootNode);
-
-    SafeRelease(parser);
-    return retValue;
+    ScopedPtr<YamlParser> parser(YamlParser::Create(pathName));
+    return (parser.get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
 }
 
 bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
@@ -497,15 +489,12 @@ KeyedArchive* KeyedArchive::GetArchiveFromByteArray(const String& key) const
     {
         return nullptr;
     }
-    const uint8* array = GetByteArray(key);
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(array, size, File::OPEN | File::READ);
+    ScopedPtr<UnmanagedMemoryFile> file(new UnmanagedMemoryFile(GetByteArray(key), size));
     if (!archive->Load(file))
     {
-        SafeRelease(file);
         SafeRelease(archive);
         return nullptr;
     }
-    SafeRelease(file);
     return archive;
 }
 

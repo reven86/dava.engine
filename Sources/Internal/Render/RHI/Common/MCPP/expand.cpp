@@ -87,8 +87,6 @@ static void skip_macro(void);
 /* Skip the rest of macro call      */
 static void diag_macro(int severity, const char* format, const char* arg1, long arg2, const char* arg3, const DEFBUF* defp1, const DEFBUF* defp2);
 /* Supplement diagnostic information*/
-static void dump_args(const char* why, int nargs, const char** arglist);
-/* Dump arguments list              */
 
 static int rescan_level; /* Times of macro rescan    */
 
@@ -288,7 +286,7 @@ int* pragma_op /* _Pragma() is found ? */
     macro_line = src_line; /* Line number for diag */
     macro_name = defp->name;
     rescan_level = 0;
-    trace_macro = (mcpp_mode == STD) && (mcpp_debug & MACRO_CALL) && !in_directive;
+    trace_macro = FALSE;
     if (trace_macro)
     {
         max_mac_num = INIT_MAC_INF;
@@ -365,8 +363,6 @@ int* pragma_op /* _Pragma() is found ? */
     macro_line = 0;
 exp_end:
     *out_p = EOS;
-    if (mcpp_debug & EXPAND)
-        dump_string("expand_std exit", out);
     macro_name = NULL;
     clear_exp_mac(); /* Clear the information for diagnostic */
     if (trace_macro)
@@ -643,9 +639,6 @@ int diag /* Output a diagnostic? */
             cwarn(mesg, "Lacking", (long)mac, "macro");
         if (arg > 0)
             cwarn(mesg, "Lacking", (long)arg, "argument");
-        if ((mac || arg) && (mcpp_debug & EXPAND))
-            mcpp_fputs(
-            "Imbalance of magics occurred (perhaps a moved magic), see <expand_std exit> and diagnostics.\n", MCPP_DBG);
     }
 
     return buf;
@@ -677,14 +670,6 @@ int in_src_n /* Index into in_src[]  */
     int enable_trace_macro; /* To exclude _Pragma() pseudo macro    */
     int m_num = 0; /* 'mac_num' of current macro   */
     MACRO_INF* m_inf = NULL; /* Pointer into mac_inf[]       */
-
-    if (mcpp_debug & EXPAND)
-    {
-        dump_a_def("replace entry", defp, FALSE, TRUE, fp_debug);
-        dump_unget("replace entry");
-    }
-    if ((mcpp_debug & MACRO_CALL) && in_if)
-        mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
 
     enable_trace_macro = trace_macro && defp->nargs != DEF_PRAGMA;
     if (enable_trace_macro)
@@ -793,8 +778,6 @@ int in_src_n /* Index into in_src[]  */
             if (expand_compat_mode)
             {
                 enable_repl(outer, FALSE); /* Enable re-expansion  */
-                if (mcpp_debug & EXPAND)
-                    dump_string("enabled re-expansion", outer ? outer->name : "<arg>");
             }
             else
             {
@@ -804,11 +787,6 @@ int in_src_n /* Index into in_src[]  */
     }
 
     catbuf = xmalloc((size_t)(NMACWORK + IDMAX));
-    if (mcpp_debug & EXPAND)
-    {
-        mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
-        dump_string("prescan entry", defp->repl);
-    }
     if (prescan(defp, (const char**)arglist, catbuf, catbuf + NMACWORK) == FALSE)
     { /* Process #, ## operators      */
         diag_macro(CERROR, macbuf_overflow, defp->name, 0L, catbuf, defp, NULL);
@@ -823,33 +801,16 @@ int in_src_n /* Index into in_src[]  */
         return NULL;
     }
     catbuf = xrealloc(catbuf, strlen(catbuf) + 1);
-    /* Use memory sparingly */
-    if (mcpp_debug & EXPAND)
-    {
-        mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
-        dump_string("prescan exit", catbuf);
-    }
 
     if (nargs > 0)
     { /* Function-like macro with any argument    */
         expbuf = xmalloc((size_t)(NMACWORK + IDMAX));
-        if (mcpp_debug & EXPAND)
-        {
-            mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
-            dump_string("substitute entry", catbuf);
-        }
         out_p = substitute(defp, (const char**)arglist, catbuf, expbuf, expbuf + NMACWORK); /* Expand each arguments    */
         if (!enable_trace_macro)
             xfree(arglist[0]);
         xfree(arglist);
         xfree(catbuf);
         expbuf = xrealloc(expbuf, strlen(expbuf) + 1);
-        /* Use memory sparingly */
-        if (mcpp_debug & EXPAND)
-        {
-            mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
-            dump_string("substitute exit", expbuf);
-        }
     }
     else
     { /* Object-like macro or */
@@ -868,8 +829,6 @@ int in_src_n /* Index into in_src[]  */
     xfree(expbuf);
     if (enable_trace_macro && out_p)
         out_p = close_macro_inf(out_p, m_num, in_src_n);
-    if (mcpp_debug & EXPAND)
-        dump_string("replace exit", out);
 
     if (trace_macro && defp->nargs == DEF_PRAGMA)
     {
@@ -1269,8 +1228,6 @@ char** token_p /* Address of preceding token pointer   */
         unget_string(prev_token, NULL); /* Scan once more       */
         c = get_ch(); /* This line should be before the next line. */
         infile->fp = (FILE*)-1; /* To check token length*/
-        if (mcpp_debug & EXPAND)
-            dump_string("checking generated token", infile->buffer);
         scan_token(c, (workp = work_buf, &workp), work_end);
         infile->fp = NULL;
         if (*infile->bptr != EOS)
@@ -1323,8 +1280,10 @@ char** token_p /* Address of preceding token pointer   */
     return out;
 }
 
+#if defined(_MSC_VER)
 #pragma warning(push) 
 #pragma warning(disable : 4018)
+#endif
 static const char* remove_magics(
 const char* argp, /* The argument list    */
 int from_last /* token is the last or first?  */
@@ -1639,6 +1598,9 @@ int from_last /* token is the last or first?  */
 
     return arg_p;
 }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #if DEBUG_MACRO_ANN
 static void chk_symmetry(
@@ -1865,8 +1827,6 @@ char* out /* Output buffer        */
     { /* '\\' outside of quotation has been found */
         int invalid = FALSE;
         unget_string(out, defp->name);
-        if (mcpp_debug & EXPAND)
-            dump_string("checking generated token", infile->buffer);
         scan_quote(get_ch(), work_buf, work_end, TRUE);
         /* Unterminated or too long string will be diagnosed    */
         if (*infile->bptr != EOS) /* More than a token    */
@@ -1913,11 +1873,6 @@ char* out_end /* End of output buffer */
         if (c == MAC_PARM)
         { /* Formal parameter     */
             c = *in++ & UCHARMAX; /* Parameter number     */
-            if (mcpp_debug & EXPAND)
-            {
-                mcpp_fprintf(MCPP_DBG, " (expanding arg[%d])", c);
-                dump_string(NULL, arglist[c - 1]);
-            }
 #if COMPILER == GNUC || COMPILER == MSC
             arg = arglist[c - 1];
             if (trace_macro)
@@ -2011,11 +1966,6 @@ char* out_end /* End of output buffer */
     int within_defined_arg_depth = 0;
 #endif
 
-    if (mcpp_debug & EXPAND)
-    {
-        mcpp_fprintf(MCPP_DBG, "rescan_level--%d (%s) ", rescan_level + 1, outer ? outer->name : "<arg>");
-        dump_string("rescan entry", in);
-    }
     if (!disable_repl(outer)) /* Don't re-replace replacing macro */
         return NULL; /* Too deeply nested macro call */
     if (mcpp_mode == STD)
@@ -2216,11 +2166,6 @@ char* out_end /* End of output buffer */
         }
     }
     enable_repl(outer, TRUE); /* Enable macro for later text  */
-    if (mcpp_debug & EXPAND)
-    {
-        mcpp_fprintf(MCPP_DBG, "rescan_level--%d (%s) ", rescan_level + 1, outer ? outer->name : "<arg>");
-        dump_string("rescan exit", out);
-    }
     return out_p;
 }
 
@@ -2400,11 +2345,6 @@ int* pragma_op /* Flag of _Pragma (not used in prestd)     */
             cerror(macbuf_overflow, macro_name, 0L, macrobuf);
             longjmp(jump, 1);
         }
-        if (mcpp_debug & GETC)
-        {
-            *mp = EOS;
-            dump_string("macrobuf", macrobuf);
-        }
     }
 
 exp_end:
@@ -2420,10 +2360,6 @@ exp_end:
     }
 err_end:
     out_p = stpcpy(out, macrobuf);
-    if (mcpp_debug & EXPAND)
-    {
-        dump_string("expand_prestd exit", out);
-    }
     macro_name = NULL;
     clear_exp_mac();
     *pragma_op = FALSE;
@@ -2478,11 +2414,6 @@ DEFBUF* defp /* Definition of the macro      */
     int arg_len;
     int c;
 
-    if (mcpp_debug & EXPAND)
-    {
-        dump_a_def("replace_pre entry", defp, FALSE, TRUE, fp_debug);
-        dump_unget("replace_pre entry");
-    }
     if (++rescan_level >= PRESTD_RESCAN_LIMIT)
     {
         diag_macro(CERROR, "Recursive macro definition of \"%s\"" /* _E_  */
@@ -2528,8 +2459,6 @@ DEFBUF* defp /* Definition of the macro      */
     else
         unget_string(defp->repl, defp->name);
 
-    if (mcpp_debug & EXPAND)
-        dump_unget("replace_pre exit");
     if (defp->nargs >= 0)
         xfree(arglist_pre[0]);
     return TRUE;
@@ -2577,8 +2506,6 @@ DEFBUF* defp /* Current macro being replaced */
     *out_p = EOS;
     file->buffer = xrealloc(file->buffer, strlen(file->buffer) + 1);
     file->bptr = file->buffer; /* Truncate buffer      */
-    if (mcpp_debug & EXPAND)
-        dump_string("substitute_pre macroline", file->buffer);
     return;
 
 nospace:
@@ -2628,8 +2555,6 @@ int m_num /* Index into mac_inf[]             */
     MAGIC_SEQ mgc_prefix; /* MAC_INF seqs and spaces preceding an arg */
     int c;
 
-    if (mcpp_debug & EXPAND)
-        dump_unget("collect_args entry");
     args = (defp->nargs == DEF_PRAGMA) ? 1 : (defp->nargs & ~AVA_ARGS);
     if (args == 0) /* Need no argument         */
         valid_argp = argp;
@@ -2782,16 +2707,6 @@ int m_num /* Index into mac_inf[]             */
         mac_inf[m_num].loc_args /* Truncate excess memory   */
         = (LOCATION*)xrealloc((char*)locs, (loc - locs) * sizeof(LOCATION));
 
-    if (mcpp_debug & EXPAND)
-    {
-        if (nargs > 0)
-        {
-            if (nargs > args)
-                nargs = args;
-            dump_args("collect_args exit", nargs, (const char**)arglist);
-        }
-        dump_unget("collect_args exit");
-    }
 arg_ret:
     if (mcpp_mode == STD)
         in_getarg = FALSE;
@@ -3208,24 +3123,6 @@ const DEFBUF* defp2 /*   2  */
         cerror(format, arg1, arg2, arg3);
     else
         cwarn(format, arg1, arg2, arg3);
-}
-
-static void dump_args(
-const char* why,
-int nargs,
-const char** arglist)
-/*
- * Dump arguments list.
- */
-{
-    int i;
-
-    mcpp_fprintf(MCPP_DBG, "dump of %d actual arguments %s\n", nargs, why);
-    for (i = 0; i < nargs; i++)
-    {
-        mcpp_fprintf(MCPP_DBG, "arg[%d]", i + 1);
-        dump_string(NULL, arglist[i]);
-    }
 }
 
 #ifdef __clang__

@@ -85,10 +85,24 @@ int32 DeviceInfo::GetHTTPProxyPort()
     return GetPrivateImpl()->GetHTTPProxyPort();
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 DeviceInfo::ScreenInfo& DeviceInfo::GetScreenInfo()
 {
     return GetPrivateImpl()->GetScreenInfo();
 }
+
+void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    // Special implementation for WinUAP to get rid of blocking call to UI thread in impl::InitializeScreenInfo
+    GetPrivateImpl()->InitializeScreenInfo(screenInfo, fullInit);
+#else
+    (void)screenInfo;
+    (void)fullInit;
+    GetPrivateImpl()->InitializeScreenInfo();
+#endif
+}
+#endif
 
 int32 DeviceInfo::GetZBufferSize()
 {
@@ -98,6 +112,16 @@ int32 DeviceInfo::GetZBufferSize()
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
     return GetPrivateImpl()->GetGPUFamily();
+}
+
+void DeviceInfo::SetOverridenGPU(eGPUFamily newGPU)
+{
+    GetPrivateImpl()->SetOverridenGPU(newGPU);
+}
+
+void DeviceInfo::ResetOverridenGPU()
+{
+    GetPrivateImpl()->ResetOverridenGPU();
 }
 
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
@@ -113,18 +137,6 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 int32 DeviceInfo::GetCpuCount()
 {
     return GetPrivateImpl()->GetCpuCount();
-}
-
-void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
-{
-#if defined(__DAVAENGINE_WIN_UAP__)
-    // Special implementation for WinUAP to get rid of blocking call to UI thread in impl::InitializeScreenInfo
-    GetPrivateImpl()->InitializeScreenInfo(screenInfo, fullInit);
-#else
-    (void)screenInfo;
-    (void)fullInit;
-    GetPrivateImpl()->InitializeScreenInfo();
-#endif
 }
 
 bool DeviceInfo::IsTouchPresented()

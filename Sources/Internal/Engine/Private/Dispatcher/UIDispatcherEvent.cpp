@@ -31,10 +31,38 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetTitleEvent(const String& title)
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateSetFullscreenEvent(eFullscreen mode)
+{
+    UIDispatcherEvent e(SET_FULLSCREEN);
+    e.setFullscreenEvent.mode = mode;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateSetCursorCaptureEvent(eCursorCapture mode)
+{
+    UIDispatcherEvent e(SET_CURSOR_CAPTURE);
+    e.setCursorCaptureEvent.mode = mode;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateSetCursorVisibilityEvent(bool visible)
+{
+    UIDispatcherEvent e(SET_CURSOR_VISIBILITY);
+    e.setCursorVisibilityEvent.visible = visible;
+    return e;
+}
+
 UIDispatcherEvent UIDispatcherEvent::CreateFunctorEvent(const Function<void()>& functor)
 {
     UIDispatcherEvent e(FUNCTOR);
     e.functor = functor;
+    return e;
+}
+
+UIDispatcherEvent UIDispatcherEvent::CreateSetSurfaceScaleEvent(const float32 scale)
+{
+    UIDispatcherEvent e(SET_SURFACE_SCALE);
+    e.setSurfaceScaleEvent.scale = scale;
     return e;
 }
 

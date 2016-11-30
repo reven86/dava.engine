@@ -2,6 +2,7 @@
 #define __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Base/Noncopyable.h"
 
 #include "Network/Base/IOLoop.h"

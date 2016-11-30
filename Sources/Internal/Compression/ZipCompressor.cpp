@@ -1,6 +1,7 @@
 #include "Compression/ZipCompressor.h"
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
+#include "Base/Exception.h"
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -19,7 +20,18 @@
     #pragma warning(pop)
 
 #else
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
     #include <miniz/miniz.c>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #endif
 
 #ifdef __clang__
@@ -106,7 +118,7 @@ ZipFile::ZipFile(RefPtr<File>& file_, const FilePath& fileName)
 
     if (!zipData->file)
     {
-        throw std::runtime_error("can't open archive file: " + fileName.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't open archive file: " + fileName.GetStringValue());
     }
 
     uint64 fileSize = zipData->file->GetSize();
@@ -117,7 +129,7 @@ ZipFile::ZipFile(RefPtr<File>& file_, const FilePath& fileName)
 
     if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == MZ_FALSE)
     {
-        throw std::runtime_error("can't init zip from file: " + fileName.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't init zip from file: " + fileName.GetStringValue());
     }
 }
 

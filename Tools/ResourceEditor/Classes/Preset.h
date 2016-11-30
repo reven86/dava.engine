@@ -1,5 +1,4 @@
-#ifndef __PRESET_MANAGER_H__
-#define __PRESET_MANAGER_H__
+#pragma once
 
 namespace DAVA
 {
@@ -22,4 +21,3 @@ bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
 bool DialogSavePresetForMaterial(DAVA::NMaterial* material);
 bool DialogLoadPresetForMaterial(DAVA::NMaterial* material);
 }
-#endif // __PRESET_MANAGER_H__

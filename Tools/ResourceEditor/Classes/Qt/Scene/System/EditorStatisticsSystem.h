@@ -30,8 +30,8 @@ public:
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
-    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
-    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component) override;
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component) override;
 
     void Process(DAVA::float32 timeElapsed) override;
 

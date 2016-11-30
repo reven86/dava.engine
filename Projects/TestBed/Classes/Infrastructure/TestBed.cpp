@@ -1,6 +1,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
+#include "Engine/EngineSettings.h"
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -26,9 +27,14 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/ScriptingTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
+#include "Tests/UILoggingTest.h"
+#include "Tests/ProfilerTest.h"
+#include "Tests/ImGuiTest.h"
+#include "Tests/SoundTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -37,18 +43,14 @@
 
 void CheckDeviceInfoValid();
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
     using namespace Net;
 
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "TestBed");
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
 #if defined(__DAVAENGINE_QT__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
@@ -62,6 +64,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
+
+    appOptions->SetBool("init_imgui", true);
 
     eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
     if (cmdline.size() > 1 && cmdline[1] == "--console")
@@ -79,8 +83,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.SetOptions(appOptions);
-    e.Init(runmode, modules);
+    e.Init(runmode, modules, appOptions);
 
     CheckDeviceInfoValid();
 
@@ -110,12 +113,14 @@ TestBed::TestBed(Engine& engine)
         engine.windowDestroyed.Connect(this, &TestBed::OnWindowDestroyed);
 
         Window* w = engine.PrimaryWindow();
+        w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
-        w->Resize(1024.f, 768.f);
-        w->sizeScaleChanged.Connect(this, &TestBed::OnWindowSizeChanged);
+        w->SetSize({ 1024.f, 768.f });
+
+        engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
     }
 
-    engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+    engine.GetContext()->settings->Load("~res:/EngineSettings.yaml");
 }
 
 void TestBed::OnGameLoopStarted()
@@ -168,9 +173,9 @@ void TestBed::OnWindowDestroyed(DAVA::Window* w)
     Logger::Error("****** TestBed::OnWindowDestroyed");
 }
 
-void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size, DAVA::Size2f surfaceSize)
 {
-    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f, surfaceW=%.1f, surfaceH=%.1f", size.dx, size.dy, surfaceSize.dx, surfaceSize.dy);
 }
 
 void TestBed::OnSuspended()
@@ -230,6 +235,11 @@ void TestBed::RegisterTests()
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
+    new UILoggingTest(*this);
+    new ProfilerTest(*this);
+    new ScriptingTest(*this);
+    new ImGuiTest(*this);
+    new SoundTest(*this);
     //$UNITTEST_CTOR
 }
 
@@ -410,12 +420,6 @@ void CheckDeviceInfoValid()
     auto httpProxyPort = DeviceInfo::GetHTTPProxyPort();
     Logger::Info("http_proxy_port: %d", httpProxyPort);
     DVASSERT(httpProxyPort == 0);
-
-    auto screenInfo = DeviceInfo::GetScreenInfo();
-    Logger::Info("screen_info: w=%d h=%d scale=%f", screenInfo.width, screenInfo.height, screenInfo.scale);
-    DVASSERT(screenInfo.height > 0);
-    DVASSERT(screenInfo.width > 0);
-    DVASSERT(screenInfo.scale >= 1);
 
     auto zbufferSize = DeviceInfo::GetZBufferSize();
     Logger::Info("zbuffer_size: %d", zbufferSize);

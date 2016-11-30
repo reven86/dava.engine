@@ -1,14 +1,16 @@
 #ifndef __RHI_SHADERSOURCE_H__
 #define __RHI_SHADERSOURCE_H__
 
-    #include "rhi_Type.h"
-    #include "Base/BaseTypes.h"    
-    #include "Base/FastName.h"
+#include "rhi_Type.h"
+#include "Base/BaseTypes.h"    
+#include "Base/FastName.h"
 
 namespace DAVA
 {
 class File;
 }
+
+#define RHI_SHADER_SOURCE_BUFFER_SIZE 65536
 
 namespace rhi
 {

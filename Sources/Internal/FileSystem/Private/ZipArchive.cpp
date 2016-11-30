@@ -1,6 +1,7 @@
 #include "FileSystem/Private/ZipArchive.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
+#include "Base/Exception.h"
 #include <cstring>
 
 namespace DAVA
@@ -22,7 +23,7 @@ ZipArchive::ZipArchive(RefPtr<File>& file_, const FilePath& fileName)
 
         if (!zipFile.GetFileInfo(i, name, origSize, compressedSize, isDirectory))
         {
-            throw std::runtime_error("failed! get file info");
+            DAVA_THROW(DAVA::Exception, "failed! get file info");
         }
 
         if (!isDirectory)

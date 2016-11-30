@@ -1,8 +1,10 @@
 #include "UIInputSystem.h"
 
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
+#include "UI/UIScreen.h"
 
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -415,6 +417,7 @@ bool UIInputSystem::HandleKeyEvent(UIEvent* event)
             current = c;
             if (current->SystemProcessInput(event))
             {
+                Analytics::EmitKeyEvent(current.Get(), event);
                 processed = true;
                 break;
             }

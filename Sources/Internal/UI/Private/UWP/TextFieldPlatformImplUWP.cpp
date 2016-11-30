@@ -13,7 +13,7 @@
 #include "UI/UITextField.h"
 #include "UI/Focus/FocusHelpers.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -363,15 +363,7 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
-    fontSize /= scaleFactor;
-
-    properties.fontSize = fontSize;
+    properties.fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
     properties.fontSizeChanged = true;
     properties.fontSizeAssigned = true;
     properties.anyPropertyChanged = true;
@@ -1186,46 +1178,14 @@ bool TextFieldPlatformImpl::IsMultiline() const
 
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-// 2. map physical to window
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    Rect rect = srcRect;
-#if defined(__DAVAENGINE_COREV2__)
-    // 1. map window to physical
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
-#else
-    // 1. map window to physical
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x *= scaleFactor;
-    rect.y *= scaleFactor;
-    rect.dx *= scaleFactor;
-    rect.dy *= scaleFactor;
-
-    // 2. map physical to virtual
-    rect = coordSystem->ConvertPhysicalToVirtual(rect);
-    rect -= coordSystem->GetPhysicalDrawOffset();
-    return rect;
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
+    return coordSystem->ConvertInputToVirtual(srcRect);
 }
 
 void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)

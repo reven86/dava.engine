@@ -2,6 +2,7 @@
 #define __DAVAENGINE_ADDRESS_RESOLVER_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
 #include <libuv/uv.h>
