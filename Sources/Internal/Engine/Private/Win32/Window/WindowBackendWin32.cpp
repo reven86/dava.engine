@@ -313,10 +313,10 @@ void WindowBackend::UpdateClipCursor()
     }
 }
 
-void WindowBackend::HandleWindowFocusChanging(bool focusState)
+void WindowBackend::HandleWindowFocusChanging(bool hasFocus)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
-    if (!focusState)
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    if (!hasFocus)
     {
         if (captureMode != eCursorCapture::OFF)
         {
@@ -325,6 +325,8 @@ void WindowBackend::HandleWindowFocusChanging(bool focusState)
         }
         DoSetCursorVisibility(true);
     }
+
+    PlatformCore::EnableHighResolutionTimer(hasFocus);
 }
 
 void WindowBackend::DoSetCursorVisibility(bool visible)

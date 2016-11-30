@@ -35,6 +35,7 @@ public:
     void OnDpiChanged();
 
     static bool IsPhoneContractPresent();
+    static void EnableHighResolutionTimer(bool enable);
 
     void RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
     void UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
