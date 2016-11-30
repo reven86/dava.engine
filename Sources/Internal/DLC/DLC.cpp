@@ -1059,11 +1059,7 @@ bool DLC::ReadValue(const FilePath& path, uint32* value, String* version)
 
         if (nullptr != version)
         {
-            tmp[0] = 0;
-            if (f->ReadLine(tmp, sizeof(tmp)) > 0)
-            {
-                *version = tmp;
-            }
+            *version = f->ReadLine();
         }
 
         SafeRelease(f);
