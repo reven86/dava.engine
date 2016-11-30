@@ -707,7 +707,7 @@ void DLC::StepCheckMetaCancel()
 void DLC::StepDownloadPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState, String()))
+    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState))
     {
         dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
@@ -821,7 +821,7 @@ void DLC::StepDownloadPatchCancel()
 void DLC::StepPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState, String()))
+    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState))
     {
         PostError(DE_WRITE_ERROR);
         return;
