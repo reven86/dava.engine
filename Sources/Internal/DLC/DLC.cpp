@@ -66,8 +66,8 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     dlcContext.stateInfoStorePath = workingDir + "State.info";
     dlcContext.prevState = 0;
 
-    ReadFileValue(dlcContext.stateInfoStorePath, dlcContext.prevState, String());
-    ReadFileValue(dlcContext.remoteVerStotePath, dlcContext.remoteVer, String());
+    ReadValue(dlcContext.stateInfoStorePath, &dlcContext.prevState);
+    ReadValue(dlcContext.remoteVerStotePath, &dlcContext.remoteVer);
 
     logsFilePath = workingDir + "DlcLog.txt";
 
@@ -490,7 +490,7 @@ void DLC::OnDownloadTaskStateChanged(uint32 id, DownloadStatus status)
 void DLC::StepCheckInfoBegin()
 {
     // write current dlcState into state-file
-    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
+    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState))
     {
         dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Can't write dlcState %d to stateInfoStorePath = %s", dlcState, dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
@@ -500,7 +500,7 @@ void DLC::StepCheckInfoBegin()
 
     if (!dlcContext.forceFullUpdate)
     {
-        ReadFileValue(dlcContext.localVerStorePath, dlcContext.localVer, dlcContext.localGameVer);
+        ReadValue(dlcContext.localVerStorePath, &dlcContext.localVer, &dlcContext.localGameVer);
     }
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
@@ -521,7 +521,7 @@ void DLC::StepCheckInfoFinish(uint32 id, DownloadStatus status)
 
             if (DLE_NO_ERROR == downloadError && FileSystem::Instance()->Exists(dlcContext.remoteVerStotePath))
             {
-                if (ReadFileValue(dlcContext.remoteVerStotePath, dlcContext.remoteVer, String()))
+                if (ReadValue(dlcContext.remoteVerStotePath, &dlcContext.remoteVer))
                 {
                     PostEvent(EVENT_CHECK_OK);
                 }
@@ -707,7 +707,7 @@ void DLC::StepCheckMetaCancel()
 void DLC::StepDownloadPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
+    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState, String()))
     {
         dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
@@ -821,7 +821,7 @@ void DLC::StepDownloadPatchCancel()
 void DLC::StepPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
+    if (!WriteValue(dlcContext.stateInfoStorePath, dlcState, String()))
     {
         PostError(DE_WRITE_ERROR);
         return;
@@ -991,7 +991,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
 
         // update local version
-        if (!WriteFileValue(dlcContext.localVerStorePath, dlcContext.remoteVer, dlcContext.gameVer))
+        if (!WriteValue(dlcContext.localVerStorePath, dlcContext.remoteVer, dlcContext.gameVer))
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
@@ -999,9 +999,9 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
             dlcContext.lastErrno = errno;
         }
 
-        // clean patch file if it was fully truncated
-        // if we don't do that - we have Empty Patch Error if patching was finished in background and application was closed
-        // because in that case StepPatchFinish losts and at application restart DLC follows to patching state.
+        // Clean patch file if it was fully truncated.
+        // If we don't do that - we will have "Empty Patch Error" when patching will be finished
+        // in background and application will be closed.
         File* patchFile = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
         int32 patchSizeAfterPatching = static_cast<int32>(patchFile->GetSize());
         SafeRelease(patchFile);
@@ -1038,7 +1038,7 @@ void DLC::StepDone()
     Logger::InfoToFile(logsFilePath, "[DLC::StepDone] Done!");
 }
 
-bool DLC::ReadFileValue(const FilePath& path, uint32& value, String& optional)
+bool DLC::ReadValue(const FilePath& path, uint32* value, String* optional)
 {
     bool ret = false;
 
@@ -1051,16 +1051,19 @@ bool DLC::ReadFileValue(const FilePath& path, uint32& value, String& optional)
         tmp[0] = 0;
         if (f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-            if (sscanf(tmp, "%u", &value) > 0)
+            if (sscanf(tmp, "%u", value) > 0)
             {
                 ret = true;
             }
         }
 
-        tmp[0] = 0;
-        if (f->ReadLine(tmp, sizeof(tmp)) > 0)
+        if (nullptr != optional)
         {
-            optional = tmp;
+            tmp[0] = 0;
+            if (f->ReadLine(tmp, sizeof(tmp)) > 0)
+            {
+                *optional = tmp;
+            }
         }
 
         SafeRelease(f);
@@ -1069,7 +1072,7 @@ bool DLC::ReadFileValue(const FilePath& path, uint32& value, String& optional)
     return ret;
 }
 
-bool DLC::WriteFileValue(const FilePath& path, uint32 value, String optional)
+bool DLC::WriteValue(const FilePath& path, uint32 value, const String& optional)
 {
     bool ret = false;
 
@@ -1114,7 +1117,7 @@ String DLC::ToString(DownloadError e)
     String errorMsg;
     switch (e)
     {
-    case DLE_CANCELLED: // download was cancelled by our side
+    case DLE_CANCELLED: // download was canceled by our side
         errorMsg = "DLE_CANCELLED";
         break;
     case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
@@ -1123,7 +1126,7 @@ String DLC::ToString(DownloadError e)
     case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
         errorMsg = "DLE_COULDNT_RESOLVE_HOST";
         break;
-    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+    case DLE_COULDNT_CONNECT: // we cannot connect to given address at given port
         errorMsg = "DLE_COULDNT_CONNECT";
         break;
     case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
@@ -1135,7 +1138,7 @@ String DLC::ToString(DownloadError e)
     case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
         errorMsg = "DLE_COMMON_ERROR";
         break;
-    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+    case DLE_INIT_ERROR: // any handles initialization was unsuccessful
         errorMsg = "DLE_INIT_ERROR";
         break;
     case DLE_FILE_ERROR: // file read and write errors
