@@ -1079,9 +1079,9 @@ bool DLC::WriteValue(const FilePath& path, uint32 value, const String& version)
         String tmp = Format("%u", value);
         ret = f->WriteLine(tmp);
 
-        if (!version.empty())
+        if (ret && !version.empty())
         {
-            ret &= f->WriteLine(version);
+            ret = f->WriteLine(version);
         }
 
         SafeRelease(f);
