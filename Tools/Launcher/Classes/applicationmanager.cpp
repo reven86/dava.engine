@@ -87,7 +87,7 @@ bool ApplicationManager::TryStopApp(const QString& runPath) const
     if (reply == ProcessCommunication::eReply::ACCEPT)
     {
         QEventLoop eventLoop;
-        std::atomic<bool> isStillRunning = true;
+        std::atomic<bool> isStillRunning(true);
         std::thread workerThread([&eventLoop, &isStillRunning, runPath]() {
             QElapsedTimer timer;
             timer.start();
