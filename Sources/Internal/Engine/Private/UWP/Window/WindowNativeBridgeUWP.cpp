@@ -5,8 +5,8 @@
 
 #include "Engine/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
-#include "Engine/Private/WinSystemTimer.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -239,6 +239,8 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     {
         hasFocus = gotFocus;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+
+        PlatformCore::EnableHighResolutionTimer(hasFocus);
     }
 
     if (!hasFocus)
@@ -250,11 +252,6 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
         }
         SetCursorVisibility(true);
     }
-
-    if (!PlatformCore::IsPhoneContractPresent())
-    {
-        EnableHighResolutionTimer(hasFocus);
-    }
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
@@ -264,6 +261,8 @@ void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ cor
     {
         hasFocus = true;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+
+        PlatformCore::EnableHighResolutionTimer(true);
     }
 }
 

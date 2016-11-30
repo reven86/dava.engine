@@ -6,6 +6,7 @@
 #elif defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include <timeapi.h>
 
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
@@ -110,6 +111,37 @@ void PlatformCore::PrepareToQuit()
 void PlatformCore::Quit()
 {
     ::PostQuitMessage(engineBackend.GetExitCode());
+}
+
+void PlatformCore::EnableHighResolutionTimer(bool enable)
+{
+    static UINT minTimerPeriod = 0;
+    static bool highResolutionEnabled = false;
+
+    if (minTimerPeriod == 0)
+    {
+        // On first call obtain timer capabilities
+        TIMECAPS timeCaps;
+        if (::timeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) == TIMERR_NOERROR)
+        {
+            minTimerPeriod = timeCaps.wPeriodMin;
+        }
+    }
+
+    // Application must match each call to timeBeginPeriod with a call to timeEndPeriod
+    // https://msdn.microsoft.com/en-us/library/dd757633(v=vs.85).aspx
+    if (minTimerPeriod != 0 && highResolutionEnabled != enable)
+    {
+        if (enable)
+        {
+            ::timeBeginPeriod(minTimerPeriod);
+        }
+        else
+        {
+            timeEndPeriod(minTimerPeriod);
+        }
+        highResolutionEnabled = enable;
+    }
 }
 
 } // namespace Private

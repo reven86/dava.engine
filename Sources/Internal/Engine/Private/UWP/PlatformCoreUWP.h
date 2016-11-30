@@ -34,6 +34,7 @@ public:
     void OnDpiChanged();
 
     static bool IsPhoneContractPresent();
+    static void EnableHighResolutionTimer(bool enable);
 
 private:
     void GameThread();

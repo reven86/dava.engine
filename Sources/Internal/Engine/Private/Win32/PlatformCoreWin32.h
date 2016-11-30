@@ -24,6 +24,7 @@ public:
     PlatformCore& operator=(const PlatformCore&) = delete;
 
     static HINSTANCE Win32AppInstance();
+    static void EnableHighResolutionTimer(bool enable);
 
     void Init();
     void Run();
