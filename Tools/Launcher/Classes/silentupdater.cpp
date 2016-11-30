@@ -65,7 +65,6 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
         return;
     }
 
-
     SilentUpdateTask task = tasks.dequeue();
     if (reply->error() != QNetworkReply::NoError)
     {
