@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNe
     {
         DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
     };
-    DAVA::Engine::Instance()->RunAsyncOnMainThread(function);
+    DAVA::RunOnMainThread(function);
 }
 } // extern "C"
 

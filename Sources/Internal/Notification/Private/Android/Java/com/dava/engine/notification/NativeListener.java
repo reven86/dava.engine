@@ -12,36 +12,16 @@ public class NativeListener extends DavaActivity.ActivityListenerImpl
 {
     public static native void nativeNewIntent(String uid);
 
-    void RegisterListener()
+    public NativeListener()
     {
         DavaActivity.instance().registerActivityListener(this);
         DavaNotificationProvider.Init(DavaActivity.instance());
-    }
-
-    void UnRegisterListener()
-    {
-        DavaActivity.instance().unregisterActivityListener(this);
-    }
-
-    public NativeListener()
-    {
-        DavaActivity.instance().runOnUiThread(new Runnable() {
-            @Override public void run()
-            {
-                RegisterListener();
-            }
-        });
         Log.d(DavaActivity.LOG_TAG, "NativeListener.<init> Create class instance.");
     }
 
     void release()
     {
-        DavaActivity.instance().runOnUiThread(new Runnable() {
-            @Override public void run()
-            {
-                UnRegisterListener();
-            }
-        });
+        DavaActivity.instance().unregisterActivityListener(this);
     }
 
     @Override
