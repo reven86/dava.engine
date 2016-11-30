@@ -19,6 +19,8 @@ id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
+DAVA::Semaphore* _Metal_DrawableDispatchSemaphore = nullptr; //used to prevent building command buffers
+const uint32 _Metal_DrawableDispatchSemaphoreFrameCount = 4;
 
 InitParam _Metal_InitParam;
 
@@ -26,16 +28,14 @@ Dispatch DispatchMetal = { 0 };
 
 //------------------------------------------------------------------------------
 
-static Api
-metal_HostApi()
+static Api metal_HostApi()
 {
     return RHI_METAL;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-metal_TextureFormatSupported(TextureFormat format, ProgType)
+static bool metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -76,6 +76,8 @@ metal_TextureFormatSupported(TextureFormat format, ProgType)
 
 static void metal_Uninitialize()
 {
+    if (_Metal_DrawableDispatchSemaphore != nullptr)
+        _Metal_DrawableDispatchSemaphore->Post(_Metal_DrawableDispatchSemaphoreFrameCount); //resume render thread if parked there
 }
 
 //------------------------------------------------------------------------------
@@ -180,6 +182,13 @@ void Metal_InitContext()
     depth_desc.depthWriteEnabled = YES;
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
+
+    //Logger::Error(" METAL DEVICE NAME: %s", _Metal_Device.name);
+    if (([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v3]) && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
+    {
+        Logger::Error(" A7 ios 10 detected", _Metal_Device.name);
+        _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
+    }
 }
 bool Metal_CheckSurface()
 {
