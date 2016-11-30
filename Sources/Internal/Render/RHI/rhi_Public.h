@@ -144,6 +144,7 @@ void Reset(const ResetParam& param);
 bool NeedRestoreResources();
 
 void Present(); // execute all submitted command-buffers & do flip/present
+void ReportError(const InitParam&, RenderingError);
 
 Api HostApi();
 bool TextureFormatSupported(TextureFormat format, ProgType progType = PROG_FRAGMENT);

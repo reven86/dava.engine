@@ -78,12 +78,12 @@ void* BufferDX11_t::Map(DAVA::uint32 inOffset, DAVA::uint32 inSize)
     void* ptr = nullptr;
     if (usage == USAGE_DYNAMICDRAW)
     {
-        if (_DX11_UseHardwareCommandBuffers)
+        if (dx11.useHardwareCommandBuffers)
         {
-            DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
+            DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
 
             D3D11_MAPPED_SUBRESOURCE rc = {};
-            HRESULT hr = _D3D11_SecondaryContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
+            HRESULT hr = dx11.deferredContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);
             if (DX11Check(hr) && (rc.pData != nullptr))
             {
                 isMapped = true;
@@ -123,10 +123,10 @@ void BufferDX11_t::Unmap()
 
     if (usage == USAGE_DYNAMICDRAW)
     {
-        if (_DX11_UseHardwareCommandBuffers)
+        if (dx11.useHardwareCommandBuffers)
         {
-            DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
-            _D3D11_SecondaryContext->Unmap(buffer, 0);
+            DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+            dx11.deferredContext->Unmap(buffer, 0);
         }
         else
         {
@@ -146,7 +146,7 @@ void BufferDX11_t::ResolvePendingUpdate(ID3D11DeviceContext* context)
     if (updatePending == false)
         return;
 
-    DVASSERT(_DX11_UseHardwareCommandBuffers == false);
+    DVASSERT(dx11.useHardwareCommandBuffers == false);
 
     D3D11_MAPPED_SUBRESOURCE rc = {};
     HRESULT hr = context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc);

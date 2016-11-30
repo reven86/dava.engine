@@ -90,7 +90,7 @@ bool ConstBufDX11_t::SetConst(uint32 const_i, uint32 const_count, const float* d
 
     memcpy(value + 4 * const_i, data, const_count * (4 * sizeof(float)));
 
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
         lastUpdateFrame = currentFrame;
     }
@@ -106,7 +106,7 @@ bool ConstBufDX11_t::SetConst(uint32 const_i, uint32 const_sub_i, const float* d
     DVASSERT(const_i <= regCount && const_sub_i < 4);
 
     memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
         lastUpdateFrame = currentFrame;
     }
@@ -122,7 +122,7 @@ void ConstBufDX11_t::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBu
 {
     if (lastUpdateFrame == currentFrame)
     {
-        DVASSERT(_DX11_UseHardwareCommandBuffers);
+        DVASSERT(dx11.useHardwareCommandBuffers);
         context->UpdateSubresource(buffer, 0, nullptr, value, regCount * (4 * sizeof(float)), 0);
     }
     outBuffer[buf_i] = buffer;
@@ -130,12 +130,12 @@ void ConstBufDX11_t::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** outBu
 
 void ConstBufDX11_t::SetToRHI(const void* instData)
 {
-    _D3D11_ImmediateContext->UpdateSubresource(buffer, 0, nullptr, instData, regCount * (4 * sizeof(float)), 0);
+    dx11.context->UpdateSubresource(buffer, 0, nullptr, instData, regCount * (4 * sizeof(float)), 0);
 
     if (progType == PROG_VERTEX)
-        _D3D11_ImmediateContext->VSSetConstantBuffers(buf_i, 1, &buffer);
+        dx11.context->VSSetConstantBuffers(buf_i, 1, &buffer);
     else
-        _D3D11_ImmediateContext->PSSetConstantBuffers(buf_i, 1, &buffer);
+        dx11.context->PSSetConstantBuffers(buf_i, 1, &buffer);
 }
 
 const void* ConstBufDX11_t::Instance()
@@ -227,7 +227,8 @@ void ConstBufferDX11::InvalidateAllInstances()
 
 void ConstBufferDX11::InitializeRingBuffer(uint32 size)
 {
-    ConstBufDX11_t::defaultRingBuffer.Initialize((size) ? size : 4 * 1024 * 1024);
+    if (!dx11.useHardwareCommandBuffers)
+        ConstBufDX11_t::defaultRingBuffer.Initialize((size) ? size : 4 * 1024 * 1024);
 }
 
 } // namespace rhi

@@ -393,8 +393,8 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     DumpShaderText((const char*)(&fprog_bin[0]), (uint32 int)fprog_bin.size());
 #endif
 
-    const char* vsFeatureLevel = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1";
-    const char* fsFeatureLevel = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1";
+    const char* vsFeatureLevel = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1";
+    const char* fsFeatureLevel = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1";
 
     hr = D3DCompile((const char*)(&vprog_bin[0]), vprog_bin.size(), "vprog", nullptr, nullptr, "vp_main", vsFeatureLevel,
                     D3DCOMPILE_OPTIMIZATION_LEVEL2, 0, &vp_code, &vp_err);

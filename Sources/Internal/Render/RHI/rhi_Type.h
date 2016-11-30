@@ -58,6 +58,7 @@ enum class RenderingError : uint32_t
 {
     DriverError,
     UnsupportedShaderModel,
+    FailedToInitialize
 };
 
 enum ProgType
@@ -546,6 +547,20 @@ enum ColorMask
     COLORMASK_ALL = COLORMASK_R | COLORMASK_G | COLORMASK_B | COLORMASK_A
 };
 
+enum BlendFunc
+{
+};
+
+enum BlendOp
+{
+    BLENDOP_ZERO,
+    BLENDOP_ONE,
+    BLENDOP_SRC_ALPHA,
+    BLENDOP_INV_SRC_ALPHA,
+    BLENDOP_SRC_COLOR,
+    BLENDOP_DST_COLOR
+};
+
 struct BlendState
 {
     struct
@@ -565,25 +580,17 @@ struct BlendState
     {
         for (uint32 i = 0; i != MAX_RENDER_TARGET_COUNT; ++i)
         {
+            rtBlend[i].colorFunc = 0;
+            rtBlend[i].colorSrc = static_cast<uint32>(BLENDOP_ONE);
+            rtBlend[i].colorDst = static_cast<uint32>(BLENDOP_ZERO);
+            rtBlend[i].alphaFunc = 0;
+            rtBlend[i].alphaSrc = static_cast<uint32>(BLENDOP_ONE);
+            rtBlend[i].alphaDst = static_cast<uint32>(BLENDOP_ZERO);
             rtBlend[i].writeMask = COLORMASK_ALL;
             rtBlend[i].blendEnabled = false;
             rtBlend[i].alphaToCoverage = false;
         }
     }
-};
-
-enum BlendFunc
-{
-};
-
-enum BlendOp
-{
-    BLENDOP_ZERO,
-    BLENDOP_ONE,
-    BLENDOP_SRC_ALPHA,
-    BLENDOP_INV_SRC_ALPHA,
-    BLENDOP_SRC_COLOR,
-    BLENDOP_DST_COLOR
 };
 
 namespace PipelineState

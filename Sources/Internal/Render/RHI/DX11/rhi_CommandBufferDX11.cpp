@@ -101,7 +101,7 @@ void CommandBufferDX11_t::Reset()
         cur_vb_stride[i] = 0;
     }
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
         ResetHardware();
 #endif
 }
@@ -131,7 +131,7 @@ void CommandBufferDX11_t::ApplyTopology(PrimitiveType primType, uint32 primCount
     if (topo != cur_topo)
     {
     #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-        if (_DX11_UseHardwareCommandBuffers)
+        if (dx11.useHardwareCommandBuffers)
         {
             context->IASetPrimitiveTopology(topo);
         }
@@ -218,10 +218,11 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
     }
     else
     {
-        inContext->OMSetRenderTargets(1, &_D3D11_RenderTargetView, _D3D11_DepthStencilView);
+        ID3D11RenderTargetView* rtView[] = { dx11.renderTargetView.Get() };
+        inContext->OMSetRenderTargets(1, rtView, dx11.depthStencilView.Get());
 
         D3D11_TEXTURE2D_DESC desc = {};
-        _D3D11_SwapChainBuffer->GetDesc(&desc);
+        dx11.renderTarget->GetDesc(&desc);
         def_viewport.Width = float(desc.Width);
         def_viewport.Height = float(desc.Height);
     }
@@ -500,7 +501,7 @@ static void dx11_SWCommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 
 void CommandBufferDX11_t::ExecuteSoftware()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers == false);
+    DVASSERT(dx11.useHardwareCommandBuffers == false);
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
@@ -511,7 +512,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
         case CMD_BEGIN:
         {
             Reset();
-            Begin(_D3D11_ImmediateContext);
+            Begin(dx11.ImmediateContext());
         }
         break;
 
@@ -536,7 +537,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
         case CMD_SET_INDICES:
         {
             Handle ib = static_cast<const SWCommand_SetIndices*>(cmd)->ib;
-            IndexBufferDX11::SetToRHI(ib, 0, _D3D11_ImmediateContext);
+            IndexBufferDX11::SetToRHI(ib, 0, dx11.ImmediateContext());
         }
         break;
 
@@ -550,8 +551,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
         {
             if (cur_query_buf != InvalidHandle)
             {
-                QueryBufferDX11::SetQueryIndex(cur_query_buf, static_cast<const SWCommand_SetQueryIndex*>(cmd)->objectIndex,
-                                               _D3D11_ImmediateContext);
+                QueryBufferDX11::SetQueryIndex(cur_query_buf, static_cast<const SWCommand_SetQueryIndex*>(cmd)->objectIndex, dx11.ImmediateContext());
             }
         }
         break;
@@ -559,7 +559,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
         case CMD_ISSUE_TIMESTAMP_QUERY:
         {
             Handle perfQuery = ((SWCommand_IssueTimestamptQuery*)cmd)->perfQuery;
-            PerfQueryDX11::IssueTimestampQuery(perfQuery, _D3D11_ImmediateContext);
+            PerfQueryDX11::IssueTimestampQuery(perfQuery, dx11.ImmediateContext());
         }
         break;
 
@@ -574,7 +574,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
             for (uint32 i = 0; i != cur_stream_count; ++i)
                 cur_vb_stride[i] = (vdecl) ? vdecl->Stride(i) : 0;
 
-            PipelineStateDX11::SetToRHI(ps, vdeclUID, _D3D11_ImmediateContext);
+            PipelineStateDX11::SetToRHI(ps, vdeclUID, dx11.ImmediateContext());
         }
         break;
 
@@ -599,7 +599,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
                 rs_param.scissorEnabled = true;
                 cur_rs = nullptr;
 
-                _D3D11_ImmediateContext->RSSetScissorRects(1, &rect);
+                dx11.context->RSSetScissorRects(1, &rect);
             }
             else
             {
@@ -627,11 +627,11 @@ void CommandBufferDX11_t::ExecuteSoftware()
                 vp.MinDepth = 0.0f;
                 vp.MaxDepth = 1.0f;
 
-                _D3D11_ImmediateContext->RSSetViewports(1, &vp);
+                dx11.context->RSSetViewports(1, &vp);
             }
             else
             {
-                _D3D11_ImmediateContext->RSSetViewports(1, &def_viewport);
+                dx11.context->RSSetViewports(1, &def_viewport);
             }
         }
         break;
@@ -664,7 +664,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
         {
             Handle tex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->tex;
             uint32 unitIndex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->unitIndex;
-            TextureDX11::SetToRHIFragment(tex, unitIndex, _D3D11_ImmediateContext);
+            TextureDX11::SetToRHIFragment(tex, unitIndex, dx11.ImmediateContext());
         }
         break;
 
@@ -672,19 +672,19 @@ void CommandBufferDX11_t::ExecuteSoftware()
         {
             Handle tex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->tex;
             uint32 unitIndex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->unitIndex;
-            TextureDX11::SetToRHIVertex(tex, unitIndex, _D3D11_ImmediateContext);
+            TextureDX11::SetToRHIVertex(tex, unitIndex, dx11.ImmediateContext());
         }
         break;
 
         case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateDX11::SetToRHI(static_cast<const SWCommand_SetDepthStencilState*>(cmd)->depthStencilState, _D3D11_ImmediateContext);
+            DepthStencilStateDX11::SetToRHI(static_cast<const SWCommand_SetDepthStencilState*>(cmd)->depthStencilState, dx11.ImmediateContext());
         }
         break;
 
         case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateDX11::SetToRHI(static_cast<const SWCommand_SetSamplerState*>(cmd)->samplerState, _D3D11_ImmediateContext);
+            SamplerStateDX11::SetToRHI(static_cast<const SWCommand_SetSamplerState*>(cmd)->samplerState, dx11.ImmediateContext());
         }
         break;
 
@@ -695,20 +695,20 @@ void CommandBufferDX11_t::ExecuteSoftware()
 
             if (topo != cur_topo)
             {
-                _D3D11_ImmediateContext->IASetPrimitiveTopology(topo);
+                dx11.context->IASetPrimitiveTopology(topo);
                 cur_topo = topo;
             }
 
             if (cur_rs == nullptr)
             {
                 cur_rs = GetRasterizerState(rs_param);
-                _D3D11_ImmediateContext->RSSetState(cur_rs);
+                dx11.context->RSSetState(cur_rs);
             }
 
             for (uint32 s = 0; s != cur_stream_count; ++s)
-                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], _D3D11_ImmediateContext);
+                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], dx11.ImmediateContext());
 
-            _D3D11_ImmediateContext->Draw(vertexCount, 0);
+            dx11.context->Draw(vertexCount, 0);
         }
         break;
 
@@ -721,20 +721,20 @@ void CommandBufferDX11_t::ExecuteSoftware()
 
             if (topo != cur_topo)
             {
-                _D3D11_ImmediateContext->IASetPrimitiveTopology(topo);
+                dx11.context->IASetPrimitiveTopology(topo);
                 cur_topo = topo;
             }
 
             if (cur_rs == nullptr)
             {
                 cur_rs = GetRasterizerState(rs_param);
-                _D3D11_ImmediateContext->RSSetState(cur_rs);
+                dx11.context->RSSetState(cur_rs);
             }
 
             for (uint32 s = 0; s != cur_stream_count; ++s)
-                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], _D3D11_ImmediateContext);
+                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], dx11.ImmediateContext());
 
-            _D3D11_ImmediateContext->DrawIndexed(indexCount, startIndex, baseVertex);
+            dx11.context->DrawIndexed(indexCount, startIndex, baseVertex);
         }
         break;
 
@@ -746,20 +746,20 @@ void CommandBufferDX11_t::ExecuteSoftware()
 
             if (topo != cur_topo)
             {
-                _D3D11_ImmediateContext->IASetPrimitiveTopology(topo);
+                dx11.context->IASetPrimitiveTopology(topo);
                 cur_topo = topo;
             }
 
             if (cur_rs == nullptr)
             {
                 cur_rs = GetRasterizerState(rs_param);
-                _D3D11_ImmediateContext->RSSetState(cur_rs);
+                dx11.context->RSSetState(cur_rs);
             }
 
             for (uint32 s = 0; s != cur_stream_count; ++s)
-                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], _D3D11_ImmediateContext);
+                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], dx11.ImmediateContext());
 
-            _D3D11_ImmediateContext->DrawInstanced(vertexCount, instCount, 0, 0);
+            dx11.context->DrawInstanced(vertexCount, instCount, 0, 0);
         }
         break;
 
@@ -774,20 +774,20 @@ void CommandBufferDX11_t::ExecuteSoftware()
 
             if (topo != cur_topo)
             {
-                _D3D11_ImmediateContext->IASetPrimitiveTopology(topo);
+                dx11.context->IASetPrimitiveTopology(topo);
                 cur_topo = topo;
             }
 
             if (cur_rs == nullptr)
             {
                 cur_rs = GetRasterizerState(rs_param);
-                _D3D11_ImmediateContext->RSSetState(cur_rs);
+                dx11.context->RSSetState(cur_rs);
             }
 
             for (uint32 s = 0; s != cur_stream_count; ++s)
-                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], _D3D11_ImmediateContext);
+                VertexBufferDX11::SetToRHI(cur_vb[s], s, 0, cur_vb_stride[s], dx11.ImmediateContext());
 
-            _D3D11_ImmediateContext->DrawIndexedInstanced(indexCount, instCount, startIndex, 0, baseInst);
+            dx11.context->DrawIndexedInstanced(indexCount, instCount, startIndex, 0, baseInst);
         }
         break;
 
@@ -1085,7 +1085,7 @@ void FlushContextIfRequired(ID3D11DeviceContext* context)
 
 void CommandBufferDX11_t::InitHardware()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
     if (context == nullptr)
     {
         commandList = nullptr;
@@ -1098,15 +1098,15 @@ void CommandBufferDX11_t::InitHardware()
 
 void CommandBufferDX11_t::ExecuteHardware()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
-    _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
-    FlushContextIfRequired(_D3D11_ImmediateContext);
+    dx11.context->ExecuteCommandList(commandList, FALSE);
+    FlushContextIfRequired(dx11.ImmediateContext());
 }
 
 void CommandBufferDX11_t::ReleaseHardware(bool isComplete)
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
 
     if ((context != nullptr) && !isComplete)
     {
@@ -1120,7 +1120,7 @@ void CommandBufferDX11_t::ReleaseHardware(bool isComplete)
 
 void CommandBufferDX11_t::ResetHardware()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
 
     for (uint32 i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
     {
@@ -1137,7 +1137,7 @@ void CommandBufferDX11_t::ResetHardware()
 
 void CommandBufferDX11_t::ApplyVertexData()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
 
     for (uint32 i = 0; i != cur_stream_count; ++i)
     {
@@ -1153,7 +1153,7 @@ void CommandBufferDX11_t::ApplyVertexData()
 
 void CommandBufferDX11_t::ApplyRasterizerState()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
 
     if (cur_rs == nullptr)
         cur_rs = GetRasterizerState(rs_param);
@@ -1167,7 +1167,7 @@ void CommandBufferDX11_t::ApplyRasterizerState()
 
 void CommandBufferDX11_t::ApplyConstBuffers()
 {
-    DVASSERT(_DX11_UseHardwareCommandBuffers);
+    DVASSERT(dx11.useHardwareCommandBuffers);
 
     context->VSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, vertexConstBuffer);
     context->PSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, fragmentConstBuffer);
@@ -1215,7 +1215,7 @@ Handle CommandBufferDX11::Allocate(const RenderPassConfig& passDesc, bool isFirs
     cb->isLastInPass = isLastInPass;
 
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
         cb->InitHardware();
 #endif
 
@@ -1227,7 +1227,7 @@ void CommandBufferDX11::ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumbe
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(handle);
 
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
         cb->ExecuteHardware();
         cb->ReleaseHardware(true);
@@ -1235,18 +1235,18 @@ void CommandBufferDX11::ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumbe
 #endif
 
 #if (RHI_DX11_CB_COMPILE_WITH_SOFTWARE)
-    if (!_DX11_UseHardwareCommandBuffers)
+    if (!dx11.useHardwareCommandBuffers)
         cb->ExecuteSoftware();
 #endif
 
     if (cb->isLastInPass && cb->passCfg.UsingMSAA())
     {
         const rhi::RenderPassConfig::ColorBuffer& colorBuffer = cb->passCfg.colorBuffer[0];
-        TextureDX11::ResolveMultisampling(colorBuffer.multisampleTexture, colorBuffer.texture, _D3D11_ImmediateContext);
+        TextureDX11::ResolveMultisampling(colorBuffer.multisampleTexture, colorBuffer.texture, dx11.ImmediateContext());
     }
 
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
         PerfQueryDX11::DeferredPerfQueriesIssued(cb->deferredPerfQueries);
 #endif
 
@@ -1263,7 +1263,7 @@ void CommandBufferDX11::SignalAndRelease(Handle handle)
         SyncObjectDX11::SetSignaledAndUsedProperties(cb->sync, true, true);
 
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
         cb->ReleaseHardware(cb->isComplete);
 #endif
 

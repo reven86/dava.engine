@@ -1,14 +1,16 @@
 #include "rhi_DX11.h"
-#include "rhi_DX11.h"
 #include "../Common/RenderLoop.h"
 #include "../Common/FrameLoop.h"
 #include "../Common/dbg_StatSet.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-#include "Platform/DeviceInfo.h"
+#include <wrl/client.h>
+#include <Windows.ui.xaml.media.dxinterop.h>
 #endif
 
+#define RHI_DX11_ALLOW_FEATURE_LEVEL_11 1
 #define RHI_DX11_ASSERT_ON_ERROR 1
 
 extern "C" {
@@ -16,113 +18,40 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
+namespace DAVA
+{
+namespace UWPWorkaround
+{
+bool enableSurfaceSizeWorkaround = false; // 'workaround' for ATI HD ****G drivers
+}
+}
+
 namespace rhi
 {
+using namespace Microsoft::WRL;
+
 static Dispatch DispatchDX11 = {};
 static ResetParam resetParams;
 static DAVA::Mutex resetParamsSync;
 static DAVA::Mutex pendingSecondaryCmdListSync;
-static DAVA::Vector<ID3D11CommandList*> pendingSecondaryCmdLists;
+static DAVA::Vector<ComPtr<ID3D11CommandList>> pendingSecondaryCmdLists;
+static DWORD _DX11_RenderThreadId = 0;
 
-ID3D11Device* _D3D11_Device = nullptr;
-IDXGISwapChain* _D3D11_SwapChain = nullptr;
-ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
-ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
-ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
-ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
-D3D_FEATURE_LEVEL _D3D11_FeatureLevel = D3D_FEATURE_LEVEL_9_1;
-ID3D11DeviceContext* _D3D11_ImmediateContext = nullptr;
-ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
-DAVA::Mutex _D3D11_SecondaryContextSync;
-ID3D11Debug* _D3D11_Debug = nullptr;
-ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
-InitParam _DX11_InitParam;
-DWORD _DX11_RenderThreadId = 0;
-bool _DX11_UseHardwareCommandBuffers = false;
-
-const UINT DX11_BackBuffersCount = 3; // TODO : make shared variable across DX11 code
-const DXGI_FORMAT DX11_BackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-
-namespace uap
-{
-void InitDeviceAndSwapChain(void* panel);
-void ResizeSwapChain(int32 width, int32 height, float32 scaleX, float32 scaleY);
-void GetDeviceDescription(char* dst);
-}
+DX11Resources dx11;
 
 /*
  * Helper functions
  */
-static bool _IsValidIntelCardDX11(uint32 vendor_id, uint32 device_id)
-{
-    return ((vendor_id == 0x8086) && // Intel Architecture
-            // These guys are prehistoric :)
-            (device_id == 0x2572) || // 865G
-            (device_id == 0x3582) || // 855GM
-            (device_id == 0x2562) || // 845G
-            (device_id == 0x3577) || // 830M
-            // These are from 2005 and later
-            (device_id == 0x2A02) || // GM965 Device 0
-            (device_id == 0x2A03) || // GM965 Device 1
-            (device_id == 0x29A2) || // G965 Device 0
-            (device_id == 0x29A3) || // G965 Device 1
-            (device_id == 0x27A2) || // 945GM Device 0
-            (device_id == 0x27A6) || // 945GM Device 1
-            (device_id == 0x2772) || // 945G Device 0
-            (device_id == 0x2776) || // 945G Device 1
-            (device_id == 0x2592) || // 915GM Device 0
-            (device_id == 0x2792) || // 915GM Device 1
-            (device_id == 0x2582) || // 915G Device 0
-            (device_id == 0x2782) // 915G Device 1
-            );
-}
-
-void DX11_CreateSizeDependentResources(UINT w, UINT h)
-{
-    HRESULT hr = _D3D11_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)(&_D3D11_SwapChainBuffer));
-    DX11_ProcessCallResult(hr, "_D3D11_SwapChain->GetBuffer", __FILE__, __LINE__);
-
-    D3D11_TEXTURE2D_DESC ds_desc = {};
-    ds_desc.Width = w;
-    ds_desc.Height = h;
-    ds_desc.MipLevels = 1;
-    ds_desc.ArraySize = 1;
-    ds_desc.Format = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
-    ds_desc.SampleDesc.Count = 1;
-    ds_desc.Usage = D3D11_USAGE_DEFAULT;
-    ds_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &ds_desc, 0, &_D3D11_DepthStencilBuffer);
-    DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView);
-    DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, _D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView);
-}
-
-static void ResizeSwapchain()
-{
-    DAVA::LockGuard<DAVA::Mutex> lock(resetParamsSync);
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-    uap::ResizeSwapChain(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
-#else
-    DAVA::SafeRelease(_D3D11_RenderTargetView);
-    DAVA::SafeRelease(_D3D11_DepthStencilBuffer);
-    DAVA::SafeRelease(_D3D11_DepthStencilView);
-    DAVA::SafeRelease(_D3D11_SwapChainBuffer);
-    HRESULT hr = _D3D11_SwapChain->ResizeBuffers(DX11_BackBuffersCount, resetParams.width, resetParams.height, DX11_BackBufferFormat, 0);
-    DX11_ProcessCallResult(hr, "_D3D11_SwapChain->ResizeBuffers", __FILE__, __LINE__);
-    DX11_CreateSizeDependentResources(resetParams.width, resetParams.height);
-#endif
-}
-
 void dx11_InitCaps()
 {
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_10_0);
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = false;
-    MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
-    MutableDeviceCaps::Get().isPerfQuerySupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().isInstancingSupported = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().isPerfQuerySupported = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -134,7 +63,7 @@ void dx11_InitCaps()
     else
     #endif
     {
-        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(dx11.device.Get());
     }
 
     //Some drivers returns untrue DX feature-level, so check it manually
@@ -142,17 +71,17 @@ void dx11_InitCaps()
     {
         ID3D11Query* freqQuery = nullptr;
         D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP_DISJOINT };
-        _D3D11_Device->CreateQuery(&desc, &freqQuery);
+        dx11.device->CreateQuery(&desc, &freqQuery);
         MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
         DAVA::SafeRelease(freqQuery);
     }
 
     D3D11_FEATURE_DATA_THREADING threadingData = {};
-    _D3D11_Device->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threadingData, sizeof(threadingData));
-    _DX11_UseHardwareCommandBuffers = threadingData.DriverCommandLists && threadingData.DriverConcurrentCreates;
-    DAVA::Logger::Info("DX11: hardware command buffers enabled: %d", static_cast<int32>(_DX11_UseHardwareCommandBuffers));
+    dx11.device->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threadingData, sizeof(threadingData));
+    dx11.useHardwareCommandBuffers = threadingData.DriverCommandLists && threadingData.DriverConcurrentCreates;
+    DAVA::Logger::Info("DX11: hardware command buffers enabled: %d", static_cast<int32>(dx11.useHardwareCommandBuffers));
 
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
         CommandBufferDX11::BindHardwareCommandBufferDispatch(&DispatchDX11);
     else
         CommandBufferDX11::BindSoftwareCommandBufferDispatch(&DispatchDX11);
@@ -174,9 +103,9 @@ bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fil
     DVASSERT(cmd.func >= DX11Command::DEVICE_FIRST_COMMAND);
     DVASSERT(cmd.func < DX11Command::DEVICE_LAST_COMMAND);
 
-    if (_DX11_UseHardwareCommandBuffers || (GetCurrentThreadId() == _DX11_RenderThreadId))
+    if (dx11.useHardwareCommandBuffers || (GetCurrentThreadId() == _DX11_RenderThreadId))
     {
-        // running on render thread
+        // running on render thread, or using deferred context
         // immediate execution, device validation will occur inside
         ExecDX11(&cmd, 1, true);
     }
@@ -194,7 +123,7 @@ bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fil
 
 void ValidateDX11Device(const char* call)
 {
-    if (_D3D11_Device == nullptr)
+    if (dx11.device == nullptr)
     {
         DAVA::Logger::Error("DX11 Device is not ready, %s and further calls will be blocked.", call);
         for (;;)
@@ -206,8 +135,7 @@ void ValidateDX11Device(const char* call)
 
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
 {
-    DXGI_FORMAT depthFormat = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
-    const DXGI_FORMAT formatsToCheck[] = { DXGI_FORMAT_B8G8R8A8_UNORM, depthFormat };
+    const DXGI_FORMAT formatsToCheck[] = { dx11.BackBufferFormat, dx11.DepthStencilFormat };
 
     uint32 sampleCount = 2;
 
@@ -258,7 +186,7 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
     if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))
     {
         const char* actualError = DX11_GetErrorText(hr);
-        const char* reason = DX11_GetErrorText(_D3D11_Device->GetDeviceRemovedReason());
+        const char* reason = DX11_GetErrorText(dx11.device->GetDeviceRemovedReason());
 
         DAVA::String info = DAVA::Format("DX11 Device removed/reset\n%s\nat %s [%u]:\n\n%s\n\n%s", call, fileName, line, actualError, reason);
 
@@ -270,12 +198,8 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         DVASSERT_MSG(0, info.c_str());
     #endif
 
-        if (_DX11_InitParam.renderingErrorCallback)
-        {
-            _DX11_InitParam.renderingErrorCallback(RenderingError::DriverError, _DX11_InitParam.renderingErrorCallbackContext);
-        }
-
-        _D3D11_Device = nullptr;
+        ReportError(dx11.initParameters, RenderingError::DriverError);
+        dx11.device = nullptr;
     }
     else if (FAILED(hr))
     {
@@ -283,137 +207,6 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         DAVA::Logger::Error("DX11 Device call %s\nat %s [%u] failed:\n%s", call, fileName, line, errorText);
     }
 }
-
-#if !defined(__DAVAENGINE_WIN_UAP__)
-
-#define RHI_DX11__FORCE_9X_PROFILE 0
-
-void InitDeviceAndSwapChain()
-{
-    HRESULT hr;
-#if RHI_DX11__FORCE_9X_PROFILE
-    D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
-#else
-    D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-#endif
-    IDXGIAdapter* defAdapter = NULL;
-
-    // enumerate adapters
-    {
-        IDXGIFactory* factory = NULL;
-        std::vector<IDXGIAdapter*> adapter;
-        const uint32 preferredVendorID[] =
-        {
-          0x10DE, // nVIDIA
-          0x1002 // ATI
-        };
-
-        if (DX11Check(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&factory)))
-        {
-            IDXGIAdapter* a = NULL;
-
-            for (UINT i = 0; factory->EnumAdapters(i, &a) != DXGI_ERROR_NOT_FOUND; ++i)
-            {
-                adapter.push_back(a);
-            }
-        }
-
-        Logger::Info("detected GPUs (%u) :", adapter.size());
-        for (uint32 i = 0; i != adapter.size(); ++i)
-        {
-            DXGI_ADAPTER_DESC desc = { 0 };
-
-            if (DX11Check(adapter[i]->GetDesc(&desc)))
-            {
-                char info[128];
-
-                ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
-
-                Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
-
-                if (!defAdapter)
-                {
-                    for (uint32 k = 0; k != countof(preferredVendorID); ++k)
-                    {
-                        if (desc.VendorId == preferredVendorID[k])
-                        {
-                            defAdapter = adapter[i];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-#if 0
-    flags |= D3D11_CREATE_DEVICE_DEBUG;
-    flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
-#endif
-
-    DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
-    swapchain_desc.BufferDesc.Width = _DX11_InitParam.width;
-    swapchain_desc.BufferDesc.Height = _DX11_InitParam.height;
-    swapchain_desc.BufferDesc.Format = DX11_BackBufferFormat;
-    swapchain_desc.BufferDesc.RefreshRate.Numerator = 0;
-    swapchain_desc.BufferDesc.RefreshRate.Denominator = 0;
-    swapchain_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
-    swapchain_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
-    swapchain_desc.SampleDesc.Count = 1;
-    swapchain_desc.SampleDesc.Quality = 0;
-    swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapchain_desc.BufferCount = DX11_BackBuffersCount;
-    swapchain_desc.OutputWindow = (HWND)_DX11_InitParam.window;
-    swapchain_desc.Windowed = (_DX11_InitParam.fullScreen) ? FALSE : TRUE;
-    swapchain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    swapchain_desc.Flags = 0;
-
-    DWORD deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
-
-    hr = D3D11CreateDeviceAndSwapChain(defAdapter, (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, NULL,
-                                       deviceFlags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
-                                       &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
-
-    if (FAILED(hr))
-    {
-        // fall back to 'default' adapter
-        hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, feature, countof(feature),
-                                           D3D11_SDK_VERSION, &swapchain_desc, &_D3D11_SwapChain, &_D3D11_Device,
-                                           &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
-    }
-
-    if (DX11Check(hr))
-    {
-        IDXGIDevice* dxgiDevice = nullptr;
-        IDXGIAdapter* dxgiAdapter = nullptr;
-        _GUID uuid = __uuidof(IDXGIDevice);
-        if (DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice)))
-        {
-            if (DX11Check(dxgiDevice->GetAdapter(&dxgiAdapter)))
-            {
-                DXGI_ADAPTER_DESC desc = {};
-
-                if (DX11Check(dxgiAdapter->GetDesc(&desc)))
-                {
-                    ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, MutableDeviceCaps::Get().deviceDescription,
-                                          countof(MutableDeviceCaps::Get().deviceDescription), NULL, NULL);
-                    Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X",
-                                 MutableDeviceCaps::Get().deviceDescription, desc.VendorId, desc.DeviceId);
-                }
-            }
-        }
-
-        uuid = __uuidof(IDXGIDevice);
-        hr = DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&_D3D11_Debug));
-        hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
-
-        DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
-        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
-        DX11_CreateSizeDependentResources(_DX11_InitParam.width, _DX11_InitParam.height);
-    }
-}
-#endif
 
 /*
  * Render pass implementation
@@ -476,6 +269,253 @@ void RenderPassDX11::RejectCommandBuffersAndRelease(Handle handle)
     RenderPassPoolDX11::Free(handle);
 }
 
+bool dx11_HasDebugLayers()
+{
+    return SUCCEEDED(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_NULL, 0, D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, nullptr, nullptr, nullptr));
+}
+
+HRESULT CreateDXGIFactoryWrapper(UINT flags)
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    return CreateDXGIFactory2(flags, IID_PPV_ARGS(dx11.factory.GetAddressOf()));
+#else
+    return CreateDXGIFactory1(IID_PPV_ARGS(dx11.factory.GetAddressOf()));
+#endif
+}
+
+ComPtr<IDXGIAdapter> dx11_SelectAdapter()
+{
+    using AdapterWithDesc = std::pair<ComPtr<IDXGIAdapter>, DXGI_ADAPTER_DESC>;
+    DAVA::Vector<AdapterWithDesc> availableAdapters;
+
+    UINT factoryFlags = 0;
+#if defined(__DAVAENGINE_WIN_UAP__) && defined(__DAVAENGINE_DEBUG__)
+    if (dx11.hasDebugLayers)
+        factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+
+    DAVA::Logger::Info("[RHI-DX11] enumerating adapters:", static_cast<DAVA::uint32>(availableAdapters.size()));
+    if (DX11Check(CreateDXGIFactoryWrapper(factoryFlags)))
+    {
+        UINT index = 0;
+        ComPtr<IDXGIAdapter> adapter;
+        while (dx11.factory->EnumAdapters(index, adapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND)
+        {
+            DXGI_ADAPTER_DESC desc = {};
+            adapter->GetDesc(&desc);
+            DAVA::Logger::Info("%d : '%S' (vendor: %04X, subsystem: %04X)", index, desc.Description, desc.VendorId, desc.SubSysId);
+            availableAdapters.emplace_back(adapter, desc);
+            ++index;
+        }
+    }
+
+    if (availableAdapters.empty())
+        return ComPtr<IDXGIAdapter>();
+
+    std::sort(availableAdapters.begin(), availableAdapters.end(), [](const AdapterWithDesc& l, const AdapterWithDesc& r)
+              {
+                  static const UINT preferredVendorIds[] =
+                  {
+                    0x10DE, // Nvidia
+                    0x1002, // ATI
+                    0x8086, // Intel
+                  };
+                  UINT leftId = UINT(-1);
+                  UINT rightId = UINT(-1);
+                  for (UINT i = 0; i < countof(preferredVendorIds); ++i)
+                  {
+                      if (preferredVendorIds[i] == l.second.VendorId)
+                          leftId = i;
+                      if (preferredVendorIds[i] == r.second.VendorId)
+                          rightId = i;
+                  }
+                  return leftId < rightId;
+              });
+
+    const AdapterWithDesc& selected = availableAdapters.front();
+    DAVA::Logger::Info("[RHI-DX11] Using adapter `%S` (vendor: %04X, subsystem: %04X)", selected.second.Description, selected.second.VendorId, selected.second.SubSysId);
+
+    {
+        // Find out if we should use workaround for AMD GPU
+        char info[256] = {};
+        WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, selected.second.Description, -1, info, countof(info) - 1, nullptr, nullptr);
+        DAVA::UWPWorkaround::enableSurfaceSizeWorkaround |= strstr(info, "AMD Radeon HD") && (info[strlen(info) - 1] == 'G');
+    }
+
+    return selected.first;
+}
+
+bool dx11_CreateDevice(const InitParam& param)
+{
+    UINT deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+#if defined(__DAVAENGINE_DEBUG__)
+    if (dx11.hasDebugLayers)
+        deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+    static const D3D_FEATURE_LEVEL featureLevels[] =
+    {
+    #if (RHI_DX11_ALLOW_FEATURE_LEVEL_11)
+        D3D_FEATURE_LEVEL_11_1,
+        D3D_FEATURE_LEVEL_11_0,
+    #endif
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1
+    };
+
+    ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
+    D3D_DRIVER_TYPE driverType = adapter.Get() ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE;
+    HRESULT result = D3D11CreateDevice(adapter.Get(), driverType, nullptr, deviceFlags, featureLevels, countof(featureLevels),
+                                       D3D11_SDK_VERSION, dx11.device.GetAddressOf(), &dx11.usedFeatureLevel, dx11.context.GetAddressOf());
+
+    bool failedToCreateDevice = (dx11.device.Get() == nullptr) || !DX11Check(result);
+    if (failedToCreateDevice)
+    {
+        driverType = D3D_DRIVER_TYPE_WARP;
+        result = D3D11CreateDevice(nullptr, driverType, nullptr, deviceFlags, featureLevels, countof(featureLevels),
+                                   D3D11_SDK_VERSION, dx11.device.GetAddressOf(), &dx11.usedFeatureLevel, dx11.context.GetAddressOf());
+    }
+
+    failedToCreateDevice = (dx11.device.Get() == nullptr) || !DX11Check(result);
+    if (failedToCreateDevice)
+    {
+        ReportError(param, RenderingError::FailedToInitialize);
+        return false;
+    }
+
+    if (!DX11Check(dx11.device.As(&dx11.dxgiDevice)))
+    {
+        ReportError(param, RenderingError::FailedToInitialize);
+        return false;
+    }
+
+    return true;
+}
+
+void dx11_DestroyDevice()
+{
+    dx11.renderTarget.Reset();
+    dx11.renderTargetView.Reset();
+    dx11.depthStencil.Reset();
+    dx11.depthStencilView.Reset();
+    dx11.factory.Reset();
+    dx11.swapChain.Reset();
+    dx11.deferredContext.Reset();
+    dx11.context.Reset();
+    dx11.device.Reset();
+}
+
+bool dx11_CreateSwapChain(const InitParam& param)
+{
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    desc.Width = param.width;
+    desc.Height = param.height + (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround ? 1 : 0);
+    desc.Format = dx11.BackBufferFormat;
+    desc.SampleDesc.Count = 1;
+    desc.BufferCount = dx11.BackBuffersCount;
+    desc.Scaling = DXGI_SCALING_STRETCH;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    HRESULT result = E_FAIL;
+    try
+    {
+    #if defined(__DAVAENGINE_WIN_UAP__)
+        ComPtr<IDXGISwapChain1> swapChain;
+        result = dx11.factory->CreateSwapChainForComposition(dx11.device.Get(), &desc, nullptr, swapChain.GetAddressOf());
+        if (!DX11Check(swapChain.As(&dx11.swapChain)))
+        {
+            ReportError(param, RenderingError::FailedToInitialize);
+            return false;
+        }
+    #else
+        HWND wnd = reinterpret_cast<HWND>(param.window);
+        result = dx11.factory->CreateSwapChainForHwnd(dx11.device.Get(), wnd, &desc, nullptr, nullptr, dx11.swapChain.GetAddressOf());
+    #endif
+    }
+    catch (...)
+    {
+        dx11_DestroyDevice();
+        if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+        {
+            DAVA::Logger::Error("[RHI-DX11] failed to create swapchain even with workaround. Terminating application.");
+        }
+        else
+        {
+            DAVA::Logger::Error("[RHI-DX11] failed to create swapchain, attempting with workaround...");
+            DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
+        }
+        return false;
+    }
+
+    if (!DX11Check(result))
+        return false;
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    using Windows::UI::Core::CoreDispatcherPriority;
+    using Windows::UI::Core::DispatchedHandler;
+    using namespace Windows::UI::Xaml::Controls;
+    SwapChainPanel ^ swapChainPanel = reinterpret_cast<SwapChainPanel ^>(param.window);
+    auto handler = [swapChainPanel, &param]()
+    {
+        ComPtr<ISwapChainPanelNative> panelNative;
+        if (DX11Check(reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(IID_PPV_ARGS(panelNative.GetAddressOf()))))
+            panelNative->SetSwapChain(dx11.swapChain.Get());
+        else
+            ReportError(param, RenderingError::FailedToInitialize);
+    };
+    swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler(handler, Platform::CallbackContext::Any));
+#endif
+
+    dx11.dxgiDevice->SetMaximumFrameLatency(1);
+    return true;
+}
+
+bool dx11_ResizeSwapChain(DAVA::uint32 width, DAVA::uint32 height, float scaleX, float scaleY)
+{
+    ID3D11RenderTargetView* nullView[] = { nullptr };
+    dx11.context->OMSetRenderTargets(1, nullView, nullptr);
+    dx11.renderTarget.Reset();
+    dx11.renderTargetView.Reset();
+    dx11.depthStencil.Reset();
+    dx11.depthStencilView.Reset();
+    dx11.context->ClearState();
+    dx11.context->Flush();
+
+    if (!DX11Check(dx11.swapChain->ResizeBuffers(dx11.BackBuffersCount, width, height, dx11.BackBufferFormat, 0)))
+        return false;
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    DXGI_MATRIX_3X2_F inverseScale = {};
+    inverseScale._11 = 1.0f / scaleX;
+    inverseScale._22 = 1.0f / scaleY;
+    DX11Check(dx11.swapChain->SetMatrixTransform(&inverseScale));
+#endif
+
+    if (!DX11Check(dx11.swapChain->GetBuffer(0, IID_PPV_ARGS(dx11.renderTarget.GetAddressOf()))))
+        return false;
+
+    if (!DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, dx11.renderTarget.Get(), 0, dx11.renderTargetView.GetAddressOf()))
+        return false;
+
+    D3D11_TEXTURE2D_DESC dsDesc = {};
+    dsDesc.Width = width;
+    dsDesc.Height = height;
+    dsDesc.Format = dx11.DepthStencilFormat;
+    dsDesc.MipLevels = 1;
+    dsDesc.ArraySize = 1;
+    dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    dsDesc.SampleDesc.Count = 1;
+    if (!DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &dsDesc, 0, dx11.depthStencil.GetAddressOf()))
+        return false;
+
+    if (!DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, dx11.depthStencil.Get(), 0, dx11.depthStencilView.GetAddressOf()))
+        return false;
+
+    return true;
+}
+
 /*
  * Main dispatch implemenation
  */
@@ -513,30 +553,32 @@ static void dx11_Uninitialize()
 {
     QueryBufferDX11::ReleaseQueryPool();
     PerfQueryDX11::ReleasePerfQueryPool();
+    dx11_DestroyDevice();
 }
 
 static void dx11_ResetBlock()
 {
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
-
-        _D3D11_SecondaryContext->ClearState();
         ID3D11CommandList* commandList = nullptr;
-        DX11Check(_D3D11_SecondaryContext->FinishCommandList(FALSE, &commandList));
+        DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+        dx11.deferredContext->ClearState();
+        DX11Check(dx11.deferredContext->FinishCommandList(FALSE, &commandList));
         DAVA::SafeRelease(commandList);
-        _D3D11_SecondaryContext->Release();
-
-        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
     }
     else
     {
         rhi::ConstBufferDX11::InvalidateAll();
     }
 
-    ID3D11RenderTargetView* view[] = { nullptr };
-    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
-    ResizeSwapchain();
+    dx11_ResizeSwapChain(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
+
+    if (dx11.useHardwareCommandBuffers)
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+        dx11.deferredContext.Reset();
+        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, dx11.deferredContext.GetAddressOf());
+    }
 }
 
 static void dx11_Reset(const ResetParam& param)
@@ -550,16 +592,16 @@ static void dx11_Reset(const ResetParam& param)
 
 static void dx11_SuspendRendering()
 {
-#if defined(__DAVAENGINE_WIN_UAP__)
     FrameLoop::RejectFrames();
 
-    _GUID uuid = __uuidof(IDXGIDevice3);
-    IDXGIDevice3* dxgiDevice3 = nullptr;
-    if (DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &uuid, (void**)(&dxgiDevice3)))
+#if defined(__DAVAENGINE_WIN_UAP__)
+    GUID guid = __uuidof(IDXGIDevice3);
+    Microsoft::WRL::ComPtr<IDXGIDevice3> dxgiDevice3;
+    if (DX11DeviceCommand(DX11Command::QUERY_INTERFACE, &guid, dxgiDevice3.GetAddressOf()))
     {
-        _D3D11_ImmediateContext->ClearState();
+        dx11.context->ClearState();
         dxgiDevice3->Trim();
-        dxgiDevice3->Release();
+        dxgiDevice3.Reset();
     }
 #endif
 }
@@ -574,23 +616,38 @@ static void dx11_InitContext()
 {
     _DX11_RenderThreadId = GetCurrentThreadId();
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-    uap::InitDeviceAndSwapChain(_DX11_InitParam.window);
-    uap::GetDeviceDescription(MutableDeviceCaps::Get().deviceDescription);
-    {
-        DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
-        DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, &_D3D11_SecondaryContext);
-    }
-#else
-    InitDeviceAndSwapChain();
+#if defined(__DAVAENGINE_DEBUG__)
+    dx11.hasDebugLayers = dx11_HasDebugLayers();
 #endif
+
+    if (!dx11_CreateDevice(dx11.initParameters))
+    {
+        ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
+        return;
+    }
+
+    if (!dx11_CreateSwapChain(dx11.initParameters) && DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+    {
+        dx11_DestroyDevice();
+        if (!dx11_CreateSwapChain(dx11.initParameters))
+        {
+            ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
+            return;
+        }
+    }
+
+    if (!dx11_ResizeSwapChain(dx11.initParameters.width, dx11.initParameters.height, dx11.initParameters.scaleX, dx11.initParameters.scaleY))
+    {
+        ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
+        return;
+    }
+
+    DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+    DX11DeviceCommand(DX11Command::CREATE_DEFERRED_CONTEXT, 0, dx11.deferredContext.GetAddressOf());
 
     dx11_InitCaps();
 
-    if (!_DX11_UseHardwareCommandBuffers)
-    {
-        ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
-    }
+    ConstBufferDX11::InitializeRingBuffer(dx11.initParameters.shaderConstRingBufferSize);
 }
 
 static bool dx11_CheckSurface()
@@ -621,48 +678,45 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     if (frame.sync != InvalidHandle)
         SyncObjectDX11::SetProperties(frame.sync, frame.frameNumber, false, true);
 
-    PerfQueryDX11::ObtainPerfQueryMeasurment(_D3D11_ImmediateContext);
-    PerfQueryDX11::BeginMeasurment(_D3D11_ImmediateContext);
+    PerfQueryDX11::ObtainPerfQueryMeasurment(dx11.ImmediateContext());
+    PerfQueryDX11::BeginMeasurment(dx11.ImmediateContext());
 
     if (frame.perfQueryStart != InvalidHandle)
-        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryStart, _D3D11_ImmediateContext);
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryStart, dx11.ImmediateContext());
 
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
         DAVA::LockGuard<DAVA::Mutex> lock(pendingSecondaryCmdListSync);
-        for (ID3D11CommandList* cmdList : pendingSecondaryCmdLists)
-        {
-            _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
-            cmdList->Release();
-        }
+        for (ComPtr<ID3D11CommandList> cmdList : pendingSecondaryCmdLists)
+            dx11.context->ExecuteCommandList(cmdList.Get(), FALSE);
         pendingSecondaryCmdLists.clear();
     }
 
     for (RenderPassDX11_t* pp : pass)
     {
         if (pp->perfQueryStart != InvalidHandle)
-            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryStart, _D3D11_ImmediateContext);
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryStart, dx11.ImmediateContext());
 
         for (Handle cb_h : pp->commandBuffers)
             CommandBufferDX11::ExecuteAndRelease(cb_h, frame.frameNumber);
 
         if (pp->perfQueryEnd != InvalidHandle)
-            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryEnd, _D3D11_ImmediateContext);
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryEnd, dx11.ImmediateContext());
     }
 
     for (Handle p : frame.pass)
         RenderPassPoolDX11::Free(p);
 
     if (frame.perfQueryEnd != InvalidHandle)
-        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryEnd, _D3D11_ImmediateContext);
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryEnd, dx11.ImmediateContext());
 
     SyncObjectDX11::CheckFrameAndSignalUsed(frame.frameNumber);
 }
 
 static bool dx11_PresentBuffer()
 {
-    DX11_ProcessCallResult(_D3D11_SwapChain->Present(1, 0), __FUNCTION__, __FILE__, __LINE__);
-    PerfQueryDX11::EndMeasurment(_D3D11_ImmediateContext);
+    DX11_ProcessCallResult(dx11.swapChain->Present(1, 0), __FUNCTION__, __FILE__, __LINE__);
+    PerfQueryDX11::EndMeasurment(dx11.ImmediateContext());
     return true;
 }
 
@@ -680,19 +734,19 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             break;
 
         case DX11Command::MAP:
-            cmd->retval = _D3D11_ImmediateContext->Map((ID3D11Resource*)(arg[0]), UINT(arg[1]), D3D11_MAP(arg[2]), UINT(arg[3]), (D3D11_MAPPED_SUBRESOURCE*)(arg[4]));
+            cmd->retval = dx11.context->Map((ID3D11Resource*)(arg[0]), UINT(arg[1]), D3D11_MAP(arg[2]), UINT(arg[3]), (D3D11_MAPPED_SUBRESOURCE*)(arg[4]));
             break;
 
         case DX11Command::UNMAP:
-            _D3D11_ImmediateContext->Unmap((ID3D11Resource*)(arg[0]), UINT(arg[1]));
+            dx11.context->Unmap((ID3D11Resource*)(arg[0]), UINT(arg[1]));
             break;
 
         case DX11Command::UPDATE_SUBRESOURCE:
-            _D3D11_ImmediateContext->UpdateSubresource((ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]));
+            dx11.context->UpdateSubresource((ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]));
             break;
 
         case DX11Command::COPY_RESOURCE:
-            _D3D11_ImmediateContext->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
+            dx11.context->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
             break;
 
         case DX11Command::SYNC_CPU_GPU:
@@ -710,12 +764,12 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
                 if (tsQuery && fqQuery)
                 {
-                    _D3D11_ImmediateContext->Begin(fqQuery);
-                    _D3D11_ImmediateContext->End(tsQuery);
-                    _D3D11_ImmediateContext->End(fqQuery);
+                    dx11.context->Begin(fqQuery);
+                    dx11.context->End(tsQuery);
+                    dx11.context->End(fqQuery);
 
                     uint64 timestamp = 0;
-                    while (S_FALSE == _D3D11_ImmediateContext->GetData(tsQuery, &timestamp, sizeof(uint64), 0))
+                    while (S_FALSE == dx11.context->GetData(tsQuery, &timestamp, sizeof(uint64), 0))
                     {
                     };
 
@@ -724,7 +778,7 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                         *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
 
                         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
-                        while (S_FALSE == _D3D11_ImmediateContext->GetData(fqQuery, &data, sizeof(data), 0))
+                        while (S_FALSE == dx11.context->GetData(fqQuery, &data, sizeof(data), 0))
                         {
                         };
 
@@ -742,91 +796,91 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         case DX11Command::QUERY_INTERFACE:
         {
             ValidateDX11Device("QueryInterface");
-            cmd->retval = _D3D11_Device->QueryInterface(*(const IID*)(arg[0]), (void**)(arg[1]));
+            cmd->retval = dx11.device.Get()->QueryInterface(*(const GUID*)(arg[0]), (void**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_DEFERRED_CONTEXT:
         {
             ValidateDX11Device("CreateDeferredContext");
-            cmd->retval = _D3D11_Device->CreateDeferredContext((UINT)arg[0], (ID3D11DeviceContext**)(arg[1]));
+            cmd->retval = dx11.device->CreateDeferredContext((UINT)arg[0], (ID3D11DeviceContext**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_BLEND_STATE:
         {
             ValidateDX11Device("CreateBlendState");
-            cmd->retval = _D3D11_Device->CreateBlendState((const D3D11_BLEND_DESC*)(arg[0]), (ID3D11BlendState**)(arg[1]));
+            cmd->retval = dx11.device->CreateBlendState((const D3D11_BLEND_DESC*)(arg[0]), (ID3D11BlendState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_SAMPLER_STATE:
         {
             ValidateDX11Device("CreateSamplerState");
-            cmd->retval = _D3D11_Device->CreateSamplerState((const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]));
+            cmd->retval = dx11.device->CreateSamplerState((const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_RASTERIZER_STATE:
         {
             ValidateDX11Device("CreateRasterizerState");
-            cmd->retval = _D3D11_Device->CreateRasterizerState((const D3D11_RASTERIZER_DESC*)(arg[0]), (ID3D11RasterizerState**)(arg[1]));
+            cmd->retval = dx11.device->CreateRasterizerState((const D3D11_RASTERIZER_DESC*)(arg[0]), (ID3D11RasterizerState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_DEPTH_STENCIL_STATE:
         {
             ValidateDX11Device("CreateDepthStencilState");
-            cmd->retval = _D3D11_Device->CreateDepthStencilState((const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]));
+            cmd->retval = dx11.device->CreateDepthStencilState((const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_VERTEX_SHADER:
         {
             ValidateDX11Device("CreateVertexShader");
-            cmd->retval = _D3D11_Device->CreateVertexShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11VertexShader**)(arg[3]));
+            cmd->retval = dx11.device->CreateVertexShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11VertexShader**)(arg[3]));
             break;
         }
         case DX11Command::CREATE_PIXEL_SHADER:
         {
             ValidateDX11Device("CreatePixelShader");
-            cmd->retval = _D3D11_Device->CreatePixelShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11PixelShader**)(arg[3]));
+            cmd->retval = dx11.device->CreatePixelShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11PixelShader**)(arg[3]));
             break;
         }
         case DX11Command::CREATE_INPUT_LAYOUT:
         {
             ValidateDX11Device("CreateInputLayout");
-            cmd->retval = _D3D11_Device->CreateInputLayout((const D3D11_INPUT_ELEMENT_DESC*)(arg[0]), (UINT)(arg[1]), (const void*)(arg[2]), (SIZE_T)(arg[3]), (ID3D11InputLayout**)(arg[4]));
+            cmd->retval = dx11.device->CreateInputLayout((const D3D11_INPUT_ELEMENT_DESC*)(arg[0]), (UINT)(arg[1]), (const void*)(arg[2]), (SIZE_T)(arg[3]), (ID3D11InputLayout**)(arg[4]));
             break;
         }
         case DX11Command::CREATE_QUERY:
         {
             ValidateDX11Device("CreateQuery");
-            cmd->retval = _D3D11_Device->CreateQuery((const D3D11_QUERY_DESC*)(arg[0]), (ID3D11Query**)(arg[1]));
+            cmd->retval = dx11.device->CreateQuery((const D3D11_QUERY_DESC*)(arg[0]), (ID3D11Query**)(arg[1]));
             break;
         }
         case DX11Command::CREATE_BUFFER:
         {
             ValidateDX11Device("CreateBuffer");
-            cmd->retval = _D3D11_Device->CreateBuffer((const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]));
+            cmd->retval = dx11.device->CreateBuffer((const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_TEXTURE_2D:
         {
             ValidateDX11Device("CreateTexture2D");
-            cmd->retval = _D3D11_Device->CreateTexture2D((const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]));
+            cmd->retval = dx11.device->CreateTexture2D((const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_RENDER_TARGET_VIEW:
         {
             ValidateDX11Device("CreateRenderTargetView");
-            cmd->retval = _D3D11_Device->CreateRenderTargetView((ID3D11Resource*)(arg[0]), (const D3D11_RENDER_TARGET_VIEW_DESC*)(arg[1]), (ID3D11RenderTargetView**)(arg[2]));
+            cmd->retval = dx11.device->CreateRenderTargetView((ID3D11Resource*)(arg[0]), (const D3D11_RENDER_TARGET_VIEW_DESC*)(arg[1]), (ID3D11RenderTargetView**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_DEPTH_STENCIL_VIEW:
         {
             ValidateDX11Device("CreateDepthStencilView");
-            cmd->retval = _D3D11_Device->CreateDepthStencilView((ID3D11Resource*)(arg[0]), (const D3D11_DEPTH_STENCIL_VIEW_DESC*)(arg[1]), (ID3D11DepthStencilView**)(arg[2]));
+            cmd->retval = dx11.device->CreateDepthStencilView((ID3D11Resource*)(arg[0]), (const D3D11_DEPTH_STENCIL_VIEW_DESC*)(arg[1]), (ID3D11DepthStencilView**)(arg[2]));
             break;
         }
         case DX11Command::CREATE_SHADER_RESOURCE_VIEW:
         {
             ValidateDX11Device("CreateShaderResourceView");
-            cmd->retval = _D3D11_Device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
+            cmd->retval = dx11.device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
             break;
         }
         default:
@@ -840,16 +894,16 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 static void dx11_EndFrame()
 {
-    if (_DX11_UseHardwareCommandBuffers)
+    if (dx11.useHardwareCommandBuffers)
     {
-        ID3D11CommandList* cmdList = nullptr;
+        ComPtr<ID3D11CommandList> cmdList;
         {
-            DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_SecondaryContextSync);
-            DX11Check(_D3D11_SecondaryContext->FinishCommandList(TRUE, &cmdList));
+            DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+            DX11Check(dx11.deferredContext->FinishCommandList(TRUE, cmdList.GetAddressOf()));
         }
         {
             DAVA::LockGuard<DAVA::Mutex> lock(pendingSecondaryCmdListSync);
-            pendingSecondaryCmdLists.push_back(cmdList);
+            pendingSecondaryCmdLists.emplace_back(cmdList);
         }
     }
 
@@ -867,7 +921,7 @@ static void dx11_RejectFrame(const CommonImpl::Frame& frame)
 
 void dx11_Initialize(const InitParam& param)
 {
-    _DX11_InitParam = param;
+    dx11.initParameters = param;
 
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);

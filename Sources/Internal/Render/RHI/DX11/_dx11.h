@@ -11,12 +11,14 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     #include <DXGI1_3.h>
-#else
+#elif !defined(_WIN32_WINNT)
     #define _WIN32_WINNT 0x0601
 #endif
 
 #include <d3d11_1.h>
 #include <dxgi.h>
+#include <dxgiformat.h>
+#include <wrl/client.h>
 
 namespace rhi
 {
@@ -74,6 +76,46 @@ struct DX11Command
         : func(f)
         , arguments({ DAVA::uint64(a)... })
     {
+    }
+};
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+using IDXGISwapChainClass = IDXGISwapChain2;
+#else
+using IDXGISwapChainClass = IDXGISwapChain1;
+#endif
+
+struct DX11Resources
+{
+    InitParam initParameters;
+
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    Microsoft::WRL::ComPtr<IDXGIFactory2> factory;
+    Microsoft::WRL::ComPtr<IDXGISwapChainClass> swapChain;
+    Microsoft::WRL::ComPtr<IDXGIDevice1> dxgiDevice;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTarget;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencil;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> deferredContext;
+
+    DAVA::Mutex deferredContextLock;
+
+    UINT BackBuffersCount = 3;
+    DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+    DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    D3D_FEATURE_LEVEL usedFeatureLevel = D3D_FEATURE_LEVEL_9_1;
+
+    bool useHardwareCommandBuffers = true;
+
+#if defined(__DAVAENGINE_DEBUG__)
+    bool hasDebugLayers = false;
+#endif
+
+    ID3D11DeviceContext* ImmediateContext()
+    {
+        return context.Get();
     }
 };
 
