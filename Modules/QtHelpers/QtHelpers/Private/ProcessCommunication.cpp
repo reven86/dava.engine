@@ -20,9 +20,8 @@ namespace ProcessCommunicationDetails
     const QString keySenderApp = "senderApp";
     const QString keyTransportMessageID = "messageID";
 
-    const qint64 pollingTime = 50; //100ms;
+    const qint64 pollingTime = 200; //ms;
     const qint64 maximumTimeout = 5 * 60 * 1000; // 5 minutes
-    static qint64 lastMessageID = 0;
 }
 
 ProcessCommunication::ProcessCommunication(QObject* parent)
@@ -53,6 +52,15 @@ ProcessCommunication::~ProcessCommunication()
     }
 }
 
+void ProcessCommunication::InitPollTimer()
+{
+    pollTimer = new QTimer(this);
+    pollTimer->setInterval(ProcessCommunicationDetails::pollingTime);
+    pollTimer->setSingleShot(false);
+    connect(pollTimer, &QTimer::timeout, this, &ProcessCommunication::Poll);
+    pollTimer->start();
+}
+
 QString ProcessCommunication::GetReplyString(eReply reply)
 {
     switch (reply)
@@ -64,7 +72,7 @@ QString ProcessCommunication::GetReplyString(eReply reply)
     case eReply::UNKNOWN_MESSAGE:
         return tr("this message is unknown for client");
     case eReply::NOT_INITIALIZED:
-        return tr("communication module was not initialized");
+        return tr("communication module was not initialized, restart appication please");
     case eReply::SEND_ERROR:
         return tr("can not send message");
     case eReply::TIMEOUT_ERROR:
@@ -128,7 +136,10 @@ ProcessCommunication::eReply ProcessCommunication::SendSync(const eMessage messa
         loop.quit();
     };
     SendAsync(messagCode, targetAppPath, callBack);
-    loop.exec();
+    if (haveAnswer == false)
+    {
+        loop.exec();
+    }
     return reply;
 }
 
@@ -156,11 +167,11 @@ void ProcessCommunication::Poll()
         while (iterator.hasNext())
         {
             const MessageDetails &details = iterator.next();
+            //we got reply for sent message
             if (details.transportMessageID == transportLevelID)
             {
                 details.callBack(static_cast<eReply>(messageIDValue));
                 iterator.remove();
-                //we got reply for sent message
                 gotReply = true;
                 Flush();
             }
@@ -175,6 +186,8 @@ void ProcessCommunication::Poll()
             Reply(transportLevelID, reply, targetApp);
         }
     }
+
+    //check messages for timeout error
     QMutableListIterator<MessageDetails> iterator(sentMessages);
     qint64 elapsedTime = elapsedTimer.elapsed();
     while (iterator.hasNext())
@@ -198,17 +211,7 @@ void ProcessCommunication::Reply(qint64 transportLevelID, const eReply replyCode
 
     QJsonDocument document(obj);
     QByteArray jsonData = document.toJson();
-    jsonData.append('\0');
     Write(jsonData);
-}
-
-void ProcessCommunication::InitPollTimer()
-{
-    pollTimer = new QTimer(this);
-    pollTimer->setInterval(ProcessCommunicationDetails::pollingTime);
-    pollTimer->setSingleShot(false);
-    connect(pollTimer, &QTimer::timeout, this, &ProcessCommunication::Poll);
-    pollTimer->start();
 }
 
 bool ProcessCommunication::Lock()
@@ -236,7 +239,7 @@ bool ProcessCommunication::Write(const QByteArray &data)
     bool success = false;
     if (data.size() > ProcessCommunicationDetails::maxDataSize)
     {
-        qWarning() << "Process communication module can not send data biggest than max size";
+        qWarning() << "Process communication module can not send data biggest then max size";
     }
     else if (Lock() != false)
     {
@@ -250,7 +253,7 @@ bool ProcessCommunication::Write(const QByteArray &data)
         }
         else
         {
-            qWarning() << "Process communication module can not write shared memory. Last error is" << sharedMemory.errorString();
+            qWarning() << "Process communication module can not write to the shared memory. Last error is" << sharedMemory.errorString();
         }
         Unlock();
     }
@@ -281,6 +284,8 @@ QJsonObject ProcessCommunication::Read()
     QJsonDocument document = QJsonDocument::fromJson(data.left(data.indexOf('\0')), &parseError);
     if (parseError.error == QJsonParseError::NoError && document.isObject())
     {
+        //check that message is valid and it delivered for the current application
+        //because this detail need to be checked on the protocol level
         QJsonObject obj = document.object();
         if (obj[ProcessCommunicationDetails::keyClientMessageID].isDouble() &&
             obj[ProcessCommunicationDetails::keySenderApp].isString() &&
@@ -290,10 +295,14 @@ QJsonObject ProcessCommunication::Read()
         {
             return obj;
         }
+        else
+        {
+            return QJsonObject();
+        }
     }
     else
     {
-        qWarning() << "Process communication module can not write shared memory. Last error is" << sharedMemory.errorString();
+        qWarning() << "Process communication module can not parse shared memory data, last error is " << parseError.errorString();
     }
     return QJsonObject();
 }
@@ -308,9 +317,11 @@ bool ProcessCommunication::Flush()
     return success;
 }
 
+qint64 ProcessCommunication::MessageDetails::lastMessageID = 0;
+
 ProcessCommunication::MessageDetails::MessageDetails(CallbackFunction callBack_)
-    : transportMessageID(ProcessCommunicationDetails::lastMessageID)
+    : transportMessageID(lastMessageID)
     , callBack(callBack_)
 {
-    ProcessCommunicationDetails::lastMessageID++;
+    lastMessageID++;
 }

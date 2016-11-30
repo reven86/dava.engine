@@ -176,6 +176,10 @@ void UpdateDialog::DownloadFinished()
     }
     QNetworkReply::NetworkError error = currentDownload->error();
     QString errorString = currentDownload->errorString();
+    QByteArray readedData = currentDownload->readAll();
+
+    currentDownload->deleteLater();
+    currentDownload = nullptr;
 
     if (error == QNetworkReply::OperationCanceledError)
     {
@@ -189,9 +193,6 @@ void UpdateDialog::DownloadFinished()
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
         return;
     }
-    QByteArray readedData = currentDownload->readAll();
-    currentDownload->deleteLater();
-    currentDownload = nullptr;
 
     bool success = false;
     FileManager* fileManager = appManager->GetFileManager();

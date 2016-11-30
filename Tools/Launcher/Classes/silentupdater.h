@@ -25,7 +25,7 @@ struct SilentUpdateTask
     QString branchID;
     QString appID;
     AppVersion newVersion;
-    const AppVersion* currentVersion;
+    const AppVersion* currentVersion = nullptr;
     CallBack onFinished;
 };
 
@@ -50,7 +50,7 @@ private:
     bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);
 
     QNetworkAccessManager* networkManager = nullptr;
-    //we hold this variable to avoid Qt bug. When network becomes to incaccessible state we dont receive DownloadFinished.
+    //we hold this variable to avoid Qt bug. When network becomes to incaccessible state we dont receive signal downloadFinished.
     QNetworkReply* currentReply = nullptr;
     ApplicationManager* appManager = nullptr;
     QQueue<SilentUpdateTask> tasks;

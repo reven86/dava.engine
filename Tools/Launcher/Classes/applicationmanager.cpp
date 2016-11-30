@@ -11,6 +11,10 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QThread>
+#include <QEventLoop>
+
+#include <thread>
+#include <atomic>
 
 namespace ApplicationManagerDetails
 {
@@ -68,7 +72,7 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
 AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, const QString& appID)
 {
     Application* app = localConfig.GetApplication(branchID, appID);
-    if (app == nullptr)
+    if (app == nullptr || app->versions.isEmpty())
     {
         return nullptr;
     }
@@ -79,22 +83,29 @@ AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, con
 bool ApplicationManager::TryStopApp(const QString& runPath) const
 {
     ProcessCommunication::eReply reply = processCommunication->SendSync(ProcessCommunication::eMessage::QUIT, runPath);
+    //now wait until application will be really closed
     if (reply == ProcessCommunication::eReply::ACCEPT)
     {
-        QElapsedTimer timer;
-        timer.start();
-        const int maxWaitTime = 10000; //10 secs;
-        bool isStillRunning = true;
-        while (timer.elapsed() < maxWaitTime && isStillRunning)
-        {
-            isStillRunning = ProcessHelper::IsProcessRuning(runPath);
-            QThread::msleep(100);
-        }
+        QEventLoop eventLoop;
+        std::atomic<bool> isStillRunning = true;
+        std::thread workerThread([&eventLoop, &isStillRunning, runPath]() {
+            QElapsedTimer timer;
+            timer.start();
+            const int maxWaitTime = 10 * 1000;
+            while (timer.elapsed() < maxWaitTime && isStillRunning)
+            {
+                QThread::msleep(100);
+                isStillRunning = ProcessHelper::IsProcessRuning(runPath);
+            }
+            eventLoop.quit();
+        });
+        eventLoop.exec();
+        workerThread.join();
         return isStillRunning == false;
     }
     else
     {
-        ErrorMessenger::LogMessage(QtWarningMsg, tr("Can not stop ACS, answer is %1").arg(processCommunication->GetReplyString(reply)));
+        ErrorMessenger::LogMessage(QtWarningMsg, tr("Can not stop application by path %1, answer is %2").arg(runPath).arg(processCommunication->GetReplyString(reply)));
     }
     return false;
 }
@@ -112,10 +123,10 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
         return true;
     }
     QString runPath = appDirPath + GetLocalAppPath(version, appID);
-    bool triedToStopProgrammly = false;
+    bool triedToStop = false;
     while (ProcessHelper::IsProcessRuning(runPath))
     {
-        if (triedToStopProgrammly == false && appID.contains("assetcacheserver", Qt::CaseInsensitive))
+        if (triedToStop == false && CanTryStopApplication(appID))
         {
             if (TryStopApp(runPath))
             {
@@ -123,17 +134,21 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
             }
             else
             {
-                triedToStopProgrammly = true;
+                triedToStop = true;
             }
         }
         if (silent)
         {
+            ErrorMessenger::LogMessage(QtWarningMsg, QString("Can not remove application %1, because it still running").arg(appID));
             return false;
         }
-        int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
-        if (result == QMessageBox::Cancel)
+        else
         {
-            return false;
+            int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
+            if (result == QMessageBox::Cancel)
+            {
+                return false;
+            }
         }
     }
     return true;
@@ -156,6 +171,11 @@ void ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QS
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_FILE, "Can not remove directory " + appDirPath + "\nApplication need to be reinstalled!\nIf this error occurs again - remove directory by yourself, please");
     }
+}
+
+bool ApplicationManager::CanTryStopApplication(const QString& applicationName) const
+{
+    return applicationName.contains("assetcacheserver", Qt::CaseInsensitive);
 }
 
 void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
@@ -485,9 +505,8 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
 
 bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, bool silent, QStringList& appsToRestart)
 {
-    //we need to remove all toolset applications, whether they was installed or not
     auto needRestartLater = [this](const QString& branchID, const QString& appName) {
-        if (appName.contains("assetcacheserver", Qt::CaseInsensitive) == false)
+        if (CanTryStopApplication(appName) == false)
         {
             return false;
         }
@@ -499,6 +518,7 @@ bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID,
         QString path = GetApplicationDirectory(branchID, appName, version->isToolSet, false) + GetLocalAppPath(version, appName);
         return ProcessHelper::IsProcessRuning(path);
     };
+    //we need to remove all toolset applications, whether they was installed or not
     if (willInstallToolset)
     {
         QStringList toolsetApps = localConfig.GetTranslatedToolsetApplications();

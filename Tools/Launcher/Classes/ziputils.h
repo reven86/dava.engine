@@ -22,7 +22,7 @@ public:
         PROCESS_READ_ERROR,
         PROCESS_WRITE_ERROR,
         PROCESS_UNKNOWN_ERROR,
-        //process return non-zero code or crashed
+        //process returned non-zero code or was crashed without any errors
         PROCESS_FAILED,
         PARSE_ERROR,
         ARCHIVE_IS_EMPTY,

@@ -31,5 +31,5 @@ private:
     QMap<ConfigDownloader::eURLType, QPushButton*> resetUrlWidgets;
 };
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* silentUpdater);
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* silentUpdater);
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener);
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener);
