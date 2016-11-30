@@ -32,7 +32,9 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
 
     // initial values
     dlcContext.remoteUrl = url;
+    dlcContext.gameVer = gameVersion;
     dlcContext.localVer = 0;
+    dlcContext.localGameVer = "";
     dlcContext.forceFullUpdate = forceFullUpdate;
 
     dlcContext.localWorkingDir = workingDir;
@@ -64,8 +66,8 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     dlcContext.stateInfoStorePath = workingDir + "State.info";
     dlcContext.prevState = 0;
 
-    ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
-    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
+    ReadFileValue(dlcContext.stateInfoStorePath, dlcContext.prevState, String());
+    ReadFileValue(dlcContext.remoteVerStotePath, dlcContext.remoteVer, String());
 
     logsFilePath = workingDir + "DlcLog.txt";
 
@@ -438,6 +440,20 @@ void DLC::FSM(DLCEvent event)
             StepClean();
             break;
         case DS_DONE:
+            if (dlcError == DE_CONNECT_ERROR)
+            {
+                // If some connection errors were occurred
+                // we should check if some resources
+                // already exist and also check that thous
+                // resources were downloaded by game with
+                // same version as current request.
+                if (dlcContext.gameVer == dlcContext.localGameVer)
+                {
+                    // If so, we already have resources for current game version
+                    // and we can safely continue to work even without DLC server
+                    dlcError = DE_NO_ERROR;
+                }
+            }
             StepDone();
             break;
         default:
@@ -474,7 +490,7 @@ void DLC::OnDownloadTaskStateChanged(uint32 id, DownloadStatus status)
 void DLC::StepCheckInfoBegin()
 {
     // write current dlcState into state-file
-    if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
+    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
     {
         dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Can't write dlcState %d to stateInfoStorePath = %s", dlcState, dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
@@ -484,7 +500,7 @@ void DLC::StepCheckInfoBegin()
 
     if (!dlcContext.forceFullUpdate)
     {
-        ReadUint32(dlcContext.localVerStorePath, dlcContext.localVer);
+        ReadFileValue(dlcContext.localVerStorePath, dlcContext.localVer, dlcContext.localGameVer);
     }
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
@@ -505,7 +521,7 @@ void DLC::StepCheckInfoFinish(uint32 id, DownloadStatus status)
 
             if (DLE_NO_ERROR == downloadError && FileSystem::Instance()->Exists(dlcContext.remoteVerStotePath))
             {
-                if (ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer))
+                if (ReadFileValue(dlcContext.remoteVerStotePath, dlcContext.remoteVer, String()))
                 {
                     PostEvent(EVENT_CHECK_OK);
                 }
@@ -691,7 +707,7 @@ void DLC::StepCheckMetaCancel()
 void DLC::StepDownloadPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
+    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
     {
         dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
@@ -805,7 +821,7 @@ void DLC::StepDownloadPatchCancel()
 void DLC::StepPatchBegin()
 {
     // write current dlcState into state-file
-    if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
+    if (!WriteFileValue(dlcContext.stateInfoStorePath, dlcState, String()))
     {
         PostError(DE_WRITE_ERROR);
         return;
@@ -975,7 +991,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
 
         // update local version
-        if (!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
+        if (!WriteFileValue(dlcContext.localVerStorePath, dlcContext.remoteVer, dlcContext.gameVer))
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
@@ -1022,7 +1038,7 @@ void DLC::StepDone()
     Logger::InfoToFile(logsFilePath, "[DLC::StepDone] Done!");
 }
 
-bool DLC::ReadUint32(const FilePath& path, uint32& value)
+bool DLC::ReadFileValue(const FilePath& path, uint32& value, String& optional)
 {
     bool ret = false;
 
@@ -1031,6 +1047,7 @@ bool DLC::ReadUint32(const FilePath& path, uint32& value)
     if (NULL != f)
     {
         char8 tmp[64];
+
         tmp[0] = 0;
         if (f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
@@ -1039,13 +1056,20 @@ bool DLC::ReadUint32(const FilePath& path, uint32& value)
                 ret = true;
             }
         }
+
+        tmp[0] = 0;
+        if (f->ReadLine(tmp, sizeof(tmp)) > 0)
+        {
+            optional = tmp;
+        }
+
         SafeRelease(f);
     }
 
     return ret;
 }
 
-bool DLC::WriteUint32(const FilePath& path, uint32 value)
+bool DLC::WriteFileValue(const FilePath& path, uint32 value, String optional)
 {
     bool ret = false;
 
@@ -1055,6 +1079,12 @@ bool DLC::WriteUint32(const FilePath& path, uint32 value)
     {
         String tmp = Format("%u", value);
         ret = f->WriteLine(tmp);
+
+        if (!optional.empty())
+        {
+            ret &= f->WriteLine(optional);
+        }
+
         SafeRelease(f);
     }
 

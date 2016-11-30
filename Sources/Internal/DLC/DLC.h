@@ -132,7 +132,9 @@ protected:
     struct DLCContext
     {
         String remoteUrl;
+        String gameVer;
         uint32 localVer;
+        String localGameVer;
         bool forceFullUpdate;
 
         FilePath localWorkingDir;
@@ -217,8 +219,8 @@ protected:
     void PatchingThread(BaseObject* caller, void* callerData, void* userData);
 
     // helper functions
-    bool ReadUint32(const FilePath& path, uint32& value);
-    bool WriteUint32(const FilePath& path, uint32 value);
+    bool ReadFileValue(const FilePath& path, uint32& value, String& optional);
+    bool WriteFileValue(const FilePath& path, uint32 value, String optional);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
 
