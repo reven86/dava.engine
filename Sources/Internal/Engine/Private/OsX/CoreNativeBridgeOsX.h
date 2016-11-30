@@ -8,6 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSObject;
@@ -48,8 +49,8 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate();
 
-    void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
-    void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
+    void RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
+    void UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
 
     enum eNotificationType
     {
@@ -68,7 +69,8 @@ struct CoreNativeBridge final
     AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;
 
-    List<NSApplicationDelegateListener*> appDelegateListeners;
+    Mutex listenersMutex;
+    List<PlatformApi::Mac::NSApplicationDelegateListener*> appDelegateListeners;
 
     bool quitSent = false;
     bool closeRequestByApp = false;

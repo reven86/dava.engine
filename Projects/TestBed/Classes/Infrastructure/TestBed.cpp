@@ -107,7 +107,7 @@ TestBed::TestBed(Engine& engine)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset(new NativeDelegateMac());
-    engine.GetNativeService()->RegisterNSApplicationDelegateListener(nativeDelegate.get());
+    PlatformApi::Mac::RegisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     nativeDelegate.reset(new NativeDelegateIos());
     engine.GetNativeService()->RegisterUIApplicationDelegateListener(nativeDelegate.get());
@@ -175,7 +175,7 @@ void TestBed::OnGameLoopStopped()
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
-    engine.GetNativeService()->UnregisterNSApplicationDelegateListener(nativeDelegate.get());
+    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     engine.GetNativeService()->UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)

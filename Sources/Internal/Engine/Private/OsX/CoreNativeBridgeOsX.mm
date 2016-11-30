@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 
 #include "Engine/Window.h"
-#include "Engine/OsX/NSApplicationDelegateListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
@@ -17,6 +16,7 @@
 
 #import "Engine/Private/OsX/AppDelegateOsX.h"
 
+#include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
@@ -141,7 +141,7 @@ void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notificatio
 {
     core->engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
@@ -213,9 +213,14 @@ void CoreNativeBridge::ApplicationWillTerminate()
     std::exit(exitCode);
 }
 
-void CoreNativeBridge::RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void CoreNativeBridge::RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
 {
     DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
     if (it == end(appDelegateListeners))
     {
@@ -223,8 +228,12 @@ void CoreNativeBridge::RegisterNSApplicationDelegateListener(NSApplicationDelega
     }
 }
 
-void CoreNativeBridge::UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void CoreNativeBridge::UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
 {
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
     if (it != end(appDelegateListeners))
     {
@@ -234,10 +243,15 @@ void CoreNativeBridge::UnregisterNSApplicationDelegateListener(NSApplicationDele
 
 void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3)
 {
-    for (auto i = begin(appDelegateListeners), e = end(appDelegateListeners); i != e;)
+    Vector<PlatformApi::Mac::NSApplicationDelegateListener*> listenersCopy;
     {
-        NSApplicationDelegateListener* l = *i;
-        ++i;
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(appDelegateListeners.size());
+        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Mac::NSApplicationDelegateListener* l : listenersCopy)
+    {
         switch (type)
         {
         case ON_DID_FINISH_LAUNCHING:

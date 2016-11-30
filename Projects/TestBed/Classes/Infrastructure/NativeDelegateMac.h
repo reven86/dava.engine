@@ -6,9 +6,9 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/OsX/NSApplicationDelegateListener.h"
+#include <Engine/PlatformApi.h>
 
-struct NativeDelegateMac : public DAVA::NSApplicationDelegateListener
+struct NativeDelegateMac : public DAVA::PlatformApi::Mac::NSApplicationDelegateListener
 {
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;

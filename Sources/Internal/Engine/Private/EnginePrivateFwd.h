@@ -11,7 +11,10 @@ class Dispatcher;
 namespace PlatformApi
 {
 #if defined(__DAVAENGINE_MACOS__)
+namespace Mac
+{
 struct NSApplicationDelegateListener;
+}
 #elif defined(__DAVAENGINE_IPHONE__)
 struct UIApplicationDelegateListener;
 #elif defined(__DAVAENGINE_WIN_UAP__)
