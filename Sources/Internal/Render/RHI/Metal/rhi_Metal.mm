@@ -183,7 +183,6 @@ void Metal_InitContext()
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
 
-    //Logger::Error(" METAL DEVICE NAME: %s", _Metal_Device.name);
     if (([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v3]) && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
     {
         Logger::Error(" A7 ios 10 detected", _Metal_Device.name);
