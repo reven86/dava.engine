@@ -176,6 +176,8 @@ void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* list
     \defgroup engine_ios Engine facilities specific to iOS platform
 */
 
+DAVA_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIView);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIImage);
 
@@ -187,6 +189,30 @@ namespace PlatformApi
 {
 namespace Ios
 {
+/**
+    \ingroup engine_ios
+    Interface definition for a callbacks to be invoked when `UIApplicationDelegate` lifecycle event occurs (didFinishLaunchingWithOptions,
+    applicationDidBecomeActive, etc).
+    Only subset of `UIApplicationDelegate` methods are mapped to the interface definition, other methods are mapped as required.
+
+    To receive callbacks from `UIApplicationDelegate` application should declare class derived from `UIApplicationDelegateListener`, implement
+    necessary methods and register it through `RegisterUIApplicationDelegateListener` function.
+ 
+    Methods of `UIApplicationDelegateListener` are always called in the context of UI thread (for iOS UI thread and main thread are the same).
+*/
+struct UIApplicationDelegateListener
+{
+    // clang-format off
+    virtual ~UIApplicationDelegateListener() = default;
+    virtual void didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions) {}
+    virtual void applicationDidBecomeActive() {}
+    virtual void applicationDidResignActive() {}
+    virtual void applicationWillEnterForeground() {}
+    virtual void applicationDidEnterBackground() {}
+    virtual void applicationWillTerminate() {}
+    // clang-format on
+};
+
 void AddUIView(Window* targetWindow, UIView* uiview);
 void RemoveUIView(Window* targetWindow, UIView* uiview);
 
@@ -195,6 +221,29 @@ void ReturnUIViewToPool(Window* targetWindow, UIView* view);
 
 UIImage* RenderUIViewToUIImage(UIView* view);
 Image* ConvertUIImageToImage(UIImage* nativeImage);
+
+/**
+    \ingroup engine_ios
+    Register a callback to be invoked in response of `UIApplicationDelegate` lifecycle events.
+
+    Application can register a callback from any thread, but callbacks are invoked in the context of UI thread.
+    The best place to call this function is before calling `Engine::Run` or in `Engine::gameLoopStarted` signal handler.
+
+    \pre `listener` should not be null pointer
+    \pre Function shall not be called before `Engine::Init` or after `Engine::cleanup` signal.
+*/
+void RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener);
+
+/**
+    \ingroup engine_mac
+    Unregister a callback previously registered by `RegisterUIApplicationDelegateListener` function.
+
+    Application can unregister a callback from any thread, even during callback invocation.
+
+    \pre `listener` should be previously registered
+    \pre Function shall not be called after `Engine::cleanup` signal
+*/
+void UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener);
 
 } // namespace Ios
 } // namespace PlatformApi

@@ -110,7 +110,7 @@ TestBed::TestBed(Engine& engine)
     PlatformApi::Mac::RegisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     nativeDelegate.reset(new NativeDelegateIos());
-    engine.GetNativeService()->RegisterUIApplicationDelegateListener(nativeDelegate.get());
+    PlatformApi::Ios::RegisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
     nativeDelegate.reset(new NativeDelegateWin10());
     PlatformApi::Win10::RegisterXamlApplicationListener(nativeDelegate.get());
@@ -177,7 +177,7 @@ void TestBed::OnGameLoopStopped()
 #elif defined(__DAVAENGINE_MACOS__)
     PlatformApi::Mac::UnregisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
-    engine.GetNativeService()->UnregisterUIApplicationDelegateListener(nativeDelegate.get());
+    PlatformApi::Ios::UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
     PlatformApi::Win10::UnregisterXamlApplicationListener(nativeDelegate.get());
 #endif

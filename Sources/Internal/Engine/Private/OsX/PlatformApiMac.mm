@@ -1,3 +1,5 @@
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 #elif defined(__DAVAENGINE_MACOS__)

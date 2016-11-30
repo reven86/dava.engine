@@ -1,7 +1,11 @@
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Ios/PlatformCoreiOS.h"
+#include "Engine/Private/Ios/CoreNativeBridgeiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 #include "Render/Image/Image.h"
@@ -98,6 +102,20 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
         //CGImageRelease(imageRef);
     }
     return image;
+}
+
+void RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->bridge->RegisterUIApplicationDelegateListener(listener);
+}
+
+void UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->bridge->UnregisterUIApplicationDelegateListener(listener);
 }
 
 } // namespace Ios

@@ -1,10 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/iOS/UIApplicationDelegateListener.h"
+#include "Engine/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -225,9 +224,14 @@ void CoreNativeBridge::GameControllerDidDisconnected()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
-void CoreNativeBridge::RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void CoreNativeBridge::RegisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
 {
     DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
     if (it == end(appDelegateListeners))
     {
@@ -235,8 +239,12 @@ void CoreNativeBridge::RegisterUIApplicationDelegateListener(UIApplicationDelega
     }
 }
 
-void CoreNativeBridge::UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void CoreNativeBridge::UnregisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
 {
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
     if (it != end(appDelegateListeners))
     {
@@ -246,10 +254,15 @@ void CoreNativeBridge::UnregisterUIApplicationDelegateListener(UIApplicationDele
 
 void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)
 {
-    for (auto i = begin(appDelegateListeners), e = end(appDelegateListeners); i != e;)
+    Vector<PlatformApi::Ios::UIApplicationDelegateListener*> listenersCopy;
     {
-        UIApplicationDelegateListener* l = *i;
-        ++i;
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(appDelegateListeners.size());
+        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Ios::UIApplicationDelegateListener* l : listenersCopy)
+    {
         switch (type)
         {
         case ON_DID_FINISH_LAUNCHING:
