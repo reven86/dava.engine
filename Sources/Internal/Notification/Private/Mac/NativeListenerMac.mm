@@ -9,7 +9,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Osx/NativeServiceOsX.h"
-#include "Engine/Osx/WindowNativeServiceOsX.h"
+#include "Engine/PlatformApi.h"
 #include "Engine/Window.h"
 #include "Logger/Logger.h"
 #include "Notification/LocalNotificationController.h"

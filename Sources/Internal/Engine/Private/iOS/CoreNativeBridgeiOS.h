@@ -1,11 +1,11 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSObject;
@@ -46,8 +46,8 @@ struct CoreNativeBridge final
     void GameControllerDidConnected();
     void GameControllerDidDisconnected();
 
-    void RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener);
-    void UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener);
+    void RegisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener);
+    void UnregisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener);
 
     enum eNotificationType
     {
@@ -66,7 +66,8 @@ struct CoreNativeBridge final
     MainDispatcher* mainDispatcher = nullptr;
     ObjectiveCInterop* objcInterop = nullptr;
 
-    List<UIApplicationDelegateListener*> appDelegateListeners;
+    Mutex listenersMutex;
+    List<PlatformApi::Ios::UIApplicationDelegateListener*> appDelegateListeners;
 };
 
 } // namespace Private

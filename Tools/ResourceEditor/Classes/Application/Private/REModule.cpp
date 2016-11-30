@@ -137,7 +137,7 @@ void REModule::PostInit()
     Themes::InitFromQApplication();
     DAVA::TArc::ContextAccessor& accessor = GetAccessor();
 
-    DAVA::EngineContext* engineContext = accessor.GetEngineContext();
+    const DAVA::EngineContext* engineContext = accessor.GetEngineContext();
     engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
     engineContext->uiControlSystem->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
@@ -155,7 +155,7 @@ void REModule::PostInit()
 
 void REModule::UnpackHelpDoc()
 {
-    DAVA::EngineContext* engineContext = GetAccessor().GetEngineContext();
+    const DAVA::EngineContext* engineContext = GetAccessor().GetEngineContext();
     DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
     DAVA::FilePath docsPath = DAVA::FilePath(ResourceEditor::DOCUMENTATION_PATH);
     if (editorVer != APPLICATION_BUILD_VERSION || !engineContext->fileSystem->Exists(docsPath))

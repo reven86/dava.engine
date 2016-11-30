@@ -49,6 +49,7 @@ public:
     void OnResumed();
 
     void OnUpdateConsole(DAVA::float32 frameDelta);
+    void OnBackgroundUpdate(DAVA::float32 frameDelta);
 
     void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();
@@ -98,6 +99,8 @@ private:
     std::unique_ptr<NativeDelegateIos> nativeDelegate;
 #elif defined(__DAVAENGINE_WIN_UAP__)
     std::unique_ptr<NativeDelegateWin10> nativeDelegate;
+#else
+    std::unique_ptr<char> nativeDelegate; // Dummy pointer on platforms which do not provide native delegates
 #endif
 };
 

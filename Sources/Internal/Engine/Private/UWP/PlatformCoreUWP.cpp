@@ -1,17 +1,18 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
-#include "Engine/UWP/NativeServiceUWP.h"
-#include "Engine/UWP/XamlApplicationListener.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+#include "Engine/Private/UWP/DllImportWin10.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
+#include "Debug/Backtrace.h"
 #include "Platform/SystemTimer.h"
+#include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
@@ -23,11 +24,16 @@ namespace DAVA
 {
 namespace Private
 {
+bool PlatformCore::isPhoneContractPresent = false;
+
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , dispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
+    using ::Windows::Foundation::Metadata::ApiInformation;
+    isPhoneContractPresent = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+
+    DllImport::Initialize();
 }
 
 PlatformCore::~PlatformCore() = default;
@@ -38,13 +44,15 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    if (savedLaunchArgs != nullptr)
+    if (savedActivatedEventArgs != nullptr)
     {
-        // Here notify listeners about OnLaunched
-        engineBackend->GetPrimaryWindow()->RunAsyncOnUIThread([ this, savedLaunchArgs = savedLaunchArgs ]() {
-            NotifyListeners(ON_LAUNCHED, savedLaunchArgs);
+        // Here notify listeners about OnLaunched or OnActivated occured before entering game loop.
+        // Notification will come on first frame
+        engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([ this, args = savedActivatedEventArgs ]() {
+            using ::Windows::ApplicationModel::Activation::ActivationKind;
+            NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
         });
-        savedLaunchArgs = nullptr;
+        savedActivatedEventArgs = nullptr;
     }
 
     engineBackend->OnGameLoopStarted();
@@ -82,9 +90,12 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
+void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
-    if (!gameThreadRunning)
+    using namespace ::Windows::ApplicationModel::Activation;
+
+    ApplicationExecutionState prevExecState = args->PreviousExecutionState;
+    if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
     {
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
         gameThread->Start();
@@ -93,20 +104,14 @@ void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAct
         //gameThread->Detach();
         //gameThread->Release();
 
-        gameThreadRunning = true;
-
-        // Save launch arguments if game thread is not runnnig yet and notify listeners later
-        // when dava.engine is initialized and listeners have had chance to register.
-        savedLaunchArgs = launchArgs;
+        // Save activated event arguments to notify listeners later just before entering game loop to ensure
+        // that dava.engine and game have intialized and listeners have had chance to register.
+        savedActivatedEventArgs = args;
     }
     else
     {
-        NotifyListeners(ON_LAUNCHED, launchArgs);
+        NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
     }
-}
-
-void PlatformCore::OnActivated()
-{
 }
 
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
@@ -151,9 +156,19 @@ void PlatformCore::OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ /*gamepa
     dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
-void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* listener)
+void PlatformCore::OnDpiChanged()
+{
+    engineBackend->UpdateDisplayConfig();
+}
+
+void PlatformCore::RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
 {
     DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
     if (it == end(xamlApplicationListeners))
     {
@@ -161,8 +176,12 @@ void PlatformCore::RegisterXamlApplicationListener(XamlApplicationListener* list
     }
 }
 
-void PlatformCore::UnregisterXamlApplicationListener(XamlApplicationListener* listener)
+void PlatformCore::UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
 {
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
     auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
     if (it != end(xamlApplicationListeners))
     {
@@ -172,8 +191,25 @@ void PlatformCore::UnregisterXamlApplicationListener(XamlApplicationListener* li
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline = engineBackend->GetCommandLine();
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(engineBackend->GetCommandLine());
+    }
+    catch (const Exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();
@@ -184,17 +220,59 @@ void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ 
     using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
     using ::Windows::ApplicationModel::Activation::IActivatedEventArgs;
 
-    for (auto i = begin(xamlApplicationListeners), e = end(xamlApplicationListeners); i != e;)
+    Vector<PlatformApi::Win10::XamlApplicationListener*> listenersCopy;
     {
-        XamlApplicationListener* l = *i;
-        ++i;
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(xamlApplicationListeners.size());
+        std::copy(xamlApplicationListeners.begin(), xamlApplicationListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Win10::XamlApplicationListener* l : listenersCopy)
+    {
         switch (type)
         {
         case ON_LAUNCHED:
             l->OnLaunched(static_cast<LaunchActivatedEventArgs ^>(arg1));
             break;
+        case ON_ACTIVATED:
+            l->OnActivated(static_cast<IActivatedEventArgs ^>(arg1));
+            break;
         default:
             break;
+        }
+    }
+}
+
+void PlatformCore::EnableHighResolutionTimer(bool enable)
+{
+    if (DllImport::fnTimeGetDevCaps != nullptr)
+    {
+        static UINT minTimerPeriod = 0;
+        static bool highResolutionEnabled = false;
+
+        if (minTimerPeriod == 0)
+        {
+            // On first call obtain timer capabilities
+            TIMECAPS timeCaps;
+            if (DllImport::fnTimeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) == 0)
+            {
+                minTimerPeriod = timeCaps.wPeriodMin;
+            }
+        }
+
+        // Application must match each call to timeBeginPeriod with a call to timeEndPeriod
+        // https://msdn.microsoft.com/en-us/library/dd757633(v=vs.85).aspx
+        if (minTimerPeriod != 0 && highResolutionEnabled != enable)
+        {
+            if (enable)
+            {
+                DllImport::fnTimeBeginPeriod(minTimerPeriod);
+            }
+            else
+            {
+                DllImport::fnTimeEndPeriod(minTimerPeriod);
+            }
+            highResolutionEnabled = enable;
         }
     }
 }

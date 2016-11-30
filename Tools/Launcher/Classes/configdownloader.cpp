@@ -95,6 +95,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();
+        appManager->GetLocalConfig()->UpdateApplicationsNames();
         appManager->SaveLocalConfig();
         accept();
     }

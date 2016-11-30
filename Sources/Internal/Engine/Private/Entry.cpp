@@ -1,9 +1,13 @@
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 #include "Base/Platform.h"
+#include "Debug/Backtrace.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Logger/Logger.h"
 
 /**
     \ingroup engine
@@ -42,14 +46,25 @@ int main(int argc, char* argv[])
     using namespace DAVA;
     using DAVA::Private::EngineBackend;
 
-    Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
-    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return DAVAMain(std::move(cmdargs));
+    try {
+        Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
+        std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+        return DAVAMain(std::move(cmdargs));
+    } catch (const Exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    } catch (const std::exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
-
-#include <minwindef.h>
 
 // Win32
 // To use WinMain in static lib with unicode support set entry point to wWinMainCRTStartup:
@@ -63,20 +78,31 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
     using namespace DAVA;
     using Private::EngineBackend;
 
-    Vector<String> cmdargs = Private::GetCommandArgs();
-    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return DAVAMain(std::move(cmdargs));
+    try {
+        Vector<String> cmdargs = Private::GetCommandArgs();
+        std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+        return DAVAMain(std::move(cmdargs));
+    } catch (const Exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    } catch (const std::exception& e) {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
-
-#include <windows.h>
 
 namespace DAVA
 {
 namespace Private
 {
-extern int StartUWPApplication(const Vector<String>& cmdargs);
+extern int StartUWPApplication(Vector<String> cmdargs);
 } // namespace Private
 } // namespace DAVA
 
@@ -85,9 +111,7 @@ extern int StartUWPApplication(const Vector<String>& cmdargs);
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
-
-    Vector<String> cmdargs = Private::GetCommandArgs();
-    return DAVA::Private::StartUWPApplication(cmdargs);
+    return Private::StartUWPApplication(Private::GetCommandArgs());
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)

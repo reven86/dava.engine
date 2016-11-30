@@ -14,6 +14,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
 
 __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
@@ -38,7 +39,11 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     using ::Windows::System::UserProfile::AdvertisingManager;
     using ::Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation;
 
+#if defined(__DAVAENGINE_COREV2__)
+    isMobileMode = Private::PlatformCore::IsPhoneContractPresent();
+#else
     isMobileMode = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+#endif
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator

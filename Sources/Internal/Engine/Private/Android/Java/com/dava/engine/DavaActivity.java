@@ -147,8 +147,10 @@ public final class DavaActivity extends Activity
 
     /**
         Register a callback to be invoked when DavaActivity lifecycle event occurs.
+
+        Application can register a callback from any thread, but callbacks are invoked in the context of UI thread.
     */
-    public void registerActivityListener(ActivityListener l)
+    synchronized public void registerActivityListener(ActivityListener l)
     {
         if (l != null && !activityListeners.contains(l))
         {
@@ -157,9 +159,11 @@ public final class DavaActivity extends Activity
     }
 
     /**
-        Unregister activity listener.
+        Unregister a callback previously registered by `registerActivityListener` function.
+
+        Application can unregister a callback from any thread, even during callback invocation.
     */
-    public void unregisterActivityListener(ActivityListener l)
+    synchronized public void unregisterActivityListener(ActivityListener l)
     {
         activityListeners.remove(l);
     }
@@ -227,6 +231,7 @@ public final class DavaActivity extends Activity
         layout.addView(primarySurfaceView);
 
         notifyListeners(ON_ACTIVITY_CREATE, savedInstanceStateBundle);
+        notifyListeners(ON_ACTIVITY_START, null);
         savedInstanceStateBundle = null;
 
 /* uncomment after multidex enabled
@@ -559,40 +564,40 @@ public final class DavaActivity extends Activity
 
     private void notifyListeners(int what, Object arg)
     {
-        if (!activityListeners.isEmpty())
+        // Make listeners copy to allow unregistering listeners inside callback
+        ArrayList<ActivityListener> listenersCopy = new ArrayList<ActivityListener>();
+        synchronized(this)
         {
-            // Make listeners copy to allow unregistering listeners inside callback
-            ArrayList<ActivityListener> listenersCopy = new ArrayList<ActivityListener>();
             listenersCopy.addAll(activityListeners);
-            for (ActivityListener l : listenersCopy)
+        }
+        for (ActivityListener l : listenersCopy)
+        {
+            switch (what)
             {
-                switch (what)
-                {
-                case ON_ACTIVITY_CREATE:
-                    l.onCreate((Bundle)arg);
-                    break;
-                case ON_ACTIVITY_START:
-                    l.onStart();
-                    break;
-                case ON_ACTIVITY_RESUME:
-                    l.onResume();
-                    break;
-                case ON_ACTIVITY_PAUSE:
-                    l.onPause();
-                    break;
-                case ON_ACTIVITY_RESTART:
-                    l.onRestart();
-                    break;
-                case ON_ACTIVITY_STOP:
-                    l.onStop();
-                    break;
-                case ON_ACTIVITY_DESTROY:
-                    l.onDestroy();
-                    break;
-                case ON_ACTIVITY_NEW_INTENT:
-                    l.onNewIntent((Intent)arg);
-                    break;
-                }
+            case ON_ACTIVITY_CREATE:
+                l.onCreate((Bundle)arg);
+                break;
+            case ON_ACTIVITY_START:
+                l.onStart();
+                break;
+            case ON_ACTIVITY_RESUME:
+                l.onResume();
+                break;
+            case ON_ACTIVITY_PAUSE:
+                l.onPause();
+                break;
+            case ON_ACTIVITY_RESTART:
+                l.onRestart();
+                break;
+            case ON_ACTIVITY_STOP:
+                l.onStop();
+                break;
+            case ON_ACTIVITY_DESTROY:
+                l.onDestroy();
+                break;
+            case ON_ACTIVITY_NEW_INTENT:
+                l.onNewIntent((Intent)arg);
+                break;
             }
         }
     }

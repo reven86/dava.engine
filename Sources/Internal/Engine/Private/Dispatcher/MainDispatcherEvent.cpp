@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
@@ -53,6 +53,16 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadMotionEvent(uint32 deviceI
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count)
+{
+    DVASSERT(displayInfo != nullptr && count > 0);
+
+    MainDispatcherEvent e(DISPLAY_CONFIG_CHANGED);
+    e.displayConfigEvent.displayInfo = displayInfo;
+    e.displayConfigEvent.count = count;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button)
 {
     DVASSERT(gamepadButtonEventType == GAMEPAD_BUTTON_DOWN || gamepadButtonEventType == GAMEPAD_BUTTON_UP);
@@ -73,6 +83,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window
     e.sizeEvent.height = h;
     e.sizeEvent.surfaceWidth = surfaceW;
     e.sizeEvent.surfaceHeight = surfaceH;
+    e.sizeEvent.surfaceScale = 1.0f;
     e.sizeEvent.dpi = dpi;
     e.sizeEvent.fullscreen = fullscreen;
     return e;
@@ -85,7 +96,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, eFullscreen fullscreen)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -93,6 +104,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* wi
     e.sizeEvent.height = h;
     e.sizeEvent.surfaceWidth = surfaceW;
     e.sizeEvent.surfaceHeight = surfaceH;
+    e.sizeEvent.surfaceScale = surfaceScale;
     e.sizeEvent.dpi = 0.0f;
     e.sizeEvent.fullscreen = fullscreen;
     return e;

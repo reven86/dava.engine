@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 
 #include "Engine/EngineTypes.h"
+#include "DeviceManager/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -57,6 +59,8 @@ struct MainDispatcherEvent final
 
         GAMEPAD_ADDED,
         GAMEPAD_REMOVED,
+
+        DISPLAY_CONFIG_CHANGED,
     };
 
     static bool IsInputEvent(eType type);
@@ -96,6 +100,7 @@ struct MainDispatcherEvent final
         float32 height;
         float32 surfaceWidth;
         float32 surfaceHeight;
+        float32 surfaceScale;
         float32 dpi; //< is set only by WINDOW_CREATED
         eFullscreen fullscreen;
     };
@@ -173,6 +178,14 @@ struct MainDispatcherEvent final
         bool isRepeated;
     };
 
+    // Parameter for DISPLAY_CONFIG_CHANGED event
+    // Handler is responsible for freeing displayInfo (delete[] displayInfo)
+    struct DisplayConfigEvent
+    {
+        DisplayInfo* displayInfo;
+        size_t count;
+    };
+
     MainDispatcherEvent() = default;
     MainDispatcherEvent(eType type)
         : type(type)
@@ -204,6 +217,7 @@ struct MainDispatcherEvent final
         TrackpadGestureEvent trackpadGestureEvent;
         GamepadEvent gamepadEvent;
         KeyEvent keyEvent;
+        DisplayConfigEvent displayConfigEvent;
     };
 
     template <typename F>
@@ -217,9 +231,11 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value);
     static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button);
 
+    static MainDispatcherEvent CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count);
+
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
-    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, eFullscreen fullscreen);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
     static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);

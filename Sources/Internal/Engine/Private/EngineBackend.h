@@ -1,8 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Base/RefPtr.h"
 #include "Functional/Functional.h"
 
@@ -10,6 +11,8 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 #include "UI/UIEvent.h"
+
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -20,6 +23,8 @@ class EngineBackend final
 {
 public:
     static EngineBackend* Instance();
+
+    static WindowBackend* GetWindowBackend(Window* w);
 
     EngineBackend(const Vector<String>& cmdargs);
     ~EngineBackend();
@@ -36,7 +41,7 @@ public:
     bool IsEmbeddedGUIMode() const;
     bool IsConsoleMode() const;
 
-    EngineContext* GetEngineContext() const;
+    const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
@@ -45,7 +50,6 @@ public:
 
     Engine* GetEngine() const;
     MainDispatcher* GetDispatcher() const;
-    NativeService* GetNativeService() const;
     PlatformCore* GetPlatformCore() const;
 
     const KeyedArchive* GetOptions() const;
@@ -74,6 +78,8 @@ public:
     void ResetRenderer(Window* w, bool resetToNull);
     void DeinitRender(Window* w);
 
+    void UpdateDisplayConfig();
+
 private:
     void RunConsole();
 
@@ -81,10 +87,11 @@ private:
 
     void OnFrameConsole();
 
-    void OnBeginFrame();
-    void OnUpdate(float32 frameDelta);
-    void OnDraw();
-    void OnEndFrame();
+    void BeginFrame();
+    void Update(float32 frameDelta);
+    void UpdateWindows(float32 frameDelta);
+    void EndFrame();
+    void BackgroundUpdate(float32 frameDelta);
 
     void EventHandler(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
@@ -95,6 +102,8 @@ private:
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
+
+    static void OnRenderingError(rhi::RenderingError err, void* param);
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;
@@ -146,7 +155,7 @@ inline bool EngineBackend::IsConsoleMode() const
     return runMode == eEngineRunMode::CONSOLE_MODE;
 }
 
-inline EngineContext* EngineBackend::GetEngineContext() const
+inline const EngineContext* EngineBackend::GetContext() const
 {
     return context;
 }

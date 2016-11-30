@@ -13,6 +13,8 @@
 
 #include "Platform/SystemTimer.h"
 #include "Engine/Qt/RenderWidget.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>
@@ -120,7 +122,7 @@ void SceneTabWidget::ReleaseDAVAUI()
 int SceneTabWidget::OpenTab()
 {
     DVASSERT(globalOperations);
-    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.");
+    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.", 0, 0);
 
     DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
     scenePath.ReplaceExtension(".sc2");
@@ -149,7 +151,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
         return -1;
     }
 
-    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname());
+    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname(), 0, 0);
 
     tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
@@ -434,7 +436,9 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
 
 void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    DAVA::UIControlSystem::Instance()->vcs->SetVirtualScreenSize(width, height);
+    const DAVA::EngineContext* ctx = DAVA::GetEngineContext();
+    ctx->uiControlSystem->vcs->SetVirtualScreenSize(width, height);
+    ctx->uiControlSystem->vcs->RegisterAvailableResourceSize(width, height, "Gfx");
 
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
@@ -487,7 +491,7 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
                     }
                 }
 
-                WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString());
+                WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString(), 0, 0);
                 if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
                 {
                     curScene->structureSystem->Add(path.toStdString(), pos);

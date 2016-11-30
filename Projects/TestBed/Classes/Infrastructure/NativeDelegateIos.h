@@ -4,9 +4,9 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/iOS/UIApplicationDelegateListener.h"
+#include "Engine/PlatformApi.h"
 
-struct NativeDelegateIos : public DAVA::UIApplicationDelegateListener
+struct NativeDelegateIos : public DAVA::PlatformApi::Ios::UIApplicationDelegateListener
 {
     void didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions) override;
     void applicationDidBecomeActive() override;

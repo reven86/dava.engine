@@ -9,11 +9,7 @@ using namespace DAVA;
 
 FullscreenTest::FullscreenTest(TestBed& app)
     : BaseScreen(app, "FullscreenTest")
-    , primaryWindow(app.GetEngine().PrimaryWindow())
 {
-    Window* primWind = Engine::Instance()->PrimaryWindow();
-    cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
-    cursorVisible = primWind->GetCursorVisibility();
 }
 
 void FullscreenTest::LoadResources()
@@ -89,20 +85,20 @@ void FullscreenTest::LoadResources()
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul +0.1");
     btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulUp));
     AddControl(btn);
 
     btn.reset(new UIButton(Rect(155, 135, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul -0.1");
     btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulDown));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulDown));
     AddControl(btn);
 
     currentScaleText = new UIStaticText(Rect(310, 125, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
-    currentScaleText->SetText(Format(L"%f", primaryWindow->GetSurfaceScale()));
+    currentScaleText->SetText(Format(L"%f", GetPrimaryWindow()->GetSurfaceScale()));
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -176,7 +172,7 @@ void FullscreenTest::LoadResources()
     AddControl(btn);
 
     auto update = [this](Window*, Size2f, Size2f) { UpdateMode(); };
-    sizeChangedSigConn = primaryWindow->sizeChanged.Connect(update);
+    sizeChangedSigConn = GetPrimaryWindow()->sizeChanged.Connect(update);
 
     UpdateMode();
 }
@@ -194,8 +190,12 @@ void FullscreenTest::UnloadResources()
     SafeRelease(pinningText);
     SafeRelease(pinningMousePosText);
 
-    primaryWindow->sizeChanged.Disconnect(sizeChangedSigConn);
-    sizeChangedSigConn = SigConnectionID();
+    // TODO: UIControls and others should be deleted when window is destroyed, not later
+    if (GetPrimaryWindow() != nullptr)
+    {
+        GetPrimaryWindow()->sizeChanged.Disconnect(sizeChangedSigConn);
+        sizeChangedSigConn = SigConnectionID();
+    }
 
     BaseScreen::UnloadResources();
 }
@@ -206,10 +206,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        primaryWindow->SetFullscreen(eFullscreen::Off);
+        GetPrimaryWindow()->SetFullscreenAsync(eFullscreen::Off);
         break;
     case 1:
-        primaryWindow->SetFullscreen(eFullscreen::On);
+        GetPrimaryWindow()->SetFullscreenAsync(eFullscreen::On);
         break;
     case 99:
         UpdateMode();
@@ -219,31 +219,19 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetSurfaceScale();
-    if (mul < 2.0f)
-    {
-        mul += 0.1f;
-    }
+    float32 mul = GetPrimaryWindow()->GetSurfaceScale();
+    mul += 0.1f;
 
-    // TODO: implement window user scale factor in engine and testbed
-    // Core::Instance()->SetScreenScaleMultiplier(mul);
-
-    mul = primaryWindow->GetSurfaceScale();
+    GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetSurfaceScale();
-    if (mul > 0.2f)
-    {
-        mul -= 0.1f;
-    }
+    float32 mul = GetPrimaryWindow()->GetSurfaceScale();
+    mul -= 0.1f;
 
-    // TODO: implement window user scale factor in engine and testbed
-    // Core::Instance()->SetScreenScaleMultiplier(mul);
-
-    mul = primaryWindow->GetSurfaceScale();
+    GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
@@ -286,22 +274,14 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
 void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = static_cast<UIButton*>(sender);
-    Window* primWind = Engine::Instance()->PrimaryWindow();
     switch (btn->GetTag())
     {
     case 0:
-    {
-        primWind->SetCursorVisibility(false);
-        cursorVisible = primWind->GetCursorVisibility();
+        GetPrimaryWindow()->SetCursorVisibility(false);
         break;
-    }
     case 1:
-    {
-        primWind->SetCursorCapture(eCursorCapture::PINNING);
-        primWind->SetCursorVisibility(false);
-        cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+        GetPrimaryWindow()->SetCursorCapture(eCursorCapture::PINNING);
         break;
-    }
     default:
         break;
     }
@@ -311,21 +291,18 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 
 void FullscreenTest::UpdateMode()
 {
-    switch (primaryWindow->GetFullscreen())
+    Window* w = GetPrimaryWindow();
+    if (w->GetFullscreen() == eFullscreen::On)
     {
-    case eFullscreen::Off:
-        currentModeText->SetText(L"Windowed");
-        break;
-    case eFullscreen::On:
         currentModeText->SetText(L"Fullscreen");
-        break;
-    default:
-        currentModeText->SetText(L"Unknown");
-        break;
+    }
+    else
+    {
+        currentModeText->SetText(L"Windowed");
     }
 
     WideString outStr;
-    if (cursorCaptured)
+    if (w->GetCursorCapture() == eCursorCapture::PINNING)
     {
         outStr += L"Mouse Capture Mode = PINNING";
         outStr += L"\n";
@@ -338,7 +315,7 @@ void FullscreenTest::UpdateMode()
     {
         outStr += L"Mouse Capture Mode mode: OFF";
         outStr += L"\n";
-        if (cursorVisible)
+        if (w->GetCursorVisibility())
         {
             outStr += L"Mouse visibility = true";
             pinningMousePosText->SetVisibilityFlag(false);
@@ -358,16 +335,14 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
     if (currentInput->device == eInputDevices::MOUSE)
     {
-        Window* primWind = Engine::Instance()->PrimaryWindow();
+        Window* w = GetPrimaryWindow();
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
-            if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
+            if (currentInput->mouseButton == eMouseButtons::MIDDLE)
             {
-                primWind->SetCursorCapture(eCursorCapture::OFF);
-                cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
-                primWind->SetCursorVisibility(true);
-                cursorVisible = primWind->GetCursorVisibility();
+                w->SetCursorCapture(eCursorCapture::OFF);
+                w->SetCursorVisibility(true);
             }
             break;
 
