@@ -38,7 +38,6 @@
 
 - (void)applicationDidBecomeActive:(NSNotification*)notification
 {
-    [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
     bridge->ApplicationDidBecomeActive();
 }
 

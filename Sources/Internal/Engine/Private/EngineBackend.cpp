@@ -430,9 +430,6 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::GAMEPAD_REMOVED:
         context->inputSystem->HandleGamepadRemoved(e);
         break;
-    case MainDispatcherEvent::LOCAL_NOTIFICATION:
-        HandleLocalNotification(e);
-        break;
     default:
         if (e.window != nullptr)
         {
@@ -535,13 +532,6 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
             Quit(0);
         }
     }
-}
-
-void EngineBackend::HandleLocalNotification(const MainDispatcherEvent& e)
-{
-    String uid(e.localNotificationEvent.uid);
-    context->localNotificationController->OnNotificationPressed(uid);
-    delete[] e.localNotificationEvent.uid;
 }
 
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)

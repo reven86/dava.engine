@@ -92,7 +92,6 @@ private:
     void HandleBackNavigation(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
     void HandleUserCloseRequest(const MainDispatcherEvent& e);
-    void HandleLocalNotification(const MainDispatcherEvent& e);
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();

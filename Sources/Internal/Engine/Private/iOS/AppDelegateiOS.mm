@@ -5,10 +5,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
-#include "Engine/EngineModule.h"
-#include "Utils/NSStringUtils.h"
-#include "Notification/LocalNotificationController.h"
-#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA
 {
@@ -41,7 +37,6 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    [[UIApplication sharedApplication] cancelAllLocalNotifications];
     bridge->ApplicationDidBecomeActive();
 }
 

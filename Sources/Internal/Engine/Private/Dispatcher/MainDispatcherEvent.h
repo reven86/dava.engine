@@ -57,8 +57,6 @@ struct MainDispatcherEvent final
 
         GAMEPAD_ADDED,
         GAMEPAD_REMOVED,
-
-        LOCAL_NOTIFICATION,
     };
 
     static bool IsInputEvent(eType type);
@@ -175,11 +173,6 @@ struct MainDispatcherEvent final
         bool isRepeated;
     };
 
-    struct LocalNotificationEvent
-    {
-        const char8* uid;
-    };
-
     MainDispatcherEvent() = default;
     MainDispatcherEvent(eType type)
         : type(type)
@@ -211,7 +204,6 @@ struct MainDispatcherEvent final
         TrackpadGestureEvent trackpadGestureEvent;
         GamepadEvent gamepadEvent;
         KeyEvent keyEvent;
-        LocalNotificationEvent localNotificationEvent;
     };
 
     template <typename F>
@@ -241,7 +233,6 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowCaptureLostEvent(Window* window);
-    static MainDispatcherEvent CreateLocalNotificationEvent(const String& uid);
 };
 
 template <typename F>

@@ -11,10 +11,12 @@ class LocalNotification;
 class LocalNotificationText;
 class LocalNotificationProgress;
 
+#if defined(__DAVAENGINE_COREV2__)
 namespace Private
 {
 struct NativeListener;
-} // namespace Private
+}
+#endif
 
 class LocalNotificationController : public Singleton<LocalNotificationController>
 {
