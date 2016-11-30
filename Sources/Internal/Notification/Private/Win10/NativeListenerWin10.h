@@ -5,7 +5,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/UWP/XamlApplicationListener.h"
+#include "Engine/PlatformApi.h"
 
 namespace DAVA
 {
@@ -13,7 +13,7 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener : public XamlApplicationListener
+struct NativeListener : public PlatformApi::Win10::XamlApplicationListener
 {
     NativeListener(LocalNotificationController& controller);
     virtual ~NativeListener();

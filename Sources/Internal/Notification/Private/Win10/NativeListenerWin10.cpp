@@ -3,7 +3,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/UWP/NativeServiceUWP.h"
 #include "Notification/LocalNotificationController.h"
 
 #include "Engine/Engine.h"
@@ -16,12 +15,12 @@ namespace Private
 NativeListener::NativeListener(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
-    Engine::Instance()->GetNativeService()->RegisterXamlApplicationListener(this);
+    PlatformApi::Win10::RegisterXamlApplicationListener(this);
 }
 
 NativeListener::~NativeListener()
 {
-    Engine::Instance()->GetNativeService()->UnregisterXamlApplicationListener(this);
+    PlatformApi::Win10::UnregisterXamlApplicationListener(this);
 }
 
 void NativeListener::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs)
@@ -38,7 +37,7 @@ void NativeListener::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
             {
                 localNotificationController.OnNotificationPressed(arguments);
             };
-            Engine::Instance()->RunAsyncOnMainThread(function);
+            RunOnMainThread(function);
         }
     }
 }
