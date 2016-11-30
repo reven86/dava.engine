@@ -16,6 +16,7 @@ class ProcessCommunication;
 class ApplicationManager : public QObject
 {
     Q_OBJECT
+
 public:
     explicit ApplicationManager(QObject* parent = 0);
 
@@ -31,7 +32,7 @@ public:
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
-    void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
+    void ShowApplicataionInExplorer(const QString& branchID, const QString& appID);
     void RunApplication(const QString& branchID, const QString& appID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
     //TODO:  silent need to be removed, all dialogs must be displayed on the client side
@@ -50,13 +51,16 @@ public:
     //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
+signals:
+    void BranchChanged(const QString& branch);
+
 private:
     void LoadLocalConfig(const QString& configPath);
     bool TryStopApp(const QString& runPath) const;
     bool CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent);
 
     //before call this function check that app is not running
-    void RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent);
+    bool RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent);
     bool CanTryStopApplication(const QString& applicationName) const;
 
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);

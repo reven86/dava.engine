@@ -57,13 +57,14 @@ void SilentUpdater::AddTask(SilentUpdateTask&& task)
 void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 {
     reply->deleteLater();
+    canStartNextTask = true;
+
     //this situation occurs on network error
     if (tasks.isEmpty())
     {
         return;
     }
 
-    canStartNextTask = true;
 
     SilentUpdateTask task = tasks.dequeue();
     if (reply->error() != QNetworkReply::NoError)
@@ -135,12 +136,12 @@ void SilentUpdater::StartNextTask()
     {
         return;
     }
-    canStartNextTask = false;
     if (tasks.isEmpty())
     {
         return;
     }
     const SilentUpdateTask& task = tasks.last();
     QString url = task.newVersion.url;
+    canStartNextTask = false;
     currentReply = networkManager->get(QNetworkRequest(QUrl(url)));
 }

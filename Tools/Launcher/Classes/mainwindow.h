@@ -48,12 +48,13 @@ private slots:
 
     void OpenPreferencesEditor();
 
+    void ShowTable(const QString& branchID);
+
 private:
     void CheckUpdates();
     void RefreshApps();
 
     void ShowWebpage();
-    void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
 
     void RefreshBranchesList();

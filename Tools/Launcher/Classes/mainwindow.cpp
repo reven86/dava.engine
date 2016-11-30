@@ -119,6 +119,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OpenPreferencesEditor);
 
     appManager = new ApplicationManager(this);
+    connect(appManager, &ApplicationManager::BranchChanged, this, &MainWindow::ShowTable);
+
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
     commandListener = new CommandListener(appManager, this);
@@ -586,7 +588,7 @@ QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID, int ro
         {
             QString appID, insVersionID, avVersionID;
             GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
-            appManager->ShowApplicataionInExplorer(selectedBranchID, appID, insVersionID);
+            appManager->ShowApplicataionInExplorer(selectedBranchID, appID);
         }
     });
 

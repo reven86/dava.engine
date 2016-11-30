@@ -25,11 +25,11 @@ CommandListener::CommandListener(ApplicationManager* appManager_, QObject* paren
     , updateTimer(new QTimer(this))
     , networkManager(new QNetworkAccessManager(this))
 {
-    updateTimer->setSingleShot(true);
-    updateTimer->setInterval(1 * 1000);
+    updateTimer->setSingleShot(false);
+    updateTimer->setInterval(90 * 1000);
     connect(updateTimer, &QTimer::timeout, this, &CommandListener::GetCommands);
     connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::GotReply);
-    //updateTimer->start();
+    updateTimer->start();
 }
 
 QString CommandListener::GetProtocolKey() const
@@ -89,7 +89,6 @@ void CommandListener::SendReply(eResult result, const QString& commandID, const 
     data.append("&message='");
     data.append(message);
     data.append("'");
-    qDebug() << "reply data: " << data;
     Post(urlStr, data);
 
     if (result != SUCCESS)
@@ -134,13 +133,13 @@ void CommandListener::GotReply(QNetworkReply* reply)
 
     QJsonParseError parseError;
     QByteArray readedData = reply->readAll();
-    qDebug() << readedData;
     QJsonDocument document = QJsonDocument::fromJson(readedData, &parseError);
     if (parseError.error != QJsonParseError::NoError)
     {
         SendReply(FAILURE, "Can not parse JSON reply, error is: " + parseError.errorString());
         return;
     }
+
     QJsonObject rootObj = document.object();
     QJsonValue keyValue = rootObj["key"];
     if (keyValue.isString())

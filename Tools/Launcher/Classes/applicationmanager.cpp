@@ -154,15 +154,16 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
     return true;
 }
 
-void ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent)
+bool ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent)
 {
     AppVersion* version = GetInstalledVersion(branchID, appID);
     if (version == nullptr)
     {
-        return;
+        return true;
     }
     QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
-    if (FileManager::DeleteDirectory(appDirPath))
+    bool success = FileManager::DeleteDirectory(appDirPath);
+    if (success)
     {
         localConfig.RemoveApplication(branchID, appID, version->id);
         SaveLocalConfig();
@@ -171,6 +172,7 @@ void ApplicationManager::RemoveApplicationImpl(const QString& branchID, const QS
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_FILE, "Can not remove directory " + appDirPath + "\nApplication need to be reinstalled!\nIf this error occurs again - remove directory by yourself, please");
     }
+    return success;
 }
 
 bool ApplicationManager::CanTryStopApplication(const QString& applicationName) const
@@ -352,6 +354,7 @@ void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& 
     localConfig.InsertApplication(branchID, appID, version);
     localConfig.UpdateApplicationsNames();
     SaveLocalConfig();
+    emit BranchChanged(branchID);
 }
 
 QString ApplicationManager::GetString(const QString& stringID) const
@@ -396,14 +399,19 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
     return runPath;
 }
 
-void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID)
+void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID)
 {
-    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
-    if (runPath.isEmpty())
+    AppVersion* installedVersion = GetInstalledVersion(branchID, appID);
+    if (installedVersion == nullptr)
     {
         return;
     }
-    QtHelpers::ShowInOSFileManager(runPath);
+    QString appDirPath = GetApplicationDirectory(branchID, appID, installedVersion->isToolSet, false);
+    if (appDirPath.isEmpty())
+    {
+        return;
+    }
+    QtHelpers::ShowInOSFileManager(appDirPath);
 }
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID)
@@ -441,7 +449,6 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     {
         return true;
     }
-
     if (version->isToolSet)
     {
         //check that we can remove folder "toolset" first
@@ -457,8 +464,13 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         //right now we call DeleteDirectory three times for one folder. This is required by design of ApplicationManager and ConfigParser classes
         for (const QString& fakeAppID : localConfig.GetTranslatedToolsetApplications())
         {
-            RemoveApplicationImpl(branchID, fakeAppID, silent);
+            //if you can not delete one application from the toolset - you can not delete another applications from this toolset too
+            if (RemoveApplicationImpl(branchID, fakeAppID, silent) == false)
+            {
+                return false;
+            }
         }
+        return true;
     }
     else
     {
@@ -467,9 +479,8 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
             ErrorMessenger::LogMessage(QtWarningMsg, "Can not remove application " + appID + " from branch " + branchID);
             return false;
         }
-        RemoveApplicationImpl(branchID, appID, silent);
+        return RemoveApplicationImpl(branchID, appID, silent);
     }
-    return true;
 }
 
 bool ApplicationManager::RemoveBranch(const QString& branchID)
