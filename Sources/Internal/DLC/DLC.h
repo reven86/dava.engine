@@ -219,8 +219,8 @@ protected:
     void PatchingThread(BaseObject* caller, void* callerData, void* userData);
 
     // helper functions
-    bool ReadValue(const FilePath& path, uint32* value, String* optional = nullptr);
-    bool WriteValue(const FilePath& path, uint32 value, const String& optional = String());
+    bool ReadValue(const FilePath& path, uint32* value, String* version = nullptr);
+    bool WriteValue(const FilePath& path, uint32 value, const String& version = String());
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
 

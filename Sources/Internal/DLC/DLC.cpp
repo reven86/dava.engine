@@ -1038,7 +1038,7 @@ void DLC::StepDone()
     Logger::InfoToFile(logsFilePath, "[DLC::StepDone] Done!");
 }
 
-bool DLC::ReadValue(const FilePath& path, uint32* value, String* optional)
+bool DLC::ReadValue(const FilePath& path, uint32* value, String* version)
 {
     bool ret = false;
 
@@ -1057,12 +1057,12 @@ bool DLC::ReadValue(const FilePath& path, uint32* value, String* optional)
             }
         }
 
-        if (nullptr != optional)
+        if (nullptr != version)
         {
             tmp[0] = 0;
             if (f->ReadLine(tmp, sizeof(tmp)) > 0)
             {
-                *optional = tmp;
+                *version = tmp;
             }
         }
 
@@ -1072,7 +1072,7 @@ bool DLC::ReadValue(const FilePath& path, uint32* value, String* optional)
     return ret;
 }
 
-bool DLC::WriteValue(const FilePath& path, uint32 value, const String& optional)
+bool DLC::WriteValue(const FilePath& path, uint32 value, const String& version)
 {
     bool ret = false;
 
@@ -1083,9 +1083,9 @@ bool DLC::WriteValue(const FilePath& path, uint32 value, const String& optional)
         String tmp = Format("%u", value);
         ret = f->WriteLine(tmp);
 
-        if (!optional.empty())
+        if (!version.empty())
         {
-            ret &= f->WriteLine(optional);
+            ret &= f->WriteLine(version);
         }
 
         SafeRelease(f);
