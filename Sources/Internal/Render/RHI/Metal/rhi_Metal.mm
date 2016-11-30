@@ -20,6 +20,8 @@ id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
 
+static const DAVA::uint32 METAL_RING_CONSTS_BUFFER_SIZE_MULTIPLIER = 4; //x3 for 3 frames + 1 for render-thread
+
 InitParam _Metal_InitParam;
 
 Dispatch DispatchMetal = { 0 };
@@ -191,10 +193,10 @@ bool Metal_CheckSurface()
 void metal_Initialize(const InitParam& param)
 {
     _Metal_InitParam = param;
-    int ringBufferSize = 2 * 1024 * 1024;
+    DAVA::uint32 ringBufferSize = 2 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 4);
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * METAL_RING_CONSTS_BUFFER_SIZE_MULTIPLIER);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
