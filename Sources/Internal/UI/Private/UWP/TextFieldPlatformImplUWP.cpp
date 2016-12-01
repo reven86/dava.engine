@@ -16,6 +16,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -204,6 +205,9 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 void TextFieldPlatformImpl::Initialize()
 {
     uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+#if defined(__DAVAENGINE_COREV2__)
+    uiTextField->GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
+#endif
     properties.createNew = true;
 
 #if defined(__DAVAENGINE_COREV2__)
