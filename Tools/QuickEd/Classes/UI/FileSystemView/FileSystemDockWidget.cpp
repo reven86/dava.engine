@@ -372,4 +372,3 @@ void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList
     openFileAction->setEnabled(canOpen);
     openFileAction->setVisible(canOpen);
 }
-

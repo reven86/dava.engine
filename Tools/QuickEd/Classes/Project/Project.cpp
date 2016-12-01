@@ -331,4 +331,3 @@ const QString& Project::GetProjectName() const
 {
     return projectName;
 }
-
