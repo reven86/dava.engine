@@ -444,6 +444,7 @@ void GameCore::mrtInit()
     cube_mrt.vb = cube.vb;
     cube_mrt.v_cnt = cube.v_cnt;
     cube_mrt.texSet = cube.texSet;
+    cube_mrt.samplerState = cube.samplerState;
     cube_mrt.vb_layout = cube.vb_layout;
 
     rhi::ShaderCache::UpdateProg(
