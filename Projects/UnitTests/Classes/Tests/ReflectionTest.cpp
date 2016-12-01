@@ -549,7 +549,7 @@ DAVA_TESTCLASS (ReflectionTest)
         // custom ctor/dtor
         rtype = DAVA::ReflectedTypeDB::Get<BaseOnlyReflection>();
 
-        DAVA::Any b = rtype->CreateObject(ReflectedType::CreatePolicy::ByPointer);
+        DAVA::Any b = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByPointer);
         TEST_VERIFY(!b.IsEmpty());
 
         rtype->Destroy(std::move(b));

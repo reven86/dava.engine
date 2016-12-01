@@ -23,7 +23,7 @@ template <typename GetF, typename SetF>
 struct VwType;
 
 template <typename GetT, typename Cls>
-struct VwType<GetT (Cls::*)() const, nullptr_t>
+struct VwType<GetT (Cls::*)() const, std::nullptr_t>
 {
     using ReT = typename FnRetFoReflectionRet<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
@@ -42,7 +42,7 @@ struct VwType<GetT (GetCls::*)() const, void (SetCls::*)(SetT) const>
 };
 
 template <typename C, typename GetT, typename Cls>
-struct VwType<GetT (Cls::*)(C*) const, nullptr_t>
+struct VwType<GetT (Cls::*)(C*) const, std::nullptr_t>
 {
     using ReT = typename FnRetFoReflectionRet<GetT>::type;
     using SetT = typename std::remove_reference<GetT>::type;
@@ -91,14 +91,14 @@ struct RFCreatorLambda
 // Setter: nullptr
 //
 template <typename C, typename LaGetF>
-struct RFCreatorLambda<C, LaGetF, nullptr_t>
+struct RFCreatorLambda<C, LaGetF, std::nullptr_t>
 {
-    using RetT = typename VwType<decltype(&LaGetF::operator()), nullptr_t>::ReT;
-    using GetF = typename VwType<decltype(&LaGetF::operator()), nullptr_t>::GetF;
-    using SetF = typename VwType<decltype(&LaGetF::operator()), nullptr_t>::SetF;
-    using VwT = typename VwType<decltype(&LaGetF::operator()), nullptr_t>::VwT;
+    using RetT = typename VwType<decltype(&LaGetF::operator()), std::nullptr_t>::ReT;
+    using GetF = typename VwType<decltype(&LaGetF::operator()), std::nullptr_t>::GetF;
+    using SetF = typename VwType<decltype(&LaGetF::operator()), std::nullptr_t>::SetF;
+    using VwT = typename VwType<decltype(&LaGetF::operator()), std::nullptr_t>::VwT;
 
-    static ReflectedStructure::Field* Create(LaGetF laGetter, nullptr_t)
+    static ReflectedStructure::Field* Create(LaGetF laGetter, std::nullptr_t)
     {
         ReflectedStructure::Field* f = new ReflectedStructure::Field();
 
@@ -130,13 +130,13 @@ struct RFCreator
 // Setter: nullptr
 //
 template <typename C, typename GetT>
-struct RFCreator<C, GetT (*)(), nullptr_t>
+struct RFCreator<C, GetT (*)(), std::nullptr_t>
 {
     using GetF = GetT (*)();
     using SetT = typename std::remove_reference<GetT>::type;
     using RetT = typename FnRetFoReflectionRet<GetT>::type;
 
-    static ReflectedStructure::Field* Create(GetF getter, nullptr_t)
+    static ReflectedStructure::Field* Create(GetF getter, std::nullptr_t)
     {
         ReflectedStructure::Field* f = new ReflectedStructure::Field();
 
@@ -174,13 +174,13 @@ struct RFCreator<C, GetT (*)(), void (*)(SetT)>
 // Setter: nullptr
 //
 template <typename C, typename GetT>
-struct RFCreator<C, GetT (*)(C*), nullptr_t>
+struct RFCreator<C, GetT (*)(C*), std::nullptr_t>
 {
     using GetF = GetT (*)(C*);
     using SetT = typename std::remove_reference<GetT>::type;
     using RetT = typename FnRetFoReflectionRet<GetT>::type;
 
-    static ReflectedStructure::Field* Create(GetF getter, nullptr_t)
+    static ReflectedStructure::Field* Create(GetF getter, std::nullptr_t)
     {
         ReflectedStructure::Field* f = new ReflectedStructure::Field();
 
@@ -218,13 +218,13 @@ struct RFCreator<C, GetT (*)(C*), void (*)(C*, SetT)>
 // Setter: nullptr
 //
 template <typename C, typename GetT>
-struct RFCreator<C, GetT (C::*)(), nullptr_t>
+struct RFCreator<C, GetT (C::*)(), std::nullptr_t>
 {
     using GetF = GetT (C::*)();
     using SetT = typename std::remove_reference<GetT>::type;
     using RetT = typename FnRetFoReflectionRet<GetT>::type;
 
-    static ReflectedStructure::Field* Create(GetF getter, nullptr_t)
+    static ReflectedStructure::Field* Create(GetF getter, std::nullptr_t)
     {
         ReflectedStructure::Field* f = new ReflectedStructure::Field();
 
@@ -262,13 +262,13 @@ struct RFCreator<C, GetT (C::*)(), void (C::*)(SetT)>
 // Setter: nullptr
 //
 template <typename C, typename GetT>
-struct RFCreator<C, GetT (C::*)() const, nullptr_t>
+struct RFCreator<C, GetT (C::*)() const, std::nullptr_t>
 {
     using GetF = GetT (C::*)() const;
     using SetT = typename std::remove_reference<GetT>::type;
     using RetT = typename FnRetFoReflectionRet<GetT>::type;
 
-    static ReflectedStructure::Field* Create(GetF getter, nullptr_t)
+    static ReflectedStructure::Field* Create(GetF getter, std::nullptr_t)
     {
         ReflectedStructure::Field* f = new ReflectedStructure::Field();
 
