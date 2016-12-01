@@ -357,7 +357,7 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
     ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
 }
 
-static Reflection Create(const Any& any, const ReflectedMeta* objectMeta)
+Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 {
     if (!any.IsEmpty())
     {
