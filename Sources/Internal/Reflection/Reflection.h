@@ -55,6 +55,7 @@ class StructureWrapper;
 */
 struct ReflectionBase
 {
+    virtual ~ReflectionBase() = default;
     virtual const ReflectedType* GetReflectedType() const = 0;
 };
 

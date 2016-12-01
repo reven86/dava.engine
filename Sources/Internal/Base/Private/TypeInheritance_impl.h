@@ -8,10 +8,12 @@ namespace DAVA
 {
 namespace RttiInheritanceDetail
 {
+static uint32 stubData = 0xcccccccc;
+
 template <typename From, typename To>
 std::ptrdiff_t GetPtrDiff()
 {
-    From* from = reinterpret_cast<From*>(0xcccccccc);
+    From* from = reinterpret_cast<From*>(&stubData);
     To* to = static_cast<To*>(from);
 
     ptrdiff_t ret = reinterpret_cast<uintptr_t>(to) - reinterpret_cast<uintptr_t>(from);
