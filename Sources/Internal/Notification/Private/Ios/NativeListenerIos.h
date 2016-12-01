@@ -5,7 +5,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/iOS/UIApplicationDelegateListener.h"
+#include "Engine/PlatformApi.h"
 namespace DAVA
 {
 class LocalNotificationController;
