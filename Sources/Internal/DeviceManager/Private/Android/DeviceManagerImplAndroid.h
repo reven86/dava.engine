@@ -7,6 +7,7 @@
 
 #include "DeviceManager/DeviceManagerTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {
@@ -19,8 +20,21 @@ struct DeviceManagerImpl final
 
     void UpdateDisplayConfig();
 
+	DisplayInfo ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary);
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
+
+    // JNI part
+    JNI::JavaClass javaDeviceManagerClass;
+    JNI::JavaClass javaDisplayInfoClass;
+    jobject javaDeviceManagerInstance;
+    jfieldID javaDisplayInfoNameField;
+    jfieldID javaDisplayInfoIdField;
+    jfieldID javaDisplayInfoWidthField;
+    jfieldID javaDisplayInfoHeightField;
+    jfieldID javaDisplayInfoDpiXField;
+    jfieldID javaDisplayInfoDpiYField;
 };
 
 } // namespace Private
