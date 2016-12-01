@@ -25,8 +25,8 @@ public:
     template <typename T>
     static const ReflectedType* GetByPointer(const T* ptr);
 
-    static const ReflectedType* GetByRtType(const Type* type);
-    static const ReflectedType* GetByRtTypeName(const String& rttiName);
+    static const ReflectedType* GetByType(const Type* type);
+    static const ReflectedType* GetByTypeName(const String& rttiName);
     static const ReflectedType* GetByPermanentName(const String& permanentName);
 
     static ReflectedType* CreateCustomType(const Type* type, const String& permanentName);

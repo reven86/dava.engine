@@ -357,4 +357,18 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
     ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
 }
 
+static Reflection Create(const Any& any, const ReflectedMeta* objectMeta)
+{
+    if (!any.IsEmpty())
+    {
+        const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
+
+        // TODO:
+        // ...
+
+        DVASSERT(false);
+    }
+
+    return Reflection();
+}
 } // namespace DAVA

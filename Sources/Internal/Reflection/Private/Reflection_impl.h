@@ -91,19 +91,4 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
-
-static Reflection Create(const Any& any, const ReflectedMeta* objectMeta)
-{
-    if (!any.IsEmpty())
-    {
-        const ReflectedType* objectType = ReflectedTypeDB::GetByRtType(any.GetType());
-
-        // TODO:
-        // ...
-
-        DVASSERT(false);
-    }
-
-    return Reflection();
-}
 } // namespace DAVA

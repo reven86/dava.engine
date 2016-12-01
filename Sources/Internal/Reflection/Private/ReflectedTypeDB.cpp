@@ -7,7 +7,7 @@ UnorderedMap<const Type*, ReflectedType*> ReflectedTypeDB::typeToReflectedTypeMa
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::typeNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
 
-const ReflectedType* ReflectedTypeDB::GetByRtType(const Type* type)
+const ReflectedType* ReflectedTypeDB::GetByType(const Type* type)
 {
     const ReflectedType* ret = nullptr;
 
@@ -20,7 +20,7 @@ const ReflectedType* ReflectedTypeDB::GetByRtType(const Type* type)
     return ret;
 }
 
-const ReflectedType* ReflectedTypeDB::GetByRtTypeName(const String& rttiName)
+const ReflectedType* ReflectedTypeDB::GetByTypeName(const String& rttiName)
 {
     const ReflectedType* ret = nullptr;
 

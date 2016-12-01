@@ -24,7 +24,7 @@ void StructureWrapperClass::FillCache(const Type* type)
 
 void StructureWrapperClass::FillCacheEntries(const Type* type)
 {
-    const ReflectedType* reflectedType = ReflectedTypeDB::GetByRtType(type);
+    const ReflectedType* reflectedType = ReflectedTypeDB::GetByType(type);
     const ReflectedStructure* structure = reflectedType->GetStrucutre();
 
     if (nullptr != structure)

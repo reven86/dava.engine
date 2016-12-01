@@ -126,6 +126,7 @@ public:
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
     bool RemoveField(const Any& key) const;
     AnyFn GetFieldCreator() const;
+
     static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
     //
     // <--
