@@ -2,6 +2,7 @@
 #include "Platform/DeviceInfo.h"
 #include "../Common/dbg_StatSet.h"
 #include "../Common/SoftwareCommandBuffer.h"
+#include "../Common/RenderLoop.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
@@ -503,6 +504,9 @@ void CommandBufferDX11_t::ExecuteSoftware()
 {
     DVASSERT(dx11.useHardwareCommandBuffers == false);
 
+    const DAVA::uint32 immediateCommandCheckInterval = 10;
+    DAVA::uint32 commandsExecuted = 0;
+
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
         const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
@@ -796,8 +800,16 @@ void CommandBufferDX11_t::ExecuteSoftware()
             DVASSERT_MSG(false, "unsupported command");
         }
 
+        ++commandsExecuted;
+        if (commandsExecuted >= immediateCommandCheckInterval)
+        {
+            RenderLoop::CheckImmediateCommand();
+            commandsExecuted = 0;
+        }
+
         if (cmd->type == CMD_END)
             break;
+
         c += cmd->size;
     }
 }
