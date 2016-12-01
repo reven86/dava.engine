@@ -10,13 +10,13 @@ namespace TArc
 template <typename T>
 void DataContext::DeleteData()
 {
-    DeleteData(ReflectedType::Get<T>());
+    DeleteData(ReflectedTypeDB::Get<T>());
 }
 
 template <typename T>
 T* DataContext::GetData() const
 {
-    return static_cast<T*>(GetData(ReflectedType::Get<T>()));
+    return static_cast<T*>(GetData(ReflectedTypeDB::Get<T>()));
 }
 } // namespace TArc
 } // namespace DAVA
