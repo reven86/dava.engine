@@ -10,12 +10,12 @@
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 #include "Engine/Private/UWP/DllImportUWP.h"
 
-#include "Debug/Backtrace.h"
-#include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
+#include "Debug/Backtrace.h"
 #include "Logger/Logger.h"
-#include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/SystemTimer.h"
+#include "Utils/Utils.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
@@ -85,12 +85,16 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
 {
     using namespace ::Windows::ApplicationModel::Activation;
 
+    // Force DeviceInfo instantiation for early initialization (due to static nature of DeviceInfo)
+    Logger::FrameworkDebug("%s", DeviceInfo::GetPlatformString().c_str());
+
     ApplicationExecutionState prevExecState = args->PreviousExecutionState;
     if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
     {
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
         gameThread->Start();
         gameThread->BindToProcessor(0);
+        gameThread->SetPriority(Thread::PRIORITY_HIGH);
         // TODO: make Thread detachable
         //gameThread->Detach();
         //gameThread->Release();
