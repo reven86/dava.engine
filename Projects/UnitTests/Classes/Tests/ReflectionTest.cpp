@@ -484,10 +484,10 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<T>();
 
-        const AnyFn* ctor = rtype->GetCtor<Args...>(Type::Instance<T>());
+        const AnyFn* ctor = rtype->GetCtor<Args...>(DAVA::Type::Instance<T>());
         TEST_VERIFY(nullptr != ctor);
 
-        DAVA::Any a = rtype->CreateObject(ReflectedType::CreatePolicy::ByValue, args...);
+        DAVA::Any a = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByValue, args...);
         DAVA::Any b = ctor->Invoke(args...);
         DAVA::Any c = T(args...);
         TEST_VERIFY(a.Get<T>() == b.Get<T>());
