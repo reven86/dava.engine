@@ -144,7 +144,7 @@ struct NSApplicationDelegateListener
 
 void AddNSView(Window* targetWindow, NSView* nsview);
 void RemoveNSView(Window* targetWindow, NSView* nsview);
-void DoWindowDeminiaturize();
+void PrimaryWindowDeminiaturize();
 
 /**
     \ingroup engine_mac

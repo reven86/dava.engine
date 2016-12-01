@@ -19,9 +19,9 @@ JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNe
     DAVA::String uidStr = DAVA::JNI::JavaStringToString(uid);
     auto function = [uidStr]()
     {
-        localNotificationController->OnNotificationPressed(uidStr);
+        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
     };
-    DAVA::RunOnMainThread(function);
+    DAVA::RunOnMainThreadAsync(function);
 }
 } // extern "C"
 

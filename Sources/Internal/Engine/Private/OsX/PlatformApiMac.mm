@@ -4,7 +4,6 @@
 #if defined(__DAVAENGINE_QT__)
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Engine.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
@@ -31,10 +30,10 @@ void RemoveNSView(Window* targetWindow, NSView* nsview)
     [nsview removeFromSuperview];
 }
 
-void DoWindowDeminiaturize()
+void PrimaryWindowDeminiaturize()
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(Engine::Instance()->PrimaryWindow());
+    WindowBackend* wb = EngineBackend::GetWindowBackend(EngineBackend::Instance()->PrimaryWindow());
     [wb->bridge->nswindow deminiaturize:wb->bridge->windowDelegate];
     [wb->bridge->nswindow becomeKeyWindow];
 }

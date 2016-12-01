@@ -12,11 +12,10 @@
 
 @class NSObject;
 @class NSNotification;
+@class NSUserNotification;
 
 @class FrameTimer;
 @class AppDelegate;
-@class NSNotification;
-@class NSUserNotification;
 
 namespace DAVA
 {
