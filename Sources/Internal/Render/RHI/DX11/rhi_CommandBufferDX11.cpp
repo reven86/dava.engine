@@ -479,6 +479,7 @@ static void dx11_SWCommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, Pr
     cmd->firstVertex = firstVertex;
     cmd->instanceCount = instCount;
     cmd->baseInstance = baseInstance;
+    cmd->startIndex = startIndex;
 }
 
 static void dx11_SWCommandBuffer_SetMarker(Handle cmdBuf, const char* text)
