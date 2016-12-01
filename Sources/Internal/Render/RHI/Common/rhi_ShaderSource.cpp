@@ -1983,7 +1983,7 @@ void ShaderSourceCache::Load(const char* fileName)
             if (!success)
             {
                 Clear();
-                Logger::Error("ShaderSource-Cache failed to load, ignoring cached shaders\n");
+                Logger::Warning("ShaderSource-Cache failed to load, ignoring cached shaders\n");
             }
         };
         
