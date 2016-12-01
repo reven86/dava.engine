@@ -530,6 +530,9 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     if (selStart < selEnd)
     {
         const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+        // Place range of selStart and selEnd in range of characters
+        selStart = std::min(selStart, 0);
+        selEnd = std::max(selStart, tb->GetCharactersCount());
         for (uint32 i = selStart; i < selEnd; ++i)
         {
             const TextBox::Character& c = tb->GetCharacter(i);
