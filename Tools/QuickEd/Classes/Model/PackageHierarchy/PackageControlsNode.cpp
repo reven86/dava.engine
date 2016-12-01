@@ -9,7 +9,7 @@
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageNode* parent_, String name_)
+PackageControlsNode::PackageControlsNode(PackageNode* parent_, const String& name_)
     : ControlsContainerNode(parent_)
     , name(name_)
 {

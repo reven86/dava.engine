@@ -17,7 +17,7 @@ class PackageNode;
 class PackageControlsNode : public ControlsContainerNode
 {
 public:
-    PackageControlsNode(PackageNode* parent, DAVA::String name);
+    PackageControlsNode(PackageNode* parent, const DAVA::String& name);
     virtual ~PackageControlsNode();
 
     void Add(ControlNode* node) override;
