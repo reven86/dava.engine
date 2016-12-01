@@ -178,7 +178,8 @@ void MainWindow::OnInstallAll()
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
         AppVersion* currentVersion = localConfig->GetAppVersion(selectedBranchID, appID, insVersionID);
         AppVersion* newVersion = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
-        if (newVersion != nullptr)
+        Application* remoteApplication = remoteConfig->GetApplication(selectedBranchID, appID);
+        if (newVersion != nullptr && remoteApplication != nullptr)
         {
             tasks.push_back(UpdateTask(selectedBranchID, appID, currentVersion, *newVersion));
         }
@@ -200,14 +201,14 @@ void MainWindow::OnRemoveAll()
     {
         return;
     }
-    QQueue<UpdateTask> tasks;
+
     for (int i = 0, count = ui->tableWidget->rowCount(); i < count; ++i)
     {
         QString appID, insVersionID, avVersionID;
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
         if (!appID.isEmpty() && !insVersionID.isEmpty())
         {
-            appManager->RemoveApplication(selectedBranchID, appID, insVersionID);
+            appManager->RemoveApplication(selectedBranchID, appID, true);
         }
     }
     ShowTable(selectedBranchID);
@@ -219,7 +220,8 @@ void MainWindow::OnInstall(int rowNumber)
     GetTableApplicationIDs(rowNumber, appID, insVersionID, avVersionID);
 
     AppVersion* newVersion = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
-    if (newVersion == nullptr)
+    Application* remoteApplication = appManager->GetRemoteConfig()->GetApplication(selectedBranchID, appID);
+    if (newVersion == nullptr || remoteApplication == nullptr)
     {
         Q_ASSERT(false);
         return;
@@ -244,7 +246,7 @@ void MainWindow::OnRemove(int rowNumber)
                           QMessageBox::Yes | QMessageBox::No);
         int result = msbox.exec();
 
-        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, insVersionID))
+        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, true))
             RefreshApps();
     }
 }

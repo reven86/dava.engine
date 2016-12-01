@@ -200,20 +200,34 @@ void UpdateDialog::DownloadFinished()
     outputFile.close();
 
     const UpdateTask& task = tasks.head();
-
-    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
-    if (task.currentVersion != nullptr)
+    bool canRemoveCorrectrly = true;
+    //we need to remove toolset application, whether they was in toolset or not
+    if (task.newVersion.isToolSet)
     {
-        QString localAppPath = ApplicationManager::GetLocalAppPath(task.currentVersion, task.appID);
-        QString runPath = appDir + localAppPath;
-        while (ProcessHelper::IsProcessRuning(runPath))
-            ErrorMessenger::ShowRetryDlg(task.appID, runPath, false);
+        QStringList toolsetApps = appManager->GetLocalConfig()->GetTranslatedToolsetApplications();
+        for (auto iter = toolsetApps.begin(); iter != toolsetApps.end() && canRemoveCorrectrly; ++iter)
+        {
+            canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, *iter, false);
+        }
     }
-    FileManager::DeleteDirectory(appDir);
+    else
+    {
+        //if current application is a part of toolset, all toolset applications will be removed.
+        canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, task.appID, false);
+    }
+    if (canRemoveCorrectrly == false)
+    {
+        UpdateLastLogValue("Removing applications Failed!");
+        BreakLog();
+        return;
+    }
 
     UpdateLastLogValue(tr("Download Complete!"));
 
     AddLogValue(tr("Unpacking archive..."));
+
+    //create path to a new version directory
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
 
     ui->cancelButton->setEnabled(false);
     ZipUtils::CompressedFilesAndSizes files;
