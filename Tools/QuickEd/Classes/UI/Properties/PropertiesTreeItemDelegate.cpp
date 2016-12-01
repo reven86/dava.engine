@@ -23,6 +23,7 @@
 #include "EnumPropertyDelegate.h"
 #include "PropertiesModel.h"
 #include "StringPropertyDelegate.h"
+#include "ComboPropertyDelegate.h"
 #include "FilePathPropertyDelegate.h"
 #include "ColorPropertyDelegate.h"
 #include "IntegerPropertyDelegate.h"
@@ -32,6 +33,7 @@
 #include "Vector4PropertyDelegate.h"
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
+#include "CompletionsProviderForScrollBar.h"
 #include "Project/Project.h"
 
 using namespace DAVA;
@@ -68,6 +70,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["Delegate"] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
 
     propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);

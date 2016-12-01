@@ -1,19 +1,18 @@
-#ifndef __ITEMDELEGATEFORPROPERTYENUM_H__
-#define __ITEMDELEGATEFORPROPERTYENUM_H__
+#pragma once
 
 #include "BasePropertyDelegate.h"
 #include <QComboBox>
 #include <QAbstractItemDelegate>
 #include <QPointer>
 
-class PropertiesTreeItemDelegate;
+#include "CompletionsProvider.h"
 
-class EnumPropertyDelegate : public BasePropertyDelegate
+class ComboPropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    EnumPropertyDelegate(PropertiesTreeItemDelegate* delegate);
-    ~EnumPropertyDelegate();
+    ComboPropertyDelegate(PropertiesTreeItemDelegate* delegate, std::unique_ptr<CompletionsProvider> completionsProvider);
+    ~ComboPropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index) override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
@@ -21,6 +20,10 @@ public:
 
 private slots:
     void OnCurrentIndexChanged();
-};
+    void OnActivated(const QString& text);
 
-#endif // __ITEMDELEGATEFORPROPERTYENUM_H__
+private:
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
+    std::unique_ptr<CompletionsProvider> completionsProvider;
+};
