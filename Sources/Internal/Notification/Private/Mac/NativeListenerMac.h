@@ -7,14 +7,15 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/OsX/NSApplicationDelegateListener.h"
+#include "Engine/PlatformApi.h"
+
 namespace DAVA
 {
 class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener : public NSApplicationDelegateListener
+struct NativeListener : public PlatformApi::Mac::NSApplicationDelegateListener
 {
     NativeListener(LocalNotificationController& controller);
     virtual ~NativeListener();

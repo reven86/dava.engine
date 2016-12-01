@@ -6,7 +6,6 @@
 #import <Foundation/Foundation.h>
 
 #include "Engine/Engine.h"
-#include "Engine/NativeService.h"
 #include "Logger/Logger.h"
 #include "Utils/NSStringUtils.h"
 
@@ -17,12 +16,12 @@ namespace Private
 NativeListener::NativeListener(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
-    Engine::Instance()->GetNativeService()->RegisterUIApplicationDelegateListener(this);
+    PlatformApi::Ios::RegisterUIApplicationDelegateListener(this);
 }
 
 NativeListener::~NativeListener()
 {
-    Engine::Instance()->GetNativeService()->UnregisterUIApplicationDelegateListener(this);
+    PlatformApi::Ios::UnregisterUIApplicationDelegateListener(this);
 }
 
 void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
@@ -49,7 +48,7 @@ void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, N
             auto func = [this, uidStr]() {
                 localNotificationController.OnNotificationPressed(uidStr);
             };
-            Engine::Instance()->RunAsyncOnMainThread(func);
+            RunOnMainThreadAsync(func);
         }
     }
 }
@@ -68,7 +67,7 @@ void NativeListener::didReceiveLocalNotification(UILocalNotification* notificati
         auto func = [this, uidStr]() {
             localNotificationController.OnNotificationPressed(uidStr);
         };
-        Engine::Instance()->RunAsyncOnMainThread(func);
+        RunOnMainThreadAsync(func);
     }
 }
 } // namespace Private

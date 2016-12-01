@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/Engine.h"
 #include "Engine/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
@@ -136,7 +137,7 @@ void CoreNativeBridge::OnFrameTimer()
     // mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
     // mutex might be already locked so we'll got a deadlock.
     // Return to this code after RenderManager mutex will be removed.
-    if (core->engineBackend->GetEngineContext()->uiScreenManager->IsDrawBlocked())
+    if (GetEngineContext()->uiScreenManager->IsDrawBlocked())
         return;
 
     int32 fps = core->OnFrame();

@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "Engine/Engine.h"
-#include "Engine/Osx/NativeServiceOsX.h"
 #include "Engine/PlatformApi.h"
 #include "Engine/Window.h"
 #include "Logger/Logger.h"
@@ -22,12 +21,12 @@ namespace Private
 NativeListener::NativeListener(DAVA::LocalNotificationController& controller)
     : localNotificationController(controller)
 {
-    Engine::Instance()->GetNativeService()->RegisterNSApplicationDelegateListener(this);
+    RegisterNSApplicationDelegateListener(this);
 }
 
 NativeListener::~NativeListener()
 {
-    Engine::Instance()->GetNativeService()->UnregisterNSApplicationDelegateListener(this);
+    UnregisterNSApplicationDelegateListener(this);
 }
 
 void NativeListener::applicationDidFinishLaunching(NSNotification* notification)
@@ -43,7 +42,7 @@ void NativeListener::applicationDidFinishLaunching(NSNotification* notification)
             auto func = [this, uidStr]() {
                 localNotificationController.OnNotificationPressed(uidStr);
             };
-            Engine::Instance()->RunAsyncOnMainThread(func);
+            RunOnMainThreadAsync(func);
         }
     }
 }
@@ -63,10 +62,10 @@ void NativeListener::didActivateNotification(NSUserNotification* notification)
         auto func = [this, uidStr]() {
             localNotificationController.OnNotificationPressed(uidStr);
         };
-        Engine::Instance()->RunAsyncOnMainThread(func);
+        RunOnMainThreadAsync(func);
 
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
+        PlatformApi::Mac::DoWindowDeminiaturize();
     }
 }
 } // namespace Private

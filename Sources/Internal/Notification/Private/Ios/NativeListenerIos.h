@@ -12,7 +12,7 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener : public UIApplicationDelegateListener
+struct NativeListener : public PlatformApi::Ios::UIApplicationDelegateListener
 {
     NativeListener(LocalNotificationController& controller);
     virtual ~NativeListener();
