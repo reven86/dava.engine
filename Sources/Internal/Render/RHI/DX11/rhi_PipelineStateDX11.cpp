@@ -10,7 +10,7 @@ struct PipelineStateDX11_t
     struct LayoutInfo
     {
         ID3D11InputLayout* inputLayout = nullptr;
-        uint32 layoutUID = 0;
+        DAVA::uint32 layoutUID = 0;
         LayoutInfo(ID3D11InputLayout* i, DAVA::uint32 uid);
     };
     PipelineState::Descriptor desc;
@@ -21,19 +21,19 @@ struct PipelineStateDX11_t
     ID3D11BlendState* blendState = nullptr;
     ID3D10Blob* vpCode = nullptr;
 
-    uint32 vertexBufCount = 0;
-    uint32 vertexBufRegCount[16];
-    uint32 fragmentBufCount = 0;
-    uint32 fragmentBufRegCount[16];
+    DAVA::uint32 vertexBufCount = 0;
+    DAVA::uint32 vertexBufRegCount[16];
+    DAVA::uint32 fragmentBufCount = 0;
+    DAVA::uint32 fragmentBufRegCount[16];
 
     VertexLayout vertexLayout;
     DAVA::Vector<LayoutInfo> altLayout;
     DAVA::Vector<uint8> dbgVertexSrc;
     DAVA::Vector<uint8> dbgPixelSrc;
 
-    Handle CreateConstBuffer(ProgType type, uint32 buf_i);
-    static ID3D11InputLayout* CreateInputLayout(const VertexLayout& layout, const void* code, uint32 code_sz);
-    static ID3D11InputLayout* CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& vprogLayout, const void* code, uint32 code_sz);
+    Handle CreateConstBuffer(ProgType type, DAVA::uint32 buf_i);
+    static ID3D11InputLayout* CreateInputLayout(const VertexLayout& layout, const void* code, DAVA::uint32 code_sz);
+    static ID3D11InputLayout* CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& vprogLayout, const void* code, DAVA::uint32 code_sz);
 };
 
 using PipelineStateDX11Pool = ResourcePool<PipelineStateDX11_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false>;
@@ -45,19 +45,19 @@ PipelineStateDX11_t::LayoutInfo::LayoutInfo(ID3D11InputLayout* i, DAVA::uint32 u
 {
 }
 
-ID3D11InputLayout* PipelineStateDX11_t::CreateInputLayout(const VertexLayout& layout, const void* code, uint32 code_sz)
+ID3D11InputLayout* PipelineStateDX11_t::CreateInputLayout(const VertexLayout& layout, const void* code, DAVA::uint32 code_sz)
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
     DAVA::uint32 elemCount = 0;
 
     DVASSERT(layout.ElementCount() < countof(elem));
-    for (uint32 i = 0; i != layout.ElementCount(); ++i)
+    for (DAVA::uint32 i = 0; i != layout.ElementCount(); ++i)
     {
         if (layout.ElementSemantics(i) == VS_PAD)
             continue;
 
-        uint32 stream_i = layout.ElementStreamIndex(i);
+        DAVA::uint32 stream_i = layout.ElementStreamIndex(i);
 
         elem[elemCount].AlignedByteOffset = (UINT)(layout.ElementOffset(i));
         elem[elemCount].SemanticIndex = layout.ElementSemanticsIndex(i);
@@ -160,20 +160,20 @@ ID3D11InputLayout* PipelineStateDX11_t::CreateInputLayout(const VertexLayout& la
     return vdecl;
 }
 
-ID3D11InputLayout* PipelineStateDX11_t::CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& vprogLayout, const void* code, uint32 code_sz)
+ID3D11InputLayout* PipelineStateDX11_t::CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& vprogLayout, const void* code, DAVA::uint32 code_sz)
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
     DAVA::uint32 elemCount = 0;
 
     DVASSERT(vbLayout.ElementCount() < countof(elem));
-    for (uint32 i = 0; i != vprogLayout.ElementCount(); ++i)
+    for (DAVA::uint32 i = 0; i != vprogLayout.ElementCount(); ++i)
     {
         DVASSERT(vprogLayout.ElementSemantics(i) != VS_PAD);
 
-        uint32 vb_elem_i = DAVA::InvalidIndex;
+        DAVA::uint32 vb_elem_i = DAVA::InvalidIndex;
 
-        for (uint32 k = 0; k != vbLayout.ElementCount(); ++k)
+        for (DAVA::uint32 k = 0; k != vbLayout.ElementCount(); ++k)
         {
             if (vbLayout.ElementSemantics(k) == vprogLayout.ElementSemantics(i) && vbLayout.ElementSemanticsIndex(k) == vprogLayout.ElementSemanticsIndex(i))
             {
@@ -184,7 +184,7 @@ ID3D11InputLayout* PipelineStateDX11_t::CreateCompatibleInputLayout(const Vertex
 
         if (vb_elem_i != DAVA::InvalidIndex)
         {
-            uint32 stream_i = vprogLayout.ElementStreamIndex(i);
+            DAVA::uint32 stream_i = vprogLayout.ElementStreamIndex(i);
 
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
@@ -290,10 +290,10 @@ ID3D11InputLayout* PipelineStateDX11_t::CreateCompatibleInputLayout(const Vertex
 
     if (vprogLayout.Stride() < vbLayout.Stride())
     {
-        const uint32 padCnt = vbLayout.Stride() - vprogLayout.Stride();
+        const DAVA::uint32 padCnt = vbLayout.Stride() - vprogLayout.Stride();
 
         DVASSERT(padCnt % 4 == 0);
-        for (uint32 p = 0; p != padCnt / 4; ++p)
+        for (DAVA::uint32 p = 0; p != padCnt / 4; ++p)
         {
             elem[elemCount].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT; //vprogLayout.Stride() + p;
             elem[elemCount].SemanticIndex = p;
@@ -311,12 +311,12 @@ ID3D11InputLayout* PipelineStateDX11_t::CreateCompatibleInputLayout(const Vertex
     return vdecl;
 }
 
-Handle PipelineStateDX11_t::CreateConstBuffer(ProgType type, uint32 buf_i)
+Handle PipelineStateDX11_t::CreateConstBuffer(ProgType type, DAVA::uint32 buf_i)
 {
     return ConstBufferDX11::Alloc(type, buf_i, (type == PROG_VERTEX) ? vertexBufRegCount[buf_i] : fragmentBufRegCount[buf_i]);
 }
 
-static void DumpShaderText(const char* code, uint32 code_sz)
+static void DumpShaderText(const char* code, DAVA::uint32 code_sz)
 {
     char src[64 * 1024] = {};
     if (code_sz + 1 >= sizeof(src))
@@ -326,7 +326,7 @@ static void DumpShaderText(const char* code, uint32 code_sz)
     }
 
     char* src_line[1024] = {};
-    uint32 line_cnt = 0;
+    DAVA::uint32 line_cnt = 0;
     memcpy(src, code, code_sz);
 
     src_line[line_cnt++] = src;
@@ -359,7 +359,7 @@ static void DumpShaderText(const char* code, uint32 code_sz)
         }
     }
 
-    for (uint32 i = 0; i != line_cnt; ++i)
+    for (DAVA::uint32 i = 0; i != line_cnt; ++i)
     {
         DAVA::Logger::Info("%4u |  %s", 1 + i, src_line[i]);
     }
@@ -389,8 +389,8 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
 #if 0
-    DumpShaderText((const char*)(&vprog_bin[0]), (uint32 int)vprog_bin.size());
-    DumpShaderText((const char*)(&fprog_bin[0]), (uint32 int)fprog_bin.size());
+    DumpShaderText((const char*)(&vprog_bin[0]), (DAVA::uint32)vprog_bin.size());
+    DumpShaderText((const char*)(&fprog_bin[0]), (DAVA::uint32)fprog_bin.size());
 #endif
 
     const char* vsFeatureLevel = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1";
@@ -413,7 +413,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
                 {
                     ps->vertexBufCount = desc.ConstantBuffers;
 
-                    for (uint32 b = 0; b != desc.ConstantBuffers; ++b)
+                    for (DAVA::uint32 b = 0; b != desc.ConstantBuffers; ++b)
                     {
                         ID3D11ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(b);
                         if (cb)
@@ -443,7 +443,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         DAVA::Logger::Error("shader-uid : %s", desc.vprogUid.c_str());
         DAVA::Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&vprog_bin[0]), (uint32)vprog_bin.size());
+        DumpShaderText((const char*)(&vprog_bin[0]), (DAVA::uint32)vprog_bin.size());
         ps->vertexShader = nullptr;
         DVASSERT_MSG(ps->vertexShader, desc.vprogUid.c_str());
     }
@@ -464,7 +464,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
                 if (DX11Check(hr))
                 {
                     ps->fragmentBufCount = desc.ConstantBuffers;
-                    for (uint32 b = 0; b != desc.ConstantBuffers; ++b)
+                    for (DAVA::uint32 b = 0; b != desc.ConstantBuffers; ++b)
                     {
                         ID3D11ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(b);
                         if (cb)
@@ -495,7 +495,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         DAVA::Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
         DAVA::Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&fprog_bin[0]), (uint32)fprog_bin.size());
+        DumpShaderText((const char*)(&fprog_bin[0]), (DAVA::uint32)fprog_bin.size());
         ps->pixelShader = nullptr;
     }
 
@@ -555,13 +555,13 @@ static void dx11_PipelineState_Delete(Handle ps)
     PipelineStateDX11Pool::Free(ps);
 }
 
-static Handle dx11_PipelineState_CreateVertexConstBuffer(Handle ps, uint32 buf_i)
+static Handle dx11_PipelineState_CreateVertexConstBuffer(Handle ps, DAVA::uint32 buf_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
     return ps11->CreateConstBuffer(PROG_VERTEX, buf_i);
 }
 
-static Handle dx11_PipelineState_CreateFragmentConstBuffer(Handle ps, uint32 buf_i)
+static Handle dx11_PipelineState_CreateFragmentConstBuffer(Handle ps, DAVA::uint32 buf_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
     return ps11->CreateConstBuffer(PROG_FRAGMENT, buf_i);
@@ -575,7 +575,7 @@ void PipelineStateDX11::SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PipelineState_CreateFragmentConstBuffer = &dx11_PipelineState_CreateFragmentConstBuffer;
 }
 
-void PipelineStateDX11::SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context)
+void PipelineStateDX11::SetToRHI(Handle ps, DAVA::uint32 layoutUID, ID3D11DeviceContext* context)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
 
@@ -629,7 +629,7 @@ void PipelineStateDX11::SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContex
     context->OMSetBlendState(ps11->blendState, nullptr, 0xFFFFFFFF);
 }
 
-uint32 PipelineStateDX11::VertexLayoutStride(Handle ps, uint32 stream_i)
+uint32 PipelineStateDX11::VertexLayoutStride(Handle ps, DAVA::uint32 stream_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
     return ps11->vertexLayout.Stride(stream_i);
@@ -641,7 +641,7 @@ uint32 PipelineStateDX11::VertexLayoutStreamCount(Handle ps)
     return ps11->vertexLayout.StreamCount();
 }
 
-void PipelineStateDX11::GetConstBufferCount(Handle ps, uint32* vertexBufCount, uint32* fragmentBufCount)
+void PipelineStateDX11::GetConstBufferCount(Handle ps, DAVA::uint32* vertexBufCount, DAVA::uint32* fragmentBufCount)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
     *vertexBufCount = ps11->vertexBufCount;
