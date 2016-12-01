@@ -6,8 +6,6 @@
 
 #include <functional>
 
-#ifndef __REFLECTION_FEATURE__
-
 struct RelfCollectionsHolder
 {
     /// VectorTest
@@ -271,5 +269,3 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         CollectionSetTestHelper<int>(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
     }
 };
-
-#endif
