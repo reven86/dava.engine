@@ -1274,6 +1274,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
     auto self{ shared_from_this() };
     RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 
+    // clang-format off
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         uint32 imageWidth = renderTarget->PixelWidth;
         uint32 imageHeight = renderTarget->PixelHeight;
@@ -1328,6 +1329,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
             Logger::Error("[TextField] RenderToTexture failed: 0x%08X", hr);
         }
     });
+    // clang-format on
 }
 
 Sprite* TextFieldPlatformImpl::CreateSpriteFromPreviewData(uint8* imageData, uint32 width, uint32 height)

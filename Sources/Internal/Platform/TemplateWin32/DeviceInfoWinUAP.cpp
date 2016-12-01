@@ -97,7 +97,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         // Windows does not provide triggers to detect whether device has entered or left Continuum mode.
         // Then connect to CoreWindow::SizeChanged event and check UserInteractionMode
         // http://stackoverflow.com/questions/34115039/how-do-i-detect-that-the-windows-mobile-transitioned-to-continuum-mode
-        CoreWindow::GetForCurrentThread()->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>([this](CoreWindow^, WindowSizeChangedEventArgs^) {
+        CoreWindow::GetForCurrentThread()->SizeChanged += ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^, WindowSizeChangedEventArgs ^ ) {
             CheckContinuumMode();
         });
     }
