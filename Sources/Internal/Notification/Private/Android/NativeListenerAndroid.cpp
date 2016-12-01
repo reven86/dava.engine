@@ -19,7 +19,7 @@ JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNe
     DAVA::String uidStr = DAVA::JNI::JavaStringToString(uid);
     auto function = [uidStr]()
     {
-        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        localNotificationController->OnNotificationPressed(uidStr);
     };
     DAVA::RunOnMainThread(function);
 }
@@ -30,10 +30,10 @@ namespace DAVA
 namespace Private
 {
 NativeListener::NativeListener(LocalNotificationController& controller)
+    : localNotificationController(controller)
 {
     try
     {
-        instance = nullptr;
         JNIEnv* env = JNI::GetEnv();
         JNI::JavaClass clazz("com/dava/engine/notification/NativeListener");
         release = clazz.GetMethod<void>("release");

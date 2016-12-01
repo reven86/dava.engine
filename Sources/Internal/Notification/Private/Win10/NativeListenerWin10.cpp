@@ -32,12 +32,11 @@ void NativeListener::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
         Platform::String ^ launchString = launchArgs->Arguments;
         if (!arguments.empty())
         {
-            String uidStr = UTF8Utils::EncodeToUTF8(launchString->Data());
             auto function = [this, arguments]()
             {
                 localNotificationController.OnNotificationPressed(arguments);
             };
-            RunOnMainThread(function);
+            RunOnMainThreadAsync(function);
         }
     }
 }

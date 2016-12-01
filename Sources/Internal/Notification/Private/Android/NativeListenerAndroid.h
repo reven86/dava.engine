@@ -21,7 +21,8 @@ struct NativeListener final
     ~NativeListener();
 
 private:
-    jobject instance;
+    LocalNotificationController& localNotificationController;
+    jobject instance = nullptr;
     Function<void(jobject)> release;
 };
 } // namespace Private

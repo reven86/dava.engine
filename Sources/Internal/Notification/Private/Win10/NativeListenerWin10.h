@@ -16,7 +16,7 @@ namespace Private
 struct NativeListener : public PlatformApi::Win10::XamlApplicationListener
 {
     NativeListener(LocalNotificationController& controller);
-    virtual ~NativeListener();
+    virtual ~NativeListener() override;
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs) override;
 
 private:

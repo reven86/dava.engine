@@ -18,7 +18,7 @@ namespace Private
 struct NativeListener : public PlatformApi::Mac::NSApplicationDelegateListener
 {
     NativeListener(LocalNotificationController& controller);
-    virtual ~NativeListener();
+    virtual ~NativeListener() override;
 
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;

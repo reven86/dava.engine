@@ -15,6 +15,10 @@ struct NativeListener
 {
     NativeListener(LocalNotificationController& controller);
 };
+
+NativeListener::NativeListener(LocalNotificationController& controller)
+{
+}
 } // namespace Private
 } // namespace DAVA
 

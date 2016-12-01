@@ -21,19 +21,19 @@ namespace Private
 NativeListener::NativeListener(DAVA::LocalNotificationController& controller)
     : localNotificationController(controller)
 {
-    RegisterNSApplicationDelegateListener(this);
+    PlatformApi::Mac::RegisterNSApplicationDelegateListener(this);
 }
 
 NativeListener::~NativeListener()
 {
-    UnregisterNSApplicationDelegateListener(this);
+    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(this);
 }
 
 void NativeListener::applicationDidFinishLaunching(NSNotification* notification)
 {
     //using namespace DAVA;
     NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
-    if (userNotification.userInfo != nil)
+    if (userNotification && (userNotification.userInfo != nil))
     {
         NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
         if (uid != nil && [uid length] != 0)
@@ -54,7 +54,6 @@ void NativeListener::applicationDidBecomeActive()
 
 void NativeListener::didActivateNotification(NSUserNotification* notification)
 {
-    //using namespace DAVA;
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
     if (uid != nil && [uid length] != 0)
     {
@@ -65,7 +64,7 @@ void NativeListener::didActivateNotification(NSUserNotification* notification)
         RunOnMainThreadAsync(func);
 
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        PlatformApi::Mac::DoWindowDeminiaturize();
+        PlatformApi::Mac::PrimaryWindowDeminiaturize();
     }
 }
 } // namespace Private
