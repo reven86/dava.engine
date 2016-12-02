@@ -14,12 +14,13 @@
 
 extern "C"
 {
-JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid)
+JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid, jlong controller)
 {
+    DAVA::LocalNotificationController* localNotificationController = reinterpret_cast<DAVA::LocalNotificationController*>(static_cast<uintptr_t>(controller));
     DAVA::String uidStr = DAVA::JNI::JavaStringToString(uid);
-    auto function = [uidStr]()
+    auto function = [uidStr, localNotificationController]()
     {
-        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        localNotificationController->OnNotificationPressed(uidStr);
     };
     DAVA::RunOnMainThreadAsync(function);
 }
@@ -30,15 +31,14 @@ namespace DAVA
 namespace Private
 {
 NativeListener::NativeListener(LocalNotificationController& controller)
-    : localNotificationController(controller)
 {
     try
     {
         JNIEnv* env = JNI::GetEnv();
         JNI::JavaClass clazz("com/dava/engine/notification/NativeListener");
         release = clazz.GetMethod<void>("release");
-        jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "()V");
-        jobject obj = env->NewObject(clazz, classConstructor);
+        jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "(J)V");
+        jobject obj = env->NewObject(clazz, classConstructor, reinterpret_cast<jlong>(&controller));
         instance = env->NewGlobalRef(obj);
         env->DeleteLocalRef(obj);
     }

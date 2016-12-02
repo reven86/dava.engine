@@ -10,10 +10,13 @@ import com.dava.engine.notification.DavaNotificationProvider;
 
 public class NativeListener extends DavaActivity.ActivityListenerImpl
 {
-    public static native void nativeNewIntent(String uid);
+    protected long localNotificationController = 0;
 
-    public NativeListener()
+    public static native void nativeNewIntent(String uid, long controller);
+
+    public NativeListener(long controller)
     {
+        localNotificationController = controller;
         DavaActivity.instance().registerActivityListener(this);
         DavaNotificationProvider.Init(DavaActivity.instance());
         Log.d(DavaActivity.LOG_TAG, "NativeListener.<init> Create class instance.");
@@ -39,7 +42,7 @@ public class NativeListener extends DavaActivity.ActivityListenerImpl
             if (uid != null)
             {
                 DavaNotificationProvider.HideNotification(uid);
-                nativeNewIntent(uid);
+                nativeNewIntent(uid, localNotificationController);
             }
         }
     }
