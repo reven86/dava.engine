@@ -4,10 +4,15 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIDevice.h>
+#import <UIKit/UILocalNotification.h>
+#import <UIKit/UIApplication.h>
+#import <UIKit/UIUserNotificationSettings.h>
 
 #include "Engine/Engine.h"
 #include "Logger/Logger.h"
 #include "Utils/NSStringUtils.h"
+#include "Notification/LocalNotificationController.h"
 
 namespace DAVA
 {

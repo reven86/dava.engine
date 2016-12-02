@@ -33,7 +33,7 @@ void RemoveNSView(Window* targetWindow, NSView* nsview)
 void PrimaryWindowDeminiaturize()
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(EngineBackend::Instance()->PrimaryWindow());
+    WindowBackend* wb = EngineBackend::GetWindowBackend(EngineBackend::Instance()->GetPrimaryWindow());
     [wb->bridge->nswindow deminiaturize:wb->bridge->windowDelegate];
     [wb->bridge->nswindow becomeKeyWindow];
 }

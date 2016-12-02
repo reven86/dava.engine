@@ -9,6 +9,7 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "UI/UIScreenManager.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
