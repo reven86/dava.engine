@@ -138,7 +138,7 @@ bool UIScrollBarLinkSystem::RestoreLink(int32 linkType, Predicate predicate)
 
 void UIScrollBarLinkSystem::LinkScrollBar(UIScrollBarDelegateComponent* component)
 {
-    if (!RestoreLink(Link::SCROLL_BAR_LINKED, [component](Link& l) { return l.component == component; }))
+    if (!RestoreLink(Link::SCROLL_BAR_LINKED, [component](const Link& l) { return l.component == component; }))
     {
         links.push_back(Link(component));
     }
@@ -146,7 +146,7 @@ void UIScrollBarLinkSystem::LinkScrollBar(UIScrollBarDelegateComponent* componen
 
 void UIScrollBarLinkSystem::LinkDelegate(UIControl* linkedControl)
 {
-    RestoreLink(Link::DELEGATE_LINKED, [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
+    RestoreLink(Link::DELEGATE_LINKED, [linkedControl](const Link& l) { return l.linkedControl == linkedControl; });
 }
 
 template <typename Predicate>
@@ -169,11 +169,11 @@ bool UIScrollBarLinkSystem::Unlink(int32 linkType, Predicate predicate)
 
 bool UIScrollBarLinkSystem::UnlinkScrollBar(UIScrollBarDelegateComponent* component)
 {
-    return Unlink(Link::SCROLL_BAR_LINKED, [component](Link& l) { return l.component == component; });
+    return Unlink(Link::SCROLL_BAR_LINKED, [component](const Link& l) { return l.component == component; });
 }
 
 bool UIScrollBarLinkSystem::UnlinkDelegate(UIControl* linkedControl)
 {
-    return Unlink(Link::DELEGATE_LINKED, [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
+    return Unlink(Link::DELEGATE_LINKED, [linkedControl](const Link& l) { return l.linkedControl == linkedControl; });
 }
 }
