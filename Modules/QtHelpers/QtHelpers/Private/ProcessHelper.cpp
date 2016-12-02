@@ -10,7 +10,7 @@
 #include <QProcess>
 #include <QStringList>
 
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 void ProcessHelper::RunProcess(const QString& path)
 {
     QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
@@ -141,7 +141,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 
 bool ProcessHelper::IsProcessRuning(const QString& path)
 {
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 //    ProcessSerialNumber psn;
 //    return ProcessHelper::GetProcessPSN(path, psn);
 #elif defined Q_OS_WIN
@@ -153,7 +153,7 @@ bool ProcessHelper::IsProcessRuning(const QString& path)
 
 void ProcessHelper::SetActiveProcess(const QString& path)
 {
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 //    ProcessSerialNumber psn;
 //    if (ProcessHelper::GetProcessPSN(path, psn))
 //        SetFrontProcess(&psn);

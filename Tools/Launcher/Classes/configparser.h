@@ -127,6 +127,7 @@ public:
     Branch* GetBranch(const QString& branch);
     const Branch* GetBranch(const QString& branch) const;
 
+    const Application* GetApplication(const QString& branch, const QString& appID) const;
     Application* GetApplication(const QString& branch, const QString& appID);
 
     AppVersion* GetAppVersion(const QString& branch, const QString& appID, const QString& ver);

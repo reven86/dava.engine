@@ -26,14 +26,14 @@ public:
     };
     CommandListener(ApplicationManager* appManager, QObject* parent = nullptr);
 
-    void GetCommands();
+    void AskForCommands();
 
     QString GetProtocolKey() const;
     void SetProtocolKey(const QString& key);
 
 private slots:
 
-    void GotReply(QNetworkReply* reply);
+    void OnReply(QNetworkReply* reply);
     void OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void OnProcessError(QProcess::ProcessError error);
 

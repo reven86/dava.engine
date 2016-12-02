@@ -20,8 +20,8 @@ namespace ProcessCommunicationDetails
     const QString keySenderApp = "senderApp";
     const QString keyTransportMessageID = "messageID";
 
-    const qint64 pollingTime = 200; //ms;
-    const qint64 maximumTimeout = 5 * 60 * 1000; // 5 minutes
+    const qint64 pollingTimeMs = 200; //ms;
+    const qint64 maximumTimeoutMs = 5 * 60 * 1000; // 5 minutes
 }
 
 ProcessCommunication::ProcessCommunication(QObject* parent)
@@ -55,7 +55,7 @@ ProcessCommunication::~ProcessCommunication()
 void ProcessCommunication::InitPollTimer()
 {
     pollTimer = new QTimer(this);
-    pollTimer->setInterval(ProcessCommunicationDetails::pollingTime);
+    pollTimer->setInterval(ProcessCommunicationDetails::pollingTimeMs);
     pollTimer->setSingleShot(false);
     connect(pollTimer, &QTimer::timeout, this, &ProcessCommunication::Poll);
     pollTimer->start();
@@ -112,7 +112,6 @@ void ProcessCommunication::SendAsync(const eMessage messageCode, const QString &
 
     QJsonDocument document(obj);
     QByteArray jsonData = document.toJson();
-    jsonData.append('\0');
     if (Write(jsonData))
     {
         messageDetails.creationTime = elapsedTimer.elapsed();
@@ -173,7 +172,6 @@ void ProcessCommunication::Poll()
                 details.callBack(static_cast<eReply>(messageIDValue));
                 iterator.remove();
                 gotReply = true;
-                Flush();
             }
         }
 
@@ -193,7 +191,7 @@ void ProcessCommunication::Poll()
     while (iterator.hasNext())
     {
         const MessageDetails &details = iterator.next();
-        if (elapsedTime - details.creationTime > ProcessCommunicationDetails::maximumTimeout)
+        if (elapsedTime - details.creationTime > ProcessCommunicationDetails::maximumTimeoutMs)
         {
             details.callBack(eReply::TIMEOUT_ERROR);
             iterator.remove();
@@ -276,7 +274,7 @@ QJsonObject ProcessCommunication::Read()
         }
         Unlock();
     }
-    if (data.indexOf('\0') == 0)
+    if (data.startsWith('\0'))
     {
         return QJsonObject();
     }
@@ -293,6 +291,7 @@ QJsonObject ProcessCommunication::Read()
             obj[ProcessCommunicationDetails::keyTransportMessageID].isDouble() &&
             obj[ProcessCommunicationDetails::keyTargetApp] == qApp->applicationFilePath())
         {
+            Flush();
             return obj;
         }
         else

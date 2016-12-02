@@ -129,19 +129,6 @@ QString FileManager::GetLauncherDirectory() const
     return path + "/";
 }
 
-bool FileManager::CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
-{
-    QFile file(filePath);
-    if (file.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        if (file.write(data) == data.size())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool FileManager::DeleteDirectory(const QString& path)
 {
     if (path == "/" || path == "." || path == "..")
@@ -274,27 +261,19 @@ void FileManager::MakeDirectory(const QString& path)
         QDir().mkpath(path);
 }
 
-QString FileManager::CreateZipFile(const QByteArray& dataToWrite, bool* success) const
+bool FileManager::CreateZipFile(const QByteArray& dataToWrite, QString& filePath) const
 {
-    if (success != nullptr)
-    {
-        *success = false;
-    }
-
-    const QString& filePath = GetTempDownloadFilePath();
+    filePath = GetTempDownloadFilePath();
     QFile outputFile(filePath);
 
     if (outputFile.open(QFile::WriteOnly | QFile::Truncate))
     {
+        qint64 dataSize = dataToWrite.size();
         qint64 written = outputFile.write(dataToWrite);
-        if (success != nullptr
-            && written != -1)
-        {
-            *success = true;
-        }
         outputFile.close();
+        return written == dataSize;
     }
-    return filePath;
+    return false;
 }
 
 void FileManager::SetFilesDirectory(const QString& newDirPath)

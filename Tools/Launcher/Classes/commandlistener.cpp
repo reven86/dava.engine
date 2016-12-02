@@ -27,8 +27,8 @@ CommandListener::CommandListener(ApplicationManager* appManager_, QObject* paren
 {
     updateTimer->setSingleShot(false);
     updateTimer->setInterval(90 * 1000);
-    connect(updateTimer, &QTimer::timeout, this, &CommandListener::GetCommands);
-    connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::GotReply);
+    connect(updateTimer, &QTimer::timeout, this, &CommandListener::AskForCommands);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::OnReply);
     updateTimer->start();
 }
 
@@ -102,7 +102,7 @@ void CommandListener::SendReply(eResult result, const QString& message)
     SendReply(result, "0", message);
 }
 
-void CommandListener::GetCommands()
+void CommandListener::AskForCommands()
 {
     QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=commands";
@@ -122,7 +122,7 @@ void CommandListener::Post(const QString& urlStr, const QByteArray& data)
     networkManager->post(request, data);
 }
 
-void CommandListener::GotReply(QNetworkReply* reply)
+void CommandListener::OnReply(QNetworkReply* reply)
 {
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError)
@@ -246,7 +246,13 @@ void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString
             this, &CommandListener::OnProcessFinished);
     connect(process, &QProcess::errorOccurred, this, &CommandListener::OnProcessError);
     startedCommandIDs[process] = commandID;
-    process->start("cmd.exe /c " + cmd, QProcess::ReadWrite);
+    QString processString =
+#ifdef Q_OS_WIN
+    "cmd.exe /c " + cmd;
+#else
+    cmd;
+#endif //platform
+    process->start(processString, QProcess::ReadWrite);
 }
 
 void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString& commandID)

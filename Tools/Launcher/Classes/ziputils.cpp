@@ -40,7 +40,7 @@ QString ZipError::GetErrorString() const
     case PROCESS_CRASHED:
         return QObject::tr("Archiver crashed");
     case PROCESS_TIMEDOUT:
-        return QObject::tr("Archiver crashed by time out");
+        return QObject::tr("Archiver time out error");
     case PROCESS_READ_ERROR:
         return QObject::tr("Failed to read output from archiver");
     case PROCESS_WRITE_ERROR:

@@ -709,13 +709,29 @@ Application* ConfigParser::GetApplication(const QString& branchID, const QString
             }
     }
 
-    return 0;
+    return nullptr;
+}
+
+const Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID) const
+{
+    const Branch* branch = GetBranch(branchID);
+    if (branch != nullptr)
+    {
+        int appCount = branch->applications.size();
+        for (int i = 0; i < appCount; ++i)
+            if (branch->applications[i].id == appID)
+            {
+                return &branch->applications[i];
+            }
+    }
+
+    return nullptr;
 }
 
 AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& appID, const QString& ver)
 {
     Application* app = GetApplication(branchID, appID);
-    if (app)
+    if (app != nullptr)
     {
         int versCount = app->versions.size();
         for (int i = 0; i < versCount; ++i)
@@ -723,7 +739,7 @@ AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& 
                 return &app->versions[i];
     }
 
-    return 0;
+    return nullptr;
 }
 
 QString ConfigParser::GetString(const QString& stringID) const

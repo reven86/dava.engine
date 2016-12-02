@@ -24,6 +24,7 @@ public:
 
     ConfigParser* GetLocalConfig();
     ConfigParser* GetRemoteConfig();
+    const AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID) const;
     AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID);
 
     ProcessCommunication* GetProcessCommunicationModule() const;
@@ -57,7 +58,7 @@ signals:
 private:
     void LoadLocalConfig(const QString& configPath);
     bool TryStopApp(const QString& runPath) const;
-    bool CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent);
+    bool CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent) const;
 
     //before call this function check that app is not running
     bool RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent);

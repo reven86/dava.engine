@@ -69,6 +69,17 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
     }
 }
 
+const AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, const QString& appID) const
+{
+    const Application* app = localConfig.GetApplication(branchID, appID);
+    if (app == nullptr || app->versions.isEmpty())
+    {
+        return nullptr;
+    }
+    const AppVersion* version = app->GetVersion(0);
+    return version;
+}
+
 AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, const QString& appID)
 {
     Application* app = localConfig.GetApplication(branchID, appID);
@@ -110,9 +121,9 @@ bool ApplicationManager::TryStopApp(const QString& runPath) const
     return false;
 }
 
-bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent)
+bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent) const
 {
-    AppVersion* version = GetInstalledVersion(branchID, appID);
+    const AppVersion* version = GetInstalledVersion(branchID, appID);
     if (version == nullptr)
     {
         return true;
@@ -124,7 +135,8 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
     }
     QString runPath = appDirPath + GetLocalAppPath(version, appID);
     bool triedToStop = false;
-    while (ProcessHelper::IsProcessRuning(runPath))
+
+    if (ProcessHelper::IsProcessRuning(runPath))
     {
         if (triedToStop == false && CanTryStopApplication(appID))
         {
@@ -132,23 +144,21 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
             {
                 return true;
             }
-            else
-            {
-                triedToStop = true;
-            }
         }
+
         if (silent)
         {
             ErrorMessenger::LogMessage(QtWarningMsg, QString("Can not remove application %1, because it still running").arg(appID));
             return false;
         }
-        else
+    }
+
+    while (ProcessHelper::IsProcessRuning(runPath))
+    {
+        int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
+        if (result == QMessageBox::Cancel)
         {
-            int result = ErrorMessenger::ShowRetryDlg(appID, runPath, canReject);
-            if (result == QMessageBox::Cancel)
-            {
-                return false;
-            }
+            return false;
         }
     }
     return true;

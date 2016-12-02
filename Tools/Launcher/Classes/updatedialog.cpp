@@ -194,10 +194,10 @@ void UpdateDialog::DownloadFinished()
         return;
     }
 
-    bool success = false;
+    QString filePath;
     FileManager* fileManager = appManager->GetFileManager();
-    QString filePath = fileManager->CreateZipFile(readedData, &success);
-    if (success == false)
+    bool archiveCreated = fileManager->CreateZipFile(readedData, filePath);
+    if (archiveCreated == false)
     {
         UpdateLastLogValue(tr("Can not create archive %1!").arg(filePath));
         BreakLog();

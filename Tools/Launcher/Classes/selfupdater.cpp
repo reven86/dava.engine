@@ -121,23 +121,21 @@ void SelfUpdater::DownloadFinished()
     {
         ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-        QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath();
         UpdateError err = NO_ERRORS;
-        //archive file scope. At the end of the scope file will be closed if necessary
-        {
-            QByteArray data = currentDownload->readAll();
+        QByteArray data = currentDownload->readAll();
 
-            currentDownload->deleteLater();
-            currentDownload = nullptr;
-            //create an archive with a new version
-            if (!FileManager::CreateFileAndWriteData(tempArchiveFilePath, data))
-            {
-                err = ARCHIVE_ERROR;
-            }
-        }
-        if (err == NO_ERRORS)
+        currentDownload->deleteLater();
+        currentDownload = nullptr;
+        //create an archive with a new version
+        QString tempArchiveFilePath;
+        bool archiveCreated = fileManager->CreateZipFile(data, tempArchiveFilePath);
+        if (archiveCreated)
         {
             err = ProcessLauncherUpdate();
+        }
+        else
+        {
+            err = ARCHIVE_ERROR;
         }
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
         if (err == NO_ERRORS)

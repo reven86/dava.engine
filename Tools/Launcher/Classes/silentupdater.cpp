@@ -75,15 +75,16 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
     QByteArray readedData = reply->readAll();
     bool success = false;
     FileManager* fileManager = appManager->GetFileManager();
-    QString archivePath = fileManager->CreateZipFile(readedData, &success);
-    if (success == false)
+    QString archivePath;
+    bool archiveCreated = fileManager->CreateZipFile(readedData, archivePath);
+    if (archiveCreated == false)
     {
         task.onFinished(false, "Can not write archive to file " + archivePath);
         return;
     }
     QStringList applicationsToRestart;
-    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, true, applicationsToRestart);
-    if (canRemoveCorrectrly == false)
+    bool canRemoveCorrectly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, true, applicationsToRestart);
+    if (canRemoveCorrectly == false)
     {
         task.onFinished(false, "Can not remove installed applications");
         return;
@@ -113,18 +114,18 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 
 void SilentUpdater::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
 {
+    canStartNextTask = QNetworkAccessManager::Accessible;
     if (accessible == QNetworkAccessManager::NotAccessible)
     {
         if (currentReply != nullptr)
         {
+            tasks.dequeue();
             currentReply->abort();
             currentReply->deleteLater();
             currentReply = nullptr;
-            while (tasks.isEmpty() == false)
-            {
-                SilentUpdateTask task = tasks.dequeue();
-                task.onFinished(false, "Network was disabled");
-            }
+
+            SilentUpdateTask task = tasks.dequeue();
+            task.onFinished(false, "Network was disabled");
         }
     }
 }
@@ -139,7 +140,7 @@ void SilentUpdater::StartNextTask()
     {
         return;
     }
-    const SilentUpdateTask& task = tasks.last();
+    const SilentUpdateTask& task = tasks.first();
     QString url = task.newVersion.url;
     canStartNextTask = false;
     currentReply = networkManager->get(QNetworkRequest(QUrl(url)));

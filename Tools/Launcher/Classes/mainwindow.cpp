@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget* parent)
     //it will be used to get commands manually for testing reasons
     QShortcut* shortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this);
     shortCut->setContext(Qt::ApplicationShortcut);
-    connect(shortCut, &QShortcut::activated, commandListener, &CommandListener::GetCommands);
+    connect(shortCut, &QShortcut::activated, commandListener, &CommandListener::AskForCommands);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -616,7 +616,7 @@ QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app, int rowNum)
         comboBox->setFocusPolicy(Qt::NoFocus);
         comboBox->setCurrentIndex(0);
 
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
         comboBox->setMaximumHeight(26);
 #endif
 
