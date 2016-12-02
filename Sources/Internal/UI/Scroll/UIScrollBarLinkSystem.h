@@ -19,6 +19,7 @@ public:
 
     void Process(DAVA::float32 elapsedTime) override;
 
+    bool IsRestoreLinks() const;
     void SetRestoreLinks(bool restoring);
 
 private:
@@ -31,25 +32,32 @@ private:
         };
         UIScrollBarDelegateComponent* component = nullptr;
         UIControl* linkedControl = nullptr;
-        int32 connectionType = 0;
+        int32 type = 0;
 
         Link(UIScrollBarDelegateComponent* component_)
             : component(component_)
-            , connectionType(SCROLL_BAR_LINKED)
+            , type(SCROLL_BAR_LINKED)
         {
         }
     };
 
-    void RegisterScrollBarDelegateComponent(UIScrollBarDelegateComponent* component);
-    void UnregisterScrollBarDelegateComponent(UIScrollBarDelegateComponent* component);
     void SetupLink(Link* link, UIControl* control);
     void BreakLink(Link* link);
 
-    bool TryToRestoreLink(UIScrollBarDelegateComponent* component, UIControl* linkedControl);
-    bool TryToBreakLink(UIScrollBarDelegateComponent* component, UIControl* linkedControl);
+    template <typename Predicate>
+    bool RestoreLink(int32 linkType, Predicate);
+
+    void LinkScrollBar(UIScrollBarDelegateComponent* component);
+    void LinkDelegate(UIControl* linkedControl);
+
+    template <typename Predicate>
+    bool Unlink(int32 linkType, Predicate);
+
+    bool UnlinkScrollBar(UIScrollBarDelegateComponent* component);
+    bool UnlinkDelegate(UIControl* linkedControl);
 
     Vector<Link> links;
 
-    bool restoreLinks = true;
+    bool restoreLinks = false;
 };
 }

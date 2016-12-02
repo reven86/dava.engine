@@ -20,14 +20,11 @@ void UIScrollBarLinkSystem::RegisterControl(UIControl* control)
     UIScrollBarDelegateComponent* component = control->GetComponent<UIScrollBarDelegateComponent>();
     if (component)
     {
-        if (!TryToRestoreLink(component, nullptr))
-        {
-            RegisterScrollBarDelegateComponent(component);
-        }
+        LinkScrollBar(component);
     }
     else
     {
-        TryToRestoreLink(nullptr, control);
+        LinkDelegate(control);
     }
 }
 
@@ -36,12 +33,11 @@ void UIScrollBarLinkSystem::UnregisterControl(UIControl* control)
     UIScrollBarDelegateComponent* component = control->GetComponent<UIScrollBarDelegateComponent>();
     if (component)
     {
-        TryToBreakLink(component, nullptr);
-        //            UnregisterScrollBarDelegateComponent(component);
+        UnlinkScrollBar(component);
     }
     else
     {
-        TryToBreakLink(nullptr, control);
+        UnlinkDelegate(control);
     }
 }
 
@@ -49,11 +45,7 @@ void UIScrollBarLinkSystem::RegisterComponent(UIControl* control, UIComponent* c
 {
     if (component->GetType() == UIScrollBarDelegateComponent::C_TYPE)
     {
-        //RegisterScrollBarDelegateComponent(static_cast<UIScrollBarDelegateComponent*>(component));
-        if (!TryToRestoreLink(static_cast<UIScrollBarDelegateComponent*>(component), nullptr))
-        {
-            RegisterScrollBarDelegateComponent(static_cast<UIScrollBarDelegateComponent*>(component));
-        }
+        LinkScrollBar(static_cast<UIScrollBarDelegateComponent*>(component));
     }
 }
 
@@ -61,8 +53,7 @@ void UIScrollBarLinkSystem::UnregisterComponent(UIControl* control, UIComponent*
 {
     if (component->GetType() == UIScrollBarDelegateComponent::C_TYPE)
     {
-        //UnregisterScrollBarDelegateComponent(static_cast<UIScrollBarDelegateComponent*>(component));
-        TryToBreakLink(static_cast<UIScrollBarDelegateComponent*>(component), nullptr);
+        UnlinkScrollBar(static_cast<UIScrollBarDelegateComponent*>(component));
     }
 }
 
@@ -70,7 +61,7 @@ void UIScrollBarLinkSystem::Process(DAVA::float32 elapsedTime)
 {
     for (Link& link : links)
     {
-        if (link.linkedControl == nullptr || link.component->IsPathToDelegateDirty())
+        if (((link.type & Link::SCROLL_BAR_LINKED) != 0) && (link.linkedControl == nullptr || link.component->IsPathToDelegateDirty()))
         {
             UIControl* control = link.component->GetControl()->FindByPath(link.component->GetPathToDelegate());
             if (control != nullptr)
@@ -80,31 +71,26 @@ void UIScrollBarLinkSystem::Process(DAVA::float32 elapsedTime)
             else
             {
                 BreakLink(&link);
+                link.type &= ~Link::DELEGATE_LINKED;
+                link.linkedControl = nullptr;
             }
             link.component->ResetPathToDelegateDirty();
         }
+        else if (restoreLinks && link.type == (Link::SCROLL_BAR_LINKED | Link::DELEGATE_LINKED))
+        {
+            link.component->SetPathToDelegate(UIControlHelpers::GetPathToOtherControl(link.component->GetControl(), link.linkedControl));
+        }
     }
+}
+
+bool UIScrollBarLinkSystem::IsRestoreLinks() const
+{
+    return restoreLinks;
 }
 
 void UIScrollBarLinkSystem::SetRestoreLinks(bool restore)
 {
     restoreLinks = restore;
-}
-
-void UIScrollBarLinkSystem::RegisterScrollBarDelegateComponent(UIScrollBarDelegateComponent* component)
-{
-    links.push_back(Link(component));
-}
-
-void UIScrollBarLinkSystem::UnregisterScrollBarDelegateComponent(UIScrollBarDelegateComponent* component)
-{
-    auto it = std::find_if(links.begin(), links.end(), [component](Link& l) { return l.component == component; });
-    if (it != links.end())
-    {
-        Link& link = *it;
-        BreakLink(&link);
-        links.erase(it);
-    }
 }
 
 void UIScrollBarLinkSystem::SetupLink(Link* link, UIControl* control)
@@ -118,6 +104,7 @@ void UIScrollBarLinkSystem::SetupLink(Link* link, UIControl* control)
     if (scrollBar && delegate)
     {
         link->linkedControl = control;
+        link->type = Link::DELEGATE_LINKED | Link::SCROLL_BAR_LINKED;
         scrollBar->SetDelegate(delegate);
     }
 }
@@ -131,63 +118,62 @@ void UIScrollBarLinkSystem::BreakLink(Link* link)
     }
 }
 
-bool UIScrollBarLinkSystem::TryToRestoreLink(UIScrollBarDelegateComponent* component, UIControl* linkedControl)
+template <typename Predicate>
+bool UIScrollBarLinkSystem::RestoreLink(int32 linkType, Predicate predicate)
 {
     if (restoreLinks)
     {
-        Vector<Link>::iterator it;
-        if (component != nullptr)
+        auto it = std::find_if(links.begin(), links.end(), predicate);
+        if (it != links.end())
         {
-            it = std::find_if(brokenLinks.begin(), brokenLinks.end(), [component](Link& l) { return l.component == component; });
-        }
-        else if (linkedControl != nullptr)
-        {
-            it = std::find_if(brokenLinks.begin(), brokenLinks.end(), [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-
-        if (it != brokenLinks.end())
-        {
+            it->type |= linkType;
             it->component->SetPathToDelegate(UIControlHelpers::GetPathToOtherControl(it->component->GetControl(), it->linkedControl));
             SetupLink(&(*it), it->linkedControl);
 
-            links.push_back(*it);
-            brokenLinks.erase(it);
             return true;
         }
     }
-
     return false;
 }
 
-bool UIScrollBarLinkSystem::TryToBreakLink(UIScrollBarDelegateComponent* component, UIControl* linkedControl)
+void UIScrollBarLinkSystem::LinkScrollBar(UIScrollBarDelegateComponent* component)
 {
-    Vector<Link>::iterator it;
-    if (component != nullptr)
+    if (!RestoreLink(Link::SCROLL_BAR_LINKED, [component](Link& l) { return l.component == component; }))
     {
-        it = std::find_if(links.begin(), links.end(), [component](Link& l) { return l.component == component; });
+        links.push_back(Link(component));
     }
-    else if (linkedControl != nullptr)
-    {
-        it = std::find_if(links.begin(), links.end(), [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
-    }
+}
 
+void UIScrollBarLinkSystem::LinkDelegate(UIControl* linkedControl)
+{
+    RestoreLink(Link::DELEGATE_LINKED, [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
+}
+
+template <typename Predicate>
+bool UIScrollBarLinkSystem::Unlink(int32 linkType, Predicate predicate)
+{
+    auto it = std::find_if(links.begin(), links.end(), predicate);
     if (it != links.end())
     {
+        it->type &= ~linkType;
         BreakLink(&(*it));
 
-        if (restoreLinks)
+        if (!restoreLinks || it->type == 0)
         {
-            brokenLinks.push_back(*it);
+            links.erase(it);
         }
-        links.erase(it);
-
         return true;
     }
-
     return false;
+}
+
+bool UIScrollBarLinkSystem::UnlinkScrollBar(UIScrollBarDelegateComponent* component)
+{
+    return Unlink(Link::SCROLL_BAR_LINKED, [component](Link& l) { return l.component == component; });
+}
+
+bool UIScrollBarLinkSystem::UnlinkDelegate(UIControl* linkedControl)
+{
+    return Unlink(Link::DELEGATE_LINKED, [linkedControl](Link& l) { return l.linkedControl == linkedControl; });
 }
 }

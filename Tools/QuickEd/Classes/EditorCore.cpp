@@ -23,6 +23,7 @@
 #include "Particles/ParticleEmitter.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Scroll/UIScrollBarLinkSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
@@ -201,6 +202,8 @@ EditorCore::EditorCore(DAVA::Engine& engine)
 
     UIControlSystem* uiControlSystem = context->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+
+    uiControlSystem->GetSystem<UIScrollBarLinkSystem>()->SetRestoreLinks(true);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
