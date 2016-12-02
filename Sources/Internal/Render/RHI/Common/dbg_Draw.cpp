@@ -45,7 +45,7 @@ static const char* vp__dbg_ptc =
 "vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-"   output.pos   = mul( float4(input.pos,1.0), XForm );\n"
+"   output.pos   = mul( float4(input.pos.xyz,1.0), XForm );\n"
 "   output.uv    = input.uv;\n"
 "   output.color = input.color;"
 "    return output;\n"
@@ -93,7 +93,7 @@ static const char* vp__dbg_pc =
 "vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-"    output.pos   = mul( XForm, float4(input.pos, 1.0) );\n"
+"    output.pos   = mul( XForm, float4(input.pos.xyz, 1.0) );\n"
 "    output.color = float4(input.color);"
 "    return output;\n"
 "}\n";

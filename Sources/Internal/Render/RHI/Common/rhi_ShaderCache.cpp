@@ -859,7 +859,7 @@ static const char* _ShaderDefine_DX11 =
 ;
 */
 //------------------------------------------------------------------------------
-/*
+
 void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)
 {
     ShaderSource src;
@@ -873,7 +873,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
         //DAVA::Logger::Info(code.c_str());
     }
 }
-*/
+
 //------------------------------------------------------------------------------
 
 void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize)
