@@ -2,6 +2,7 @@ package com.dava.engine;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -30,7 +31,7 @@ import java.util.LinkedList;
         - doing other housekeeping.
 
     By design client applications are not permited to extend `DavaActivity`. Instead they should implement `ActivityListener` interface
-    and register it to receive callbacks about activity lifecycle events (onCreate, onPause, etc).
+    and register it to receive callbacks about activity events (onCreate, onPause, etc).
     Application usually has its own set of java classes and native shared libraries which should be instantiated/loaded on program start.
     Application can list them in `AndroidManifest.xml` under special `meta-data` tag. In the following sample dava.engine will try to load
     `libcrystax.so`, `libc++_shared.so` and `libTestBed.so` and try to instantiate java class `com.dava.testbed.TestBed`:
@@ -49,7 +50,7 @@ public final class DavaActivity extends Activity
                                 implements View.OnSystemUiVisibilityChangeListener
 {
     /**
-        Interface definition for a callbacks to be invoked when DavaActivity lifecycle event occurs (onCreate, onPause, etc).
+        Interface definition for callbacks to be invoked when DavaActivity event occurs (onCreate, onPause, etc).
         Use registerActivityListener and unregisterActivityListener methods to install/uninstall listeners.
     */
     public interface ActivityListener
@@ -61,6 +62,10 @@ public final class DavaActivity extends Activity
         public void onRestart();
         public void onStop();
         public void onDestroy();
+        public void onSaveInstanceState(Bundle outState);
+        public void onActivityResult(int requestCode, int resultCode, Intent data);
+        public void onNewIntent(Intent intent);
+        public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults);
     }
 
     /**
@@ -76,6 +81,26 @@ public final class DavaActivity extends Activity
         public void onRestart() {}
         public void onStop() {}
         public void onDestroy() {}
+        public void onSaveInstanceState(Bundle outState) {}
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {}
+        public void onNewIntent(Intent intent) {}
+        public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
+    }
+
+    // Helper class to hold arguments for calling listener's onActivityResult
+    private static class ActivityResultArgs
+    {
+        public int requestCode;
+        public int resultCode;
+        public Intent data;
+    }
+
+    // Helper class to hold arguments for calling listener's onPermissionResult
+    private static class RequestPermissionResultArgs
+    {
+        public int requestCode;
+        public String[] permissions;
+        public int[] grantResults;
     }
 
     public static final String LOG_TAG = "DAVA"; //!< Tag used by dava.engine java classes for internal log outputs
@@ -111,6 +136,10 @@ public final class DavaActivity extends Activity
     private static final int ON_ACTIVITY_RESTART = 4;
     private static final int ON_ACTIVITY_STOP = 5;
     private static final int ON_ACTIVITY_DESTROY = 6;
+    private static final int ON_ACTIVITY_SAVE_INSTANCE_STATE = 7;
+    private static final int ON_ACTIVITY_RESULT = 8;
+    private static final int ON_ACTIVITY_NEW_INTENT = 9;
+    private static final int ON_ACTIVITY_REQUEST_PERMISSION_RESULT = 10;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -367,6 +396,44 @@ public final class DavaActivity extends Activity
         return super.dispatchKeyEvent(event);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        notifyListeners(ON_ACTIVITY_SAVE_INSTANCE_STATE, null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        ActivityResultArgs args = new ActivityResultArgs();
+        args.requestCode = requestCode;
+        args.resultCode = resultCode;
+        args.data = data;
+        notifyListeners(ON_ACTIVITY_RESULT, args);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        RequestPermissionResultArgs args = new RequestPermissionResultArgs();
+        args.requestCode = requestCode;
+        args.permissions = permissions;
+        args.grantResults = grantResults;
+        notifyListeners(ON_ACTIVITY_REQUEST_PERMISSION_RESULT, args);
+    }
+
     void hideNavigationBar()
     {
         // Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
@@ -572,6 +639,19 @@ public final class DavaActivity extends Activity
             case ON_ACTIVITY_DESTROY:
                 l.onDestroy();
                 break;
+            case ON_ACTIVITY_SAVE_INSTANCE_STATE:
+            	l.onSaveInstanceState((Bundle)arg);
+            	break;
+            case ON_ACTIVITY_RESULT:
+            	ActivityResultArgs activityResultArgs = (ActivityResultArgs)arg;
+            	l.onActivityResult(activityResultArgs.requestCode, activityResultArgs.resultCode, activityResultArgs.data);
+            	break;
+            case ON_ACTIVITY_NEW_INTENT:
+            	l.onNewIntent((Intent)arg);
+            	break;
+            case ON_ACTIVITY_REQUEST_PERMISSION_RESULT:
+            	RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
+            	l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
             }
         }
     }
