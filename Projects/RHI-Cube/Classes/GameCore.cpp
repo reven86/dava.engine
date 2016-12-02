@@ -1859,7 +1859,7 @@ void GameCore::mrtDraw()
         pass_desc.colorBuffer[0].clearColor[2] = 0.35f;
         pass_desc.colorBuffer[0].clearColor[3] = 1.0f;
         pass_desc.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+        pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
         rhi::HPacketList pl[2];
     #if USE_SECOND_CB
