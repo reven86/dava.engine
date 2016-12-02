@@ -743,5 +743,4 @@ void UIList::ScrollToPosition(float32 position, float32 timeSec /*= 0.3f*/)
 {
     scroll->ScrollToPosition(-position);
 }
-
 };
