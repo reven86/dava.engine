@@ -119,6 +119,7 @@ macro( modules_tree_info_execute )
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${TMP_CMAKE_MODULE_INFO_BUILD}/" )
 
     set( FOLDER_MODULE ${CMAKE_CURRENT_LIST_DIR} )
+    get_property(  ARG_MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfoCmake.in
                     ${TMP_CMAKE_MODULE_INFO}/CMakeLists.txt  @ONLY )
@@ -255,7 +256,6 @@ macro( reset_MAIN_MODULE_VALUES )
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
                                          DEPENDENT_LIST
-                                         DAVA_COMPONENTS 
                                          GROUP_SOURCE )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
@@ -285,27 +285,33 @@ macro( setup_main_module )
     set( INIT )
 
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-    get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
-    list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
-        set( INIT true )
-    else()
-        if( ORIGINAL_NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
-            if ( ${_index} GREATER -1)
+
+
+    if( MODULE_COMPONENTS_VALUE_NAME )
+        get_property(  MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
+        list (FIND MODULE_COMPONENTS "ALL" _index)
+        if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
+            set( INIT true )
+        else()
+            if( ORIGINAL_NAME_MODULE )
+                list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
+                if ( ${_index} GREATER -1)
+                    set( INIT true )
+                endif()
+            else()
                 set( INIT true )
             endif()
-        else()
-            set( INIT true )
-        endif()
-    endif()  
+        endif() 
+    else()
+        set( INIT true )
+    endif()
 
     if( MODULES_TREE_INFO AND INIT )
         modules_tree_info()
     elseif ( INIT )
         #"hack - find first call"
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
-        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
+        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )            
             modules_tree_info_execute()
             generated_initialization_module_code()
 			set( ROOT_NAME_MODULE ${NAME_MODULE} )

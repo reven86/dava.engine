@@ -44,6 +44,7 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 include ( Coverage             )
+include ( ModuleHelper         )
 
 #
 macro ( set_project_files_properties FILES_LIST )
