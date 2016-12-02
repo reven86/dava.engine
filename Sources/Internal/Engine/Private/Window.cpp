@@ -343,6 +343,13 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     //  - single render init/reset call during one frame
     //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
+
+    // Only WINDOW_CREATED event has valid DPI field
+    if (e.type == MainDispatcherEvent::WINDOW_CREATED)
+    {
+        dpi = e.sizeEvent.dpi;
+    }
+
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
     mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
         if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
@@ -356,7 +363,6 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
     surfaceScale = compressedSize.surfaceScale;
-    dpi = compressedSize.dpi;
     fullscreenMode = compressedSize.fullscreen;
 
     Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
