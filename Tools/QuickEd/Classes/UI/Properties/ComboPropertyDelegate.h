@@ -25,5 +25,7 @@ private slots:
 private:
     bool eventFilter(QObject* obj, QEvent* event) override;
 
+    void CommitDataImpl(QWidget* comboBox);
+
     std::unique_ptr<CompletionsProvider> completionsProvider;
 };
