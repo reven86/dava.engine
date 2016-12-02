@@ -4,13 +4,13 @@
 #include "Notification/LocalNotificationDelayed.h"
 
 #include "Notification/Private/Android/LocalNotificationAndroid.h"
-#include "Notification/Private/LocalNotificationNotImplemented.h"
+#include "Notification/Private/LocalNotificationStub.h"
 
 #include "Notification/Private/Mac/NativeListenerMac.h"
 #include "Notification/Private/Ios/NativeListenerIos.h"
 #include "Notification/Private/Win10/NativeListenerWin10.h"
 #include "Notification/Private/Android/NativeListenerAndroid.h"
-#include "Notification/Private/NativeListenerNotImplemented.h"
+#include "Notification/Private/NativeListenerStub.h"
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/LockGuard.h"
