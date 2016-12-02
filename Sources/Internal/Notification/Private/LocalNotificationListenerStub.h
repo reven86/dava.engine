@@ -11,12 +11,12 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener
+struct LocalNotificationListener
 {
-    NativeListener(LocalNotificationController& controller);
+    LocalNotificationListener(LocalNotificationController& controller);
 };
 
-NativeListener::NativeListener(LocalNotificationController& controller)
+LocalNotificationListener::LocalNotificationListener(LocalNotificationController& controller)
 {
 }
 } // namespace Private

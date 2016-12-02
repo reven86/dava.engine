@@ -15,10 +15,10 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener : public PlatformApi::Mac::NSApplicationDelegateListener
+struct LocalNotificationListener : public PlatformApi::Mac::NSApplicationDelegateListener
 {
-    NativeListener(LocalNotificationController& controller);
-    virtual ~NativeListener() override;
+    LocalNotificationListener(LocalNotificationController& controller);
+    virtual ~LocalNotificationListener() override;
 
     void applicationDidFinishLaunching(NSNotification* notification) override;
     void applicationDidBecomeActive() override;

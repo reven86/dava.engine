@@ -6,11 +6,11 @@
 #include "Notification/Private/Android/LocalNotificationAndroid.h"
 #include "Notification/Private/LocalNotificationStub.h"
 
-#include "Notification/Private/Mac/NativeListenerMac.h"
-#include "Notification/Private/Ios/NativeListenerIos.h"
-#include "Notification/Private/Win10/NativeListenerWin10.h"
-#include "Notification/Private/Android/NativeListenerAndroid.h"
-#include "Notification/Private/NativeListenerStub.h"
+#include "Notification/Private/Mac/LocalNotificationListenerMac.h"
+#include "Notification/Private/Ios/LocalNotificationListenerIos.h"
+#include "Notification/Private/Win10/LocalNotificationListenerWin10.h"
+#include "Notification/Private/Android/LocalNotificationListenerAndroid.h"
+#include "Notification/Private/LocalNotificationListenerStub.h"
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/LockGuard.h"
@@ -20,7 +20,7 @@ namespace DAVA
 LocalNotificationController::LocalNotificationController()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    nativeListener.reset(new Private::NativeListener(*this));
+    localListener.reset(new Private::LocalNotificationListener(*this));
 #endif
 }
 
@@ -37,7 +37,7 @@ LocalNotificationController::~LocalNotificationController()
         }
     }
 #if defined(__DAVAENGINE_COREV2__)
-    nativeListener.reset();
+    localListener.reset();
 #endif
 }
 

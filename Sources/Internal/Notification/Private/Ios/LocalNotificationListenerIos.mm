@@ -1,4 +1,4 @@
-#include "Notification/Private/Ios/NativeListenerIos.h"
+#include "Notification/Private/Ios/LocalNotificationListenerIos.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
@@ -18,18 +18,18 @@ namespace DAVA
 {
 namespace Private
 {
-NativeListener::NativeListener(LocalNotificationController& controller)
+LocalNotificationListener::LocalNotificationListener(LocalNotificationController& controller)
     : localNotificationController(controller)
 {
     PlatformApi::Ios::RegisterUIApplicationDelegateListener(this);
 }
 
-NativeListener::~NativeListener()
+LocalNotificationListener::~LocalNotificationListener()
 {
     PlatformApi::Ios::UnregisterUIApplicationDelegateListener(this);
 }
 
-void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
+void LocalNotificationListener::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
 #if defined(__IPHONE_8_0)
     NSString* version = [[UIDevice currentDevice] systemVersion];
@@ -58,12 +58,12 @@ void NativeListener::didFinishLaunchingWithOptions(UIApplication* application, N
     }
 }
 
-void NativeListener::applicationDidBecomeActive()
+void LocalNotificationListener::applicationDidBecomeActive()
 {
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
 }
 
-void NativeListener::didReceiveLocalNotification(UILocalNotification* notification)
+void LocalNotificationListener::didReceiveLocalNotification(UILocalNotification* notification)
 {
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
     if (uid != nil && [uid length] != 0)

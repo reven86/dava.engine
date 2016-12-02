@@ -1,4 +1,4 @@
-#include "Notification/Private/Android/NativeListenerAndroid.h"
+#include "Notification/Private/Android/LocalNotificationListenerAndroid.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_ANDROID__)
@@ -14,7 +14,7 @@
 
 extern "C"
 {
-JNIEXPORT void JNICALL Java_com_dava_engine_notification_NativeListener_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid, jlong controller)
+JNIEXPORT void JNICALL Java_com_dava_engine_notification_LocalNotificationListener_nativeNewIntent(JNIEnv* env, jclass jclazz, jstring uid, jlong controller)
 {
     DAVA::LocalNotificationController* localNotificationController = reinterpret_cast<DAVA::LocalNotificationController*>(static_cast<uintptr_t>(controller));
     DAVA::String uidStr = DAVA::JNI::JavaStringToString(uid);
@@ -30,12 +30,12 @@ namespace DAVA
 {
 namespace Private
 {
-NativeListener::NativeListener(LocalNotificationController& controller)
+LocalNotificationListener::LocalNotificationListener(LocalNotificationController& controller)
 {
     try
     {
         JNIEnv* env = JNI::GetEnv();
-        JNI::JavaClass clazz("com/dava/engine/notification/NativeListener");
+        JNI::JavaClass clazz("com/dava/engine/notification/LocalNotificationListener");
         release = clazz.GetMethod<void>("release");
         jmethodID classConstructor = env->GetMethodID(clazz, "<init>", "(J)V");
         jobject obj = env->NewObject(clazz, classConstructor, reinterpret_cast<jlong>(&controller));
@@ -44,13 +44,13 @@ NativeListener::NativeListener(LocalNotificationController& controller)
     }
     catch (const JNI::Exception& e)
     {
-        Logger::Error("[NativeListener] failed to init java bridge: %s", e.what());
+        Logger::Error("[LocalNotificationListener] failed to init java bridge: %s", e.what());
         DVASSERT_MSG(false, e.what());
         return;
     }
 }
 
-NativeListener::~NativeListener()
+LocalNotificationListener::~LocalNotificationListener()
 {
     if (instance != nullptr)
     {

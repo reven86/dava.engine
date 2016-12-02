@@ -15,10 +15,10 @@ class LocalNotificationController;
 
 namespace Private
 {
-struct NativeListener final
+struct LocalNotificationListener final
 {
-    NativeListener(LocalNotificationController& controller);
-    ~NativeListener();
+    LocalNotificationListener(LocalNotificationController& controller);
+    ~LocalNotificationListener();
 
 private:
     jobject instance = nullptr;

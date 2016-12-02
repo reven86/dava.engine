@@ -8,18 +8,18 @@ import android.content.Intent;
 import com.dava.engine.DavaActivity;
 import com.dava.engine.notification.DavaNotificationProvider;
 
-public class NativeListener extends DavaActivity.ActivityListenerImpl
+public class LocalNotificationListener extends DavaActivity.ActivityListenerImpl
 {
     protected long localNotificationController = 0;
 
     public static native void nativeNewIntent(String uid, long controller);
 
-    public NativeListener(long controller)
+    public LocalNotificationListener(long controller)
     {
         localNotificationController = controller;
         DavaActivity.instance().registerActivityListener(this);
         DavaNotificationProvider.Init(DavaActivity.instance());
-        Log.d(DavaActivity.LOG_TAG, "NativeListener.<init> Create class instance.");
+        Log.d(DavaActivity.LOG_TAG, "LocalNotificationListener.<init> Create class instance.");
     }
 
     void release()
