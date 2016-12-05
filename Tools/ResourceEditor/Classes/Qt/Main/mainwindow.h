@@ -70,9 +70,6 @@ public:
     bool IsWaitDialogOnScreen() const;
     void WaitStop();
 
-    void BeastWaitSetMessage(const QString& messsage);
-    bool BeastWaitCanceled();
-
     void EnableGlobalTimeout(bool enable);
 
     bool CanBeClosed();
