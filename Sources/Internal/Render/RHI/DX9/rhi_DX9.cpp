@@ -280,7 +280,7 @@ void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
             }
             else
             {
-                DAVA::Logger::Error("[RHI-D3D9] GetDeviceCaps call failed for %s with error: %s. Attempting with D3DDEVTYPE_REF...", dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
+                DAVA::Logger::Warning("[RHI-D3D9] GetDeviceCaps call failed for %s with error: %s. Attempting with D3DDEVTYPE_REF...", dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
                 hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_REF, &adapter.caps);
                 if (SUCCEEDED(hr))
                 {
@@ -407,9 +407,9 @@ void dx9_InitContext()
     else
     {
         uint32 adaptersCount = static_cast<uint32>(adapters.size());
-        Logger::Info("[RHI-D3D9] Failed to select adapter, selecting from %u adapters: ", adaptersCount);
+        Logger::Error("[RHI-D3D9] Failed to select adapter, selecting from %u adapters: ", adaptersCount);
         for (const AdapterInfo& adapter : adapters)
-            DAVA::Logger::Info("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
+            DAVA::Logger::Error("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
     }
 
     dx9_InitCaps();
