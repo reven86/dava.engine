@@ -118,7 +118,10 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-    engineContext->logger->SetLogFilename("ResEditor.txt");
+    DAVA::FilePath documentsFolder = engineContext->fileSystem->GetCurrentDocumentsDirectory();
+    engineContext->fileSystem->SetCurrentDocumentsDirectory(documentsFolder + "ResourceEditor");
+    engineContext->logger->SetLogFilename("ResourceEditor.txt");
+
     settingsManager = new SettingsManager();
     beastProxy = new BEAST_PROXY_TYPE();
 
