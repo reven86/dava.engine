@@ -1,26 +1,30 @@
 #pragma once
-#include "Functional/Function.h"
-#include "Reflection/Wrappers.h"
+
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
+#endif
+
+#include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
 namespace DAVA
 {
 template <typename C, typename GetT, typename SetT>
-class ValueWrapperClassFn : public ValueWrapper
+class ValueWrapperClassFnPtr : public ValueWrapper
 {
-    using Getter = Function<GetT(C*)>;
-    using Setter = Function<void(C*, SetT)>;
+    using Getter = GetT (C::*)();
+    using Setter = void (C::*)(SetT);
 
 public:
-    ValueWrapperClassFn(Getter getter_, Setter setter_ = nullptr)
+    ValueWrapperClassFnPtr(Getter getter_, Setter setter_ = nullptr)
         : ValueWrapper()
         , getter(getter_)
         , setter(setter_)
     {
     }
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
-        return (nullptr == setter);
+        return (nullptr == setter || object.IsConst());
     }
 
     const Type* GetType() const override
@@ -33,29 +37,26 @@ public:
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
         C* cls = object.GetPtr<C>();
+        UnrefGetT v = (cls->*getter)();
 
-        Any ret;
-        UnrefGetT v = getter(cls);
-        ret.Set(std::move(v));
-        return ret;
+        return Any(std::move(v));
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
-        bool ret = false;
-        C* cls = object.GetPtr<C>();
-
-        if (nullptr != setter)
+        if (!IsReadonly(object))
         {
-            const SetT& v = value.Get<UnrefSetT>();
-            setter(cls, v);
+            C* cls = object.GetPtr<C>();
 
-            ret = true;
+            const SetT& v = value.Get<UnrefSetT>();
+            (cls->*setter)(v);
+
+            return true;
         }
 
-        return ret;
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
@@ -79,13 +80,13 @@ private:
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
     {
         C* cls = object.GetPtr<C>();
-        return ReflectedObject(getter(cls));
+        return ReflectedObject((cls->*getter)());
     }
 
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
     {
         C* cls = object.GetPtr<C>();
-        GetT v = getter(cls);
+        GetT v = (cls->*getter)();
         return ReflectedObject(&v);
     }
 };

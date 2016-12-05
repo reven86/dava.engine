@@ -31,7 +31,7 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     QObject::connect(this, SIGNAL(accepted()), this, SLOT(OnAccepted()));
     QObject::connect(this, SIGNAL(rejected()), this, SLOT(OnRejected()));
 
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.AddListener(this);
 
     SetSelectedItem(0);
