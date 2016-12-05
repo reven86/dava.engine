@@ -15,6 +15,9 @@
 
 using namespace DAVA;
 
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 768
+
 GameCore::GameCore(DAVA::Engine& e)
     : engine(e)
 {
@@ -23,6 +26,7 @@ GameCore::GameCore(DAVA::Engine& e)
 
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
     engine.suspended.Connect(this, &GameCore::OnSuspend);
     engine.resumed.Connect(this, &GameCore::OnResume);
     engine.beginFrame.Connect(this, &GameCore::BeginFrame);
@@ -32,6 +36,12 @@ GameCore::GameCore(DAVA::Engine& e)
 
 void GameCore::OnAppStarted()
 {
+    VirtualCoordinatesSystem* vcs = engine.GetContext()->uiControlSystem->vcs;
+    vcs->SetVirtualScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    vcs->SetProportionsIsFixed(false);
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH, SCREEN_HEIGHT, "Gfx");
+    vcs->RegisterAvailableResourceSize(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "Gfx2");
+
     new GraphicsDetect();
     GraphicsDetect::Instance()->ReloadSettings();
     SoundSystem::Instance()->InitFromQualitySettings();
@@ -152,26 +162,11 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
 {
-    w->SetSize({ 1024, 768 });
+    w->SetSize({ SCREEN_WIDTH, SCREEN_HEIGHT });
     w->SetTitle("Performance Tests");
 
     // TODO FullScreen
     //w->SetFullScreen(false);
-}
-
-void GameCore::OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h, DAVA::float32 scaleX, DAVA::float32 scaleY)
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    KeyedArchive* archive = engine.GetOptions();
-    uint32 width = window->GetWidth();
-    uint32 height = window->GetHeight();
-
-    EngineContext* context = engine.GetContext();
-    context->virtualCoordSystem->SetVirtualScreenSize(width, height);
-    context->virtualCoordSystem->SetProportionsIsFixed(false);
-    context->virtualCoordSystem->RegisterAvailableResourceSize(width, height, "Gfx");
-    context->virtualCoordSystem->RegisterAvailableResourceSize(width * 2, height * 2, "Gfx2");
-#endif
 }
 
 void GameCore::Cleanup()
@@ -369,8 +364,6 @@ KeyedArchive* CreateOptions()
     appOptions->SetInt32("max_packet_list_count", 64);
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
     appOptions->SetInt32("renderer", rhi::ApiIsSupported(rhi::RHI_METAL) ? rhi::RHI_METAL : rhi::RHI_GLES2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 #else

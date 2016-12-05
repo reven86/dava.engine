@@ -139,7 +139,7 @@ def start_performance_tests_on_android_device():
         stdout=subprocess.PIPE)
     # start unittests on device
     subprocess.Popen(
-        ["adb", "shell", "am", "start", "-es", TEST_PARAMS, "-n", "com.dava.performancetests/com.dava.performancetests." + PRJ_NAME_BASE])
+        ["adb", "shell", "am", "start", "-es", TEST_PARAMS, "-n", "com.dava.performancetests/com.dava.engine.DavaActivity"])
     return sub_process
 
 

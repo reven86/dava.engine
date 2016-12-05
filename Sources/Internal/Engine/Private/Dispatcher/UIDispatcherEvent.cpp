@@ -59,6 +59,13 @@ UIDispatcherEvent UIDispatcherEvent::CreateFunctorEvent(const Function<void()>& 
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateSetSurfaceScaleEvent(const float32 scale)
+{
+    UIDispatcherEvent e(SET_SURFACE_SCALE);
+    e.setSurfaceScaleEvent.scale = scale;
+    return e;
+}
+
 } // namespace Private
 } // namespace DAVA
 

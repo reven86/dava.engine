@@ -202,8 +202,17 @@ void DX9CheckMultisampleSupport()
 
 void dx9_InitCaps()
 {
-    D3DCAPS9 caps;
+    D3DCAPS9 caps = {};
     _D3D9_Device->GetDeviceCaps(&caps);
+
+    DWORD shaderModel = DAVA::Min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
+    if (shaderModel < 3)
+    {
+        if (_DX9_InitParam.renderingErrorCallback)
+        {
+            _DX9_InitParam.renderingErrorCallback(RenderingError::UnsupportedShaderModel, _DX9_InitParam.renderingErrorCallbackContext);
+        }
+    }
 
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
@@ -212,7 +221,13 @@ void dx9_InitCaps()
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
-    MutableDeviceCaps::Get().isPerfQuerySupported = true;
+
+    {
+        IDirect3DQuery9* freqQuery = nullptr;
+        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
+        MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
+        DAVA::SafeRelease(freqQuery);
+    }
 
     const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
     if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series

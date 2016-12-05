@@ -18,28 +18,6 @@ void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString&
 
 int main(int argc, char* argv[])
 {
-#ifdef Q_OS_WIN
-    //this code is deprecated and fix update mechamism from old versions of launcher.
-    //remove this block in 2017
-
-    QFileInfo fi(argv[0]);
-    QDir currentDir(fi.absoluteDir());
-    QString platformsPath = "platforms";
-    QString windowsDllPath = "qwindows.dll";
-    //remove "platforms" with permission hack
-    if (currentDir.exists(platformsPath))
-    {
-        currentDir.cd(platformsPath);
-        currentDir.removeRecursively();
-        currentDir.cdUp();
-    }
-    //try copy even if folder already exists
-    //if (!currentDir.exists(platformsDir))
-    {
-        currentDir.mkpath(platformsPath);
-        QFile::copy(windowsDllPath, platformsPath + "/" + windowsDllPath);
-    }
-#endif //windows
     QApplication a(argc, argv);
     a.setOrganizationName("DAVA");
     a.setApplicationName("Launcher");

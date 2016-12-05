@@ -152,7 +152,7 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
 void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.AddListener(this);
 
     QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
@@ -356,7 +356,7 @@ void LibraryWidget::OnAddModel()
     SceneEditor2* scene = sceneHolder.GetScene();
     if (nullptr != scene)
     {
-        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString());
+        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString(), 0, 0);
         scene->structureSystem->Add(fileInfo.absoluteFilePath().toStdString());
     }
 }
@@ -375,7 +375,7 @@ void LibraryWidget::OnConvertDae()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString());
+    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString(), 0, 0);
     DAEConverter::Convert(fileInfo.absoluteFilePath().toStdString());
 }
 

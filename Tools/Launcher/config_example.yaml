@@ -63,10 +63,6 @@ branches:
                 url: http://by2-svn.wargaming.net/dava.framework/win/development/UIEditor_win_2013-08-09_12_40_01__0300.zip
     DEV:
         RE:
-            2013-08-14_19_26_04__0300:
-                runpath: "ResourceEditor/dava.framework/Tools/ResourceEditorResourceEditor.exe"
-                cmd: ""
-                url: http://by2-svn.wargaming.net/dava.framework/win/development/ResourceEditor_win_2013-08-14_19_26_04__0300.zip
             2013-08-13_23_11_13__0300:
                 runpath: "ResourceEditor/dava.framework/Tools/ResourceEditorResourceEditor.exe"
                 cmd: ""
