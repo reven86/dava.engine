@@ -82,6 +82,10 @@ void SelectionModule::CreateModuleActions(DAVA::TArc::UI* ui)
                     return DAVA::String("Lock Selection by Mouse");
                 return DAVA::String("Unlock Selection by Mouse");
             });
+
+            action->SetStateUpdationFunction(QtAction::Checked, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
+                return value.CanGet<bool>() && value.Get<bool>();
+            });
         }
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SelectionModule::SelectionByMouseChanged, this));

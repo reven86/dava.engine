@@ -52,6 +52,7 @@ public:
     ~QtMainWindow();
 
     void OnRenderingInitialized();
+    void AfterInjectInit();
 
     void WaitStart(const QString& title, const QString& message, int min, int max);
     void WaitSetMessage(const QString& messsage);

@@ -241,7 +241,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupMainMenu();
     SetupThemeActions();
     SetupToolBars();
-    SetupStatusBar();
     SetupActions();
 
     // create tool windows
@@ -313,6 +312,11 @@ void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
     QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+}
+
+void QtMainWindow::AfterInjectInit()
+{
+    SetupStatusBar();
 }
 
 QString GetSaveFolderForEmitters()
@@ -527,21 +531,16 @@ void QtMainWindow::SetupStatusBar()
 
     QObject::connect(this, &QtMainWindow::GlobalInvalidateTimeout, ui->statusBar, &StatusBar::UpdateByTimer);
 
-    auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
-    {
-        QToolButton* statusBtn = new QToolButton();
-        statusBtn->setDefaultAction(action);
-        statusBtn->setAutoRaise(true);
-        statusBtn->setMaximumSize(QSize(16, 16));
-        statusBar->insertPermanentWidget(0, statusBtn);
-    };
+    DAVA::TArc::InsertionParams insertParams;
+    insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
+    DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
-    CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
-    CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableSounds, ui->statusBar);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()
