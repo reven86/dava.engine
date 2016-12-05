@@ -19,6 +19,6 @@ public:
     UIComponent* Clone() const override;
 
 protected:
-    ~UIUpdateComponent() override = default;
+    ~UIUpdateComponent() override;
 };
 }

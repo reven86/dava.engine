@@ -17,7 +17,7 @@ Temporary system for backward compatibility with existing code.
 class UIUpdateSystem : public UISystem
 {
 public:
-    ~UIUpdateSystem() override = default;
+    ~UIUpdateSystem() override;
 
     void RegisterControl(UIControl* control) override;
     void UnregisterControl(UIControl* control) override;

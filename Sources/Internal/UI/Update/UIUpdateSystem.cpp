@@ -5,6 +5,10 @@
 
 namespace DAVA
 {
+~UIUpdateSystem::UIUpdateSystem()
+{
+}
+
 void UIUpdateSystem::RegisterControl(UIControl* control)
 {
     // Do nothing because this system work only with visible controls

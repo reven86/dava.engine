@@ -22,7 +22,7 @@ public:
     float32 GetDelta() const;
 
 protected:
-    ~UICustomUpdateDeltaComponent() override = default;
+    ~UICustomUpdateDeltaComponent() override;
 
 private:
     float32 customDelta = 0.f;

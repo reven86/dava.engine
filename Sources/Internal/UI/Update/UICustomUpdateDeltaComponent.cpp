@@ -2,6 +2,10 @@
 
 namespace DAVA
 {
+~UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent()
+{
+}
+
 UIComponent* UICustomUpdateDeltaComponent::Clone() const
 {
     return new UICustomUpdateDeltaComponent(*this);
