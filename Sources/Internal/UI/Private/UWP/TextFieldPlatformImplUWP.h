@@ -7,12 +7,12 @@
 #include "Base/BaseTypes.h"
 #include "Math/Rect.h"
 #include "Math/Color.h"
-#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
 class Color;
 class Sprite;
+class Texture;
 class UIGeometricData;
 class UITextField;
 class UITextFieldDelegate;
@@ -170,7 +170,7 @@ private:
     Rect VirtualToWindow(const Rect& srcRect) const;
     Rect WindowToVirtual(const Rect& srcRect) const;
     void RenderToTexture(bool moveOffScreenOnCompletion);
-    Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
+    Sprite* CreateSpriteFromPreviewData(uint8* imageData, uint32 width, uint32 height);
 
 private: // Event handlers
     void OnKeyDown(Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args);
@@ -221,6 +221,11 @@ private:
     WideString lastProgrammaticText;
     TextFieldProperties properties;
     bool programmaticTextChange = false;
+
+#if defined(__DAVAENGINE_COREV2__)
+    Texture* texture = nullptr;
+    Sprite* sprite = nullptr;
+#endif
 
     size_t windowSizeChangedConnection = 0;
     size_t windowDestroyedConnection = 0;
