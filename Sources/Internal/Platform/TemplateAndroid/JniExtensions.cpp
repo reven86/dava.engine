@@ -53,9 +53,9 @@ jmethodID JniExtension::GetMethodID(const char* methodName, const char* paramCod
 
 JNIEnv* JniExtension::GetEnvironment() const
 {
-    // right way to take JNIEnv
-    // JNIEnv is valid only for the thread where it was gotten.
-    // we shouldn't store JNIEnv.
+// right way to take JNIEnv
+// JNIEnv is valid only for the thread where it was gotten.
+// we shouldn't store JNIEnv.
 #if !defined(__DAVAENGINE_COREV2__)
     JNIEnv* env;
     if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))

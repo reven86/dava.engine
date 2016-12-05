@@ -19,60 +19,60 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
     , javaDeviceManagerClass("com/dava/engine/DeviceManager")
     , javaDisplayInfoClass("com/dava/engine/DeviceManager$DisplayInfo")
 {
-	JNIEnv* env = JNI::GetEnv();
+    JNIEnv* env = JNI::GetEnv();
 
-	// DeviceManager.instance()
-	Function<jDeviceManager()> javaDeviceManagerGetInstanceMethod = javaDeviceManagerClass.GetStaticMethod<jDeviceManager>("instance");
+    // DeviceManager.instance()
+    Function<jDeviceManager()> javaDeviceManagerGetInstanceMethod = javaDeviceManagerClass.GetStaticMethod<jDeviceManager>("instance");
 
-	// DeviceManager.getDisplaysInfo()
-	Function<jDisplayInfoArray(jobject)> javaDeviceManagerGetDisplaysInfoMethod = javaDeviceManagerClass.GetMethod<jDisplayInfoArray>("getDisplaysInfo");
-	
-	// Get Java DeviceManager instance
-	javaDeviceManagerInstance = javaDeviceManagerGetInstanceMethod();
-	
-	// Save fields ids for Java DisplayInfo class
-	javaDisplayInfoNameField = env->GetFieldID(javaDisplayInfoClass, "name", JNI::TypeSignature<jstring>::value());
-	javaDisplayInfoIdField = env->GetFieldID(javaDisplayInfoClass, "id", JNI::TypeSignature<jint>::value());
-	javaDisplayInfoWidthField = env->GetFieldID(javaDisplayInfoClass, "width", JNI::TypeSignature<jint>::value());
-	javaDisplayInfoHeightField = env->GetFieldID(javaDisplayInfoClass, "height", JNI::TypeSignature<jint>::value());
-	javaDisplayInfoDpiXField = env->GetFieldID(javaDisplayInfoClass, "dpiX", JNI::TypeSignature<jfloat>::value());
-	javaDisplayInfoDpiYField = env->GetFieldID(javaDisplayInfoClass, "dpiY", JNI::TypeSignature<jfloat>::value());
+    // DeviceManager.getDisplaysInfo()
+    Function<jDisplayInfoArray(jobject)> javaDeviceManagerGetDisplaysInfoMethod = javaDeviceManagerClass.GetMethod<jDisplayInfoArray>("getDisplaysInfo");
 
-	// Get displays
-	const jDisplayInfoArray displaysInfo = javaDeviceManagerGetDisplaysInfoMethod(javaDeviceManagerInstance);
-	DAVA_JNI_EXCEPTION_CHECK
+    // Get Java DeviceManager instance
+    javaDeviceManagerInstance = javaDeviceManagerGetInstanceMethod();
 
-	// Convert & save to C++ DeviceManager
-	const size_t displaysCount = static_cast<size_t>(env->GetArrayLength(displaysInfo));
-	deviceManager->displays.resize(displaysCount);
-	for (size_t i = 0; i < displaysCount; ++i)
-	{
-		const jobject javaDisplayInfo = env->GetObjectArrayElement(displaysInfo, i);
+    // Save fields ids for Java DisplayInfo class
+    javaDisplayInfoNameField = env->GetFieldID(javaDisplayInfoClass, "name", JNI::TypeSignature<jstring>::value());
+    javaDisplayInfoIdField = env->GetFieldID(javaDisplayInfoClass, "id", JNI::TypeSignature<jint>::value());
+    javaDisplayInfoWidthField = env->GetFieldID(javaDisplayInfoClass, "width", JNI::TypeSignature<jint>::value());
+    javaDisplayInfoHeightField = env->GetFieldID(javaDisplayInfoClass, "height", JNI::TypeSignature<jint>::value());
+    javaDisplayInfoDpiXField = env->GetFieldID(javaDisplayInfoClass, "dpiX", JNI::TypeSignature<jfloat>::value());
+    javaDisplayInfoDpiYField = env->GetFieldID(javaDisplayInfoClass, "dpiY", JNI::TypeSignature<jfloat>::value());
 
-		// Java class should always put primary display into first position
-		const bool isPrimary = (i == 0);
-		deviceManager->displays[i] = ConvertFromJavaDisplayInfo(env, javaDisplayInfo, isPrimary);
-	}
+    // Get displays
+    const jDisplayInfoArray displaysInfo = javaDeviceManagerGetDisplaysInfoMethod(javaDeviceManagerInstance);
+    DAVA_JNI_EXCEPTION_CHECK
+
+    // Convert & save to C++ DeviceManager
+    const size_t displaysCount = static_cast<size_t>(env->GetArrayLength(displaysInfo));
+    deviceManager->displays.resize(displaysCount);
+    for (size_t i = 0; i < displaysCount; ++i)
+    {
+        const jobject javaDisplayInfo = env->GetObjectArrayElement(displaysInfo, i);
+
+        // Java class should always put primary display into first position
+        const bool isPrimary = (i == 0);
+        deviceManager->displays[i] = ConvertFromJavaDisplayInfo(env, javaDisplayInfo, isPrimary);
+    }
 }
 
 void DeviceManagerImpl::UpdateDisplayConfig()
 {
-	// TODO: implement tracking display changes
+    // TODO: implement tracking display changes
 }
 
 DisplayInfo DeviceManagerImpl::ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary)
 {
-	DisplayInfo displayInfo;
-	displayInfo.name = JNI::ToString(static_cast<jstring>(env->GetObjectField(javaDisplayInfo, javaDisplayInfoNameField)));
-	displayInfo.systemId = static_cast<uintptr_t>(env->GetIntField(javaDisplayInfo, javaDisplayInfoIdField));
-	displayInfo.rect.x = 0; // No information available from Android API for both x and y values
-	displayInfo.rect.y = 0;
-	displayInfo.rect.dx = static_cast<float32>(env->GetIntField(javaDisplayInfo, javaDisplayInfoWidthField));
-	displayInfo.rect.dy = static_cast<float32>(env->GetIntField(javaDisplayInfo, javaDisplayInfoHeightField));
-	displayInfo.rawDpiX = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiXField));
-	displayInfo.rawDpiY = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiYField));
-	displayInfo.primary = isPrimary; 
-	return displayInfo;
+    DisplayInfo displayInfo;
+    displayInfo.name = JNI::ToString(static_cast<jstring>(env->GetObjectField(javaDisplayInfo, javaDisplayInfoNameField)));
+    displayInfo.systemId = static_cast<uintptr_t>(env->GetIntField(javaDisplayInfo, javaDisplayInfoIdField));
+    displayInfo.rect.x = 0; // No information available from Android API for both x and y values
+    displayInfo.rect.y = 0;
+    displayInfo.rect.dx = static_cast<float32>(env->GetIntField(javaDisplayInfo, javaDisplayInfoWidthField));
+    displayInfo.rect.dy = static_cast<float32>(env->GetIntField(javaDisplayInfo, javaDisplayInfoHeightField));
+    displayInfo.rawDpiX = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiXField));
+    displayInfo.rawDpiY = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiYField));
+    displayInfo.primary = isPrimary;
+    return displayInfo;
 }
 
 } // namespace Private

@@ -20,7 +20,7 @@ struct DeviceManagerImpl final
 
     void UpdateDisplayConfig();
 
-	DisplayInfo ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary);
+    DisplayInfo ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary);
 
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
