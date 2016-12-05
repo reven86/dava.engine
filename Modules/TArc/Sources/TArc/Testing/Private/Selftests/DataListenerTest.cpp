@@ -2,9 +2,7 @@
 #include "TArc/Testing/MockListener.h"
 
 #include "TArc/DataProcessing/DataNode.h"
-
-#include "Reflection/ReflectedType.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class DataListenerNode : public DAVA::TArc::DataNode
 {

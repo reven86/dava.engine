@@ -398,7 +398,7 @@ int32 Reflection__index(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self->GetField(name).ref;
+    Reflection refl = self->GetField(name);
     if (refl.IsValid())
     {
         if (refl.HasFields() || refl.HasMethods())
@@ -411,7 +411,7 @@ int32 Reflection__index(lua_State* L)
         return 1;
     }
 
-    AnyFn method = self->GetMethod(name.Get<String>()).fn;
+    AnyFn method = self->GetMethod(name.Get<String>());
     if (method.IsValid())
     {
         lua_pushdvanyfn(L, method);
@@ -444,7 +444,7 @@ int32 Reflection__newindex(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self->GetField(name).ref;
+    Reflection refl = self->GetField(name);
     if (refl.IsValid())
     {
         try
