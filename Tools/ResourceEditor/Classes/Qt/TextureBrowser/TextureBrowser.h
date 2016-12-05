@@ -51,8 +51,6 @@ public:
     static QColor gpuColor_DX11;
     static QColor errorColor;
 
-    void InvalidateSelection(const SelectableGroup& selection);
-
 protected:
     void closeEvent(QCloseEvent* e) override;
 

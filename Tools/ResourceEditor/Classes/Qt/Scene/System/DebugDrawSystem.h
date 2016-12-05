@@ -19,8 +19,6 @@ public:
     DebugDrawSystem(DAVA::Scene* scene);
     virtual ~DebugDrawSystem();
 
-    void Draw() override;
-
     void SetRequestedObjectType(ResourceEditor::eSceneObjectType objectType);
     ResourceEditor::eSceneObjectType GetRequestedObjectType() const;
 
@@ -30,6 +28,9 @@ public:
     //need be moved to testing tool
     DAVA_DEPRECATED(inline void EnableSwithcesWithDifferentLODsMode(bool enabled));
     DAVA_DEPRECATED(inline bool SwithcesWithDifferentLODsModeEnabled() const);
+
+protected:
+    void Draw() override;
 
 private:
     void Draw(DAVA::Entity* entity);

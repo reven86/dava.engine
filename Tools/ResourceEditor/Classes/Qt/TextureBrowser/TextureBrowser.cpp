@@ -1073,16 +1073,15 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
 
 void TextureBrowser::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (selectionAny.CanCast<SelectableGroup>())
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
         textureListModel->setHighlight(selection);
     }
-}
-
-void TextureBrowser::InvalidateSelection(const SelectableGroup& selection)
-{
-    textureListModel->setHighlight(selection);
+    else
+    {
+        textureListModel->setHighlight(SelectableGroup());
+    }
 }
 
 void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)

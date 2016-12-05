@@ -80,7 +80,6 @@ public slots:
 
     void OnEditorGizmoToggle(bool show);
     void OnViewLightmapCanvas(bool show);
-    void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
     void OnEnableVisibilitySystemToggle(bool enabled);
     void OnRefreshVisibilitySystem();

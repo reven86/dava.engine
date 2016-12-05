@@ -32,8 +32,6 @@ public:
     TextDrawSystem(DAVA::Scene* scene, SceneCameraSystem* cameraSystem);
     ~TextDrawSystem();
 
-    void Draw() override;
-
     DAVA::Vector2 ToPos2d(const DAVA::Vector3& pos3d) const;
 
     void DrawText(DAVA::int32 x, DAVA::int32 y, const DAVA::String& text, const DAVA::Color& color, Align align = Align::TopLeft);
@@ -42,6 +40,8 @@ public:
     DAVA::GraphicFont* GetFont() const;
 
 protected:
+    void Draw() override;
+
     struct TextToDraw
     {
         TextToDraw(DAVA::Vector2 _pos, const DAVA::String& _text, const DAVA::Color& _color, Align _align)

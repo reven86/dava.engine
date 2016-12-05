@@ -13,13 +13,14 @@ class EditorParticlesSystem : public DAVA::SceneSystem, public EditorSceneSystem
 public:
     EditorParticlesSystem(DAVA::Scene* scene);
 
-    void Draw() override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     void RestartParticleEffects();
 
     DAVA::ParticleLayer* GetForceOwner(DAVA::ParticleForce* force) const;
     DAVA::ParticleEmitterInstance* GetLayerOwner(DAVA::ParticleLayer* layer) const;
+
+protected:
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void AddEntity(DAVA::Entity* entity) override;

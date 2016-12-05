@@ -110,7 +110,9 @@ ActionComponentEditor::~ActionComponentEditor()
     {
         widths.push_back(ui->tableActions->columnWidth(i));
     }
-    DAVA::VariantType value(reinterpret_cast<DAVA::uint8*>(widths.data()), static_cast<DAVA::int32>(widths.size()) * sizeof(DAVA::int32));
+
+    DAVA::int32 dataSize = static_cast<DAVA::int32>(widths.size() * sizeof(DAVA::int32));
+    DAVA::VariantType value(reinterpret_cast<DAVA::uint8*>(widths.data()), dataSize);
     posSaver.SaveValue(ActionComponentEditorDetail::GetColumnWidthsKey(), value);
     delete ui;
 }

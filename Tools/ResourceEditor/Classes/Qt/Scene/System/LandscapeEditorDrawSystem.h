@@ -53,9 +53,6 @@ public:
     void SetCursorSize(DAVA::float32 cursorSize);
     void SetCursorPosition(const DAVA::Vector2& cursorPos);
 
-    void Process(DAVA::float32 timeElapsed) override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     DAVA::float32 GetTextureSize(const DAVA::FastName& level);
     DAVA::Vector3 GetLandscapeSize();
     DAVA::float32 GetLandscapeMaxHeight();
@@ -94,6 +91,10 @@ public:
     bool InitTilemaskImageCopy();
 
     void DisableSystem();
+
+protected:
+    void Process(DAVA::float32 timeElapsed) override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void UpdateBaseLandscapeHeightmap();

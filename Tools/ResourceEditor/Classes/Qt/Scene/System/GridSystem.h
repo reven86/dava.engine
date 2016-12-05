@@ -10,5 +10,7 @@ class SceneGridSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
 public:
     SceneGridSystem(DAVA::Scene* scene);
+
+protected:
     void Draw() override;
 };

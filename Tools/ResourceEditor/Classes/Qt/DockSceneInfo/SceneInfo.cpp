@@ -581,9 +581,9 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 
 void SceneInfo::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (selectionAny.CanCast<SelectableGroup>())
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
         ClearSelectionData();
         CollectSelectedRenderObjects(&selection);
         RefreshLODInfoForSelection();

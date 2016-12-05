@@ -6,19 +6,9 @@
 
 namespace Selection
 {
-SelectionData* GetSelectionData()
-{
-    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
-    if (activeContext != nullptr)
-    {
-        return activeContext->GetData<SelectionData>();
-    }
-    return nullptr;
-}
-
 const SelectableGroup& GetSelection()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         return selectionData->GetSelection();
@@ -30,7 +20,7 @@ const SelectableGroup& GetSelection()
 
 void CancelSelection()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         selectionData->CancelSelection();
@@ -39,7 +29,7 @@ void CancelSelection()
 
 void SetSelection(SelectableGroup& newSelection)
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         selectionData->SetSelection(newSelection);
@@ -62,7 +52,7 @@ DAVA::Entity* GetSelectableEntity(DAVA::Entity* selectionCandidate)
 
 bool IsEntitySelectable(DAVA::Entity* selectionCandidate)
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         return selectionData->IsEntitySelectable(selectionCandidate);
@@ -73,7 +63,7 @@ bool IsEntitySelectable(DAVA::Entity* selectionCandidate)
 
 void ResetSelectionComponentMask()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         selectionData->ResetSelectionComponentMask();
@@ -82,7 +72,7 @@ void ResetSelectionComponentMask()
 
 void SetSelectionComponentMask(DAVA::uint64 mask)
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         selectionData->SetSelectionComponentMask(mask);
@@ -91,7 +81,7 @@ void SetSelectionComponentMask(DAVA::uint64 mask)
 
 DAVA::uint64 GetSelectionComponentMask()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
         return selectionData->GetSelectionComponentMask();
@@ -100,40 +90,22 @@ DAVA::uint64 GetSelectionComponentMask()
     return 0;
 }
 
-void SetSelectionAllowed(bool allowed)
-{
-    SelectionData* selectionData = GetSelectionData();
-    if (selectionData != nullptr)
-    {
-        selectionData->SetSelectionAllowed(allowed);
-    }
-}
-bool IsSelectionAllowed()
-{
-    SelectionData* selectionData = GetSelectionData();
-    if (selectionData != nullptr)
-    {
-        return selectionData->IsSelectionAllowed();
-    }
-    return false;
-}
-
 bool Lock()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
-        return selectionData->Lock(true);
+        return selectionData->Lock();
     }
     return false;
 }
 
 void Unlock()
 {
-    SelectionData* selectionData = GetSelectionData();
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
     if (selectionData != nullptr)
     {
-        selectionData->Lock(false);
+        selectionData->Unlock();
     }
 }
 }

@@ -662,7 +662,6 @@ void SelectionSystem::CancelSelection()
 
 void SelectionSystem::SetLocked(bool lock)
 {
-    //    bool lockChanged = IsLocked() != lock;
     SceneSystem::SetLocked(lock);
 
     hoodSystem->LockAxis(lock);
@@ -672,25 +671,6 @@ void SelectionSystem::SetLocked(bool lock)
     {
         UpdateHoodPos();
     }
-
-    //    if (lockChanged)
-    //    {
-    //        SelectableGroup emptyGroup;
-    //        SelectableGroup* selected = nullptr;
-    //        SelectableGroup* deselected = nullptr;
-    //        if (lock == true)
-    //        {
-    //            selected = &emptyGroup;
-    //            deselected = &currentSelection;
-    //        }
-    //        else
-    //        {
-    //            selected = &currentSelection;
-    //            deselected = &emptyGroup;
-    //        }
-    //
-    //        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
-    //    }
 }
 
 void SelectionSystem::UpdateHoodPos() const

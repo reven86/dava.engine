@@ -45,9 +45,6 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
-    void Draw() override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     void SetDrawMode(int mode);
     int GetDrawMode() const;
 
@@ -68,6 +65,10 @@ public:
     DAVA::AABBox3 GetUntransformedBoundingBox(Selectable::Object* entity) const;
 
     void EnableSystem() override;
+
+protected:
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     DAVA::AABBox3 GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const;

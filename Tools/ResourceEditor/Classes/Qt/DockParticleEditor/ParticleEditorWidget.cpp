@@ -183,12 +183,11 @@ void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, DAVA::Part
 
 void ParticleEditorWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
-    if (selectionAny.CanCast<SelectableGroup>() && (activeContext != nullptr))
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
 
-        SceneData* sceneData = activeContext->GetData<SceneData>();
+        SceneData* sceneData = REGlobal::GetActiveDataNode<SceneData>();
         SceneEditor2* scene = sceneData->GetScene().Get();
 
         ProcessSelection(scene, selection);

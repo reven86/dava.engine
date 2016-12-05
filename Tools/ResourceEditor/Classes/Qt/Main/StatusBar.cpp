@@ -83,7 +83,6 @@ void StatusBar::SceneActivated(SceneEditor2* scene)
     activeScene = scene;
 
     UpdateDistanceToCamera();
-    UpdateSelectionBoxSize();
 }
 
 void StatusBar::SceneDeactivated(SceneEditor2* scene)
@@ -113,13 +112,14 @@ void StatusBar::OnSceneGeometryChaged(DAVA::uint32 width, DAVA::uint32 height)
 
 void StatusBar::UpdateSelectionBoxSize()
 {
-    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
-    if (activeContext == nullptr)
+    SelectionData* selectionData = REGlobal::GetActiveDataNode<SelectionData>();
+    if (selectionData == nullptr)
     {
+        selectionBoxSize->setText(QString());
+        selectionBoxSize->setVisible(false);
         return;
     }
 
-    SelectionData* selectionData = activeContext->GetData<SelectionData>();
     const SelectableGroup& selection = selectionData->GetSelection();
     if (selection.IsEmpty())
     {

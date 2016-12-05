@@ -17,6 +17,7 @@ class SelectionData : public DAVA::TArc::DataNode
 public:
     static const char* selectionPropertyName;
     static const char* selectionBoxPropertyName;
+    static const char* selectionAllowedPropertyName;
 
     const SelectableGroup& GetSelection() const;
     void SetSelection(SelectableGroup& newSelection);
@@ -33,10 +34,11 @@ public:
     void SetSelectionAllowed(bool allowed);
     bool IsSelectionAllowed() const;
 
-    bool Lock(bool locked);
+    bool Lock();
+    void Unlock();
 
     bool IsEntitySelectable(DAVA::Entity* selectionCandidate) const;
-    //
+    //end of old interface
 
 private:
     friend class SelectionModule;
@@ -48,6 +50,7 @@ private:
         DAVA::ReflectionRegistrator<SelectionData>::Begin()
         .Field(selectionPropertyName, &SelectionData::GetSelection, nullptr)
         .Field(selectionBoxPropertyName, &SelectionData::GetSelectionBox, nullptr)
+        .Field(selectionAllowedPropertyName, &SelectionData::IsSelectionAllowed, nullptr)
         .End();
     }
 };

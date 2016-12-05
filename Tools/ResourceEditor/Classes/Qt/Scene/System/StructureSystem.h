@@ -26,7 +26,6 @@ public:
     ~StructureSystem();
 
     void Process(DAVA::float32 timeElapsed) override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
     void Move(const SelectableGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore);
     void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstance*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
@@ -50,6 +49,9 @@ public:
     void RemoveDelegate(StructureSystemDelegate* delegate);
 
     void CheckAndMarkSolid(DAVA::Entity* entity);
+
+protected:
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void AddEntity(DAVA::Entity* entity) override;

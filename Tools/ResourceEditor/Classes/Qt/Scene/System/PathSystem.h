@@ -26,9 +26,6 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-    void Draw() override;
-
     DAVA::Entity* GetCurrrentPath() const;
     const DAVA::Vector<DAVA::Entity*>& GetPathes() const;
 
@@ -40,6 +37,9 @@ public:
     void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) override;
 
 protected:
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
+    void Draw() override;
+
     void DrawInEditableMode();
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color);

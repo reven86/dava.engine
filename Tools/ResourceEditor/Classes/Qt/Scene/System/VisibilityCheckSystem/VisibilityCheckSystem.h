@@ -26,12 +26,14 @@ public:
 
     void Recalculate();
     void Process(DAVA::float32 timeElapsed) override;
-    void Draw() override;
 
     void InvalidateMaterials();
 
     void FixCurrentFrame();
     void ReleaseFixedFrame();
+
+protected:
+    void Draw() override;
 
 private:
     using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Vector3>>;

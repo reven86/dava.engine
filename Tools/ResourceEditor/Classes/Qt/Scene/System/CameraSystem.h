@@ -16,7 +16,6 @@ public:
     SceneCameraSystem(DAVA::Scene* scene);
     ~SceneCameraSystem();
 
-    void Draw() override;
 
     DAVA::Camera* GetCurCamera() const;
 
@@ -57,6 +56,9 @@ public:
     void MoveToStep(int ofs);
 
     void EnableSystem() override;
+
+protected:
+    void Draw() override;
 
 private:
     void OnKeyboardInput(DAVA::UIEvent* event);

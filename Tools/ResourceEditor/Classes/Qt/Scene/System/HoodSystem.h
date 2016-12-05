@@ -52,6 +52,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
+protected:
     void Draw() override;
 
 private:
@@ -62,7 +63,6 @@ private:
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
-private:
     btCollisionWorld* collWorld = nullptr;
     btAxisSweep3* collBroadphase = nullptr;
     btDefaultCollisionConfiguration* collConfiguration = nullptr;

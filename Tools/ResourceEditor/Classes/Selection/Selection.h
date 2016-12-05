@@ -23,9 +23,6 @@ void ResetSelectionComponentMask();
 void SetSelectionComponentMask(DAVA::uint64 mask);
 DAVA::uint64 GetSelectionComponentMask();
 
-void SetSelectionAllowed(bool allowed);
-bool IsSelectionAllowed();
-
 bool Lock();
 void Unlock();
 }

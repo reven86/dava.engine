@@ -131,17 +131,17 @@ void RunActionEventWidget::sceneActivated(SceneEditor2* scene_)
 void RunActionEventWidget::sceneDeactivated(SceneEditor2* scene)
 {
     scene = nullptr;
-    autocompleteModel->setStringList(QStringList());
 }
 
 void RunActionEventWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (selectionAny.CanCast<SelectableGroup>() == false)
+    if (selectionAny.CanGet<SelectableGroup>() == false)
     {
+        autocompleteModel->setStringList(QStringList());
         return;
     }
 
-    const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+    const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
 
     QSet<QString> nameSet;
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())

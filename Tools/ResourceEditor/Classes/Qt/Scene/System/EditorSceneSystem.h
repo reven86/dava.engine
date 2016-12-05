@@ -3,15 +3,10 @@
 class RECommandNotificationObject;
 class EditorSceneSystem
 {
+    friend class SceneEditor2;
+
 public:
     virtual ~EditorSceneSystem() = default;
-
-    virtual void Draw()
-    {
-    }
-    virtual void ProcessCommand(const RECommandNotificationObject& commandNotification)
-    {
-    }
 
     virtual void EnableSystem()
     {
@@ -19,5 +14,13 @@ public:
     }
 
 protected:
+    virtual void Draw()
+    {
+    }
+    virtual void ProcessCommand(const RECommandNotificationObject& commandNotification)
+    {
+    }
+
+
     bool systemIsEnabled = false;
 };

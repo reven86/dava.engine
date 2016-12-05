@@ -222,35 +222,37 @@ void EditorLODSystem::Process(float32 timeElapsed)
 
 void EditorLODSystem::ProcessAddedEntities()
 {
-    if (componentsToAdd.empty() == false)
+    if (componentsToAdd.empty())
     {
-        bool invalidateUI = mode == eEditorMode::MODE_ALL_SCENE;
-
-        const SelectableGroup& selection = Selection::GetSelection();
-        for (const std::pair<DAVA::Entity*, DAVA::LodComponent*>& pair : componentsToAdd)
-        {
-            if (selection.ContainsObject(pair.first))
-            {
-                ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
-
-                resetForceValues.flag = ForceValues::APPLY_ALL;
-                resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
-                resetForceValues.distance = LodComponent::INVALID_DISTANCE;
-                lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
-                lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(pair.second);
-                lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
-                lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
-                invalidateUI = true;
-            }
-        }
-
-        if (invalidateUI == true)
-        {
-            EmitInvalidateUI(FLAG_ALL);
-        }
-
-        componentsToAdd.clear();
+        return;
     }
+
+    bool invalidateUI = mode == eEditorMode::MODE_ALL_SCENE;
+
+    const SelectableGroup& selection = Selection::GetSelection();
+    for (const std::pair<DAVA::Entity*, DAVA::LodComponent*>& pair : componentsToAdd)
+    {
+        if (selection.ContainsObject(pair.first))
+        {
+            ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
+
+            resetForceValues.flag = ForceValues::APPLY_ALL;
+            resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
+            resetForceValues.distance = LodComponent::INVALID_DISTANCE;
+            lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
+            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(pair.second);
+            lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
+            lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
+            invalidateUI = true;
+        }
+    }
+
+    if (invalidateUI == true)
+    {
+        EmitInvalidateUI(FLAG_ALL);
+    }
+
+    componentsToAdd.clear();
 }
 
 void EditorLODSystem::AddEntity(Entity* entity)
@@ -535,8 +537,6 @@ void EditorLODSystem::SelectionChanged(const SelectableGroup& selection)
         lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
         lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
     }
-
-    bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
 
     uint32 count = selection.GetSize();
     Vector<Entity*> lodEntities;

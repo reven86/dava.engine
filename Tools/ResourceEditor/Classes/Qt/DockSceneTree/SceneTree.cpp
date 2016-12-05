@@ -831,7 +831,6 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
-    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::SyncSelectionToTree), this);
 
     setModel(filteringProxyModel);
 
@@ -1384,7 +1383,7 @@ void SceneTree::UpdateModel()
     treeModel->ReloadFilter();
     filteringProxyModel->invalidate();
 
-    selectionUpdater->Update();
+    SyncSelectionToTree();
 
     if (treeModel->IsFilterSet())
     {

@@ -1,18 +1,21 @@
-#include "MaterialTree.h"
-#include "MaterialFilterModel.h"
-#include "Main/mainwindow.h"
-#include "Scene/SceneSignals.h"
-#include "MaterialEditor/MaterialAssignSystem.h"
-#include "QtTools/WidgetHelpers/SharedIcon.h"
-#include "TArc/Core/FieldBinder.h"
+#include "Classes/Qt/MaterialEditor/MaterialTree.h"
+#include "Classes/Qt/MaterialEditor/MaterialFilterModel.h"
+#include "Classes/Qt/MaterialEditor/MaterialAssignSystem.h"
+#include "Classes/Qt/Main/mainwindow.h"
+#include "Classes/Qt/Scene/SceneSignals.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Selection/Selection.h"
 #include "Classes/Selection/SelectionData.h"
 
-#include "Commands2/RemoveComponentCommand.h"
-#include "Commands2/Base/RECommandBatch.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/Base/RECommandBatch.h"
+#include "Classes/Commands2/Base/RECommandNotificationObject.h"
+
+#include "TArc/Core/FieldBinder.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 #include "Entity/Component.h"
 
 #include <QDragMoveEvent>
@@ -244,9 +247,9 @@ void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 
 void MaterialTree::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (selectionAny.CanCast<SelectableGroup>())
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
         treeModel->SetSelection(&selection);
         treeModel->invalidate();
     }

@@ -807,12 +807,11 @@ void ParticleTimeLineWidget::OnParticleEffectStateChanged(SceneEditor2* scene, D
 
 void ParticleTimeLineWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    DAVA::TArc::DataContext* activeContext = REGlobal::GetActiveContext();
-    if (selectionAny.CanCast<SelectableGroup>() && (activeContext != nullptr))
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
 
-        SceneData* sceneData = activeContext->GetData<SceneData>();
+        SceneData* sceneData = REGlobal::GetActiveDataNode<SceneData>();
         SceneEditor2* scene = sceneData->GetScene().Get();
 
         ProcessSelection(scene, selection);
@@ -836,7 +835,7 @@ void ParticleTimeLineWidget::ProcessSelection(SceneEditor2* scene, const Selecta
         return;
 
     activeScene = scene;
-    const auto& obj = selection.GetFirst();
+    const Selectable& obj = selection.GetFirst();
     if (obj.CanBeCastedTo<DAVA::Entity>())
     {
         auto entity = obj.AsEntity();

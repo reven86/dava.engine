@@ -107,7 +107,6 @@ public:
     void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component) override;
 
     void Process(DAVA::float32 timeElapsed) override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
     void SceneDidLoaded() override;
 
@@ -143,6 +142,9 @@ public:
     DAVA::FilePath GetPathForPlaneEntity() const;
 
     static bool IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances);
+
+protected:
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void RecalculateData();

@@ -217,7 +217,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , shortcutChecker(this)
 #endif
     , tarcUI(tarcUI_)
-    , waitDialog(nullptr)
 {
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.SetListener(this);
@@ -539,7 +538,6 @@ void QtMainWindow::SetupStatusBar()
 
     CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
     CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
-    CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
@@ -600,7 +598,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
 
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
-    QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
     QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(triggered(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
@@ -847,9 +844,9 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionHangingObjects->setEnabled(enable);
 
-    ui->menuEdit->setEnabled(enable);
+    ui->Edit->setEnabled(enable);
     ui->menuCreateNode->setEnabled(enable);
-    ui->menuScene->setEnabled(enable);
+    ui->Scene->setEnabled(enable);
     ui->menuLightView->setEnabled(enable);
 
     ui->sceneToolBar->setEnabled(enable);
@@ -992,11 +989,6 @@ void QtMainWindow::OnViewLightmapCanvas(bool show)
     {
         scene->materialSystem->SetLightmapCanvasVisible(showCanvas);
     }
-}
-
-void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
-{
-    Selection::SetSelectionAllowed(allow);
 }
 
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
@@ -1206,9 +1198,6 @@ void QtMainWindow::OnTextureBrowser()
 
     DAVA::RefPtr<SceneEditor2> sceneEditor = MainWindowDetails::GetCurrentScene();
     TextureBrowser::Instance()->sceneActivated(sceneEditor.Get());
-
-    const SelectableGroup& selection = Selection::GetSelection();
-    TextureBrowser::Instance()->InvalidateSelection(selection);
 }
 
 void QtMainWindow::OnSceneLightMode()
@@ -1456,8 +1445,6 @@ void QtMainWindow::LoadViewState(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
-        ui->actionOnSceneSelection->setChecked(Selection::IsSelectionAllowed());
-
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
 

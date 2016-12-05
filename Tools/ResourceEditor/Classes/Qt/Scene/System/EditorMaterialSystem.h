@@ -26,8 +26,6 @@ public:
     EditorMaterialSystem(DAVA::Scene* scene);
     ~EditorMaterialSystem();
 
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
 
     DAVA::Entity* GetEntity(DAVA::NMaterial*) const;
@@ -43,6 +41,9 @@ public:
     bool IsLightmapCanvasVisible() const;
 
     bool HasMaterial(DAVA::NMaterial*) const;
+
+protected:
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     struct MaterialMapping

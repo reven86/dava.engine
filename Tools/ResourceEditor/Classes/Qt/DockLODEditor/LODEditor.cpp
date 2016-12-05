@@ -304,6 +304,9 @@ void LODEditor::SceneActivated(SceneEditor2* scene)
     activeScene = scene;
     activeScene->editorLODSystem->AddDelegate(this);
     activeScene->editorStatisticsSystem->AddDelegate(this);
+
+    bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool(); // to protect from changes of recusive at another scene tab
+    activeScene->editorLODSystem->SetRecursive(recursive);
 }
 
 void LODEditor::SceneDeactivated(SceneEditor2* scene)
@@ -318,10 +321,12 @@ void LODEditor::SceneDeactivated(SceneEditor2* scene)
 
 void LODEditor::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (selectionAny.CanCast<SelectableGroup>() && (activeScene != nullptr))
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        const SelectableGroup& selection = selectionAny.Cast<SelectableGroup>();
+        DVASSERT(activeScene != nullptr);
         EditorLODSystem* system = activeScene->editorLODSystem;
+
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
         system->SelectionChanged(selection);
     }
 }

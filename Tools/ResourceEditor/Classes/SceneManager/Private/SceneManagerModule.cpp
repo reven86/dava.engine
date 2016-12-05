@@ -248,7 +248,6 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     using namespace DAVA::TArc;
 
     ContextAccessor* accessor = GetAccessor();
-    DataContext* context = accessor->GetGlobalContext();
 
     DAVA::RenderWidget* engineRenderWidget = GetContextManager()->GetRenderWidget();
     renderWidget = new SceneRenderWidget(accessor, engineRenderWidget, this);

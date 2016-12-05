@@ -69,9 +69,6 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
-    void Draw() override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
@@ -82,6 +79,10 @@ public:
 
     void AddDelegate(SelectionSystemDelegate* delegate);
     void RemoveDelegate(SelectionSystemDelegate* delegate);
+
+protected:
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;

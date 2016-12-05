@@ -40,9 +40,6 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
-    void Draw() override;
-    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
-
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
@@ -53,6 +50,9 @@ public:
     void DidRemoved(DAVA::Entity* removedEntity) override;
 
 protected:
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
+
     DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
 
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent* edgeComponent);

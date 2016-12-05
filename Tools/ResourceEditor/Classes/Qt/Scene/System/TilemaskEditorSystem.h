@@ -28,7 +28,6 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
-    void Draw() override;
 
     void SetBrushSize(DAVA::int32 brushSize);
     DAVA::int32 GetBrushSize();
@@ -48,6 +47,8 @@ public:
     eTilemaskDrawType GetDrawingType();
 
 protected:
+    void Draw() override;
+
     DAVA::uint32 curToolSize;
 
     DAVA::Texture* toolImageTexture;

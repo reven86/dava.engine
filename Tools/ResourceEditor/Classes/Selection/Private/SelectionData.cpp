@@ -3,6 +3,7 @@
 
 const char* SelectionData::selectionPropertyName = "selection";
 const char* SelectionData::selectionBoxPropertyName = "selectionBox";
+const char* SelectionData::selectionAllowedPropertyName = "selectionAllowed";
 
 const SelectableGroup& SelectionData::GetSelection() const
 {
@@ -52,12 +53,18 @@ bool SelectionData::IsSelectionAllowed() const
     return selectionSystem->IsSelectionAllowed();
 }
 
-bool SelectionData::Lock(bool locked)
+bool SelectionData::Lock()
 {
     DVASSERT(selectionSystem);
     bool wasLocked = selectionSystem->IsLocked();
-    selectionSystem->SetLocked(locked);
+    selectionSystem->SetLocked(true);
     return wasLocked;
+}
+
+void SelectionData::Unlock()
+{
+    DVASSERT(selectionSystem);
+    selectionSystem->SetLocked(false);
 }
 
 bool SelectionData::IsEntitySelectable(DAVA::Entity* selectionCandidate) const

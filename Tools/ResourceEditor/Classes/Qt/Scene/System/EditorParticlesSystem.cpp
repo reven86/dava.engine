@@ -227,7 +227,7 @@ void EditorParticlesSystem::RestartParticleEffects()
 
 DAVA::ParticleLayer* EditorParticlesSystem::GetForceOwner(DAVA::ParticleForce* force) const
 {
-    std::function<DAVA::ParticleLayer*(DAVA::ParticleEmitter*, DAVA::ParticleForce*)> getForceOwner = [&getForceOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleForce* force) -> DAVA::ParticleLayer*
+    DAVA::Function<DAVA::ParticleLayer*(DAVA::ParticleEmitter*, DAVA::ParticleForce*)> getForceOwner = [&getForceOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleForce* force) -> DAVA::ParticleLayer*
     {
         for (DAVA::ParticleLayer* layer : emitter->layers)
         {
@@ -270,7 +270,7 @@ DAVA::ParticleLayer* EditorParticlesSystem::GetForceOwner(DAVA::ParticleForce* f
 
 DAVA::ParticleEmitterInstance* EditorParticlesSystem::GetLayerOwner(DAVA::ParticleLayer* layer) const
 {
-    std::function<bool(DAVA::ParticleEmitter*, DAVA::ParticleLayer*)> hasLayerOwner = [&hasLayerOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer) -> bool
+    DAVA::Function<bool(DAVA::ParticleEmitter*, DAVA::ParticleLayer*)> hasLayerOwner = [&hasLayerOwner](DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer) -> bool
     {
         for (DAVA::ParticleLayer* l : emitter->layers)
         {

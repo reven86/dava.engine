@@ -76,6 +76,7 @@ SceneCollisionSystem::~SceneCollisionSystem()
     {
         delete etc.second;
     }
+    objectToCollision.clear();
 
     DAVA::SafeDelete(objectsCollWorld);
     DAVA::SafeDelete(objectsBroadphase);
@@ -248,8 +249,10 @@ void SceneCollisionSystem::UpdateCollisionObject(const Selectable& object)
 
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object) const
 {
+    DVASSERT(object != nullptr);
+
     DAVA::AABBox3 aabox;
-    if ((object != nullptr) && (objectToCollision.count(object) != 0))
+    if (objectToCollision.count(object) != 0)
     {
         CollisionBaseObject* collObj = objectToCollision.at(object);
         if (collObj != nullptr)
@@ -276,6 +279,7 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
     if (collision == nullptr)
         return;
 
+    DVASSERT(obj != nullptr);
     if (objectToCollision.count(obj) > 0)
     {
         DestroyFromObject(obj);
@@ -373,15 +377,8 @@ void SceneCollisionSystem::Draw()
         for (const auto& item : selection.GetContent())
         {
             // get collision object for solid selected entity
+            DVASSERT(item.GetContainedObject() != nullptr);
             CollisionBaseObject* cObj = objectToCollision[item.GetContainedObject()];
-
-            // if no collision object for solid selected entity,
-            // try to get collision object for real selected entity
-            if (NULL == cObj)
-            {
-                cObj = objectToCollision[item.GetContainedObject()];
-            }
-
             if (NULL != cObj && NULL != cObj->btObject)
             {
                 objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));

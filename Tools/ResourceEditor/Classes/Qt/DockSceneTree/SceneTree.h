@@ -82,7 +82,6 @@ private:
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
     SceneTreeDelegate* treeDelegate = nullptr;
     LazyUpdater* treeUpdater;
-    LazyUpdater* selectionUpdater;
     bool isInSelectionSync = false;
     std::shared_ptr<GlobalOperations> globalOperations;
 
