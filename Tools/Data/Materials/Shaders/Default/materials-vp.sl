@@ -162,7 +162,7 @@ vertex_out
 
 #if ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) && !SETUP_LIGHTMAP
 [material][a] property float2 uvOffset = float2(0,0);
-[material][a] property float2 uvScale = float2(1.0,1.0);
+[material][a] property float2 uvScale = float2(0,0);
 #endif
 
 #if WIND_ANIMATION
@@ -209,7 +209,7 @@ vertex_out
 
 #if TILED_DECAL_MASK
 [material][a] property float2 decalTileCoordOffset = float2(0,0);
-[material][a] property float2 decalTileCoordScale = float2(1.0,1.0);
+[material][a] property float2 decalTileCoordScale = float2(0,0);
 #endif
 
 #if MATERIAL_DETAIL

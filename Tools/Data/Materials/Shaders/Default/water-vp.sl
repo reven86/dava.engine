@@ -103,8 +103,8 @@ vertex_out
 #if (!DEBUG_UNITY_Z_NORMAL)||(SHADING == SHADING_PERVERTEX )
     [material][instance] property float2 normal0ShiftPerSecond  = float2(0,0); 
     [material][instance] property float2 normal1ShiftPerSecond  = float2(0,0);
-    [material][instance] property float normal0Scale            = 1;
-    [material][instance] property float normal1Scale            = 1;
+    [material][instance] property float normal0Scale            = 0;
+    [material][instance] property float normal1Scale            = 0;
     #if DEBUG_NORMAL_ROTATION
         [material][instance] property float normalRotation = 0;
     #endif

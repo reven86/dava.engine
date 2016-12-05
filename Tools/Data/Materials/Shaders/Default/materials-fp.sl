@@ -114,7 +114,7 @@ fragment_out
 #endif
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
-    [material][a] property float alphatestThreshold           = 0.5;
+    [material][a] property float alphatestThreshold           = 0.0;
 #endif
 
 #if PIXEL_LIT
@@ -147,7 +147,7 @@ fragment_out
 
 
 #if FLATCOLOR
-    [material][a] property float4 flatColor = float4(1,1,1,1);
+    [material][a] property float4 flatColor = float4(0,0,0,0);
 #endif
 
 #if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)

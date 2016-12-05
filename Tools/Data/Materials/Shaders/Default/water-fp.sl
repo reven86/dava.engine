@@ -91,15 +91,15 @@ fragment_out
 
     [material][instance] property float3 reflectionTintColor          = float3(1,1,1);
     [material][instance] property float  fresnelBias                  = 0;
-    [material][instance] property float  fresnelPow                   = 5.0;
+    [material][instance] property float  fresnelPow                   = 0.0;
     
     #if DEBUG_Z_NORMAL_SCALE && !DEBUG_UNITY_Z_NORMAL
         [material][instance] property float  normal0_z_scale = 1;
         [material][instance] property float  normal1_z_scale = 1;
     #endif
 #elif SHADING == SHADING_PERVERTEX
-    [material][instance] property float3 decalTintColor     = float3(1,1,1);
-    [material][instance] property float3 reflectanceColor   = float3(1,1,1);
+    [material][instance] property float3 decalTintColor     = float3(0,0,0);
+    [material][instance] property float3 reflectanceColor   = float3(0,0,0);
 #endif
 
 
