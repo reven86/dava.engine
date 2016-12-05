@@ -1,46 +1,20 @@
-#include "Base/Platform.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/Wrappers.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
-UnorderedMap<const Type*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedType::rttiNameToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedType::permanentNameToReflectedTypeMap;
+ReflectedType::~ReflectedType() = default;
 
-void ReflectedType::SetPermanentName(const String& name) const
+ReflectedType::ReflectedType(const Type* type_)
+    : type(type_)
 {
-    ReflectedType* rt = const_cast<ReflectedType*>(this);
-
-    assert(permanentName.empty() && "Name is already set");
-    assert(permanentNameToReflectedTypeMap.count(name) == 0 && "Permanent name alredy in use");
-
-    rt->permanentName = name;
-    rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
-const CtorWrapper* ReflectedType::GetCtor(const AnyFn::Params& params) const
+Vector<const AnyFn*> ReflectedType::GetCtors() const
 {
-    const CtorWrapper* ret = nullptr;
+    Vector<const AnyFn*> ret;
 
-    for (auto& it : ctorWrappers)
-    {
-        if (it->GetInvokeParams() == params)
-        {
-            ret = it.get();
-            break;
-        }
-    }
-
-    return ret;
-}
-
-Vector<const CtorWrapper*> ReflectedType::GetCtors() const
-{
-    Vector<const CtorWrapper*> ret;
-
-    ret.reserve(ctorWrappers.size());
-    for (auto& it : ctorWrappers)
+    ret.reserve(structure->ctors.size());
+    for (auto& it : structure->ctors)
     {
         ret.push_back(it.get());
     }
@@ -48,48 +22,32 @@ Vector<const CtorWrapper*> ReflectedType::GetCtors() const
     return ret;
 }
 
-const DtorWrapper* ReflectedType::GetDtor() const
+const AnyFn* ReflectedType::GetDtor() const
 {
-    return dtorWrapper.get();
-}
-
-const ReflectedType* ReflectedType::GetByType(const Type* type)
-{
-    const ReflectedType* ret = nullptr;
-
-    auto it = typeToReflectedTypeMap.find(type);
-    if (it != typeToReflectedTypeMap.end())
+    if (structure->dtor != nullptr)
     {
-        ret = it->second;
+        return structure->dtor.get();
     }
 
-    return ret;
+    return nullptr;
 }
 
-const ReflectedType* ReflectedType::GetByRttiName(const String& name)
+void ReflectedType::Destroy(Any&& v) const
 {
-    const ReflectedType* ret = nullptr;
-
-    auto it = rttiNameToReflectedTypeMap.find(name);
-    if (it != rttiNameToReflectedTypeMap.end())
+    if (v.GetType()->IsPointer())
     {
-        ret = it->second;
+        const AnyFn* dtor = GetDtor();
+
+        if (nullptr != dtor)
+        {
+            dtor->Invoke(v);
+        }
+        else
+        {
+            DAVA_THROW(Exception, "There is no appropriate dtor.");
+        }
     }
 
-    return ret;
+    v.Clear();
 }
-
-const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
-{
-    const ReflectedType* ret = nullptr;
-
-    auto it = permanentNameToReflectedTypeMap.find(name);
-    if (it != permanentNameToReflectedTypeMap.end())
-    {
-        ret = it->second;
-    }
-
-    return ret;
-}
-
 } // namespace DAVA

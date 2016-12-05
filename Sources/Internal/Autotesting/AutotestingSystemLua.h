@@ -107,6 +107,7 @@ public:
 
     void ProcessInput(const UIEvent& input);
     void ClickSystemBack();
+    void PressEscape();
 
     // helpers
     bool SetText(const String& path, const String& text); // lua uses ansi strings

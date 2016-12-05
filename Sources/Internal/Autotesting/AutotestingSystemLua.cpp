@@ -568,8 +568,14 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 
 void AutotestingSystemLua::ClickSystemBack()
 {
-    Logger::FrameworkDebug("AutotestingSystemLua::ClickSystemBack");
+    Logger::Debug("AutotestingSystemLua::ClickSystemBack");
     AutotestingSystem::Instance()->ClickSystemBack();
+}
+
+void AutotestingSystemLua::PressEscape()
+{
+    Logger::Debug("AutotestingSystemLua::PressEscape");
+    AutotestingSystem::Instance()->PressEscape();
 }
 
 String AutotestingSystemLua::GetText(UIControl* control)
