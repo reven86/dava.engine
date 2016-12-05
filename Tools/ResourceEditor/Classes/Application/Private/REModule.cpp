@@ -55,7 +55,7 @@ void REModule::PostInit()
     DAVA::TArc::ContextAccessor* accessor = GetAccessor();
 
     DAVA::EngineContext* engineContext = accessor->GetEngineContext();
-    engineContext->localizationSystem->InitWithDirectory("~res:/ResourceEditor/Strings/");
+    engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
     engineContext->uiControlSystem->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
 
