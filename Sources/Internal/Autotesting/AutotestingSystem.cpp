@@ -464,7 +464,6 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 
 void AutotestingSystem::ClickSystemBack()
 {
-    Logger::Info("AutotestingSystem::ClickSystemBack");
     UIEvent keyEvent;
 #if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
@@ -473,6 +472,20 @@ void AutotestingSystem::ClickSystemBack()
 #endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    UIControlSystem::Instance()->OnInput(&keyEvent);
+}
+
+void AutotestingSystem::PressEscape()
+{
+    UIEvent keyEvent;
+#if defined(__DAVAENGINE_COREV2__)
+    keyEvent.device = eInputDevices::KEYBOARD;
+#else
+    keyEvent.device = UIEvent::Device::KEYBOARD;
+#endif
+    keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+    keyEvent.key = DAVA::Key::ESCAPE;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }

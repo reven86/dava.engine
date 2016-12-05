@@ -221,7 +221,13 @@ void dx9_InitCaps()
     MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
     MutableDeviceCaps::Get().isZeroBaseClipRange = true;
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
-    MutableDeviceCaps::Get().isPerfQuerySupported = true;
+
+    {
+        IDirect3DQuery9* freqQuery = nullptr;
+        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
+        MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
+        DAVA::SafeRelease(freqQuery);
+    }
 
     const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
     if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
