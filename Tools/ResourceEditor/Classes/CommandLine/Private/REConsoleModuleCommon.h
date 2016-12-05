@@ -5,7 +5,7 @@
 
 #include "CommandLine/ProgramOptions.h"
 
-#include "TArcCore/ConsoleModule.h"
+#include "TArc/Core/ConsoleModule.h"
 
 class REConsoleModuleCommon : public DAVA::TArc::ConsoleModule
 {

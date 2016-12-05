@@ -3,7 +3,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 
 #import <MediaPlayer/MediaPlayer.h>

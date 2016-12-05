@@ -1,7 +1,9 @@
-#ifndef __LIBRARY_WIDGET_H__
-#define __LIBRARY_WIDGET_H__
+#pragma once
 
 #include "Classes/Qt/Scene/ActiveSceneHolder.h"
+
+#include "TArc/DataProcessing/DataListener.h"
+#include "TArc/DataProcessing/DataWrapper.h"
 
 #include "Render/RenderBase.h"
 
@@ -43,7 +45,7 @@ protected:
 };
 
 class GlobalOperations;
-class LibraryWidget : public QWidget
+class LibraryWidget : public QWidget, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -60,10 +62,6 @@ public:
     void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected slots:
-
-    void ProjectOpened(const QString& path);
-    void ProjectClosed();
-
     void ViewAsList();
     void ViewDetailed();
 
@@ -90,6 +88,7 @@ private:
 
     void HidePreview() const;
     void ShowPreview(const QString& pathname) const;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
 
     QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
 
@@ -111,6 +110,5 @@ private:
     int curTypeIndex;
     ActiveSceneHolder sceneHolder;
     std::shared_ptr<GlobalOperations> globalOperations = nullptr;
+    DAVA::TArc::DataWrapper projectDataWrapper;
 };
-
-#endif // __LIBRARY_WIDGET_H__

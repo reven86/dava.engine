@@ -17,7 +17,7 @@ void SetupLogger(const DAVA::String& logLevelString)
     };
 
     DAVA::Logger::eLogLevel requestedLevel = DAVA::Logger::LEVEL_INFO;
-    for (DAVA::uint32 i = 0, count = levels.size(); i < count; ++i)
+    for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(levels.size()); i < count; ++i)
     {
         if (levels[i] == logLevelString)
         {

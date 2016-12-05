@@ -10,7 +10,6 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& idx, const QVariant& value, int role = Qt::EditRole) override;
-    static QString GetYamlExtensionString();
 };
 
 #endif //__QUICKED_FILE_SYSTEM_MODEL_H__

@@ -1,5 +1,7 @@
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include <QMessageBox>
 #include <QToolButton>
@@ -29,11 +31,21 @@ FilePath GetOpenFileName(const String& title, const FilePath& pathname, const St
                                                    QString(filter.c_str()));
 
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
-    if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
+    if (!openedPathname.IsEmpty())
     {
-        //Need to Show Error
-        DAVA::Logger::Error("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str());
-        openedPathname = FilePath();
+        SceneValidator validator;
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+        if (data)
+        {
+            validator.SetPathForChecking(data->GetProjectPath());
+        }
+
+        if (validator.IsPathCorrectForProject(openedPathname) == false)
+        {
+            //Need to Show Error
+            DAVA::Logger::Error("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str());
+            openedPathname = FilePath();
+        }
     }
 
     return openedPathname;

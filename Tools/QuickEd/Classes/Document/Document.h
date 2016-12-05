@@ -55,6 +55,7 @@ public:
     bool CanSave() const;
     bool CanClose() const;
     bool IsDocumentExists() const;
+    void RefreshAllControlProperties();
 
 signals:
     void FileChanged(Document* document);
@@ -62,7 +63,7 @@ signals:
     void CanCloseChanged(bool canClose);
 
 public slots:
-    void RefreshAllControlProperties();
+    void OnFontPresetChanged(const DAVA::String& presetName);
     void SetCanClose(bool canClose);
 
 private slots:

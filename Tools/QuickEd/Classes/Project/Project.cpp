@@ -1,279 +1,328 @@
-#include "DAVAEngine.h"
-
 #include "Project.h"
-#include "EditorFontSystem.h"
-#include "Model/YamlPackageSerializer.h"
+
+#include "Document/Document.h"
+#include "Document/DocumentGroup.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Helpers/ResourcesManageHelper.h"
+#include "Model/YamlPackageSerializer.h"
+#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
+#include "UI/ProjectView.h"
+
+#include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
+
+#include "Engine/Engine.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlEmitter.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/UIControlSystem.h"
+#include "Utils/Utils.h"
 
 #include <QDir>
 #include <QApplication>
 #include <QMessageBox>
 #include <QFileDialog>
 
+#if defined(__DAVAENGINE_MACOS__)
+#include "Utils/MacOSSymLinkRestorer.h"
+#endif
+
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(Project,
-                              PREF_ARG("projectsHistory", DAVA::String()),
-                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
-                              )
+QString Project::RestoreSymLinkInFilePath(const QString& filePath) const
+{
+#if defined(__DAVAENGINE_MACOS__)
+    return symLinkRestorer->RestoreSymLinkInFilePath(filePath);
+#endif
 
-Project::Project(QObject* parent)
-    : QObject(parent)
+    return filePath;
+}
+
+Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& properties_)
+    : QObject(nullptr)
+    , properties(properties_)
+    , projectDirectory(QString::fromStdString(properties_.GetProjectDirectory().GetStringValue()))
+    , projectName(QString::fromStdString(properties_.GetProjectFile().GetFilename()))
+    , view(view_)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
-    , isOpen(false)
+    , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
+    , spritesPacker(new SpritesPacker())
+    , projectStructure(new FileSystemCache(QStringList() << "yaml"))
 {
-    PreferencesStorage::Instance()->RegisterPreferences(this);
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
+    {
+        FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
+    }
+
+    FilePath::AddResourcesFolder(properties.GetConvertedResourceDirectory().absolute);
+    FilePath::AddResourcesFolder(properties.GetResourceDirectory().absolute);
+
+    if (!properties.GetFontsConfigsDirectory().absolute.IsEmpty()) //for support legacy empty project
+    {
+        editorFontSystem->SetDefaultFontsPath(properties.GetFontsConfigsDirectory().absolute);
+        editorFontSystem->LoadLocalizedFonts();
+    }
+
+    if (!properties.GetTextsDirectory().absolute.IsEmpty()) //support legacy empty project
+    {
+        editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(properties.GetTextsDirectory().absolute.GetStringValue())));
+    }
+
+    if (!properties.GetDefaultLanguage().empty()) //support legacy empty project
+    {
+        editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(properties.GetDefaultLanguage()));
+    }
+
+    FilePath uiDirectory = properties.GetUiDirectory().absolute;
+    DVASSERT(fileSystem->IsDirectory(uiDirectory));
+    uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
+
+    projectStructure->TrackDirectory(uiResourcesPath);
+    view->SetResourceDirectory(uiResourcesPath);
+
+    view->SetProjectActionsEnabled(true);
+    view->SetProjectPath(GetProjectPath());
+    view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
+
+    connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged, Qt::DirectConnection);
+    connect(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, documentGroup.get(), &DocumentGroup::FontPresetChanged, Qt::DirectConnection);
+
+    connect(view, &MainWindow::ProjectView::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
+    connect(view, &MainWindow::ProjectView::RtlChanged, this, &Project::SetRtl);
+    connect(view, &MainWindow::ProjectView::BiDiSupportChanged, this, &Project::SetBiDiSupport);
+    connect(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+    connect(view, &MainWindow::ProjectView::ReloadSprites, this, &Project::OnReloadSprites);
+    connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::OnFindFileInProject);
+
+    connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
+
+    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
+
+    spritesPacker->ClearTasks();
+    for (const auto& gfxOptions : properties.GetGfxDirectories())
+    {
+        QDir gfxDirectory(QString::fromStdString(gfxOptions.directory.absolute.GetStringValue()));
+        DVASSERT(gfxDirectory.exists());
+
+        FilePath gfxOutDir = properties.GetConvertedResourceDirectory().absolute + gfxOptions.directory.relative;
+        QDir gfxOutDirectory(QString::fromStdString(gfxOutDir.GetStringValue()));
+
+        spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
+    }
+
+#if defined(__DAVAENGINE_MACOS__)
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
+#endif
 }
 
 Project::~Project()
 {
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
-}
+    view->SetLanguages(QStringList(), QString());
+    view->SetProjectPath(QString());
+    view->SetProjectActionsEnabled(false);
 
-bool Project::Open(const QString& path)
-{
-    bool result = OpenInternal(path);
-    SetIsOpen(result);
-    return result;
-}
-
-void Project::Close()
-{
-    FilePath::RemoveResourcesFolder(projectPath + "Data/");
-
-    SetProjectName("");
-    SetProjectPath("");
-    SetIsOpen(false);
-}
-
-bool Project::OpenInternal(const QString& path)
-{
-    // Attempt to create a project
-    ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
-    if (!parser)
-    {
-        return false;
-    }
-
-    QFileInfo fileInfo(path);
-    if (!fileInfo.exists())
-    {
-        return false;
-    }
-    SetProjectName(fileInfo.fileName());
+    view->SetResourceDirectory(QString());
+    projectStructure->UntrackDirectory(uiResourcesPath);
 
     editorLocalizationSystem->Cleanup();
-
-    QDir projectDir = fileInfo.absoluteDir();
-    if (!projectDir.mkpath("." + GetScreensRelativePath()))
-    {
-        return false;
-    }
-
-    editorLocalizationSystem->Cleanup();
-
-    SetProjectPath(fileInfo.absolutePath());
-
-    YamlNode* projectRoot = parser->GetRootNode();
-    if (nullptr != projectRoot)
-    {
-        const YamlNode* fontNode = projectRoot->Get("font");
-
-        // Get font node
-        if (nullptr != fontNode)
-        {
-            // Get default font node
-            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-            if (nullptr != defaultFontPath)
-            {
-                FilePath localizationFontsPath(defaultFontPath->AsString());
-                if (FileSystem::Instance()->Exists(localizationFontsPath))
-                {
-                    editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
-                }
-            }
-        }
-
-        if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-        {
-            editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-        }
-
-        editorFontSystem->LoadLocalizedFonts();
-
-        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-        const YamlNode* localeNode = projectRoot->Get("Locale");
-        if (localizationPathNode != nullptr && localeNode != nullptr)
-        {
-            FilePath localePath = localizationPathNode->AsString();
-            QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-            QDir localePathDir(absPath);
-            editorLocalizationSystem->SetDirectory(localePathDir);
-
-            QString currentLocale = QString::fromStdString(localeNode->AsString());
-            editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-        }
-        const YamlNode* libraryNode = projectRoot->Get("Library");
-        libraryPackages.clear();
-        if (libraryNode != nullptr)
-        {
-            for (uint32 i = 0; i < libraryNode->GetCount(); i++)
-            {
-                libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
-            }
-        }
-    }
-
-    return true;
+    editorFontSystem->ClearAllFonts();
+    FilePath::RemoveResourcesFolder(properties.GetResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(properties.GetConvertedResourceDirectory().absolute);
 }
 
-bool Project::CanOpenProject(const QString& projectPath) const
+Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
 {
-    if (projectPath.isEmpty())
-    {
-        return false; //this is not performace fix. QDir return true for empty path
-    }
-    QFileInfo fileInfo(projectPath);
-    return fileInfo.exists() && fileInfo.isFile();
+    return properties.GetLibraryPackages();
 }
 
-const Vector<FilePath>& Project::GetLibraryPackages() const
+std::tuple<ResultList, ProjectProperties> Project::ParseProjectPropertiesFromFile(const QString& projectFile)
 {
-    return libraryPackages;
+    ResultList resultList;
+
+    RefPtr<YamlParser> parser(YamlParser::Create(projectFile.toStdString()));
+    if (parser.Get() == nullptr)
+    {
+        QString message = tr("Can not parse project file %1.").arg(projectFile);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+
+        return std::make_tuple(resultList, ProjectProperties());
+    }
+
+    return ProjectProperties::Parse(projectFile.toStdString(), parser->GetRootNode());
+}
+
+bool Project::EmitProjectPropertiesToFile(const ProjectProperties& properties)
+{
+    RefPtr<YamlNode> node = ProjectProperties::Emit(properties);
+
+    return YamlEmitter::SaveToYamlFile(properties.GetProjectFile(), node.Get());
+}
+
+const QStringList& Project::GetFontsFileExtensionFilter()
+{
+    static const QStringList filter(QStringList() << "*.ttf"
+                                                  << "*.otf"
+                                                  << "*.fon"
+                                                  << "*.fnt"
+                                                  << "*.def"
+                                                  << "*.df");
+    return filter;
+}
+
+const QString& Project::GetGraphicsFileExtension()
+{
+    static const QString filter(".psd");
+    return filter;
+}
+
+const QString& Project::Get3dFileExtension()
+{
+    static const QString filter(".sc2");
+    return filter;
+}
+
+const QString& Project::GetUiFileExtension()
+{
+    static const QString extension(".yaml");
+    return extension;
+}
+
+QStringList Project::GetAvailableLanguages() const
+{
+    return editorLocalizationSystem->GetAvailableLocales();
+}
+
+QString Project::GetCurrentLanguage() const
+{
+    return editorLocalizationSystem->GetCurrentLocale();
+}
+
+void Project::SetCurrentLanguage(const QString& newLanguageCode)
+{
+    editorLocalizationSystem->SetCurrentLocale(newLanguageCode);
+    editorFontSystem->RegisterCurrentLocaleFonts();
+
+    documentGroup->LanguageChanged();
+}
+
+const QStringList& Project::GetDefaultPresetNames() const
+{
+    return editorFontSystem->GetDefaultPresetNames();
 }
 
 EditorFontSystem* Project::GetEditorFontSystem() const
 {
-    return editorFontSystem;
+    return editorFontSystem.get();
 }
 
-EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+void Project::SetRtl(bool isRtl)
 {
-    return editorLocalizationSystem;
+    UIControlSystem::Instance()->SetRtl(isRtl);
+
+    documentGroup->RtlChanged();
 }
 
-const QString& Project::GetScreensRelativePath()
+void Project::SetBiDiSupport(bool support)
 {
-    static const QString relativePath("/Data/UI");
-    return relativePath;
+    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
+
+    documentGroup->BiDiSupportChanged();
 }
 
-const QString& Project::GetProjectFileName()
+void Project::SetGlobalStyleClasses(const QString& classesStr)
 {
-    static const QString projectFile("ui.uieditor");
-    return projectFile;
-}
+    Vector<String> tokens;
+    Split(classesStr.toStdString(), " ", tokens);
 
-QString Project::CreateNewProject(Result* result /*=nullptr*/)
-{
-    if (result == nullptr)
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
+    for (String& token : tokens)
     {
-        Result dummy; //code cleaner
-        result = &dummy;
+        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
     }
-    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
-    if (projectDirPath.isEmpty())
+
+    documentGroup->GlobalStyleClassesChanged();
+}
+
+QString Project::GetResourceDirectory() const
+{
+    return QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue());
+}
+
+void Project::OnReloadSprites()
+{
+    if (!documentGroup->TryCloseAllDocuments())
     {
-        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
-        return "";
+        return;
     }
-    bool needOverwriteProjectFile = true;
-    QDir projectDir(projectDirPath);
-    const QString projectFileName = GetProjectFileName();
-    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
-    if (QFile::exists(fullProjectFilePath))
+
+    view->ExecDialogReloadSprites(spritesPacker.get());
+}
+
+void Project::OnReloadSpritesFinished()
+{
+    Sprite::ReloadSprites();
+}
+
+bool Project::TryCloseAllDocuments()
+{
+    bool hasUnsaved = documentGroup->HasUnsavedDocuments();
+
+    if (hasUnsaved)
     {
-        if (QMessageBox::Yes == QMessageBox::question(qApp->activeWindow(), tr("Project file exists!"), tr("Project file %1 exists! Open this project?").arg(fullProjectFilePath)))
+        int ret = QMessageBox::question(
+        view->mainWindow,
+        tr("Save changes"),
+        tr("Some files has been modified.\n"
+           "Do you want to save your changes?"),
+        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
+        if (ret == QMessageBox::Cancel)
         {
-            return fullProjectFilePath;
+            return false;
         }
-
-        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
-        return "";
-    }
-    QFile projectFile(fullProjectFilePath);
-    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
-    {
-        *result = Result(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
-        return "";
-    }
-    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreensRelativePath()))
-    {
-        *result = Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
-        return "";
-    }
-    return fullProjectFilePath;
-}
-
-bool Project::IsOpen() const
-{
-    return isOpen;
-}
-
-void Project::SetIsOpen(bool arg)
-{
-    if (isOpen == arg)
-    {
-        //return; //TODO: implement this after we create CloseProject function
-    }
-    isOpen = arg;
-    if (arg)
-    {
-        ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
-        QString newProjectPath = GetProjectPath() + GetProjectName();
-        QStringList projectsPathes = GetProjectsHistory();
-        projectsPathes.removeAll(newProjectPath);
-        projectsPathes += newProjectPath;
-        while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
+        else if (ret == QMessageBox::SaveAll)
         {
-            projectsPathes.removeFirst();
+            documentGroup->SaveAllDocuments();
         }
-        projectsHistory = projectsPathes.join('\n').toStdString();
     }
-    emit IsOpenChanged(arg);
+
+    documentGroup->CloseAllDocuments();
+
+    return true;
+}
+
+void Project::OnFindFileInProject()
+{
+    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);
+    if (filePath.isEmpty())
+    {
+        return;
+    }
+    view->SelectFile(filePath);
+    documentGroup->AddDocument(filePath);
+}
+
+void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)
+{
+    spritesPacker->SetCacheClient(newCacheClient, "QuickEd.ReloadSprites");
 }
 
 QString Project::GetProjectPath() const
 {
-    return QString::fromStdString(projectPath.GetAbsolutePathname());
+    return QString::fromStdString(properties.GetProjectFile().GetStringValue());
 }
 
-QString Project::GetProjectName() const
+const QString& Project::GetProjectDirectory() const
+{
+    return projectDirectory;
+}
+
+const QString& Project::GetProjectName() const
 {
     return projectName;
-}
-
-QStringList Project::GetProjectsHistory() const
-{
-    QString history = QString::fromStdString(projectsHistory);
-    return history.split("\n", QString::SkipEmptyParts);
-}
-
-void Project::SetProjectPath(QString arg)
-{
-    if (GetProjectPath() != arg)
-    {
-        if (!projectPath.IsEmpty())
-        {
-            FilePath::RemoveResourcesFolder(projectPath + "Data/");
-        }
-        projectPath = arg.toStdString().c_str();
-        if (!projectPath.IsEmpty())
-        {
-            projectPath.MakeDirectoryPathname();
-            FilePath::AddResourcesFolder(projectPath + "Data/");
-        }
-        emit ProjectPathChanged(arg);
-    }
-}
-
-void Project::SetProjectName(QString arg)
-{
-    if (projectName != arg)
-    {
-        projectName = arg;
-        emit ProjectNameChanged(arg);
-    }
 }

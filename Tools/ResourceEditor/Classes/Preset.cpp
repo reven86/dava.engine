@@ -1,4 +1,6 @@
 #include "Preset.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
@@ -11,8 +13,6 @@
 #include "Utils/StringFormat.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
-
-#include "Project/ProjectManager.h"
 
 #include "Base/GlobalEnum.h"
 
@@ -100,7 +100,9 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
 FilePath CreatePresetFolderPathname(const String& folder)
 {
-    const FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    const FilePath& projectPath = data->GetProjectPath();
     FilePath folderPath = projectPath + folder;
     folderPath.MakeDirectoryPathname();
     return folderPath;

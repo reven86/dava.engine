@@ -1,15 +1,18 @@
 #include "FMODSoundBrowser.h"
-#include "ui_soundbrowser.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Scene/SceneEditor2.h"
-#include "Project/ProjectManager.h"
+
+#include "Reflection/ReflectedType.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "ui_soundbrowser.h"
 
 #include <QTreeWidget>
 #include <QMessageBox>
 #include <QLabel>
 #include <QSlider>
 #include <QToolTip>
-
-#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     : QDialog(parent)
@@ -28,7 +31,8 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     QObject::connect(this, SIGNAL(accepted()), this, SLOT(OnAccepted()));
     QObject::connect(this, SIGNAL(rejected()), this, SLOT(OnRejected()));
 
-    QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(OnProjectOpened(const QString&)));
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
+    projectDataWrapper.AddListener(this);
 
     SetSelectedItem(0);
 
@@ -53,11 +57,6 @@ DAVA::String FMODSoundBrowser::GetSelectSoundEvent()
     }
 
     return "";
-}
-
-void FMODSoundBrowser::OnProjectOpened(const QString&)
-{
-    UpdateEventTree();
 }
 
 void FMODSoundBrowser::UpdateEventTree()
@@ -107,6 +106,14 @@ void FMODSoundBrowser::SetSelectedItem(QTreeWidgetItem* item)
         ui->selectButton->setDisabled(false);
     else
         ui->selectButton->setDisabled(true);
+}
+
+void FMODSoundBrowser::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+{
+    if (fields.count(ProjectManagerData::ProjectPathProperty) > 0 || fields.empty())
+    {
+        UpdateEventTree();
+    }
 }
 
 void FMODSoundBrowser::SelectItemAndExpandTreeByEventName(const DAVA::String& eventName)

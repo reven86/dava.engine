@@ -18,7 +18,7 @@ Vector4PropertyDelegate::~Vector4PropertyDelegate()
 {
 }
 
-QWidget* Vector4PropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* Vector4PropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     QLineEdit* lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));

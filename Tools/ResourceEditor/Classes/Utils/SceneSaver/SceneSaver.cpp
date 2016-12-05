@@ -3,10 +3,10 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Scene/SceneHelper.h"
-#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 #include "Main/QtUtils.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
@@ -90,8 +90,9 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 
     //scene->Update(0.1f);
 
-    FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
-    SceneValidator::Instance()->ValidateScene(scene, fileName);
+    SceneValidator validator;
+    validator.SetPathForChecking(sceneUtils.dataSourceFolder);
+    validator.ValidateScene(scene, fileName);
 
     {
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
@@ -135,19 +136,20 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
         Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
     }
 
-    SceneValidator::Instance()->SetPathForChecking(oldPath);
-
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
     Logger::FrameworkDebug("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);
 }
 
 void SceneSaver::CopyTextures(DAVA::Scene* scene)
 {
-    TexturesMap::const_iterator endIt = texturesForSave.end();
-    TexturesMap::iterator it = texturesForSave.begin();
-    for (; it != endIt; ++it)
+    for (const auto& it : texturesForSave)
     {
-        CopyTexture(it->first);
+        if (it.first.GetType() == FilePath::PATH_IN_MEMORY)
+        {
+            continue;
+        }
+
+        CopyTexture(it.first);
     }
 }
 
@@ -350,7 +352,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     if (pathname.empty())
         return;
 
-    FilePath projectPath = ProjectManager::CreateProjectPathFromPath(sceneFolder);
+    FilePath projectPath = ProjectManagerData::CreateProjectPathFromPath(sceneFolder);
     if (projectPath.IsEmpty())
     {
         Logger::Error("Can't copy custom colors texture (%s)", pathname.c_str());
@@ -361,7 +363,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     sceneUtils.AddFile(texPathname);
 
     FilePath newTexPathname = sceneUtils.GetNewFilePath(texPathname);
-    FilePath newProjectPathname = ProjectManager::CreateProjectPathFromPath(sceneUtils.dataFolder);
+    FilePath newProjectPathname = ProjectManagerData::CreateProjectPathFromPath(sceneUtils.dataFolder);
     if (newProjectPathname.IsEmpty())
     {
         Logger::Error("Can't save custom colors texture (%s)", pathname.c_str());

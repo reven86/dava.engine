@@ -21,6 +21,7 @@
 #include "Debug/Private/ImGui.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Input/InputSystem.h"
@@ -75,6 +76,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
+    context->settings = new EngineSettings();
 }
 
 EngineBackend::~EngineBackend()
@@ -584,6 +586,9 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = surfSize.dx / size.dx;
     rendererParams.scaleY = surfSize.dy / size.dy;
 
+    rendererParams.renderingErrorCallbackContext = this;
+    rendererParams.renderingErrorCallback = &EngineBackend::OnRenderingError;
+
     w->InitCustomRenderParams(rendererParams);
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
@@ -708,6 +713,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     delete context->analyticsCore;
+    delete context->settings;
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
 
@@ -726,8 +732,8 @@ void EngineBackend::DestroySubsystems()
         delete context->inputSystem;
     }
 
-    context->fontManager->Release();
     context->uiControlSystem->Release();
+    context->fontManager->Release();
     context->animationManager->Release();
     context->renderSystem2D->Release();
     context->performanceSettings->Release();
@@ -763,6 +769,18 @@ void EngineBackend::DestroySubsystems()
     context->systemTimer->Release();
 
     context->logger->Release();
+}
+
+void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
+{
+    EngineBackend* self = static_cast<EngineBackend*>(param);
+    self->engine->renderingError.Emit(err);
+
+    // abort if signal was ignored
+    String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x", static_cast<DAVA::uint32>(err));
+    DVASSERT_MSG(0, info.c_str());
+    Logger::Error("%s", info.c_str());
+    abort();
 }
 
 } // namespace Private
