@@ -2,7 +2,7 @@
 
 #include "TArc/DataProcessing/DataNode.h"
 
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Base/RefPtr.h"
 
 #include <QString>

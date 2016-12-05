@@ -279,7 +279,7 @@ DAVA_TARC_TESTCLASS(FieldBinderTest)
         mockObject = new FieldBinderTestDetail::SingleBindMockObject(this);
         DAVA::TArc::FieldDescriptor descr;
         descr.fieldName = DAVA::FastName("v1");
-        descr.type = DAVA::ReflectedType::Get<FieldBinderTestDetail::DataNode1>();
+        descr.type = DAVA::ReflectedTypeDB::Get<FieldBinderTestDetail::DataNode1>();
         fieldBinder->BindField(descr, DAVA::MakeFunction(mockObject, &FieldBinderTestDetail::MockObject::ValueChanged));
         EXPECT_CALL(*mockObject, ValueChanged(_))
         .Times(4);
@@ -290,14 +290,14 @@ DAVA_TARC_TESTCLASS(FieldBinderTest)
         mockObject = new FieldBinderTestDetail::DualBindMockObject(this);
         DAVA::TArc::FieldDescriptor fieldDescr1;
         fieldDescr1.fieldName = DAVA::FastName("v1");
-        fieldDescr1.type = DAVA::ReflectedType::Get<FieldBinderTestDetail::DataNode1>();
+        fieldDescr1.type = DAVA::ReflectedTypeDB::Get<FieldBinderTestDetail::DataNode1>();
         fieldBinder->BindField(fieldDescr1, DAVA::MakeFunction(mockObject, &FieldBinderTestDetail::MockObject::ValueChanged));
         EXPECT_CALL(*mockObject, ValueChanged(_))
         .Times(5);
 
         DAVA::TArc::FieldDescriptor fieldDescr2;
         fieldDescr2.fieldName = DAVA::FastName("fv1");
-        fieldDescr2.type = DAVA::ReflectedType::Get<FieldBinderTestDetail::DataNode2>();
+        fieldDescr2.type = DAVA::ReflectedTypeDB::Get<FieldBinderTestDetail::DataNode2>();
         fieldBinder->BindField(fieldDescr2, DAVA::MakeFunction(mockObject, &FieldBinderTestDetail::MockObject::ValueChanged2));
         EXPECT_CALL(*mockObject, ValueChanged2(_))
         .Times(5);

@@ -70,7 +70,7 @@ void SceneTabbar::OnActiveTabChanged()
 {
     SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
 
-    Reflection ref = model.GetField(Any(activeTabPropertyName)).ref;
+    Reflection ref = model.GetField(Any(activeTabPropertyName));
     DVASSERT(ref.IsValid());
     Any value = ref.GetValue();
     DVASSERT(value.CanCast<uint64>());
@@ -111,7 +111,7 @@ void SceneTabbar::OnTabsCollectionChanged()
             existsIds.emplace(data.value<uint64>(), i);
         }
 
-        Reflection ref = model.GetField(tabsPropertyName).ref;
+        Reflection ref = model.GetField(tabsPropertyName);
         Vector<Reflection::Field> fields = ref.GetFields();
         setEnabled(!fields.empty());
 
@@ -119,14 +119,14 @@ void SceneTabbar::OnTabsCollectionChanged()
         {
             DVASSERT(field.key.CanCast<uint64>());
             uint64 id = field.key.Cast<uint64>();
-            Reflection title = field.ref.GetField(tabTitlePropertyName).ref;
+            Reflection title = field.ref.GetField(tabTitlePropertyName);
             DVASSERT(title.IsValid());
             Any titleValue = title.GetValue();
             DVASSERT(titleValue.CanCast<String>());
             QString titleText = QString::fromStdString(titleValue.Cast<String>());
 
             QString tooltipText;
-            Reflection tooltip = field.ref.GetField(tabTooltipPropertyName).ref;
+            Reflection tooltip = field.ref.GetField(tabTooltipPropertyName);
             if (tooltip.IsValid())
             {
                 Any tooltipValue = tooltip.GetValue();
@@ -180,13 +180,13 @@ void SceneTabbar::OnCurrentTabChanged(int currentTab)
 
     if (currentTab == -1)
     {
-        model.GetField(activeTabPropertyName).ref.SetValue(uint64(0));
+        model.GetField(activeTabPropertyName).SetValue(uint64(0));
         return;
     }
 
     QVariant data = tabData(currentTab);
     DVASSERT(data.canConvert<uint64>());
-    model.GetField(activeTabPropertyName).ref.SetValue(data.value<uint64>());
+    model.GetField(activeTabPropertyName).SetValue(data.value<uint64>());
 }
 
 void SceneTabbar::OnCloseTabRequest(int index)

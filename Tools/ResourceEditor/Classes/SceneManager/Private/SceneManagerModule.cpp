@@ -207,13 +207,13 @@ void SceneManagerModule::PostInit()
 
     {
         DAVA::TArc::FieldDescriptor fieldDescr;
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneTabsModel>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneTabsModel>();
         fieldDescr.fieldName = DAVA::FastName(DAVA::TArc::SceneTabbar::activeTabPropertyName);
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnActiveTabChanged));
     }
     {
         DAVA::TArc::FieldDescriptor fieldDescr;
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         fieldDescr.fieldName = DAVA::FastName(SceneData::sceneChangedPropertyName);
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnScenePathChanged));
 
@@ -226,7 +226,7 @@ void SceneManagerModule::PostInit()
     params.ui = ui;
     params.menuSubPath << "File";
     params.predicateFieldDescriptor.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-    params.predicateFieldDescriptor.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+    params.predicateFieldDescriptor.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
     params.enablePredicate = [](const DAVA::Any& v) -> DAVA::Any
     {
         return v.CanCast<DAVA::FilePath>() && !v.Cast<DAVA::FilePath>().IsEmpty();
@@ -282,7 +282,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-        fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
         });
@@ -306,7 +306,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-        fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
         });
@@ -333,7 +333,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
-        fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
         });
@@ -354,7 +354,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
@@ -376,7 +376,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
@@ -408,7 +408,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
@@ -426,7 +426,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         QtAction* action = new QtAction(accessor, QStringLiteral("Save To Folder With Children"));
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        fieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
             return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
@@ -480,7 +480,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor descriptor;
         descriptor.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        descriptor.type = DAVA::ReflectedType::Get<SceneData>();
+        descriptor.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, descriptor, [](const DAVA::Any& v) {
             return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
@@ -499,7 +499,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor enabledFieldDescr;
         enabledFieldDescr.fieldName = DAVA::FastName(SceneData::sceneLandscapeToolsPropertyName);
-        enabledFieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        enabledFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, enabledFieldDescr, [](const DAVA::Any& v) -> DAVA::Any
                                          {
                                              return v.CanCast<DAVA::uint32>() && v.Cast<DAVA::uint32>() == 0;
@@ -507,7 +507,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor checkedFieldDescr;
         checkedFieldDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
-        checkedFieldDescr.type = DAVA::ReflectedType::Get<SceneManagerModuleDetail::TexturesGPUData>();
+        checkedFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::TexturesGPUData>();
         action->SetStateUpdationFunction(QtAction::Checked, checkedFieldDescr, [gpu](const DAVA::Any& v)
                                          {
                                              return v.CanCast<DAVA::eGPUFamily>() && v.Cast<DAVA::eGPUFamily>() == gpu;
@@ -554,14 +554,14 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor sceneFieldDescr;
         sceneFieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        sceneFieldDescr.type = DAVA::ReflectedType::Get<SceneData>();
+        sceneFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
         action->SetStateUpdationFunction(QtAction::Enabled, sceneFieldDescr, [](const DAVA::Any& v) {
             return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
         });
 
         FieldDescriptor currentGPUDescr;
         currentGPUDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
-        currentGPUDescr.type = DAVA::ReflectedType::Get<SceneManagerModuleDetail::TexturesGPUData>();
+        currentGPUDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::TexturesGPUData>();
         action->SetStateUpdationFunction(QtAction::Text, currentGPUDescr, [](const DAVA::Any& v)
                                          {
                                              DAVA::String result;

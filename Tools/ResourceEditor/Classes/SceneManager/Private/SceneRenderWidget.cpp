@@ -22,7 +22,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     , widgetDelegate(widgetDelegate_)
 {
     using namespace DAVA::TArc;
-    activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedType::Get<SceneData>());
+    activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<SceneData>());
     activeSceneWrapper.SetListener(this);
 
     DataContext* ctx = accessor->GetGlobalContext();

@@ -95,7 +95,7 @@ void ProjectManagerModule::CreateActions()
         QtAction* closeProjectAction = new QtAction(GetAccessor(), closeProjectsName, nullptr);
 
         FieldDescriptor fieldDescr;
-        fieldDescr.type = DAVA::ReflectedType::Get<ProjectManagerData>();
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
         closeProjectAction->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
             return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();

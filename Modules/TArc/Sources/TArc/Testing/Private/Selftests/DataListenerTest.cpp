@@ -37,17 +37,17 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         ctx->CreateData(std::make_unique<DataListenerNode>());
         TEST_VERIFY(ctx->GetData<DataListenerNode>() != nullptr);
 
-        activeWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        activeWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         activeWrapper.SetListener(&listener);
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{}));
         EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{}));
         EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{}));
 
-        secondWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        secondWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         secondWrapper.SetListener(&secondListener);
 
-        bothWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        bothWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         bothWrapper.SetListener(&bothListener);
     }
 
@@ -102,7 +102,7 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     DAVA_TEST (ListenerChainTest)
     {
         using namespace ::testing;
-        activeWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        activeWrapper = CreateWrapper(DAVA::ReflectedTypeDB::Get<DataListenerNode>());
         activeWrapper.SetListener(&listener);
 
         {

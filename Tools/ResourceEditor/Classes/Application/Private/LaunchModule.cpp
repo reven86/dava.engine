@@ -24,7 +24,7 @@ public:
         : module(module_)
     {
         DAVA::TArc::ContextAccessor* accessor = module->GetAccessor();
-        wrapper = accessor->CreateWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+        wrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
         wrapper.SetListener(this);
     }
 

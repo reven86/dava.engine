@@ -66,7 +66,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
             propsItem.Set(Settings::Internal_LastProjectPath.c_str(), firstFakeProjectPath);
         }
 
-        wrapper = GetAccessor()->CreateWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+        wrapper = GetAccessor()->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
         wrapper.SetListener(&listener);
 
         InSequence sequence;
