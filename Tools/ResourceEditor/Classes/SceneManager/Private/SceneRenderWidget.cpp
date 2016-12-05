@@ -194,6 +194,12 @@ void SceneRenderWidget::OnMouseOverSelection(SceneEditor2* scene, const Selectab
     static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
 
     DataContext* ctx = accessor->GetActiveContext();
+    if (ctx == nullptr)
+    {
+        renderWidget->unsetCursor();
+        return;
+    }
+
     SceneData* data = ctx->GetData<SceneData>();
 
     if ((data->GetScene() == scene) && (objects != nullptr))
