@@ -245,11 +245,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
             char8* origData = nullptr;
             char8* newData = nullptr;
 
-            File* origFile = nullptr;
-            if (FileSystem::Instance()->IsFile(origPath))
-            {
-                origFile = File::Create(origPath, File::OPEN | File::READ);
-            }
+            File* origFile = File::Create(origPath, File::OPEN | File::READ);
             if (nullptr != origFile)
             {
                 uint32 origSize = static_cast<uint32>(origFile->GetSize());
@@ -261,12 +257,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
                 patchInfo.origCRC = CRC32::ForBuffer(origData, origSize);
             }
 
-            File* newFile = nullptr;
-            if (FileSystem::Instance()->IsFile(newPath))
-            {
-                newFile = File::Create(newPath, File::OPEN | File::READ);
-            }
-
+            File* newFile = File::Create(newPath, File::OPEN | File::READ);
             if (nullptr != newFile)
             {
                 uint32 newSize = static_cast<uint32>(newFile->GetSize());
