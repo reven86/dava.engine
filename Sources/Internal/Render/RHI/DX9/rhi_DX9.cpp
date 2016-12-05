@@ -250,7 +250,7 @@ struct AdapterInfo
 
 const char* dx9_AdapterInfo(const D3DADAPTER_IDENTIFIER9& info)
 {
-    static char buffer[256] = {};
+    static char buffer[1024] = {};
     memset(buffer, 0, sizeof(buffer));
 
     sprintf(buffer, "`%s` at `%s` (vendor: 0x%04x, subsystem: 0x%04x, driver: %u.%u.%u.%u)",
