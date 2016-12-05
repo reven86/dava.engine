@@ -5,7 +5,7 @@
 
 namespace DAVA
 {
-~UIUpdateSystem::UIUpdateSystem()
+UIUpdateSystem::~UIUpdateSystem()
 {
 }
 

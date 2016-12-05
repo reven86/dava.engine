@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-~UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent()
+UICustomUpdateDeltaComponent::~UICustomUpdateDeltaComponent()
 {
 }
 

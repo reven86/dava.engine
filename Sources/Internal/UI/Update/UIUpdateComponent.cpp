@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-~UIUpdateComponent::UIUpdateComponent()
+UIUpdateComponent::~UIUpdateComponent()
 {
 }
 
