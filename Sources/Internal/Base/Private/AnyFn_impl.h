@@ -177,7 +177,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type to count mismatch");
+        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type or count mismatch");
     }
 };
 
@@ -299,13 +299,13 @@ inline AnyFn::Params::Params()
 template <typename Ret, typename... Args>
 AnyFn::Params& AnyFn::Params::Set()
 {
-    retType = Type::Instance<Ret>();
-    return SetArgs<Args...>();
+    return SetArgs<Args...>(Type::Instance<Ret>());
 }
 
 template <typename... Args>
-AnyFn::Params& AnyFn::Params::SetArgs()
+AnyFn::Params& AnyFn::Params::SetArgs(const Type* retType_)
 {
+    retType = retType_;
     argsType.reserve(sizeof...(Args));
 
     auto args_push_back = [this](const Type* t) {
@@ -325,9 +325,9 @@ inline AnyFn::Params AnyFn::Params::From()
 }
 
 template <typename... Args>
-inline AnyFn::Params AnyFn::Params::FromArgs()
+inline AnyFn::Params AnyFn::Params::FromArgs(const Type* retType_)
 {
-    return Params().SetArgs<Args...>();
+    return Params().SetArgs<Args...>(retType_);
 }
 
 } // namespace DAVA

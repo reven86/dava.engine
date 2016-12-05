@@ -3,7 +3,7 @@
 #include "Debug/DVAssert.h"
 #include "Base/TemplateHelpers.h"
 
-#include "Reflection/ReflectedType.h"
+#include "Reflection/Reflection.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
@@ -198,7 +198,7 @@ void QtReflected::CreateMetaObject()
     DVASSERT(wrapper.HasData());
     Reflection reflectionData = wrapper.GetData();
 
-    const ReflectedType* type = reflectionData.GetReflectedType();
+    const ReflectedType* type = reflectionData.GetValueObject().GetReflectedType();
 
     SCOPE_EXIT
     {
