@@ -40,12 +40,12 @@ void ComboPropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& in
 {
     QComboBox* comboBox = editor->findChild<QComboBox*>("comboBox");
 
-    bool wasBlocked = comboBox->blockSignals(true);
-    int comboIndex = comboBox->findText(index.data(Qt::DisplayRole).toString());
-    comboBox->setCurrentIndex(comboIndex);
-
-    comboBox->setEditText(index.data(Qt::DisplayRole).toString());
-    comboBox->blockSignals(wasBlocked);
+    {
+        const QSignalBlocker blocker(comboBox);
+        int comboIndex = comboBox->findText(index.data(Qt::DisplayRole).toString());
+        comboBox->setCurrentIndex(comboIndex);
+        comboBox->setEditText(index.data(Qt::DisplayRole).toString());
+    }
 
     BasePropertyDelegate::SetValueModified(editor, false);
 }

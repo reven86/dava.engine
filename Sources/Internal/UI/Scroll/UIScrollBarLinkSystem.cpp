@@ -18,7 +18,7 @@ UIScrollBarLinkSystem::~UIScrollBarLinkSystem()
 void UIScrollBarLinkSystem::RegisterControl(UIControl* control)
 {
     UIScrollBarDelegateComponent* component = control->GetComponent<UIScrollBarDelegateComponent>();
-    if (component)
+    if (component != nullptr)
     {
         LinkScrollBar(component);
     }
@@ -31,7 +31,7 @@ void UIScrollBarLinkSystem::RegisterControl(UIControl* control)
 void UIScrollBarLinkSystem::UnregisterControl(UIControl* control)
 {
     UIScrollBarDelegateComponent* component = control->GetComponent<UIScrollBarDelegateComponent>();
-    if (component)
+    if (component != nullptr)
     {
         UnlinkScrollBar(component);
     }
