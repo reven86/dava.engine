@@ -102,7 +102,7 @@ public:
                 obj->Untrack(this);
             }
 
-            it->second.deleted = true;
+            connections.erase(it);
         }
     }
 
@@ -120,10 +120,12 @@ public:
                 if (it->second.obj == obj)
                 {
                     obj->Untrack(this);
-                    it->second.deleted = true;
+                    it = connections.erase(it);
                 }
-
-                it++;
+                else
+                {
+                    it++;
+                }
             }
         }
     }
@@ -139,8 +141,9 @@ public:
             {
                 obj->Untrack(this);
             }
-            con.second.deleted = true;
         }
+
+        connections.clear();
     }
 
     void Track(SigConnectionID id, TrackedObject* obj)
@@ -209,7 +212,6 @@ protected:
             , obj(obj_)
             , tid(tid_)
             , blocked(false)
-            , deleted(false)
         {
         }
 
@@ -217,7 +219,6 @@ protected:
         TrackedObject* obj;
         ThreadIDType tid;
         bool blocked;
-        bool deleted;
     };
 
     MutexType mutex;
@@ -255,23 +256,19 @@ public:
         auto iter = Base::connections.begin();
         while (iter != Base::connections.end())
         {
-            if (iter->second.deleted)
-            {
-                iter = Base::connections.erase(iter);
-            }
-            else
-            {
-                if (!iter->second.blocked)
-                {
-                    // Make functor copy and call its copy:
-                    //  when connected lambda with captured variables disconnects from signal while signal is emitting
-                    //  compiler destroys lambda and its captured variables
-                    auto fn = iter->second.fn;
-                    fn(args...);
-                }
+            auto next = iter;
+            ++next;
 
-                iter++;
+            if (!iter->second.blocked)
+            {
+                // Make functor copy and call its copy:
+                //  when connected lambda with captured variables disconnects from signal while signal is emitting
+                //  compiler destroys lambda and its captured variables
+                auto fn = iter->second.fn;
+                fn(args...);
             }
+
+            iter = next;
         }
     }
 };
