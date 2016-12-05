@@ -18,6 +18,12 @@
 namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
+    : UIPackageLoader(Map<String, Set<String>>())
+{
+}
+
+UIPackageLoader::UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes_)
+    : legacyPrototypes(legacyPrototypes_)
 {
     version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
@@ -39,12 +45,6 @@ UIPackageLoader::UIPackageLoader()
     {
         DVASSERT(false); // we have to remove legacy aligns support if min supported version more than version with legacy aligns
     }
-}
-
-UIPackageLoader::UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes_)
-    : DAVA::AbstractUIPackageLoader()
-    , legacyPrototypes(legacyPrototypes_)
-{
 }
 
 UIPackageLoader::~UIPackageLoader()
