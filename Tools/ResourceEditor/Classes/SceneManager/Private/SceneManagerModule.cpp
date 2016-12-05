@@ -702,6 +702,26 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
         }
     }
 
+    // if scene with "scenePath" have already been opened, we should simply activate it
+    {
+        DataContext::ContextID contextToActivate = DataContext::Empty;
+        accessor->ForEachContext([scenePath, &contextToActivate](DataContext& ctx)
+                                 {
+                                     SceneData* data = ctx.GetData<SceneData>();
+                                     if (data->scene->GetScenePath() == scenePath)
+                                     {
+                                         DVASSERT(contextToActivate == DataContext::Empty);
+                                         contextToActivate = ctx.GetID();
+                                     }
+                                 });
+
+        if (contextToActivate != DataContext::Empty)
+        {
+            contextManager->ActivateContext(contextToActivate);
+            return;
+        }
+    }
+
     UI* ui = GetUI();
     WaitDialogParams waitDlgParams;
     waitDlgParams.message = QString("Opening scene\n%1").arg(scenePath.GetAbsolutePathname().c_str());
