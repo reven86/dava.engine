@@ -1560,7 +1560,7 @@ void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 
 void QtMainWindow::OnSaveHeightmapToImage()
 {
-    if (MainWindowDetails::IsSavingAllowed("Save heightmap to Image"))
+    if (MainWindowDetails::IsSavingAllowed("Save heightmap to Image") == false)
     {
         return;
     }
@@ -1595,7 +1595,7 @@ void QtMainWindow::OnSaveHeightmapToImage()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
-    if (MainWindowDetails::IsSavingAllowed("Save tiled texture"))
+    if (MainWindowDetails::IsSavingAllowed("Save tiled texture") == false)
     {
         return;
     }
@@ -1881,53 +1881,8 @@ void QtMainWindow::OnCustomColorsEditor()
         return;
     }
 
-    if (sceneEditor->customColorsSystem->ChangesPresent())
-    {
-        DAVA::FilePath currentTexturePath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-
-        if (!DAVA::FileSystem::Instance()->Exists(currentTexturePath) && !SelectCustomColorsTexturePath())
-        {
-            ui->actionCustomColorsEditor->setChecked(true);
-            return;
-        }
-    }
-
     sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableCustomColorsCommand(sceneEditor.Get(), true)));
     ui->actionCustomColorsEditor->setChecked(false);
-}
-
-bool QtMainWindow::SelectCustomColorsTexturePath()
-{
-    DAVA::RefPtr<SceneEditor2> sceneEditor = MainWindowDetails::GetCurrentScene();
-    if (!sceneEditor)
-    {
-        return false;
-    }
-    DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
-
-    QString filePath = FileDialog::getSaveFileName(nullptr,
-                                                   QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
-                                                   QString(scenePath.GetAbsolutePathname().c_str()),
-                                                   PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-    DAVA::FilePath selectedPathname(filePath.toStdString());
-    DAVA::Entity* landscape = FindLandscapeEntity(sceneEditor.Get());
-    if (selectedPathname.IsEmpty() || nullptr == landscape)
-    {
-        return false;
-    }
-
-    DAVA::KeyedArchive* customProps = GetOrCreateCustomProperties(landscape)->GetArchive();
-    if (nullptr == customProps)
-    {
-        return false;
-    }
-
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(data != nullptr);
-    DAVA::String pathToSave = selectedPathname.GetRelativePathname(data->GetProjectPath().GetAbsolutePathname());
-    customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, pathToSave);
-
-    return true;
 }
 
 void QtMainWindow::OnHeightmapEditor()

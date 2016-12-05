@@ -195,8 +195,6 @@ protected:
 
     void SynchronizeStateWithUI();
 
-    bool SelectCustomColorsTexturePath();
-
     static void SetActionCheckedSilently(QAction* action, bool checked);
 
 private slots:
