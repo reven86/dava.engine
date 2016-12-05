@@ -187,15 +187,15 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
     LoadMaterialsSettings(data);
 
-    DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+    DAVA::QualitySettingsSystem::Instance()->Load(data->projectPath + "DataSource/quality.yaml");
     DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
     DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
     fileSystem->CreateDirectory(data->GetWorkspacePath(), true);
-    if (fileSystem->Exists(data->GetDataSourcePath()))
+    if (fileSystem->Exists(data->GetDataSource3DPath()))
     {
-        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
     }
 
     data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
@@ -205,8 +205,6 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
 void ProjectManagerModule::OpenLastProject()
 {
-    ProjectManagerData* data = GetData();
-
     DAVA::FilePath projectPath;
     {
         DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
@@ -242,9 +240,9 @@ bool ProjectManagerModule::CloseProject()
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
 
         DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
-        if (fileSystem->Exists(data->GetDataSourcePath()))
+        if (fileSystem->Exists(data->GetDataSource3DPath()))
         {
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
         }
 
         data->projectPath = "";
