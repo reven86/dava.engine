@@ -120,6 +120,7 @@ public:
                 if (it->second.obj == obj)
                 {
                     obj->Untrack(this);
+                    it->second.obj = nullptr;
                     it->second.deleted = true;
                 }
 
@@ -138,6 +139,7 @@ public:
             if (nullptr != obj)
             {
                 obj->Untrack(this);
+                con.second.obj = nullptr;
             }
             con.second.deleted = true;
         }
@@ -156,7 +158,7 @@ public:
                 it->second.obj = nullptr;
             }
 
-            if (nullptr != obj)
+            if (nullptr != obj && !it->second.deleted)
             {
                 it->second.obj = obj;
                 obj->Track(this);
