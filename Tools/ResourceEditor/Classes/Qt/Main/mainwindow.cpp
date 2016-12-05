@@ -34,7 +34,6 @@
 #include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
 #include "Classes/Qt/Tools/PathDescriptor/PathDescriptor.h"
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
-#include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
 #include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
 #include "Classes/Qt/Tools/LoggerOutput/ErrorDialogOutput.h"
@@ -237,8 +236,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupWidget();
 
     qApp->installEventFilter(this);
-
-    new QtPosSaver(this);
 
     SetupDocks();
     SetupMainMenu();

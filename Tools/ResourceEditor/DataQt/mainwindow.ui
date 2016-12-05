@@ -31,6 +31,25 @@
   <property name="dockOptions">
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
+  <widget class="QFrame" name="mainFrame">
+   <layout class="QVBoxLayout" name="verticalLayout_8">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+   </layout>
+  </widget>
   <widget class="DockProperties" name="dockProperties">
    <property name="minimumSize">
     <size>
@@ -693,8 +712,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>599</width>
-          <height>69</height>
+          <width>256</width>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -822,8 +841,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>599</width>
-          <height>69</height>
+          <width>256</width>
+          <height>94</height>
          </rect>
         </property>
        </widget>

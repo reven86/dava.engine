@@ -44,7 +44,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     layout->addWidget(tabBar);
     layout->addWidget(renderWidget);
     layout->setMargin(1);
-    layout->setSpacing(3);
+    layout->setSpacing(0);
     setLayout(layout);
 
     InitDavaUI();
