@@ -475,6 +475,11 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
+    public boolean isPaused()
+    {
+        return isPaused;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void handleResume()

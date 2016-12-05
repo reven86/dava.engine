@@ -6,12 +6,23 @@ using namespace DAVA;
 #if defined(__DAVAENGINE_ANDROID__)
 
 JniUtils::JniUtils()
+#if defined(__DAVAENGINE_COREV2__)
+    : jniUtils("com/dava/engine/Utils")
+#else
     : jniUtils("com/dava/framework/JNIUtils")
+#endif
 {
+#if defined(__DAVAENGINE_COREV2__)
+    disableSleepTimer = jniUtils.GetStaticMethod<void>("disableSleepTimer");
+    enableSleepTimer = jniUtils.GetStaticMethod<void>("enableSleepTimer");
+    openURL = jniUtils.GetStaticMethod<void, jstring>("openURL");
+    generateGUID = jniUtils.GetStaticMethod<jstring>("generateGUID");
+#else
     disableSleepTimer = jniUtils.GetStaticMethod<void>("DisableSleepTimer");
     enableSleepTimer = jniUtils.GetStaticMethod<void>("EnableSleepTimer");
     openURL = jniUtils.GetStaticMethod<void, jstring>("OpenURL");
     generateGUID = jniUtils.GetStaticMethod<jstring>("GenerateGUID");
+#endif
 }
 
 bool JniUtils::DisableSleepTimer()
