@@ -98,9 +98,7 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
-
-    if (filename.IsDirectoryPathname() || fileSystem->IsDirectory(filename))
+    if (filename.IsDirectoryPathname())
     {
         return nullptr;
     }
