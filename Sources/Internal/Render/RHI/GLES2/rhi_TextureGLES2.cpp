@@ -413,7 +413,7 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
             DVASSERT(self->fbo != 0);
             GLCommand cmd[] =
             {
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, uint64(self->fbo) } },
               { GLCommand::READ_PIXELS, { 0, 0, self->width, self->height, GL_RGBA, GL_UNSIGNED_BYTE, uint64(self->mappedData) } },
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Bound_FrameBuffer } },
             };
