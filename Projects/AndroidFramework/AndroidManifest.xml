@@ -5,7 +5,7 @@
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="25" />
 
     <application>
         <receiver android:name="com.dava.framework.ScheduledNotificationReceiver"/>
