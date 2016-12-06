@@ -202,7 +202,7 @@ public final class DavaActivity extends Activity
     {
         return activitySingleton.gamepadManager;
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -670,6 +670,7 @@ public final class DavaActivity extends Activity
             case ON_ACTIVITY_REQUEST_PERMISSION_RESULT:
             	RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
             	l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
+                break;
             }
         }
     }
