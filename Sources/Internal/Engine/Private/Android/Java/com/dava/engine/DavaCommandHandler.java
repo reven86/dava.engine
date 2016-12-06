@@ -29,12 +29,12 @@ final class DavaCommandHandler extends Handler
     {
         sendCommand(eHandlerCommand.TRIGGER_PROCESS_EVENTS, view, 0);
     }
-/* uncomment after multidex enabled
+
     public void sendUpdateGamepads(DavaGamepadManager manager, long delayMs)
     {
         sendCommand(eHandlerCommand.UPDATE_GAMEPADS, manager, delayMs);
     }
-*/
+
     @Override
     public void handleMessage(Message msg)
     {
@@ -51,10 +51,8 @@ final class DavaCommandHandler extends Handler
             view.processEvents();
             break;
         case eHandlerCommand.UPDATE_GAMEPADS:
-/* uncomment after multidex enabled
             DavaGamepadManager manager = (DavaGamepadManager)msg.obj;
             manager.timeToUpdate();
-*/
             break;
         default:
             super.handleMessage(msg);

@@ -29,9 +29,7 @@ final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
                                        DavaActivity.ActivityListener,
                                        View.OnTouchListener,
-/* uncomment after multidex enabled
                                        View.OnGenericMotionListener,
-*/
                                        View.OnKeyListener
 {
     protected long windowBackendPointer = 0;
@@ -42,13 +40,11 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height, int surfaceWidth, int surfaceHeight, int dpi);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
-/* uncomment after multidex enabled
     public static native void nativeSurfaceViewOnMouseEvent(long windowBackendPointer, int action, int buttonId, float x, float y, float deltaX, float deltaY, int modifierKeys);
     public static native void nativeSurfaceViewOnTouchEvent(long windowBackendPointer, int action, int touchId, float x, float y, int modifierKeys);
     public static native void nativeSurfaceViewOnKeyEvent(long windowBackendPointer, int action, int keyCode, int unicodeChar, int modifierKeys, boolean isRepeated);
     public static native void nativeSurfaceViewOnGamepadButton(long windowBackendPointer, int deviceId, int action, int keyCode);
     public static native void nativeSurfaceViewOnGamepadMotion(long windowBackendPointer, int deviceId, int axis, float value);
-*/
     
     public DavaSurfaceView(Context context, long windowBackendPtr)
     {
@@ -62,9 +58,8 @@ final class DavaSurfaceView extends SurfaceView
         requestFocus();
         setOnTouchListener(this);
         setOnKeyListener(this);
-/* uncomment after multidex enabled
         setOnGenericMotionListener(this);
-*/
+
         DavaActivity.instance().registerActivityListener(this);
     }
     
@@ -210,15 +205,11 @@ final class DavaSurfaceView extends SurfaceView
         int source = event.getSource();
         if (source == InputDevice.SOURCE_MOUSE)
         {
-/* uncomment after multidex enabled
             handleMouseEvent(event);
-*/
         }
         else if (source == InputDevice.SOURCE_TOUCHSCREEN)
         {
-/* uncomment after multidex enabled
             handleTouchEvent(event);
-*/
         }
         return true;
     }
@@ -234,26 +225,21 @@ final class DavaSurfaceView extends SurfaceView
         // from gamepad and then from keyboard if not processed.
         if ((source & (InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) != 0)
         {
-/* uncomment after multidex enabled
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
-*/
             return true;
         }
 
         if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
         {
-/* uncomment after multidex enabled
             int modifierKeys = event.getMetaState();
             int unicodeChar = event.getUnicodeChar();
             boolean isRepeated = event.getRepeatCount() > 0;
             nativeSurfaceViewOnKeyEvent(windowBackendPointer, action, keyCode, unicodeChar, modifierKeys, isRepeated);
-*/
             return true;
         }
         return false;
     }
 
-/* uncomment after multidex enabled
     // View.OnGenericMotionListener interface
     @Override
     public boolean onGenericMotion(View v, MotionEvent event)
@@ -271,9 +257,7 @@ final class DavaSurfaceView extends SurfaceView
         }
         return false;
     }
-*/
 
-/* uncomment after multidex enabled
     private void handleGamepadMotionEvent(MotionEvent event)
     {
         int action = event.getActionMasked();
@@ -359,5 +343,4 @@ final class DavaSurfaceView extends SurfaceView
         int modifierKeys = event.getMetaState();
         nativeSurfaceViewOnMouseEvent(windowBackendPointer, action, buttonState, x, y, deltaX, deltaY, modifierKeys);
     }
-*/
 }
