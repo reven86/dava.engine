@@ -234,7 +234,7 @@ void MainWindow::OnInstall(int rowNumber)
     Application* remoteApplication = appManager->GetRemoteConfig()->GetApplication(selectedBranchID, appID);
     if (newVersion == nullptr || remoteApplication == nullptr)
     {
-        Q_ASSERT(false);
+        ErrorMessenger::LogMessage(QtCriticalMsg, "can not found remote application or version OnInstall");
         return;
     }
     AppVersion* currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);

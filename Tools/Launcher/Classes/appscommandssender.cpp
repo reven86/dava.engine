@@ -56,7 +56,7 @@ bool AppsCommandsSender::RequestQuit(const QString& appPath)
     long quitCode = static_cast<long>(LauncherListener::eMessage::QUIT);
     long replyCode = SendMessage(quitCode, appPath);
     return static_cast<eReplyInternal>(replyCode) == eReplyInternal::TARGET_NOT_FOUND
-    && static_cast<LauncherListener::eReply>(replyCode) == LauncherListener::eReply::ACCEPT;
+    || static_cast<LauncherListener::eReply>(replyCode) == LauncherListener::eReply::ACCEPT;
 }
 
 long AppsCommandsSender::SendMessage(long message, const QString& appPath)
@@ -82,7 +82,7 @@ long AppsCommandsSender::SendMessage(long message, const QString& appPath)
         data = socket->readAll();
         socket->disconnectFromServer();
         //this situation occurs when application fails on processing message
-        if (waitTimer.isActive())
+        if (waitTimer.isActive() == false)
         {
             return static_cast<long>(eReplyInternal::TIMEOUT_ERROR);
         }
