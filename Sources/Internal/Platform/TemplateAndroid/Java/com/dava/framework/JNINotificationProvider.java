@@ -103,27 +103,33 @@ public class JNINotificationProvider {
 
     static void NotifyDelayed(String uid, String title, String text, int delaySeconds, boolean useSound) {
         Context context = JNIApplication.GetApplication();
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
-        intent.putExtra("uid", uid);
-        intent.putExtra("icon", icon);
-        intent.putExtra("title", title);
-        intent.putExtra("text", text);
-        intent.putExtra("useSound", useSound);
-		if(JNIActivity.GetActivity() != null) {
-			intent.putExtra("activityClassName", JNIActivity.GetActivity().getClass().getName());
-		}
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + delaySeconds * 1000, pendingIntent);
+        if (context != null)
+        {
+	        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+	        Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
+	        intent.putExtra("uid", uid);
+	        intent.putExtra("icon", icon);
+	        intent.putExtra("title", title);
+	        intent.putExtra("text", text);
+	        intent.putExtra("useSound", useSound);
+			if(JNIActivity.GetActivity() != null) {
+				intent.putExtra("activityClassName", JNIActivity.GetActivity().getClass().getName());
+			}
+	        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+	        alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + delaySeconds * 1000, pendingIntent);
+    	}
     }
 
     static void RemoveAllDelayedNotifications() {
         Context context = JNIApplication.GetApplication();
-        Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-		notificationManager.cancelAll();
+        if (context != null)
+        {
+	        Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
+	        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+	        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+	        alarmManager.cancel(pendingIntent);
+			notificationManager.cancelAll();
+		}
     }
 
     static void HideNotification(String uid) {
