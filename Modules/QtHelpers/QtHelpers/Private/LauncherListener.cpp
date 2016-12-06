@@ -50,7 +50,7 @@ void LauncherListener::OnReadyRead()
     }
     QByteArray data = clientConnection->readAll();
     bool ok = false;
-    long code = data.toLong(&ok);
+    int code = data.toInt(&ok);
     LauncherMessageCodes::eReplyInternal replyInternal = LauncherMessageCodes::eReplyInternal::WRONG_MESSAGE_FORMAT;
     if (ok)
     {
@@ -65,7 +65,7 @@ void LauncherListener::OnReadyRead()
             replyInternal = static_cast<LauncherMessageCodes::eReplyInternal>(reply);
         }
     }
-    QByteArray reply = QByteArray::number(static_cast<long>(replyInternal));
+    QByteArray reply = QByteArray::number(static_cast<int>(replyInternal));
     clientConnection->write(reply);
     clientConnection->flush();
     clientConnection->disconnectFromServer();
