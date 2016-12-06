@@ -100,6 +100,7 @@ public:
             if (nullptr != obj)
             {
                 obj->Untrack(this);
+                it->second.obj = nullptr;
             }
 
             it->second.deleted = true;
