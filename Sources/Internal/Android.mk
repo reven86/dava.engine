@@ -413,7 +413,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/ModuleManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Render/2D/Private/.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
