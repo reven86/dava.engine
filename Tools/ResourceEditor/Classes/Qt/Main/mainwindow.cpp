@@ -196,7 +196,7 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , shortcutChecker(this)
 #endif
 {
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.AddListener(this);
 
     ActiveSceneHolder::Init();
@@ -583,7 +583,7 @@ void QtMainWindow::WaitSetValue(int value)
 
 bool QtMainWindow::IsWaitDialogOnScreen() const
 {
-    return tarcUI->HasActiveWaitDalogues();
+    return tarcUI->HasActiveWaitDalogues() || (beastWaitDialog != nullptr && beastWaitDialog->isVisible());
 }
 
 void QtMainWindow::WaitStop()
@@ -2371,20 +2371,11 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
-        OnReloadTextures();
+        // ReloadTextures should be delayed to give Qt some time for closing wait dialog before we will open new one for texture reloading.
+        delayedExecutor.DelayedExecute(DAVA::MakeFunction(this, &QtMainWindow::OnReloadTextures));
     }
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
-}
-
-void QtMainWindow::BeastWaitSetMessage(const QString& messsage)
-{
-    beastWaitDialog->SetMessage(messsage);
-}
-
-bool QtMainWindow::BeastWaitCanceled()
-{
-    return beastWaitDialog->WasCanceled();
 }
 
 void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)

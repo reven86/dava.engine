@@ -1,24 +1,26 @@
 #pragma once
-#include "Functional/Function.h"
-#include "Reflection/Wrappers.h"
+
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
+#endif
 
 namespace DAVA
 {
 template <typename GetT, typename SetT>
-class ValueWrapperStaticFn : public ValueWrapper
+class ValueWrapperStaticFnPtr : public ValueWrapper
 {
-    using Getter = Function<GetT()>;
-    using Setter = Function<void(SetT)>;
+    using Getter = GetT (*)();
+    using Setter = void (*)(SetT);
 
 public:
-    ValueWrapperStaticFn(Getter getter_, Setter setter_ = nullptr)
+    ValueWrapperStaticFnPtr(Getter getter_, Setter setter_ = nullptr)
         : ValueWrapper()
         , getter(getter_)
         , setter(setter_)
     {
     }
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
         return (nullptr == setter);
     }
@@ -32,27 +34,24 @@ public:
     {
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
-        Any ret;
-        UnrefGetT v = getter();
-        ret.Set(std::move(v));
-        return ret;
+        UnrefGetT v = (*getter)();
+
+        return Any(std::move(v));
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
-        bool ret = false;
-
         if (nullptr != setter)
         {
             const SetT& v = value.Get<UnrefSetT>();
-            setter(v);
+            (*setter)(v);
 
-            ret = true;
+            return true;
         }
 
-        return ret;
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
@@ -68,19 +67,19 @@ protected:
     Setter setter = nullptr;
 
 private:
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::false_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::false_type /* is_pointer */, std::false_type /* is_reference */) const
     {
         return ReflectedObject();
     }
 
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
     {
-        return ReflectedObject(getter());
+        return ReflectedObject((*getter)());
     }
 
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
     {
-        GetT v = getter();
+        GetT v = (*getter)();
         return ReflectedObject(&v);
     }
 };
