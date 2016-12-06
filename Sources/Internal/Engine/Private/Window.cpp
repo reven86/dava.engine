@@ -412,6 +412,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
+    uiControlSystem->CancelAllInputs();
     inputSystem->GetKeyboard().ClearAllKeys();
     hasFocus = e.stateEvent.state != 0;
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
