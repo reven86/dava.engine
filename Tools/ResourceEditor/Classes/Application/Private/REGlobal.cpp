@@ -1,57 +1,74 @@
 #include "Classes/Application/REGlobal.h"
 
-#include "TArc/Core/Private/CoreInterface.h"
+#include "TArc/Core/Core.h"
 
 namespace REGlobal
 {
 namespace REGlobalDetails
 {
-DAVA::TArc::CoreInterface* coreInstance = nullptr;
-DAVA::TArc::UI* ui = nullptr;
+DAVA::TArc::Core* coreInstance = nullptr;
+
+DAVA::TArc::CoreInterface* GetCoreInterface()
+{
+    return coreInstance->GetCoreInterface();
+}
+
+DAVA::TArc::UI* GetUI()
+{
+    return coreInstance->GetUI();
+}
 }
 
 DAVA::TArc::WindowKey MainWindowKey(DAVA::FastName("ResourceEditor"));
 
 DAVA::TArc::DataContext* GetGlobalContext()
 {
-    if (REGlobalDetails::coreInstance == nullptr)
+    DAVA::TArc::CoreInterface* coreInterface = REGlobalDetails::GetCoreInterface();
+    if (coreInterface == nullptr)
         return nullptr;
-    return REGlobalDetails::coreInstance->GetGlobalContext();
+    return coreInterface->GetGlobalContext();
 }
 
 DAVA::TArc::DataContext* GetActiveContext()
 {
-    if (REGlobalDetails::coreInstance == nullptr)
+    DAVA::TArc::CoreInterface* coreInterface = REGlobalDetails::GetCoreInterface();
+    if (coreInterface == nullptr)
         return nullptr;
-    return REGlobalDetails::coreInstance->GetActiveContext();
+    return coreInterface->GetActiveContext();
 }
 
 DAVA::TArc::OperationInvoker* GetInvoker()
 {
-    return REGlobalDetails::coreInstance;
+    return REGlobalDetails::GetCoreInterface();
 }
 
 DAVA::TArc::ContextAccessor* GetAccessor()
 {
-    return REGlobalDetails::coreInstance;
+    return REGlobalDetails::GetCoreInterface();
 }
 
 DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type)
 {
-    if (REGlobalDetails::coreInstance == nullptr)
+    DAVA::TArc::CoreInterface* coreInterface = REGlobalDetails::GetCoreInterface();
+    if (coreInterface == nullptr)
         return DAVA::TArc::DataWrapper();
-    return REGlobalDetails::coreInstance->CreateWrapper(type);
+    return coreInterface->CreateWrapper(type);
 }
 
 DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalMessageParams& params)
 {
-    return REGlobalDetails::ui->ShowModalMessage(MainWindowKey, params);
+    DAVA::TArc::UI* ui = REGlobalDetails::GetUI();
+    DVASSERT(ui != nullptr);
+    if (ui == nullptr)
+    {
+        return DAVA::TArc::ModalMessageParams::NoButton;
+    }
+    return ui->ShowModalMessage(MainWindowKey, params);
 }
 
-void InitTArcCore(DAVA::TArc::CoreInterface* core, DAVA::TArc::UI* ui)
+void InitTArcCore(DAVA::TArc::Core* core)
 {
     REGlobalDetails::coreInstance = core;
-    REGlobalDetails::ui = ui;
 }
 
 IMPL_OPERATION_ID(OpenLastProjectOperation);

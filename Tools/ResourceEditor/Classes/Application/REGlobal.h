@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class CoreInterface;
+class Core;
 class DataContext;
 }
 }
@@ -20,7 +20,7 @@ class DataContext;
 namespace REGlobal
 {
 extern DAVA::TArc::WindowKey MainWindowKey;
-void InitTArcCore(DAVA::TArc::CoreInterface* core, DAVA::TArc::UI* ui);
+void InitTArcCore(DAVA::TArc::Core* core);
 
 DAVA::TArc::DataContext* GetGlobalContext();
 DAVA::TArc::DataContext* GetActiveContext();

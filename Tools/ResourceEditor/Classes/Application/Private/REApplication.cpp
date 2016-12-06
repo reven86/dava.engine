@@ -93,7 +93,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
-    REGlobal::InitTArcCore(tarcCore->GetCoreInterface(), tarcCore->GetUI());
+    REGlobal::InitTArcCore(tarcCore);
     if (isConsoleMode)
     {
         CreateConsoleModules(tarcCore);
@@ -135,7 +135,7 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
 
 void REApplication::Cleanup()
 {
-    REGlobal::InitTArcCore(nullptr, nullptr);
+    REGlobal::InitTArcCore(nullptr);
     DAVA::SafeRelease(beastProxy);
     DAVA::SafeRelease(settingsManager);
 
