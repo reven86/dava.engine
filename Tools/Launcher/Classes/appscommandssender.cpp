@@ -9,7 +9,7 @@ namespace AppsCommandsSenderDetails
 {
 enum class eReplyInternal
 {
-    TARGET_NOT_FOUND = LauncherListener::eReply::REPLIES_COUNT,
+    TARGET_NOT_FOUND = static_cast<int>(LauncherListener::eReply::REPLIES_COUNT),
     TIMEOUT_ERROR,
     OTHER_ERROR
 };
@@ -45,21 +45,21 @@ bool AppsCommandsSender::HostIsAvailable(const QString& appPath)
 
 bool AppsCommandsSender::Ping(const QString& appPath)
 {
-    long pingCode = static_cast<long>(LauncherMessageCodes::eMessageInternal::PING);
-    long replyCode = SendMessage(pingCode, appPath);
+    int pingCode = static_cast<int>(LauncherMessageCodes::eMessageInternal::PING);
+    int replyCode = SendMessage(pingCode, appPath);
     return static_cast<LauncherMessageCodes::eReplyInternal>(replyCode) == LauncherMessageCodes::eReplyInternal::PONG;
 }
 
 bool AppsCommandsSender::RequestQuit(const QString& appPath)
 {
     using namespace AppsCommandsSenderDetails;
-    long quitCode = static_cast<long>(LauncherListener::eMessage::QUIT);
-    long replyCode = SendMessage(quitCode, appPath);
+    int quitCode = static_cast<int>(LauncherListener::eMessage::QUIT);
+    int replyCode = SendMessage(quitCode, appPath);
     return static_cast<eReplyInternal>(replyCode) == eReplyInternal::TARGET_NOT_FOUND
     && static_cast<LauncherListener::eReply>(replyCode) == LauncherListener::eReply::ACCEPT;
 }
 
-long AppsCommandsSender::SendMessage(long message, const QString& appPath)
+int AppsCommandsSender::SendMessage(int message, const QString& appPath)
 {
     using namespace AppsCommandsSenderDetails;
 
@@ -84,10 +84,10 @@ long AppsCommandsSender::SendMessage(long message, const QString& appPath)
         //this situation occurs when application fails on processing message
         if (waitTimer.isActive())
         {
-            return static_cast<long>(eReplyInternal::TIMEOUT_ERROR);
+            return static_cast<int>(eReplyInternal::TIMEOUT_ERROR);
         }
         bool ok = false;
-        long code = data.toLong(&ok);
+        int code = data.toInt(&ok);
         if (ok)
         {
             return code;
@@ -98,8 +98,8 @@ long AppsCommandsSender::SendMessage(long message, const QString& appPath)
         QLocalSocket::LocalSocketError lastError = socket->error();
         if (lastError == QLocalSocket::ServerNotFoundError)
         {
-            return static_cast<long>(eReplyInternal::TARGET_NOT_FOUND);
+            return static_cast<int>(eReplyInternal::TARGET_NOT_FOUND);
         }
     }
-    return static_cast<long>(eReplyInternal::OTHER_ERROR);
+    return static_cast<int>(eReplyInternal::OTHER_ERROR);
 }

@@ -16,8 +16,8 @@ struct SilentUpdateTask
     SilentUpdateTask(const QString& branch, const QString& app, const AppVersion* currentVersion_, const AppVersion& newVersion_, CallBack onFinished_)
         : branchID(branch)
         , appID(app)
-        , currentVersion(currentVersion_)
         , newVersion(newVersion_)
+        , currentVersion(currentVersion_)
         , onFinished(onFinished_)
     {
     }

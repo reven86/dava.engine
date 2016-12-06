@@ -17,6 +17,6 @@ public:
     bool RequestQuit(const QString& appPath);
 
 private:
-    long SendMessage(long message, const QString& appPath);
+    int SendMessage(int message, const QString& appPath);
     QLocalSocket* socket = nullptr;
 };

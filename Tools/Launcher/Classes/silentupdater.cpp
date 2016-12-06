@@ -73,7 +73,6 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
     }
 
     QByteArray readedData = reply->readAll();
-    bool success = false;
     FileManager* fileManager = appManager->GetFileManager();
     QString archivePath;
     bool archiveCreated = fileManager->CreateZipFile(readedData, archivePath);
