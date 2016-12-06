@@ -198,6 +198,11 @@ protected:
 
     void SyncWrappers()
     {
+        if (recursiveSyncGuard == true)
+        {
+            return;
+        }
+        recursiveSyncGuard = true;
         size_t index = 0;
         while (index < wrappers.size())
         {
@@ -214,6 +219,7 @@ protected:
         {
             wrapper.Sync(true);
         }
+        recursiveSyncGuard = false;
     }
 
 protected:
@@ -228,6 +234,7 @@ protected:
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
+    bool recursiveSyncGuard = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl

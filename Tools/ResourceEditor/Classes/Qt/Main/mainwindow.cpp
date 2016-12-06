@@ -370,7 +370,7 @@ void QtMainWindow::WaitSetValue(int value)
 
 bool QtMainWindow::IsWaitDialogOnScreen() const
 {
-    return tarcUI->HasActiveWaitDalogues();
+    return tarcUI->HasActiveWaitDalogues() || (beastWaitDialog != nullptr && beastWaitDialog->isVisible());
 }
 
 void QtMainWindow::WaitStop()
@@ -1784,20 +1784,13 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
-        REGlobal::GetInvoker()->Invoke(REGlobal::ReloadTexturesOperation.ID, Settings::GetGPUFormat());
+        // ReloadTextures should be delayed to give Qt some time for closing wait dialog before we will open new one for texture reloading.
+        delayedExecutor.DelayedExecute([]() {
+            REGlobal::GetInvoker()->Invoke(REGlobal::ReloadTexturesOperation.ID, Settings::GetGPUFormat());
+        });
     }
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
-}
-
-void QtMainWindow::BeastWaitSetMessage(const QString& messsage)
-{
-    beastWaitDialog->SetMessage(messsage);
-}
-
-bool QtMainWindow::BeastWaitCanceled()
-{
-    return beastWaitDialog->WasCanceled();
 }
 
 void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
