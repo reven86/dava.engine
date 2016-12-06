@@ -12,7 +12,7 @@ class UIControlPackageContext;
 class UIPackage : public BaseObject
 {
 public:
-    static const int32 CURRENT_VERSION = 5;
+    static const int32 CURRENT_VERSION = 6;
 
     UIPackage();
 
