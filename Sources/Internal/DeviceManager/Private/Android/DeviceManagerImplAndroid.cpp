@@ -40,7 +40,6 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 
     // Get displays
     const jDisplayInfoArray displaysInfo = javaDeviceManagerGetDisplaysInfoMethod(javaDeviceManagerInstance);
-    DAVA_JNI_EXCEPTION_CHECK
 
     // Convert & save to C++ DeviceManager
     const size_t displaysCount = static_cast<size_t>(env->GetArrayLength(displaysInfo));
@@ -52,7 +51,11 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
         // Java class should always put primary display into first position
         const bool isPrimary = (i == 0);
         deviceManager->displays[i] = ConvertFromJavaDisplayInfo(env, javaDisplayInfo, isPrimary);
+
+        env->DeleteLocalRef(javaDisplayInfo);
     }
+
+    env->DeleteLocalRef(displaysInfo);
 }
 
 void DeviceManagerImpl::UpdateDisplayConfig()
