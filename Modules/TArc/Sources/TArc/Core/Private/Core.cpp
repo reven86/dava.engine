@@ -214,6 +214,7 @@ protected:
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
+    bool recursiveSyncGuard = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl

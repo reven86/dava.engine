@@ -5,7 +5,6 @@
 #endif
 #include "ui_treeimportdialog.h"
 #include "Qt/Main/mainwindow.h"
-#include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 

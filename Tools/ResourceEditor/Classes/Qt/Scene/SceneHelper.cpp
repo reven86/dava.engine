@@ -17,17 +17,17 @@ void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
     else
         material->CollectLocalTextures(materialTextures);
 
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+
     for (auto const& matTex : materialTextures)
     {
         const DAVA::FilePath& texturePath = matTex->path;
         DAVA::Texture* texture = matTex->texture;
-
-        SceneValidator validator;
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        if (data)
-        {
-            validator.SetPathForChecking(data->GetProjectPath());
-        }
 
         if (texturePath.IsEmpty() || !validator.IsPathCorrectForProject(texturePath))
         {

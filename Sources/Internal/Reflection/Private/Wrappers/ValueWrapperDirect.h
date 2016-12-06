@@ -1,19 +1,23 @@
 #pragma once
-#include "Reflection/Wrappers.h"
+
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
+#endif
 
 namespace DAVA
 {
 class ValueWrapperDirect : public ValueWrapper
 {
 public:
-    ValueWrapperDirect(const Type* type_)
+    ValueWrapperDirect(const Type* type_, bool isConst_ = false)
         : type(type_)
+        , isConst(isConst_ || type->IsConst())
     {
     }
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
-        return type->IsConst();
+        return isConst || object.IsConst();
     }
 
     const Type* GetType() const override
@@ -25,11 +29,7 @@ public:
     {
         Any ret;
 
-        // TODO:
-        // optimize
-        // ...
-
-        if (object.IsValid())
+        if (!IsReadonly(object))
         {
             void* ptr = object.GetVoidPtr();
             ret.LoadValue(ptr, type);
@@ -42,14 +42,10 @@ public:
     {
         bool ret = false;
 
-        // TODO:
-        // optimize
-        // ...
-
-        if (!IsReadonly() && object.IsValid())
+        if (!IsReadonly(object) && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            const Type* inType = object.GetType()->Deref();
+            const Type* inType = object.GetReflectedType()->GetType();
             ret = value.StoreValue(ptr, inType->GetSize());
         }
 
@@ -63,6 +59,7 @@ public:
 
 protected:
     const Type* type;
+    bool isConst;
 };
 
 } // namespace DAVA
