@@ -13,7 +13,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QJsonObject;
 
-class CommandListener : public QObject
+class BAManagerClient : public QObject
 {
     Q_OBJECT
 
@@ -24,7 +24,7 @@ public:
         SUCCESS = 2,
         FAILURE = 3
     };
-    CommandListener(ApplicationManager* appManager, QObject* parent = nullptr);
+    BAManagerClient(ApplicationManager* appManager, QObject* parent = nullptr);
 
     void AskForCommands();
 

@@ -1,4 +1,4 @@
-#include "CommandListener.h"
+#include "bamanagerclient.h"
 #include "applicationmanager.h"
 #include "errormessenger.h"
 #include "silentupdater.h"
@@ -18,7 +18,7 @@
 #include <QProcess>
 #include <QDir>
 
-CommandListener::CommandListener(ApplicationManager* appManager_, QObject* parent /* = nullptr */)
+BAManagerClient::BAManagerClient(ApplicationManager* appManager_, QObject* parent /* = nullptr */)
     : QObject(parent)
     , silentUpdater(new SilentUpdater(appManager_, this))
     , applicationManager(appManager_)
@@ -27,22 +27,22 @@ CommandListener::CommandListener(ApplicationManager* appManager_, QObject* paren
 {
     updateTimer->setSingleShot(false);
     updateTimer->setInterval(90 * 1000);
-    connect(updateTimer, &QTimer::timeout, this, &CommandListener::AskForCommands);
-    connect(networkManager, &QNetworkAccessManager::finished, this, &CommandListener::OnReply);
+    connect(updateTimer, &QTimer::timeout, this, &BAManagerClient::AskForCommands);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &BAManagerClient::OnReply);
     updateTimer->start();
 }
 
-QString CommandListener::GetProtocolKey() const
+QString BAManagerClient::GetProtocolKey() const
 {
     return protocolKey;
 }
 
-void CommandListener::SetProtocolKey(const QString& key)
+void BAManagerClient::SetProtocolKey(const QString& key)
 {
     protocolKey = key.toUtf8();
 }
 
-void CommandListener::ProcessCommand(const QJsonObject& object)
+void BAManagerClient::ProcessCommand(const QJsonObject& object)
 {
     QJsonValue commandIDValue = object["command_id"];
     if (commandIDValue.isString() == false)
@@ -76,7 +76,7 @@ void CommandListener::ProcessCommand(const QJsonObject& object)
     }
 }
 
-void CommandListener::SendReply(eResult result, const QString& commandID, const QString& message)
+void BAManagerClient::SendReply(eResult result, const QString& commandID, const QString& message)
 {
     QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=command_result";
@@ -97,12 +97,12 @@ void CommandListener::SendReply(eResult result, const QString& commandID, const 
     }
 }
 
-void CommandListener::SendReply(eResult result, const QString& message)
+void BAManagerClient::SendReply(eResult result, const QString& message)
 {
     SendReply(result, "0", message);
 }
 
-void CommandListener::AskForCommands()
+void BAManagerClient::AskForCommands()
 {
     QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=commands";
@@ -114,7 +114,7 @@ void CommandListener::AskForCommands()
     Post(urlStr, data);
 }
 
-void CommandListener::Post(const QString& urlStr, const QByteArray& data)
+void BAManagerClient::Post(const QString& urlStr, const QByteArray& data)
 {
     QNetworkRequest request;
     request.setUrl(QUrl(urlStr));
@@ -122,7 +122,7 @@ void CommandListener::Post(const QString& urlStr, const QByteArray& data)
     networkManager->post(request, data);
 }
 
-void CommandListener::OnReply(QNetworkReply* reply)
+void BAManagerClient::OnReply(QNetworkReply* reply)
 {
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError)
@@ -184,7 +184,7 @@ void CommandListener::OnReply(QNetworkReply* reply)
     }
 }
 
-void CommandListener::OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void BAManagerClient::OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QProcess* process = qobject_cast<QProcess*>(sender());
     if (process == nullptr)
@@ -209,7 +209,7 @@ void CommandListener::OnProcessFinished(int exitCode, QProcess::ExitStatus exitS
     SendReply(result, commandID, reply);
 }
 
-void CommandListener::OnProcessError(QProcess::ProcessError error)
+void BAManagerClient::OnProcessError(QProcess::ProcessError error)
 {
     QProcess* process = qobject_cast<QProcess*>(sender());
     if (process == nullptr)
@@ -229,7 +229,7 @@ void CommandListener::OnProcessError(QProcess::ProcessError error)
     SendReply(FAILURE, commandID, reply);
 }
 
-void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString& commandID)
+void BAManagerClient::LaunchProcess(const QJsonObject& requestObj, const QString& commandID)
 {
     QJsonValue commandValue = requestObj["cmd"];
     if (commandValue.isString() == false)
@@ -243,8 +243,8 @@ void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString
     ErrorMessenger::LogMessage(QtDebugMsg, "launched command from BA-manager: " + cmd);
     QProcess* process = new QProcess();
     connect(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            this, &CommandListener::OnProcessFinished);
-    connect(process, &QProcess::errorOccurred, this, &CommandListener::OnProcessError);
+            this, &BAManagerClient::OnProcessFinished);
+    connect(process, &QProcess::errorOccurred, this, &BAManagerClient::OnProcessError);
     startedCommandIDs[process] = commandID;
     QString processString =
 #ifdef Q_OS_WIN
@@ -255,7 +255,7 @@ void CommandListener::LaunchProcess(const QJsonObject& requestObj, const QString
     process->start(processString, QProcess::ReadWrite);
 }
 
-void CommandListener::SilentUpdate(const QJsonObject& requestObj, const QString& commandID)
+void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString& commandID)
 {
     QJsonValue branchNameValue = requestObj["branchName"];
     if (branchNameValue.isString() == false)

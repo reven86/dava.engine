@@ -6,7 +6,6 @@
 #include "mainwindow.h"
 #include "defines.h"
 
-#include "QtHelpers/ProcessCommunication.h"
 #include "QtHelpers/ProcessHelper.h"
 
 #include <QNetworkReply>

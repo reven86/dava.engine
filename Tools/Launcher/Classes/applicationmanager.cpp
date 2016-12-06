@@ -2,9 +2,9 @@
 #include "filemanager.h"
 #include "errormessenger.h"
 #include "filemanager.h"
+#include "appscommandssender.h"
 
 #include "QtHelpers/HelperFunctions.h"
-#include "QtHelpers/ProcessCommunication.h"
 #include "QtHelpers/ProcessHelper.h"
 
 #include <QFile>
@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QEventLoop>
+#include <QElapsedTimer>
 
 #include <thread>
 #include <atomic>
@@ -30,7 +31,7 @@ QString RemoveWhitespace(const QString& str)
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
     , fileManager(new FileManager(this))
-    , processCommunication(new ProcessCommunication(this))
+    , commandsSender(new AppsCommandsSender(this))
 
 {
     localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
@@ -93,9 +94,7 @@ AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, con
 
 bool ApplicationManager::TryStopApp(const QString& runPath) const
 {
-    ProcessCommunication::eReply reply = processCommunication->SendSync(ProcessCommunication::eMessage::QUIT, runPath);
-    //now wait until application will be really closed
-    if (reply == ProcessCommunication::eReply::ACCEPT)
+    if (commandsSender->RequestQuit(runPath))
     {
         QEventLoop eventLoop;
         std::atomic<bool> isStillRunning(true);
@@ -116,7 +115,7 @@ bool ApplicationManager::TryStopApp(const QString& runPath) const
     }
     else
     {
-        ErrorMessenger::LogMessage(QtWarningMsg, tr("Can not stop application by path %1, answer is %2").arg(runPath).arg(processCommunication->GetReplyString(reply)));
+        ErrorMessenger::LogMessage(QtWarningMsg, tr("Can not stop application by path %1").arg(runPath));
     }
     return false;
 }
@@ -135,7 +134,6 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
     }
     QString runPath = appDirPath + GetLocalAppPath(version, appID);
     bool triedToStop = false;
-
     if (ProcessHelper::IsProcessRuning(runPath))
     {
         if (triedToStop == false && CanTryStopApplication(appID))
@@ -381,9 +379,9 @@ ConfigParser* ApplicationManager::GetRemoteConfig()
     return &remoteConfig;
 }
 
-ProcessCommunication* ApplicationManager::GetProcessCommunicationModule() const
+AppsCommandsSender* ApplicationManager::GetAppsCommandsSender() const
 {
-    return processCommunication;
+    return commandsSender;
 }
 
 ConfigParser* ApplicationManager::GetLocalConfig()

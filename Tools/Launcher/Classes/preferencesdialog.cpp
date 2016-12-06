@@ -2,7 +2,7 @@
 #include "filemanager.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
-#include "CommandListener.h"
+#include "BAManagerClient.h"
 
 #include <QFileDialog>
 #include <QJsonObject>
@@ -32,7 +32,7 @@ void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDo
     }
 }
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener)
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener)
 {
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
@@ -54,7 +54,7 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     }
 }
 
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener)
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener)
 {
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);

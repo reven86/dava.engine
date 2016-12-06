@@ -11,7 +11,7 @@
 
 class FileManager;
 struct AppVersion;
-class ProcessCommunication;
+class AppsCommandsSender;
 
 class ApplicationManager : public QObject
 {
@@ -27,7 +27,7 @@ public:
     const AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID) const;
     AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID);
 
-    ProcessCommunication* GetProcessCommunicationModule() const;
+    AppsCommandsSender* GetAppsCommandsSender() const;
 
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
@@ -74,7 +74,7 @@ private:
     ConfigParser remoteConfig;
 
     FileManager* fileManager = nullptr;
-    ProcessCommunication* processCommunication = nullptr;
+    AppsCommandsSender* commandsSender = nullptr;
 };
 
 #endif // APPLICATIONMANAGER_H

@@ -5,7 +5,7 @@
 
 class FileManager;
 class ConfigDownloader;
-class CommandListener;
+class BAManagerClient;
 
 class PreferencesDialog : public QDialog, private Ui::PreferencesDialog
 {
@@ -31,5 +31,5 @@ private:
     QMap<ConfigDownloader::eURLType, QPushButton*> resetUrlWidgets;
 };
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener);
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, CommandListener* commandListener);
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener);
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener);

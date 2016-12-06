@@ -5,7 +5,7 @@
 #include "Engine/EngineContext.h"
 
 #include "QtHelpers/RunGuard.h"
-#include "QtHelpers/ProcessCommunication.h"
+#include "QtHelpers/LauncherListener.h"
 
 #include <QApplication>
 #include <QCryptographicHash>
@@ -52,14 +52,14 @@ int Process(Engine& e)
                          runGuard.reset();
                      });
     QString path = qApp->applicationFilePath();
-    ProcessCommunication processCommunication;
-    processCommunication.SetProcessRequestFunction([](ProcessCommunication::eMessage message) {
-        if (message == ProcessCommunication::eMessage::QUIT)
+    LauncherListener launcherListener;
+    launcherListener.Init([](LauncherListener::eMessage message) {
+        if (message == LauncherListener::eMessage::QUIT)
         {
             qApp->quit();
-            return ProcessCommunication::eReply::ACCEPT;
+            return LauncherListener::eReply::ACCEPT;
         }
-        return ProcessCommunication::eReply::UNKNOWN_MESSAGE;
+        return LauncherListener::eReply::UNKNOWN_MESSAGE;
     });
 
     return a.exec();

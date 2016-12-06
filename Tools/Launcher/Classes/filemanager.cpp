@@ -7,7 +7,9 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QProcess>
+
 #include <functional>
+#include <fstream>
 
 namespace FileManagerDetails
 {
@@ -263,17 +265,25 @@ void FileManager::MakeDirectory(const QString& path)
 
 bool FileManager::CreateZipFile(const QByteArray& dataToWrite, QString& filePath) const
 {
+    using namespace std;
+    //we can not use QFile::write because of bug https://bugreports.qt.io/browse/QTBUG-57468
     filePath = GetTempDownloadFilePath();
-    QFile outputFile(filePath);
-
-    if (outputFile.open(QFile::WriteOnly | QFile::Truncate))
+    try
     {
-        qint64 dataSize = dataToWrite.size();
-        qint64 written = outputFile.write(dataToWrite);
-        outputFile.close();
-        return written == dataSize;
+        ofstream outfile(filePath.toStdString().c_str(), ofstream::out | ofstream::trunc | ofstream::binary);
+        if (outfile.is_open())
+        {
+            outfile.write(dataToWrite, dataToWrite.size());
+            outfile.close();
+            return outfile.good();
+        }
+        return false;
     }
-    return false;
+    catch (const ofstream::failure& failure)
+    {
+        ErrorMessenger::LogMessage(QtWarningMsg, "can not write to file " + filePath + " the reason is " + failure.what());
+        return false;
+    }
 }
 
 void FileManager::SetFilesDirectory(const QString& newDirPath)

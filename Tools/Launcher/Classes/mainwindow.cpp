@@ -11,9 +11,8 @@
 #include "errormessenger.h"
 #include "branchesListModel.h"
 #include "branchesFilterModel.h"
-#include "CommandListener.h"
-
-#include "QtHelpers/ProcessCommunication.h"
+#include "BAManagerClient.h"
+#include "appscommandssender.h"
 
 #include <QSet>
 #include <QQueue>
@@ -123,12 +122,12 @@ MainWindow::MainWindow(QWidget* parent)
 
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
-    commandListener = new CommandListener(appManager, this);
+    baManagerClient = new BAManagerClient(appManager, this);
     //create secret shortcut
     //it will be used to get commands manually for testing reasons
     QShortcut* shortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this);
     shortCut->setContext(Qt::ApplicationShortcut);
-    connect(shortCut, &QShortcut::activated, commandListener, &CommandListener::AskForCommands);
+    connect(shortCut, &QShortcut::activated, baManagerClient, &BAManagerClient::AskForCommands);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -146,7 +145,7 @@ MainWindow::MainWindow(QWidget* parent)
     restoreState(settings.value(stateKey).toByteArray());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::LoadPreferences(fileManager, configDownloader, commandListener);
+    ::LoadPreferences(fileManager, configDownloader, baManagerClient);
 }
 
 MainWindow::~MainWindow()
@@ -156,7 +155,7 @@ MainWindow::~MainWindow()
     settings.setValue(stateKey, saveState());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::SavePreferences(fileManager, configDownloader, commandListener);
+    ::SavePreferences(fileManager, configDownloader, baManagerClient);
     SafeDelete(ui);
 }
 
