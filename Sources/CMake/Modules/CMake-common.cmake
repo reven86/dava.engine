@@ -1,7 +1,7 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 function (append_property KEY_PROP  VALUE)
     GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )

@@ -1,5 +1,4 @@
 set( DAVA_LIBRARY    "DavaFramework" )
-
 if( DavaFramework_FIND_COMPONENTS )
     set( DAVA_COMPONENTS "${DAVA_LIBRARY};${DavaFramework_FIND_COMPONENTS}" )
 
@@ -17,5 +16,4 @@ add_module_subdirectory( ${DAVA_LIBRARY}  "${CURRENT_DIR}/../../Internal"
 
 get_property( MODULES_NAME GLOBAL PROPERTY  MODULES_NAME )
 set( DAVA_LIBRARY ${MODULES_NAME})
-
-
+set( PACKAGE_${NAME}_STATIC_LIBRARIES ${MODULES_NAME} )

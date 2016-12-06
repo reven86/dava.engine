@@ -11,6 +11,15 @@ macro ( add_module_subdirectory NAME SOURCE_DIR )
 
     set_property( GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} ${ARG_COMPONENTS} )
 
+
+    foreach( VALUE ${MAIN_MODULE_VALUES} )
+        set( ${VALUE}_DIR_NAME ${${VALUE}} )
+        set( ${VALUE})
+    endforeach()
+    
     add_subdirectory ( ${SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${NAME} )
 
+    foreach( VALUE ${MAIN_MODULE_VALUES} )
+        set(  ${VALUE} ${${VALUE}_DIR_NAME} )
+    endforeach()
 endmacro()    

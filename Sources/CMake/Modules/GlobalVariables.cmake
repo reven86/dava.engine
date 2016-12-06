@@ -1,7 +1,7 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 #
 function ( load_config CONFIG_FILE )
@@ -20,11 +20,6 @@ function ( load_config CONFIG_FILE )
     endforeach()
 
 endfunction ()
-
-# Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
-    cmake_policy(SET CMP0054 NEW)
-endif()
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )

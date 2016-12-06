@@ -2,7 +2,7 @@
 set(  MAIN_MODULE_VALUES 
 NAME_MODULE                            #
 NAME_MODULE_STUB                       #
-MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
+MODULE_TYPE                            #"[ INLINE PLUGIN  ]"
 #
 IMPL_MODULE
 EXTERNAL_MODULES
@@ -222,7 +222,7 @@ macro( generated_initialization_module_code )
 				list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
 				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
 				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
-            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
+            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "PLUGIN" )
             endif()
               
         endforeach()
@@ -311,6 +311,7 @@ macro( setup_main_module )
     elseif ( INIT )
         #"hack - find first call"
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
+
         if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )            
             modules_tree_info_execute()
             generated_initialization_module_code()
@@ -392,6 +393,8 @@ macro( setup_main_module )
                     include_directories(${${PACKAGE_INCLUDE}})
                 endforeach()
             endif()
+            list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${PACKAGE_${NAME}_STATIC_LIBRARIES} )
+
         endforeach()
 
         #"ERASE FILES"
@@ -551,11 +554,16 @@ macro( setup_main_module )
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
-            elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
+
+            elseif( ${MODULE_TYPE} STREQUAL "PLUGIN" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-				list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${ROOT_NAME_MODULE} )  
-                load_property( PROPERTY_LIST TARGET_MODULES_LIST )    
-                add_definitions( -DDAVA_IMPLEMENT_DYNAMIC_MODULE )                
+                load_property( PROPERTY_LIST TARGET_MODULES_LIST ) 
+                list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
+                add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
+
+                if( APPLE )
+                    set_target_properties( ${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_EXECUTABLE_PREFIX  "" )
+                endif()              
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
