@@ -538,7 +538,7 @@ void EmitterLayerWidget::OnSpriteBtn()
         startPath = EmitterLayerWidgetDetails::ConvertSpritePathToPSD(startPath);
     }
 
-    QString selectedPath = FileDialog::getOpenFileName(nullptr, QString("Open particle sprite"), startPath, QString("Effect File (*.psd)"));
+    QString selectedPath = FileDialog::getOpenFileName(nullptr, QString("Open particle sprite"), startPath, QString("Sprite File (*.psd)"));
     if (selectedPath.isEmpty())
     {
         return;
