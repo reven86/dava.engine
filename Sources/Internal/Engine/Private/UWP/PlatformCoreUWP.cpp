@@ -281,39 +281,6 @@ void PlatformCore::EnableHighResolutionTimer(bool enable)
     }
 }
 
-void PlatformCore::EnableHighResolutionTimer(bool enable)
-{
-    if (DllImport::fnTimeGetDevCaps != nullptr)
-    {
-        static UINT minTimerPeriod = 0;
-        static bool highResolutionEnabled = false;
-
-        if (minTimerPeriod == 0)
-        {
-            // On first call obtain timer capabilities
-            TIMECAPS timeCaps;
-            if (DllImport::fnTimeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) == 0)
-            {
-                minTimerPeriod = timeCaps.wPeriodMin;
-            }
-        }
-
-        // Application must match each call to timeBeginPeriod with a call to timeEndPeriod
-        // https://msdn.microsoft.com/en-us/library/dd757633(v=vs.85).aspx
-        if (minTimerPeriod != 0 && highResolutionEnabled != enable)
-        {
-            if (enable)
-            {
-                DllImport::fnTimeBeginPeriod(minTimerPeriod);
-            }
-            else
-            {
-                DllImport::fnTimeEndPeriod(minTimerPeriod);
-            }
-            highResolutionEnabled = enable;
-        }
-    }
-}
 } // namespace Private
 } // namespace DAVA
 
