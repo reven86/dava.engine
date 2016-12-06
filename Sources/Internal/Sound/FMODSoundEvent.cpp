@@ -36,7 +36,10 @@ FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
         {
             FMOD_MODE mode = 0;
             fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
-            is3D = (mode == FMOD_3D);
+            if (mode == FMOD_3D)
+            {
+                is3D = true;
+            }
 
             InitParamsMap();
 
@@ -60,7 +63,7 @@ bool FMODSoundEvent::Trigger()
     if (fmodEventSystem == nullptr)
         return false;
 
-    if (is3D)
+    if (is3D && !fmodEventInstances.empty())
     {
         FMOD::Event* fmodEventInfo = nullptr;
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
@@ -73,8 +76,10 @@ bool FMODSoundEvent::Trigger()
             {
                 DVASSERT(direction.Length() > 0.f);
             }
-            FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
+
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
+            FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
+
             ApplyParamsToEvent(fmodEventInfo);
         }
     }
@@ -90,6 +95,8 @@ bool FMODSoundEvent::Trigger()
 
         const float pitch = SpeedToPitchInOctaves(speed);
         FMOD_VERIFY(fmodEvent->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
+
+        FMOD_VERIFY(fmodEvent->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
 
         FMOD_RESULT startResult = fmodEvent->start();
 
