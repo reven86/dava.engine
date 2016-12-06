@@ -706,13 +706,13 @@ void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> 
     [ce setVertexTexture:self->uid atIndex:unitIndex];
 }
 
-void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
+void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc, unsigned target_i)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
     DVASSERT(!self->is_cubemap);
 
     DVASSERT(self->uid);
-    desc.colorAttachments[0].texture = self->uid;
+    desc.colorAttachments[target_i].texture = self->uid;
 }
 
 void SetAsResolveRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)

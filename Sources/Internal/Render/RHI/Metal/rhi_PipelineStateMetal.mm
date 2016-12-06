@@ -258,7 +258,8 @@ public:
     state_t
     {
         uint32 layoutUID;
-        MTLPixelFormat color_format;
+        MTLPixelFormat color_format[MAX_RENDER_TARGET_COUNT];
+        uint32 color_count;
         id<MTLRenderPipelineState> state;
         uint32 stride;
         uint32 sampleCount;
@@ -903,7 +904,7 @@ VertexStreamCount(Handle ps)
     return psm->layout.StreamCount();
 }
 
-uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 sampleCount)
+uint32 SetToRHI(Handle ps, uint32 layoutUID, const MTLPixelFormat* color_fmt, unsigned color_count, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 sampleCount)
 {
     uint32 stride = 0;
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
@@ -911,7 +912,8 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
     DVASSERT(psm);
 
     if (layoutUID == VertexLayout::InvalidUID
-        && color_fmt == MTLPixelFormatBGRA8Unorm
+        && color_count == 1
+        && color_fmt[0] == MTLPixelFormatBGRA8Unorm
         && ds_used)
     {
         [ce setRenderPipelineState:psm->state];
@@ -924,8 +926,23 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
 
         for (unsigned i = 0; i != psm->altState.size(); ++i)
         {
+            bool color_fmt_match = false;
+
+            if (psm->altState[i].color_count == color_count)
+            {
+                color_fmt_match = true;
+                for (unsigned t = 0; t != color_count; ++t)
+                {
+                    if (psm->altState[i].color_format[t] != color_fmt[t])
+                    {
+                        color_fmt_match = false;
+                        break;
+                    }
+                }
+            }
+
             if ((psm->altState[i].layoutUID == layoutUID) &&
-                (psm->altState[i].color_format == color_fmt) &&
+                color_fmt_match &&
                 (psm->altState[i].ds_used == ds_used) &&
                 (psm->altState[i].sampleCount == sampleCount))
             {
@@ -938,7 +955,7 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
         if (do_add)
         {
             PipelineStateMetal_t::state_t state;
-            const VertexLayout* layout = VertexLayout::Get(layoutUID);
+            const VertexLayout* layout = (layoutUID != VertexLayout::InvalidUID) ? VertexLayout::Get(layoutUID) : &psm->layout;
             MTLRenderPipelineDescriptor* rp_desc = [MTLRenderPipelineDescriptor new];
             MTLRenderPipelineReflection* ps_info = nil;
             NSError* rs_err = nil;
@@ -954,8 +971,12 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
                 rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
             }
 
-            rp_desc.colorAttachments[0] = psm->desc.colorAttachments[0];
-            rp_desc.colorAttachments[0].pixelFormat = color_fmt;
+            for (unsigned t = 0; t != color_count; ++t)
+            {
+                rp_desc.colorAttachments[t] = psm->desc.colorAttachments[t];
+                rp_desc.colorAttachments[t].pixelFormat = color_fmt[t];
+            }
+
             rp_desc.sampleCount = sampleCount;
             rp_desc.vertexFunction = psm->desc.vertexFunction;
             rp_desc.fragmentFunction = psm->desc.fragmentFunction;
@@ -1066,7 +1087,9 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
 
             state.layoutUID = layoutUID;
             state.state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
-            state.color_format = color_fmt;
+            state.color_count = color_count;
+            for (unsigned t = 0; t != color_count; ++t)
+                state.color_format[t] = color_fmt[t];
             state.ds_used = ds_used;
             state.stride = layout->Stride();
             state.sampleCount = sampleCount;

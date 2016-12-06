@@ -53,7 +53,8 @@ public:
     id<MTLCommandBuffer> buf;
 
     id<MTLTexture> rt;
-    MTLPixelFormat color_fmt;
+    MTLPixelFormat color_fmt[MAX_RENDER_TARGET_COUNT];
+    uint32 color_count;
     Handle cur_ib;
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
@@ -138,7 +139,7 @@ void CommandBufferMetal_t::Execute()
             Handle ps = static_cast<const SWCommand_SetPipelineState*>(cmd)->ps;
             unsigned layoutUID = static_cast<const SWCommand_SetPipelineState*>(cmd)->vdecl;
 
-            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder, sampleCount);
+            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, color_count, ds_used, encoder, sampleCount);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
             StatSet::IncStat(stat_SET_PS, 1);
         }
@@ -414,10 +415,36 @@ void CommandBufferMetal_t::Execute()
 //------------------------------------------------------------------------------
 
 void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassConfig& cfg, bool& ds_used)
-
 {
     bool usingMSAA = cfg.UsingMSAA();
 
+    DVASSERT(!usingMSAA);
+    for (unsigned i = 0; i != countof(cfg.colorBuffer); ++i)
+    {
+        switch (cfg.colorBuffer[i].loadAction)
+        {
+        case LOADACTION_CLEAR:
+            desc.colorAttachments[i].loadAction = MTLLoadActionClear;
+            break;
+        case LOADACTION_LOAD:
+            desc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+            break;
+        default:
+            desc.colorAttachments[i].loadAction = MTLLoadActionDontCare;
+        }
+
+        desc.colorAttachments[i].storeAction = MTLStoreActionStore;
+        desc.colorAttachments[i].clearColor = MTLClearColorMake(cfg.colorBuffer[i].clearColor[0], cfg.colorBuffer[i].clearColor[1], cfg.colorBuffer[i].clearColor[2], cfg.colorBuffer[i].clearColor[3]);
+
+        if (cfg.colorBuffer[i].texture != InvalidHandle)
+            TextureMetal::SetAsRenderTarget(cfg.colorBuffer[i].texture, desc, i);
+        else
+            desc.colorAttachments[i].texture = _Metal_currentDrawable.texture;
+
+        if (cfg.colorBuffer[i].texture == InvalidHandle)
+            break;
+    }
+    /*
     const RenderPassConfig::ColorBuffer& color0 = cfg.colorBuffer[0];
     if (color0.texture == InvalidHandle)
     {
@@ -457,6 +484,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
 
     desc.colorAttachments[0].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
     desc.colorAttachments[0].clearColor = MTLClearColorMake(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]);
+*/
 
     if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
@@ -572,7 +600,23 @@ bool RenderPassMetal_t::Initialize()
         [cb->encoder retain];
 
         cb->rt = desc.colorAttachments[0].texture;
-        cb->color_fmt = desc.colorAttachments[0].texture.pixelFormat;
+        cb->color_count = 0;
+        for (unsigned t = 0; t != MAX_RENDER_TARGET_COUNT; ++t)
+        {
+            cb->color_fmt[t] = desc.colorAttachments[t].texture.pixelFormat;
+
+            if (cfg.colorBuffer[t].texture == InvalidHandle)
+            {
+                if (t == 0)
+                    cb->color_count = 1;
+                break;
+            }
+            else
+            {
+                ++cb->color_count;
+            }
+        }
+
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
@@ -593,7 +637,22 @@ bool RenderPassMetal_t::Initialize()
             [cb->encoder retain];
             cb->buf = commandBuffer;
             cb->rt = desc.colorAttachments[0].texture;
-            cb->color_fmt = desc.colorAttachments[0].texture.pixelFormat;
+            cb->color_count = 0;
+            for (unsigned t = 0; t != MAX_RENDER_TARGET_COUNT; ++t)
+            {
+                cb->color_fmt[t] = desc.colorAttachments[t].texture.pixelFormat;
+
+                if (cfg.colorBuffer[t].texture == InvalidHandle)
+                {
+                    if (t == 0)
+                        cb->color_count = 1;
+                    break;
+                }
+                else
+                {
+                    ++cb->color_count;
+                }
+            }
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
