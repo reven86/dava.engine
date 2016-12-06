@@ -289,8 +289,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         rhi::PipelineState::Descriptor psDesc;
         psDesc.vprogUid = vProgUid;
         psDesc.fprogUid = fProgUid;
-        rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-        ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
+        ShaderDescriptor* res = new ShaderDescriptor(rhi::HPipelineState(rhi::InvalidHandle), vProgUid, fProgUid);
         res->sourceName = name;
         res->defines = defines;
         res->valid = false;
