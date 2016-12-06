@@ -480,11 +480,7 @@ void AutotestingSystem::ClickSystemBack()
 void AutotestingSystem::PressEscape()
 {
     UIEvent keyEvent;
-#if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
-#else
-    keyEvent.device = UIEvent::Device::KEYBOARD;
-#endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::ESCAPE;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);

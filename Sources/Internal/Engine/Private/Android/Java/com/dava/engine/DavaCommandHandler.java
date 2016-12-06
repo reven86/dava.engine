@@ -51,10 +51,8 @@ final class DavaCommandHandler extends Handler
             view.processEvents();
             break;
         case eHandlerCommand.UPDATE_GAMEPADS:
-
             DavaGamepadManager manager = (DavaGamepadManager)msg.obj;
             manager.timeToUpdate();
-
             break;
         default:
             super.handleMessage(msg);

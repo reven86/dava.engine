@@ -121,6 +121,7 @@ public final class DavaActivity extends Activity
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
     protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
+
     // List of class instances loaded from boot_classes files on startup
     protected LinkedList<Object> bootstrapObjects = new LinkedList<Object>();
 
@@ -196,10 +197,12 @@ public final class DavaActivity extends Activity
     {
         return activitySingleton.commandHandler;
     }
+
     static DavaGamepadManager gamepadManager()
     {
         return activitySingleton.gamepadManager;
     }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
