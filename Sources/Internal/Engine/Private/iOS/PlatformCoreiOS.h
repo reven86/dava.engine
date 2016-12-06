@@ -1,9 +1,8 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Functional/Signal.h"
@@ -25,6 +24,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    int32 OnFrame();
+
     // Signals for distribution UIApplicationDelegate's notifications:
     //  - applicationDidBecomeActive/applicationWillResignActive
     //  - applicationWillEnterForeground/applicationDidEnterBackground
@@ -32,9 +33,6 @@ public:
     // and visibility states
     Signal<bool> didBecomeResignActive;
     Signal<bool> didEnterForegroundBackground;
-
-private:
-    int32 OnFrame();
 
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;

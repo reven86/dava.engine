@@ -48,6 +48,20 @@ void UnfocusXamlControl(Window* targetWindow, ::Windows::UI::Xaml::UIElement ^ x
     return wb->bridge->GetLastPressedPointer();
 }
 
+void RegisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->RegisterXamlApplicationListener(listener);
+}
+
+void UnregisterXamlApplicationListener(XamlApplicationListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->UnregisterXamlApplicationListener(listener);
+}
+
 } // namespace Win10
 } // namespace PlatformApi
 } // namespace DAVA

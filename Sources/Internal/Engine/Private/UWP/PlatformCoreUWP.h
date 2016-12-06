@@ -5,6 +5,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -36,15 +37,28 @@ public:
     static bool IsPhoneContractPresent();
     static void EnableHighResolutionTimer(bool enable);
 
+    void RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
+    void UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
+
 private:
     void GameThread();
 
-private:
+    enum eNotificationType
+    {
+        ON_LAUNCHED,
+        ON_ACTIVATED,
+    };
+    void NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1);
+
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
+
+    Mutex listenersMutex;
+    List<PlatformApi::Win10::XamlApplicationListener*> xamlApplicationListeners;
+    ::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ savedActivatedEventArgs = nullptr;
 
     static bool isPhoneContractPresent;
 };

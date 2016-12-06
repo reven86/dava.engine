@@ -10,6 +10,7 @@
 #include "Engine/Private/UWP/DllImportWin10.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
+#include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Debug/Backtrace.h"
 #include "Logger/Logger.h"
@@ -43,6 +44,17 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    if (savedActivatedEventArgs != nullptr)
+    {
+        // Here notify listeners about OnLaunched or OnActivated occured before entering game loop.
+        // Notification will come on first frame
+        engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([ this, args = savedActivatedEventArgs ]() {
+            using ::Windows::ApplicationModel::Activation::ActivationKind;
+            NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
+        });
+        savedActivatedEventArgs = nullptr;
+    }
+
     engineBackend->OnGameLoopStarted();
 
     while (!quitGameThread)
@@ -95,6 +107,14 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
         // TODO: make Thread detachable
         //gameThread->Detach();
         //gameThread->Release();
+
+        // Save activated event arguments to notify listeners later just before entering game loop to ensure
+        // that dava.engine and game have intialized and listeners have had chance to register.
+        savedActivatedEventArgs = args;
+    }
+    else
+    {
+        NotifyListeners(args->Kind == ActivationKind::Launch ? ON_LAUNCHED : ON_ACTIVATED, args);
     }
 }
 
@@ -145,6 +165,34 @@ void PlatformCore::OnDpiChanged()
     engineBackend->UpdateDisplayConfig();
 }
 
+void PlatformCore::RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
+{
+    DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
+    if (it == end(xamlApplicationListeners))
+    {
+        xamlApplicationListeners.push_back(listener);
+    }
+}
+
+void PlatformCore::UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener)
+{
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(xamlApplicationListeners), end(xamlApplicationListeners), listener);
+    if (it != end(xamlApplicationListeners))
+    {
+        xamlApplicationListeners.erase(it);
+    }
+}
+
 void PlatformCore::GameThread()
 {
     try
@@ -169,6 +217,68 @@ void PlatformCore::GameThread()
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();
+}
+
+void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1)
+{
+    using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
+    using ::Windows::ApplicationModel::Activation::IActivatedEventArgs;
+
+    Vector<PlatformApi::Win10::XamlApplicationListener*> listenersCopy;
+    {
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(xamlApplicationListeners.size());
+        std::copy(xamlApplicationListeners.begin(), xamlApplicationListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Win10::XamlApplicationListener* l : listenersCopy)
+    {
+        switch (type)
+        {
+        case ON_LAUNCHED:
+            l->OnLaunched(static_cast<LaunchActivatedEventArgs ^>(arg1));
+            break;
+        case ON_ACTIVATED:
+            l->OnActivated(static_cast<IActivatedEventArgs ^>(arg1));
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void PlatformCore::EnableHighResolutionTimer(bool enable)
+{
+    if (DllImport::fnTimeGetDevCaps != nullptr)
+    {
+        static UINT minTimerPeriod = 0;
+        static bool highResolutionEnabled = false;
+
+        if (minTimerPeriod == 0)
+        {
+            // On first call obtain timer capabilities
+            TIMECAPS timeCaps;
+            if (DllImport::fnTimeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) == 0)
+            {
+                minTimerPeriod = timeCaps.wPeriodMin;
+            }
+        }
+
+        // Application must match each call to timeBeginPeriod with a call to timeEndPeriod
+        // https://msdn.microsoft.com/en-us/library/dd757633(v=vs.85).aspx
+        if (minTimerPeriod != 0 && highResolutionEnabled != enable)
+        {
+            if (enable)
+            {
+                DllImport::fnTimeBeginPeriod(minTimerPeriod);
+            }
+            else
+            {
+                DllImport::fnTimeEndPeriod(minTimerPeriod);
+            }
+            highResolutionEnabled = enable;
+        }
+    }
 }
 
 void PlatformCore::EnableHighResolutionTimer(bool enable)

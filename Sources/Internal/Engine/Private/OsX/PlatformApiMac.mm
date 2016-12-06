@@ -1,8 +1,12 @@
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
+#include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
@@ -24,6 +28,20 @@ void AddNSView(Window* targetWindow, NSView* nsview)
 void RemoveNSView(Window* targetWindow, NSView* nsview)
 {
     [nsview removeFromSuperview];
+}
+
+void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->bridge->RegisterNSApplicationDelegateListener(listener);
+}
+
+void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->bridge->UnregisterNSApplicationDelegateListener(listener);
 }
 
 } // namespace Mac
