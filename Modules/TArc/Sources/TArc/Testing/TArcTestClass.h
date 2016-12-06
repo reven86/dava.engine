@@ -35,6 +35,8 @@ public:
     QWidget* GetWindow(const WindowKey& wndKey);
     QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
 
+    static Signal<Core*> coreChanged;
+
 protected:
     std::unique_ptr<Core> core;
     std::unique_ptr<MockInvoker> mockInvoker;

@@ -95,6 +95,7 @@ TestClass::~TestClass()
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 
+    coreChanged.Emit(nullptr);
     Core* c = core.release();
     c->SetInvokeListener(nullptr);
     mockInvoker.reset();
@@ -127,6 +128,7 @@ void TestClass::SetUp(const String& testName)
         Window* w = e->PrimaryWindow();
         DVASSERT(w);
         core->OnWindowCreated(w);
+        coreChanged.Emit(core.get());
     }
 
     DAVA::UnitTests::TestClass::SetUp(testName);
@@ -211,6 +213,8 @@ QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& 
 void TestClass::CreateTestedModules()
 {
 }
+
+Signal<Core*> TestClass::coreChanged;
 
 } // namespace TArc
 } // namespace DAVA

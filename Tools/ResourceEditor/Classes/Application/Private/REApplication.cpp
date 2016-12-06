@@ -30,6 +30,7 @@
 #endif //__DAVAENGINE_BEAST__
 
 #include "TArc/Core/Core.h"
+#include "TArc/Testing/TArcTestClass.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
@@ -131,6 +132,11 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     engineContext->uiControlSystem->vcs->EnableReloadResourceOnResize(false);
     engineContext->performanceSettings->SetPsPerformanceMinFPS(5.0f);
     engineContext->performanceSettings->SetPsPerformanceMaxFPS(10.0f);
+
+    if (IsTestEnvironment())
+    {
+        DAVA::TArc::TestClass::coreChanged.Connect(&REGlobal::InitTArcCore);
+    }
 }
 
 void REApplication::Cleanup()
