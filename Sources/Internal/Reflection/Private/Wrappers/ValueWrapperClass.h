@@ -1,9 +1,14 @@
 #pragma once
-#include "Reflection/Private/ValueWrapperDefault.h"
+
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
+#endif
+
+#include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
 namespace DAVA
 {
-template <typename T, typename C>
+template <typename C, typename T>
 class ValueWrapperClass : public ValueWrapperDefault<T>
 {
 public:

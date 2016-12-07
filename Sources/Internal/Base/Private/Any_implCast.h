@@ -33,7 +33,7 @@ struct AnyCast<T*>
         void* inPtr = any.Get<void*>();
         void* outPtr = nullptr;
 
-        if (TypeInheritance::Cast(any.GetType(), inPtr, Type::Instance<P>(), &outPtr))
+        if (TypeInheritance::Cast(any.GetType(), Type::Instance<P>(), inPtr, &outPtr))
         {
             return static_cast<T*>(outPtr);
         }

@@ -1011,9 +1011,9 @@ static void dx11_EndFrame()
     pendingSecondaryCmdListSync.Lock();
     pendingSecondaryCmdLists.push_back(cmdList);
     pendingSecondaryCmdListSync.Unlock();
-#else
-    ConstBufferDX11::InvalidateAllInstances();
 #endif
+
+    ConstBufferDX11::InvalidateAllInstances();
 }
 
 static void dx11_RejectFrame(const CommonImpl::Frame& frame)

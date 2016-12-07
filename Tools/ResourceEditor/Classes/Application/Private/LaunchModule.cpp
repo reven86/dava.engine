@@ -19,7 +19,7 @@ void LaunchModule::PostInit()
 
     accessor.GetGlobalContext()->CreateData(std::make_unique<LaunchModuleData>());
 
-    projectDataWrapper = accessor.CreateWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper = accessor.CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.AddListener(this);
 
     InvokeOperation(REGlobal::OpenLastProjectOperation.ID);

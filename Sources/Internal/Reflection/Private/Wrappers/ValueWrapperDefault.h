@@ -1,19 +1,22 @@
 #pragma once
-#include "Reflection/Wrappers.h"
+
+#ifndef __DAVA_Reflection__
+#include "Reflection/Reflection.h"
+#endif
 
 namespace DAVA
 {
 template <typename T>
 class ValueWrapperDefault : public ValueWrapper
 {
-    static const bool is_const = std::is_const<T>::value;
-
 public:
+    static const bool isConst = std::is_const<typename std::remove_pointer<T>::type>::value;
+
     ValueWrapperDefault() = default;
 
-    bool IsReadonly() const override
+    bool IsReadonly(const ReflectedObject& object) const override
     {
-        return is_const;
+        return isConst || object.IsConst();
     }
 
     const Type* GetType() const override
@@ -33,8 +36,13 @@ public:
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
-        T* ptr = object.GetPtr<T>();
-        return SetValueInternal(ptr, value);
+        if (!object.IsConst())
+        {
+            T* ptr = object.GetPtr<T>();
+            return SetValueInternal(ptr, value);
+        }
+
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
@@ -45,11 +53,11 @@ public:
 protected:
     inline bool SetValueInternal(T* ptr, const Any& value) const
     {
-        return SetValueInternalImpl<is_const>::fn(ptr, value);
+        return SetValueInternalImpl<isConst>::fn(ptr, value);
     }
 
 private:
-    template <bool is_const, typename U = void>
+    template <bool isConst, typename U = void>
     struct SetValueInternalImpl
     {
         inline static bool fn(T* ptr, const Any& value)
@@ -68,5 +76,4 @@ private:
         }
     };
 };
-
 } // namespace DAVA
