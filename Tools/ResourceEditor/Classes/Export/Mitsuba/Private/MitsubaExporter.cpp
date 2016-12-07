@@ -66,8 +66,6 @@ public:
     void ExportBatch(const DAVA::String& name, const MitsubaExporterDetail::RenderBatchExport& rb);
     void ExportLight(DAVA::LightComponent* light);
 
-    void OnLandscapeImageCaptured(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
-
     bool RenderObjectsIsValidForExport(DAVA::RenderObject* object);
     bool RenderBatchIsValidForExport(DAVA::RenderBatch* batch, DAVA::int32 lodIndex, DAVA::int32 swIndex);
     bool MaterialIsValidForExport(DAVA::NMaterial* material);
@@ -77,7 +75,7 @@ public:
 };
 
 static const DAVA::String FileExtension = ".xml";
-static DAVA::String currentLandscapeImageName;
+void LandscapeThumbnailCallback(DAVA::String fileName, DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 }
 
 void MitsubaExporter::PostInit()
@@ -347,8 +345,9 @@ void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape
 
     DVASSERT(indices.size() % 3 == 0);
 
-    MitsubaExporterDetail::currentLandscapeImageName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
-    LandscapeThumbnails::Create(landscape, DAVA::MakeFunction(this, &MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured));
+    DAVA::String landscapeTextureName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
+    auto callback = DAVA::Bind(&MitsubaExporterDetail::LandscapeThumbnailCallback, landscapeTextureName, std::placeholders::_1, std::placeholders::_2);
+    LandscapeThumbnails::Create(landscape, callback);
 
     {
         // compute landscape normals
@@ -401,14 +400,8 @@ void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape
     {
         mitsuba::scope bsdf("bsdf", mitsuba::kType, DAVA::String("diffuse"));
         mitsuba::scope texture("texture", mitsuba::kType, DAVA::String("bitmap"), mitsuba::kName, DAVA::String("reflectance"));
-        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, MitsubaExporterDetail::currentLandscapeImageName);
+        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, landscapeTextureName);
     }
-}
-
-void MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
-{
-    DAVA::ScopedPtr<DAVA::Image> image(landscapeTexture->CreateImageFromMemory());
-    DAVA::ImageSystem::Save(MitsubaExporterDetail::currentLandscapeImageName, image);
 }
 
 void MitsubaExporterDetail::Exporter::CollectExportObjects(const DAVA::Entity* entity)
@@ -617,4 +610,10 @@ void MitsubaExporterDetail::Exporter::ExportMaterial(const DAVA::String& name, M
             }
         }
     }
+}
+
+void MitsubaExporterDetail::LandscapeThumbnailCallback(DAVA::String fileName, DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
+{
+    DAVA::ScopedPtr<DAVA::Image> image(landscapeTexture->CreateImageFromMemory());
+    DAVA::ImageSystem::Save(fileName, image);
 }
