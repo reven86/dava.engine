@@ -465,9 +465,17 @@ void UIList::Input(UIEvent* currentInput)
         if (UIEvent::Device::MOUSE == currentInput->device)
 #endif
         {
-            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            // In horizontal list also work horizontal wheel
+            if (!FLOAT_EQUAL(currentInput->wheelDelta.x, 0.f) && ORIENTATION_HORIZONTAL == orientation)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
         }
-        else // UIEvent::Phase::TOUCH_PAD
+        else // UIEvent::Device::TOUCH_PAD
         {
             if (ORIENTATION_HORIZONTAL == orientation)
             {
