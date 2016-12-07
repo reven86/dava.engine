@@ -10,12 +10,6 @@
 #include <QApplication>
 #include <QCryptographicHash>
 
-#ifdef Q_OS_MAC
-#include <QUrl>
-#include <CoreFoundation/CoreFoundation.h>
-#endif //Q_OS_MAC
-#include "QtHelpers/Private/LauncherIPCHelpers.h"
-
 using namespace DAVA;
 
 int Process(Engine& e)
@@ -57,22 +51,8 @@ int Process(Engine& e)
                          server.reset();
                          runGuard.reset();
                      });
-    LauncherListener launcherListener;
-    
-#ifdef Q_OS_MAC
-    CFURLRef url = (CFURLRef)CFAutorelease((CFURLRef)CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-    QString appPath = QUrl::fromCFURL(url).path();
-    while (appPath.endsWith('/'))
-    {
-        appPath.chop(1);
-    }
-#else
-    QString appPath = application->applicationFilePath();
-#endif //platform
-    DAVA::Logger::Debug("app path: %s", appPath.toStdString().c_str());
-    appPath = LauncherIPCHelpers::PathToKey(appPath);
-    DAVA::Logger::Debug("modified app path: %s", appPath.toStdString().c_str());
 
+    LauncherListener launcherListener;
     launcherListener.Init([](LauncherListener::eMessage message) {
         if (message == LauncherListener::eMessage::QUIT)
         {
