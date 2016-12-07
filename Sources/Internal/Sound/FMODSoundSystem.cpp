@@ -149,6 +149,7 @@ SoundSystem::~SoundSystem()
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(sigUpdateId);
 
+#if defined(__DAVAENGINE_ANDROID__)
     if (fmodActivityListenerGlobalRef != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -157,6 +158,7 @@ SoundSystem::~SoundSystem()
         env->DeleteGlobalRef(fmodActivityListenerGlobalRef);
         fmodActivityListenerGlobalRef = nullptr;
     }
+#endif
 #endif
 
     if (fmodEventSystem)
