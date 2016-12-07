@@ -42,6 +42,7 @@ uint16 SkeletonComponent::GetConfigJointsCount()
 void SkeletonComponent::SetConfigJoints(const Vector<JointConfig>& config)
 {
     configJoints = config;
+    configUpdated = true;
 }
 
 void SkeletonComponent::RebuildFromConfig()
