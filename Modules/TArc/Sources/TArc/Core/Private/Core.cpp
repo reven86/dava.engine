@@ -458,7 +458,6 @@ public:
         ToolsAssetGuard::Instance()->Init();
         Impl::OnLoopStarted();
 
-
         engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
         DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
