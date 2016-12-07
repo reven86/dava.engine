@@ -63,7 +63,7 @@ private:
     };
 
     size_t size = 0;
-    const char* name;
+    const char* name = nullptr;
     const std::type_info* stdTypeInfo = &typeid(void);
 
     const Type* derefType = nullptr;
