@@ -81,6 +81,8 @@ bool ApiIsSupported(Api api)
         supported = true;
         #endif
         break;
+    default:
+        DVASSERT(!"kaboom!"); // to shut up goddamn warning
     }
 
     return supported;
