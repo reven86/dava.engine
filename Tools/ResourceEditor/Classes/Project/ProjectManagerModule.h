@@ -21,7 +21,7 @@ private:
     void OpenProjectByPath(const DAVA::FilePath& incomePath);
     void OpenProjectImpl(const DAVA::FilePath& incomePath);
     void OpenLastProject();
-    void CloseProject();
+    bool CloseProject();
     void ReloadSprites();
 
 private:

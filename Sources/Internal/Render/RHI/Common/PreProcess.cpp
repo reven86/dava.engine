@@ -1,11 +1,14 @@
 #include "PreProcess.h"
+
 #include "../rhi_Type.h"
-#include "../rhi_ShaderSource.h"
 #include "rhi_Utils.h"
 
-    #include "MCPP/mcpp_lib.h"
-    #include <stdio.h>
-    #include <stdarg.h>
+#include "MCPP/mcpp_lib.h"
+
+#include <stdio.h>
+#include <stdarg.h>
+
+#define RHI_SHADER_SOURCE_BUFFER_SIZE (64 << 10)
 
 ShaderPreprocessScope::ShaderPreprocessScope()
 {
@@ -26,6 +29,8 @@ void PreProcessText(const char* text, const char** arg, unsigned argCount, std::
 
     argv[argc++] = "<mcpp>"; // we just need first arg
     argv[argc++] = "-P"; // do not output #line directives
+    // it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
+    //  argv[argc++] = "-C";    // keep comments
     for (const char **a = arg, **a_end = arg + argCount; a != a_end; ++a)
         argv[argc++] = *a;
     argv[argc++] = MCPP_Text;

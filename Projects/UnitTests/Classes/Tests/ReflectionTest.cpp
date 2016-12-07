@@ -129,7 +129,7 @@ struct D : public AB
 
 struct DHolder : DAVA::ReflectionBase
 {
-    int i;
+    int i = 0;
     D d;
 
     DAVA_VIRTUAL_REFLECTION(DHolder)
