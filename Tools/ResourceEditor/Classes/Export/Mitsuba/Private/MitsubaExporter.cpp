@@ -9,9 +9,6 @@
 
 namespace MitsubaExporterDetail
 {
-static const DAVA::uint32 MeshExporterVersion = 1;
-static DAVA::String landscapeImageName;
-
 struct TextureExport
 {
     DAVA::Texture* tex = nullptr;
@@ -43,14 +40,16 @@ struct LightExport
 {
     DAVA::LightComponent* light = nullptr;
 };
-}
 
-class MitsubaExporter::Private
+class Exporter
 {
 public:
+    const DAVA::uint32 MeshExporterVersion = 1;
+
     DAVA::String exportFolder;
     DAVA::String meshesFolder;
     DAVA::String texturesFolder;
+    DAVA::String landscapeImageName;
     DAVA::UnorderedMap<DAVA::String, MitsubaExporterDetail::TextureExport> texturesToExport;
     DAVA::UnorderedMap<DAVA::String, MitsubaExporterDetail::MaterialExport> materialsToExport;
     DAVA::Vector<std::pair<DAVA::String, MitsubaExporterDetail::RenderBatchExport>> renderBatchesToExport;
@@ -77,6 +76,7 @@ public:
     void CollectMaterialTextures(MitsubaExporterDetail::MaterialExport& material);
     bool AddTextureToExport(DAVA::Texture*, DAVA::String& textureId);
 };
+}
 
 void MitsubaExporter::PostInit()
 {
@@ -107,13 +107,13 @@ void MitsubaExporter::Export()
         if (exportFile.GetExtension().empty())
             exportFile.ReplaceExtension(".xml");
 
-        Private exporter;
+        MitsubaExporterDetail::Exporter exporter;
         SceneData* sceneData = GetAccessor()->GetActiveContext()->GetData<SceneData>();
         exporter.Export(sceneData->GetScene().Get(), exportFile);
     }
 }
 
-bool MitsubaExporter::Private::Export(DAVA::Scene* scene, const DAVA::FilePath& toFile)
+bool MitsubaExporterDetail::Exporter::Export(DAVA::Scene* scene, const DAVA::FilePath& toFile)
 {
     exportFolder = toFile.GetDirectory().GetAbsolutePathname();
 
@@ -172,7 +172,7 @@ bool MitsubaExporter::Private::Export(DAVA::Scene* scene, const DAVA::FilePath& 
     return true;
 }
 
-void MitsubaExporter::Private::ExportCamera(const DAVA::Camera* cam, const DAVA::Size2i& viewport)
+void MitsubaExporterDetail::Exporter::ExportCamera(const DAVA::Camera* cam, const DAVA::Size2i& viewport)
 {
     DAVA::String origin = DAVA::Format("%f, %f, %f", cam->GetPosition().x, cam->GetPosition().y, cam->GetPosition().z);
     DAVA::String target = DAVA::Format("%f, %f, %f", cam->GetTarget().x, cam->GetTarget().y, cam->GetTarget().z);
@@ -199,10 +199,10 @@ void MitsubaExporter::Private::ExportCamera(const DAVA::Camera* cam, const DAVA:
     }
 }
 
-void MitsubaExporter::Private::ExportBatch(const DAVA::String& name, const MitsubaExporterDetail::RenderBatchExport& rb)
+void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, const MitsubaExporterDetail::RenderBatchExport& rb)
 {
-    DAVA::String uniqueName = DAVA::Format("%s/%u_%s.obj", meshesFolder.c_str(), MitsubaExporterDetail::MeshExporterVersion,
-                                           name.c_str(), reinterpret_cast<DAVA::uint64>(rb.rb));
+    DAVA::String uniqueName = DAVA::Format("%s/%u_%s.obj", meshesFolder.c_str(), MeshExporterVersion, name.c_str(), reinterpret_cast<DAVA::uint64>(rb.rb));
+
     DAVA::String outFile = exportFolder + uniqueName;
     if (!DAVA::FileSystem::Instance()->Exists(outFile))
     {
@@ -295,7 +295,7 @@ void MitsubaExporter::Private::ExportBatch(const DAVA::String& name, const Mitsu
     }
 }
 
-void MitsubaExporter::Private::ExportLight(DAVA::LightComponent* light)
+void MitsubaExporterDetail::Exporter::ExportLight(DAVA::LightComponent* light)
 {
     if (light->IsDynamic())
     {
@@ -332,7 +332,7 @@ void MitsubaExporter::Private::ExportLight(DAVA::LightComponent* light)
     }
 }
 
-void MitsubaExporter::Private::ExportLandscape(DAVA::Landscape* landscape)
+void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape)
 {
     DAVA::Vector<DAVA::Landscape::LandscapeVertex> vertices;
     DAVA::Vector<DAVA::int32> indices;
@@ -343,8 +343,8 @@ void MitsubaExporter::Private::ExportLandscape(DAVA::Landscape* landscape)
 
     DVASSERT(indices.size() % 3 == 0);
 
-    MitsubaExporterDetail::landscapeImageName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
-    LandscapeThumbnails::Create(landscape, DAVA::MakeFunction(this, &MitsubaExporter::Private::OnLandscapeImageCaptured));
+    landscapeImageName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
+    LandscapeThumbnails::Create(landscape, DAVA::MakeFunction(this, &MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured));
 
     {
         // compute landscape normals
@@ -397,17 +397,17 @@ void MitsubaExporter::Private::ExportLandscape(DAVA::Landscape* landscape)
     {
         mitsuba::scope bsdf("bsdf", mitsuba::kType, DAVA::String("diffuse"));
         mitsuba::scope texture("texture", mitsuba::kType, DAVA::String("bitmap"), mitsuba::kName, DAVA::String("reflectance"));
-        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, MitsubaExporterDetail::landscapeImageName);
+        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, landscapeImageName);
     }
 }
 
-void MitsubaExporter::Private::OnLandscapeImageCaptured(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
+void MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
 {
     DAVA::ScopedPtr<DAVA::Image> image(landscapeTexture->CreateImageFromMemory());
-    DAVA::ImageSystem::Save(MitsubaExporterDetail::landscapeImageName, image);
+    DAVA::ImageSystem::Save(landscapeImageName, image);
 }
 
-void MitsubaExporter::Private::CollectExportObjects(const DAVA::Entity* entity)
+void MitsubaExporterDetail::Exporter::CollectExportObjects(const DAVA::Entity* entity)
 {
     DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
     if (RenderObjectsIsValidForExport(renderObject))
@@ -454,7 +454,7 @@ void MitsubaExporter::Private::CollectExportObjects(const DAVA::Entity* entity)
     }
 }
 
-bool MitsubaExporter::Private::RenderObjectsIsValidForExport(DAVA::RenderObject* object)
+bool MitsubaExporterDetail::Exporter::RenderObjectsIsValidForExport(DAVA::RenderObject* object)
 {
     static const DAVA::Set<DAVA::RenderObject::eType> validRenderObjectTypes =
     {
@@ -467,7 +467,7 @@ bool MitsubaExporter::Private::RenderObjectsIsValidForExport(DAVA::RenderObject*
     return (object != nullptr) && (validRenderObjectTypes.count(object->GetType()) > 0);
 }
 
-bool MitsubaExporter::Private::RenderBatchIsValidForExport(DAVA::RenderBatch* batch, DAVA::int32 lodIndex, DAVA::int32 swIndex)
+bool MitsubaExporterDetail::Exporter::RenderBatchIsValidForExport(DAVA::RenderBatch* batch, DAVA::int32 lodIndex, DAVA::int32 swIndex)
 {
     if ((batch == nullptr) || (lodIndex > 0) || (swIndex > 0))
         return false;
@@ -475,7 +475,7 @@ bool MitsubaExporter::Private::RenderBatchIsValidForExport(DAVA::RenderBatch* ba
     return MaterialIsValidForExport(batch->GetMaterial());
 }
 
-bool MitsubaExporter::Private::MaterialIsValidForExport(DAVA::NMaterial* material)
+bool MitsubaExporterDetail::Exporter::MaterialIsValidForExport(DAVA::NMaterial* material)
 {
     if (material == nullptr)
         return false;
@@ -492,7 +492,7 @@ bool MitsubaExporter::Private::MaterialIsValidForExport(DAVA::NMaterial* materia
     return true;
 }
 
-void MitsubaExporter::Private::CollectMaterialTextures(MitsubaExporterDetail::MaterialExport& material)
+void MitsubaExporterDetail::Exporter::CollectMaterialTextures(MitsubaExporterDetail::MaterialExport& material)
 {
     DAVA::FastName fxName = material.mat->GetEffectiveFXName();
     material.alphaTestMaterial = fxName.find("Alphatest") != DAVA::String::npos;
@@ -532,7 +532,7 @@ void MitsubaExporter::Private::CollectMaterialTextures(MitsubaExporterDetail::Ma
     }
 }
 
-bool MitsubaExporter::Private::AddTextureToExport(DAVA::Texture* texture, DAVA::String& textureId)
+bool MitsubaExporterDetail::Exporter::AddTextureToExport(DAVA::Texture* texture, DAVA::String& textureId)
 {
     if (texture == nullptr)
         return false;
@@ -550,7 +550,7 @@ bool MitsubaExporter::Private::AddTextureToExport(DAVA::Texture* texture, DAVA::
     return true;
 }
 
-void MitsubaExporter::Private::ExportTexture(const DAVA::String& name, const MitsubaExporterDetail::TextureExport& tex)
+void MitsubaExporterDetail::Exporter::ExportTexture(const DAVA::String& name, const MitsubaExporterDetail::TextureExport& tex)
 {
     if (!DAVA::FileSystem::Instance()->Exists(tex.destinationFilePath))
     {
@@ -564,7 +564,7 @@ void MitsubaExporter::Private::ExportTexture(const DAVA::String& name, const Mit
     mitsuba::tag(mitsuba::kFloat, mitsuba::kName, DAVA::String("vscale"), mitsuba::kValue, tex.vScale);
 }
 
-void MitsubaExporter::Private::ExportMaterial(const DAVA::String& name, MitsubaExporterDetail::MaterialExport mtl)
+void MitsubaExporterDetail::Exporter::ExportMaterial(const DAVA::String& name, MitsubaExporterDetail::MaterialExport mtl)
 {
     if (mtl.alphaTestMaterial)
     {

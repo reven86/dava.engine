@@ -10,6 +10,5 @@ protected:
     void Export();
 
 private:
-    class Private;
     DAVA::TArc::QtConnections connections;
 };
