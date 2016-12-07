@@ -35,91 +35,89 @@ static DAVA::Size2i framebufferSize = { 0, 0 };
 static const char* IMGUI_RENDER_PASS_MARKER_NAME = "ImGuiRenderPass";
 
 static const char* vprogPC =
-"VPROG_IN_BEGIN\n"
-"    VPROG_IN_TEXCOORD0(2)\n"
-"    VPROG_IN_COLOR\n"
-"VPROG_IN_END\n"
-"\n"
-"VPROG_OUT_BEGIN\n"
-"    VPROG_OUT_POSITION\n"
-"    VPROG_OUT_COLOR0(color,4)\n"
-"VPROG_OUT_END\n"
-"\n"
-"property float4x4   XForm : unique,dynamic : ;\n"
-"\n"
-"VPROG_BEGIN\n"
-"\n"
-"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.0);\n"
-"    float4  in_color    = VP_IN_COLOR;\n"
-"\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position,1.0) );\n"
-"    VP_OUT(color)       = in_color;\n"
-"\n"
-"VPROG_END\n";
+"vertex_in\n"
+"{\n"
+"    float2 pos : TEXCOORD0;\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"vertex_out\n"
+"{\n"
+"    float4 position : SV_POSITION;\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"[material][unique] property float4x4 XForm;"
+"vertex_out vp_main( vertex_in input )\n"
+"{\n"
+"    vertex_out output;\n"
+"    output.position = mul( XForm, float4(input.pos.x,-input.pos.y,0.0,1.0) );\n"
+"    output.color = input.color;\n"
+"    return output;\n"
+"}\n";
 
 static const char* fprogPC =
-"FPROG_IN_BEGIN\n"
-"    FPROG_IN_COLOR0(color,4)\n"
-"FPROG_IN_END\n"
+"fragment_in\n"
+"{\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"fragment_out\n"
+"{\n"
+"    float4 color : SV_TARGET0;\n"
+"};\n"
 "\n"
-"FPROG_OUT_BEGIN\n"
-"    FPROG_OUT_COLOR\n"
-"FPROG_OUT_END\n"
-"\n"
-"FPROG_BEGIN\n"
-"\n"
-"    FP_OUT_COLOR = FP_IN(color);\n"
-"\n"
-"FPROG_END\n"
-"BLEND_MODE(alpha)\n";
+"fragment_out\n"
+"fp_main( fragment_in input )\n"
+"{\n"
+"    fragment_out output;\n"
+"    output.color = input.color;\n"
+"    return output;\n"
+"}\n"
+"blending { src=src_alpha dst=inv_src_alpha }\n";
 
 static const char* vprogPTC =
-"VPROG_IN_BEGIN\n"
-"    VPROG_IN_TEXCOORD0(2)\n"
-"    VPROG_IN_TEXCOORD1(2)\n"
-"    VPROG_IN_COLOR\n"
-"VPROG_IN_END\n"
-"\n"
-"VPROG_OUT_BEGIN\n"
-"    VPROG_OUT_POSITION\n"
-"    VPROG_OUT_TEXCOORD0(texcoord,2)\n"
-"    VPROG_OUT_COLOR0(color,4)\n"
-"VPROG_OUT_END\n"
-"\n"
-"property float4x4   XForm : unique,dynamic : ;\n"
-"\n"
-"VPROG_BEGIN\n"
-"\n"
-"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.0);\n"
-"    float2  in_texcoord = VP_IN_TEXCOORD1;\n"
-"    float4  in_color    = VP_IN_COLOR;\n"
-"\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position, 1.0) );\n"
-"    VP_OUT(texcoord)    = in_texcoord;\n"
-"    VP_OUT(color)       = in_color;\n"
-"\n"
-"VPROG_END\n";
+"vertex_in\n"
+"{\n"
+"    float2 pos : TEXCOORD0;\n"
+"    float2 uv : TEXCOORD1;\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"vertex_out\n"
+"{\n"
+"    float4 position : SV_POSITION;\n"
+"    float2 uv : TEXCOORD0;\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"[material][unique] property float4x4 XForm;"
+"vertex_out vp_main( vertex_in input )\n"
+"{\n"
+"    vertex_out output;\n"
+"    output.position = mul( XForm, float4(input.pos.x,-input.pos.y,0.0,1.0) );\n"
+"    output.uv = input.uv;\n"
+"    output.color = input.color;\n"
+"    return output;\n"
+"}\n";
 
 static const char* fprogPTC =
-"FPROG_IN_BEGIN\n"
-"    FPROG_IN_TEXCOORD0(texcoord,2)\n"
-"    FPROG_IN_COLOR0(color,4)\n"
-"FPROG_IN_END\n"
+"fragment_in\n"
+"{\n"
+"    float2 uv    : TEXCOORD0;\n"
+"    float4 color : COLOR0;\n"
+"};\n"
+"fragment_out\n"
+"{\n"
+"    float4 color : SV_TARGET0;\n"
+"};\n"
 "\n"
-"FPROG_OUT_BEGIN\n"
-"    FPROG_OUT_COLOR\n"
-"FPROG_OUT_END\n"
+"uniform sampler2D Image;\n"
 "\n"
-"DECL_FP_SAMPLER2D(tex)\n"
-"\n"
-"FPROG_BEGIN\n"
-"\n"
-"    float4 sample = FP_TEXTURE2D( tex, FP_IN(texcoord) );\n"
-"\n"
-"    FP_OUT_COLOR = sample * FP_IN(color);\n"
-"\n"
-"FPROG_END\n"
-"BLEND_MODE(alpha)\n";
+"fragment_out\n"
+"fp_main( fragment_in input )\n"
+"{\n"
+"    fragment_out output;\n"
+"    float4       image = tex2D( Image, input.uv );"
+"    output.color = image * input.color;\n"
+"    return output;\n"
+"}\n"
+"blending { src=src_alpha dst=inv_src_alpha }\n";
 
 void ImGuiDrawFn(ImDrawData* data)
 {
@@ -315,8 +313,11 @@ void Initialize()
         ps_desc.fprogUid = DAVA::FastName("imgui.fp.pc");
         ps_desc.blending = fp_pc.Blending();
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_pc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_pc.SourceCode());
+        const std::string& vp_bin = vp_pc.GetSourceCode(rhi::HostApi());
+        const std::string& fp_bin = fp_pc.GetSourceCode(rhi::HostApi());
+
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_bin.c_str(), unsigned(vp_bin.length()));
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_bin.c_str(), unsigned(fp_bin.length()));
 
         ImGuiImplDetails::pipelineStatePC = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePC, 1, &ImGuiImplDetails::constBufferPC);
@@ -335,8 +336,11 @@ void Initialize()
         ps_desc.fprogUid = DAVA::FastName("imgui.fp.ptc");
         ps_desc.blending = fp_ptc.Blending();
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode());
+        const std::string& vp_bin = vp_ptc.GetSourceCode(rhi::HostApi());
+        const std::string& fp_bin = fp_ptc.GetSourceCode(rhi::HostApi());
+
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_bin.c_str(), unsigned(vp_bin.length()));
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_bin.c_str(), unsigned(fp_bin.length()));
 
         ImGuiImplDetails::pipelineStatePTC = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePTC, 1, &ImGuiImplDetails::constBufferPTC);
