@@ -63,16 +63,15 @@ public:
     void clearConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu);
     void clearOriginal(const DAVA::TextureDescriptor* descriptor);
     void clearThumbnail(const DAVA::TextureDescriptor* descriptor);
+    void ClearCache();
 
 signals:
+    void CacheCleared();
     void ThumbnailLoaded(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
     void OriginalLoaded(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
     void ConvertedLoaded(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu, const TextureInfo& image);
 
 protected slots:
-
-    void ClearCache();
-
     void ReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
     void ReadyOriginal(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
     void ReadyConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu, const TextureInfo& image);

@@ -7,16 +7,16 @@ namespace DAVA
 {
 namespace TArc
 {
-ContextAccessor& ClientModule::GetAccessor()
+ContextAccessor* ClientModule::GetAccessor()
 {
     DVASSERT(coreInterface != nullptr);
-    return *coreInterface;
+    return coreInterface;
 }
 
-UI& ClientModule::GetUI()
+UI* ClientModule::GetUI()
 {
     DVASSERT(ui != nullptr);
-    return *ui;
+    return ui;
 }
 
 void ClientModule::Init(CoreInterface* coreInterface_, UI* ui_)
