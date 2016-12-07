@@ -60,7 +60,7 @@ ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
 endif ()
 
 #create package info for users, which install launcher at the first time
-if (WIN32 AND DEPLOY)
+if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
     ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/createPackageInfo.py"
             "${DEPLOY_DIR}"
