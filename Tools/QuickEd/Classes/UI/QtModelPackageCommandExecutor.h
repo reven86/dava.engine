@@ -15,6 +15,7 @@ class CommandStack;
 }
 
 class Document;
+class Project;
 class PackageBaseNode;
 
 class ControlNode;
@@ -29,7 +30,7 @@ class ComponentPropertiesSection;
 class QtModelPackageCommandExecutor
 {
 public:
-    QtModelPackageCommandExecutor(Document* _document);
+    QtModelPackageCommandExecutor(Project* project, Document* document);
     virtual ~QtModelPackageCommandExecutor();
 
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode* package);
@@ -78,6 +79,7 @@ private:
     void ExecCommand(std::unique_ptr<DAVA::Command>&& cmd);
 
 private:
+    Project* project = nullptr;
     Document* document = nullptr;
     PackageNode* packageNode = nullptr;
 };
