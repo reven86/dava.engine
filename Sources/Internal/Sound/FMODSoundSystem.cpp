@@ -12,6 +12,7 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Concurrency/LockGuard.h"
 
 #include "Engine/EngineModule.h"
 
@@ -55,7 +56,7 @@ void F_CALLBACK fmod_tracking_free(void* ptr, FMOD_MEMORY_TYPE /*type*/, const c
 
 } // unnamed namespace
 
-static_assert(sizeof(FMOD_VECTOR) == sizeof(Vector3), "Sizes of FMOD_VECTOR and Vector3 are mismatch");
+static_assert(sizeof(FMOD_VECTOR) == sizeof(Vector3), "Sizes of FMOD_VECTOR and Vector3 do not match");
 
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
@@ -630,9 +631,26 @@ void SoundSystem::ReleaseAllEventWaveData()
         ReleaseFMODEventGroupData(toplevelGroups[i]);
 }
 
+void SoundSystem::SetAllGroupsVolume(float32 volume)
+{
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup& group = soundGroups[i];
+
+        group.volume = volume;
+        for (auto& x : group.events)
+        {
+            x->SetVolume(volume);
+        }
+    }
+}
+
 void SoundSystem::SetGroupVolume(const FastName& groupName, float32 volume)
 {
-    soundGroupsMutex.Lock();
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
     for (size_t i = 0; i < soundGroups.size(); ++i)
     {
         SoundGroup& group = soundGroups[i];
@@ -647,23 +665,81 @@ void SoundSystem::SetGroupVolume(const FastName& groupName, float32 volume)
             break;
         }
     }
-    soundGroupsMutex.Unlock();
 }
 
-float32 SoundSystem::GetGroupVolume(const FastName& groupName)
+float32 SoundSystem::GetGroupVolume(const FastName& groupName) const
 {
-    soundGroupsMutex.Lock();
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
     float32 ret = -1.f;
     for (size_t i = 0; i < soundGroups.size(); ++i)
     {
-        SoundGroup& group = soundGroups[i];
+        SoundGroup const& group = soundGroups[i];
         if (group.name == groupName)
         {
             ret = group.volume;
             break;
         }
     }
-    soundGroupsMutex.Unlock();
+
+    return ret;
+}
+
+void SoundSystem::SetAllGroupsSpeed(float32 speed)
+{
+    DVASSERT(speed >= 0.0f);
+
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup& group = soundGroups[i];
+
+        group.speed = speed;
+        for (auto& x : group.events)
+        {
+            x->SetSpeed(speed);
+        }
+    }
+}
+
+void SoundSystem::SetGroupSpeed(const FastName& groupName, float32 speed)
+{
+    DVASSERT(speed >= 0.0f);
+
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup& group = soundGroups[i];
+        if (group.name == groupName)
+        {
+            group.speed = speed;
+            for (auto& x : group.events)
+            {
+                x->SetSpeed(speed);
+            }
+
+            break;
+        }
+    }
+}
+
+float32 SoundSystem::GetGroupSpeed(const FastName& groupName) const
+{
+    LockGuard<Mutex> lock(soundGroupsMutex);
+
+    float32 ret = -1.f;
+    for (size_t i = 0; i < soundGroups.size(); ++i)
+    {
+        SoundGroup const& group = soundGroups[i];
+        if (group.name == groupName)
+        {
+            ret = group.speed;
+            break;
+        }
+    }
+
     return ret;
 }
 

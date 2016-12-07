@@ -1067,7 +1067,11 @@ bool ShaderSource::Load(DAVA::File* in)
 
     READ_CHECK(ReadUI4(in, &readUI4));
     READ_CHECK(readUI4 <= rhi::MAX_SHADER_CONST_BUFFER_COUNT);
-    buf.resize(readUI4);
+    uint32 bufCount = readUI4;
+    for (const ShaderProp& p : prop)
+        READ_CHECK(p.bufferindex < bufCount);
+
+    buf.resize(bufCount);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
         READ_CHECK(ReadUI4(in, &readUI4));

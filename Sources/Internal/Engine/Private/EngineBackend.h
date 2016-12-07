@@ -11,6 +11,8 @@
 
 #include "UI/UIEvent.h"
 
+#include "Render/RHI/rhi_Type.h"
+
 namespace DAVA
 {
 class KeyedArchive;
@@ -95,6 +97,8 @@ private:
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
+
+    static void OnRenderingError(rhi::RenderingError err, void* param);
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;

@@ -29,6 +29,7 @@
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
 #include <direct.h>
 #include <io.h>

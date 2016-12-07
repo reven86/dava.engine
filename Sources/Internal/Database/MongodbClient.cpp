@@ -477,6 +477,12 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
             break;
         }
 
+        case BSON_NULL:
+        {
+            Logger::Warning("[MongodbClient::ReadData] Get NULL type by key: %s", key.c_str());
+            break;
+        }
+
         case BSON_OID:
             //TODO: add 12-bytes array
             //bson_append_oid(object, key, bson_iterator_oid(&it));

@@ -196,7 +196,7 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , shortcutChecker(this)
 #endif
 {
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.AddListener(this);
 
     ActiveSceneHolder::Init();
@@ -508,20 +508,19 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         if (!allScenesTextures.empty())
         {
             int progress = 0;
-            WaitStart("Reloading textures...", "", 0, static_cast<int>(allScenesTextures.size()));
+            WaitStart("", "Reloading textures", 0, static_cast<int>(allScenesTextures.size()));
 
             DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
             DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
 
             for (; it != end; ++it)
             {
-                it->second->ReloadAs(gpu);
-
 #if defined(USE_FILEPATH_IN_MAP)
-                WaitSetMessage(it->first.GetAbsolutePathname().c_str());
+                WaitSetMessage(QString("Reloading texture:\n %1").arg(QString::fromStdString(it->first.GetAbsolutePathname())));
 #else //#if defined(USE_FILEPATH_IN_MAP)
-                WaitSetMessage(it->first.c_str());
+                WaitSetMessage(QString("Reloading texture:\n %1").arg(QString::fromStdString(it->first)));
 #endif //#if defined(USE_FILEPATH_IN_MAP)
+                it->second->ReloadAs(gpu);
                 WaitSetValue(progress++);
             }
 
@@ -550,7 +549,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
     LoadGPUFormat();
 }
 
-void QtMainWindow::WaitStart(const QString& title, const QString& message, int min /* = 0 */, int max /* = 100 */)
+void QtMainWindow::WaitStart(const QString& title, const QString& message, int min, int max)
 {
     DVASSERT(waitDialog == nullptr);
 
@@ -558,7 +557,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.message = message;
     params.min = min;
     params.max = max;
-    params.needProgressBar = false;
+    params.needProgressBar = min != max;
     waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::WindowKey(REGlobal::MainWindowName), params);
     DAVA::TArc::WaitDialog* dialog = dynamic_cast<DAVA::TArc::WaitDialog*>(waitDialog.get());
     dialog->beforeDestroy.Connect([this](DAVA::TArc::WaitHandle* handle)
@@ -584,7 +583,7 @@ void QtMainWindow::WaitSetValue(int value)
 
 bool QtMainWindow::IsWaitDialogOnScreen() const
 {
-    return tarcUI->HasActiveWaitDalogues();
+    return tarcUI->HasActiveWaitDalogues() || (beastWaitDialog != nullptr && beastWaitDialog->isVisible());
 }
 
 void QtMainWindow::WaitStop()
@@ -1378,7 +1377,7 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
         return;
     }
 
-    WaitStart("Save with Children", "Please wait...");
+    WaitStart("Save with Children", "Please wait...", 0, 0);
 
     DAVA::FilePath folder = PathnameToDAVAStyle(path);
     folder.MakeDirectoryPathname();
@@ -1472,7 +1471,7 @@ void QtMainWindow::ExportTriggered()
             return;
         }
 
-        WaitStart("Export", "Please wait...");
+        WaitStart("Export", "Please wait...", 0, 0);
 
         ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
         DVASSERT(data != nullptr);
@@ -2231,7 +2230,7 @@ void QtMainWindow::OnConvertModifiedTextures()
         return;
     }
 
-    WaitStart("Conversion of modified textures.", "Checking for modified textures.");
+    WaitStart("Conversion of modified textures.", "Checking for modified textures.", 0, 0);
     DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>> textures;
     int filesToUpdate = SceneHelper::EnumerateModifiedTextures(scene, textures);
 
@@ -2372,20 +2371,11 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
-        OnReloadTextures();
+        // ReloadTextures should be delayed to give Qt some time for closing wait dialog before we will open new one for texture reloading.
+        delayedExecutor.DelayedExecute(DAVA::MakeFunction(this, &QtMainWindow::OnReloadTextures));
     }
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
-}
-
-void QtMainWindow::BeastWaitSetMessage(const QString& messsage)
-{
-    beastWaitDialog->SetMessage(messsage);
-}
-
-bool QtMainWindow::BeastWaitCanceled()
-{
-    return beastWaitDialog->WasCanceled();
 }
 
 void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)

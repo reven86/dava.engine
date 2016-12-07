@@ -266,9 +266,9 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         DVASSERT(0, info.c_str());
     #endif
 
-        if (_DX11_InitParam.renderingNotPossibleFunc)
+        if (_DX11_InitParam.renderingErrorCallback)
         {
-            _DX11_InitParam.renderingNotPossibleFunc();
+            _DX11_InitParam.renderingErrorCallback(RenderingError::DriverError, _DX11_InitParam.renderingErrorCallbackContext);
         }
 
         _D3D11_Device = nullptr;

@@ -86,7 +86,7 @@ bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* no
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
     if (!outFile)
     {
-        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
+        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output %s", outFileName.GetStringValue().c_str(), strerror(errno));
         return false;
     }
 
@@ -316,9 +316,8 @@ bool YamlEmitter::EmitUnorderedMap(yaml_emitter_t* emitter, const YamlNode* mapN
 
 bool YamlEmitter::EmitOrderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode)
 {
-    const MultiMap<String, YamlNode*>& map = mapNode->AsMap();
-    MultiMap<String, YamlNode*>::const_iterator iter = map.begin();
-    MultiMap<String, YamlNode*>::const_iterator end = map.end();
+    const UnorderedMap<String, YamlNode*>& map = mapNode->AsMap();
+    auto iter = map.begin(), end = map.end();
     for (; iter != end; ++iter)
     {
         if (!EmitScalar(emitter, iter->first, GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))

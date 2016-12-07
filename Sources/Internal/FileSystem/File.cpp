@@ -99,7 +99,10 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
+    if (filename.IsDirectoryPathname())
+    {
+        return nullptr;
+    }
 
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {

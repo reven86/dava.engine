@@ -177,7 +177,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
     for (YamlNode* styleSheetNode : styleSheetMap)
     {
-        const MultiMap<String, YamlNode*>& styleSheet = styleSheetNode->AsMap();
+        const UnorderedMap<String, YamlNode*>& styleSheet = styleSheetNode->AsMap();
 
         auto propertiesSectionIter = styleSheet.find("properties");
 

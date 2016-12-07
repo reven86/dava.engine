@@ -68,7 +68,7 @@ void REModule::OnRenderSystemInitialized(DAVA::Window* w)
     DVASSERT(globalData != nullptr);
     globalData->mainWindow->OnRenderingInitialized();
 
-    launchDataWrapper = accessor.CreateWrapper(DAVA::ReflectedType::Get<LaunchModuleData>());
+    launchDataWrapper = accessor.CreateWrapper(DAVA::ReflectedTypeDB::Get<LaunchModuleData>());
     launchDataWrapper.AddListener(this);
 }
 

@@ -34,7 +34,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     Assert::SetupDefaultHandlers();
 
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
+    e.Init(eEngineRunMode::CONSOLE_MODE, { "NetCore" }, nullptr);
 
     e.update.Connect([&e](float32)
                      {

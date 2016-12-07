@@ -11,6 +11,16 @@ namespace DAVA
 {
 static const FastName FMOD_SYSTEM_EVENTANGLE_PARAMETER("(event angle)");
 
+static float32 SpeedToPitchInOctaves(const float32 speed)
+{
+    // For using with FMOD::Event::setPitch & FMOD_EVENT_PITCHUNITS_OCTAVES
+    // 0.0f -> default frequency
+    // +1 octave -> x2 frequency
+    // -1 octave -> x1/2 frequency
+
+    return std::log2f(speed);
+}
+
 FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
     :
     is3D(false)
@@ -26,7 +36,10 @@ FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
         {
             FMOD_MODE mode = 0;
             fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
-            is3D = (mode == FMOD_3D);
+            if (mode == FMOD_3D)
+            {
+                is3D = true;
+            }
 
             InitParamsMap();
 
@@ -50,7 +63,7 @@ bool FMODSoundEvent::Trigger()
     if (fmodEventSystem == nullptr)
         return false;
 
-    if (is3D)
+    if (is3D && !fmodEventInstances.empty())
     {
         FMOD::Event* fmodEventInfo = nullptr;
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
@@ -63,8 +76,10 @@ bool FMODSoundEvent::Trigger()
             {
                 DVASSERT(direction.Length() > 0.f);
             }
-            FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
+
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
+            FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
+
             ApplyParamsToEvent(fmodEventInfo);
         }
     }
@@ -77,6 +92,12 @@ bool FMODSoundEvent::Trigger()
         ApplyParamsToEvent(fmodEvent);
 
         FMOD_VERIFY(fmodEvent->setVolume(volume));
+
+        const float pitch = SpeedToPitchInOctaves(speed);
+        FMOD_VERIFY(fmodEvent->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
+
+        FMOD_VERIFY(fmodEvent->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
+
         FMOD_RESULT startResult = fmodEvent->start();
 
         if (startResult == FMOD_OK)
@@ -134,6 +155,22 @@ void FMODSoundEvent::SetVolume(float32 _volume)
         for (size_t i = 0; i < instancesCount; ++i)
         {
             FMOD_VERIFY(instancesCopy[i]->setVolume(volume));
+        }
+    }
+}
+
+void FMODSoundEvent::SetSpeed(float32 _speed)
+{
+    if (speed != _speed)
+    {
+        speed = _speed;
+
+        Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
+        size_t instancesCount = instancesCopy.size();
+        for (size_t i = 0; i < instancesCount; ++i)
+        {
+            float pitch = SpeedToPitchInOctaves(speed);
+            FMOD_VERIFY(instancesCopy[i]->setPitch(pitch, FMOD_EVENT_PITCHUNITS_OCTAVES));
         }
     }
 }
