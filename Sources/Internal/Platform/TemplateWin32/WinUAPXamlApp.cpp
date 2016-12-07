@@ -628,7 +628,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     using ::Windows::Devices::Input::PointerDeviceType;
 
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-    Vector2 wheelDelta(pointerPoint->Properties->MouseWheelDelta / static_cast<float32>(WHEEL_DELTA), 0.f);
+    Vector2 wheelDelta(0.f, pointerPoint->Properties->MouseWheelDelta / static_cast<float32>(WHEEL_DELTA));
     if (pointerPoint->Properties->IsHorizontalMouseWheel)
     {
         std::swap(wheelDelta.x, wheelDelta.y);
@@ -639,7 +639,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 
     core->RunOnMainThread([this, wheelDelta, physPoint, type, modifiers]() {
         UIEvent ev;
-        ev.wheelDelta = wheelDelta;
+        ev.wheelDelta.x = wheelDelta.x;
+        ev.wheelDelta.y = wheelDelta.y;
         ev.modifiers = modifiers;
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
