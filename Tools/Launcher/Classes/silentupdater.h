@@ -45,6 +45,8 @@ private slots:
     void OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 
 private:
+    //RAII structure to start next task at the end of a scope
+    struct TaskStarter;
     void StartNextTask();
     bool ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files);
     bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);

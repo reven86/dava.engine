@@ -32,10 +32,13 @@ bool LauncherListener::Init(ProcessRequestFunction function)
 #ifdef Q_OS_MAC
     CFURLRef url = (CFURLRef)CFAutorelease((CFURLRef)CFBundleCopyBundleURL(CFBundleGetMainBundle()));
     QString appPath = QUrl::fromCFURL(url).path();
+    //launcher will use app as a file, but not as a folder
     while(appPath.endsWith('/'))
     {
         appPath.chop(1);
     }
+    //sometimes CFBundleCopyBundleURL returns url with a double slashes
+    appPath.replace("//", "/");
 #else
     QString appPath = application->applicationFilePath();
 #endif //platform

@@ -31,6 +31,20 @@ private:
 };
 }
 
+struct SilentUpdater::TaskStarter
+{
+    TaskStarter(SilentUpdater* silentUpdater_)
+        : silentUpdater(silentUpdater_)
+    {
+    }
+    ~TaskStarter()
+    {
+        silentUpdater->StartNextTask();
+    }
+
+    SilentUpdater* silentUpdater = nullptr;
+};
+
 SilentUpdater::SilentUpdater(ApplicationManager* appManager, QObject* parent)
     : QObject(parent)
     , appManager(appManager)
@@ -64,6 +78,8 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
     {
         return;
     }
+
+    TaskStarter taskStarter(this);
 
     SilentUpdateTask task = tasks.dequeue();
     if (reply->error() != QNetworkReply::NoError)
@@ -108,7 +124,6 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
     {
         appManager->RunApplication(task.branchID, appToRestart);
     }
-    StartNextTask();
 }
 
 void SilentUpdater::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
