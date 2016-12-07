@@ -127,11 +127,11 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packag
     ControlNode* prototypeNode = nullptr;
     if (packageName.empty())
     {
-        prototypeNode = FindRootControl(prototypeName);
+        prototypeNode = FindPrototype(prototypeName);
         if (prototypeNode == nullptr)
         {
             if (loader->LoadControlByName(prototypeName, this))
-                prototypeNode = FindRootControl(prototypeName);
+                prototypeNode = FindPrototype(prototypeName);
         }
     }
     else
@@ -140,7 +140,11 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packag
         {
             if (importedPackage->GetName() == packageName)
             {
-                prototypeNode = importedPackage->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
+                prototypeNode = importedPackage->GetPrototypes()->FindControlNodeByName(prototypeName);
+                if (prototypeNode == nullptr)
+                {
+                    prototypeNode = importedPackage->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
+                }
                 break;
             }
         }
@@ -185,7 +189,7 @@ UIControl* QuickEdPackageBuilder::BeginUnknownControl(const YamlNode* node)
     return nullptr;
 }
 
-void QuickEdPackageBuilder::EndControl(bool isRoot)
+void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
     bool addToParent = controlsStack.back().addToParent;
@@ -193,13 +197,25 @@ void QuickEdPackageBuilder::EndControl(bool isRoot)
 
     if (addToParent)
     {
-        if (controlsStack.empty() || isRoot)
+        switch (controlPlace)
         {
-            lastControl->GetControl()->UpdateLayout();
+        case TO_CONTROLS:
             rootControls.push_back(SafeRetain(lastControl));
-        }
-        else
+            break;
+
+        case TO_PROTOTYPES:
+            prototypes.push_back(SafeRetain(lastControl));
+            break;
+
+        case TO_PREVIOUS_CONTROL:
+            DVASSERT(!controlsStack.empty());
             controlsStack.back().node->Add(lastControl);
+            break;
+
+        default:
+            DVASSERT(false);
+            break;
+        }
     }
     SafeRelease(lastControl);
 }
@@ -324,6 +340,24 @@ RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
         package->GetStyleSheets()->Add(styleSheet);
     }
 
+    for (ControlNode* control : prototypes)
+    {
+        bool canInsert = true;
+        for (PackageNode* declinedPackage : declinedPackages)
+        {
+            if (control->IsDependsOnPackage(declinedPackage))
+            {
+                canInsert = false;
+                break;
+            }
+        }
+
+        if (canInsert)
+        {
+            package->GetPrototypes()->Add(control);
+        }
+    }
+
     for (ControlNode* control : rootControls)
     {
         bool canInsert = true;
@@ -366,12 +400,20 @@ void QuickEdPackageBuilder::AddImportedPackage(PackageNode* node)
     importedPackages.push_back(SafeRetain(node));
 }
 
-ControlNode* QuickEdPackageBuilder::FindRootControl(const DAVA::String& name) const
+ControlNode* QuickEdPackageBuilder::FindPrototype(const DAVA::String& name) const
 {
-    for (ControlNode* control : rootControls)
+    for (ControlNode* control : prototypes)
     {
         if (control->GetName() == name)
             return control;
+    }
+
+    for (ControlNode* control : rootControls)
+    {
+        if (control->GetName() == name)
+        {
+            return control;
+        }
     }
     return nullptr;
 }
