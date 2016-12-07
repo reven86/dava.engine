@@ -18,19 +18,18 @@ public:
     QString GetErrorMessage() const;
     //this message will be send to a target application
     //user must know about this messages to enumerate them on the client side
-    enum class eMessage
+    //this enums used on data level of the OSI model
+    enum eMessage
     {
         QUIT
     };
 
     //this is reply to launcher
-    //user must know about replies to use them on the client side
-    enum class eReply
+    enum eReply
     {
         ACCEPT,
         REJECT,
-        UNKNOWN_MESSAGE,
-        REPLIES_COUNT
+        UNKNOWN_MESSAGE
     };
 
     //client application receive messages by ProcessRequestFunction;
@@ -38,7 +37,7 @@ public:
     //SetProcessRequestFunction([](eMessage message) { return UNKNOWN_MESSAGE; };
     using ProcessRequestFunction = std::function<eReply(eMessage)>;
     bool Init(ProcessRequestFunction function);
-
+    
 private slots:
     void OnNewConnection();
     void OnReadyRead();

@@ -1,15 +1,16 @@
 #include "appscommandssender.h"
 #include "QtHelpers/LauncherListener.h"
-#include "QtHelpers/Private/LauncherMessageCodes.h"
+#include "QtHelpers/Private/LauncherIPCHelpers.h"
 
 #include <QEventLoop>
 #include <QTimer>
 
 namespace AppsCommandsSenderDetails
 {
-enum class eReplyInternal
+//this enum describes channel-level of the OSI model
+enum eChannelReply
 {
-    TARGET_NOT_FOUND = static_cast<int>(LauncherListener::eReply::REPLIES_COUNT),
+    TARGET_NOT_FOUND = static_cast<int>(LauncherIPCHelpers::USER_REPLY),
     TIMEOUT_ERROR,
     OTHER_ERROR
 };
@@ -31,9 +32,10 @@ AppsCommandsSender::~AppsCommandsSender()
 
 bool AppsCommandsSender::HostIsAvailable(const QString& appPath)
 {
+    QString actualPath = LauncherIPCHelpers::PathToKey(appPath);
     Q_ASSERT(socket->state() == QLocalSocket::UnconnectedState);
 
-    socket->connectToServer(appPath);
+    socket->connectToServer(actualPath);
     socket->waitForConnected();
     if (socket->state() == QLocalSocket::ConnectedState)
     {
@@ -45,9 +47,10 @@ bool AppsCommandsSender::HostIsAvailable(const QString& appPath)
 
 bool AppsCommandsSender::Ping(const QString& appPath)
 {
-    int pingCode = static_cast<int>(LauncherMessageCodes::eMessageInternal::PING);
+    using namespace LauncherIPCHelpers;
+    int pingCode = static_cast<int>(PING);
     int replyCode = SendMessage(pingCode, appPath);
-    return static_cast<LauncherMessageCodes::eReplyInternal>(replyCode) == LauncherMessageCodes::eReplyInternal::PONG;
+    return static_cast<eProtocolReply>(replyCode) == PONG;
 }
 
 bool AppsCommandsSender::RequestQuit(const QString& appPath)
@@ -55,16 +58,17 @@ bool AppsCommandsSender::RequestQuit(const QString& appPath)
     using namespace AppsCommandsSenderDetails;
     int quitCode = static_cast<int>(LauncherListener::eMessage::QUIT);
     int replyCode = SendMessage(quitCode, appPath);
-    return static_cast<eReplyInternal>(replyCode) == eReplyInternal::TARGET_NOT_FOUND
+    return static_cast<eChannelReply>(replyCode) == TARGET_NOT_FOUND
     || static_cast<LauncherListener::eReply>(replyCode) == LauncherListener::eReply::ACCEPT;
 }
 
 int AppsCommandsSender::SendMessage(int message, const QString& appPath)
 {
     using namespace AppsCommandsSenderDetails;
-
+    using namespace LauncherIPCHelpers;
+    QString actualPath = LauncherIPCHelpers::PathToKey(appPath);
     Q_ASSERT(socket->state() == QLocalSocket::UnconnectedState);
-    socket->connectToServer(appPath);
+    socket->connectToServer(actualPath);
     socket->waitForConnected();
     if (socket->state() == QLocalSocket::ConnectedState)
     {
@@ -84,7 +88,7 @@ int AppsCommandsSender::SendMessage(int message, const QString& appPath)
         //this situation occurs when application fails on processing message
         if (waitTimer.isActive() == false)
         {
-            return static_cast<int>(eReplyInternal::TIMEOUT_ERROR);
+            return static_cast<int>(TIMEOUT_ERROR);
         }
         bool ok = false;
         int code = data.toInt(&ok);
@@ -98,8 +102,8 @@ int AppsCommandsSender::SendMessage(int message, const QString& appPath)
         QLocalSocket::LocalSocketError lastError = socket->error();
         if (lastError == QLocalSocket::ServerNotFoundError)
         {
-            return static_cast<int>(eReplyInternal::TARGET_NOT_FOUND);
+            return static_cast<int>(TARGET_NOT_FOUND);
         }
     }
-    return static_cast<int>(eReplyInternal::OTHER_ERROR);
+    return static_cast<int>(OTHER_ERROR);
 }

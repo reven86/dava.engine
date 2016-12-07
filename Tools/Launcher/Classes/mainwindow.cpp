@@ -123,6 +123,7 @@ MainWindow::MainWindow(QWidget* parent)
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
     baManagerClient = new BAManagerClient(appManager, this);
+
     //create secret shortcut
     //it will be used to get commands manually for testing reasons
     QShortcut* shortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this);

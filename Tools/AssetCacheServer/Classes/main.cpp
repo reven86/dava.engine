@@ -51,7 +51,6 @@ int Process(Engine& e)
                          server.reset();
                          runGuard.reset();
                      });
-    QString path = qApp->applicationFilePath();
     LauncherListener launcherListener;
     launcherListener.Init([](LauncherListener::eMessage message) {
         if (message == LauncherListener::eMessage::QUIT)

@@ -134,7 +134,7 @@ bool ApplicationManager::CanRemoveApp(const QString& branchID, const QString& ap
     }
     QString runPath = appDirPath + GetLocalAppPath(version, appID);
     bool triedToStop = false;
-    if (ProcessHelper::IsProcessRuning(runPath))
+    if (commandsSender->HostIsAvailable(runPath))
     {
         if (triedToStop == false && CanTryStopApplication(appID))
         {
@@ -535,7 +535,7 @@ bool ApplicationManager::PrepareToInstallNewApplication(const QString& branchID,
             return false;
         }
         QString path = GetApplicationDirectory(branchID, appName, version->isToolSet, false) + GetLocalAppPath(version, appName);
-        return ProcessHelper::IsProcessRuning(path);
+        return commandsSender->HostIsAvailable(path);
     };
     //we need to remove all toolset applications, whether they was installed or not
     if (willInstallToolset)
