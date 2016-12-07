@@ -229,6 +229,8 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     errorLoggerOutput = new ErrorDialogOutput(globalOperations);
     DAVA::Logger::AddCustomOutput(errorLoggerOutput);
 
+    tarcUI->lastWaitDialogWasClosed.Connect(&waitDialogClosed, &DAVA::Signal<>::Emit);
+
     new LandscapeEditorShortcutManager(this);
     PathDescriptor::InitializePathDescriptors();
 
@@ -346,14 +348,6 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.max = max;
     params.needProgressBar = min != max;
     waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
-    DAVA::TArc::WaitDialog* dialog = dynamic_cast<DAVA::TArc::WaitDialog*>(waitDialog.get());
-    dialog->beforeDestroy.Connect([this](DAVA::TArc::WaitHandle* handle)
-                                  {
-                                      if (!IsWaitDialogOnScreen())
-                                      {
-                                          waitDialogClosed.Emit();
-                                      }
-                                  });
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)

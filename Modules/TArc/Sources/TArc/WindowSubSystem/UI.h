@@ -175,6 +175,7 @@ public:
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
     virtual bool HasActiveWaitDalogues() const = 0;
+    Signal<> lastWaitDialogWasClosed;
 
     DAVA_DEPRECATED(virtual QWidget* GetWindow(const WindowKey& windowKey) = 0);
 };

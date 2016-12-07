@@ -658,6 +658,10 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
     dlg->beforeDestroy.Connect([this](WaitHandle* waitHandle)
                                {
                                    impl->activeWaitDialogues.erase(waitHandle);
+                                   if (impl->activeWaitDialogues.empty())
+                                   {
+                                       lastWaitDialogWasClosed.Emit();
+                                   }
                                });
     dlg->Show();
     return std::move(dlg);

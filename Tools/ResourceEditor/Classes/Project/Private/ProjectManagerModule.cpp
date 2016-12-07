@@ -233,7 +233,13 @@ void ProjectManagerModule::CloseProject()
         if (GetAccessor()->GetContextCount() == 0)
         {
             DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+
+            DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
+            if (fileSystem->Exists(data->GetDataSourcePath()))
+            {
+                data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+            }
+
             data->projectPath = "";
 
             SettingsManager::ResetPerProjectSettings();
