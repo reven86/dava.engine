@@ -11,16 +11,16 @@ namespace MitsubaExporterDetail
 {
 struct TextureExport
 {
-    DAVA::Texture* tex = nullptr;
+    DAVA::Texture* texture = nullptr;
     DAVA::FilePath originalFilePath;
     DAVA::String destinationFilePath;
-    float uScale = 1.0f;
-    float vScale = 1.0f;
+    DAVA::float32 uScale = 1.0f;
+    DAVA::float32 vScale = 1.0f;
 };
 
 struct MaterialExport
 {
-    DAVA::NMaterial* mat = nullptr;
+    DAVA::NMaterial* material = nullptr;
     DAVA::Map<DAVA::String, DAVA::String> textures;
     DAVA::String bumpmapTextureId;
     DAVA::String alphaTestTextureId;
@@ -44,12 +44,11 @@ struct LightExport
 class Exporter
 {
 public:
-    const DAVA::uint32 MeshExporterVersion = 1;
+    static const DAVA::uint32 MeshExporterVersion = 1;
 
     DAVA::String exportFolder;
     DAVA::String meshesFolder;
     DAVA::String texturesFolder;
-    DAVA::String landscapeImageName;
     DAVA::UnorderedMap<DAVA::String, MitsubaExporterDetail::TextureExport> texturesToExport;
     DAVA::UnorderedMap<DAVA::String, MitsubaExporterDetail::MaterialExport> materialsToExport;
     DAVA::Vector<std::pair<DAVA::String, MitsubaExporterDetail::RenderBatchExport>> renderBatchesToExport;
@@ -76,6 +75,9 @@ public:
     void CollectMaterialTextures(MitsubaExporterDetail::MaterialExport& material);
     bool AddTextureToExport(DAVA::Texture*, DAVA::String& textureId);
 };
+
+static const DAVA::String FileExtension = ".xml";
+static DAVA::String currentLandscapeImageName;
 }
 
 void MitsubaExporter::PostInit()
@@ -104,8 +106,10 @@ void MitsubaExporter::Export()
     if (!exportFolder.isEmpty())
     {
         DAVA::FilePath exportFile(exportFolder.toUtf8().toStdString());
-        if (exportFile.GetExtension().empty())
-            exportFile.ReplaceExtension(".xml");
+        if (exportFile.GetExtension() != MitsubaExporterDetail::FileExtension)
+        {
+            exportFile.ReplaceExtension(MitsubaExporterDetail::FileExtension);
+        }
 
         MitsubaExporterDetail::Exporter exporter;
         SceneData* sceneData = GetAccessor()->GetActiveContext()->GetData<SceneData>();
@@ -343,7 +347,7 @@ void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape
 
     DVASSERT(indices.size() % 3 == 0);
 
-    landscapeImageName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
+    MitsubaExporterDetail::currentLandscapeImageName = DAVA::Format("%s%s/landscape.png", exportFolder.c_str(), texturesFolder.c_str(), reinterpret_cast<DAVA::uint64>(landscape));
     LandscapeThumbnails::Create(landscape, DAVA::MakeFunction(this, &MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured));
 
     {
@@ -397,14 +401,14 @@ void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape
     {
         mitsuba::scope bsdf("bsdf", mitsuba::kType, DAVA::String("diffuse"));
         mitsuba::scope texture("texture", mitsuba::kType, DAVA::String("bitmap"), mitsuba::kName, DAVA::String("reflectance"));
-        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, landscapeImageName);
+        mitsuba::tag(mitsuba::kString, mitsuba::kName, DAVA::String("filename"), mitsuba::kValue, MitsubaExporterDetail::currentLandscapeImageName);
     }
 }
 
 void MitsubaExporterDetail::Exporter::OnLandscapeImageCaptured(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
 {
     DAVA::ScopedPtr<DAVA::Image> image(landscapeTexture->CreateImageFromMemory());
-    DAVA::ImageSystem::Save(landscapeImageName, image);
+    DAVA::ImageSystem::Save(MitsubaExporterDetail::currentLandscapeImageName, image);
 }
 
 void MitsubaExporterDetail::Exporter::CollectExportObjects(const DAVA::Entity* entity)
@@ -428,7 +432,7 @@ void MitsubaExporterDetail::Exporter::CollectExportObjects(const DAVA::Entity* e
                     DAVA::NMaterial* material = batch->GetMaterial();
                     DAVA::String materialID = DAVA::Format("mat_%p", material);
 
-                    materialsToExport[materialID].mat = material;
+                    materialsToExport[materialID].material = material;
                     CollectMaterialTextures(materialsToExport[materialID]);
 
                     DAVA::String batchID = DAVA::Format("%s_batch_%u", entity->GetName().c_str(), i);
@@ -494,7 +498,7 @@ bool MitsubaExporterDetail::Exporter::MaterialIsValidForExport(DAVA::NMaterial* 
 
 void MitsubaExporterDetail::Exporter::CollectMaterialTextures(MitsubaExporterDetail::MaterialExport& material)
 {
-    DAVA::FastName fxName = material.mat->GetEffectiveFXName();
+    DAVA::FastName fxName = material.material->GetEffectiveFXName();
     material.alphaTestMaterial = fxName.find("Alphatest") != DAVA::String::npos;
 
     material.materialType = mitsuba::kDiffuse;
@@ -506,7 +510,7 @@ void MitsubaExporterDetail::Exporter::CollectMaterialTextures(MitsubaExporterDet
         material.materialType = mitsuba::kRoughConductor;
 
     DAVA::String textureId;
-    DAVA::Texture* diffuseTexture = material.mat->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
+    DAVA::Texture* diffuseTexture = material.material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
     if (AddTextureToExport(diffuseTexture, textureId))
     {
         material.alphaTestTextureId = textureId;
@@ -524,7 +528,7 @@ void MitsubaExporterDetail::Exporter::CollectMaterialTextures(MitsubaExporterDet
         material.alphaTestMaterial = false;
     }
 
-    DAVA::Texture* normalMap = material.mat->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_NORMAL);
+    DAVA::Texture* normalMap = material.material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_NORMAL);
     if (AddTextureToExport(normalMap, textureId))
     {
         material.bumpmapTextureId = textureId;
@@ -543,7 +547,7 @@ bool MitsubaExporterDetail::Exporter::AddTextureToExport(DAVA::Texture* texture,
 
     DAVA::String baseName = sourceFile.GetFilename();
     textureId = DAVA::Format("%s/%s.png", texturesFolder.c_str(), baseName.c_str());
-    texturesToExport[textureId].tex = texture;
+    texturesToExport[textureId].texture = texture;
     texturesToExport[textureId].originalFilePath = sourceFile;
     texturesToExport[textureId].destinationFilePath = exportFolder + textureId;
 
