@@ -10,7 +10,7 @@ void EntityProducerModule::PostInit()
 {
     using namespace DAVA::TArc;
 
-    QtAction* instantiateCamera = new QtAction(GetAccessor(), "Instantiate Current Camera");
+    QtAction* instantiateCamera = new QtAction(GetAccessor(), "Clone Current Camera");
     FieldDescriptor fieldDescriptor;
     fieldDescriptor.type = DAVA::ReflectedTypeDB::Get<SceneData>();
     fieldDescriptor.fieldName = DAVA::FastName(SceneData::scenePropertyName);
