@@ -12,6 +12,7 @@ public:
 
 protected:
     void Update(DAVA::float32 timeElapsed) override;
+    void ShowEngineSettings();
 
     bool showTestWindow = true;
     bool showAnotherWindow = false;

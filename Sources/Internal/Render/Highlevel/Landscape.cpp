@@ -25,6 +25,8 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -82,6 +84,18 @@ Landscape::Landscape()
             floatHeightTexture = true;
         }
     }
+
+#ifdef __DAVAENGINE_COREV2__
+    EngineSettings* settings = Engine::Instance()->GetContext()->settings;
+#else
+    EngineSettings* settings = EngineSettings::Instance();
+#endif
+
+    EngineSettings::eSettingValue landscapeSetting = settings->GetSetting<EngineSettings::SETTING_LANDSCAPE_RENDERMODE>().Get<EngineSettings::eSettingValue>();
+    if (landscapeSetting == EngineSettings::LANDSCAPE_NO_INSTANCING)
+        renderMode = RENDERMODE_NO_INSTANCING;
+    else if (landscapeSetting == EngineSettings::LANDSCAPE_INSTANCING && renderMode == RENDERMODE_INSTANCING_MORPHING)
+        renderMode = RENDERMODE_INSTANCING;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
@@ -813,8 +827,10 @@ void Landscape::DrawLandscapeNoInstancing()
     drawIndices = 0;
     flushQueueCounter = 0;
     activeRenderBatchArray.clear();
+    queuedQuadBuffer = -1;
 
-    ClearQueue();
+    DVASSERT(queueIndexCount == 0);
+
     AddPatchToRender(0, 0, 0);
     FlushQueue();
 }
@@ -925,36 +941,40 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
-    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
-    {
-        AllocateRenderBatch();
-    }
-
     DVASSERT(queuedQuadBuffer != -1);
 
-    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
-    DVASSERT(indexBuffer.allocatedindices == queueIndexCount);
+    uint16* indicesPtr = indices.data();
+    while (queueIndexCount != 0)
+    {
+        DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+        if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+        {
+            AllocateRenderBatch();
+        }
 
-    Memcpy(indexBuffer.data, indices.data(), queueIndexCount * sizeof(uint16));
-    RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
-    batch->indexBuffer = indexBuffer.buffer;
-    batch->indexCount = queueIndexCount;
-    batch->startIndex = indexBuffer.baseIndex;
-    batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
+        DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
+        DVASSERT(queueIndexCount >= indexBuffer.allocatedindices);
+        uint32 allocatedIndices = indexBuffer.allocatedindices - indexBuffer.allocatedindices % 3; //in buffer must be completed triangles
 
-    DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
+        Memcpy(indexBuffer.data, indicesPtr, allocatedIndices * sizeof(uint16));
+        RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
+        batch->indexBuffer = indexBuffer.buffer;
+        batch->indexCount = allocatedIndices;
+        batch->startIndex = indexBuffer.baseIndex;
+        batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
 
-    activeRenderBatchArray.push_back(batch);
-    ClearQueue();
+        DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
 
-    drawIndices += batch->indexCount;
-    ++flushQueueCounter;
-}
+        activeRenderBatchArray.push_back(batch);
 
-void Landscape::ClearQueue()
-{
-    queueIndexCount = 0;
+        queueIndexCount -= allocatedIndices;
+        indicesPtr += allocatedIndices;
+
+        drawIndices += allocatedIndices;
+        ++flushQueueCounter;
+    }
+
+    DVASSERT(queueIndexCount == 0);
     queuedQuadBuffer = -1;
 }
 

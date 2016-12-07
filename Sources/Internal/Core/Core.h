@@ -266,6 +266,8 @@ protected:
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
 
+    static void OnRenderingError(rhi::RenderingError error, void* context);
+
 private:
     KeyedArchive* options;
 

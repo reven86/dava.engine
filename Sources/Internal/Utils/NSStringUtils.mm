@@ -88,12 +88,14 @@ String StringFromNSString(NSString* string)
 {
     if (string)
     {
-        return String([string cStringUsingEncoding:NSASCIIStringEncoding]);
+        const char* utf8Chars = [string UTF8String];
+        if (utf8Chars)
+        {
+            return String(utf8Chars);
+        }
     }
-    else
-    {
-        return "";
-    }
+
+    return String();
 }
 
 WideString WideStringFromNSString(NSString* string)

@@ -142,11 +142,14 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 
 void SceneSaver::CopyTextures(DAVA::Scene* scene)
 {
-    TexturesMap::const_iterator endIt = texturesForSave.end();
-    TexturesMap::iterator it = texturesForSave.begin();
-    for (; it != endIt; ++it)
+    for (const auto& it : texturesForSave)
     {
-        CopyTexture(it->first);
+        if (it.first.GetType() == FilePath::PATH_IN_MEMORY)
+        {
+            continue;
+        }
+
+        CopyTexture(it.first);
     }
 }
 

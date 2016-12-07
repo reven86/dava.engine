@@ -47,6 +47,7 @@ find_package( DavaFramework REQUIRED )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
+find_package( GMock REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -156,9 +157,13 @@ DEPLOY_SCRIPT (            COPY_WIN32  ${BEAST_DLL}
                            COPY_WIN64  ${BEAST_DLL}
                            COPY_DIR    ${DEPLOY_DIR})
 
-if (DEPLOY)
+if (DEPLOY OR WIN32 )
     if (NOT WIN32)
         set(BEAST_DIR "")
+    endif()
+
+    if( NOT DEPLOY AND WIN32 )
+        set( DEPLOY_BEAST_DIR ${MIX_APP_DIR} )
     endif()
 
     if( NOT DEPLOY_BEAST_DIR )

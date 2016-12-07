@@ -2,10 +2,10 @@
 #include "Base/BaseTypes.h"
 #include "Math/Color.h"
 #include "Math/MathDefines.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Scripting/LuaScript.h"
 
-struct ReflClass : public DAVA::ReflectedBase
+struct ReflClass : public DAVA::ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(ReflClass)
     {

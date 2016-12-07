@@ -27,6 +27,7 @@ public:
     ~LibraryModel() override;
 
     void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
+    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes);
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
@@ -40,9 +41,9 @@ private:
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();
-    void AddControl(ControlNode* node, QStandardItem* rootItem, bool haveToMakeInstance);
-    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool haveToMakeInstance);
-    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool haveToMakeInstance);
+    void AddControl(ControlNode* node, QStandardItem* rootItem, bool makePrototype);
+    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool makePrototype);
+    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool makePrototype);
 
     //Package Signals
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -61,6 +62,7 @@ private:
 
     DAVA::Vector<ControlNode*> defaultControls;
     DAVA::Vector<DAVA::FilePath> libraryPackagePaths;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypes;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__
