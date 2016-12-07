@@ -1049,36 +1049,23 @@ bool WindowBackend::RegisterWindowClass()
 
 float32 WindowBackend::GetDpi() const
 {
-    float32 ret = 0.0f;
-
-    using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
-
-    // we are trying to get pointer on GetDpiForMonitor function with GetProcAddress
-    // because this function is available only on win8.1 and win10 but we should be able
-    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
-    // and GetDpiForMonitor wont be called
-    HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
-    MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
-
-    if (nullptr != fn)
+    float32 result = 0.0f;
+    if (DllImport::fnGetDpiForMonitor != nullptr)
     {
         UINT x = 0;
         UINT y = 0;
-        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
-        (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
-
-        ret = static_cast<float32>(x);
+        HMONITOR hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &x, &y);
+        result = static_cast<float32>(x);
     }
     else
     {
-        // default behavior for windows (ver < 8.1)
-        // get dpi from caps
-        HDC screen = GetDC(NULL);
-        ret = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
-        ReleaseDC(NULL, screen);
+        // default behavior for Windows with version < 8.1
+        HDC hdcScreen = ::GetDC(nullptr);
+        result = static_cast<float32>(::GetDeviceCaps(hdcScreen, LOGPIXELSX));
+        ::ReleaseDC(NULL, hdcScreen);
     }
-
-    return ret;
+    return result;
 }
 
 eModifierKeys WindowBackend::GetModifierKeys()
