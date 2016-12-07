@@ -5,6 +5,7 @@
 
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "EditorSystems/SelectionContainer.h"
 
 #include <QObject>
 #include <QVector>
@@ -66,6 +67,7 @@ public:
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
 
     bool TryCloseAllDocuments();
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
@@ -74,6 +76,9 @@ private:
     void OnReloadSprites();
     void OnReloadSpritesFinished();
     void OnFindFileInProject();
+    void OnJumpToPrototype();
+    void OnFindPrototypeInstances();
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     ProjectProperties properties;
     const QString projectDirectory;
@@ -86,6 +91,7 @@ private:
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<FileSystemCache> fileSystemCache;
+    SelectionContainer selectionContainer;
 #if defined(__DAVAENGINE_MACOS__)
     std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
 #endif

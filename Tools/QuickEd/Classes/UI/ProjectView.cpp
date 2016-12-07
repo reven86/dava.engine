@@ -13,6 +13,10 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ProjectView::ReloadSprites);
     connect(mainWindow->ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindFileInProject);
+    connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
+    connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
+
+    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
 }
 
 void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
@@ -52,6 +56,8 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
     mainWindow->ui->actionCloseProject->setEnabled(enabled);
     mainWindow->ui->actionFindFileInProject->setEnabled(enabled);
+    mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
+    mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->toolBarPlugins->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
@@ -143,6 +149,11 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 {
     QString langCode = comboboxLanguage->itemData(newLanguageIndex).toString();
     emit CurrentLanguageChanged(langCode);
+}
+
+void MainWindow::ProjectView::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    emit SelectionChanged(selected, deselected);
 }
 
 void MainWindow::ProjectView::SelectFile(const QString& filePath)

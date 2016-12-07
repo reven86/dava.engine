@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "EditorSystems/SelectionContainer.h"
 
 struct WidgetContext
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include <QObject>
 #include "UI/mainwindow.h"
+#include "EditorSystems/SelectionContainer.h"
 
 class SpritesPacker;
 class QComboBox;
@@ -33,12 +34,16 @@ signals:
     void CurrentLanguageChanged(const QString& newLangCode);
     void ReloadSprites();
     void FindFileInProject();
+    void JumpToPrototype();
+    void FindPrototypeInstances();
+    void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private slots:
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnCurrentLanguageChanged(int newLanguageIndex);
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
     static QString ConvertLangCodeToString(const QString& langCode);

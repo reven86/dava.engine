@@ -3,6 +3,7 @@
 #include "Document/Document.h"
 #include "Document/DocumentGroup.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
@@ -98,6 +99,9 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     connect(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
     connect(view, &MainWindow::ProjectView::ReloadSprites, this, &Project::OnReloadSprites);
     connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::OnFindFileInProject);
+    connect(view, &MainWindow::ProjectView::JumpToPrototype, this, &Project::OnJumpToPrototype);
+    connect(view, &MainWindow::ProjectView::FindPrototypeInstances, this, &Project::OnFindPrototypeInstances);
+    connect(view, &MainWindow::ProjectView::SelectionChanged, this, &Project::OnSelectionChanged);
 
     connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
 
@@ -301,6 +305,17 @@ bool Project::TryCloseAllDocuments()
     return true;
 }
 
+void Project::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
+{
+    Logger::Debug("--> %s:%s", packagePath.GetFrameworkPath().c_str(), controlName.c_str());
+    Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
+    if (document != nullptr)
+    {
+        p
+        //        document->
+    }
+}
+
 void Project::OnFindFileInProject()
 {
     QString filePath = FindFileDialog::GetFilePath(fileSystemCache.get(), "yaml", view->mainWindow);
@@ -310,6 +325,34 @@ void Project::OnFindFileInProject()
     }
     view->SelectFile(filePath);
     documentGroup->AddDocument(filePath);
+}
+
+void Project::OnJumpToPrototype()
+{
+    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
+    if (nodes.size() == 1)
+    {
+        auto it = nodes.begin();
+        PackageBaseNode* node = *it;
+
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr && controlNode->GetPrototype() != nullptr)
+        {
+            ControlNode* prototypeNode = controlNode->GetPrototype();
+            FilePath path = prototypeNode->GetPackage()->GetPath();
+            String name = prototypeNode->GetName();
+            JumpToControl(path, name);
+        }
+    }
+}
+
+void Project::OnFindPrototypeInstances()
+{
+}
+
+void Project::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)

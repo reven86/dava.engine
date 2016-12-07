@@ -111,6 +111,19 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
+void PreviewWidget::SelectPrototype(const String& name)
+{
+    if (document != nullptr)
+    {
+        PackageNode* package = document->GetPackage();
+        ControlNode* node = package->GetPrototypes()->FindControlNodeByName(name);
+        if (node != nullptr)
+        {
+            systemsManager->SelectNode(node);
+        }
+    }
+}
+
 float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.
