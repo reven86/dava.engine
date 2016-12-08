@@ -568,13 +568,13 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 
 void AutotestingSystemLua::ClickSystemBack()
 {
-    Logger::Debug("AutotestingSystemLua::ClickSystemBack");
+    Logger::FrameworkDebug("AutotestingSystemLua::ClickSystemBack");
     AutotestingSystem::Instance()->ClickSystemBack();
 }
 
 void AutotestingSystemLua::PressEscape()
 {
-    Logger::Debug("AutotestingSystemLua::PressEscape");
+    Logger::FrameworkDebug("AutotestingSystemLua::PressEscape");
     AutotestingSystem::Instance()->PressEscape();
 }
 
