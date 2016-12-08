@@ -243,7 +243,7 @@ VertexLayout& VertexLayout::operator=(const VertexLayout& src)
 //==============================================================================
 
 static const uint32 UniqueVertexLayoutCapacity = 1024;
-static std::atomic<uint32> UniqueVertexLayoutSize(0);
+static std::atomic<uint32> UniqueVertexLayoutLastIdentifier(0);
 static VertexLayout UniqueVertexLayout[UniqueVertexLayoutCapacity] = {};
 
 //------------------------------------------------------------------------------
@@ -252,10 +252,13 @@ const VertexLayout* VertexLayout::Get(uint32 uid)
 {
     DVASSERT(uid < UniqueVertexLayoutCapacity);
 
-    if ((uid != InvalidUID) && (uid < UniqueVertexLayoutSize))
+    if (uid == InvalidUID)
+        return nullptr;
+
+    if (uid <= UniqueVertexLayoutLastIdentifier)
         return UniqueVertexLayout + uid;
 
-    DAVA::Logger::Error("rhi::VertexLayout::Get(%u) failed, UniqueVertexLayoutSize: %u", uid, UniqueVertexLayoutSize.load(std::memory_order_relaxed));
+    DAVA::Logger::Error("rhi::VertexLayout::Get(%u) failed, UniqueVertexLayoutSize: %u", uid, UniqueVertexLayoutLastIdentifier.load(std::memory_order_relaxed));
     return nullptr;
 }
 
@@ -263,13 +266,13 @@ const VertexLayout* VertexLayout::Get(uint32 uid)
 
 uint32 VertexLayout::UniqueId(const VertexLayout& layout)
 {
-    for (uint32 i = 0, e = UniqueVertexLayoutSize; i < e; ++i)
+    for (uint32 i = 1, e = UniqueVertexLayoutLastIdentifier; i <= e; ++i)
     {
         if (UniqueVertexLayout[i] == layout)
             return i;
     }
 
-    uint32 uid = ++UniqueVertexLayoutSize;
+    uint32 uid = ++UniqueVertexLayoutLastIdentifier;
     DVASSERT(uid < UniqueVertexLayoutCapacity);
     UniqueVertexLayout[uid] = layout;
     return uid;
