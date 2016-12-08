@@ -351,8 +351,6 @@ void TextureGLES2_t::Destroy(bool force_immediate)
 
     ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
 
-    //-    fbo.clear();
-
     DVASSERT(!isMapped);
 
     if (mappedData)
@@ -409,7 +407,6 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
-            //-            DVASSERT(self->fbo.size())
             DVASSERT(self->fbo != 0);
             GLCommand cmd[] =
             {
@@ -811,108 +808,6 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         self->samplerState = *sampler;
         self->forceSetSamplerState = false;
     }
-}
-
-void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level)
-{
-    /*
-    TextureGLES2_t* color = TextureGLES2Pool::Get(tex);
-    TextureGLES2_t* depthStencil = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
-
-    GLuint fb = 0;
-    DVASSERT(color->isRenderTarget || color->isRenderBuffer);
-    for (const FramebufferGLES2_t& fbo : color->fbo)
-    {
-        if ((fbo.color == tex) && (fbo.depthStencil == depth) && (fbo.face == face) && (fbo.level == level))
-        {
-            fb = fbo.frameBuffer;
-            break;
-        }
-    }
-
-    if (fb == 0)
-    {
-        GL_CALL(glGenFramebuffers(1, &fb));
-        DVASSERT(fb != 0);
-        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-
-        if (color->isRenderBuffer)
-        {
-            DVASSERT(glIsRenderbuffer(color->uid));
-            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color->uid));
-        }
-        else
-        {
-            GLenum target = GL_TEXTURE_2D;
-
-            if (color->isCubeMap)
-            {
-                switch (face)
-                {
-                case TEXTURE_FACE_POSITIVE_X:
-                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-                    break;
-                case TEXTURE_FACE_NEGATIVE_X:
-                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-                    break;
-                case TEXTURE_FACE_POSITIVE_Y:
-                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-                    break;
-                case TEXTURE_FACE_NEGATIVE_Y:
-                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-                    break;
-                case TEXTURE_FACE_POSITIVE_Z:
-                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-                    break;
-                case TEXTURE_FACE_NEGATIVE_Z:
-                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
-                    break;
-                }
-            }
-            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, color->uid, level));
-        }
-
-        if (depthStencil != nullptr)
-        {
-		#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid));
-            if (depthStencil->uid2)
-            {
-                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid2));
-            }
-		#else
-            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid));
-		#endif
-        }
-
-	#if !(defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__)
-        GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
-        GL_CALL(glDrawBuffers(1, b));
-	#endif
-
-        int status = 0;
-        GL_CALL(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-        if (status == GL_FRAMEBUFFER_COMPLETE)
-        {
-            FramebufferGLES2_t fbo;
-            fbo.color = tex;
-            fbo.depthStencil = depth;
-            fbo.face = face;
-            fbo.level = level;
-            fbo.frameBuffer = fb;
-            color->fbo.push_back(fbo);
-        }
-        else
-        {
-            DAVA::Logger::Error("glCheckFramebufferStatus = %08X", status);
-            DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
-        }
-    }
-
-    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-    _GLES2_Bound_FrameBuffer = fb;
-*/
 }
 
 unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsigned* level, uint32 colorCount, Handle depthStencil)
