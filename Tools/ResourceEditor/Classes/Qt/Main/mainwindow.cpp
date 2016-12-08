@@ -721,7 +721,7 @@ void QtMainWindow::SetupActions()
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
     connect(ui->actionGenerate_Assert, &QAction::triggered, []()
             {
-                DVASSERT_MSG(false, "Debug assert call");
+                DVASSERT(false, "Debug assert call");
             });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -2492,7 +2492,7 @@ void QtMainWindow::RemoveSelection()
 bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
 {
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    DVASSERT_MSG(scene.Get() != nullptr, "Switching visibility tool requires an opened scene");
+    DVASSERT(scene.Get() != nullptr, "Switching visibility tool requires an opened scene");
 
     DAVA::int32 enabledTools = scene->GetEnabledTools();
     if (enabled && (enabledTools != 0))
@@ -2574,7 +2574,7 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         REGlobal::GetInvoker()->Invoke(REGlobal::ReloadTexturesOperation.ID, Settings::GetGPUFormat());
         break;
     default:
-        DVASSERT_MSG(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)).c_str());
+        DVASSERT(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)).c_str());
         break;
     }
 }
