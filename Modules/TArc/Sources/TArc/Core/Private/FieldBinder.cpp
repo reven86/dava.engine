@@ -96,9 +96,10 @@ public:
                 }
                 else
                 {
+                    Any value = dataFields[iter->second].ref.GetValue();
                     for (auto& fn : listener.second)
                     {
-                        fn(dataFields[iter->second].ref.GetValue());
+                        fn(value);
                     }
                 }
             }
@@ -125,9 +126,10 @@ public:
                 if (iter != listeners.end())
                 {
                     Reflection field = reflection.GetField(fieldAnyName);
+                    Any value = field.GetValue();
                     for (auto& fn : iter->second)
                     {
-                        fn(field.GetValue());
+                        fn(value);
                     }
                 }
             }
