@@ -8,6 +8,8 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
+#include "TArc/Utils/Private/CrashDumpHandler.h"
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
@@ -43,6 +45,7 @@ public:
         , core(core_)
         , globalContext(new DataContext())
     {
+        InitCrashDumpHandler();
     }
 
     ~Impl()
@@ -119,7 +122,8 @@ public:
 
     DataContext* GetGlobalContext() override
     {
-        return globalContext.get();
+        return nullptr;
+        //return globalContext.get();
     }
 
     DataContext* GetContext(DataContext::ContextID contextID) override
