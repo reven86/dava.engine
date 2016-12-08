@@ -8,8 +8,8 @@ namespace DAVA
 {
 namespace TArc
 {
-PTOP_LEVEL_EXCEPTION_FILTER prevFilter = nullptr;
 #if defined(__DAVAENGINE_WIN32__)
+PTOP_LEVEL_EXCEPTION_FILTER prevFilter = nullptr;
 void MakeMinidump(EXCEPTION_POINTERS* e)
 {
     HMODULE hDbgHelp = LoadLibraryA("dbghelp");
