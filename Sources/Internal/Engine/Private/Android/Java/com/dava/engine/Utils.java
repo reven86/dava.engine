@@ -65,7 +65,7 @@ public class Utils
 				}
 				catch(ActivityNotFoundException e)
 				{
-					Log.i(DavaActivity.LOG_TAG, "[OpenURL] failed with exeption: " + e.toString());
+					Log.e(DavaActivity.LOG_TAG, "[OpenURL] failed with exeption: " + e.toString());
 				}
 			}
 		});
