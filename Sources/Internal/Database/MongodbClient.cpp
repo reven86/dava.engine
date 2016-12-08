@@ -493,7 +493,7 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
             localtime_r(&rawTime, &tms);
 #endif // __DAVAENGINE_WINDOWS__
             Array<char8, 50> buf = { { 0 } };
-            std::strftime(buf.data(), buf.size(), "%d.%b.%Y_%H-%M-%S", &tms);
+            strftime(buf.data(), buf.size(), "%d.%b.%Y_%H-%M-%S", &tms);
             archive->SetString(key, String(buf.data()));
             break;
         }
