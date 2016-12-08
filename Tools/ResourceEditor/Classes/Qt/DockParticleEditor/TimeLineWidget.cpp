@@ -438,12 +438,12 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>
     }
 
     LOGIC_POINTS desLine[2];
-    for (DAVA::uint32 i = 0; i < lines.size(); ++i)
+    for (size_t i = 0; i < lines.size(); ++i)
     {
         desLine[0].push_back(DAVA::Vector2(lines[i].t, lines[i].v.x));
         desLine[1].push_back(DAVA::Vector2(lines[i].t, lines[i].v.y));
     }
-    for (DAVA::int32 i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         if (desLine[i].size() == 1) //force correct min time
         {
@@ -451,9 +451,9 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>
         }
     }
 
-    for (DAVA::int32 i = 0; i < 2; i++)
+    for (DAVA::uint32 i = 0; i < 2; i++)
     {
-        DAVA::size_type id = this->lines.size();
+        DAVA::uint32 id = static_cast<DAVA::uint32>(this->lines.size());
         // no panic, this->lines - is map<uint32, struct>
         // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
@@ -489,7 +489,7 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>
 
     for (DAVA::int32 i = 0; i < 3; i++)
     {
-        DAVA::size_type id = this->lines.size();
+        DAVA::uint32 id = static_cast<DAVA::uint32>(this->lines.size());
         // no panic, this->lines - is map<uint32, struct>
         // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];

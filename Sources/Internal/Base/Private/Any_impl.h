@@ -16,12 +16,6 @@ inline Any::Any(T&& value, NotAny<T>)
     Set(std::forward<T>(value));
 }
 
-inline void Any::Swap(Any& any)
-{
-    std::swap(anyStorage, any.anyStorage);
-    std::swap(type, any.type);
-}
-
 inline bool Any::IsEmpty() const
 {
     return (nullptr == type);
@@ -42,9 +36,7 @@ inline Any& Any::operator=(Any&& any)
 {
     if (this != &any)
     {
-        type = any.type;
-        anyStorage = std::move(any.anyStorage);
-        any.type = nullptr;
+        Set(std::move(any));
     }
 
     return *this;
@@ -108,6 +100,18 @@ inline const T& Any::Get(const T& defaultValue) const
     return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
 }
 
+inline const void* Any::GetData() const
+{
+    return anyStorage.GetData();
+}
+
+inline void Any::Swap(Any& any)
+{
+    std::swap(type, any.type);
+    std::swap(anyStorage, any.anyStorage);
+    std::swap(compareFn, any.compareFn);
+}
+
 inline void Any::Set(const Any& any)
 {
     anyStorage = any.anyStorage;
@@ -131,7 +135,7 @@ void Any::Set(T&& value, NotAny<T>)
 
     type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
-    compareFn = &AnyCompare<std::remove_cv_t<T>>::IsEqual;
+    compareFn = &AnyCompare<U>::IsEqual;
 }
 
 template <typename T>
@@ -148,4 +152,21 @@ T Any::Cast() const
 
     return AnyCast<T>::Cast(*this);
 }
+
+template <typename T>
+T Any::Cast(const T& defaultValue) const
+{
+    if (CanGet<T>())
+        return anyStorage.GetAuto<T>();
+
+    try
+    {
+        return AnyCast<T>::Cast(*this);
+    }
+    catch (const Exception&)
+    {
+        return defaultValue;
+    }
+}
+
 } // namespace DAVA

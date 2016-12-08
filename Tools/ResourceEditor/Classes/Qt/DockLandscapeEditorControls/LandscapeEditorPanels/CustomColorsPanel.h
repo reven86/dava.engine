@@ -1,9 +1,7 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
+#pragma once
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Main/Request.h"
 
 #include "TArc/DataProcessing/DataWrapper.h"
 #include "TArc/DataProcessing/DataListener.h"
@@ -27,7 +25,6 @@ private slots:
     void SetColor(int color);
     bool SaveTexture();
     void LoadTexture();
-    void SaveTextureIfNeeded(SceneEditor2* scene);
 
     void IncreaseBrushSize();
     void DecreaseBrushSize();
@@ -58,7 +55,7 @@ private:
     DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
     DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
 private:
     QComboBox* comboColor = nullptr;
@@ -67,5 +64,3 @@ private:
     QPushButton* buttonLoadTexture = nullptr;
     DAVA::TArc::DataWrapper projectDataWrapper;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

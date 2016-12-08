@@ -833,15 +833,13 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
     PipelineStateDX9_t* ps = PipelineStateDX9Pool::Get(handle);
     bool vprog_valid = false;
     bool fprog_valid = false;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     //Logger::Info("create PS");
     //Logger::Info("  vprog= %s",desc.vprogUid.c_str());
     //Logger::Info("  fprog= %s",desc.vprogUid.c_str());
     //desc.vertexLayout.Dump();
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
     ps->vprog.uid = desc.vprogUid;
     ps->fprog.uid = desc.fprogUid;

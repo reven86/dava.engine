@@ -30,7 +30,7 @@ private:
 
     void Init(const QStringList& files);
 
-    bool eventFilter(QObject* obj, QEvent* event);
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
     QString GetCommonParent(const QString& path1, const QString& path2);
 

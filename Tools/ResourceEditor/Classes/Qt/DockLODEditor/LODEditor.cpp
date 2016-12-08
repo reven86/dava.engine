@@ -7,7 +7,6 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
-#include "Main/Guards.h"
 #include "Main/mainwindow.h"
 #include "Classes/Qt/GlobalOperations.h"
 #include "PlaneLODDialog/PlaneLODDialog.h"
