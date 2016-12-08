@@ -183,9 +183,10 @@ void Metal_InitContext()
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
 
-    if (([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v3]) && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
+    //MTLFeatureSet_iOS_GPUFamily1_v3 = 5
+    if (([_Metal_Device supportsFeatureSet:5]) && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
     {
-        Logger::Error("A7 ios 10 detected");
+        DAVA::Logger::Error("A7 ios 10 detected");
         _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
     }
 }
