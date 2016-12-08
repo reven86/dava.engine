@@ -116,11 +116,9 @@ void CustomColorsPanel::InitUI()
 
 void CustomColorsPanel::ConnectToSignals()
 {
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedType::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
+    projectDataWrapper.SetListener(this);
 
-    connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
-            this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
 
@@ -176,7 +174,7 @@ DAVA::int32 CustomColorsPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 }
 // end of convert functions ==========================
 
-void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void CustomColorsPanel::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data);
@@ -198,16 +196,14 @@ bool CustomColorsPanel::SaveTexture()
     SceneEditor2* sceneEditor = GetActiveScene();
 
     DAVA::FilePath selectedPathname = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-    if (!DAVA::FileSystem::Instance()->Exists(selectedPathname))
-    {
-        selectedPathname = sceneEditor->GetScenePath().GetDirectory();
-    }
+    DVASSERT(!selectedPathname.IsEmpty());
+    selectedPathname = selectedPathname.GetDirectory();
 
-    const QString text = "Custom colors texture is not saved. Do you want to save it?";
+    const QString text = "Custom colors texture was not saved. Do you want to save it?";
     QString filePath;
     for (;;)
     {
-        filePath = FileDialog::getSaveFileName(NULL, QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
+        filePath = FileDialog::getSaveFileName(nullptr, QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
                                                QString(selectedPathname.GetAbsolutePathname().c_str()),
                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
@@ -222,7 +218,7 @@ bool CustomColorsPanel::SaveTexture()
         break;
     }
 
-    selectedPathname = PathnameToDAVAStyle(filePath);
+    selectedPathname = DAVA::FilePath(filePath.toStdString());
 
     if (selectedPathname.IsEmpty())
     {
@@ -249,24 +245,6 @@ void CustomColorsPanel::LoadTexture()
     if (!selectedPathname.IsEmpty())
     {
         sceneEditor->customColorsSystem->LoadTexture(selectedPathname, true);
-    }
-}
-
-void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)
-{
-    if (scene != GetActiveScene())
-    {
-        return;
-    }
-
-    DAVA::FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
-    if (!selectedPathname.IsEmpty())
-    {
-        scene->customColorsSystem->SaveTexture(selectedPathname);
-    }
-    else
-    {
-        SaveTexture();
     }
 }
 

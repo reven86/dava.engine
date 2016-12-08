@@ -6,7 +6,8 @@
     #include "Render/RHI/rhi_ShaderCache.h"
     #include "Render/RHI/rhi_ShaderSource.h"
 
-    #include "Debug/Profiler.h"
+    #include "Render/RHI/Common/PreProcess.h"
+
 #include "Render/RenderBase.h"
 
     #include "Render/RHI/dbg_Draw.h"
@@ -55,35 +56,41 @@ void GameCore::SetupTriangle()
 
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-simple"),
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "VPROG_IN_END\n"
+    "vertex_in\n"
+    "{\n"
+    "    float3 pos : POSITION;\n"
+    "};\n"
+    "vertex_out\n"
+    "{\n"
+    "    float4 pos : SV_POSITION;\n"
+    "};\n"
     "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "VPROG_OUT_END\n"
-    "\n"
-    "VPROG_BEGIN\n"
-    "\n"
-    "    float3 in_pos = VP_IN_POSITION.xyz;"
-    "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
-    "\n"
-    "VPROG_END\n");
+    "vertex_out\n"
+    "vp_main( vertex_in input )\n"
+    "{\n"
+    "    vertex_out output;"
+    "    float3 in_pos = input.pos.xyz;"
+    "    output.pos = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
+    "    return output;\n"
+    "}\n");
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_END\n"
-    "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
-    "\n"
-    "DECL_FPROG_BUFFER(0,4)\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    FP_OUT_COLOR = float4(FP_Buffer0[0]);\n"
-    "FPROG_END\n");
-
+    "fragment_in\n"
+    "{\n"
+    "};\n"
+    "fragment_out\n"
+    "{\n"
+    "    float4 color : SV_TARGET;\n"
+    "};\n"
+    "property float4 Tint;\n"
+    "fragment_out\n"
+    "fp_main( fragment_in input )\n"
+    "{\n"
+    "    fragment_out output;\n"
+    "    output.color = Tint;\n"
+    //    "    output.color = float4(1.0,1.0,1.0,1.0);\n"
+    "    return output;\n"
+    "};\n");
     rhi::PipelineState::Descriptor psDesc;
 
     psDesc.vertexLayout.Clear();
@@ -235,151 +242,65 @@ void GameCore::SetupCube()
 
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded"),
-    "VPROG_IN_BEGIN\n"
-    "    VPROG_IN_POSITION\n"
-    "    VPROG_IN_NORMAL\n"
-    "    VPROG_IN_TEXCOORD\n"
-    "VPROG_IN_END\n"
+    "vertex_in\n"
+    "{\n"
+    "    float3 pos    : POSITION;\n"
+    "    float3 normal : NORMAL;\n"
+    "    float2 uv     : TEXCOORD;\n"
+    "};\n"
     "\n"
-    "VPROG_OUT_BEGIN\n"
-    "    VPROG_OUT_POSITION\n"
-    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
-    "    VPROG_OUT_TEXCOORD1(color,4)\n"
-    "VPROG_OUT_END\n"
+    "vertex_out\n"
+    "{\n"
+    "    float4 pos    : SV_POSITION;\n"
+    "    float2 uv     : TEXCOORD0;\n"
+    "    float4 color  : TEXCOORD1;\n"
+    "};\n"
     "\n"
-    "DECL_VPROG_BUFFER(0,16)\n"
-    "DECL_VPROG_BUFFER(1,16)\n"
+    "[global] property float4x4 ViewProjection;\n"
+    "[unique] property float4x4 World;\n"
     "\n"
-    "VPROG_BEGIN\n"
+    "vertex_out\n"
+    "vp_main( vertex_in input )\n"
+    "{\n"
+    "    vertex_out output;\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
-    "    float3 in_normal   = VP_IN_NORMAL;\n"
-    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
-    "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
-    "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
-    //        "    float3x3 World3 = float3x3( (float3)(float4(VP_Buffer1[0])), (float3)(float4(VP_Buffer1[1])), (float3)(float4(VP_Buffer1[2])) );\n"
-    //        "    float3x3 World3 = float3x3( float3(VP_Buffer1[0]), float3(VP_Buffer1[1]), float3(VP_Buffer1[2]) );\n"
-    "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
-    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
-    "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
-    "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
-    "    VP_OUT(uv)        = in_texcoord;\n"
-    "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
+    "    float4 wpos = mul( float4(input.pos.x,input.pos.y,input.pos.z,1.0), World );\n"
+    //    "    float  i    = dot( float3(0,0,-1), normalize(mul(float3(input.normal),(float3x3)World)) );\n"
+    "    float  i    = dot( float3(0,0,-1), normalize(mul( float4(input.normal.x,input.normal.y,input.normal.z,0.0), World).xyz) );\n"
     "\n"
-    "VPROG_END\n"
-    /*
-"struct VP_Input"
-"{\n" 
-"    packed_float3 position;\n"
-"    packed_float3 normal;\n"
-"    packed_float2 texcoord;\n"
-"};\n"
-"struct VP_Output\n" 
-"{\n"
-"    float4 position [[ position ]];\n" 
-"    float4 color [[ user(texturecoord) ]];\n" 
-"};\n"
-"struct VP_Buffer0 { packed_float4 data[16]; };\n"
-"struct VP_Buffer1 { packed_float4 data[16]; };\n"
-"vertex VP_Output vp_main\n"
-"( \n"
-"    constant VP_Input*   in    [[ buffer(0) ]],\n"
-"    constant VP_Buffer0* buf0  [[ buffer(1) ]],\n"
-"    constant VP_Buffer1* buf1  [[ buffer(2) ]],\n"
-"    uint                 vid   [[ vertex_id ]]\n"
-")\n"
-"{\n"
-"    VP_Output   OUT;\n"
-"    VP_Input    IN  = in[vid];\n"
-"\n"
-"    float4x4 ViewProjection = float4x4( buf0->data[0], buf0->data[1], buf0->data[2], buf0->data[3] );\n"
-"    float4x4 World = float4x4( buf1->data[0], buf1->data[1], buf1->data[2], buf1->data[3] );\n"
-"    float3x3 World3 = float3x3( float3(float4(buf1->data[0])), float3(float4(buf1->data[1])), float3(float4(buf1->data[2])) );\n"
-"    float4 wpos = World * float4(IN.position[0],IN.position[1],IN.position[2],1.0);\n"
-"    float i   = dot( float3(0,0,-1), normalize(World3*float3(IN.normal)) );\n"
-"    OUT.position   = ViewProjection * wpos;\n"
-"    OUT.color      = float4(i,i,i,1.0);\n"
-"\n"
-"    return OUT;\n"
-"}\n"
-*/
-    /*
-"precision highp float;\n"
-#if DV_USE_UNIFORMBUFFER_OBJECT
-        "uniform VP_Buffer0_Block { vec4 VP_Buffer0[16]; };\n"
-        "uniform VP_Buffer1_Block { vec4 VP_Buffer1[16]; };\n"
-#else
-        "uniform vec4 VP_Buffer0[16];\n"
-        "uniform vec4 VP_Buffer1[16];\n"
-#endif        
-        "attribute vec4 attr_position;\n"
-        "attribute vec3 attr_normal;\n"
-        "attribute vec2 attr_texcoord;\n"
-        "varying vec3 var_Color;\n"
-        "void main()\n"
-        "{\n"
-        "    mat4 ViewProjection = mat4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
-        "    mat4 World = mat4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
-        "    vec4 wpos = World * vec4(attr_position.x,attr_position.y,attr_position.z,1.0);\n"
-//        "    float i   = dot( vec3(0,0,-1), normalize(mat3(World)*attr_normal) );\n"
-        "    float i   = dot( vec3(0,0,-1), normalize( mat3(vec3(World[0].x,World[0].y,World[0].z),vec3(World[1].x,World[1].y,World[1].z),vec3(World[2].x,World[2].y,World[2].z)) * attr_normal) );\n"
-        "    gl_Position   = ViewProjection * wpos;\n"
-//        "    var_Color.rgb = i;\n"
-        "    var_Color.rgb = vec3(i,i,i);\n"
-        "}\n"
-*/
+    "    output.pos    = mul( wpos, ViewProjection );\n"
+    "    output.uv     = input.uv;\n"
+    "    output.color  = float4(i,i,i,i);\n"
+    "\n"
+    "    return output;\n"
+    "}\n"
     );
     rhi::ShaderCache::UpdateProg(
     rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
-    "FPROG_IN_BEGIN\n"
-    "FPROG_IN_TEXCOORD0(uv,2)\n"
-    "FPROG_IN_TEXCOORD1(color,4)\n"
-    "FPROG_IN_END\n"
+    "fragment_in\n"
+    "{\n"
+    "    float2 uv     : TEXCOORD0;\n"
+    "    float4 color  : TEXCOORD1;\n"
+    "};\n"
     "\n"
-    "FPROG_OUT_BEGIN\n"
-    "    FPROG_OUT_COLOR\n"
-    "FPROG_OUT_END\n"
+    "fragment_out\n"
+    "{\n"
+    "    float4 color  : SV_Target;\n"
+    "};\n"
     "\n"
-    "DECL_FP_SAMPLER2D(0)\n"
+    "[unique] property float4 Tint;\n"
+    "uniform sampler2D Albedo;\n"
     "\n"
+    "fragment_out\n"
+    "fp_main( fragment_in input )\n"
+    "{\n"
+    "    fragment_out output;\n"
+    "    float4       diffuse = tex2D( Albedo, input.uv );\n"
     "\n"
-    "DECL_FPROG_BUFFER(0,4)\n"
-    "\n"
-    "FPROG_BEGIN\n"
-    "    float4  diffuse = FP_TEXTURE2D( 0, FP_IN(uv) );\n"
-    "    FP_OUT_COLOR = diffuse * float4(FP_Buffer0[0]) * FP_IN(color);\n"
-    "FPROG_END\n"
-    /*
-"struct FP_Input\n"
-"{\n"
-"    float4 position [[position]];\n" 
-"    float4 color [[user(texturecoord)]];\n"
-"};\n"
-"struct FP_Buffer0 { packed_float4 data[4]; };\n"
-"float4 fragment fp_main\n"
-"(\n"
-"    FP_Input IN                [[ stage_in ]],\n"
-"    constant FP_Buffer0* buf0  [[ buffer(0) ]]\n"
-")\n"
-"{\n"
-"    float4 clr = float4(buf0->data[0]) * IN.color;\n"
-"    return clr;\n"
-"}\n"
-*/
-    /*
-"precision highp float;\n"
-#if DV_USE_UNIFORMBUFFER_OBJECT
-        "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
-#else
-        "uniform vec4 FP_Buffer0[4];\n"
-#endif
-        "varying vec3 var_Color;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_FragColor.rgb = FP_Buffer0[0].xyz * var_Color;\n"
-        "    gl_FragColor.a   = FP_Buffer0[0].a;\n"
-        "}\n"
-*/
+    "    output.color = diffuse * input.color * Tint;\n"
+    //    "    output.color = input.color + 0.001*diffuse + 0.0001*Tint;\n"
+    "    return output;\n"
+    "}\n"
     );
 
     rhi::PipelineState::Descriptor psDesc;
@@ -609,67 +530,46 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
-    struct
+    //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.sl";
+    const char* src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/water-fp.sl";
+    //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/ShadowVolume/shadowvolume-vp.sl";
+    File* file = File::Create(src, File::OPEN | File::READ);
+
+    if (file)
     {
-        const char* file;
-        const char* flag[16];
-    } src[]{
-        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", { "VERTEX_LIT", nullptr } } /*,
-        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"PIXEL_LIT",nullptr} },
-        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"SKINNING","PIXEL_LIT",nullptr} }
+        rhi::ShaderSource vp(src);
+        uint32 sz = file->GetSize();
+        char buf[64 * 1024];
+
+        DVASSERT(sz < sizeof(buf));
+        file->Read(buf, sz);
+        buf[sz] = '\0';
+
+        std::vector<std::string> defines;
+
+        /*        
+        defines.push_back( "VERTEX_LIT" );
+        defines.push_back( "1" );
+        defines.push_back( "NORMALIZED_BLINN_PHONG" );
+        defines.push_back( "1" );        
 */
-    };
+        /*
+        defines.push_back("FOG_LINEAR");defines.push_back("1");
+        defines.push_back("SKINNING");defines.push_back("1");
+        defines.push_back("VERTEX_FOG");defines.push_back("1");
+*/
+        defines.push_back("PIXEL_LIT");
+        defines.push_back("1");
+        defines.push_back("REAL_REFLECTION");
+        defines.push_back("1");
 
-    //    profiler::Start();
-    /*
-    for (unsigned i = 0; i != countof(src); ++i)
-    {
-        File* file = File::CreateFromSystemPath(src[i].file, File::OPEN | File::READ);
-
-        if (file)
+        if (vp.Construct(rhi::PROG_FRAGMENT, buf, defines))
         {
-            rhi::ShaderSource vp;
-            uint32 sz = file->GetSize();
-            char buf[64 * 1024];
-
-            DVASSERT(sz < sizeof(buf));
-            file->Read(buf, sz);
-            buf[sz] = '\0';
-
-            std::vector<std::string> defines;
-
-            for (unsigned k = 0; k != countof(src[i].flag); ++k)
-            {
-                if (src[i].flag[k])
-                {
-                    defines.push_back(src[i].flag[k]);
-                    defines.push_back("1");
-                }
-                else
-                {
-                    break;
-                }
-            }
-            if (vp.Construct(rhi::PROG_VERTEX, buf, defines))
-            {
-                uint8 data[128 * 1024];
-                DAVA::File* f = DAVA::DynamicMemoryFile::Create(data, countof(data), DAVA::File::READ | DAVA::File::WRITE);
-
-                f->Seek(0, DAVA::File::SEEK_FROM_START);
-                vp.Save(f);
-
-                f->Seek(0, DAVA::File::SEEK_FROM_START);
-                vp.Load(f);
-
-                vp.Dump();
-
-                //vp.Dump();
-            }
+            //            vp.InlineFunctions();
+            vp.GetSourceCode(rhi::HostApi());
+            vp.Dump();
         }
     }
-*/
-    //    profiler::Stop();
-    //    profiler::Dump();
 
     /*
 {
@@ -750,14 +650,14 @@ void GameCore::OnAppStarted()
     }
     #endif
 
-    //    SetupTriangle();
+    //SetupTriangle();
     SetupCube();
     //SetupInstancedCube();
     //    SetupTank();
-    SetupRT();
+    //SetupRT();
 
-    perfQuerySet = rhi::CreatePerfQuerySet(16);
-    perfQuerySetFired = false;
+    //    perfQuerySet = rhi::CreatePerfQuerySet(16);
+    //    perfQuerySetFired = false;
 
     //    sceneRenderTest.reset(new SceneRenderTestV3());
 
@@ -943,61 +843,7 @@ void GameCore::OnForeground()
 
 void GameCore::Update(float32 timeElapsed)
 {
-    static float screenshot_ttw = 5.0f;
-
-    screenshot_ttw -= timeElapsed;
-    if (screenshot_ttw < 0)
-    {
-        rhi::TakeScreenshot(&ScreenShotCallback);
-        screenshot_ttw = 5.0f;
-    }
-
     //    sceneRenderTest->Update(timeElapsed);
-
-    static bool old_s_pressed = false;
-    bool new_s_pressed = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::KEY_S);
-
-    if (!old_s_pressed && new_s_pressed)
-    {
-        DAVA::Logger::Info("taking screenshot...");
-        rhi::TakeScreenshot(&GameCore::ScreenShotCallback);
-    }
-    old_s_pressed = new_s_pressed;
-
-    static std::vector<profiler::CounterInfo> counter;
-
-    if (profiler::GetAverageCounters(&counter))
-    {
-    }
-
-    {
-        int maxLen = 0;
-        int x0 = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx - 12 * (DbgDraw::SmallCharW + 1);
-        int y0 = 10;
-
-        for (uint32 i = 0; i != counter.size(); ++i)
-        {
-            int len = strlen(counter[i].name);
-
-            if (len > maxLen)
-                maxLen = len;
-        }
-        x0 -= maxLen * (DbgDraw::SmallCharW + 1);
-
-        DbgDraw::SetSmallTextSize();
-        for (uint32 i = 0; i != counter.size(); ++i)
-        {
-            char text[128];
-
-            memset(text, ' ', sizeof(text));
-            int l = sprintf(text, "%s", counter[i].name);
-            text[l] = ' ';
-            sprintf(text + maxLen, "  %5u  %u", counter[i].count, counter[i].timeUs);
-
-            //        DbgDraw::Text2D( 100, 100+i*(DbgDraw::SmallCharH+1), 0xFFFFFFFF, "%s %u", counter[i].name, counter[i].timeUs );
-            DbgDraw::Text2D(x0, y0 + i * (DbgDraw::SmallCharH + 1), 0xFFFFFFFF, text);
-        }
-    }
 }
 
 void GameCore::BeginFrame()
@@ -1248,7 +1094,7 @@ void GameCore::SetupInstancedCube()
 
 void GameCore::DrawInstancedCube()
 {
-    SCOPED_NAMED_TIMING("app-draw");
+//    SCOPED_NAMED_TIMING("app-draw");
     #define USE_SECOND_CB 1
 
     rhi::RenderPassConfig pass_desc;
@@ -1382,7 +1228,7 @@ void GameCore::DrawInstancedCube()
     }
     #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1397,16 +1243,16 @@ void GameCore::Draw()
         return;
 
     //    sceneRenderTest->Render();
-    //        rhiDraw();
-    //manticoreDraw();
+    //rhiDraw();
+    manticoreDraw();
     //DrawInstancedCube();
-    rtDraw();
+    //rtDraw();
     //    visibilityTestDraw();
 }
 
 void GameCore::rhiDraw()
 {
-    SCOPED_NAMED_TIMING("GameCore::Draw");
+//    SCOPED_NAMED_TIMING("GameCore::Draw");
 //-    ApplicationCore::BeginFrame();
 
 #define DRAW_TANK 0
@@ -1526,8 +1372,8 @@ void GameCore::rhiDraw()
 
 void GameCore::manticoreDraw()
 {
-    SCOPED_NAMED_TIMING("app-draw");
-    #define USE_SECOND_CB 1
+//    SCOPED_NAMED_TIMING("app-draw");
+    #define USE_SECOND_CB 0
 
     rhi::RenderPassConfig pass_desc;
     float clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
@@ -1559,7 +1405,7 @@ void GameCore::manticoreDraw()
             strcat(title, "Metal");
             break;
         }
-        DbgDraw::SetNormalTextSize();
+        //        DbgDraw::SetNormalTextSize();
         //    DbgDraw::SetSmallTextSize();
         DbgDraw::Text2D(10, 50, 0xFFFFFFFF, title);
     }
@@ -1580,6 +1426,7 @@ void GameCore::manticoreDraw()
     rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, pl);
     #endif
 
+    /*
     if (perfQuerySetFired)
     {
         bool ready = false;
@@ -1609,7 +1456,7 @@ void GameCore::manticoreDraw()
         rhi::SetFramePerfQuerySet(perfQuerySet);
         perfQuerySetFired = true;
     }
-
+*/
     rhi::RenderPass::Begin(pass);
     rhi::BeginPacketList(pl[0]);
 
@@ -1712,7 +1559,7 @@ void GameCore::manticoreDraw()
 
 #endif
 
-    ///    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -1853,7 +1700,7 @@ void GameCore::visibilityTestDraw()
         packet.queryIndex = 1;
     rhi::AddPacket(pl[0], packet);
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    DbgDraw::FlushBatched(pl[0]);
 
     rhi::EndPacketList(pl[0]);
 
@@ -2027,11 +1874,11 @@ void GameCore::rtDraw()
 
 void GameCore::EndFrame()
 {
-    SCOPED_NAMED_TIMING("GameCore::EndFrame");
+    //    SCOPED_NAMED_TIMING("GameCore::EndFrame");
     rhi::Present();
 
     // rendering stats
-
+    /*
     {
         const unsigned id[] =
         {
@@ -2069,6 +1916,7 @@ void GameCore::EndFrame()
             DbgDraw::Text2D(x1, y, clr, "= %u", StatSet::StatValue(id[i]));
         }
     }
+*/
 }
 
 void GameCore::ScreenShotCallback(uint32 width, uint32 height, const void* rgba)

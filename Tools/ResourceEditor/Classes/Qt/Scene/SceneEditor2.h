@@ -1,12 +1,10 @@
-#ifndef __SCENE_EDITOR_PROXY_H__
-#define __SCENE_EDITOR_PROXY_H__
+#pragma once
 
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
 #include "Base/StaticSingleton.h"
 
-#include "Main/Request.h"
 #include "Settings/SettingsManager.h"
 #include "Command/Command.h"
 
@@ -109,7 +107,9 @@ public:
     DAVA::SceneFileV2::eError SaveScene();
     bool Export(const SceneExporter::Params& exportingParams);
 
-    const DAVA::FilePath& GetScenePath();
+    void SaveEmitters(const DAVA::Function<DAVA::FilePath(const DAVA::String& /*entityName*/, const DAVA::String& /*emitterName*/)>& getEmitterPathFn);
+
+    const DAVA::FilePath& GetScenePath() const;
     void SetScenePath(const DAVA::FilePath& newScenePath);
 
     // commands
@@ -228,5 +228,3 @@ void LookAtSelection(SceneEditor2* scene);
 void RemoveSelection(SceneEditor2* scene);
 void LockTransform(SceneEditor2* scene);
 void UnlockTransform(SceneEditor2* scene);
-
-#endif // __SCENE_EDITOR_PROXY_H__
