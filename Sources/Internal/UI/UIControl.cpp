@@ -1263,12 +1263,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
                 if (!multiInput)
                 {
                     currentInputID = currentInput->touchId;
                 }
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 Input(currentInput);
                 return true;

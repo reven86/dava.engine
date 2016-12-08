@@ -28,7 +28,7 @@ public:
     virtual DAVA::UIControl* BeginControlWithPrototype(const DAVA::String& packageName, const DAVA::String& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
     virtual DAVA::UIControl* BeginControlWithPath(const DAVA::String& pathName) override;
     virtual DAVA::UIControl* BeginUnknownControl(const DAVA::YamlNode* node) override;
-    virtual void EndControl(bool isRoot) override;
+    virtual void EndControl(eControlPlace controlPlace) override;
 
     virtual void BeginControlPropertiesSection(const DAVA::String& name) override;
     virtual void EndControlPropertiesSection() override;
@@ -51,7 +51,7 @@ public:
     void AddImportedPackage(PackageNode* node);
 
 private:
-    ControlNode* FindRootControl(const DAVA::String& name) const;
+    ControlNode* FindPrototype(const DAVA::String& name) const;
 
 private:
     struct ControlDescr
@@ -72,6 +72,7 @@ private:
 
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<ControlNode*> prototypes;
     DAVA::Vector<StyleSheetNode*> styleSheets;
     DAVA::Vector<DAVA::FilePath> declinedPackages;
 

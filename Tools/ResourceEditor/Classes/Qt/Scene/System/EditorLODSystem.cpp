@@ -15,8 +15,6 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
-#include "Main/Guards.h"
-
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/SelectionSystem.h"
@@ -26,6 +24,8 @@
 
 #include "Settings/Settings.h"
 #include "Settings/SettingsManager.h"
+
+#include "TArc/Utils/ScopedValueGuard.h"
 
 using namespace DAVA;
 
@@ -445,7 +445,7 @@ void EditorLODSystem::DeleteLOD(int32 layer)
 {
     if (activeLodData->GetLODLayersCount() > 0)
     {
-        Guard::ScopedBoolGuard guard(generateCommands, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(generateCommands, true);
         bool deleted = activeLodData->DeleteLOD(layer);
         if (deleted)
         {
@@ -459,7 +459,7 @@ void EditorLODSystem::CopyLastLODToFirst()
 {
     DVASSERT(activeLodData != nullptr);
 
-    Guard::ScopedBoolGuard guard(generateCommands, true);
+    DAVA::TArc::ScopedValueGuard<bool> guard(generateCommands, true);
     bool copied = activeLodData->CopyLod(activeLodData->GetMaxLODLayer(), 0);
     if (copied)
     {
@@ -491,7 +491,7 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
         }
     }
 
-    Guard::ScopedBoolGuard guard(generateCommands, true);
+    DAVA::TArc::ScopedValueGuard<bool> guard(generateCommands, true);
     activeLodData->PropagateValues();
 
     RecalculateData();
@@ -708,7 +708,7 @@ void EditorLODSystem::ProcessPlaneLODs()
 
     if (allRequestsProcessed)
     {
-        Guard::ScopedBoolGuard guard(generateCommands, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(generateCommands, true);
 
         SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
         sceneEditor2->BeginBatch("Create plane lods", static_cast<DAVA::uint32>(planeLODRequests.size()));
