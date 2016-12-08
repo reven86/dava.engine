@@ -355,11 +355,11 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
                                              {
                                                  ProjectManagerData* projectData = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
                                                  DVASSERT(projectData != nullptr);
-                                                 
+
                                                  DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
                                                  return fileSystem->Exists(projectData->GetDataSourcePath());
                                              }
-                                             
+
                                              return false;
                                          });
 
