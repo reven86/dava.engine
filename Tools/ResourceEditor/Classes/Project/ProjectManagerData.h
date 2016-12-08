@@ -48,8 +48,6 @@ public:
     const EditorConfig* GetEditorConfig() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
-    void SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn);
-
 public:
     static const DAVA::String ProjectPathProperty;
 
@@ -62,7 +60,6 @@ private:
     DAVA::FilePath projectPath;
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
-    DAVA::Function<bool()> closeProjectPredicate;
 
     DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
     {

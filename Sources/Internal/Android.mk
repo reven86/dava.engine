@@ -421,6 +421,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/Parser/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \

@@ -10,6 +10,7 @@
 
 class Document;
 class LibraryModel;
+class Project;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
@@ -19,6 +20,7 @@ public:
     ~LibraryWidget() = default;
 
     void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
+    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes);
 
 public slots:
     void OnDocumentChanged(Document* document);

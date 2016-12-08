@@ -1,10 +1,8 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
+#pragma once
 
 #include "Commands2/Base/RECommand.h"
 
 #include "DAVAEngine.h"
-#include "Main/Request.h"
 
 class CustomColorsProxy;
 class SceneEditor2;
@@ -29,5 +27,3 @@ private:
     DAVA::Rect updatedRect;
     bool shouldClearTexture = false;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__) */
