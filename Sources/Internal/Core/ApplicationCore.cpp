@@ -11,6 +11,7 @@
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif

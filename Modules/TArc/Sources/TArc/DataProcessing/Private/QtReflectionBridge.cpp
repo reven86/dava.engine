@@ -187,7 +187,7 @@ void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Vector<Any
     {
         for (const Any& fieldName : fields)
         {
-            DVASSERT(fieldName.CanCast<String>())
+            DVASSERT(fieldName.CanCast<String>());
             FirePropertySignal(fieldName.Cast<String>());
         }
     }
