@@ -13,8 +13,6 @@ protected:
     bool CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText) override;
     void SaveOnWindowClose(const DAVA::TArc::WindowKey& key) override;
     void RestoreOnWindowClose(const DAVA::TArc::WindowKey& key) override;
-    void OnContextCreated(DAVA::TArc::DataContext& context) override;
-    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void PostInit() override;
 };
