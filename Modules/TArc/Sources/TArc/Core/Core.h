@@ -30,7 +30,7 @@ public:
     template <typename T, typename... Args>
     void CreateModule(Args&&... args)
     {
-        CreateModule(ReflectedTypeDB::Get<typename T>(), std::forward<Args>(args)...);
+        CreateModule(ReflectedTypeDB::Get<T>(), std::forward<Args>(args)...);
     }
 
     template <typename... Args>

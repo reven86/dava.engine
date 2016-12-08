@@ -72,7 +72,6 @@ DataReader<T>::DataReader(DataReader<T>&& other)
     , dataPtr(std::move(other.dataPtr))
     , holder(std::move(other.holder))
 {
-    other.holder = nullptr;
 }
 
 template <typename T>

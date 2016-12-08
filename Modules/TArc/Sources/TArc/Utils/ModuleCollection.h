@@ -27,12 +27,12 @@ struct ModuleInitializer
 {
     ModuleInitializer()
     {
-        ModuleCollection::Instance()->AddGuiModule(ModuleCollection::TypeCreateFn(&ModuleInitializer<typename T>::GetType));
+        ModuleCollection::Instance()->AddGuiModule(ModuleCollection::TypeCreateFn(&ModuleInitializer<T>::GetType));
     }
 
     ModuleInitializer(const String& command)
     {
-        ModuleCollection::Instance()->AddConsoleModule(ModuleCollection::TypeCreateFn(&ModuleInitializer<typename T>::GetType), command);
+        ModuleCollection::Instance()->AddConsoleModule(ModuleCollection::TypeCreateFn(&ModuleInitializer<T>::GetType), command);
     }
 
     static const ReflectedType* GetType()
@@ -43,6 +43,5 @@ struct ModuleInitializer
 } // namespace TArc
 } // namespace DAVA
 
-
-#define DECL_GUI_MODULE(name) ::DAVA::TArc::ModuleInitializer<name> initializer_##name
-#define DECL_CONSOLE_MODULE(name, command) ::DAVA::TArc::ModuleInitializer<name> initializer_##name(command)
+#define DECL_GUI_MODULE(className) ::DAVA::TArc::ModuleInitializer<className> initializer_##className
+#define DECL_CONSOLE_MODULE(className, command) ::DAVA::TArc::ModuleInitializer<className> initializer_##className(command)

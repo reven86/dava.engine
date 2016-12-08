@@ -58,6 +58,13 @@ protected:
         DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         ctxManager->ActivateContext(id);
     }
+
+    DAVA_VIRTUAL_REFLECTION(TestControllerModule, ControllerModule)
+    {
+        ReflectionRegistrator<TestControllerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
 
 bool IsDebuggerPresent()
