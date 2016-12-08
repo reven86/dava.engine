@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.view.Display;
 import android.view.Surface;
 import android.content.Context;
@@ -13,7 +14,7 @@ import android.hardware.display.DisplayManager;
 
 // Not thread-safe (should be used only from Android's main thread)
 // Only handles displays for now
-public final class DeviceManager implements DisplayManager.DisplayListener
+public final class DeviceManager
 {	
 	public static final class DisplayInfo
 	{
@@ -34,6 +35,38 @@ public final class DeviceManager implements DisplayManager.DisplayListener
 			this.dpiY = dpiY;
 		}
 	}
+
+	@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+	private class DisplayManagerListener implements DisplayManager.DisplayListener
+	{
+		@Override
+		public void onDisplayRemoved(int removedDisplayId)
+		{
+			Iterator<DisplayInfo> iterator = DeviceManager.instance().displaysInfo.iterator();
+			while (iterator.hasNext())
+			{
+				final DisplayInfo display = iterator.next();
+				if (display.id == removedDisplayId)
+				{
+					iterator.remove();
+				}
+			}
+		}
+
+		@Override
+		public void onDisplayChanged(int displayId)
+		{
+		}
+
+		@Override
+		public void onDisplayAdded(int addedDisplayId)
+		{
+			// Assume default display can never be switched
+
+			final Display newDisplay = DeviceManager.getDisplayManager().getDisplay(addedDisplayId);
+			DeviceManager.instance().displaysInfo.add(getDisplayInfo(newDisplay));
+		}
+	}
 	
 	private static DeviceManager instance;
 	public static DeviceManager instance()
@@ -51,6 +84,7 @@ public final class DeviceManager implements DisplayManager.DisplayListener
 	private List<DisplayInfo> displaysInfo = new ArrayList<DisplayInfo>();
 	
 	private boolean isTrackingChanges = false;
+	private DisplayManager.DisplayListener displayManagerListener = null;
 	
 	private DeviceManager()
 	{
@@ -62,50 +96,29 @@ public final class DeviceManager implements DisplayManager.DisplayListener
 		return displaysInfo.toArray(new DisplayInfo[displaysInfo.size()]);
 	}
 	
+	@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 	public void startTrackingChanges()
 	{
 		if (runningOnPostJellyBeanMR1() && !isTrackingChanges)
 		{
-			getDisplayManager().registerDisplayListener(this, null);
+			if (displayManagerListener == null)
+			{
+				displayManagerListener = new DisplayManagerListener();
+			}
+
+			getDisplayManager().registerDisplayListener(displayManagerListener, null);
 			isTrackingChanges = true;
 		}
 	}
 	
+	@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 	public void stopTrackingChanges()
 	{
 		if (isTrackingChanges)
 		{
-			getDisplayManager().unregisterDisplayListener(this);
+			getDisplayManager().unregisterDisplayListener(displayManagerListener);
 			isTrackingChanges = false;
 		}
-	}
-	
-	@Override
-	public void onDisplayRemoved(int removedDisplayId)
-	{
-		Iterator<DisplayInfo> iterator = displaysInfo.iterator();
-		while (iterator.hasNext())
-		{
-		   final DisplayInfo display = iterator.next();
-		   if (display.id == removedDisplayId)
-		   {
-			   iterator.remove();
-		   }
-		}
-	}
-	
-	@Override
-	public void onDisplayChanged(int displayId)
-	{
-	}
-	
-	@Override
-	public void onDisplayAdded(int addedDisplayId)
-	{
-		// Assume default display can never be switched
-		
-		final Display newDisplay = getDisplayManager().getDisplay(addedDisplayId);
-		displaysInfo.add(getDisplayInfo(newDisplay));
 	}
 	
 	private void updateDisplaysInfo()
@@ -153,6 +166,7 @@ public final class DeviceManager implements DisplayManager.DisplayListener
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
 	}
 	
+	@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 	private static DisplayManager getDisplayManager()
 	{
 		final DavaActivity activity = DavaActivity.instance();
