@@ -20,6 +20,7 @@ public:
     {
     public:
         virtual void OnCreated() = 0;
+        virtual void OnInitialized() = 0;
         virtual bool OnUserCloseRequest() = 0;
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
