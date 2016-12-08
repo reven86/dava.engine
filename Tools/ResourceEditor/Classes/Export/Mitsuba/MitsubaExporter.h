@@ -16,7 +16,7 @@ private:
     DAVA_VIRTUAL_REFLECTION(MitsubaExporter, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<MitsubaExporter>::Begin()
-            .ConstructorByPointer()
-            .End();
+        .ConstructorByPointer()
+        .End();
     }
 };

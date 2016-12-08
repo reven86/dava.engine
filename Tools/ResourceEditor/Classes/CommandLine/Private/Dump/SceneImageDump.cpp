@@ -18,7 +18,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 
-
 SceneImageDump::SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-sceneimagedump")
 {
