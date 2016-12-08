@@ -32,19 +32,11 @@ public class FmodActivityListener extends DavaActivity.ActivityListenerImpl
 	
 	public void unregister()
 	{
-		final FmodActivityListener instance = this;
-		DavaActivity.instance().runOnUiThread(new Runnable()
+		DavaActivity activity = DavaActivity.instance();
+		if (activity != null)
 		{
-			@Override
-			public void run()
-			{
-				DavaActivity activity = DavaActivity.instance();
-				if (activity != null)
-				{
-					activity.unregisterActivityListener(instance);
-				}
-			}
-		});
+			activity.unregisterActivityListener(this);
+		}
 	}
 	
 	@Override
