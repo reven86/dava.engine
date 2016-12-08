@@ -162,6 +162,11 @@ const Vector<ProjectProperties::ResDir>& ProjectProperties::GetLibraryPackages()
     return libraryPackages;
 }
 
+const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& ProjectProperties::GetPrototypes() const
+{
+    return prototypes;
+}
+
 DAVA::FilePath ProjectProperties::MakeAbsolutePath(const DAVA::String& relPath) const
 {
     if (relPath.empty())
@@ -329,6 +334,25 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
         }
     }
 
+    const YamlNode* prototypesNode = projectPropertiesNode->Get("Prototypes");
+    if (prototypesNode != nullptr)
+    {
+        for (uint32 i = 0; i < prototypesNode->GetCount(); i++)
+        {
+            Set<String> packagePrototypes;
+            const YamlNode* packNode = prototypesNode->Get(i);
+            const YamlNode* packagePrototypesNode = packNode->Get("prototypes");
+
+            for (uint32 j = 0; j < packagePrototypesNode->GetCount(); j++)
+            {
+                packagePrototypes.insert(packagePrototypesNode->Get(j)->AsString());
+            }
+
+            const String& packagePath = packNode->Get("file")->AsString();
+            props.prototypes[packagePath] = packagePrototypes;
+        }
+    }
+
     props.SetProjectFile(projectFile);
 
     return std::make_tuple(resultList, std::move(props));
@@ -343,7 +367,6 @@ RefPtr<YamlNode> ProjectProperties::Emit(const ProjectProperties& props)
     node->Add("Header", headerNode);
 
     YamlNode* propertiesNode(YamlNode::CreateMapNode(false));
-    YamlNode* resourceDirNode(YamlNode::CreateMapNode(false));
     propertiesNode->Add("ResourceDirectory", props.resourceDirectory.relative);
 
     if (!props.additionalResourceDirectory.relative.empty())

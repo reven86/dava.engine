@@ -156,9 +156,8 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
             return insertToEnd ? i + 1 : i;
         }
     }
-    DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
 
-    return 0;
+    return controlsNode->GetCount();
 }
 
 void EditorSystemsManager::SelectAll()

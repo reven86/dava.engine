@@ -5,6 +5,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "Project/Project.h"
 
 #include "Logger/Logger.h"
 
@@ -16,10 +17,10 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
+Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
-    , commandExecutor(new QtModelPackageCommandExecutor(this))
+    , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
 {

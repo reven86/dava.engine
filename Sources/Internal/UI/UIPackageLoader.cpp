@@ -19,6 +19,12 @@
 namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
+    : UIPackageLoader(Map<String, Set<String>>())
+{
+}
+
+UIPackageLoader::UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes_)
+    : legacyPrototypes(legacyPrototypes_)
 {
     version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
@@ -108,6 +114,33 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         LoadStyleSheets(styleSheetsNode, builder);
     }
 
+    const YamlNode* prototypesNode = rootNode->Get("Prototypes");
+    if (prototypesNode)
+    {
+        int32 count = static_cast<int32>(prototypesNode->GetCount());
+        for (int32 i = 0; i < count; i++)
+        {
+            const YamlNode* node = prototypesNode->Get(i);
+            QueueItem item;
+            item.name = node->Get("name")->AsString();
+            item.node = node;
+            item.status = STATUS_WAIT;
+            loadingQueue.push_back(item);
+        }
+
+        for (int32 i = 0; i < count; i++)
+        {
+            if (loadingQueue[i].status == STATUS_WAIT)
+            {
+                loadingQueue[i].status = STATUS_LOADING;
+                LoadControl(loadingQueue[i].node, AbstractUIPackageBuilder::TO_PROTOTYPES, builder);
+                loadingQueue[i].status = STATUS_LOADED;
+            }
+        }
+
+        loadingQueue.clear();
+    }
+
     const YamlNode* controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
@@ -127,7 +160,20 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
             if (loadingQueue[i].status == STATUS_WAIT)
             {
                 loadingQueue[i].status = STATUS_LOADING;
-                LoadControl(loadingQueue[i].node, true, builder);
+                AbstractUIPackageBuilder::eControlPlace controlPlace = AbstractUIPackageBuilder::TO_CONTROLS;
+                if (version <= LAST_VERSION_WITHOUT_PROTOTYPES_SUPPORT)
+                {
+                    auto it = legacyPrototypes.find(packagePath.GetFrameworkPath());
+                    if (it != legacyPrototypes.end())
+                    {
+                        if (it->second.find(loadingQueue[i].name) != it->second.end())
+                        {
+                            controlPlace = AbstractUIPackageBuilder::TO_PROTOTYPES;
+                        }
+                    }
+                }
+
+                LoadControl(loadingQueue[i].node, controlPlace, builder);
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
@@ -151,7 +197,7 @@ bool UIPackageLoader::LoadControlByName(const String& name, AbstractUIPackageBui
             {
             case STATUS_WAIT:
                 loadingQueue[index].status = STATUS_LOADING;
-                LoadControl(loadingQueue[index].node, true, builder);
+                LoadControl(loadingQueue[index].node, AbstractUIPackageBuilder::TO_PROTOTYPES, builder);
                 loadingQueue[index].status = STATUS_LOADED;
                 return true;
 
@@ -253,7 +299,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
     }
 }
 
-void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
     UIControl* control = nullptr;
     const YamlNode* pathNode = node->Get("path");
@@ -316,12 +362,12 @@ void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPac
         {
             uint32 count = childrenNode->GetCount();
             for (uint32 i = 0; i < count; i++)
-                LoadControl(childrenNode->Get(i), false, builder);
+                LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
         }
 
         control->LoadFromYamlNodeCompleted();
     }
-    builder->EndControl(root);
+    builder->EndControl(controlPlace);
 }
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder)

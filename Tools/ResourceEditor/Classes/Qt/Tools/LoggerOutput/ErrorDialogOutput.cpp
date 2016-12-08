@@ -123,7 +123,7 @@ void ErrorDialogOutput::ShowErrorDialog()
         isJobStarted = false;
     }
 
-    ShowErrorDialogImpl();
+    DelayedExecute(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialogImpl));
 }
 
 void ErrorDialogOutput::ShowErrorDialogImpl()

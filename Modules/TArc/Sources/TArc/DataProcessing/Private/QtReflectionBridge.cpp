@@ -152,20 +152,20 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void** argv)
 
 void QtReflected::Init()
 {
-    wrapper.AddListener(this);
+    wrapper.SetListener(this);
     if (wrapper.HasData())
     {
         CreateMetaObject();
     }
 }
 
-void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Set<String>& fields)
+void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Vector<Any>& fields)
 {
     if (qtMetaObject == nullptr)
     {
         if (reflectionBridge == nullptr)
         {
-            wrapper.RemoveListener(this);
+            wrapper.SetListener(nullptr);
             return;
         }
 
@@ -185,9 +185,10 @@ void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Set<String
     }
     else
     {
-        for (const String& fieldName : fields)
+        for (const Any& fieldName : fields)
         {
-            FirePropertySignal(fieldName);
+            DVASSERT(fieldName.CanCast<String>())
+            FirePropertySignal(fieldName.Cast<String>());
         }
     }
 }

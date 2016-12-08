@@ -35,9 +35,39 @@
 
 #include <QShortcut>
 
-namespace
+namespace SceneEditorDetail
 {
-const DAVA::FastName MATERIAL_FOR_REBIND = DAVA::FastName("Global");
+struct EmitterDescriptor
+{
+    EmitterDescriptor(DAVA::ParticleEmitter* emitter_, DAVA::ParticleLayer* layer, DAVA::FilePath path, DAVA::String name)
+        : emitter(emitter_)
+        , ownerLayer(layer)
+        , yamlPath(path)
+        , entityName(name)
+    {
+    }
+
+    DAVA::ParticleEmitter* emitter = nullptr;
+    DAVA::ParticleLayer* ownerLayer = nullptr;
+    DAVA::FilePath yamlPath;
+    DAVA::String entityName;
+};
+
+void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName)
+{
+    DVASSERT(topLevelEmitter != nullptr);
+
+    for (auto& layer : topLevelEmitter->layers)
+    {
+        if (nullptr != layer->innerEmitter)
+        {
+            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
+            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
+        }
+    }
+
+    emitters.emplace_back(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName);
+}
 }
 
 SceneEditor2::SceneEditor2()
@@ -314,7 +344,49 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
     return false;
 }
 
-const DAVA::FilePath& SceneEditor2::GetScenePath()
+void SceneEditor2::SaveEmitters(const DAVA::Function<DAVA::FilePath(const DAVA::String&, const DAVA::String&)>& getEmitterPathFn)
+{
+    DAVA::List<DAVA::Entity*> effectEntities;
+    GetChildEntitiesWithComponent(effectEntities, DAVA::Component::PARTICLE_EFFECT_COMPONENT);
+    if (effectEntities.empty())
+    {
+        return;
+    }
+
+    DAVA::List<SceneEditorDetail::EmitterDescriptor> emittersForSave;
+    for (DAVA::Entity* entityWithEffect : effectEntities)
+    {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
+        DAVA::ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
+        for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
+        {
+            SceneEditorDetail::CollectEmittersForSave(effect->GetEmitterInstance(i)->GetEmitter(), emittersForSave, entityName);
+        }
+    }
+
+    for (SceneEditorDetail::EmitterDescriptor& descriptor : emittersForSave)
+    {
+        DAVA::ParticleEmitter* emitter = descriptor.emitter;
+        const DAVA::String& entityName = descriptor.entityName;
+
+        DAVA::FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            yamlPathForSaving = getEmitterPathFn(entityName, emitter->name.c_str());
+        }
+
+        if (!yamlPathForSaving.IsEmpty())
+        {
+            if (nullptr != descriptor.ownerLayer)
+            {
+                descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+            }
+            emitter->SaveToYaml(yamlPathForSaving);
+        }
+    }
+}
+
+const DAVA::FilePath& SceneEditor2::GetScenePath() const
 {
     return curScenePath;
 }

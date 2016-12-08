@@ -837,7 +837,7 @@ void NMaterial::RebuildBindings()
             rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
             //for static buffers resolve sharing and bindings
-            if (bufferDescr.updateType == rhi::ShaderProp::STORAGE_STATIC)
+            if (bufferDescr.updateType == rhi::ShaderProp::SOURCE_MATERIAL)
             {
                 bufferBinding = GetConstBufferBinding(bufferDescr.propertyLayoutId);
                 bool needLocalOverride = NeedLocalOverride(bufferDescr.propertyLayoutId);

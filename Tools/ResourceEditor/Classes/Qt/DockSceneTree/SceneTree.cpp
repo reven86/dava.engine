@@ -13,7 +13,6 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Main/Guards.h"
 #include "Main/QTUtils.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
@@ -41,8 +40,11 @@
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "TArc/DataProcessing/DataContext.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
 #include "FileSystem/VariantType.h"
+
+#include <QShortcut>
 
 namespace SceneTreeDetails
 {
@@ -847,10 +849,10 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 
     // this widget signals
     QObject::connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &SceneTree::TreeSelectionChanged);
-    QObject::connect(this, &QTreeView::clicked, this, &SceneTree::TreeItemClicked);
     QObject::connect(this, &QTreeView::doubleClicked, this, &SceneTree::TreeItemDoubleClicked);
     QObject::connect(this, &QTreeView::collapsed, this, &SceneTree::TreeItemCollapsed);
     QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
+    QObject::connect(new QShortcut(QKeySequence(Qt::Key_X), this), &QShortcut::activated, this, &SceneTree::CollapseSwitch);
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 
@@ -1064,16 +1066,6 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
     EmitParticleSignals();
 }
 
-void SceneTree::TreeItemClicked(const QModelIndex& index)
-{
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
-    {
-        // TODO:
-        // ...
-    }
-}
-
 void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)
 {
     QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -1191,7 +1183,7 @@ void SceneTree::CollapseAll()
     QTreeView::collapseAll();
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(isInSelectionSync, true);
 
         QModelIndexList indexList = selectionModel()->selection().indexes();
         for (int i = 0; i < indexList.size(); ++i)
@@ -1219,7 +1211,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex& index)
 
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+        DAVA::TArc::ScopedValueGuard<bool> guard(isInSelectionSync, true);
 
         // if selected items were inside collapsed item, remove them from selection
         QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -1257,13 +1249,13 @@ void SceneTree::TreeItemExpanded(const QModelIndex& index)
 
 void SceneTree::SyncSelectionToTree()
 {
+    SCOPED_VALUE_GUARD(bool, isInSelectionSync, true, void());
+
     SceneEditor2* curScene = treeModel->GetScene();
-    if (isInSelectionSync || (curScene == nullptr))
+    if (curScene == nullptr)
     {
         return;
     }
-
-    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
     using TSelectionMap = DAVA::Map<QModelIndex, DAVA::Vector<QModelIndex>>;
     TSelectionMap toSelect;
@@ -1332,10 +1324,7 @@ void SceneTree::SyncSelectionToTree()
 
 void SceneTree::SyncSelectionFromTree()
 {
-    if (isInSelectionSync)
-        return;
-
-    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
+    SCOPED_VALUE_GUARD(bool, isInSelectionSync, true, void());
 
     SceneEditor2* curScene = treeModel->GetScene();
     if (nullptr != curScene)

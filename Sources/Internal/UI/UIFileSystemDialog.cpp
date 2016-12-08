@@ -4,12 +4,12 @@
 #include "UI/UIStaticText.h"
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
-#include "Logger/Logger.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include <algorithm>
 #include "Render/2D/FTFont.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

@@ -4,7 +4,6 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
-#include "Scene/SceneTabWidget.h"
 #include "Main/mainwindow.h"
 
 // framework
