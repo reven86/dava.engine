@@ -130,7 +130,11 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
 
     if (incomePath.IsDirectoryPathname() && incomePath != data->projectPath)
     {
-        CloseProject();
+        bool closed = CloseProject();
+        if (closed == false)
+        {
+            return;
+        }
 
         DAVA::FileSystem* fileSystem = GetAccessor().GetEngineContext()->fileSystem;
         if (fileSystem->Exists(incomePath))
@@ -205,29 +209,33 @@ void ProjectManagerModule::OpenLastProject()
     }
 }
 
-void ProjectManagerModule::CloseProject()
+bool ProjectManagerModule::CloseProject()
 {
     ProjectManagerData* data = GetData();
 
     if (!data->projectPath.IsEmpty())
     {
         DVASSERT(data->closeProjectPredicate != nullptr);
-        if (data->closeProjectPredicate())
+        if (data->closeProjectPredicate() == false)
         {
-            // TODO UVR remove imperative code that sync state of action
-            if (closeAction)
-            {
-                closeAction->setEnabled(false);
-            }
-            DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
-            data->projectPath = "";
-
-            SettingsManager::ResetPerProjectSettings();
-            DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
-            propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(DAVA::FilePath()));
+            return false;
         }
+
+        // TODO UVR remove imperative code that sync state of action
+        if (closeAction)
+        {
+            closeAction->setEnabled(false);
+        }
+        DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+        data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+        data->projectPath = "";
+
+        SettingsManager::ResetPerProjectSettings();
+        DAVA::TArc::PropertiesItem propsItem = GetAccessor().CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
+        propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(DAVA::FilePath()));
     }
+
+    return true;
 }
 
 void ProjectManagerModule::ReloadSprites()
