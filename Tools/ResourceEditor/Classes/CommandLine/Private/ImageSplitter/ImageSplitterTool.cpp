@@ -3,6 +3,8 @@
 #include "CommandLine/Private/OptionName.h"
 #include "Logger/Logger.h"
 
+#include "TArc/Utils/ModuleCollection.h"
+
 ImageSplitterTool::ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-imagesplitter")
 {
@@ -73,3 +75,5 @@ void ImageSplitterTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-imagesplitter -split -file /Users/SmokeTest/images/test.png");
     DAVA::Logger::Info("\t-imagesplitter -merge -folder /Users/SmokeTest/images/");
 }
+
+DECL_CONSOLE_MODULE(ImageSplitterTool, "-imagesplitter");

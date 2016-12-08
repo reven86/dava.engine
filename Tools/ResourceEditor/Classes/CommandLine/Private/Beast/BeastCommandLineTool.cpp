@@ -12,6 +12,8 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
 
+#include "TArc/Utils/ModuleCollection.h"
+
 BeastCommandLineTool::BeastCommandLineTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-beast")
 {
@@ -103,5 +105,6 @@ void BeastCommandLineTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-beast -file /Users/SmokeTest/DataSource/3d/Maps/scene.sc2 -output /Users/SmokeTest/DataSource/3d/Maps/beast");
 }
 
+DECL_CONSOLE_MODULE(BeastCommandLineTool, "-beast");
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

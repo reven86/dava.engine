@@ -2,6 +2,9 @@
 
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
+#include "Scene/SceneImageGraber.h"
+
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Base/ScopedPtr.h"
 #include "Base/BaseTypes.h"
@@ -15,7 +18,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 
-#include "Scene/SceneImageGraber.h"
 
 SceneImageDump::SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-sceneimagedump")
@@ -154,3 +156,5 @@ void SceneImageDump::ShowHelpInternal()
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-sceneimagedump -processfile /Users/SmokeTest/DataSource/3d/Maps/11-grass/test_scene.sc2 -camera TestCamera -width 1024 -height 1024 -gpu adreno -outfile /Users/screenshot.png");
 }
+
+DECL_CONSOLE_MODULE(SceneImageDump, "-sceneimagedump");

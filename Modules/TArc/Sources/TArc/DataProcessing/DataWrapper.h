@@ -10,6 +10,8 @@ namespace TArc
 {
 template <typename T>
 class DataEditor;
+template <typename T>
+class DataReader;
 class ReflectedDataEditor;
 class DataListener;
 class DataWrapper
@@ -29,9 +31,13 @@ public:
     bool HasData() const;
     // you can call SetListener(nullptr) to remove active listener
     void SetListener(DataListener* listener);
+    void SetFieldValue(const Any& fieldKey, const Any& value);
 
     template <typename T>
     DataEditor<T> CreateEditor();
+
+    template <typename T>
+    DataReader<T> CreateReader() const;
 
     bool IsActive() const;
 
@@ -76,6 +82,26 @@ private:
     Reflection reflection;
     T* dataPtr = nullptr;
     T copyValue;
+    DataWrapper holder;
+};
+
+template <typename T>
+class DataReader final
+{
+public:
+    DataReader(const DataWrapper& holder, Reflection reflection);
+
+    DataReader(const DataReader& other) = delete;
+    DataReader& operator=(const DataReader& other) = delete;
+
+    DataReader(DataReader&& other);
+    DataReader& operator=(DataReader&& other);
+
+    T const* operator->() const;
+
+private:
+    Reflection reflection;
+    T* dataPtr = nullptr;
     DataWrapper holder;
 };
 } // namespace TArc

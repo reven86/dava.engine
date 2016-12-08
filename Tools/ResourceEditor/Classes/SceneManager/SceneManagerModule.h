@@ -101,4 +101,11 @@ private:
     std::unique_ptr<RecentMenuItems> recentItems;
 
     QPointer<SceneRenderWidget> renderWidget;
+
+    DAVA_VIRTUAL_REFLECTION(SceneManagerModule, DAVA::TArc::ControllerModule)
+    {
+        DAVA::ReflectionRegistrator<SceneManagerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
