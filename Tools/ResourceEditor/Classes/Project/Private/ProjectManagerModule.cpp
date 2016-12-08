@@ -178,8 +178,8 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
 void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 {
     ProjectManagerData* data = GetData();
-    connections.disconnect(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, nullptr, nullptr);
     data->projectPath = incomePath;
+    DAVA::FilePath::AddResourcesFolder(data->GetDataSourcePath());
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
     DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
@@ -238,6 +238,7 @@ bool ProjectManagerModule::CloseProject()
         }
 
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+        DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
 
         DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
         if (fileSystem->Exists(data->GetDataSource3DPath()))

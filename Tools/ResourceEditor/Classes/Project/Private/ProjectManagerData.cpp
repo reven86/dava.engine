@@ -7,6 +7,7 @@
 namespace ProjectManagerDataDetails
 {
 const char* DATA_PATH = "Data/";
+const char* DATASOURCE_PATH = "DataSource/";
 const char* DATASOURCE_3D_PATH = "DataSource/3d/";
 const char* PARTICLE_CONFIG_PATH = "DataSource/Configs/Particles/";
 const char* PARTICLE_GFX_PATH = "DataSource/Gfx/Particles/";
@@ -34,6 +35,11 @@ const DAVA::FilePath& ProjectManagerData::GetProjectPath() const
 DAVA::FilePath ProjectManagerData::GetDataPath() const
 {
     return projectPath + ProjectManagerDataDetails::DATA_PATH;
+}
+
+DAVA::FilePath ProjectManagerData::GetDataSourcePath() const
+{
+    return projectPath + ProjectManagerDataDetails::DATASOURCE_PATH;
 }
 
 DAVA::FilePath ProjectManagerData::GetDataSource3DPath() const
