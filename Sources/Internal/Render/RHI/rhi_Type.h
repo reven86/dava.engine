@@ -48,10 +48,12 @@ enum ResourceType
 
 enum Api
 {
-    RHI_DX11,
+    RHI_DX11 = 0,
     RHI_DX9,
     RHI_GLES2,
-    RHI_METAL
+    RHI_METAL,
+
+    RHI_API_COUNT
 };
 
 enum class RenderingError : uint32_t

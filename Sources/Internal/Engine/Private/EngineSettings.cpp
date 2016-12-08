@@ -39,7 +39,7 @@ DAVA_REFLECTION_IMPL(EngineSettings)
 
 EngineSettings::EngineSettings()
 {
-    ReflectedType::Get<EngineSettings>(); //ensure that settings was setup
+    ReflectedTypeDB::Get<EngineSettings>(); //ensure that settings was setup
 
     Reset();
 }

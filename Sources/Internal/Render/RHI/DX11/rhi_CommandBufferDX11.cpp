@@ -485,7 +485,6 @@ static void dx11_SWCommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, Pr
 static void dx11_SWCommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
-
     if (cb->text == nullptr)
     {
         cb->text = new RingBuffer();

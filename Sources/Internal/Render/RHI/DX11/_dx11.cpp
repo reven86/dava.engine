@@ -214,7 +214,6 @@ D3D11_COMPARISON_FUNC DX11_CmpFunc(CmpFunc func)
     default:
         DVASSERT_MSG(0, "Invalid CmpFunc provided");
     }
-
     return D3D11_COMPARISON_ALWAYS;
 }
 

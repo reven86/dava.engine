@@ -27,6 +27,13 @@ public:
 class AbstractUIPackageBuilder
 {
 public:
+    enum eControlPlace
+    {
+        TO_PROTOTYPES,
+        TO_CONTROLS,
+        TO_PREVIOUS_CONTROL
+    };
+
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
 
@@ -41,7 +48,7 @@ public:
     virtual UIControl* BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) = 0;
     virtual UIControl* BeginControlWithPath(const String& pathName) = 0;
     virtual UIControl* BeginUnknownControl(const YamlNode* node) = 0;
-    virtual void EndControl(bool isRoot) = 0;
+    virtual void EndControl(eControlPlace controlPlace) = 0;
 
     virtual void BeginControlPropertiesSection(const String& name) = 0;
     virtual void EndControlPropertiesSection() = 0;

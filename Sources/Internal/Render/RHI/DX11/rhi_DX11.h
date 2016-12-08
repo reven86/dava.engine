@@ -60,10 +60,10 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
 void InvalidateAll();
+void InvalidateAllInstances();
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer);
 void SetToRHI(Handle cb, const void* instData);
 const void* Instance(Handle cb);
-void InvalidateAllInstances();
 }
 
 namespace TextureDX11
