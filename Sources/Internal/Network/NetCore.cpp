@@ -21,7 +21,9 @@ NetCore::NetCore(Engine* e)
     , isFinishing(false)
     , allStopped(false)
 {
-    sigUpdateId = e->update.Connect(this, &NetCore::Poll);
+    sigUpdateId = e->update.Connect(this, &NetCore::OnEngineUpdate);
+    netThread = Thread::Create(Message(this, &NetCore::NetThreadHandler));
+    netThread->Start();
 }
 #else
 NetCore::NetCore()
@@ -39,6 +41,31 @@ NetCore::~NetCore()
 #endif
 
     DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
+}
+
+void NetCore::NetThreadHandler(BaseObject* caller, void* callerData, void* userData)
+{
+    while (!isFinishing)
+    {
+        Thread::Sleep(10);
+        Poll();
+    }
+}
+
+void NetCore::AddCallback(const Function<void()>& fn)
+{
+    callbackQueue.Push(fn);
+}
+
+void NetCore::ExecPendingCallbacks()
+{
+    while (callbackQueue.PopAndExec())
+        ;
+}
+
+void NetCore::OnEngineUpdate(float32)
+{
+    ExecPendingCallbacks();
 }
 
 NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context, uint32 readTimeout)
@@ -109,10 +136,8 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
 
     // Block until given controller is stopped and destroyed
-    do
-    {
-        Poll();
-    } while (!oneStopped);
+    while (!oneStopped)
+        ;
 #endif
 }
 
@@ -133,10 +158,8 @@ void NetCore::DestroyAllControllersBlocked()
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
 
     // Block until all controllers are stopped and destroyed
-    do
-    {
-        Poll();
-    } while (false == allStopped);
+    while (!allStopped)
+        ;
     allStopped = false;
 #endif
 }

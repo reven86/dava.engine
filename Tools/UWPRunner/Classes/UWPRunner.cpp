@@ -136,7 +136,7 @@ void UWPRunner::WaitApp()
 
     do
     {
-        GetEngineContext()->netCore->Poll();
+        GetEngineContext()->netCore->ExecPendingCallbacks();
 
         if (logConsumer.IsChannelOpen())
         {

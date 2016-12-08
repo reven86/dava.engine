@@ -11,6 +11,8 @@
 #include "Network/ServiceRegistrar.h"
 #include "Network/IController.h"
 #include "Network/NetworkCommon.h"
+#include "Concurrency/Thread.h"
+#include "Job/JobQueue.h"
 
 namespace DAVA
 {
@@ -18,6 +20,7 @@ class Engine;
 namespace Net
 {
 class NetConfig;
+
 class NetCore : public Singleton<NetCore>
 {
 public:
@@ -80,13 +83,19 @@ public:
 #endif
     void Finish(bool runOutLoop = false);
 
+    void OnEngineUpdate(float32 frameDelta = 0.0f);
+
     bool TryDiscoverDevice(const Endpoint& endpoint);
 
     Vector<IfAddress> InstalledInterfaces() const;
 
     static bool IsNetworkEnabled();
 
+    void AddCallback(const Function<void()>& fn);
+    void ExecPendingCallbacks();
+
 private:
+    void NetThreadHandler(BaseObject* caller, void* callerData, void* userData);
     void DoStart(IController* ctrl);
     void DoRestart();
     void DoDestroy(TrackId id, volatile bool* stoppedFlag);
@@ -110,6 +119,8 @@ private:
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
 #endif
+    Thread* netThread;
+    DAVA::JobQueueWorker callbackQueue;
 };
 
 //////////////////////////////////////////////////////////////////////////

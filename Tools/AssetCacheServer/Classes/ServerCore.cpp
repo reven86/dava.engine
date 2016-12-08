@@ -216,7 +216,7 @@ void ServerCore::OnRefreshTimer()
     auto netSystem = DAVA::Net::NetCore::Instance();
     if (netSystem)
     {
-        netSystem->Poll();
+        netSystem->ExecPendingCallbacks();
     }
 }
 

@@ -5,6 +5,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "Network/NetCore.h"
 
 namespace DAVA
 {
@@ -50,7 +51,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         while (client.ChannelIsOpened() == false)
         {
-            PollNetworkIfSuitable();
+            ExecNetCallbacks();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
@@ -212,7 +213,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 
     while (currentRequest.recieved == false)
     {
-        PollNetworkIfSuitable();
+        ExecNetCallbacks();
 
         {
             LockGuard<Mutex> guard(requestLocker);
@@ -231,7 +232,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
     {
         while (currentRequest.processingRequest)
         {
-            PollNetworkIfSuitable();
+            ExecNetCallbacks();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -400,12 +401,9 @@ bool AssetCacheClient::IsConnected() const
     return client.ChannelIsOpened();
 }
 
-void AssetCacheClient::PollNetworkIfSuitable()
+void AssetCacheClient::ExecNetCallbacks()
 {
-    if (Thread::IsMainThread())
-    {
-        Net::NetCore::Instance()->Poll();
-    }
+    Net::NetCore::Instance()->ExecPendingCallbacks();
 }
 
 AssetCacheClient::ConnectionParams::ConnectionParams()
