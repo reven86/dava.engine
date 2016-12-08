@@ -30,8 +30,6 @@ public:
 
     void OnDataChanged(const DAVA::TArc::DataWrapper& w, const DAVA::Vector<DAVA::Any>& fields) override
     {
-        int* p = nullptr;
-        int x = *p;
         if (!wrapper.HasData())
         {
             return;

@@ -27,4 +27,14 @@ void CrashProduceModule::PostInit()
                               });
 
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, sequencalsAssert);
+
+    QAction* dumpAction = new QAction("Generate dump", nullptr);
+    connections.AddConnection(dumpAction, &QAction::triggered, []()
+                              {
+                                  int* p = reinterpret_cast<int*>(0xDEADBEAD);
+                                  int x = *p;
+                                  DAVA::Logger::Info("Crash value %d", x);
+                              });
+
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, dumpAction);
 }

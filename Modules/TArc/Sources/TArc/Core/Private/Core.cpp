@@ -122,8 +122,7 @@ public:
 
     DataContext* GetGlobalContext() override
     {
-        return nullptr;
-        //return globalContext.get();
+        return globalContext.get();
     }
 
     DataContext* GetContext(DataContext::ContextID contextID) override
