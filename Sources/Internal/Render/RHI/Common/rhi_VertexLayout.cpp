@@ -243,7 +243,7 @@ VertexLayout& VertexLayout::operator=(const VertexLayout& src)
 //==============================================================================
 
 static const uint32 UniqueVertexLayoutCapacity = 1024;
-static std::atomic<uint32> UniqueVertexLayoutSize = 0;
+static std::atomic<uint32> UniqueVertexLayoutSize(0);
 static VertexLayout UniqueVertexLayout[UniqueVertexLayoutCapacity] = {};
 
 //------------------------------------------------------------------------------
@@ -255,6 +255,7 @@ const VertexLayout* VertexLayout::Get(uint32 uid)
     if ((uid != InvalidUID) && (uid < UniqueVertexLayoutSize))
         return UniqueVertexLayout + uid;
 
+    DAVA::Logger::Error("rhi::VertexLayout::Get(%u) failed, UniqueVertexLayoutSize: %u", uid, UniqueVertexLayoutSize.load(std::memory_order_relaxed));
     return nullptr;
 }
 
