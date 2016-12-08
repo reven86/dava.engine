@@ -63,6 +63,7 @@ public:
     void SetGlobalStyleClasses(const QString& classesStr);
 
     DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
+    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
 
     bool CloseAllDocuments(bool force);
     void SaveAllDocuments();
@@ -87,7 +88,7 @@ private:
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
-    std::unique_ptr<FileSystemCache> projectStructure;
+    std::unique_ptr<FileSystemCache> fileSystemCache;
 #if defined(__DAVAENGINE_MACOS__)
     std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
 #endif

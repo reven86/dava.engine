@@ -75,6 +75,7 @@ private:
 private:
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> controls;
+    DAVA::Vector<ControlNode*> prototypes;
     DAVA::Vector<StyleSheetNode*> styles;
 };
 

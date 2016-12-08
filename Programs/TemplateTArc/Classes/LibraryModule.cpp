@@ -5,8 +5,8 @@
 #include "WindowSubSystem/UI.h"
 #include "WindowSubSystem/ActionUtils.h"
 
-#include "Reflection/Registrator.h"
-#include "Base/Type.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Base/RtType.h"
 
 #include <QListWidget>
 #include <QFileSystemModel>
@@ -73,5 +73,5 @@ void LibraryModule::PostInit()
     info.area = Qt::LeftDockWidgetArea;
 
     ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), "qrc:/Library.qml",
-               GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<FileSystemData>()));
+               GetAccessor().CreateWrapper(DAVA::ReflectedTypeDB::Get<FileSystemData>()));
 }

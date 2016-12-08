@@ -83,10 +83,12 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
             libraryPackages.push_back(resDir.absolute);
         }
         mainWindow->ui->libraryWidget->SetLibraryPackages(libraryPackages);
+        mainWindow->ui->libraryWidget->SetPrototypes(project->GetPrototypes());
     }
     else
     {
         mainWindow->ui->libraryWidget->SetLibraryPackages(DAVA::Vector<DAVA::FilePath>());
+        mainWindow->ui->libraryWidget->SetPrototypes(DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>());
     }
 
     mainWindow->ui->propertiesWidget->SetProject(project);

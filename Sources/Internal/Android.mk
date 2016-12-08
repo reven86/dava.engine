@@ -382,7 +382,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -420,6 +421,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/Parser/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
