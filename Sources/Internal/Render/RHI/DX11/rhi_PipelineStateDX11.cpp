@@ -370,9 +370,6 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     bool success = false;
     Handle handle = PipelineStateDX11Pool::Alloc();
     PipelineStateDX11_t* ps = PipelineStateDX11Pool::Get(handle);
-    HRESULT hr;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
     ID3D10Blob* vp_code = nullptr;
     ID3D10Blob* vp_err = nullptr;
     ID3D10Blob* fp_code = nullptr;
@@ -385,8 +382,8 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     desc.vertexLayout.Dump();
 #endif
 
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
 #if 0
     DumpShaderText((const char*)(&vprog_bin[0]), (DAVA::uint32)vprog_bin.size());
@@ -396,8 +393,8 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     const char* vsFeatureLevel = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1";
     const char* fsFeatureLevel = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1";
 
-    hr = D3DCompile((const char*)(&vprog_bin[0]), vprog_bin.size(), "vprog", nullptr, nullptr, "vp_main", vsFeatureLevel,
-                    D3DCOMPILE_OPTIMIZATION_LEVEL2, 0, &vp_code, &vp_err);
+    HRESULT hr = D3DCompile((const char*)(&vprog_bin[0]), vprog_bin.size(), "vprog", nullptr, nullptr, "vp_main", vsFeatureLevel,
+                            D3DCOMPILE_OPTIMIZATION_LEVEL2, 0, &vp_code, &vp_err);
 
     if (DX11Check(hr))
     {
