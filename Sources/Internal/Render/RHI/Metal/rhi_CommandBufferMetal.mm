@@ -433,58 +433,30 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
             desc.colorAttachments[i].loadAction = MTLLoadActionDontCare;
         }
 
-        desc.colorAttachments[i].storeAction = MTLStoreActionStore;
+        desc.colorAttachments[i].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
+        ;
         desc.colorAttachments[i].clearColor = MTLClearColorMake(cfg.colorBuffer[i].clearColor[0], cfg.colorBuffer[i].clearColor[1], cfg.colorBuffer[i].clearColor[2], cfg.colorBuffer[i].clearColor[3]);
 
         if (cfg.colorBuffer[i].texture != InvalidHandle)
-            TextureMetal::SetAsRenderTarget(cfg.colorBuffer[i].texture, desc, i);
+        {
+            if (usingMSAA)
+            {
+                TextureMetal::SetAsRenderTarget(cfg.colorBuffer[i].multisampleTexture, desc);
+                TextureMetal::SetAsResolveRenderTarget(cfg.colorBuffer[i].texture, desc);
+            }
+            else
+            {
+                TextureMetal::SetAsRenderTarget(cfg.colorBuffer[i].texture, desc, i);
+            }
+        }
         else
+        {
             desc.colorAttachments[i].texture = _Metal_currentDrawable.texture;
+        }
 
         if (cfg.colorBuffer[i].texture == InvalidHandle)
             break;
     }
-    /*
-    const RenderPassConfig::ColorBuffer& color0 = cfg.colorBuffer[0];
-    if (color0.texture == InvalidHandle)
-    {
-        if (usingMSAA)
-        {
-            DVASSERT(color0.multisampleTexture != InvalidHandle);
-            TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
-            desc.colorAttachments[0].resolveTexture = _Metal_currentDrawable.texture;
-        }
-        else
-
-        {
-            desc.colorAttachments[0].texture = _Metal_currentDrawable.texture;
-        }
-    }
-    else if (usingMSAA)
-    {
-        TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
-        TextureMetal::SetAsResolveRenderTarget(color0.texture, desc);
-    }
-    else
-    {
-        TextureMetal::SetAsRenderTarget(color0.texture, desc);
-    }
-
-    switch (color0.loadAction)
-    {
-    case LOADACTION_CLEAR:
-        desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        break;
-    case LOADACTION_LOAD:
-        desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-        break;
-    default:
-        desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-    }
-
-    desc.colorAttachments[0].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor = MTLClearColorMake(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]);
-*/
 
     if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
