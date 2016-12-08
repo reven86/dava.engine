@@ -291,6 +291,9 @@ uint32 VertexLayout::UniqueId(const VertexLayout& layout)
         info.uid = ++LastUID;
         info.layout = layout;
 
+        if (UniqueVertexLayout.empty())
+            UniqueVertexLayout.reserve(32);
+
         UniqueVertexLayout.push_back(info);
         uid = info.uid;
     }
