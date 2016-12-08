@@ -23,7 +23,7 @@
 
 DAVA_DECLARE_CUSTOM_JNI_TYPE(jstringArray, jobjectArray, "[Ljava/lang/String;");
 
-#define DAVA_JNI_EXCEPTION_CHECK \
+#define DAVA_JNI_EXCEPTION_CHECK() \
     do { \
         try { \
             JNIEnv* env = DAVA::JNI::GetEnv(); \
@@ -46,7 +46,7 @@ JNIEnv* GetEnv();
 void AttachCurrentThreadToJVM();
 void DetachCurrentThreadFromJVM();
 
-bool CheckJavaException(JNIEnv* env, bool throwJniException = false);
+bool CheckJavaException(JNIEnv* env, bool throwJniException = true);
 String GetJavaExceptionText(JNIEnv* env, jthrowable e);
 
 jclass LoadJavaClass(const char8* className, bool throwJniException = false, JNIEnv* env = nullptr);

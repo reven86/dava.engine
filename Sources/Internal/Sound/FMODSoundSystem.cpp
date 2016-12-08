@@ -112,7 +112,7 @@ SoundSystem::SoundSystem()
 
     jmethodID fmodActivityListenerConstructor = env->GetMethodID(fmodActivityListenerClass, "<init>", "()V");
     jobject fmodActivityListenerInstance = env->NewObject(fmodActivityListenerClass, fmodActivityListenerConstructor);
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     fmodActivityListenerGlobalRef = env->NewGlobalRef(fmodActivityListenerInstance);
     env->DeleteLocalRef(fmodActivityListenerInstance);
 #endif
