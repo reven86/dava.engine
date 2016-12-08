@@ -242,62 +242,35 @@ VertexLayout& VertexLayout::operator=(const VertexLayout& src)
 
 //==============================================================================
 
-struct VertexLayoutInfo
-{
-    uint32 uid;
-    VertexLayout layout;
-};
-
-static std::vector<VertexLayoutInfo> UniqueVertexLayout;
-static uint32 LastUID = 0;
+static const uint32 UniqueVertexLayoutCapacity = 1024;
+static std::atomic<uint32> UniqueVertexLayoutSize = 0;
+static VertexLayout UniqueVertexLayout[UniqueVertexLayoutCapacity] = {};
 
 //------------------------------------------------------------------------------
 
 const VertexLayout* VertexLayout::Get(uint32 uid)
 {
-    const VertexLayout* layout = nullptr;
+    DVASSERT(uid < UniqueVertexLayoutCapacity);
 
-    for (std::vector<VertexLayoutInfo>::iterator i = UniqueVertexLayout.begin(), i_end = UniqueVertexLayout.end(); i != i_end; ++i)
-    {
-        if (i->uid == uid)
-        {
-            layout = &(i->layout); // CRAP: returning pointer to data inside std::vector
-            break;
-        }
-    }
+    if ((uid != InvalidUID) && (uid < UniqueVertexLayoutSize))
+        return UniqueVertexLayout + uid;
 
-    return layout;
+    return nullptr;
 }
 
 //------------------------------------------------------------------------------
 
 uint32 VertexLayout::UniqueId(const VertexLayout& layout)
 {
-    uint32 uid = InvalidUID;
-
-    for (std::vector<VertexLayoutInfo>::iterator i = UniqueVertexLayout.begin(), i_end = UniqueVertexLayout.end(); i != i_end; ++i)
+    for (uint32 i = 0, e = UniqueVertexLayoutSize; i < e; ++i)
     {
-        if (i->layout == layout)
-        {
-            uid = i->uid;
-            break;
-        }
+        if (UniqueVertexLayout[i] == layout)
+            return i;
     }
 
-    if (uid == InvalidUID)
-    {
-        VertexLayoutInfo info;
-
-        info.uid = ++LastUID;
-        info.layout = layout;
-
-        if (UniqueVertexLayout.empty())
-            UniqueVertexLayout.reserve(32);
-
-        UniqueVertexLayout.push_back(info);
-        uid = info.uid;
-    }
-
+    uint32 uid = ++UniqueVertexLayoutSize;
+    DVASSERT(uid < UniqueVertexLayoutCapacity);
+    UniqueVertexLayout[uid] = layout;
     return uid;
 }
 
