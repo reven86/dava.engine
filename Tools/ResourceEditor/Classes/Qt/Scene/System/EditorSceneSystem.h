@@ -21,6 +21,5 @@ protected:
     {
     }
 
-
     bool systemIsEnabled = false;
 };

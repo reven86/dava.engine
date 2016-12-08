@@ -146,5 +146,4 @@ inline uint64 SceneSystem::GetRequiredComponents() const
 {
     return requiredComponents;
 }
-    
 }

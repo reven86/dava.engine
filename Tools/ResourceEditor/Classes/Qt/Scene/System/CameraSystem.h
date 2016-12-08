@@ -16,7 +16,6 @@ public:
     SceneCameraSystem(DAVA::Scene* scene);
     ~SceneCameraSystem();
 
-
     DAVA::Camera* GetCurCamera() const;
 
     DAVA::Vector3 GetPointDirection(const DAVA::Vector2& point) const;

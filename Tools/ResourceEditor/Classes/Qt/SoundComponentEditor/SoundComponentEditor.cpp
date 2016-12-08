@@ -11,7 +11,6 @@
 #include <QSlider>
 #include <QToolTip>
 
-
 SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget* parent)
     : QDialog(parent)
     , component(0)
