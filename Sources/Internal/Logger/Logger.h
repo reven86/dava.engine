@@ -28,7 +28,7 @@ public:
         LEVEL_FRAMEWORK = 0, //<! Designates fine-grained informational events to debug an engine.
         LEVEL_DEBUG, //<! Designates fine-grained informational events to debug an application.
         LEVEL_INFO, //<! Designates informational messages that highlight the progress of the application at coarse-grained level.
-        LEVEL_WARNING, //<! Designates potentially harmful situations. */
+        LEVEL_WARNING, //<! Designates potentially harmful situations.
         LEVEL_ERROR, //<! Designates error events that might still allow the application to continue running or can lead the application to abort.
 
         LEVEL__DISABLE //<! Disable logs.
