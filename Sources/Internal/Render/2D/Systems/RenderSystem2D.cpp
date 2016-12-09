@@ -103,9 +103,6 @@ void RenderSystem2D::Init()
         VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * i + 4;
     }
 
-    currentVertexBuffer = nullptr;
-    currentIndexBuffer = nullptr;
-    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
@@ -119,6 +116,9 @@ void RenderSystem2D::Init()
     lastCustomWorldMatrix = Matrix4::IDENTITY;
     lastCustomMatrixSematic = 1;
     lastClip = Rect(0, 0, -1, -1);
+
+    currentVertexBuffer.reserve(MAX_VERTICES * VBO_STRIDE[1]);
+    currentIndexBuffer.reserve(MAX_INDECES);
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -464,7 +464,7 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 void RenderSystem2D::Flush()
 {
     /*
-    Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw
+    Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw and changing state
     */
 
     if (vertexIndex == 0 && indexIndex == 0)
@@ -472,19 +472,31 @@ void RenderSystem2D::Flush()
         return;
     }
 
+    DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), vertexIndex);
+    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(indexIndex);
+    DVASSERT(vertexBuffer.allocatedVertices == vertexIndex);
+    DVASSERT(indexBuffer.allocatedindices == indexIndex);
+    Memcpy(vertexBuffer.data, currentVertexBuffer.data(), GetVBOStride(currentTexcoordStreamCount) * vertexIndex);
+    Memcpy(indexBuffer.data, currentIndexBuffer.data(), indexIndex * 2);
+
+    currentPacket.vertexStream[0] = vertexBuffer.buffer;
+    currentPacket.vertexCount = vertexBuffer.allocatedVertices;
+    currentPacket.baseVertex = vertexBuffer.baseVertex;
+    currentPacket.indexBuffer = indexBuffer.buffer;
+    currentPacket.startIndex = indexBuffer.baseIndex;
+
     if (currentPacketListHandle != rhi::InvalidHandle && currentPacket.primitiveCount > 0)
     {
         AddPacket(currentPacket);
     }
 
-    currentVertexBuffer = nullptr;
-    currentIndexBuffer = nullptr;
+    currentVertexBuffer.clear();
+    currentIndexBuffer.clear();
 
     currentPacket.vertexStream[0] = rhi::HVertexBuffer();
     currentPacket.vertexCount = 0;
     currentPacket.baseVertex = 0;
     currentPacket.indexBuffer = rhi::HIndexBuffer();
-    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
 
     vertexIndex = 0;
@@ -548,6 +560,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         // Buffer overflow or format changed. Switch to next VBO.
         Flush();
         currentTexcoordStreamCount = trimmedTexCoordCount;
+        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
 
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
@@ -558,49 +571,75 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                 Logger::Warning("PushBatch: Too much vertices (%d of %d)! Direct draw.", batchDesc.vertexCount, MAX_VERTICES);
             }
             currFrameErrorsFlags |= BUFFER_OVERFLOW_ERROR;
-
-            // Begin create vertex and index buffers
-            DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
-            if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
-            {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), batchDesc.vertexCount);
-                DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
-                DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
-                DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
-
-                currentVertexBuffer = vertexBuffer.data;
-                currentIndexBuffer = indexBuffer.data;
-
-                currentPacket.vertexStream[0] = vertexBuffer.buffer;
-                currentPacket.vertexCount = vertexBuffer.allocatedVertices;
-                currentPacket.baseVertex = vertexBuffer.baseVertex;
-                currentPacket.indexBuffer = indexBuffer.buffer;
-                currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
-                currentIndexBase = indexBuffer.baseIndex;
-            }
-            // End create vertex and index buffers
         }
     }
 
-    // Begin create vertex and index buffers
-    if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
+    // Begin check world matrix
+    bool needUpdateWorldMatrix = false;
+    bool useCustomWorldMatrix = batchDesc.worldMatrix != nullptr;
+    if (!useCustomWorldMatrix && !lastUsedCustomWorldMatrix) // Equal and False
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), MAX_VERTICES);
-        DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
-        DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
-        DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
-
-        currentVertexBuffer = vertexBuffer.data;
-        currentIndexBuffer = indexBuffer.data;
-
-        currentPacket.vertexStream[0] = vertexBuffer.buffer;
-        currentPacket.vertexCount = vertexBuffer.allocatedVertices;
-        currentPacket.baseVertex = vertexBuffer.baseVertex;
-        currentPacket.indexBuffer = indexBuffer.buffer;
-        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
-        currentIndexBase = indexBuffer.baseIndex;
+        // Skip check world matrices. Use Matrix4::IDENTITY. (the most frequent option)
     }
-    // End create vertex and index buffers
+    else if (useCustomWorldMatrix && lastUsedCustomWorldMatrix) // Equal and True
+    {
+        if (lastCustomWorldMatrix != *batchDesc.worldMatrix) // Update only if matrices not equal
+        {
+            needUpdateWorldMatrix = true;
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    else // Not equal
+    {
+        needUpdateWorldMatrix = true;
+        if (useCustomWorldMatrix)
+        {
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    // End check world matrix
+
+    // Begin new packet
+    if (currentPacket.textureSet != batchDesc.textureSetHandle || currentPacket.primitiveType != batchDesc.primitiveType || lastMaterial != batchDesc.material || lastClip != currentClip || needUpdateWorldMatrix)
+    {
+        Flush();
+        if (useCustomWorldMatrix)
+        {
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &lastCustomWorldMatrix, static_cast<pointer_size>(lastCustomMatrixSematic));
+        }
+        else
+        {
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
+        }
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
+
+        if (currentClip.dx > 0.f && currentClip.dy > 0.f)
+        {
+            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
+            currentPacket.scissorRect.x = static_cast<int16>(std::floor(transformedClipRect.x));
+            currentPacket.scissorRect.y = static_cast<int16>(std::floor(transformedClipRect.y));
+            currentPacket.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
+            currentPacket.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
+            currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
+        }
+        else
+        {
+            currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
+        }
+        lastClip = currentClip;
+
+        currentPacket.primitiveType = batchDesc.primitiveType;
+
+        DVASSERT(batchDesc.material);
+        lastMaterial = batchDesc.material;
+        lastMaterial->BindParams(currentPacket);
+        currentPacket.textureSet = batchDesc.textureSetHandle;
+        currentPacket.samplerState = batchDesc.samplerStateHandle;
+    }
+    // End new packet
 
     // Begin define draw color
     Color useColor = batchDesc.singleColor;
@@ -643,9 +682,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     };
 
     uint32 vertexStride = GetVBOStride(currentTexcoordStreamCount);
+    currentVertexBuffer.resize(vertexStride * (vertexIndex + batchDesc.vertexCount));
+    currentIndexBuffer.resize(indexIndex + batchDesc.indexCount);
+
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer.data(), vertexStride * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
         //TODO: rethink do we still require z in rhi?
@@ -660,7 +702,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
             DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
-            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer.data(), vertexStride * (vertexIndex + i));
             v.uv_ext[texStream - 1].x = batchDesc.texCoordPointer[texStream][i * 2];
             v.uv_ext[texStream - 1].y = batchDesc.texCoordPointer[texStream][i * 2 + 1];
         }
@@ -672,81 +714,6 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentIndexBuffer[ii++] = vertexIndex + batchDesc.indexPointer[i];
     }
     // End fill vertex and index buffers
-
-    // Begin check world matrix
-    bool needUpdateWorldMatrix = false;
-    bool useCustomWorldMatrix = batchDesc.worldMatrix != nullptr;
-    if (!useCustomWorldMatrix && !lastUsedCustomWorldMatrix) // Equal and False
-    {
-        // Skip check world matrices. Use Matrix4::IDENTITY. (the most frequent option)
-    }
-    else if (useCustomWorldMatrix && lastUsedCustomWorldMatrix) // Equal and True
-    {
-        if (lastCustomWorldMatrix != *batchDesc.worldMatrix) // Update only if matrices not equal
-        {
-            needUpdateWorldMatrix = true;
-            lastCustomWorldMatrix = *batchDesc.worldMatrix;
-            lastCustomMatrixSematic++;
-        }
-    }
-    else // Not equal
-    {
-        needUpdateWorldMatrix = true;
-        if (useCustomWorldMatrix)
-        {
-            lastCustomWorldMatrix = *batchDesc.worldMatrix;
-            lastCustomMatrixSematic++;
-        }
-    }
-    // End check world matrix
-
-    // Begin new packet
-    if (currentPacket.textureSet != batchDesc.textureSetHandle || currentPacket.primitiveType != batchDesc.primitiveType || lastMaterial != batchDesc.material || lastClip != currentClip || needUpdateWorldMatrix)
-    {
-        if (currentPacket.primitiveCount > 0)
-        {
-            if (currentPacketListHandle != rhi::InvalidHandle)
-                AddPacket(currentPacket);
-
-            currentPacket.primitiveCount = 0;
-        }
-
-        if (useCustomWorldMatrix)
-        {
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &lastCustomWorldMatrix, static_cast<pointer_size>(lastCustomMatrixSematic));
-        }
-        else
-        {
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
-        }
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
-
-        if (currentClip.dx > 0.f && currentClip.dy > 0.f)
-        {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = static_cast<int16>(std::floor(transformedClipRect.x));
-            currentPacket.scissorRect.y = static_cast<int16>(std::floor(transformedClipRect.y));
-            currentPacket.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
-            currentPacket.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
-            currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
-        }
-        else
-        {
-            currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
-        }
-        lastClip = currentClip;
-
-        currentPacket.primitiveType = batchDesc.primitiveType;
-        currentPacket.startIndex = currentIndexBase + indexIndex;
-
-        DVASSERT(batchDesc.material);
-        lastMaterial = batchDesc.material;
-        lastMaterial->BindParams(currentPacket);
-        currentPacket.textureSet = batchDesc.textureSetHandle;
-        currentPacket.samplerState = batchDesc.samplerStateHandle;
-    }
-    // End new packet
 
     switch (currentPacket.primitiveType)
     {
