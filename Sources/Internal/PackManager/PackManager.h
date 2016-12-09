@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Functional/Signal.h"
-#include "DLC/Downloader/DownloaderCommon.h"
-#include "Functional/Function.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
@@ -17,14 +16,14 @@ namespace DAVA
 
  example:
  ```
- IPackManager& pm = *engine.GetContext()->packManager;
+ DLCManager& pm = *engine.GetContext()->packManager;
  // if init failed we will know about it
- pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+ pm.cdnAvailable.Connect(this, &PackManagerTest::OnInitChange);
 
  String gpuArchitecture = "mali";
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.dvpk";
- IPackManager::Hints hints;
+ DLCManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
  hints.dbInMemory = true; // load DB in memory for performance
 
@@ -34,87 +33,18 @@ namespace DAVA
 
  ```
 */
-class IPackManager
+class DCLManagerImpl;
+
+class DLCManager final
 {
 public:
-    virtual ~IPackManager();
-    enum class InitState : uint32
-    {
-        Starting, //!< before any initialization code state
-        LoadingRequestAskFooter, //!< connect to server superpack.dvpk for footer block
-        LoadingRequestGetFooter, //!< download footer and parse it, find out filetable block size and position
-        LoadingRequestAskFileTable, //!< start loading filetable block from superpack.dvpk
-        LoadingRequestGetFileTable, //!< download filetable and fill info about every file on server superpack.dvpk
-        CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalDB if match
-        LoadingRequestAskDB, //!< start loading DB from server
-        LoadingRequestGetDB, //!< download DB and check it's hash
-        UnpakingDB, //!< unpack DB from zip
-        DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
-        LoadingPacksDataFromLocalDB, //!< open local DB and build pack index for all packs
-        MountingDownloadedPacks, //!< mount all local packs downloaded and not mounted later
-        Ready, //!< starting from this state client can call any method, second initialize will work too
-        Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
-    };
-
-    static const String& ToString(InitState state);
-
-    enum class InitError : uint32
-    {
-        AllGood,
-        CantCopyLocalDB,
-        CantMountLocalPacks,
-        LoadingRequestFailed,
-        UnpackingDBFailed,
-        DeleteDownloadedPackFailed,
-        LoadingPacksDataFailed,
-        MountingDownloadedPackFailed
-    };
-
-    static const String& ToString(InitError state);
-
-    /**
-     Pack with all details.
-     Read only data, you don't need to create or destroy Pack's.
-     During initialization all packs are created simultaneously.
-    */
-    struct Pack
-    {
-        enum class Status : uint32
-        {
-            NotRequested, //!< initial state
-            Requested, //!< client made request and pack in queue
-            Downloading, //!< loading pack data from server superpack
-            Mounted, //!< if all good after loading and checking hash
-            ErrorLoading, //!< downloadError - value returned from DLC DownloadManager
-            OtherError //!< mount failed, check hash failed, file IO failed see otherErrorMsg
-        };
-
-        Vector<String> dependency; //!< names of dependency packs or empty
-
-        String name; //!< unique pack name
-        String otherErrorMsg; //!< extended error message
-
-        float32 downloadProgress = 0.f; //!< [0.0f to 1.0f]
-        float32 priority = 0.f; //!< [0.0f to 1.0f]
-
-        uint32 hashFromDB = 0; //!< crc32 hash from DB file
-
-        uint64 downloadedSize = 0; //!< current downloaded size, used only during loading
-        uint64 totalSize = 0; //!< current total size on file system
-        uint64 totalSizeFromDB = 0; //!< size from DB
-
-        DownloadError downloadError = DLE_NO_ERROR; //!< download manager error
-        Status state = Status::NotRequested; //!< current pack state
-
-        bool isGPU = false; //!< value from DB
-    };
+    ~DLCManager();
 
     /**
      Proxy interface to easily check pack request progress
      to use it interface, for download progress you need to
      connect to `requestProgressChanged` signal and then
-     call `RequestPack`. Also you can find request by pack name
-     with `FindRequest`.
+     call `RequestPack`.
     */
     class IRequest
     {
@@ -122,25 +52,17 @@ public:
         virtual ~IRequest();
 
         /** return requested pack name */
-        virtual const Pack& GetRootPack() const = 0;
+        virtual const String& GetRequestedPackName() const = 0;
         /** recalculate full size with all dependencies */
         virtual uint64 GetFullSizeWithDependencies() const = 0;
         /** recalculate current downloaded size */
         virtual uint64 GetDownloadedSize() const = 0;
-        /** return true in case error loading */
-        virtual bool IsError() const = 0;
-        /** return pack during loading which error happened */
-        virtual const Pack& GetErrorPack() const = 0;
-        /** detailed error message */
-        virtual const String& GetErrorMessage() const = 0;
+        /** return true when all files loaded and ready */
+        virtual bool IsDowndloaded() const = 0;
     };
 
     /** you have to subscribe to this signal before call `Initialize` */
-    Signal<IPackManager&> initStateChanged;
-    /** signal user about every pack state change */
-    Signal<const Pack&> packStateChanged;
-    /** you can track every pack download progress with this signal */
-    Signal<const Pack&> packDownloadChanged;
+    Signal<bool> cdnAvailable;
     /** signal per user request with complete size of all depended packs */
     Signal<const IRequest&> requestProgressChanged;
 
@@ -154,66 +76,31 @@ public:
 
      You also should subscribe to all signals especially state changes
      before you call Initialize.
-     At least subscribe to `initStateChanged` signal
+     At least subscribe to `cdnAvailable` signal
     */
-    virtual void Initialize(const String& architecture,
-                            const FilePath& dirToDownloadPacks,
-                            const FilePath& pathToBasePacksDB,
-                            const String& urlToServerSuperpack,
-                            const Hints& hints) = 0;
+    void Initialize(const String& architecture,
+                    const FilePath& dirToDownloadPacks,
+                    const FilePath& pathToBasePacksDB,
+                    const String& urlToServerSuperpack,
+                    const Hints& hints);
 
-    virtual bool IsInitialized() const = 0;
+    bool IsInitialized() const;
 
-    virtual InitState GetInitState() const = 0;
+    bool IsRequestingEnabled() const;
 
-    virtual InitError GetInitError() const = 0;
-
-    virtual const String& GetInitErrorMessage() const = 0;
-
-    virtual bool IsRequestingEnabled() const = 0;
-    /** enable user request processing */
-    virtual void EnableRequesting() = 0;
-    /** disable user request processing */
-    virtual void DisableRequesting() = 0;
+    void SetRequestingEnabled(bool value);
 
     /** return unique pack name or empty string on error */
-    virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
+    const String& FindPackName(const FilePath& relativePathInArchive) const;
 
-    /** throw exception if can't find pack */
-    virtual const Pack& FindPack(const String& packName) const = 0;
+    /** return nullptr if can't find pack */
+    const IRequest* RequestPack(const String& packName);
 
-    /** throw exception if can't find pack */
-    virtual const Pack& RequestPack(const String& packName) = 0;
+    /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
+    void SetRequestOrder(const IRequest* request, unsigned order);
 
-    /**
-     List all files from DB for every pack, and call callback function
-     for every found path with
-     two params first - relative file path, second pack name
-    */
-    virtual void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) = 0;
-
-    /**
-     return request contains pack or nullptr
-     requestedPackName - previous requested pack currently in downloading
-     or present in wait queue
-    */
-    virtual const IRequest* FindRequest(const String& requestedPackName) const = 0;
-
-    /** order - [0..1] - 0 - first, 1 - last */
-    virtual void SetRequestOrder(const String& packName, float order) = 0;
-
-    /** all packs state, valid till next call frame update */
-    virtual const Vector<Pack>& GetPacks() const = 0;
-    /**
-     Unmount pack and then delete it, throw exception on error,
-     then collect from DB all dependent packs and set it's state to
-     `Pack::State::NotRequested`. Normally you don't need to delete packs
-     manually
-     */
-    virtual void DeletePack(const String& packName) = 0;
-
-    virtual const FilePath& GetLocalPacksDirectory() const = 0;
-    virtual const String& GetSuperPackUrl() const = 0;
+private:
+    std::unique_ptr<DCLManagerImpl> impl;
 };
 
 } // end namespace DAVA

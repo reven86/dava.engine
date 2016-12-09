@@ -157,7 +157,7 @@ IPackManager::InitError PackManagerImpl::GetInitError() const
     return initError;
 }
 
-const String& PackManagerImpl::GetInitErrorMessage() const
+const String& PackManagerImpl::GetLastErrorMessage() const
 {
     DVASSERT(Thread::IsMainThread());
     return initErrorMsg;
@@ -281,7 +281,7 @@ void PackManagerImpl::ContinueInitialization(float frameDelta)
 
     if (newState != beforeState || initError != InitError::AllGood)
     {
-        initStateChanged.Emit(*this);
+        cdnAvailable.Emit(*this);
 
         if (initError != InitError::AllGood)
         {

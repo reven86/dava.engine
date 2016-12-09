@@ -303,7 +303,7 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
     if (packManager.GetInitError() != IPackManager::InitError::AllGood)
     {
-        ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
+        ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetLastErrorMessage() << '\n';
         ss << "do you want to retry?\n";
     }
 
@@ -318,8 +318,8 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     packNameLoading->SetText(L"done: start init");
 
-    pm.initStateChanged.DisconnectAll();
-    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+    pm.cdnAvailable.DisconnectAll();
+    pm.cdnAvailable.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
