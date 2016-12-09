@@ -990,6 +990,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
+    styledProperties = srcControl->styledProperties;
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
