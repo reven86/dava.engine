@@ -283,6 +283,20 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         }
     }
 
+    if (!vSource || !fSource)
+    {
+        // don't try to create pipeline-state, return 'not-valid'
+        rhi::PipelineState::Descriptor psDesc;
+        psDesc.vprogUid = vProgUid;
+        psDesc.fprogUid = fProgUid;
+        ShaderDescriptor* res = new ShaderDescriptor(rhi::HPipelineState(rhi::InvalidHandle), vProgUid, fProgUid);
+        res->sourceName = name;
+        res->defines = defines;
+        res->valid = false;
+        shaderDescriptors[key] = res;
+        return res;
+    }
+
 #if 0
     Logger::Info("\n\n%s", vProgUid.c_str());
     vSource->Dump();

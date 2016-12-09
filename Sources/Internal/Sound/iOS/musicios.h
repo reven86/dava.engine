@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MUSIC_IOS_H__
-#define __DAVAENGINE_MUSIC_IOS_H__
+#pragma once
 
 #ifdef __DAVAENGINE_IPHONE__
 
@@ -18,6 +17,8 @@ public:
     virtual void SetPaused(bool paused);
 
     virtual void SetVolume(float32 volume);
+
+    virtual void SetSpeed(float32 speed);
 
     virtual void SetLoopCount(int32 looping); // -1 = infinity
     virtual int32 GetLoopCount() const;
@@ -64,5 +65,3 @@ protected:
 };
 
 #endif //#ifdef __DAVAENGINE_IPHONE__
-
-#endif //__DAVAENGINE_MUSIC_IOS_H__
