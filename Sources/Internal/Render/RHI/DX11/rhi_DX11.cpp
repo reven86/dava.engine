@@ -36,6 +36,16 @@ static DAVA::Mutex resetParamsSync;
 static DAVA::Mutex pendingSecondaryCmdListSync;
 static DAVA::Vector<ComPtr<ID3D11CommandList>> pendingSecondaryCmdLists;
 static DWORD _DX11_RenderThreadId = 0;
+static D3D_FEATURE_LEVEL _DX11_SupportedFeatureLevels[] =
+{
+#if (RHI_DX11_ALLOW_FEATURE_LEVEL_11)
+  D3D_FEATURE_LEVEL_11_1,
+  D3D_FEATURE_LEVEL_11_0,
+#endif
+  D3D_FEATURE_LEVEL_9_3,
+  D3D_FEATURE_LEVEL_9_2,
+  D3D_FEATURE_LEVEL_9_1
+};
 
 DX11Resources dx11;
 
@@ -283,9 +293,22 @@ HRESULT CreateDXGIFactoryWrapper(UINT flags)
 #endif
 }
 
+D3D_FEATURE_LEVEL dx11_maxSupportedFeatureLevel(ComPtr<IDXGIAdapter> adapter)
+{
+    D3D_FEATURE_LEVEL result = D3D_FEATURE_LEVEL_9_1;
+    D3D11CreateDevice(adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, _DX11_SupportedFeatureLevels,
+                      countof(_DX11_SupportedFeatureLevels), D3D11_SDK_VERSION, nullptr, &result, nullptr);
+    return result;
+}
+
 ComPtr<IDXGIAdapter> dx11_SelectAdapter()
 {
-    using AdapterWithDesc = std::pair<ComPtr<IDXGIAdapter>, DXGI_ADAPTER_DESC>;
+    struct AdapterWithDesc
+    {
+        ComPtr<IDXGIAdapter> adapter;
+        DXGI_ADAPTER_DESC desc;
+        D3D_FEATURE_LEVEL maxFeatureLevel;
+    };
     DAVA::Vector<AdapterWithDesc> availableAdapters;
 
     UINT factoryFlags = 0;
@@ -294,19 +317,27 @@ ComPtr<IDXGIAdapter> dx11_SelectAdapter()
         factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-    DAVA::Logger::Info("[RHI-DX11] enumerating adapters:", static_cast<DAVA::uint32>(availableAdapters.size()));
-    if (DX11Check(CreateDXGIFactoryWrapper(factoryFlags)))
+    if (!DX11Check(CreateDXGIFactoryWrapper(factoryFlags)))
+        return ComPtr<IDXGIAdapter>();
+
+    DAVA::Logger::Info("[RHI-DX11] available adapters:");
+    UINT index = 0;
+    ComPtr<IDXGIAdapter> adapter;
+    while (dx11.factory->EnumAdapters(index, adapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND)
     {
-        UINT index = 0;
-        ComPtr<IDXGIAdapter> adapter;
-        while (dx11.factory->EnumAdapters(index, adapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND)
-        {
-            DXGI_ADAPTER_DESC desc = {};
-            adapter->GetDesc(&desc);
-            DAVA::Logger::Info("%d : '%S' (vendor: %04X, subsystem: %04X)", index, desc.Description, desc.VendorId, desc.SubSysId);
-            availableAdapters.emplace_back(adapter, desc);
-            ++index;
-        }
+        availableAdapters.emplace_back();
+        AdapterWithDesc& entry = availableAdapters.back();
+        entry.adapter = adapter;
+        entry.maxFeatureLevel = dx11_maxSupportedFeatureLevel(adapter);
+        adapter->GetDesc(&entry.desc);
+
+        uint32 featureLevel = static_cast<uint32>(entry.maxFeatureLevel);
+        uint32 featureLevelMajor = ((featureLevel >> 8) & 0xf0) >> 4;
+        uint32 featureLevelMinor = (featureLevel >> 8) & 0x0f;
+        DAVA::Logger::Info("%d : '%S' (vendor: 0x%04X, subsystem: 0x%04X), feature level: 0x%04x (%u.%u)", index,
+                           entry.desc.Description, entry.desc.VendorId, entry.desc.SubSysId,
+                           featureLevel, featureLevelMajor, featureLevelMinor);
+        ++index;
     }
 
     if (availableAdapters.empty())
@@ -324,29 +355,28 @@ ComPtr<IDXGIAdapter> dx11_SelectAdapter()
                   UINT rightId = UINT(-1);
                   for (UINT i = 0; i < countof(preferredVendorIds); ++i)
                   {
-                      if (preferredVendorIds[i] == l.second.VendorId)
+                      if (preferredVendorIds[i] == l.desc.VendorId)
                           leftId = i;
-                      if (preferredVendorIds[i] == r.second.VendorId)
+                      if (preferredVendorIds[i] == r.desc.VendorId)
                           rightId = i;
                   }
                   return leftId < rightId;
               });
 
     const AdapterWithDesc& selected = availableAdapters.front();
-    DAVA::Logger::Info("[RHI-DX11] Using adapter `%S` (vendor: %04X, subsystem: %04X)", selected.second.Description, selected.second.VendorId, selected.second.SubSysId);
-
+    DAVA::Logger::Info("[RHI-DX11] Using adapter `%S` (vendor: %04X, subsystem: %04X)", selected.desc.Description, selected.desc.VendorId, selected.desc.SubSysId);
     {
         // Find out if we should use workaround for AMD GPU
         char info[256] = {};
-        WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, selected.second.Description, -1, info, countof(info) - 1, nullptr, nullptr);
+        WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, selected.desc.Description, -1, info, countof(info) - 1, nullptr, nullptr);
         DAVA::UWPWorkaround::enableSurfaceSizeWorkaround |= strstr(info, "AMD Radeon HD") && (info[strlen(info) - 1] == 'G');
     }
-
-    return selected.first;
+    return selected.adapter;
 }
 
 bool dx11_CreateDevice(const InitParam& param)
 {
+    DAVA::Logger::Info("[RHI-DX11] Creting device...");
     UINT deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 #if defined(__DAVAENGINE_DEBUG__)
@@ -354,41 +384,67 @@ bool dx11_CreateDevice(const InitParam& param)
         deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-    static const D3D_FEATURE_LEVEL featureLevels[] =
-    {
-    #if (RHI_DX11_ALLOW_FEATURE_LEVEL_11)
-        D3D_FEATURE_LEVEL_11_1,
-        D3D_FEATURE_LEVEL_11_0,
-    #endif
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1
-    };
-
     ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
+    if (adapter.Get() == nullptr)
+        DAVA::Logger::Info("[RHI-DX11] Creating device without selected adapter");
+
     D3D_DRIVER_TYPE driverType = adapter.Get() ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE;
-    HRESULT result = D3D11CreateDevice(adapter.Get(), driverType, nullptr, deviceFlags, featureLevels, countof(featureLevels),
+    HRESULT result = D3D11CreateDevice(adapter.Get(), driverType, nullptr, deviceFlags, _DX11_SupportedFeatureLevels, countof(_DX11_SupportedFeatureLevels),
                                        D3D11_SDK_VERSION, dx11.device.GetAddressOf(), &dx11.usedFeatureLevel, dx11.context.GetAddressOf());
 
     bool failedToCreateDevice = (dx11.device.Get() == nullptr) || !DX11Check(result);
     if (failedToCreateDevice)
     {
-        driverType = D3D_DRIVER_TYPE_WARP;
-        result = D3D11CreateDevice(nullptr, driverType, nullptr, deviceFlags, featureLevels, countof(featureLevels),
+        driverType = D3D_DRIVER_TYPE_HARDWARE;
+        result = D3D11CreateDevice(nullptr, driverType, nullptr, deviceFlags, _DX11_SupportedFeatureLevels, countof(_DX11_SupportedFeatureLevels),
                                    D3D11_SDK_VERSION, dx11.device.GetAddressOf(), &dx11.usedFeatureLevel, dx11.context.GetAddressOf());
     }
 
     failedToCreateDevice = (dx11.device.Get() == nullptr) || !DX11Check(result);
     if (failedToCreateDevice)
     {
+        DAVA::Logger::Error("[RHI-DX11] Failed create ID3D11Device");
         ReportError(param, RenderingError::FailedToInitialize);
         return false;
     }
 
     if (!DX11Check(dx11.device.As(&dx11.dxgiDevice)))
     {
+        DAVA::Logger::Error("[RHI-DX11] Failed to retreive IDXGIDevice1 object from ID3D11Device");
         ReportError(param, RenderingError::FailedToInitialize);
         return false;
+    }
+
+    // device was created, but no adapter provided
+    if (adapter.Get() == nullptr)
+    {
+        DX11Check(dx11.dxgiDevice->GetAdapter(adapter.GetAddressOf()));
+        if (adapter.Get() == nullptr)
+        {
+            DAVA::Logger::Error("[RHI-DX11] Failed to retreive IDXGIAdapter object from IDXGIDevice1");
+            ReportError(param, RenderingError::FailedToInitialize);
+            return false;
+        }
+
+        DXGI_ADAPTER_DESC desc = {};
+        adapter->GetDesc(&desc);
+        uint32 featureLevel = static_cast<uint32>(dx11.usedFeatureLevel);
+        uint32 featureLevelMajor = ((featureLevel >> 8) & 0xf0) >> 4;
+        uint32 featureLevelMinor = (featureLevel >> 8) & 0x0f;
+        DAVA::Logger::Info("[RHI-DX11] Using retreived adapter `%S` (vendor: 0x%04X, subsystem: 0x%04X), feature level: 0x%04x (%u.%u)",
+                           desc.Description, desc.VendorId, desc.SubSysId, featureLevel, featureLevelMajor, featureLevelMinor);
+
+        if (dx11.factory.Get() == nullptr)
+        {
+            DAVA::Logger::Info("[RHI-DX11] IDXGIFactory2 was not created, retreiving it from the adapter");
+            DX11Check(adapter->GetParent(IID_PPV_ARGS(dx11.factory.GetAddressOf())));
+            if (dx11.factory.Get() == nullptr)
+            {
+                DAVA::Logger::Info("[RHI-DX11] Failed to retreive IDXGIFactory2 from IDXGIAdapter");
+                ReportError(param, RenderingError::FailedToInitialize);
+                return false;
+            }
+        }
     }
 
     return true;
