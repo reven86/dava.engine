@@ -12,7 +12,8 @@
 RulerWidget::RulerWidget(QWidget* parent)
     : QWidget(parent)
 {
-    lazyUpdater = new LazyUpdater([this]() { update(); }, this);
+    DAVA::Function<void()> updateRuler(this, static_cast<void (QWidget::*)(void)>(&RulerWidget::update));
+    lazyUpdater = new LazyUpdater(updateRuler, this);
 
     UpdateDoubleBufferImage();
 }
