@@ -43,8 +43,8 @@ void RequestManager::Update()
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
             if (request.GetRootPack().name != subRequest.pack->name)
             {
-                IPackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
-                rootPack.state = IPackManager::Pack::Status::OtherError;
+                DLCManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
+                rootPack.state = DLCManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
                                                 rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.pack->otherErrorMsg.c_str());
 
@@ -131,9 +131,9 @@ void RequestManager::Push(const String& packName, float32 priority)
         DAVA_THROW(DAVA::Exception, "second time push same pack in queue, pack: " + packName);
     }
 
-    IPackManager::Pack& pack = packManager.GetPack(packName);
+    DLCManager::Pack& pack = packManager.GetPack(packName);
 
-    pack.state = IPackManager::Pack::Status::Requested;
+    pack.state = DLCManager::Pack::Status::Requested;
     pack.priority = priority;
 
     requests.emplace_back(packManager, pack);

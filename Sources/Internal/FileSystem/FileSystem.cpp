@@ -509,14 +509,14 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 #ifdef __DAVAENGINE_COREV2__
         // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
         // access Engine object after it has beem destroyed
-        IPackManager* pm = nullptr;
+        DLCManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
         pm = context->packManager;
 #else
-        IPackManager* pm = &Core::Instance()->GetPackManager();
+        DLCManager* pm = &Core::Instance()->GetPackManager();
 #endif
 
         if (nullptr != pm && pm->IsInitialized())

@@ -18,7 +18,7 @@ public:
     void ListFiles(const String& relativePathDir, const Function<void(const String&, const String&)>& fn);
     void ListDependentPacks(const String& pack, const Function<void(const String&)>& fn);
 
-    void InitializePacks(Vector<IPackManager::Pack>& out) const;
+    void InitializePacks(Vector<DLCManager::Pack>& out) const;
 
 private:
     std::unique_ptr<PacksDBData> data;

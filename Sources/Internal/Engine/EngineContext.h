@@ -28,7 +28,7 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
-class IPackManager;
+class DLCManager;
 class AssetsManagerAndroid;
 class ModuleManager;
 class EngineSettings;
@@ -72,11 +72,11 @@ public:
     LocalNotificationController* localNotificationController = nullptr;
 
     ModuleManager* moduleManager = nullptr;
-    IPackManager* packManager = nullptr;
+    DLCManager* packManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
     EngineSettings* settings = nullptr;
-    
+
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif
