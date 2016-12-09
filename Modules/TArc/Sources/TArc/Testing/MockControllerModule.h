@@ -17,6 +17,13 @@ public:
     MOCK_METHOD1(OnContextDeleted, void(DataContext& context));
     MOCK_METHOD1(OnWindowClosed, void(const WindowKey& key));
     MOCK_METHOD0(PostInit, void());
+
+    DAVA_VIRTUAL_REFLECTION(MockControllerModule, ControllerModule)
+    {
+        ReflectionRegistrator<MockControllerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
 } // namespace TArc
 } // namespace DAVA

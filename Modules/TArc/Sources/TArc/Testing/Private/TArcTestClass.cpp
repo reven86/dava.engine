@@ -10,7 +10,10 @@
 #include "Base/Platform.h"
 
 #include <QTimer>
+#include <QApplication>
+#include <QAbstractEventDispatcher>
 #include <gmock/gmock-spec-builders.h>
+
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
@@ -117,6 +120,23 @@ void TestClass::SetUp(const String& testName)
 {
     if (core == nullptr)
     {
+        using namespace std::chrono;
+        TestInfo::TimePoint startTimePoint = TestInfo::Clock::now();
+        double testClassTimeLimit = (tests.size() + 1) * testTimeLimit;
+        auto timeoutCrashHandler = [startTimePoint, testClassTimeLimit]()
+        {
+            double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - startTimePoint).count();
+            if (elapsedSeconds > testClassTimeLimit)
+            {
+                TEST_VERIFY_WITH_MESSAGE(false, "Timeout fail");
+                std::terminate();
+            }
+        };
+
+        QAbstractEventDispatcher* dispatcher = qApp->eventDispatcher();
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::aboutToBlock, timeoutCrashHandler);
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::awake, timeoutCrashHandler);
+
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         DVASSERT(e->IsConsoleMode() == false);
