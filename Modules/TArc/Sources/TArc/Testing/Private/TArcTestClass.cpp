@@ -122,11 +122,10 @@ void TestClass::SetUp(const String& testName)
     {
         using namespace std::chrono;
         TestInfo::TimePoint startTimePoint = TestInfo::Clock::now();
-        double testClassTimeLimit = (tests.size() + 1) * testTimeLimit;
-        auto timeoutCrashHandler = [startTimePoint, testClassTimeLimit]()
+        auto timeoutCrashHandler = [startTimePoint]()
         {
             double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - startTimePoint).count();
-            if (elapsedSeconds > testClassTimeLimit)
+            if (elapsedSeconds > 10 * 60) // 10 minutes
             {
                 TEST_VERIFY_WITH_MESSAGE(false, "Timeout fail");
                 std::terminate();
