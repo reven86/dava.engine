@@ -247,6 +247,16 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
 {
+    static const float32 scrollK = 10.0f;
+
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = theEvent.locationInWindow;
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    float32 wheelDeltaX = [theEvent scrollingDeltaX];
+    float32 wheelDeltaY = [theEvent scrollingDeltaY];
+
     // detect the wheel event device
     // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
     if (NSEventPhaseNone != [theEvent momentumPhase] || NSEventPhaseNone != [theEvent phase])
@@ -257,32 +267,28 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     else
     {
         //event.device = DAVA::UIEvent::Device::MOUSE;
+        // Invert scroll directions back because MacOS do it by self when Shift pressed
+        if (([curEvent modifierFlags] & NSEventModifierFlagShift) != 0)
+        {
+            std::swap(wheelDeltaX, wheelDeltaY);
+        }
     }
 
-    const float32 scrollK = 10.0f;
-
-    NSSize sz = [renderView frame].size;
-    NSPoint pt = theEvent.locationInWindow;
-
-    float32 x = pt.x;
-    float32 y = sz.height - pt.y;
-    float32 deltaX = [theEvent scrollingDeltaX];
-    float32 deltaY = [theEvent scrollingDeltaY];
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
         // Touchpad or other precise device send integer values (-3, -1, 0, 1, 40, etc)
-        deltaX /= scrollK;
-        deltaY /= scrollK;
+        wheelDeltaX /= scrollK;
+        wheelDeltaY /= scrollK;
     }
     else
     {
         // Mouse sends float values from 0.1 for one wheel tick
-        deltaX *= scrollK;
-        deltaY *= scrollK;
+        wheelDeltaX *= scrollK;
+        wheelDeltaY *= scrollK;
     }
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     bool isRelative = captureMode == eCursorCapture::PINNING;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, wheelDeltaX, wheelDeltaY, modifierKeys, isRelative));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)

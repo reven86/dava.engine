@@ -148,11 +148,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
         const uint32 rawScrollCoefficient = 10;
         DAVA::float32 rawScrollDeltaX([curEvent scrollingDeltaX]);
         DAVA::float32 rawScrollDeltaY([curEvent scrollingDeltaY]);
-        // Invert scroll directions back because MacOS do it by self when Shift pressed
-        if (([curEvent modifierFlags] & NSEventModifierFlagShift) != 0)
-        {
-            std::swap(rawScrollDeltaX, rawScrollDeltaY);
-        }
 
         // detect the wheel event device
         // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
@@ -163,6 +158,11 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
         else
         {
             event.device = DAVA::UIEvent::Device::MOUSE;
+            // Invert scroll directions back because MacOS do it by self when Shift pressed
+            if (([curEvent modifierFlags] & NSEventModifierFlagShift) != 0)
+            {
+                std::swap(rawScrollDeltaX, rawScrollDeltaY);
+            }
         }
 
         if (YES == [curEvent hasPreciseScrollingDeltas])
