@@ -18,5 +18,6 @@ public:
 
 private:
     int SendMessage(int message, const QString& appPath);
+    int ProcessReply(const QByteArray& data);
     QLocalSocket* socket = nullptr;
 };

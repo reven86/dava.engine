@@ -72,8 +72,6 @@ int AppsCommandsSender::SendMessage(int message, const QString& appPath)
     socket->waitForConnected();
     if (socket->state() == QLocalSocket::ConnectedState)
     {
-        QByteArray data = socket->readAll();
-
         QEventLoop eventLoop;
         QTimer waitTimer(this);
         waitTimer.setSingleShot(true);
@@ -83,19 +81,14 @@ int AppsCommandsSender::SendMessage(int message, const QString& appPath)
         waitTimer.start(10 * 1000); //wait 10 seconds for reply
         socket->write(QByteArray::number(message));
         eventLoop.exec();
-        data = socket->readAll();
-        socket->disconnectFromServer();
-        //this situation occurs when application fails on processing message
+
         if (waitTimer.isActive() == false)
         {
             return static_cast<int>(TIMEOUT_ERROR);
         }
-        bool ok = false;
-        int code = data.toInt(&ok);
-        if (ok)
-        {
-            return code;
-        }
+        QByteArray data = socket->readAll();
+        socket->disconnectFromServer();
+        return ProcessReply(data);
     }
     else
     {
@@ -106,4 +99,15 @@ int AppsCommandsSender::SendMessage(int message, const QString& appPath)
         }
     }
     return static_cast<int>(OTHER_ERROR);
+}
+
+int AppsCommandsSender::ProcessReply(const QByteArray& data)
+{
+    bool ok = false;
+    int code = data.toInt(&ok);
+    if (ok)
+    {
+        return code;
+    }
+    return LauncherListener::UNKNOWN_MESSAGE;
 }

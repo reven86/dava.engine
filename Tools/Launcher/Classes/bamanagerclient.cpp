@@ -51,32 +51,32 @@ void BAManagerClient::ProcessCommand(const QJsonObject& object)
         SendReply(FAILURE, "Can not parse command ID from command, expect a string, got type " + jsonValueTypeStr);
         return;
     }
-    QString commandIDStr = commandIDValue.toString();
+    QString commandID = commandIDValue.toString();
 
-    QJsonValue typeValue = object["type"];
-    if (typeValue.isString() == false)
+    QJsonValue requestTypeValue = object["type"];
+    if (requestTypeValue.isString() == false)
     {
-        QString jsonValueTypeStr = QString::number(static_cast<int>(typeValue.type()));
-        SendReply(FAILURE, commandIDStr, "Can not parse type from command, expect a string, got type " + jsonValueTypeStr);
+        QString jsonValueTypeStr = QString::number(static_cast<int>(requestTypeValue.type()));
+        SendReply(FAILURE, commandID, "Can not parse type from command, expect a string, got type " + jsonValueTypeStr);
         return;
     }
 
-    QString typeStr = typeValue.toString();
-    if (typeStr == "command")
+    QString requestType = requestTypeValue.toString();
+    if (requestType == "command")
     {
-        LaunchProcess(object, commandIDStr);
+        LaunchProcess(object, commandID);
     }
-    else if (typeStr == "install")
+    else if (requestType == "install")
     {
-        SilentUpdate(object, commandIDStr);
+        SilentUpdate(object, commandID);
     }
     else
     {
-        SendReply(FAILURE, commandIDStr, QString("Unknown command: %1").arg(typeStr));
+        SendReply(FAILURE, QString("Unknown command: %1").arg(requestType), commandID);
     }
 }
 
-void BAManagerClient::SendReply(eResult result, const QString& commandID, const QString& message)
+void BAManagerClient::SendReply(eResult result, const QString& message, const QString& commandID)
 {
     QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=command_result";
@@ -95,11 +95,6 @@ void BAManagerClient::SendReply(eResult result, const QString& commandID, const 
     {
         ErrorMessenger::LogMessage(QtWarningMsg, message);
     }
-}
-
-void BAManagerClient::SendReply(eResult result, const QString& message)
-{
-    SendReply(result, "0", message);
 }
 
 void BAManagerClient::AskForCommands()
@@ -204,9 +199,14 @@ void BAManagerClient::OnProcessFinished(int exitCode, QProcess::ExitStatus exitS
     QByteArray standardOutput = process->readAllStandardOutput();
     QByteArray standardError = process->readAllStandardError();
     eResult result = (exitCode == 0 && exitStatus == QProcess::NormalExit) ? SUCCESS : FAILURE;
-    QString reply = QString("process exit code: %1\nprocess exit status: %2\nstandard output: %3\nstandard error: %4");
-    reply = reply.arg(exitCode).arg(static_cast<int>(exitStatus)).arg(QString(standardOutput)).arg(QString(standardError));
-    SendReply(result, commandID, reply);
+    QJsonObject replyObject{
+        { "process exit code", QString::number(exitCode) },
+        { "process exit status", QString::number(exitStatus) },
+        { "standard output", QString(standardOutput) },
+        { "standard error", QString(standardError) }
+    };
+    QJsonDocument document(replyObject);
+    SendReply(result, document.toJson(), commandID);
 }
 
 void BAManagerClient::OnProcessError(QProcess::ProcessError error)
@@ -226,7 +226,7 @@ void BAManagerClient::OnProcessError(QProcess::ProcessError error)
         return;
     }
     QString reply = QString("Error occured while launching process. Qt error code is %1").arg(static_cast<int>(error));
-    SendReply(FAILURE, commandID, reply);
+    SendReply(FAILURE, reply, commandID);
 }
 
 void BAManagerClient::LaunchProcess(const QJsonObject& requestObj, const QString& commandID)
@@ -235,7 +235,7 @@ void BAManagerClient::LaunchProcess(const QJsonObject& requestObj, const QString
     if (commandValue.isString() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(commandValue.type()));
-        SendReply(FAILURE, commandID, "Can not parse cmd from command, expect a string, got type " + jsonValueTypeStr);
+        SendReply(FAILURE, "Can not parse cmd from command, expect a string, got type " + jsonValueTypeStr, commandID);
         return;
     }
 
@@ -261,7 +261,7 @@ void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString&
     if (branchNameValue.isString() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(branchNameValue.type()));
-        SendReply(FAILURE, commandID, "Can not parse branch name from command, expect a string, got type " + jsonValueTypeStr);
+        SendReply(FAILURE, "Can not parse branch name from command, expect a string, got type " + jsonValueTypeStr, commandID);
         return;
     }
     QString branchName = branchNameValue.toString();
@@ -270,7 +270,7 @@ void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString&
     if (appNameValue.isString() == false)
     {
         QString jsonValueTypeStr = QString::number(static_cast<int>(appNameValue.type()));
-        SendReply(FAILURE, commandID, "Can not parse branch name from command, expect a string, got type " + jsonValueTypeStr);
+        SendReply(FAILURE, "Can not parse branch name from command, expect a string, got type " + jsonValueTypeStr, commandID);
         return;
     }
     QString appName = appNameValue.toString();
@@ -279,7 +279,7 @@ void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString&
     ::FillAppFields(&newVersion, requestObj, IsToolset(appName));
     AppVersion* installedVersion = applicationManager->GetInstalledVersion(branchName, appName);
     SilentUpdateTask::CallBack callBack = [this, commandID](bool success, const QString& message) {
-        SendReply(success ? SUCCESS : FAILURE, commandID, message);
+        SendReply(success ? SUCCESS : FAILURE, message, commandID);
     };
     SilentUpdateTask task(branchName, appName, installedVersion, newVersion, callBack);
     silentUpdater->AddTask(std::move(task));

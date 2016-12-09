@@ -63,12 +63,11 @@ void LauncherListener::OnNewConnection()
     QLocalSocket *clientConnection = server->nextPendingConnection();
 
     QObject::connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
-    QObject::connect(clientConnection, &QLocalSocket::readyRead, this, &LauncherListener::OnReadyRead);
+    QObject::connect(clientConnection, &QLocalSocket::readyRead, this, &LauncherListener::ProcessTransportLevel);
 }
 
-void LauncherListener::OnReadyRead()
+void LauncherListener::ProcessTransportLevel()
 {
-    using namespace LauncherIPCHelpers;
     QLocalSocket *clientConnection = qobject_cast<QLocalSocket*>(sender());
     if (clientConnection == nullptr)
     {
@@ -76,24 +75,43 @@ void LauncherListener::OnReadyRead()
         return;
     }
     QByteArray data = clientConnection->readAll();
-    bool ok = false;
-    int code = data.toInt(&ok);
-    eProtocolReply replyInternal = WRONG_MESSAGE_FORMAT;
-    if (ok)
+    //if this a channel-level message, like ping or handshake, process it and return replt to the sender
+    int replyCode = ProcessChannelLevel(data);
+    //else process message on the data level
+    if (replyCode != UNKNOWN_MESSAGE)
     {
-        eMessage message = static_cast<eMessage>(code);
-        if (static_cast<eProtocolMessage>(message) == PING)
-        {
-            replyInternal = LauncherIPCHelpers::PONG;
-        }
-        else
-        {
-            eReply reply = processRequest(message);
-            replyInternal = static_cast<eProtocolReply>(reply);
-        }
+        replyCode = ProcessDataLevel(data);
     }
-    QByteArray reply = QByteArray::number(static_cast<int>(replyInternal));
+    QByteArray reply = QByteArray::number(static_cast<int>(replyCode));
     clientConnection->write(reply);
     clientConnection->flush();
     clientConnection->disconnectFromServer();
+}
+
+int LauncherListener::ProcessChannelLevel(const QByteArray &data)
+{
+    using namespace LauncherIPCHelpers;
+    bool ok = false;
+    int code = data.toInt(&ok);
+    if (ok)
+    {
+        eProtocolMessage message = static_cast<eProtocolMessage>(code);
+        if (message == PING)
+        {
+            return LauncherIPCHelpers::PONG;
+        }
+    }
+    return UNKNOWN_MESSAGE;
+}
+
+int LauncherListener::ProcessDataLevel(const QByteArray &data)
+{
+    bool ok = false;
+    int messageCode = data.toInt(&ok);
+    if (ok)
+    {
+        eMessage message = static_cast<eMessage>(messageCode);
+        return processRequest(message);
+    }
+    return UNKNOWN_MESSAGE;
 }

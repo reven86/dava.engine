@@ -55,6 +55,11 @@ bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer
     {
         return leftVer.buildNum < rightVer.buildNum;
     }
+    if (leftVer.isToolSet != rightVer.isToolSet)
+    {
+        //value with toolset == false must be less
+        return leftVer.isToolSet == false;
+    }
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
 

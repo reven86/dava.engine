@@ -243,11 +243,12 @@ bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString&
     bool success = true;
     for (const QPair<QFileInfo, QString>& entry : entryList)
     {
-        success &= FileManagerDetails::MoveEntry(entry.first, entry.second);
-        if (success == false)
+        bool moveResult = FileManagerDetails::MoveEntry(entry.first, entry.second);
+        if (moveResult == false)
         {
             ErrorMessenger::LogMessage(QtWarningMsg, QString("Can not move entry ") + entry.first.absoluteFilePath() + " to " + entry.second);
         }
+        success &= moveResult;
     }
     return success;
 }

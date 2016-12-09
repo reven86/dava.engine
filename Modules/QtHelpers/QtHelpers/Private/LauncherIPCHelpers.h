@@ -9,14 +9,14 @@
 
 namespace LauncherIPCHelpers
 {
+//enum initial values must be greater then data layer values
 enum eProtocolMessage
 {
-    PING = 0xF001
+    PING = 0xf000
 };
 enum eProtocolReply
 {
-    PONG = 0xF007,
-    WRONG_MESSAGE_FORMAT = 0xF00D,
+    PONG = 0xf000,
     USER_REPLY = 0xffff
 };
 

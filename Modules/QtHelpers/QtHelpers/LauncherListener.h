@@ -40,9 +40,12 @@ public:
     
 private slots:
     void OnNewConnection();
-    void OnReadyRead();
+    void ProcessTransportLevel();
 
 private:
+    int ProcessChannelLevel(const QByteArray &data);
+    int ProcessDataLevel(const QByteArray &data);
+
     QString lastError;
     std::unique_ptr<QLocalServer> server;
     ProcessRequestFunction processRequest;

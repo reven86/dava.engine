@@ -18,12 +18,6 @@ class BAManagerClient : public QObject
     Q_OBJECT
 
 public:
-    enum eResult
-    {
-        //this values is BA-manager ret-code requirements
-        SUCCESS = 2,
-        FAILURE = 3
-    };
     BAManagerClient(ApplicationManager* appManager, QObject* parent = nullptr);
 
     void AskForCommands();
@@ -32,16 +26,21 @@ public:
     void SetProtocolKey(const QString& key);
 
 private slots:
-
     void OnReply(QNetworkReply* reply);
     void OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void OnProcessError(QProcess::ProcessError error);
 
 private:
+    enum eResult
+    {
+        //this values is BA-manager ret-code requirements
+        SUCCESS = 2,
+        FAILURE = 3
+    };
+
     void ProcessCommand(const QJsonObject& object);
     void Post(const QString& urlStr, const QByteArray& data);
-    void SendReply(eResult result, const QString& commandID, const QString& message);
-    void SendReply(eResult result, const QString& message);
+    void SendReply(eResult result, const QString& message, const QString& commandID = "0");
 
     void LaunchProcess(const QJsonObject& requestObj, const QString& commandIDValue);
     void SilentUpdate(const QJsonObject& requestObj, const QString& commandIDValue);

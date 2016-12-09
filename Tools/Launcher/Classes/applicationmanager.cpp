@@ -10,12 +10,12 @@
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
-#include <QThread>
 #include <QEventLoop>
 #include <QElapsedTimer>
 
-#include <thread>
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 namespace ApplicationManagerDetails
 {
@@ -94,21 +94,24 @@ AppVersion* ApplicationManager::GetInstalledVersion(const QString& branchID, con
 
 bool ApplicationManager::TryStopApp(const QString& runPath) const
 {
+    using namespace std;
     if (commandsSender->RequestQuit(runPath))
     {
         QEventLoop eventLoop;
-        std::atomic<bool> isStillRunning(true);
-        std::thread workerThread([&eventLoop, &isStillRunning, runPath]() {
+        atomic<bool> isStillRunning(true);
+        auto ensureAppIsNotRunning = [&eventLoop, &isStillRunning, runPath]() {
             QElapsedTimer timer;
             timer.start();
-            const int maxWaitTime = 10 * 1000;
-            while (timer.elapsed() < maxWaitTime && isStillRunning)
+            const int maxWaitTimeMs = 10 * 1000;
+            while (timer.elapsed() < maxWaitTimeMs && isStillRunning)
             {
-                QThread::msleep(100);
+                const int waitTimeMs = 100;
+                this_thread::sleep_for(std::chrono::milliseconds(waitTimeMs));
                 isStillRunning = ProcessHelper::IsProcessRuning(runPath);
             }
             eventLoop.quit();
-        });
+        };
+        std::thread workerThread(QtHelpers::InvokeInAutoreleasePool, ensureAppIsNotRunning);
         eventLoop.exec();
         workerThread.join();
         return isStillRunning == false;

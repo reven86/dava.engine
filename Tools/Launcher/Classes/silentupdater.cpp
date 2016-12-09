@@ -128,8 +128,9 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 
 void SilentUpdater::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
 {
-    canStartNextTask = QNetworkAccessManager::Accessible;
-    if (accessible == QNetworkAccessManager::NotAccessible)
+    bool isAccessible = accessible == QNetworkAccessManager::Accessible;
+    canStartNextTask = isAccessible;
+    if (isAccessible == false)
     {
         if (currentReply != nullptr)
         {
