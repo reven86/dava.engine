@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QPixmap>
 #include <QMouseEvent>
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 class RulerWidget : public QWidget
 {
@@ -54,6 +55,8 @@ private:
 
     // Marker position.
     int markerPosition = 0;
+
+    QtDelayedExecutor delayedExecutor;
 };
 
 #endif /* defined(__RULER_WIDGET__H__) */

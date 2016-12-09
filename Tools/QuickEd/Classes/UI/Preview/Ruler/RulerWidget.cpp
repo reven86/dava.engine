@@ -36,7 +36,9 @@ void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
 void RulerWidget::OnMarkerPositionChanged(int position)
 {
     markerPosition = position;
-    update();
+    delayedExecutor.DelayedExecute([this]() {
+        update();
+    });
 }
 
 void RulerWidget::paintEvent(QPaintEvent* /*event*/)
