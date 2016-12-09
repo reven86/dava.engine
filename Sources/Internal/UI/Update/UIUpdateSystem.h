@@ -7,6 +7,7 @@ namespace DAVA
 {
 class UIControl;
 class UIComponent;
+class UIUpdateComponent;
 class UICustomUpdateDeltaComponent;
 
 /**
@@ -32,8 +33,8 @@ public:
 private:
     struct UpdateBind
     {
-        UpdateBind(UIComponent* uc, UICustomUpdateDeltaComponent* cdc);
-        const UIComponent* updateComponent = nullptr;
+        UpdateBind(UIUpdateComponent* uc, UICustomUpdateDeltaComponent* cdc);
+        const UIUpdateComponent* updateComponent = nullptr;
         UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
     };
 

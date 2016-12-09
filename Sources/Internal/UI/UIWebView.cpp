@@ -38,7 +38,7 @@ UIWebView::UIWebView(const Rect& rect)
     UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 
-    GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<UIUpdateComponent>()->SetUpdateInvisible(true);
 }
 
 UIWebView::~UIWebView()

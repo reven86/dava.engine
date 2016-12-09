@@ -6,6 +6,7 @@
 #include "Platform/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -82,6 +83,43 @@ UIStyleSheetSystem::UIStyleSheetSystem()
 
 UIStyleSheetSystem::~UIStyleSheetSystem()
 {
+}
+
+void UIStyleSheetSystem::Process(DAVA::float32 elapsedTime)
+{
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+    {
+        return;
+    }
+
+    CheckDirty();
+    if (currentScreenTransition.Valid())
+    {
+        Update(currentScreenTransition.Get());
+    }
+    else if (currentScreen.Valid())
+    {
+        Update(currentScreen.Get());
+    }
+    else if (popupContainer.Valid())
+    {
+        Update(popupContainer.Get());
+    }
+}
+
+void UIStyleSheetSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
+{
+    currentScreen = screen;
+}
+
+void UIStyleSheetSystem::SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition)
+{
+    currentScreenTransition = screenTransition;
+}
+
+void UIStyleSheetSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
+{
+    popupContainer = _popupContainer;
 }
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)

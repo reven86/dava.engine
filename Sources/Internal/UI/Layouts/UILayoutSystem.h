@@ -9,15 +9,20 @@
 namespace DAVA
 {
 class UIControl;
+class UIScreen;
+class UIScreenTransition;
 
-class UILayoutSystem
-: public UISystem
+class UILayoutSystem : public UISystem
 {
 public:
     UILayoutSystem();
     ~UILayoutSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override{};
+    void Process(DAVA::float32 elapsedTime) override;
+
+    void SetCurrentScreen(const RefPtr<UIScreen>& screen);
+    void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
+    void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
     bool IsRtl() const;
     void SetRtl(bool rtl);
@@ -57,6 +62,9 @@ private:
     bool dirty = false;
     bool needUpdate = false;
     Vector<ControlLayoutData> layoutData;
+    RefPtr<UIScreen> currentScreen;
+    RefPtr<UIControl> popupContainer;
+    RefPtr<UIScreenTransition> currentScreenTransition;
 };
 
 inline void UILayoutSystem::SetDirty()

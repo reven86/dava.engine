@@ -14,6 +14,7 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 #include "Concurrency/Thread.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -23,6 +24,43 @@ UILayoutSystem::UILayoutSystem()
 
 UILayoutSystem::~UILayoutSystem()
 {
+}
+
+void UILayoutSystem::Process(DAVA::float32 elapsedTime)
+{
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+    {
+        return;
+    }
+
+    CheckDirty();
+    if (currentScreenTransition.Valid())
+    {
+        Update(currentScreenTransition.Get());
+    }
+    else if (currentScreen.Valid())
+    {
+        Update(currentScreen.Get());
+    }
+    else if (popupContainer.Valid())
+    {
+        Update(popupContainer.Get());
+    }
+}
+
+void UILayoutSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
+{
+    currentScreen = screen;
+}
+
+void UILayoutSystem::SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition)
+{
+    currentScreenTransition = screenTransition;
+}
+
+void UILayoutSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
+{
+    popupContainer = _popupContainer;
 }
 
 bool UILayoutSystem::IsRtl() const

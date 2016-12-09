@@ -9,6 +9,8 @@
 namespace DAVA
 {
 class UIControl;
+class UIScreen;
+class UIScreenTransition;
 class UIStyleSheet;
 struct UIStyleSheetSelector;
 class VariantType;
@@ -20,7 +22,11 @@ public:
     UIStyleSheetSystem();
     ~UIStyleSheetSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override{};
+    void Process(DAVA::float32 elapsedTime) override;
+
+    void SetCurrentScreen(const RefPtr<UIScreen>& screen);
+    void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
+    void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false);
     void AddGlobalClass(const FastName& clazz);
@@ -56,6 +62,9 @@ private:
     int32 statsStyleSheetCount = 0;
     bool dirty = false;
     bool needUpdate = false;
+    RefPtr<UIScreen> currentScreen;
+    RefPtr<UIControl> popupContainer;
+    RefPtr<UIScreenTransition> currentScreenTransition;
 };
 
 inline void UIStyleSheetSystem::SetDirty()

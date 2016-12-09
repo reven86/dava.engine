@@ -18,7 +18,23 @@ public:
     UIUpdateComponent(const UIUpdateComponent& src) = default;
     UIComponent* Clone() const override;
 
+    void SetUpdateInvisible(bool value);
+    bool GetUpdateInvisible() const;
+
 protected:
     ~UIUpdateComponent() override;
+
+private:
+    bool updateInvisible = false;
 };
+
+inline void UIUpdateComponent::SetUpdateInvisible(bool value)
+{
+    updateInvisible = value;
+}
+
+inline bool DAVA::UIUpdateComponent::GetUpdateInvisible() const
+{
+    return updateInvisible;
+}
 }
