@@ -93,7 +93,7 @@ static const char* vp__dbg_pc =
 "vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-"    output.pos   = mul( XForm, float4(input.pos.xyz, 1.0) );\n"
+"    output.pos   = mul( float4(input.pos.xyz,1.0), XForm );\n"
 "    output.color = float4(input.color);"
 "    return output;\n"
 "}\n";
@@ -108,15 +108,15 @@ static const char* fp__dbg_pc =
 "    float4 color : SV_TARGET;\n"
 "};\n"
 "\n"
-"uniform sampler2D Image;\n"
-"\n"
 "fragment_out\n"
 "fp_main( fragment_in input )\n"
 "{\n"
 "    fragment_out output;\n"
 "    output.color = input.color;\n"
 "    return output;\n"
-"}\n";
+"}\n"
+"blending { src=src_alpha dst=inv_src_alpha }\n"
+;
 
 namespace DAVA
 {
