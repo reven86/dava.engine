@@ -24,11 +24,11 @@ public:
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
     virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
 
-    virtual UIControl* BeginControlWithClass(const String& className) override;
-    virtual UIControl* BeginControlWithCustomClass(const String& customClassName, const String& className) override;
-    virtual UIControl* BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
+    virtual UIControl* BeginControlWithClass(const FastName& controlName, const String& className) override;
+    virtual UIControl* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
+    virtual UIControl* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
     virtual UIControl* BeginControlWithPath(const String& pathName) override;
-    virtual UIControl* BeginUnknownControl(const YamlNode* node) override;
+    virtual UIControl* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
     virtual void EndControl(eControlPlace controlPlace) override;
 
     virtual void BeginControlPropertiesSection(const String& name) override;

@@ -17,9 +17,6 @@ public:
     FindWidget(QWidget* parent = nullptr);
     ~FindWidget() = default;
 
-public slots:
-    void OnDocumentChanged(Document* document);
-
 private:
     Ui::FindWidget ui;
 };

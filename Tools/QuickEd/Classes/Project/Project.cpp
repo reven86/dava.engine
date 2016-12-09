@@ -8,6 +8,7 @@
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "UI/ProjectView.h"
+#include "UI/Find/FindIterator.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
@@ -145,7 +146,7 @@ Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
     return properties.GetLibraryPackages();
 }
 
-const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& Project::GetPrototypes() const
+const Map<String, Set<DAVA::FastName>>& Project::GetPrototypes() const
 {
     return properties.GetPrototypes();
 }
@@ -307,12 +308,10 @@ bool Project::TryCloseAllDocuments()
 
 void Project::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
 {
-    Logger::Debug("--> %s:%s", packagePath.GetFrameworkPath().c_str(), controlName.c_str());
     Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
     if (document != nullptr)
     {
-        p
-        //        document->
+        view->SelectPrototype(controlName);
     }
 }
 
@@ -348,6 +347,23 @@ void Project::OnJumpToPrototype()
 
 void Project::OnFindPrototypeInstances()
 {
+    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
+    if (nodes.size() == 1)
+    {
+        auto it = nodes.begin();
+        PackageBaseNode* node = *it;
+
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            FilePath path = controlNode->GetPackage()->GetPath();
+            String name = controlNode->GetName();
+
+            FindIterator iterator;
+            FindFilter filter(path.GetFrameworkPath(), name);
+            iterator.CollectFiles(fileSystemCache.get(), filter);
+        }
+    }
 }
 
 void Project::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)

@@ -108,7 +108,7 @@ void LibraryModel::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& librar
     libraryPackagePaths = libraryPackagePaths_;
 }
 
-void LibraryModel::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes_)
+void LibraryModel::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes_)
 {
     prototypes = prototypes_;
 }

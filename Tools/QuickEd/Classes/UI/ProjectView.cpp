@@ -161,6 +161,11 @@ void MainWindow::ProjectView::SelectFile(const QString& filePath)
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
 }
 
+void MainWindow::ProjectView::SelectPrototype(const DAVA::String& prototypeName)
+{
+    mainWindow->ui->previewWidget->SelectPrototype(prototypeName);
+}
+
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
 {
     mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);

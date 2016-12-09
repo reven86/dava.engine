@@ -549,10 +549,16 @@
    <property name="text">
     <string>Jump to Prototype</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
   </action>
   <action name="actionFindPrototypeInstances">
    <property name="text">
     <string>Find Prototype Instances</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+F</string>
    </property>
   </action>
  </widget>

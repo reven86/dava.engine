@@ -18,7 +18,6 @@ MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->packageWidget, &PackageWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->libraryWidget, &LibraryWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->findWidget, &FindWidget::OnDocumentChanged);
 
     connect(mainWindow->ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
     connect(mainWindow->ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
@@ -89,7 +88,7 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
     else
     {
         mainWindow->ui->libraryWidget->SetLibraryPackages(DAVA::Vector<DAVA::FilePath>());
-        mainWindow->ui->libraryWidget->SetPrototypes(DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>());
+        mainWindow->ui->libraryWidget->SetPrototypes(DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>());
     }
 
     mainWindow->ui->propertiesWidget->SetProject(project);

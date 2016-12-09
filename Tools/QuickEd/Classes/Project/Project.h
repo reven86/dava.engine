@@ -64,7 +64,7 @@ public:
     void SetGlobalStyleClasses(const QString& classesStr);
 
     DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
-    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
+    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
     bool TryCloseAllDocuments();
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);

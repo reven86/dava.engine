@@ -18,6 +18,7 @@ public:
 
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
+    void SelectPrototype(const DAVA::String& prototypeName);
 
     void ExecDialogReloadSprites(SpritesPacker* packer);
 
