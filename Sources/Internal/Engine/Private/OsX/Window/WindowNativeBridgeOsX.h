@@ -95,10 +95,16 @@ struct WindowNativeBridge final
     uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
 
 private:
-    void SetSystemCursorVisible(bool visible);
     void SetSystemCursorCapture(bool capture);
+    void UpdateSystemCursorVisible();
 
     eCursorCapture captureMode = eCursorCapture::OFF;
+    // bug when cursor in hide state (could not be hide)
+    // Steps:
+    // minimalized application, press on appIcon in appBar,
+    // don't moveout mouse pointer from appBar some seconds,
+    // return pointer inside application, call [NsCursor hide] not work
+    bool cursorInside = true;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.

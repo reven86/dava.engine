@@ -21,6 +21,12 @@ public:
     {
         QObject::connect(sender, signal, this, slot, connectionType);
     }
+
+    template <typename Func1>
+    void AddConnection(const typename QtPrivate::FunctionPointer<Func1>::Object* sender, Func1 signal, const DAVA::Function<void()>& fn, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    {
+        AddConnection(sender, signal, [fn]() { fn(); }, connectionType);
+    }
 };
 } // namespace TArc
 } // namespace DAVA

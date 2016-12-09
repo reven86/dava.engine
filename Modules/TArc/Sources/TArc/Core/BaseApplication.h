@@ -38,8 +38,12 @@ protected:
     virtual bool AllowMultipleInstances() const;
     virtual QString GetInstanceKey() const;
 
+    bool IsTestEnvironment() const;
+
 private:
     int RunImpl();
+
+    bool isTestEnv = false;
 };
 
 } // namespace TArc

@@ -563,7 +563,10 @@ void WindowBackend::ReleaseContext()
 
 void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    }
 }
 
 void WindowBackend::Update()

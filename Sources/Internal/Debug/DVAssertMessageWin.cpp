@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -11,7 +12,9 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
     // Modal Type is ignored by Win32.
     const int flags = MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
-    int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
+    WideString wContent;
+    UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(content), static_cast<DAVA::int32>(strlen(content)), wContent);
+    int buttonId = ::MessageBoxW(HWND_DESKTOP, wContent.c_str(), L"Assert", flags);
     switch (buttonId)
     {
     case IDABORT:
@@ -127,7 +130,9 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     //  - for main and other threads
     //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
     //      Also we block asserting thread to be able to retrieve user response: continue or break
-    Platform::String ^ text = ref new Platform::String(UTF8Utils::EncodeToWideString(content).c_str());
+    WideString wContent;
+    UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(content), static_cast<DAVA::int32>(strlen(content)), wContent);
+    Platform::String ^ text = ref new Platform::String(wContent.c_str());
     if (!core->IsUIThread())
     {
         // If MainThreadDispatcher is in blocking call to UI thread we cannot show dialog box

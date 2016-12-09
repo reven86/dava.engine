@@ -32,7 +32,7 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     QObject::connect(this, SIGNAL(rejected()), this, SLOT(OnRejected()));
 
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper.SetListener(this);
 
     SetSelectedItem(0);
 
@@ -108,9 +108,10 @@ void FMODSoundBrowser::SetSelectedItem(QTreeWidgetItem* item)
         ui->selectButton->setDisabled(true);
 }
 
-void FMODSoundBrowser::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void FMODSoundBrowser::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    if (fields.count(ProjectManagerData::ProjectPathProperty) > 0 || fields.empty())
+    auto iter = std::find(fields.begin(), fields.end(), DAVA::Any(ProjectManagerData::ProjectPathProperty));
+    if (iter != fields.end() || fields.empty())
     {
         UpdateEventTree();
     }

@@ -47,6 +47,7 @@ find_package( DavaFramework REQUIRED )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
+find_package( GMock REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )

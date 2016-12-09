@@ -7,8 +7,6 @@
 #include <QAction>
 #include <QMessageBox>
 
-DAVA::FilePath PathnameToDAVAStyle(const QString& convertedPathname);
-
 DAVA::FilePath GetOpenFileName(const DAVA::String& title, const DAVA::FilePath& pathname, const DAVA::String& filter);
 
 void ShowActionWithText(QToolBar* toolbar, QAction* action, bool showText);
