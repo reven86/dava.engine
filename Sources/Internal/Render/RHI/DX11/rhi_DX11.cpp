@@ -89,7 +89,7 @@ void dx11_InitCaps()
     D3D11_FEATURE_DATA_THREADING threadingData = {};
     dx11.device->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threadingData, sizeof(threadingData));
     dx11.useHardwareCommandBuffers = threadingData.DriverCommandLists && threadingData.DriverConcurrentCreates;
-    DAVA::Logger::Info("DX11: hardware command buffers enabled: %d", static_cast<int32>(dx11.useHardwareCommandBuffers));
+    DAVA::Logger::Info("[RHI-DX11] hardware command buffers enabled: %d", static_cast<int32>(dx11.useHardwareCommandBuffers));
 
     if (dx11.useHardwareCommandBuffers)
         CommandBufferDX11::BindHardwareCommandBufferDispatch(&DispatchDX11);
