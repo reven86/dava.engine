@@ -1,6 +1,6 @@
 #pragma once
 
-// Select right header for NativeService class depending on platfrom
+// Select right header for NativeService class depending on platform
 #if defined(__DAVAENGINE_QT__)
 #include "Engine/Qt/NativeServiceQt.h"
 #elif defined(__DAVAENGINE_WIN32__)

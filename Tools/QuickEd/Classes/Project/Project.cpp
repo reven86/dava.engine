@@ -51,7 +51,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
-    , projectStructure(new FileSystemCache(QStringList() << "yaml"))
+    , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
@@ -82,7 +82,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
     uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
 
-    projectStructure->TrackDirectory(uiResourcesPath);
+    fileSystemCache->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
 
     view->SetProjectActionsEnabled(true);
@@ -127,7 +127,7 @@ Project::~Project()
     view->SetProjectActionsEnabled(false);
 
     view->SetResourceDirectory(QString());
-    projectStructure->UntrackDirectory(uiResourcesPath);
+    fileSystemCache->UntrackDirectory(uiResourcesPath);
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
@@ -139,6 +139,11 @@ Project::~Project()
 Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
 {
     return properties.GetLibraryPackages();
+}
+
+const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& Project::GetPrototypes() const
+{
+    return properties.GetPrototypes();
 }
 
 std::tuple<ResultList, ProjectProperties> Project::ParseProjectPropertiesFromFile(const QString& projectFile)
@@ -298,7 +303,7 @@ bool Project::TryCloseAllDocuments()
 
 void Project::OnFindFileInProject()
 {
-    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);
+    QString filePath = FindFileDialog::GetFilePath(fileSystemCache.get(), "yaml", view->mainWindow);
     if (filePath.isEmpty())
     {
         return;

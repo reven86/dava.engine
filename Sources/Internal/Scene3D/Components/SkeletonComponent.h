@@ -103,6 +103,7 @@ private:
     Map<FastName, uint16> jointMap;
 
     uint16 startJoint; //first joint in the list that was updated this frame - cache this value to optimize processing
+    bool configUpdated = true;
 
 public:
     INTROSPECTION_EXTEND(SkeletonComponent, Component,
