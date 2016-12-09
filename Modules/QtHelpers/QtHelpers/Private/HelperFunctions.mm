@@ -1,18 +1,17 @@
-#include "HelperFunctions.h"
-
-
+#include "QtHelpers/HelperFunctions.h"
 #import <Foundation/Foundation.h>
+#include <QtGlobal>
 
 namespace QtHelpers
 {
 //realisation for OS X which invokes given function inside autorelease pool
-#if defined(__DAVAENGINE_MACOS__)
-void InvokeInAutoreleasePool(std::function<void()> function);
+#if defined(Q_OS_MAC)
+void InvokeInAutoreleasePool(std::function<void()> function)
 {
     @autoreleasepool
     {
         function();
     }
 }
-#endif //__DAVAENGINE_MACOS__
+#endif //Q_OS_MAC
 }
