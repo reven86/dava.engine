@@ -19,11 +19,16 @@ ApplicationWindow {
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     menuBar: MenuBar {
         Menu {
-            title: "&Help"
+            title: "CMake Tool"
             MenuItem {
                 text: "Show help"
                 shortcut: StandardKey.HelpContents
                 onTriggered: help.Show();
+            }
+            MenuItem {
+                text: "Preferences"
+                shortcut: StandardKey.Preferences
+                onTriggered: preferencesDialog.open();
             }
         }
     }
@@ -41,13 +46,13 @@ ApplicationWindow {
         property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
-            historyStr = JSON.stringify(historyToSave)
+            historyStr = JSON.stringify(history)
             historyVersion = applicationWindow.historyVersion;
         }
         property int historyVersion: -1
+        property var generateBuildFolderName: false
     }
     property var history;
-    property var historyToSave; //we need this because combobox with sources and history can be different
     function applyProjectSettings(buildSettings) {
         columnLayoutOutput.needClean = buildSettings.needClean;
         rowLayout_buildFolder.path = buildSettings.buildFolder;
@@ -59,7 +64,6 @@ ApplicationWindow {
 
     function loadHistory() {
         history = [];
-        historyToSave = [];
 
         if(settings.historyVersion === historyVersion) {
             history = JSON.parse(settings.historyStr);
@@ -68,8 +72,6 @@ ApplicationWindow {
         for(var i = 0, length = history.length; i < length; ++i) {
             rowLayout_sourceFolder.item.addString(history[i].source)
         }
-        //make a deep copy
-        historyToSave = JSON.parse(JSON.stringify(history));
     }
 
     function onCurrentProjectChaged(index) {
@@ -84,12 +86,7 @@ ApplicationWindow {
         var source = rowLayout_sourceFolder.path;
         settings.lastUsedSourceFolder = source;
         source = fileSystemHelper.NormalizePath(source);
-        var i = 0;
-        for(var length = historyToSave.length; i < length && !found; ++i) {
-            if(historyToSave[i].source === source) {
-                found = true;
-            }
-        }
+        
         var newItem = {};
         newItem.source = source
         newItem.needClean = columnLayoutOutput.needClean
@@ -100,22 +97,15 @@ ApplicationWindow {
         newItem.state = mutableContent.saveState();
         
         //now update current history, because we load fields from it.
-        for(var j = 0; j < history.length; ++j) {
-            if(history[j].source === source) {
-                history[j] = newItem;
+        for(var i = 0, length = history.length; i < length && !found; ++i) {
+            if(history[i].source === source) {
+                found = true;
+                history[i] = newItem;
             }
         }
         
-        if(found) {
-            //add item to top and remove it
-            --i;
-            historyToSave.splice(i, 1);
-            historyToSave.push(newItem);
-
-        }
-        else {
-            historyToSave.push(newItem);
-            //add to combobox and to history
+        //add to combobox and to history
+        if(!found) {
             history.push(newItem)
             rowLayout_sourceFolder.item.addString(source)
         }
@@ -138,6 +128,27 @@ ApplicationWindow {
 
     Help {
         id: help;
+    }
+    
+    Dialog {
+        id: preferencesDialog
+        visible: false
+        title: "CMakeTool preferences dialog"
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+        onAccepted: {   
+            settings.generateBuildFolderName = checkBox_generateBuildFolderName.checked
+        }
+        onVisibleChanged: { 
+            if(visible) {
+                checkBox_generateBuildFolderName.checked = settings.generateBuildFolderName
+            }
+        }
+        Column {
+            CheckBox {
+                id: checkBox_generateBuildFolderName
+                text: "generate build folder name"
+            }
+        }
     }
 
     property var configuration; //main JS object, contained in config file
@@ -237,11 +248,18 @@ ApplicationWindow {
                     inputComponent: ComboBoxBuilds {
                         onTextChanged: {
                             updateOutputString()
+                            var found = false;
+                            for(var i = 0, length = history.length; i < length && !found; ++i) {
+                                if(history[i].source == text) {
+                                    found = true;
+                                    onCurrentProjectChaged(i);
+                                }
+                            }
+                            if(!found && settings.generateBuildFolderName)
+                            {
+                                rowLayout_buildFolder.path = text + "/_build";
+                            }
                         }
-                        onCurrentIndexChanged: {
-                            onCurrentProjectChaged(currentIndex);
-                        }
-
                     }
                 }
 
