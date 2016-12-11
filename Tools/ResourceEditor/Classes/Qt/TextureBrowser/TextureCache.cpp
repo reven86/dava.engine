@@ -157,6 +157,7 @@ void TextureCache::ClearCache()
 {
     clearInsteadThumbnails();
     cacheThumbnail.clear();
+    emit CacheCleared();
 }
 
 void TextureCache::ReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image)

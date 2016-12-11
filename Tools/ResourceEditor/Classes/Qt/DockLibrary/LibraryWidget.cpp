@@ -5,7 +5,6 @@
 #include "GlobalOperations.h"
 
 #include "Main/QtUtils.h"
-#include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
 
 #include "Actions/DAEConverter.h"
@@ -153,7 +152,7 @@ void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperatio
 {
     globalOperations = globalOperations_;
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
-    projectDataWrapper.AddListener(this);
+    projectDataWrapper.SetListener(this);
 
     QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
 
@@ -389,17 +388,15 @@ void LibraryWidget::OnRevealAtFolder()
 
 void LibraryWidget::HidePreview() const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::HideScenePreview, DAVA::Any());
+    REGlobal::GetInvoker()->Invoke(REGlobal::HideScenePreviewOperation.ID);
 }
 
 void LibraryWidget::ShowPreview(const QString& pathname) const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::ShowScenePreview, DAVA::Any(pathname.toStdString()));
+    REGlobal::GetInvoker()->Invoke(REGlobal::ShowScenePreviewOperation.ID, DAVA::FilePath(pathname.toStdString()));
 }
 
-void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields)
+void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     DVASSERT(projectDataWrapper == wrapper);
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();

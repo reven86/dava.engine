@@ -20,6 +20,7 @@ public:
     }
 
     virtual void ForEachContext(const Function<void(DataContext&)>& functor) = 0;
+    virtual uint32 GetContextCount() const = 0;
 
     // never returns nullptr
     virtual DataContext* GetGlobalContext() = 0;

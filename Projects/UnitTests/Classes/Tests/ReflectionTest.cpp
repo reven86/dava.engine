@@ -129,7 +129,7 @@ struct D : public AB
 
 struct DHolder : DAVA::ReflectionBase
 {
-    int i;
+    int i = 0;
     D d;
 
     DAVA_VIRTUAL_REFLECTION(DHolder)
@@ -304,7 +304,7 @@ protected:
     std::vector<SimpleStruct*> simVec;
     D* dptr = nullptr;
     A* aptr = nullptr;
-    DHolder dholder;
+    DHolder dholder = DHolder();
 
     DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
     {

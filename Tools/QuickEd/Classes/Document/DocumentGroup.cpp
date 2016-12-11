@@ -11,6 +11,7 @@
 #include "Command/CommandStack.h"
 #include "Debug/DVAssert.h"
 #include "UI/UIPackageLoader.h"
+#include "Project/Project.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 
@@ -601,7 +602,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
     if (packageRef.Get() != nullptr)
     {
-        Document* document = new Document(packageRef, this);
+        Document* document = new Document(project, packageRef, this);
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
         connect(this, &DocumentGroup::FontPresetChanged, document, &Document::OnFontPresetChanged, Qt::DirectConnection);
@@ -634,7 +635,7 @@ RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
 {
     QuickEdPackageBuilder builder;
 
-    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
+    bool packageLoaded = UIPackageLoader(project->GetPrototypes()).LoadPackage(packagePath, &builder);
 
     if (packageLoaded)
         return builder.BuildPackage();
