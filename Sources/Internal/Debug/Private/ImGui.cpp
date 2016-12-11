@@ -143,8 +143,8 @@ void ImGuiDrawFn(ImDrawData* data)
 
     if (rhi::DeviceCaps().isCenterPixelMapping)
     {
-        ortho._03 -= 0.5f / framebufferSize.dx;
-        ortho._13 -= 0.5f / framebufferSize.dy;
+        ortho._03 -= 1.0f / framebufferSize.dx;
+        ortho._13 -= 1.0f / framebufferSize.dy;
     }
 
     rhi::UpdateConstBuffer4fv(constBufferPC, 0, ortho.data, 4);
