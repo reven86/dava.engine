@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Classes/Qt/Main/RecentMenuItems.h"
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
 #include "Project/ProjectResources.h"
@@ -9,9 +10,10 @@
 class ProjectManagerData;
 class ProjectManagerModule : public DAVA::TArc::ClientModule
 {
+public:
+    ~ProjectManagerModule();
+
 protected:
-    void OnContextCreated(DAVA::TArc::DataContext& context) override;
-    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
 private:
@@ -22,20 +24,15 @@ private:
     void OpenProjectByPath(const DAVA::FilePath& incomePath);
     void OpenProjectImpl(const DAVA::FilePath& incomePath);
     void OpenLastProject();
-    void CloseProject();
+    bool CloseProject();
     void ReloadSprites();
 
 private:
     ProjectManagerData* GetData();
 
-    void AddRecentProjectActions();
-    void AddRecentProject(const DAVA::FilePath& projectPath);
-    void RemoveRecentProjects();
-    DAVA::Vector<DAVA::String> GetRecentProjects();
-
 private:
+    std::unique_ptr<RecentMenuItems> recentProject;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
-    QPointer<QAction> closeAction;
     std::unique_ptr<ProjectResources> projectResources;
 };

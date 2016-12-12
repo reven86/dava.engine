@@ -34,23 +34,20 @@
   <widget class="QFrame" name="mainFrame">
    <layout class="QVBoxLayout" name="verticalLayout_8">
     <property name="spacing">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="leftMargin">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="topMargin">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="rightMargin">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="bottomMargin">
-     <number>1</number>
+     <number>0</number>
     </property>
-    <item>
-     <widget class="SceneTabWidget" name="sceneTabWidget" native="true"/>
-    </item>
    </layout>
   </widget>
   <widget class="DockProperties" name="dockProperties">
@@ -200,15 +197,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNewScene"/>
-   <addaction name="actionOpenScene"/>
-   <addaction name="actionSaveScene"/>
-   <addaction name="separator"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="separator"/>
    <addaction name="actionMaterialEditor"/>
    <addaction name="actionTextureConverter"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -232,20 +226,6 @@
      </property>
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
-    <widget class="QMenu" name="menuSave_To_Folder_With_Children">
-     <property name="title">
-      <string>Save To Folder With Children</string>
-     </property>
-     <addaction name="actionOnlyOriginalTextures"/>
-     <addaction name="actionWithCompressedTextures"/>
-    </widget>
-    <addaction name="actionNewScene"/>
-    <addaction name="actionOpenScene"/>
-    <addaction name="actionSaveScene"/>
-    <addaction name="actionSaveSceneAs"/>
-    <addaction name="separator"/>
-    <addaction name="actionExport"/>
-    <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
     <addaction name="menuImport"/>
     <addaction name="separator"/>
@@ -290,23 +270,10 @@
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="QMenu" name="View">
     <property name="title">
      <string>View</string>
     </property>
-    <widget class="QMenu" name="menuTexturesForGPU">
-     <property name="title">
-      <string>GPU</string>
-     </property>
-     <addaction name="actionReloadPoverVRIOS"/>
-     <addaction name="actionReloadPoverVRAndroid"/>
-     <addaction name="actionReloadTegra"/>
-     <addaction name="actionReloadMali"/>
-     <addaction name="actionReloadAdreno"/>
-     <addaction name="actionReloadDX11"/>
-     <addaction name="separator"/>
-     <addaction name="actionReloadPNG"/>
-    </widget>
     <widget class="QMenu" name="menuTheme">
      <property name="title">
       <string>Theme</string>
@@ -331,7 +298,6 @@
       <string>Dock Windows</string>
      </property>
     </widget>
-    <addaction name="menuTexturesForGPU"/>
     <addaction name="menuLightView"/>
     <addaction name="separator"/>
     <addaction name="menuTheme"/>
@@ -473,7 +439,7 @@
    </widget>
    <addaction name="File"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
+   <addaction name="View"/>
    <addaction name="menuQuality"/>
    <addaction name="menuCreateNode"/>
    <addaction name="menuScene"/>
@@ -887,69 +853,6 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionNewScene">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/newscene.png</normaloff>:/QtIcons/newscene.png</iconset>
-   </property>
-   <property name="text">
-    <string>New Scene</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
-  </action>
-  <action name="actionOpenScene">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/openscene.png</normaloff>:/QtIcons/openscene.png</iconset>
-   </property>
-   <property name="text">
-    <string>Open Scene</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionSaveScene">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/savescene.png</normaloff>:/QtIcons/savescene.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save Scene</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionExportPVRIOS">
-   <property name="text">
-    <string>PowerVR iOS</string>
-   </property>
-  </action>
-  <action name="actionExportPVRAndroid">
-   <property name="text">
-    <string>PowerVR Android</string>
-   </property>
-  </action>
-  <action name="actionExportTegra">
-   <property name="text">
-    <string>Tegra</string>
-   </property>
-  </action>
   <action name="actionLight">
    <property name="icon">
     <iconset resource="Resources.qrc">
@@ -1118,30 +1021,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
-   </property>
-  </action>
-  <action name="actionReloadPoverVRIOS">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>PVR iOS</string>
-   </property>
-  </action>
-  <action name="actionReloadPoverVRAndroid">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>PVR Android</string>
-   </property>
-  </action>
-  <action name="actionReloadTegra">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Tegra</string>
    </property>
   </action>
   <action name="actionParticleEffectNode">
@@ -1365,58 +1244,6 @@
     <string>Alt+C</string>
    </property>
   </action>
-  <action name="actionExportMali">
-   <property name="text">
-    <string>Mali</string>
-   </property>
-  </action>
-  <action name="actionExportAdreno">
-   <property name="text">
-    <string>Adreno</string>
-   </property>
-  </action>
-  <action name="actionExportDX11">
-   <property name="text">
-    <string>DX11</string>
-   </property>
-  </action>
-  <action name="actionReloadMali">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Mali</string>
-   </property>
-  </action>
-  <action name="actionReloadAdreno">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Adreno</string>
-   </property>
-  </action>
-  <action name="actionReloadDX11">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>DX11</string>
-   </property>
-  </action>
-  <action name="actionExportPNG">
-   <property name="text">
-    <string>Original</string>
-   </property>
-  </action>
-  <action name="actionReloadPNG">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Original</string>
-   </property>
-  </action>
   <action name="actionEnableCameraLight">
    <property name="checkable">
     <bool>true</bool>
@@ -1442,17 +1269,6 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
-   </property>
-  </action>
-  <action name="actionSaveSceneAs">
-   <property name="text">
-    <string>Save Scene As...</string>
-   </property>
-   <property name="toolTip">
-    <string>Save Scene As...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionPivotCenter">
@@ -1548,15 +1364,6 @@
    </property>
    <property name="toolTip">
     <string>Visibility Check Tool</string>
-   </property>
-  </action>
-  <action name="actionReloadTextures">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Textures</string>
    </property>
   </action>
   <action name="actionImportSpeedTreeXML">
@@ -2143,16 +1950,6 @@
     <string>Change Shadows Drawing </string>
    </property>
   </action>
-  <action name="actionOnlyOriginalTextures">
-   <property name="text">
-    <string>Only Original Textures</string>
-   </property>
-  </action>
-  <action name="actionWithCompressedTextures">
-   <property name="text">
-    <string>With Compressed Textures</string>
-   </property>
-  </action>
   <action name="actionDumpTextures">
    <property name="text">
     <string>Textures</string>
@@ -2226,11 +2023,6 @@
     <string>Alt+R</string>
    </property>
   </action>
-  <action name="actionExport">
-   <property name="text">
-    <string>Export</string>
-   </property>
-  </action>
   <action name="actionToggleUseInstancing">
    <property name="text">
     <string>Toggle Use Instancing by Landscape</string>
@@ -2282,12 +2074,6 @@
    <class>ParticleTimeLineWidget</class>
    <extends>QWidget</extends>
    <header>DockParticleEditor/particletimelinewidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SceneTabWidget</class>
-   <extends>QWidget</extends>
-   <header>Scene/scenetabwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

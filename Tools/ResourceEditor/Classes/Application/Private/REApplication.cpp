@@ -1,9 +1,10 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Application/InitModule.h"
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Project/ProjectManagerModule.h"
+#include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Export/Mitsuba/MitsubaExporter.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -31,6 +32,7 @@
 #endif //__DAVAENGINE_BEAST__
 
 #include "TArc/Core/Core.h"
+#include "TArc/Testing/TArcTestClass.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
@@ -94,7 +96,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
-    REGlobal::InitTArcCore(tarcCore->GetCoreInterface());
+    REGlobal::InitTArcCore(tarcCore);
     if (isConsoleMode)
     {
         CreateConsoleModules(tarcCore);
@@ -105,7 +107,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::EngineContext* engineContext)
+void REApplication::Init(const DAVA::EngineContext* engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -132,6 +134,11 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     engineContext->uiControlSystem->vcs->EnableReloadResourceOnResize(false);
     engineContext->performanceSettings->SetPsPerformanceMinFPS(5.0f);
     engineContext->performanceSettings->SetPsPerformanceMaxFPS(10.0f);
+
+    if (IsTestEnvironment())
+    {
+        DAVA::TArc::TestClass::coreChanged.Connect(&REGlobal::InitTArcCore);
+    }
 }
 
 void REApplication::Cleanup()
@@ -163,10 +170,11 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
-    tarcCore->CreateModule<InitModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
+    tarcCore->CreateModule<SceneManagerModule>();
     tarcCore->CreateModule<LaunchModule>();
+    tarcCore->CreateModule<MitsubaExporter>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

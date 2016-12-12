@@ -4,9 +4,10 @@
 
 #include <QString>
 #include <QLabel>
+#include <QPlainTextEdit>
 #include <QDialog>
 #include <QProgressBar>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QApplication>
 #include <QThread>
 #include <QMetaObject>
@@ -24,25 +25,60 @@ Qt::ConnectionType GetConnectionType()
 } // namespace WaitDialogDetail
 
 WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
-    : dlg(new QDialog(parent, Qt::WindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint)))
+    : dlg(new QDialog(parent, Qt::WindowFlags(Qt::Window | Qt::CustomizeWindowHint)))
 {
-    label = new QLabel(params.message, dlg.data());
-    label->setAlignment(Qt::AlignCenter);
-    label->setWordWrap(false);
-    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QGridLayout* layout = new QGridLayout(dlg);
+    layout->setHorizontalSpacing(10);
+    layout->setVerticalSpacing(5);
+    layout->setContentsMargins(5, 5, 5, 5);
 
-    QVBoxLayout* layout = new QVBoxLayout();
-    layout->addWidget(label);
+    QLabel* waitPixmap = new QLabel(dlg);
+    QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+    sizePolicy.setHeightForWidth(waitPixmap->sizePolicy().hasHeightForWidth());
+    waitPixmap->setSizePolicy(sizePolicy);
+    waitPixmap->setPixmap(QPixmap(QString::fromUtf8(":/QtIcons/wait.png")));
+    waitPixmap->setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignTop));
+
+    layout->addWidget(waitPixmap, 2, 0, 1, 1);
+
+    messageLabel = new QPlainTextEdit(dlg);
+    messageLabel->setEnabled(true);
+    QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    sizePolicy2.setHorizontalStretch(0);
+    sizePolicy2.setVerticalStretch(0);
+    sizePolicy2.setHeightForWidth(messageLabel->sizePolicy().hasHeightForWidth());
+    messageLabel->setSizePolicy(sizePolicy2);
+    messageLabel->setAcceptDrops(false);
+    messageLabel->setFrameShape(QFrame::NoFrame);
+    messageLabel->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    messageLabel->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    messageLabel->setUndoRedoEnabled(false);
+    messageLabel->setReadOnly(true);
+    messageLabel->setPlainText(params.message);
+
+    QPalette palette = messageLabel->palette();
+    palette.setColor(QPalette::Base, Qt::transparent);
+    messageLabel->setPalette(palette);
+
+    layout->addWidget(messageLabel, 2, 1, 1, 2);
+
     if (params.needProgressBar)
     {
-        progressBar = new QProgressBar(dlg.data());
-        progressBar->setRange(params.min, params.max);
-        progressBar->setValue(0);
-        layout->addWidget(progressBar);
+        progressBar = new QProgressBar(dlg);
+        progressBar->setAlignment(Qt::AlignCenter);
+        progressBar->setTextDirection(QProgressBar::TopToBottom);
+        progressBar->setMinimum(params.min);
+        progressBar->setMaximum(params.max);
+
+        layout->addWidget(progressBar, 3, 0, 1, 3);
     }
 
     dlg->setLayout(layout);
+    dlg->setFixedSize(400, params.needProgressBar ? 150 : 120);
     dlg->setWindowModality(Qt::WindowModal);
+
     originalCursor = dlg->cursor();
     dlg->setCursor(Qt::BusyCursor);
 }
@@ -73,7 +109,7 @@ void WaitDialog::SetMessage(const QString& msg)
     if (dlg != nullptr)
     {
         RenderContextGuard guard;
-        QMetaObject::invokeMethod(label.data(), "setText", WaitDialogDetail::GetConnectionType(), Q_ARG(QString, msg));
+        QMetaObject::invokeMethod(messageLabel.data(), "setPlainText", WaitDialogDetail::GetConnectionType(), Q_ARG(QString, msg));
         Update();
     }
 }
@@ -103,14 +139,7 @@ void WaitDialog::Update()
 {
     if (WaitDialogDetail::GetConnectionType() == Qt::DirectConnection)
     {
-        QPoint centerPoint = dlg->geometry().center();
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-        if (dlg != nullptr)
-        {
-            QRect r = dlg->geometry();
-            r.moveCenter(centerPoint);
-            dlg->move(r.topLeft());
-        }
     }
 }
 } // namespace TArc

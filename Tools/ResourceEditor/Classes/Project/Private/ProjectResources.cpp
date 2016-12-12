@@ -126,7 +126,7 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
 
         DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
 
-        DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+        const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
         engineCtx->soundSystem->InitFromQualitySettings();
 
         DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
@@ -144,7 +144,12 @@ void ProjectResources::UnloadProject()
     if (!data->projectPath.IsEmpty())
     {
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
-        data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+
+        DAVA::FileSystem* fileSystem = accessor->GetEngineContext()->fileSystem;
+        if (fileSystem->Exists(data->GetDataSourcePath()))
+        {
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+        }
         data->projectPath = "";
     }
 }

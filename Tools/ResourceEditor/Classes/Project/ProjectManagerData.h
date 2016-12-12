@@ -41,8 +41,6 @@ public:
     const DAVA::Vector<MaterialTemplateInfo>* GetMaterialTemplatesInfo() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
-    void SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn);
-
 public:
     static const DAVA::String ProjectPathProperty;
 
@@ -56,8 +54,6 @@ private:
     DAVA::Vector<MaterialTemplateInfo> materialTemplatesInfo;
 
     DAVA::FilePath projectPath;
-
-    DAVA::Function<bool()> closeProjectPredicate;
 
     DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
     {

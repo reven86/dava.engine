@@ -8,6 +8,7 @@
 
 #include <memory>
 
+class QWidget;
 namespace DAVA
 {
 class Engine;
@@ -52,8 +53,9 @@ public:
         AddModule(new T(std::forward<Args>(args)...));
     }
 
-    DAVA_DEPRECATED(EngineContext* GetEngineContext());
+    DAVA_DEPRECATED(const EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
+    DAVA_DEPRECATED(UI* GetUI());
 
 private:
     // in testing environment Core shouldn't connect to Engine signals.
@@ -72,12 +74,7 @@ private:
     void OnFrame(float32 delta);
     void OnWindowCreated(DAVA::Window* w);
     bool HasControllerModule() const;
-
-    OperationInvoker* GetMockInvoker();
-    DataContext* GetActiveContext();
-    DataContext* GetGlobalContext();
-    DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
-    ContextAccessor* GetAccessor();
+    void SetInvokeListener(OperationInvoker* proxyInvoker);
 
 private:
     class Impl;

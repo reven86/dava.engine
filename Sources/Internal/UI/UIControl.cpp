@@ -1,5 +1,6 @@
 #include "UI/UIControl.h"
 
+#include "Engine/Engine.h"
 #include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
@@ -975,6 +976,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
+    styledProperties = srcControl->styledProperties;
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
@@ -1190,7 +1192,14 @@ void UIControl::DrawPivotPoint(const Rect& drawRect)
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {
     Vector2 point = _point;
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    if (GetPrimaryWindow()->GetCursorCapture() == eCursorCapture::PINNING)
+    {
+        Size2f sz = GetPrimaryWindow()->GetVirtualSize();
+        point.x = sz.dx / 2.f;
+        point.y = sz.dy / 2.f;
+    }
+#else
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
@@ -1289,12 +1298,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
                 if (!multiInput)
                 {
                     currentInputID = currentInput->touchId;
                 }
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 Input(currentInput);
                 return true;

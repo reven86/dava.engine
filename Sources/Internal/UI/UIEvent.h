@@ -10,6 +10,7 @@
 namespace DAVA
 {
 class UIControl;
+class Window;
 /**
 \ingroup controlsystem
 \brief User input representation.
@@ -57,37 +58,6 @@ public:
     };
 
     friend class UIControlSystem;
-
-#if defined(__DAVAENGINE_COREV2__)
-    using MouseButton = eMouseButtons;
-#else
-    enum class MouseButton : uint32
-    {
-        NONE = 0,
-        LEFT = 1,
-        RIGHT = 2,
-        MIDDLE = 3,
-        EXTENDED1 = 4,
-        EXTENDED2 = 5,
-
-        NUM_BUTTONS = EXTENDED2
-    };
-#endif
-
-#if defined(__DAVAENGINE_COREV2__)
-    using Device = eInputDevices;
-#else
-    enum class Device : uint32
-    {
-        UNKNOWN = 0,
-        TOUCH_SURFACE,
-        MOUSE,
-        KEYBOARD,
-        GAMEPAD,
-        PEN,
-        TOUCH_PAD,
-    };
-#endif
 
 #if !defined(__DAVAENGINE_COREV2__)
     enum Modifier
@@ -141,11 +111,10 @@ public:
         uint32 touchId;
         Key key;
         char32_t keyChar; // unicode utf32 char
-#if defined(__DAVAENGINE_COREV2__)
         eMouseButtons mouseButton;
+#if defined(__DAVAENGINE_COREV2__)
         eGamepadElements element;
 #else
-        MouseButton mouseButton;
         GamepadDevice::eDavaGamepadElement element;
 #endif
         WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
@@ -160,11 +129,11 @@ public:
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
-#if defined(__DAVAENGINE_COREV2__)
     eInputDevices device = eInputDevices::UNKNOWN;
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
     eModifierKeys modifiers = eModifierKeys::NONE;
 #else
-    Device device = Device::UNKNOWN;
     uint32 modifiers = 0;
 #endif
 };

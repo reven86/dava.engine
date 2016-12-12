@@ -8,7 +8,6 @@
 
 #import <AppKit/NSScreen.h>
 
-#include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
@@ -27,7 +26,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 
@@ -64,6 +62,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -72,6 +75,11 @@ void WindowBackend::SetFullscreen(eFullscreen newMode)
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -119,6 +127,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        bridge->SetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         bridge->SetFullscreen(e.setFullscreenEvent.mode);
