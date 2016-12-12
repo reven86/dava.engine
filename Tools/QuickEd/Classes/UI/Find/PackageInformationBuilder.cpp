@@ -132,6 +132,7 @@ void PackageInformationBuilder::EndControl(eControlPlace controlPlace)
 
         case TO_PREVIOUS_CONTROL:
             DVASSERT(!stack.empty());
+            descr.controlInformation->SetParent(stack.back().controlInformation.get());
             stack.back().controlInformation->AddChild(descr.controlInformation);
             break;
 

@@ -32,6 +32,16 @@ const DAVA::Vector<std::shared_ptr<PackageInformation>>& PackageInformation::Get
     return importedPackages;
 }
 
+const DAVA::Vector<std::shared_ptr<ControlInformation>>& PackageInformation::GetPrototypes() const
+{
+    return prototypes;
+}
+
+const DAVA::Vector<std::shared_ptr<ControlInformation>>& PackageInformation::GetControls() const
+{
+    return controls;
+}
+
 std::shared_ptr<ControlInformation> PackageInformation::FindPrototypeByName(const DAVA::FastName& name) const
 {
     for (const std::shared_ptr<ControlInformation>& prototype : prototypes)

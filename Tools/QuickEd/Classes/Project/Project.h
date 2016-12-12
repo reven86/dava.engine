@@ -68,6 +68,8 @@ public:
 
     bool TryCloseAllDocuments();
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPrototype(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);

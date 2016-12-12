@@ -21,6 +21,7 @@ Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObje
     , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
+    , project(project_)
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
@@ -125,6 +126,11 @@ void Document::OnFontPresetChanged(const DAVA::String& presetName)
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
+}
+
+Project* Document::GetProject() const
+{
+    return project;
 }
 
 void Document::SetCanSave(bool arg)

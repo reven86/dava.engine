@@ -5,6 +5,7 @@
 
 class SpritesPacker;
 class QComboBox;
+class FindItem;
 
 class MainWindow::ProjectView : public QObject
 {
@@ -18,7 +19,9 @@ public:
 
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
-    void SelectPrototype(const DAVA::String& prototypeName);
+    void SelectPrototype(const DAVA::String& prototypePath);
+    void SelectControl(const DAVA::String& controlPath);
+    void ShowResults(const DAVA::Vector<FindItem>& items);
 
     void ExecDialogReloadSprites(SpritesPacker* packer);
 

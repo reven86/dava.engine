@@ -311,8 +311,22 @@ void Project::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::Strin
     Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
     if (document != nullptr)
     {
+        view->SelectControl(controlName);
+    }
+}
+
+void Project::JumpToPrototype(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
+{
+    Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
+    if (document != nullptr)
+    {
         view->SelectPrototype(controlName);
     }
+}
+
+void Project::JumpToPackage(const DAVA::FilePath& packagePath)
+{
+    documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
 }
 
 void Project::OnFindFileInProject()
@@ -340,7 +354,7 @@ void Project::OnJumpToPrototype()
             ControlNode* prototypeNode = controlNode->GetPrototype();
             FilePath path = prototypeNode->GetPackage()->GetPath();
             String name = prototypeNode->GetName();
-            JumpToControl(path, name);
+            JumpToPrototype(path, name);
         }
     }
 }
@@ -360,8 +374,9 @@ void Project::OnFindPrototypeInstances()
             String name = controlNode->GetName();
 
             FindIterator iterator;
-            FindFilter filter(path.GetFrameworkPath(), name);
-            iterator.CollectFiles(fileSystemCache.get(), filter);
+            FindFilter filter(path.GetFrameworkPath(), FastName(name));
+            iterator.CollectFiles(fileSystemCache.get(), filter, GetPrototypes());
+            view->ShowResults(iterator.GetItems());
         }
     }
 }

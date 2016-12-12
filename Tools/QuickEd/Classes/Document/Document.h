@@ -57,6 +57,8 @@ public:
     bool IsDocumentExists() const;
     void RefreshAllControlProperties();
 
+    Project* GetProject() const;
+
 signals:
     void FileChanged(Document* document);
     void CanSaveChanged(bool canSave);
@@ -78,6 +80,7 @@ private:
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     std::unique_ptr<DAVA::CommandStack> commandStack;
     QFileSystemWatcher* fileSystemWatcher = nullptr;
+    Project* project = nullptr;
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;

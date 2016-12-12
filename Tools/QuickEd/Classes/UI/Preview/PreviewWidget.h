@@ -37,6 +37,7 @@ public:
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
     void SelectPrototype(const DAVA::String& name);
+    void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnWindowCreated();
@@ -75,6 +76,7 @@ private slots:
     void OnPositionChanged(const QPoint& position);
 
 private:
+    void SelectControlImpl(PackageControlsNode* controls, const DAVA::String& path);
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;

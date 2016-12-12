@@ -15,6 +15,8 @@ public:
     void AddPrototype(const std::shared_ptr<ControlInformation>& prototype);
 
     const DAVA::Vector<std::shared_ptr<PackageInformation>>& GetImportedPackages() const;
+    const DAVA::Vector<std::shared_ptr<ControlInformation>>& GetPrototypes() const;
+    const DAVA::Vector<std::shared_ptr<ControlInformation>>& GetControls() const;
     std::shared_ptr<ControlInformation> FindPrototypeByName(const DAVA::FastName& name) const;
 
 private:
