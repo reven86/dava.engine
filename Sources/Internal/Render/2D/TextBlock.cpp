@@ -430,6 +430,8 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_RECALC_PARAMS);
+
     stringSizes.clear();
     multilineStrings.clear();
 

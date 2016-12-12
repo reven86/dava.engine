@@ -21,6 +21,7 @@ const char* SOUND_SYSTEM = "SoundSystem";
 const char* ANIMATION_MANAGER = "AnimationManager";
 const char* UI_UPDATE = "UI::Update";
 const char* UI_LAYOUTING = "UI::Layouting";
+const char* UI_TEXTBLOCK_RECALC_PARAMS = "UI::TextBlock::CalculateParams";
 const char* UI_TEXTBLOCK_PREPARE = "UI::TextBlock::Prepare";
 const char* UI_DRAW = "UI::Draw";
 
