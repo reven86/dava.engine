@@ -1226,6 +1226,7 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
     }
 
     scene->SetScenePath(pathToSaveScene);
+    recentItems->Add(pathToSaveScene.GetAbsolutePathname());
     return true;
 }
 
