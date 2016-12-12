@@ -27,7 +27,7 @@
         <!-- List of shared libraries to load at startup -->
         <meta-data android:name="boot_modules" android:value="crystax;c++_shared;fmodex;fmodevent;TestBed"/>
         <!-- List of application specific java classes to instantiate at startup -->
-        <meta-data android:name="boot_classes" android:value="com.dava.testbed.TestBedBoot"/>
+        <meta-data android:name="boot_classes" android:value="com.dava.testbed.TestBed"/>
         
         <activity
             android:name="com.dava.engine.DavaActivity"

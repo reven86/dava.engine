@@ -31,12 +31,13 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -49,17 +50,14 @@ public:
     void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisibility(bool visible);
 
-private:
     void UIEventHandler(const UIDispatcherEvent& e);
 
-private:
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     std::unique_ptr<WindowNativeBridge> bridge;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     size_t sigidAppBecomeOrResignActive = 0;
     size_t sigidAppDidEnterForegroundOrBackground = 0;
@@ -68,11 +66,6 @@ private:
     friend class PlatformCore;
     friend struct WindowNativeBridge;
 };
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
-}
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {

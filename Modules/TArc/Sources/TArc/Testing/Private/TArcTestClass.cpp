@@ -4,7 +4,6 @@
 #include "TArc/WindowSubSystem/UI.h"
 
 #include "Engine/Engine.h"
-#include "Engine/NativeService.h"
 #include "UnitTests/UnitTests.h"
 
 #include "Base/Platform.h"
@@ -90,8 +89,7 @@ const double TestClass::testTimeLimit = 10.0; // seconds
 TestClass::~TestClass()
 {
     DVASSERT(core != nullptr);
-    Engine* e = Engine::Instance();
-    RenderWidget* widget = e->GetNativeService()->GetRenderWidget();
+    RenderWidget* widget = PlatformApi::Qt::GetRenderWidget();
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 

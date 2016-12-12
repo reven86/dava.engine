@@ -33,19 +33,31 @@ enum class eFullscreen : uint32
 enum class eInputDevices : uint32
 {
     UNKNOWN = 0, //!< Special value used in some case to specify that input device is unrecognized
-    TOUCH_SURFACE = 0x01, //!< Touch surface like touch screen on mobile devices
-    MOUSE = 0x02,
-    KEYBOARD = 0x04,
-    GAMEPAD = 0x08,
-    PEN = 0x10,
-    TOUCH_PAD = 0x20, //!< Touch pad which can be found on notebooks
+    TOUCH_SURFACE = 0x0100, //!< Touch surface like touch screen on mobile devices
+    MOUSE = 0x0200,
+    KEYBOARD = 0x0400,
+    GAMEPAD = 0x0800,
+    PEN = 0x1000,
+    TOUCH_PAD = 0x2000, //!< Touch pad which can be found on notebooks
 
+    CLASS_ALL = TOUCH_SURFACE | MOUSE | KEYBOARD | GAMEPAD | PEN | TOUCH_PAD,
     CLASS_POINTER = TOUCH_SURFACE | MOUSE | PEN | TOUCH_PAD,
     CLASS_KEYBOARD = KEYBOARD,
     CLASS_GAMEPAD = GAMEPAD,
 };
 
 DAVA_DEFINE_ENUM_BITWISE_OPERATORS(eInputDevices)
+
+/**
+    \ingroup engine
+    Translate integer value to `eInputDevices` enumeration with respect to pre-corev2 device constants values.
+
+    This function is introduced for compatibility reason between corev1 and corev2 as game saves `eInputDevices`
+    values on server.
+
+    If integer value does not correspond to any `eInputDevices` enumeration returns `eInputDevices::UNKNOWN`.
+*/
+eInputDevices TranslateUIntToInputDevice(uint32 value);
 
 /**
     \ingroup engine

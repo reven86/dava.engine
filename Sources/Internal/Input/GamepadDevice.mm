@@ -33,7 +33,7 @@ void ProcessElementHandler(GamepadDevice* device, GamepadDevice::eDavaGamepadEle
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = UIEvent::Phase::JOYSTICK;
-    newEvent.device = UIEvent::Device::GAMEPAD;
+    newEvent.device = eInputDevices::GAMEPAD;
 
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
 }

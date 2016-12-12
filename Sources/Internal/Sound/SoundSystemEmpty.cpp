@@ -2,15 +2,12 @@
 
 #ifndef DAVA_FMOD
 
-#include "Engine/EngineModule.h"
-
 namespace DAVA
 {
 Mutex SoundSystem::soundGroupsMutex;
 
 #if defined(__DAVAENGINE_COREV2__)
-SoundSystem::SoundSystem(Engine* e)
-    : engine(e)
+SoundSystem::SoundSystem(Engine* /*e*/)
 #else
 SoundSystem::SoundSystem()
 #endif

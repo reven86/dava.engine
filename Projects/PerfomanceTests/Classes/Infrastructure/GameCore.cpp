@@ -162,11 +162,8 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
 {
-    w->SetSize({ SCREEN_WIDTH, SCREEN_HEIGHT });
-    w->SetTitle("Performance Tests");
-
-    // TODO FullScreen
-    //w->SetFullScreen(false);
+    w->SetSizeAsync({ SCREEN_WIDTH, SCREEN_HEIGHT });
+    w->SetTitleAsync("Performance Tests");
 }
 
 void GameCore::Cleanup()
@@ -337,7 +334,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
 
 void GameCore::Quit()
 {
-    engine.Quit(0);
+    engine.QuitAsync(0);
 }
 
 GameCore* GameCore::instance = nullptr;
