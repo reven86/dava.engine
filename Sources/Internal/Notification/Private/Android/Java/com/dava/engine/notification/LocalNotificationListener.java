@@ -4,8 +4,6 @@ import com.dava.engine.DavaActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
-
-import com.dava.engine.DavaActivity;
 import com.dava.engine.notification.DavaNotificationProvider;
 
 public class LocalNotificationListener extends DavaActivity.ActivityListenerImpl

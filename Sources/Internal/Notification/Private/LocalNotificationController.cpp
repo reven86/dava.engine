@@ -36,9 +36,6 @@ LocalNotificationController::~LocalNotificationController()
             SafeRelease(notification);
         }
     }
-#if defined(__DAVAENGINE_COREV2__)
-    localListener.reset();
-#endif
 }
 
 LocalNotificationProgress* const LocalNotificationController::CreateNotificationProgress(const WideString& title, const WideString& text, uint32 maximum, uint32 current, bool useSound)
