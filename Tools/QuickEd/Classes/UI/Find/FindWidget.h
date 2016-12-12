@@ -24,9 +24,11 @@ public slots:
     void OnDocumentChanged(Document* document);
 
 private slots:
-    void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&);
+    void OnActivated(const QModelIndex& index);
 
 private:
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
     enum
     {
         PACKAGE_DATA = Qt::UserRole + 1,

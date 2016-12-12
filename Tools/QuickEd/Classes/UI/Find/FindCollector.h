@@ -6,11 +6,11 @@
 
 class FileSystemCache;
 
-class FindIterator
+class FindCollector
 {
 public:
-    FindIterator();
-    ~FindIterator();
+    FindCollector();
+    ~FindCollector();
 
     void CollectFiles(FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
     const DAVA::Vector<FindItem>& GetItems();

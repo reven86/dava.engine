@@ -8,7 +8,7 @@
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "UI/ProjectView.h"
-#include "UI/Find/FindIterator.h"
+#include "UI/Find/FindCollector.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
@@ -364,10 +364,10 @@ void Project::OnFindPrototypeInstances()
             FilePath path = controlNode->GetPackage()->GetPath();
             String name = controlNode->GetName();
 
-            FindIterator iterator;
-            FindFilter filter(path.GetFrameworkPath(), FastName(name));
-            iterator.CollectFiles(fileSystemCache.get(), filter, GetPrototypes());
-            view->ShowResults(iterator.GetItems());
+            FindCollector findCollector;
+            PrototypeUsagesFilter filter(path.GetFrameworkPath(), FastName(name));
+            findCollector.CollectFiles(fileSystemCache.get(), filter, GetPrototypes());
+            view->ShowResults(findCollector.GetItems());
         }
     }
 }

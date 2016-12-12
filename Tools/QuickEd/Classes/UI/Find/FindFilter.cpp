@@ -5,9 +5,7 @@
 
 using namespace DAVA;
 
-FindFilter::FindFilter(const DAVA::String& packagePath_, const DAVA::FastName& prototypeName_)
-    : packagePath(packagePath_)
-    , prototypeName(prototypeName_)
+FindFilter::FindFilter()
 {
 }
 
@@ -15,7 +13,17 @@ FindFilter::~FindFilter()
 {
 }
 
-bool FindFilter::CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const
+PrototypeUsagesFilter::PrototypeUsagesFilter(const DAVA::String& packagePath_, const DAVA::FastName& prototypeName_)
+    : packagePath(packagePath_)
+    , prototypeName(prototypeName_)
+{
+}
+
+PrototypeUsagesFilter::~PrototypeUsagesFilter()
+{
+}
+
+bool PrototypeUsagesFilter::CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const
 {
     if (package->GetPath() == packagePath)
     {
@@ -28,7 +36,7 @@ bool FindFilter::CanAcceptPackage(const std::shared_ptr<PackageInformation>& pac
            }) != packages.end();
 }
 
-bool FindFilter::CanAcceptControl(const std::shared_ptr<ControlInformation>& control) const
+bool PrototypeUsagesFilter::CanAcceptControl(const std::shared_ptr<ControlInformation>& control) const
 {
     return control->GetPrototype() == prototypeName && control->GetPrototypePackagePath() == packagePath;
 }

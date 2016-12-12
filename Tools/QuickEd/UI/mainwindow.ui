@@ -558,7 +558,7 @@
     <string>Find Prototype Instances</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Shift+F</string>
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>

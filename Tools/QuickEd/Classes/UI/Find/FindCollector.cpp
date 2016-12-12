@@ -1,4 +1,4 @@
-#include "FindIterator.h"
+#include "FindCollector.h"
 
 #include "QtTools/ProjectInformation/FileSystemCache.h"
 
@@ -8,27 +8,24 @@
 
 using namespace DAVA;
 
-FindIterator::FindIterator()
+FindCollector::FindCollector()
 {
 }
 
-FindIterator::~FindIterator()
+FindCollector::~FindCollector()
 {
 }
 
-void FindIterator::CollectFiles(FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
+void FindCollector::CollectFiles(FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
 {
     QStringList files = cache->GetFiles("yaml");
-    int index = 0;
 
     PackageInformationCache packagesCache;
 
     for (QString& pathStr : files)
     {
         FilePath path(pathStr.toStdString());
-        index++;
-        if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 &&
-            path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
+        if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 && path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
         {
             PackageInformationBuilder builder(&packagesCache);
 
@@ -46,14 +43,6 @@ void FindIterator::CollectFiles(FileSystemCache* cache, const FindFilter& filter
                         CollectControls(path, prototype, filter, true);
                     }
                 }
-                else
-                {
-                }
-            }
-            else
-            {
-                DVASSERT(false);
-                Logger::Debug("  [failed]");
             }
         }
     }
@@ -61,16 +50,16 @@ void FindIterator::CollectFiles(FileSystemCache* cache, const FindFilter& filter
     std::sort(items.begin(), items.end());
 }
 
-const DAVA::Vector<FindItem>& FindIterator::GetItems()
+const DAVA::Vector<FindItem>& FindCollector::GetItems()
 {
     return items;
 }
 
-void FindIterator::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, const FindFilter& filter, bool inPrototypeSection)
+void FindCollector::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, const FindFilter& filter, bool inPrototypeSection)
 {
     if (filter.CanAcceptControl(control))
     {
-        items.push_back(FindItem(path, control->GetPathToControl(), inPrototypeSection));
+        items.push_back(FindItem(path, control->GetPathToControl()));
     }
 
     for (const std::shared_ptr<ControlInformation>& child : control->GetChildren())

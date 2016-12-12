@@ -9,11 +9,21 @@ class ControlInformation;
 class FindFilter
 {
 public:
-    FindFilter(const DAVA::String& packagePath, const DAVA::FastName& prototypeName);
-    ~FindFilter();
+    FindFilter();
+    virtual ~FindFilter();
 
-    virtual bool CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const;
-    virtual bool CanAcceptControl(const std::shared_ptr<ControlInformation>& control) const;
+    virtual bool CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const = 0;
+    virtual bool CanAcceptControl(const std::shared_ptr<ControlInformation>& control) const = 0;
+};
+
+class PrototypeUsagesFilter : public FindFilter
+{
+public:
+    PrototypeUsagesFilter(const DAVA::String& packagePath, const DAVA::FastName& prototypeName);
+    ~PrototypeUsagesFilter();
+
+    bool CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const override;
+    bool CanAcceptControl(const std::shared_ptr<ControlInformation>& control) const override;
 
 private:
     DAVA::String packagePath;

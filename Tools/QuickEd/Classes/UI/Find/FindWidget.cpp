@@ -15,7 +15,8 @@ FindWidget::FindWidget(QWidget* parent)
 
     model = new QStandardItemModel();
     ui.treeView->setModel(model);
-    connect(ui.treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &FindWidget::OnCurrentIndexChanged);
+    connect(ui.treeView, &QTreeView::activated, this, &FindWidget::OnActivated);
+    ui.treeView->installEventFilter(this);
 }
 
 void FindWidget::ShowResults(const DAVA::Vector<FindItem>& items_)
@@ -61,7 +62,7 @@ void FindWidget::OnDocumentChanged(Document* document)
     }
 }
 
-void FindWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&)
+void FindWidget::OnActivated(const QModelIndex& index)
 {
     QString path = index.data(PACKAGE_DATA).toString();
     if (index.data(CONTROL_DATA).isValid())
@@ -73,4 +74,22 @@ void FindWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelInd
     {
         project->JumpToPackage(FilePath(path.toStdString()));
     }
+}
+
+bool FindWidget::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+        {
+            if (ui.treeView->selectionModel()->currentIndex().isValid())
+            {
+                OnActivated(ui.treeView->selectionModel()->currentIndex());
+                return true;
+            }
+        }
+    }
+
+    return QDockWidget::eventFilter(obj, event);
 }

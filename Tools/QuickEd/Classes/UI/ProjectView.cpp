@@ -17,6 +17,9 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
 
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
+
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
 }
 
 void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
