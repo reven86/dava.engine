@@ -188,7 +188,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     LoadMaterialsSettings(data);
 
     DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
-    DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
+    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
     DAVA::FileSystem* fileSystem = engineCtx->fileSystem;

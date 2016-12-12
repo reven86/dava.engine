@@ -33,7 +33,7 @@ public:
     virtual DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) = 0;
     virtual PropertiesItem CreatePropertiesNode(const String& nodeName) = 0;
 
-    virtual EngineContext* GetEngineContext() = 0;
+    virtual const EngineContext* GetEngineContext() = 0;
 };
 } // namespace TArc
 } // namespace DAVA

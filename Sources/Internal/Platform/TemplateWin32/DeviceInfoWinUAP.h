@@ -77,6 +77,10 @@ private:
     void NotifyAllClients(NativeHIDType type, bool isConnected);
     eGPUFamily GPUFamily();
 
+#if defined(__DAVAENGINE_COREV2__)
+    void CheckContinuumMode();
+#endif
+
     bool isTouchPresent = false;
     bool isMousePresent = false;
     bool isKeyboardPresent = false;

@@ -4,17 +4,18 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
 #include "Engine/Android/JNIBridge.h"
-#include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
+#include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
-#include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
+#include "Platform/SystemTimer.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 extern DAVA::Private::AndroidBridge* androidBridge;
@@ -43,7 +44,6 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
     AndroidBridge::AttachPlatformCore(this);
 }
@@ -118,8 +118,25 @@ void PlatformCore::ActivityOnDestroy()
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline;
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(std::move(androidBridge->cmdargs));
+    }
+    catch (const Exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 }
 
 void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)

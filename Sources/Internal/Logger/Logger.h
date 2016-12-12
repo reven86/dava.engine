@@ -70,6 +70,14 @@ public:
     virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
     virtual void Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* text, va_list li) const;
 
+    /**
+        Write message text to platfrom specific logging facility.
+
+        This method can be used even when Logger is not instantiated.
+        Newline character is not appended to message text.
+    */
+    static void PlatformLog(eLogLevel ll, const char8* text);
+
     //** Log event with LEVEL_FRAMEWORK level. */
     static void FrameworkDebug(const char8* text, ...);
 
@@ -103,14 +111,13 @@ public:
     void SetMaxFileSize(uint32 size);
     void EnableConsoleMode();
 
-    const char8* GetLogLevelString(eLogLevel ll) const;
+    static const char8* GetLogLevelString(eLogLevel ll);
     //TODO: insert Optional
-    eLogLevel GetLogLevelFromString(const char8* ll) const;
+    static eLogLevel GetLogLevelFromString(const char8* ll);
 
 private:
     bool CutOldLogFileIfExist(const FilePath& logFile) const;
 
-    void PlatformLog(eLogLevel ll, const char8* text) const;
     void FileLog(const FilePath& filepath, eLogLevel ll, const char8* text) const;
     void CustomLog(eLogLevel ll, const char8* text) const;
     void ConsoleLog(eLogLevel ll, const char8* text) const;

@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/iOS/AppDelegateiOS.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
@@ -24,7 +23,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions) ? YES : NO;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application

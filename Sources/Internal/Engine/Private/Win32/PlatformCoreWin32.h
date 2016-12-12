@@ -1,16 +1,14 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 namespace DAVA
 {
@@ -26,8 +24,7 @@ public:
     PlatformCore& operator=(const PlatformCore&) = delete;
 
     static HINSTANCE Win32AppInstance();
-
-    NativeService* GetNativeService() const;
+    static void EnableHighResolutionTimer(bool enable);
 
     void Init();
     void Run();
@@ -36,7 +33,6 @@ public:
 
 private:
     EngineBackend& engineBackend;
-    std::unique_ptr<NativeService> nativeService;
 
     static HINSTANCE hinstance;
 };
@@ -44,11 +40,6 @@ private:
 inline HINSTANCE PlatformCore::Win32AppInstance()
 {
     return hinstance;
-}
-
-inline NativeService* PlatformCore::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 } // namespace Private
