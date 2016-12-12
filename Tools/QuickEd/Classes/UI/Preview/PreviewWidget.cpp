@@ -112,21 +112,15 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
-void PreviewWidget::SelectPrototype(const String& name)
-{
-    if (document != nullptr)
-    {
-        PackageNode* package = document->GetPackage();
-        SelectControlImpl(package->GetPrototypes(), name);
-    }
-}
-
 void PreviewWidget::SelectControl(const DAVA::String& path)
 {
     if (document != nullptr)
     {
         PackageNode* package = document->GetPackage();
-        SelectControlImpl(package->GetPackageControlsNode(), path);
+        if (!SelectControlImpl(package->GetPrototypes(), path))
+        {
+            SelectControlImpl(package->GetPackageControlsNode(), path);
+        }
     }
 }
 
@@ -446,16 +440,15 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     scrollAreaController->SetPosition(canvasPosition);
 }
 
-void PreviewWidget::SelectControlImpl(PackageControlsNode* controls, const DAVA::String& path)
+bool PreviewWidget::SelectControlImpl(PackageControlsNode* controls, const DAVA::String& path)
 {
     Vector<String> strPath;
     Split(path, "/", strPath, false, true);
 
     ControlsContainerNode* c = controls;
-    bool found = false;
     for (String& name : strPath)
     {
-        found = false;
+        bool found = false;
         for (int32 index = 0; index < c->GetCount(); index++)
         {
             if (c->Get(index)->GetName() == name)
@@ -467,16 +460,14 @@ void PreviewWidget::SelectControlImpl(PackageControlsNode* controls, const DAVA:
         }
         if (!found)
         {
-            c = nullptr;
-            break;
+            return false;
         }
     }
 
-    if (found)
-    {
-        ControlNode* node = DynamicTypeCheck<ControlNode*>(c);
-        systemsManager->SelectNode(node);
-    }
+    ControlNode* node = DynamicTypeCheck<ControlNode*>(c);
+    systemsManager->ClearSelection();
+    systemsManager->SelectNode(node);
+    return true;
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)

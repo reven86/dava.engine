@@ -161,11 +161,6 @@ void MainWindow::ProjectView::SelectFile(const QString& filePath)
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
 }
 
-void MainWindow::ProjectView::SelectPrototype(const DAVA::String& prototypePath)
-{
-    mainWindow->ui->previewWidget->SelectPrototype(prototypePath);
-}
-
 void MainWindow::ProjectView::SelectControl(const DAVA::String& controlPath)
 {
     mainWindow->ui->previewWidget->SelectControl(controlPath);

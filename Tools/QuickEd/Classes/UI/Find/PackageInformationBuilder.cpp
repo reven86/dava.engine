@@ -1,5 +1,5 @@
 #include "PackageInformationBuilder.h"
-
+#include "Utils/Utils.h"
 using namespace DAVA;
 
 PackageInformationBuilder::PackageInformationBuilder(PackageInformationCache* cache_)
@@ -97,13 +97,36 @@ DAVA::UIControl* PackageInformationBuilder::BeginControlWithPrototype(const Fast
     DVASSERT(prototypePackage.get() != nullptr);
     DVASSERT(prototype.get() != nullptr);
 
-    stack.push_back(Descr(std::make_shared<ControlInformation>(controlName, prototypePackage, FastName(prototypeName)), true));
+    stack.push_back(Descr(std::make_shared<ControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
     return nullptr;
 }
 
 DAVA::UIControl* PackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
 {
-    stack.push_back(Descr(std::make_shared<ControlInformation>(FastName()), false));
+    if (!stack.empty())
+    {
+        std::shared_ptr<ControlInformation> ptr = stack.back().controlInformation;
+
+        Vector<String> controlNames;
+        Split(pathName, "/", controlNames, false, true);
+        for (String& name : controlNames)
+        {
+            ptr = ptr->FindChildByName(FastName(name));
+            if (!ptr)
+            {
+                DVASSERT(false);
+                break;
+            }
+        }
+
+        DVASSERT(ptr.get() != nullptr);
+        stack.push_back(Descr(ptr, false));
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+
     return nullptr; // do nothing
 }
 

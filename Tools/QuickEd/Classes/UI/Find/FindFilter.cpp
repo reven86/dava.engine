@@ -17,6 +17,11 @@ FindFilter::~FindFilter()
 
 bool FindFilter::CanAcceptPackage(const std::shared_ptr<PackageInformation>& package) const
 {
+    if (package->GetPath() == packagePath)
+    {
+        return true;
+    }
+
     const DAVA::Vector<std::shared_ptr<PackageInformation>>& packages = package->GetImportedPackages();
     return std::find_if(packages.begin(), packages.end(), [this](const std::shared_ptr<PackageInformation>& pack) {
                return pack->GetPath() == packagePath;

@@ -31,7 +31,6 @@ private:
     {
         PACKAGE_DATA = Qt::UserRole + 1,
         CONTROL_DATA = Qt::UserRole + 2,
-        IS_PROTO_DATA = Qt::UserRole + 3
     };
 
     Ui::FindWidget ui;

@@ -9,11 +9,22 @@ ControlInformation::ControlInformation(const FastName& name_)
 {
 }
 
-ControlInformation::ControlInformation(const FastName& name_, const std::shared_ptr<PackageInformation> prototypePackage_, const DAVA::FastName& prototype_)
+ControlInformation::ControlInformation(const ControlInformation& other)
+    : ControlInformation(other, other.name, std::shared_ptr<PackageInformation>(), FastName())
+{
+}
+
+ControlInformation::ControlInformation(const ControlInformation& other, const FastName& name_, const std::shared_ptr<PackageInformation> prototypePackage_, const DAVA::FastName& prototype_)
     : name(name_)
     , prototypePackage(prototypePackage_)
     , prototype(prototype_)
 {
+    for (const std::shared_ptr<ControlInformation>& otherChild : other.children)
+    {
+        std::shared_ptr<ControlInformation> child = std::make_shared<ControlInformation>(*otherChild);
+        child->SetParent(this);
+        children.push_back(child);
+    }
 }
 
 const DAVA::FastName& ControlInformation::GetName() const
@@ -62,4 +73,17 @@ void ControlInformation::AddChild(const std::shared_ptr<ControlInformation>& chi
 const DAVA::Vector<std::shared_ptr<ControlInformation>>& ControlInformation::GetChildren() const
 {
     return children;
+}
+
+std::shared_ptr<ControlInformation> ControlInformation::FindChildByName(const FastName& name) const
+{
+    for (const std::shared_ptr<ControlInformation>& c : children)
+    {
+        if (c->GetName() == name)
+        {
+            return c;
+        }
+    }
+
+    return std::shared_ptr<ControlInformation>();
 }

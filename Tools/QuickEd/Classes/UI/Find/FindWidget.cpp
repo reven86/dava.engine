@@ -41,10 +41,8 @@ void FindWidget::ShowResults(const DAVA::Vector<FindItem>& items_)
         controlItem->setEditable(false);
         controlItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
         controlItem->setData(QString::fromStdString(item.GetPathToControl()), CONTROL_DATA);
-        controlItem->setData(item.IsInPrototypeSection(), IS_PROTO_DATA);
         pathItem->appendRow(controlItem);
         pathItem->setEditable(false);
-        //        pathItem->
     }
 
     setVisible(true);
