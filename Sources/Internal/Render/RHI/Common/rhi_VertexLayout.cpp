@@ -5,6 +5,7 @@
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "rhi_Utils.h"
+#include <atomic>
 
 using DAVA::uint32;
 using DAVA::uint16;
