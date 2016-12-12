@@ -780,6 +780,12 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 endif()
 
 if( DEPLOY )
+    if( MACOS AND NOT MAC_DISABLE_BUNDLE)
+        set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/MacOS )
+    else()
+        set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR} )
+    endif()
+
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
     

@@ -9,7 +9,8 @@ namespace DAVA
 @IMODULE_INIT_POINTERS@
 @IMODULE_GET_MODULE_CODE@
 ModuleManager::ModuleManager(Engine* engine)
-: pointersToModules( new PointersToModules )
+  : pointersToModules( new PointersToModules ),
+    rootEngine(engine)
 {
 @IMODULE_CTOR_CODE@
 }

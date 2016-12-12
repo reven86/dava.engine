@@ -113,11 +113,6 @@ if ( WINDOWS_UAP )
     #libs paths
     set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
     
-    #root deployment location for resources
-    #set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
-    #add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}"
-    #                  -DDAVA_WIN_UAP_RESOURCES_PREFIX="_neutral_split.dxfeaturelevel-dx11" )
-
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
 

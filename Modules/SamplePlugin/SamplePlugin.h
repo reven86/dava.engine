@@ -1,18 +1,15 @@
 #pragma once
 
 #include "ModuleManager/IModule.h"
-#include "Base/BaseTypes.h"
 
-class SamplePlugin : public DAVA::IModule
-{
-public:
+#define EXPORT __attribute__((visibility("default")))
 
-    SamplePlugin(DAVA::Engine* engine);
-    
-    void Init() override;
-    void Shutdown() override;
-    
-private:
-    
-};
-    
+
+extern "C" {
+
+DAVA::IModule* CreatPlugin( DAVA::Engine* );
+void DestroyPlugin(  DAVA::IModule* );
+
+
+}
+

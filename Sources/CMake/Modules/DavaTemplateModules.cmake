@@ -2,7 +2,7 @@
 set(  MAIN_MODULE_VALUES 
 NAME_MODULE                            #
 NAME_MODULE_STUB                       #
-MODULE_TYPE                            #"[ INLINE PLUGIN  ]"
+MODULE_TYPE                            #"[ INLINE STATIC PLUGIN  ]"
 #
 IMPL_MODULE
 EXTERNAL_MODULES
@@ -91,6 +91,9 @@ BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
 #
 EXCLUDE_FROM_ALL
+#
+PLUGIN_OUT_DIR
+PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
 #
 )
 #
@@ -319,7 +322,7 @@ macro( setup_main_module )
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
-        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
+        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} ) 
     endif()
 
     if ( INIT AND NOT MODULES_TREE_INFO )
@@ -541,6 +544,11 @@ macro( setup_main_module )
             include_directories( "${INCLUDES}" )  
         endif()
 
+        #"PLUGIN_OUT_DIR"
+        if( PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT} )
+            set( PLUGIN_OUT_DIR PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}  )
+        endif()
+
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
             set (${DIR_NAME}_PROJECT_SOURCE_FILES_CPP ${PROJECT_SOURCE_FILES_CPP} PARENT_SCOPE)
             set (${DIR_NAME}_PROJECT_SOURCE_FILES_HPP ${PROJECT_SOURCE_FILES_HPP} PARENT_SCOPE)
@@ -561,8 +569,13 @@ macro( setup_main_module )
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
                 add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
 
-                if( APPLE )
-                    set_target_properties( ${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_EXECUTABLE_PREFIX  "" )
+
+                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
+                                                                 DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
+                                                                 DEBUG_POSTFIX Debug   )
+                if( APPLE AND PLUGIN_OUT_DIR )
+                    get_filename_component( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR} ABSOLUTE )
+                    set_target_properties( ${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${PLUGIN_OUT_DIR} )
                 endif()              
 
                 if( WIN32 AND NOT DEPLOY )

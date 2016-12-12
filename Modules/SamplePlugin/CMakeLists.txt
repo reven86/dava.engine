@@ -14,4 +14,6 @@ set( INCLUDES_PRIVATE ${DAVA_ENGINE_DIR} )       # set search path headers insid
 set( HPP_FILES *.h )                             # 
 set( CPP_FILES Private/*.cpp )                   # set where are sources
 
+set( PLUGIN_OUT_DIR "${PLUGIN_OUT_DIR_SamplePlugin}" )#plugin out dir
+
 setup_main_module()                              # induce macros of module formation

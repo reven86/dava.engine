@@ -34,6 +34,10 @@ if (DAVA_PLATFORM_QT)
     set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 endif()
 
+if( MACOS OR WIN32 )
+    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" )
+endif()
+
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
 include_directories   ( "Classes" )
@@ -87,6 +91,21 @@ endif()
 
 setup_main_executable()
 convert_graphics()
+
+if( MACOS OR WIN32 )
+    add_dependencies( ${PROJECT_NAME} SamplePlugin )
+
+
+    if( DEPLOY )
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+              COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:SamplePlugin>" ${DEPLOY_EXECUTE_DIR}  )
+
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+              COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:SamplePlugin>" $<TARGET_FILE_DIR:${PROJECT_NAME}> )
+
+    endif()
+endif()
 
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled

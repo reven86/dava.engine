@@ -28,6 +28,7 @@
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
 #include "Tests/ScriptingTest.h"
+#include "Tests/SamplePluginTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
@@ -238,6 +239,7 @@ void TestBed::RegisterTests()
     new UILoggingTest(*this);
     new ProfilerTest(*this);
     new ScriptingTest(*this);
+    new SamplePluginTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
     //$UNITTEST_CTOR
