@@ -58,19 +58,14 @@ T* DataEditor<T>::operator->()
 //////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-DataReader<T>::DataReader(const DataWrapper& holder_, Reflection reflection_)
-    : reflection(reflection_)
-    , holder(holder_)
+DataReader<T>::DataReader(const DataWrapper& holder_)
+    : holder(holder_)
 {
-    ReflectedObject refObject = reflection.GetValueObject();
-    dataPtr = refObject.GetPtr<T>();
 }
 
 template <typename T>
 DataReader<T>::DataReader(DataReader<T>&& other)
-    : reflection(std::move(other.reflection))
-    , dataPtr(std::move(other.dataPtr))
-    , holder(std::move(other.holder))
+    : holder(std::move(other.holder))
 {
 }
 
@@ -80,8 +75,6 @@ DataReader<T>& DataReader<T>::operator=(DataReader<T>&& other)
     if (&other == this)
         return *this;
 
-    reflection = std::move(other.reflection);
-    dataPtr = std::move(other.dataPtr);
     holder = std::move(other.holder);
 
     return *this;
@@ -90,7 +83,9 @@ DataReader<T>& DataReader<T>::operator=(DataReader<T>&& other)
 template <typename T>
 T const* DataReader<T>::operator->() const
 {
-    return dataPtr;
+    DVASSERT(holder.HasData());
+    ReflectedObject refObject = holder.GetData().GetValueObject();
+    return refObject.GetPtr<T>();
 }
 
 template <typename T>
@@ -118,10 +113,9 @@ DataReader<T> DataWrapper::CreateReader() const
 {
     if (HasData())
     {
-        Reflection reflection = GetData();
         try
         {
-            return DataReader<T>(*this, reflection);
+            return DataReader<T>(*this);
         }
         catch (Exception& e)
         {

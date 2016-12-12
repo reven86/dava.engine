@@ -47,6 +47,8 @@ private:
     friend class DataListener;
     template <typename T>
     friend class DataEditor;
+    template <typename T>
+    friend class DataReader;
     DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
@@ -89,7 +91,7 @@ template <typename T>
 class DataReader final
 {
 public:
-    DataReader(const DataWrapper& holder, Reflection reflection);
+    DataReader(const DataWrapper& holder);
 
     DataReader(const DataReader& other) = delete;
     DataReader& operator=(const DataReader& other) = delete;
@@ -100,8 +102,6 @@ public:
     T const* operator->() const;
 
 private:
-    Reflection reflection;
-    T* dataPtr = nullptr;
     DataWrapper holder;
 };
 } // namespace TArc
