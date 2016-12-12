@@ -131,10 +131,11 @@ struct NSApplicationDelegateListener
 {
     // clang-format off
     virtual ~NSApplicationDelegateListener() = default;
+    virtual void applicationWillFinishLaunching(NSNotification* notification) {}
     virtual void applicationDidFinishLaunching(NSNotification* notification) {}
-    virtual void applicationDidBecomeActive() {}
-    virtual void applicationDidResignActive() {}
-    virtual void applicationWillTerminate() {}
+    virtual void applicationDidBecomeActive(NSNotification* notification) {}
+    virtual void applicationDidResignActive(NSNotification* notification) {}
+    virtual void applicationWillTerminate(NSNotification* notification) {}
     virtual void didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo) {}
     virtual void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken) {}
     virtual void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error) {}

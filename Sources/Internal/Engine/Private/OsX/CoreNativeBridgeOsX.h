@@ -38,16 +38,16 @@ struct CoreNativeBridge final
     void OnFrameTimer();
 
     // Callbacks from OsXAppDelegate
-    void ApplicationWillFinishLaunching();
+    void ApplicationWillFinishLaunching(NSNotification* notification);
     void ApplicationDidFinishLaunching(NSNotification* notification);
     void ApplicationDidChangeScreenParameters();
-    void ApplicationDidBecomeActive();
-    void ApplicationDidResignActive();
+    void ApplicationDidBecomeActive(NSNotification* notification);
+    void ApplicationDidResignActive(NSNotification* notification);
     void ApplicationDidHide();
     void ApplicationDidUnhide();
     bool ApplicationShouldTerminate();
     bool ApplicationShouldTerminateAfterLastWindowClosed();
-    void ApplicationWillTerminate();
+    void ApplicationWillTerminate(NSNotification* notification);
     void ApplicationDidActivateNotification(NSUserNotification* notification);
 
     void RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
@@ -55,6 +55,7 @@ struct CoreNativeBridge final
 
     enum eNotificationType
     {
+        ON_WILL_FINISH_LAUNCHING,
         ON_DID_FINISH_LAUNCHING,
         ON_DID_BECOME_ACTIVE,
         ON_DID_RESIGN_ACTIVE,

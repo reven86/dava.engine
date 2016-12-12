@@ -132,8 +132,9 @@ void CoreNativeBridge::OnFrameTimer()
     }
 }
 
-void CoreNativeBridge::ApplicationWillFinishLaunching()
+void CoreNativeBridge::ApplicationWillFinishLaunching(NSNotification* notification)
 {
+    NotifyListeners(ON_WILL_FINISH_LAUNCHING, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
@@ -154,14 +155,14 @@ void CoreNativeBridge::ApplicationDidChangeScreenParameters()
     Logger::Debug("****** CoreNativeBridge::ApplicationDidChangeScreenParameters");
 }
 
-void CoreNativeBridge::ApplicationDidBecomeActive()
+void CoreNativeBridge::ApplicationDidBecomeActive(NSNotification* notification)
 {
-    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_DID_BECOME_ACTIVE, notification, nullptr, nullptr);
 }
 
-void CoreNativeBridge::ApplicationDidResignActive()
+void CoreNativeBridge::ApplicationDidResignActive(NSNotification* notification)
 {
-    NotifyListeners(ON_DID_RESIGN_ACTIVE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_DID_RESIGN_ACTIVE, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidHide()
@@ -195,9 +196,9 @@ bool CoreNativeBridge::ApplicationShouldTerminateAfterLastWindowClosed()
     return false;
 }
 
-void CoreNativeBridge::ApplicationWillTerminate()
+void CoreNativeBridge::ApplicationWillTerminate(NSNotification* notification)
 {
-    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_WILL_TERMINATE, notification, nullptr, nullptr);
 
     [frameTimer cancel];
 
@@ -253,17 +254,20 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
     {
         switch (type)
         {
+        case ON_WILL_FINISH_LAUNCHING:
+            l->applicationWillFinishLaunching(static_cast<NSNotification*>(arg1));
+            break;
         case ON_DID_FINISH_LAUNCHING:
             l->applicationDidFinishLaunching(static_cast<NSNotification*>(arg1));
             break;
         case ON_DID_BECOME_ACTIVE:
-            l->applicationDidBecomeActive();
+            l->applicationDidBecomeActive(static_cast<NSNotification*>(arg1));
             break;
         case ON_DID_RESIGN_ACTIVE:
-            l->applicationDidResignActive();
+            l->applicationDidResignActive(static_cast<NSNotification*>(arg1));
             break;
         case ON_WILL_TERMINATE:
-            l->applicationWillTerminate();
+            l->applicationWillTerminate(static_cast<NSNotification*>(arg1));
             break;
         case ON_DID_RECEIVE_REMOTE_NOTIFICATION:
             l->didReceiveRemoteNotification(static_cast<NSApplication*>(arg1), static_cast<NSDictionary<NSString*, id>*>(arg2));
