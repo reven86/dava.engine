@@ -110,7 +110,7 @@ inline jstring ToJNIString(const DAVA::WideString& string)
 template <typename T, jobject (JNIEnv::*NewRef)(jobject), void (JNIEnv::*DeleteRef)(jobject)>
 struct ObjectRef
 {
-    static_assert(std::is_base_of<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>::value, "T must be jobject or jobject-derived type");
+    static_assert(std::is_base_of<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>::value, "T must be jobject or jobject-based type");
 
     using Type = T; //<! T, the jobject-related type managed by this `ObjectRef`
 
@@ -485,7 +485,7 @@ inline JavaClass::operator jclass() const
 template <typename R, typename... Args>
 Function<R(Args...)> JavaClass::GetConstructor() const
 {
-    static_assert(std::is_base_of<std::remove_pointer_t<jobject>, std::remove_pointer_t<R>>::value, "bla-bla");
+    static_assert(std::is_base_of<std::remove_pointer_t<jobject>, std::remove_pointer_t<R>>::value, "T must be jobject or jobject-based type");
     JNIEnv* env = GetEnv();
     jmethodID method = env->GetMethodID(clazz, "<init>", TypeSignature<void(Args...)>::value());
     CheckJavaException(env, true);
