@@ -4,7 +4,7 @@
 #include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_MACOS__)
-#include "AssertGuardMacOSHack.h"
+#include "TArc/Utils/AssertGuardMacOSHack.h"
 #endif
 
 #include <QApplication>
