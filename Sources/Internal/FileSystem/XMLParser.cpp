@@ -143,8 +143,7 @@ void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar
             //				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
         }
 
-        String nameStr(reinterpret_cast<const char*>(name));
-        delegateptr->OnElementStarted(nameStr, "", "", attributes);
+        delegateptr->OnElementStarted(reinterpret_cast<const char*>(name), "", "", attributes);
     }
 }
 
