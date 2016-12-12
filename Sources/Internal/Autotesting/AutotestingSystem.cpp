@@ -3,6 +3,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DeviceInfo.h"
@@ -326,7 +327,9 @@ void AutotestingSystem::Update(float32 timeElapsed)
         {
             needExitApp = false;
             JobManager::Instance()->WaitWorkerJobs();
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+            Engine::Instance()->QuitAsync(0);
+#else
             Core::Instance()->Quit();
 #endif
         }
@@ -422,7 +425,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->QuitAsync(0);
+#else
     Core::Instance()->Quit();
 #endif
 }
@@ -465,11 +470,7 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 void AutotestingSystem::ClickSystemBack()
 {
     UIEvent keyEvent;
-#if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
-#else
-    keyEvent.device = UIEvent::Device::KEYBOARD;
-#endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
@@ -479,11 +480,7 @@ void AutotestingSystem::ClickSystemBack()
 void AutotestingSystem::PressEscape()
 {
     UIEvent keyEvent;
-#if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
-#else
-    keyEvent.device = UIEvent::Device::KEYBOARD;
-#endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::ESCAPE;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
