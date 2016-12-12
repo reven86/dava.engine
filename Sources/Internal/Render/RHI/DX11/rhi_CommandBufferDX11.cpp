@@ -726,7 +726,7 @@ static void
 dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
-    wchar_t txt[128];
+    wchar_t txt[256];
 
     ::MultiByteToWideChar(CP_ACP, 0, text, -1, txt, countof(txt));
 
@@ -1011,9 +1011,9 @@ static void dx11_EndFrame()
     pendingSecondaryCmdListSync.Lock();
     pendingSecondaryCmdLists.push_back(cmdList);
     pendingSecondaryCmdListSync.Unlock();
-#else
-    ConstBufferDX11::InvalidateAllInstances();
 #endif
+
+    ConstBufferDX11::InvalidateAllInstances();
 }
 
 static void dx11_RejectFrame(const CommonImpl::Frame& frame)

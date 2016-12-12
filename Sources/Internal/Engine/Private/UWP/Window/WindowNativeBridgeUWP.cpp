@@ -41,6 +41,14 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
     ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
     ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 
+    {
+        using ::Windows::Graphics::Display::DisplayInformation;
+        using ::Windows::Graphics::Display::DisplayOrientations;
+
+        // TODO: temporal hardcode, separate task for setting rotation
+        DisplayInformation::GetForCurrentView()->AutoRotationPreferences = DisplayOrientations::Landscape | DisplayOrientations::LandscapeFlipped;
+    }
+
     if (PlatformCore::IsPhoneContractPresent())
     {
         using ::Windows::UI::ViewManagement::StatusBar;

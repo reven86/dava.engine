@@ -426,10 +426,8 @@ eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(false);
-    }
+    cursorInside = true;
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(true);
@@ -438,10 +436,8 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(true);
-    }
+    cursorInside = false;
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(false);
@@ -472,23 +468,6 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
     }
 }
 
-void WindowNativeBridge::SetSystemCursorVisible(bool visible)
-{
-    static bool mouseVisibleState = true;
-    if (mouseVisibleState != visible)
-    {
-        mouseVisibleState = visible;
-        if (visible)
-        {
-            [NSCursor unhide];
-        }
-        else
-        {
-            [NSCursor hide];
-        }
-    }
-}
-
 void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 {
     if (capture)
@@ -511,12 +490,30 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
     }
 }
 
+void WindowNativeBridge::UpdateSystemCursorVisible()
+{
+    bool visible = !cursorInside || mouseVisible;
+    static bool mouseVisibleState = true;
+    if (mouseVisibleState != visible)
+    {
+        mouseVisibleState = visible;
+        if (visible)
+        {
+            [NSCursor unhide];
+        }
+        else
+        {
+            [NSCursor hide];
+        }
+    }
+}
+
 void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        SetSystemCursorVisible(visible);
+        UpdateSystemCursorVisible();
     }
 }
 

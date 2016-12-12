@@ -14,7 +14,15 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 
 void LibraryWidget::OnDocumentChanged(Document* document)
 {
-    libraryModel->SetPackageNode(nullptr != document ? document->GetPackage() : nullptr);
+    if (document != nullptr)
+    {
+        libraryModel->SetPackageNode(document->GetPackage());
+    }
+    else
+    {
+        libraryModel->SetPackageNode(nullptr);
+    }
+
     treeView->expandAll();
     treeView->collapse(libraryModel->GetDefaultControlsModelIndex());
 }
@@ -22,4 +30,9 @@ void LibraryWidget::OnDocumentChanged(Document* document)
 void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages)
 {
     libraryModel->SetLibraryPackages(libraryPackages);
+}
+
+void LibraryWidget::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes)
+{
+    libraryModel->SetPrototypes(prototypes);
 }

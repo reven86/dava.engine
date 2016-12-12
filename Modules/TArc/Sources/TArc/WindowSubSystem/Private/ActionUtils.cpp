@@ -37,9 +37,32 @@ QUrl CreateUrl(const QString scemeName, const QString& path, const InsertionPara
 }
 }
 
-QUrl CreateMenuPoint(const QString& path, const InsertionParams& params)
+InsertionParams::InsertionParams(eInsertionMethod method_, const QString& item_ /*= QString()*/)
+    : method(method_)
+    , item(item_)
 {
-    return ActionUtilsDetail::CreateUrl(menuScheme, path, params);
+}
+
+QUrl CreateMenuPoint(const QString& menuName, const InsertionParams& params)
+{
+    return ActionUtilsDetail::CreateUrl(menuScheme, menuName, params);
+}
+
+QUrl CreateMenuPoint(QList<QString> menusPath, const InsertionParams& params /*= InsertionParams()*/)
+{
+    QString path;
+    if (!menusPath.isEmpty())
+    {
+        path = menusPath.front();
+        menusPath.pop_front();
+        while (!menusPath.isEmpty())
+        {
+            path += "$/" + menusPath.front();
+            menusPath.pop_front();
+        }
+    }
+
+    return CreateMenuPoint(path, params);
 }
 
 QUrl CreateToolbarPoint(const QString& toolbarName, const InsertionParams& params)
@@ -63,6 +86,17 @@ QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor, const Insertio
 void AttachWidgetToAction(QAction* action, QWidget* widget)
 {
     action->setData(QVariant::fromValue(widget));
+}
+
+QWidget* GetAttachedWidget(QAction* action)
+{
+    QVariant data = action->data();
+    if (data.canConvert<QWidget*>())
+    {
+        return data.value<QWidget*>();
+    }
+
+    return nullptr;
 }
 
 InsertionParams::eInsertionMethod InsertionParams::Convert(const QString& v)

@@ -15,15 +15,61 @@ UIPackage::~UIPackage()
 {
     for (UIControl* control : controls)
         control->Release();
-
     controls.clear();
+
+    for (UIControl* prototype : prototypes)
+        prototype->Release();
+    prototypes.clear();
 
     SafeRelease(controlPackageContext);
 }
 
-int32 UIPackage::GetControlsCount() const
+const Vector<UIControl*>& UIPackage::GetPrototypes() const
 {
-    return static_cast<int32>(controls.size());
+    return prototypes;
+}
+
+UIControl* UIPackage::GetPrototype(const String& name) const
+{
+    return GetPrototype(FastName(name));
+}
+
+UIControl* UIPackage::GetPrototype(const FastName& name) const
+{
+    for (UIControl* prototype : prototypes)
+    {
+        if (prototype->GetName() == name)
+            return prototype;
+    }
+
+    for (UIControl* control : controls) // temporary code for supporting old yaml files
+    {
+        if (control->GetName() == name)
+            return control;
+    }
+
+    return nullptr;
+}
+
+void UIPackage::AddPrototype(UIControl* control)
+{
+    control->SetPackageContext(controlPackageContext);
+    prototypes.push_back(SafeRetain(control));
+}
+
+void UIPackage::RemovePrototype(UIControl* control)
+{
+    Vector<UIControl*>::iterator iter = std::find(prototypes.begin(), prototypes.end(), control);
+    if (iter != prototypes.end())
+    {
+        SafeRelease(*iter);
+        prototypes.erase(iter);
+    }
+}
+
+const Vector<UIControl*>& UIPackage::GetControls() const
+{
+    return controls;
 }
 
 UIControl* UIPackage::GetControl(const String& name) const
@@ -39,13 +85,13 @@ UIControl* UIPackage::GetControl(const FastName& name) const
             return control;
     }
 
-    return nullptr;
-}
+    for (UIControl* prototype : prototypes) // temporary code for supporting old yaml files
+    {
+        if (prototype->GetName() == name)
+            return prototype;
+    }
 
-UIControl* UIPackage::GetControl(int32 index) const
-{
-    DVASSERT(0 <= index && index < static_cast<int32>(controls.size()));
-    return controls[index];
+    return nullptr;
 }
 
 void UIPackage::AddControl(UIControl* control)
@@ -67,39 +113,5 @@ void UIPackage::RemoveControl(UIControl* control)
 UIControlPackageContext* UIPackage::GetControlPackageContext()
 {
     return controlPackageContext;
-}
-
-RefPtr<UIPackage> UIPackage::Clone() const
-{
-    RefPtr<UIPackage> package(new UIPackage());
-
-    package->controls.resize(controls.size());
-
-    std::transform(controls.begin(), controls.end(), package->controls.begin(),
-                   [](UIControl* control) -> UIControl*
-                   {
-                       return control->Clone();
-                   });
-    return package;
-}
-
-Vector<UIControl*>::const_iterator UIPackage::begin() const
-{
-    return controls.begin();
-}
-
-Vector<UIControl*>::const_iterator UIPackage::end() const
-{
-    return controls.end();
-}
-
-Vector<UIControl*>::iterator UIPackage::begin()
-{
-    return controls.begin();
-}
-
-Vector<UIControl*>::iterator UIPackage::end()
-{
-    return controls.end();
 }
 }

@@ -111,6 +111,11 @@ public:
         }
     }
 
+    uint32 GetContextCount() const
+    {
+        return static_cast<uint32>(contexts.size());
+    }
+
     DataContext* GetGlobalContext() override
     {
         return globalContext.get();
@@ -165,14 +170,29 @@ public:
         return engineContext;
     }
 
+    virtual UI* GetUI()
+    {
+        return nullptr;
+    }
+
 protected:
+    virtual void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne)
+    {
+    }
+    virtual void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    {
+    }
+
     void ActivateContextImpl(DataContext* context)
     {
+        BeforeContextSwitch(activeContext, context);
+        DataContext* oldContext = activeContext;
         activeContext = context;
         for (DataWrapper& wrapper : wrappers)
         {
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
+        AfterContextSwitch(activeContext, oldContext);
     }
 
     void SyncWrappers()
@@ -355,7 +375,7 @@ private:
     void RegisterOperation(int operationID, AnyFn&& fn) override
     {
     }
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         DVASSERT(false);
         return DataContext::ContextID();
@@ -470,7 +490,7 @@ public:
         {
             for (std::unique_ptr<ClientModule>& module : modules)
             {
-                module->OnContextDeleted(*context);
+                module->OnContextDeleted(context.get());
             }
         }
         modules.clear();
@@ -496,16 +516,23 @@ public:
         globalOperations.emplace(operationID, fn);
     }
 
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
-        DataContext& context = *contexts.back();
+        DataContext* context = contexts.back().get();
+
+        for (std::unique_ptr<DataNode>& data : initialData)
+        {
+            context->CreateData(std::move(data));
+        }
+        initialData.clear();
+
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->OnContextCreated(context);
         }
 
-        return context.GetID();
+        return context->GetID();
     }
 
     void DeleteContext(DataContext::ContextID contextID) override
@@ -520,14 +547,14 @@ public:
             throw std::runtime_error(Format("DeleteContext failed for contextID : %d", contextID));
         }
 
-        for (std::unique_ptr<ClientModule>& module : modules)
-        {
-            module->OnContextDeleted(**iter);
-        }
-
         if (activeContext != nullptr && activeContext->GetID() == contextID)
         {
             ActivateContextImpl(nullptr);
+        }
+
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextDeleted(iter->get());
         }
 
         contexts.erase(iter);
@@ -536,6 +563,11 @@ public:
     void ActivateContext(DataContext::ContextID contextID) override
     {
         if (activeContext != nullptr && activeContext->GetID() == contextID)
+        {
+            return;
+        }
+
+        if (activeContext == nullptr && contextID == DataContext::Empty)
         {
             return;
         }
@@ -601,6 +633,11 @@ public:
     template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args)
     {
+        if (invokeListener != nullptr)
+        {
+            invokeListener->Invoke(operationId, args...);
+        }
+
         AnyFn fn = FindOperation(operationId);
         if (!fn.IsValid())
         {
@@ -664,7 +701,33 @@ public:
         return controllerModule != nullptr;
     }
 
+    UI* GetUI() override
+    {
+        return uiManager.get();
+    }
+
+    void SetInvokeListener(OperationInvoker* invoker)
+    {
+        invokeListener = invoker;
+    }
+
 private:
+    void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne) override
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextWillBeChanged(currentContext, newOne);
+        }
+    }
+
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextWasChanged(currentContext, oldOne);
+        }
+    }
+
     AnyFn FindOperation(int operationId)
     {
         AnyFn operation;
@@ -684,6 +747,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
+    OperationInvoker* invokeListener = nullptr;
 };
 
 Core::Core(Engine& engine)
@@ -721,6 +785,11 @@ const EngineContext* Core::GetEngineContext()
 CoreInterface* Core::GetCoreInterface()
 {
     return impl.get();
+}
+
+UI* Core::GetUI()
+{
+    return impl->GetUI();
 }
 
 bool Core::IsConsoleMode() const
@@ -773,28 +842,11 @@ bool Core::HasControllerModule() const
     return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
-OperationInvoker* Core::GetMockInvoker()
-{
-    return nullptr;
-}
-
-DataContext* Core::GetActiveContext()
-{
-    DVASSERT(impl);
-    return impl->GetActiveContext();
-}
-
-DataContext* Core::GetGlobalContext()
-{
-    DVASSERT(impl);
-    return impl->GetGlobalContext();
-}
-
-DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+void Core::SetInvokeListener(OperationInvoker* proxyInvoker)
 {
     GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
     DVASSERT(guiImpl != nullptr);
-    return guiImpl->CreateWrapper(type);
+    guiImpl->SetInvokeListener(proxyInvoker);
 }
 
 } // namespace TArc

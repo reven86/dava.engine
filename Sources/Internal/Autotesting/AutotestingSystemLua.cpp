@@ -572,6 +572,12 @@ void AutotestingSystemLua::ClickSystemBack()
     AutotestingSystem::Instance()->ClickSystemBack();
 }
 
+void AutotestingSystemLua::PressEscape()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::PressEscape");
+    AutotestingSystem::Instance()->PressEscape();
+}
+
 String AutotestingSystemLua::GetText(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);

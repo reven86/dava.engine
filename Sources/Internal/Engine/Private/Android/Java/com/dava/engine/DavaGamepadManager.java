@@ -23,7 +23,6 @@ import java.util.List;
 
     Source of inspiration is SDL library.
 */
-/* uncomment after multidex enabled
 final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
 {
     // Gamepad device description 
@@ -172,4 +171,3 @@ final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
         return false;
     }
 }
-*/

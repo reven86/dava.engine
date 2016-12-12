@@ -14,6 +14,9 @@
 #include "UI/Focus/FocusHelpers.h"
 
 #include "UI/UIControlSystem.h"
+#include "Render/Texture.h"
+#include "Render/2D/Sprite.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -202,6 +205,9 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 void TextFieldPlatformImpl::Initialize()
 {
     uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+#if defined(__DAVAENGINE_COREV2__)
+    uiTextField->GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
+#endif
     properties.createNew = true;
 
 #if defined(__DAVAENGINE_COREV2__)
@@ -236,6 +242,9 @@ void TextFieldPlatformImpl::OwnerIsDying()
         window->sizeChanged.Disconnect(windowSizeChangedConnection);
         Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
     }
+
+    SafeRelease(sprite);
+    SafeRelease(texture);
 #endif
 }
 
@@ -1265,9 +1274,10 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
     auto self{ shared_from_this() };
     RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 
+    // clang-format off
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
-        int32 imageWidth = renderTarget->PixelWidth;
-        int32 imageHeight = renderTarget->PixelHeight;
+        uint32 imageWidth = renderTarget->PixelWidth;
+        uint32 imageHeight = renderTarget->PixelHeight;
         size_t streamSize = static_cast<size_t>(renderBuffer->Length);
         DataReader^ reader = DataReader::FromBuffer(renderBuffer);
 
@@ -1279,20 +1289,21 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
             index += 1;
         }
 
-        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
 #if defined(__DAVAENGINE_COREV2__)
-        RunOnMainThreadAsync([this, self, sprite, moveOffScreenOnCompletion]() {
+        RunOnMainThreadAsync([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {
 #else
-        core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
+        core->RunOnMainThread([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {
 #endif
-            if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
+            if (uiTextField != nullptr && !uiTextField->IsEditing() && !curText.empty())
             {
-                UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                if (!uiTextField->IsEditing())
-                {
-                    // Do not set rendered texture if control has focus
-                    uiTextField->SetSprite(sprite.Get(), 0);
-                }
+#if !defined(__DAVAENGINE_COREV2__)
+                Sprite* sprite = nullptr;
+#endif
+                sprite = CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight);
+                uiTextField->SetSprite(sprite, 0);
+#if !defined(__DAVAENGINE_COREV2__)
+                SafeRelease(sprite);
+#endif
             }
             if (moveOffScreenOnCompletion)
             {
@@ -1308,21 +1319,44 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
                     }
                 });
             }
-        }); }).then([this, self](task<void> t) {
+        });
+    }).then([this, self](task<void> t) {
         try {
             t.get();
         }
         catch (Platform::COMException^ e) {
             HRESULT hr = e->HResult;
             Logger::Error("[TextField] RenderToTexture failed: 0x%08X", hr);
-        } });
+        }
+    });
+    // clang-format on
 }
 
-Sprite* TextFieldPlatformImpl::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
+Sprite* TextFieldPlatformImpl::CreateSpriteFromPreviewData(uint8* imageData, uint32 width, uint32 height)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    ImageConvert::SwapRedBlueChannels(FORMAT_RGBA8888, imageData, width, height, ImageUtils::GetPitchInBytes(width, FORMAT_RGBA8888), nullptr);
+    if (texture == nullptr || texture->width != width || texture->height != height)
+    {
+        SafeRelease(sprite);
+        SafeRelease(texture);
+        texture = Texture::CreateFromData(FORMAT_RGBA8888, imageData, width, height, false);
+        texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
+
+        Vector2 uiControlSize = uiTextField->GetSize();
+        sprite = Sprite::CreateFromTexture(texture, 0, 0, width, height, uiControlSize.dx, uiControlSize.dy);
+    }
+    else
+    {
+        uint32 imageDataSize = width * height * 4;
+        texture->TexImage(0, width, height, imageData, imageDataSize, Texture::INVALID_CUBEMAP_FACE);
+    }
+    return sprite;
+#else
     ScopedPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
     ImageConvert::SwapRedBlueChannels(imgSrc);
     return Sprite::CreateFromImage(imgSrc, true, false);
+#endif
 }
 
 Platform::String ^ TextFieldPlatformImpl::xamlTextBoxStyles = LR"(

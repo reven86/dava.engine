@@ -1,9 +1,8 @@
 #include "Base/Platform.h"
-
 #include "Base/Result.h"
-#include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include <functional>
 
@@ -104,21 +103,22 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
 
         for (size_t i = 0; i < static_cast<size_t>(size); ++i)
         {
-            TEST_VERIFY(*(std::next(startExpected, i)) == ref.GetField(i).ref.GetValue().Cast<int>());
+            TEST_VERIFY(*(std::next(startExpected, i)) == ref.GetField(i).GetValue().Cast<int>());
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(ref.CanInsertFields());
+        const DAVA::Reflection::FieldCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
-        TEST_VERIFY(ref.GetField(size_t(5)).ref.GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(size_t(5)).GetValue().Cast<int>() == 5);
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(6)));
-        TEST_VERIFY(ref.GetField(size_t(6)).ref.GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(size_t(6)).GetValue().Cast<int>() == 6);
         TEST_VERIFY(ref.InsertField(size_t(6), DAVA::Any(), int(7)));
-        TEST_VERIFY(ref.GetField(size_t(5)).ref.GetValue().Cast<int>() == 5);
-        TEST_VERIFY(ref.GetField(size_t(6)).ref.GetValue().Cast<int>() == 7);
-        TEST_VERIFY(ref.GetField(size_t(7)).ref.GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(size_t(5)).GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(size_t(6)).GetValue().Cast<int>() == 7);
+        TEST_VERIFY(ref.GetField(size_t(7)).GetValue().Cast<int>() == 6);
 
         TEST_VERIFY(ref.RemoveField(size_t(7)));
         TEST_VERIFY(ref.RemoveField(size_t(5)));
@@ -130,23 +130,24 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
     {
         for (TIter i = startExpected; i != endExpected; ++i)
         {
-            DAVA::Reflection::Field field = ref.GetField(i->first);
-            int v = field.ref.GetValue().Cast<int>();
+            DAVA::Reflection r = ref.GetField(i->first);
+            int v = r.GetValue().Cast<int>();
             TEST_VERIFY(i->second == v);
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(!ref.CanInsertFields());
+        const DAVA::Reflection::FieldCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(!caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(int(5), int(5)));
-        TEST_VERIFY(ref.GetField(int(5)).ref.GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
         TEST_VERIFY(ref.AddField(int(6), int(6)));
-        TEST_VERIFY(ref.GetField(int(6)).ref.GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(int(6)).GetValue().Cast<int>() == 6);
         TEST_VERIFY(ref.AddField(int(7), int(7)));
-        TEST_VERIFY(ref.GetField(int(5)).ref.GetValue().Cast<int>() == 5);
-        TEST_VERIFY(ref.GetField(int(6)).ref.GetValue().Cast<int>() == 6);
-        TEST_VERIFY(ref.GetField(int(7)).ref.GetValue().Cast<int>() == 7);
+        TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(int(6)).GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(int(7)).GetValue().Cast<int>() == 7);
 
         TEST_VERIFY(ref.RemoveField(int(7)));
         TEST_VERIFY(ref.RemoveField(int(5)));
@@ -158,32 +159,32 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
     {
         for (TIter i = startExpected; i != endExpected; ++i)
         {
-            DAVA::Reflection::Field field = ref.GetField(*i);
-            int v = field.ref.GetValue().Cast<int>();
+            DAVA::Reflection r = ref.GetField(*i);
+            int v = r.GetValue().Cast<int>();
             TEST_VERIFY((*i) == v);
         }
 
-        TEST_VERIFY(ref.CanAddFields());
-        TEST_VERIFY(ref.CanRemoveFields());
-        TEST_VERIFY(!ref.CanInsertFields());
+        const DAVA::Reflection::FieldCaps& caps = ref.GetFieldsCaps();
+        TEST_VERIFY(caps.canAddField);
+        TEST_VERIFY(!caps.canInsertField);
+        TEST_VERIFY(caps.canRemoveField);
 
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(5)));
-        TEST_VERIFY(ref.GetField(int(5)).ref.GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(6)));
-        TEST_VERIFY(ref.GetField(int(6)).ref.GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(int(6)).GetValue().Cast<int>() == 6);
         TEST_VERIFY(ref.AddField(DAVA::Any(), int(7)));
-        TEST_VERIFY(ref.GetField(int(5)).ref.GetValue().Cast<int>() == 5);
-        TEST_VERIFY(ref.GetField(int(6)).ref.GetValue().Cast<int>() == 6);
-        TEST_VERIFY(ref.GetField(int(7)).ref.GetValue().Cast<int>() == 7);
+        TEST_VERIFY(ref.GetField(int(5)).GetValue().Cast<int>() == 5);
+        TEST_VERIFY(ref.GetField(int(6)).GetValue().Cast<int>() == 6);
+        TEST_VERIFY(ref.GetField(int(7)).GetValue().Cast<int>() == 7);
 
         TEST_VERIFY(ref.RemoveField(int(7)));
         TEST_VERIFY(ref.RemoveField(int(5)));
         TEST_VERIFY(!ref.RemoveField(int(5)));
 
-        DAVA::Reflection::Field f = ref.GetField(int(0));
-        TEST_VERIFY(f.ref.IsReadonly());
-        TEST_VERIFY(!f.ref.SetValue(int(10)));
-        f.key.Set(int(10));
+        DAVA::Reflection r = ref.GetField(int(0));
+        TEST_VERIFY(r.IsReadonly());
+        TEST_VERIFY(!r.SetValue(int(10)));
     }
 
     DAVA_TEST (VectorTest)
@@ -196,12 +197,12 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         holder.intPtrVector = &holder.intVector;
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        CollectionTestHelper<int>(r.GetField("intPtrVector").ref, holder.intVector.begin(), holder.intVector.end());
-        CollectionTestHelper<DAVA::String>(r.GetField("stringVector").ref, holder.stringVector.begin(), holder.stringVector.end());
+        CollectionTestHelper<int>(r.GetField("intPtrVector"), holder.intVector.begin(), holder.intVector.end());
+        CollectionTestHelper<DAVA::String>(r.GetField("stringVector"), holder.stringVector.begin(), holder.stringVector.end());
 
-        DAVA::Reflection::Field rf = r.GetField("intVector");
-        AddInsertRemoveTest(rf.ref, holder.intVector.begin(), holder.intVector.end());
-        CollectionTestHelper<int>(rf.ref, holder.intVector.begin(), holder.intVector.end());
+        DAVA::Reflection rf = r.GetField("intVector");
+        AddInsertRemoveTest(rf, holder.intVector.begin(), holder.intVector.end());
+        CollectionTestHelper<int>(rf, holder.intVector.begin(), holder.intVector.end());
     }
 
     DAVA_TEST (ListTest)
@@ -211,9 +212,9 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intList.push_back(v); });
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        DAVA::Reflection::Field listField = r.GetField("intList");
-        CollectionTestHelper<int>(listField.ref, holder.intList.begin(), holder.intList.end());
-        AddInsertRemoveTest(listField.ref, holder.intList.begin(), holder.intList.end());
+        DAVA::Reflection listField = r.GetField("intList");
+        CollectionTestHelper<int>(listField, holder.intList.begin(), holder.intList.end());
+        AddInsertRemoveTest(listField, holder.intList.begin(), holder.intList.end());
     }
 
     DAVA_TEST (MapTest)
@@ -223,10 +224,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.mapColl.emplace(v, v + 10); });
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        DAVA::Reflection::Field mapField = r.GetField("mapColl");
-        CollectionMapTestHelper<int, int>(mapField.ref, holder.mapColl.begin(), holder.mapColl.end());
-        AddInsertRemoveMapTest(mapField.ref, holder.mapColl.begin(), holder.mapColl.end());
-        CollectionMapTestHelper<int, int>(mapField.ref, holder.mapColl.begin(), holder.mapColl.end());
+        DAVA::Reflection mapField = r.GetField("mapColl");
+        CollectionMapTestHelper<int, int>(mapField, holder.mapColl.begin(), holder.mapColl.end());
+        AddInsertRemoveMapTest(mapField, holder.mapColl.begin(), holder.mapColl.end());
+        CollectionMapTestHelper<int, int>(mapField, holder.mapColl.begin(), holder.mapColl.end());
     }
 
     DAVA_TEST (UnorderedMapTest)
@@ -236,10 +237,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.unorderMap.emplace(v, v + 10); });
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        DAVA::Reflection::Field mapField = r.GetField("unorderMap");
-        CollectionMapTestHelper<int, int>(mapField.ref, holder.unorderMap.begin(), holder.unorderMap.end());
-        AddInsertRemoveMapTest(mapField.ref, holder.unorderMap.begin(), holder.unorderMap.end());
-        CollectionMapTestHelper<int, int>(mapField.ref, holder.unorderMap.begin(), holder.unorderMap.end());
+        DAVA::Reflection mapField = r.GetField("unorderMap");
+        CollectionMapTestHelper<int, int>(mapField, holder.unorderMap.begin(), holder.unorderMap.end());
+        AddInsertRemoveMapTest(mapField, holder.unorderMap.begin(), holder.unorderMap.end());
+        CollectionMapTestHelper<int, int>(mapField, holder.unorderMap.begin(), holder.unorderMap.end());
     }
 
     DAVA_TEST (SetTest)
@@ -249,10 +250,10 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intSet.emplace(v); });
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        DAVA::Reflection::Field setField = r.GetField("intSet");
-        CollectionSetTestHelper<int>(setField.ref, holder.intSet.begin(), holder.intSet.end());
-        AddInsertRemoveSetTest(setField.ref, holder.intSet.begin(), holder.intSet.end());
-        CollectionSetTestHelper<int>(setField.ref, holder.intSet.begin(), holder.intSet.end());
+        DAVA::Reflection setField = r.GetField("intSet");
+        CollectionSetTestHelper<int>(setField, holder.intSet.begin(), holder.intSet.end());
+        AddInsertRemoveSetTest(setField, holder.intSet.begin(), holder.intSet.end());
+        CollectionSetTestHelper<int>(setField, holder.intSet.begin(), holder.intSet.end());
     }
 
     DAVA_TEST (UnorderSetTest)
@@ -262,9 +263,9 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         std::for_each(std::begin(testIntData), std::end(testIntData), [&holder](int v) { holder.intUnorderSet.emplace(v); });
 
         DAVA::Reflection r = DAVA::Reflection::Create(&holder);
-        DAVA::Reflection::Field setField = r.GetField("intUnorderSet");
-        CollectionSetTestHelper<int>(setField.ref, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
-        AddInsertRemoveSetTest(setField.ref, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
-        CollectionSetTestHelper<int>(setField.ref, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
+        DAVA::Reflection setField = r.GetField("intUnorderSet");
+        CollectionSetTestHelper<int>(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
+        AddInsertRemoveSetTest(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
+        CollectionSetTestHelper<int>(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
     }
 };

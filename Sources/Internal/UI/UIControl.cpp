@@ -976,6 +976,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
+    styledProperties = srcControl->styledProperties;
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
@@ -1297,12 +1298,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
                 if (!multiInput)
                 {
                     currentInputID = currentInput->touchId;
                 }
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 Input(currentInput);
                 return true;
