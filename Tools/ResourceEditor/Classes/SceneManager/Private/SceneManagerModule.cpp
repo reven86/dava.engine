@@ -38,6 +38,7 @@
 #include <QtGlobal>
 #include <QUrl>
 #include <QMimeData>
+#include <QActionGroup>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -475,19 +476,20 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
     // GPU
 
     // View/GPU action
-    {
-        QtAction* action = new QtAction(accessor, "GPU");
+    QtAction* actionGPU = new QtAction(accessor, "GPU");
 
-        FieldDescriptor descriptor;
-        descriptor.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        descriptor.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, descriptor, [](const DAVA::Any& v) {
-            return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
-        });
+    FieldDescriptor descriptorGPU;
+    descriptorGPU.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+    descriptorGPU.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+    actionGPU->SetStateUpdationFunction(QtAction::Enabled, descriptorGPU, [](const DAVA::Any& v) {
+        return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
+    });
 
-        ActionPlacementInfo placement(CreateMenuPoint("View", InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
-        ui->AddAction(REGlobal::MainWindowKey, placement, action);
-    }
+    ActionPlacementInfo placementGPU(CreateMenuPoint("View", InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+    ui->AddAction(REGlobal::MainWindowKey, placementGPU, actionGPU);
+
+    QActionGroup* actionGroup = new QActionGroup(actionGPU);
+    actionGroup->setExclusive(true);
 
     DAVA::Vector<QAction*> gpuFormatActions;
     ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << "View"
@@ -496,6 +498,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
     auto createGpuAction = [&](DAVA::eGPUFamily gpu)
     {
         QtAction* action = new QtAction(accessor, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu), nullptr);
+        actionGroup->addAction(action);
 
         FieldDescriptor enabledFieldDescr;
         enabledFieldDescr.fieldName = DAVA::FastName(SceneData::sceneLandscapeToolsPropertyName);
