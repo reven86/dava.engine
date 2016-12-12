@@ -70,7 +70,7 @@ int32 PlaneLODDialog::GetSelectedLayer()
 
 FilePath PlaneLODDialog::GetSelectedTexturePath()
 {
-    return PathnameToDAVAStyle(texturePath);
+    return FilePath(texturePath.toStdString());
 }
 
 uint32 PlaneLODDialog::GetSelectedTextureSize()

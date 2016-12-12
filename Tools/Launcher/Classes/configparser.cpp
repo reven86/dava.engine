@@ -114,6 +114,7 @@ bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
     appVer->url = entry["artifacts"].toString();
     appVer->buildNum = entry["build_num"].toString();
     appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
     return !appVer->id.isEmpty();
 }
 
@@ -146,7 +147,8 @@ bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
-    bool isValid = !array.isEmpty();
+    //this array can be empty
+    bool isValid = true;
     for (const QJsonValueRef& ref : array)
     {
         QJsonObject entry = ref.toObject();
@@ -178,19 +180,9 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         QString appName = entry["build_name"].toString();
         if (appName.startsWith("toolset", Qt::CaseInsensitive))
         {
-            //try to get project name as it stored in ba-manager
-            QString prefix =
-#ifdef Q_OS_WIN
-            "_win";
-#elif defined(Q_OS_MAC)
-            "_mac";
-#else
-#error "unsupported platform"
-#endif //platform
-            QStringList applications = { "AssetCacheServer", "ResourceEditor", "QuickEd" };
-            for (const QString& toolsetApp : applications)
+            for (const QString& toolsetApp : ConfigParser::GetToolsetApplications())
             {
-                isValid &= ExtractApp(toolsetApp + prefix, entry, branch, true);
+                isValid &= ExtractApp(toolsetApp, entry, branch, true);
             }
         }
         else
@@ -198,7 +190,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
             isValid &= ExtractApp(appName, entry, branch, false);
         }
     }
-    //hotfix to sort downloaded items without rewriting mainWindow
+    //hot fix to sort downloaded items without rewriting mainWindow
     for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
     {
         QVector<Application>& apps = branchIter->applications;
@@ -520,10 +512,11 @@ QByteArray ConfigParser::Serialize() const
             for (int k = 0; k < app->GetVerionsCount(); ++k)
             {
                 const AppVersion* ver = app->GetVersion(k);
+                QString appName = ver->isToolSet ? "ToolSet" : app->id;
                 QJsonObject buildObj = {
                     { "buildNum", ver->buildNum },
                     { "build_type", ver->id },
-                    { "build_name", app->id },
+                    { "build_name", appName },
                     { "branchName", branch->id },
                     { "artifacts", ver->url },
                     { "exe_location", ver->runPath }
@@ -567,6 +560,21 @@ void ConfigParser::RemoveBranch(const QString& branchID)
 
 void ConfigParser::InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version)
 {
+    if (version.isToolSet)
+    {
+        for (const QString& fakeAppID : GetTranslatedToolsetApplications())
+        {
+            InsertApplicationImpl(branchID, fakeAppID, version);
+        }
+    }
+    else
+    {
+        InsertApplicationImpl(branchID, appID, version);
+    }
+}
+
+void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version)
+{
     Branch* branch = GetBranch(branchID);
     if (!branch)
     {
@@ -605,6 +613,41 @@ void ConfigParser::RemoveApplication(const QString& branchID, const QString& app
 
     if (!branch->GetAppCount())
         RemoveBranch(branchID);
+}
+
+QStringList ConfigParser::GetToolsetApplications()
+{
+    static QStringList applications;
+    if (applications.isEmpty())
+    {
+        applications << "AssetCacheServer"
+                     << "ResourceEditor"
+                     << "QuickEd";
+        //try to get project name as it stored in ba-manager
+        QString prefix =
+#ifdef Q_OS_WIN
+        "_win";
+#elif defined(Q_OS_MAC)
+        "_mac";
+#else
+#error "unsupported platform"
+#endif //platform
+        for (auto iter = applications.begin(); iter != applications.end(); ++iter)
+        {
+            *iter += prefix;
+        }
+    }
+    return applications;
+}
+
+QStringList ConfigParser::GetTranslatedToolsetApplications() const
+{
+    QStringList applications = GetToolsetApplications();
+    for (auto iter = applications.begin(); iter != applications.end(); ++iter)
+    {
+        *iter = GetString(*iter);
+    }
+    return applications;
 }
 
 int ConfigParser::GetBranchCount()

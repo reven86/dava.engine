@@ -20,6 +20,7 @@ public:
     }
 
     virtual void ForEachContext(const Function<void(DataContext&)>& functor) = 0;
+    virtual uint32 GetContextCount() const = 0;
 
     // never returns nullptr
     virtual DataContext* GetGlobalContext() = 0;
@@ -32,7 +33,7 @@ public:
     virtual DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) = 0;
     virtual PropertiesItem CreatePropertiesNode(const String& nodeName) = 0;
 
-    virtual EngineContext* GetEngineContext() = 0;
+    virtual const EngineContext* GetEngineContext() = 0;
 };
 } // namespace TArc
 } // namespace DAVA

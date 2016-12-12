@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SOUND_SYSTEM_H__
-#define __DAVAENGINE_SOUND_SYSTEM_H__
+#pragma once
 
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
@@ -67,8 +66,13 @@ public:
     void SetListenerPosition(const Vector3& position);
     void SetListenerOrientation(const Vector3& forward, const Vector3& left);
 
+    void SetAllGroupsVolume(float32 volume);
     void SetGroupVolume(const FastName& groupName, float32 volume);
-    float32 GetGroupVolume(const FastName& groupName);
+    float32 GetGroupVolume(const FastName& groupName) const;
+
+    void SetAllGroupsSpeed(float32 speed);
+    void SetGroupSpeed(const FastName& groupName, float32 speed);
+    float32 GetGroupSpeed(const FastName& groupName) const;
 
     void InitFromQualitySettings();
 
@@ -83,12 +87,14 @@ protected:
     struct SoundGroup
     {
         SoundGroup()
-            : volume(1.f)
+            : volume(1.0f)
+            , speed(1.0f)
         {
         }
 
         FastName name;
         float32 volume;
+        float32 speed;
         Vector<SoundEvent*> events;
     };
 
@@ -144,5 +150,3 @@ protected:
 #endif
 };
 };
-
-#endif //__DAVAENGINE_SOUND_SYSTEM_H__

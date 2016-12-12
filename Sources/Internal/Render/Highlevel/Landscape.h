@@ -209,7 +209,6 @@ protected:
     void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 yNegSizePow2, uint32 xPosSizePow2, uint32 yPosSizePow2);
 
     void FlushQueue();
-    void ClearQueue();
 
     inline uint16 GetVertexIndex(uint16 x, uint16 y);
 

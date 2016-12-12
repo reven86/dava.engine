@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Engine/EngineTypes.h"
 #include "Functional/Function.h"
@@ -14,7 +15,6 @@ namespace DAVA
 */
 
 class Engine;
-class UIControlSystem;
 class UIEvent;
 class KeyboardDevice;
 class GamepadDevice;
@@ -59,7 +59,6 @@ private:
     void HandleGamepadRemoved(const Private::MainDispatcherEvent& e);
 
 private:
-    UIControlSystem* uiControlSystem = nullptr;
     RefPtr<KeyboardDevice> keyboard;
     RefPtr<GamepadDevice> gamepad;
 

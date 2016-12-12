@@ -88,7 +88,7 @@ private:
 
     void HidePreview() const;
     void ShowPreview(const QString& pathname) const;
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
 
