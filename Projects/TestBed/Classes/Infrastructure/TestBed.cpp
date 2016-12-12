@@ -239,9 +239,15 @@ void TestBed::RegisterTests()
     new UILoggingTest(*this);
     new ProfilerTest(*this);
     new ScriptingTest(*this);
-    new SamplePluginTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+    new SamplePluginTest(*this);
+
+#endif
+
     //$UNITTEST_CTOR
 }
 
