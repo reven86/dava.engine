@@ -20,6 +20,8 @@ extern const char* JOB_MANAGER;
 extern const char* SOUND_SYSTEM;
 extern const char* ANIMATION_MANAGER;
 extern const char* UI_UPDATE;
+extern const char* UI_LAYOUTING;
+extern const char* UI_TEXTBLOCK_PREPARE;
 extern const char* UI_DRAW;
 
 //Scene
