@@ -23,8 +23,7 @@ import java.util.List;
 
     Source of inspiration is SDL library.
 */
-/* uncomment after multidex enabled
-final class DavaGamepadManager
+final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
 {
     // Gamepad device description 
     static class Gamepad
@@ -61,15 +60,12 @@ final class DavaGamepadManager
     public static native void nativeOnGamepadAdded(int deviceId, String name, boolean hasTriggerButtons);
     public static native void nativeOnGamepadRemoved(int deviceId);
 
-    void onResume()
+    // DavaActivity.ActivityListener interface
+    @Override
+    public void onResume()
     {
         updateGamepadDevices();
         DavaActivity.commandHandler().sendUpdateGamepads(this, UPDATE_PERIOD);
-    }
-
-    void onPause()
-    {
-        // Do nothing
     }
 
     // Get gamepad by its device id or null if there is no such device 
@@ -175,4 +171,3 @@ final class DavaGamepadManager
         return false;
     }
 }
-*/

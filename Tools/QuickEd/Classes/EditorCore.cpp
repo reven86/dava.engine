@@ -8,7 +8,6 @@
 #include "Base/Result.h"
 #include "DAVAVersion.h"
 #include "Engine/Engine.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Utils/Utils.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
