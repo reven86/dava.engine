@@ -107,7 +107,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::EngineContext* engineContext)
+void REApplication::Init(const DAVA::EngineContext* engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";

@@ -143,7 +143,7 @@ void SceneRenderWidget::InitDavaUI()
 
     davaUIScreen = new DAVA::UIScreen();
 
-    DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+    const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
 
     engineCtx->uiScreenManager->RegisterScreen(davaUIScreenID, davaUIScreen.Get());
     engineCtx->uiScreenManager->SetScreen(davaUIScreenID);
