@@ -325,6 +325,15 @@ void WindowBackend::OnCreated()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 }
 
+void WindowBackend::OnInitialized()
+{
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        OnVisibilityChanged(true);
+        OnApplicationFocusChanged(true);
+    }
+}
+
 bool WindowBackend::OnUserCloseRequest()
 {
     if (!closeRequestByApp)

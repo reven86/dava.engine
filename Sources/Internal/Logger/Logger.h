@@ -25,23 +25,13 @@ class Logger : public Singleton<Logger>
 public:
     enum eLogLevel
     {
-        //! Highest log level if it set all message printed out. Use it to separate framework logs from project logs
-        LEVEL_FRAMEWORK = 0,
+        LEVEL_FRAMEWORK = 0, //<! Designates fine-grained informational events to debug an engine.
+        LEVEL_DEBUG, //<! Designates fine-grained informational events to debug an application.
+        LEVEL_INFO, //<! Designates informational messages that highlight the progress of the application at coarse-grained level.
+        LEVEL_WARNING, //<! Designates potentially harmful situations.
+        LEVEL_ERROR, //<! Designates error events that might still allow the application to continue running or can lead the application to abort.
 
-        //! Highest log level at project. If it set all message printed out.
-        LEVEL_DEBUG,
-
-        //! Normal log level prints only message not related to debug
-        LEVEL_INFO,
-
-        //! Warning messages (for usage if we reached some limits)
-        LEVEL_WARNING,
-
-        //! Error messages (critical situations)
-        LEVEL_ERROR,
-
-        //! Disable logs
-        LEVEL__DISABLE
+        LEVEL__DISABLE //<! Disable logs.
     };
 
     Logger();
@@ -88,12 +78,19 @@ public:
     */
     static void PlatformLog(eLogLevel ll, const char8* text);
 
-    // logs which could be written into one log file.
-    // call SetLogFileName to specify destination file.
+    //** Log event with LEVEL_FRAMEWORK level. */
     static void FrameworkDebug(const char8* text, ...);
+
+    //** Log event with LEVEL_DEBUG level. */
     static void Debug(const char8* text, ...);
-    static void Warning(const char8* text, ...);
+
+    //** Log event with LEVEL_INFO level. */
     static void Info(const char8* text, ...);
+
+    //** Log event with LEVEL_WARNING level. */
+    static void Warning(const char8* text, ...);
+
+    //** Log event with LEVEL_ERROR level. */
     static void Error(const char8* text, ...);
 
     // logs which writes to the given file
