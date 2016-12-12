@@ -12,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/NativeService.h"
 #include "Engine/EngineContext.h"
 
 #include "Functional/Function.h"
@@ -164,9 +163,9 @@ public:
         return propertiesHolder->CreateSubHolder(nodeName);
     }
 
-    EngineContext* GetEngineContext() override
+    const EngineContext* GetEngineContext() override
     {
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         DVASSERT(engineContext);
         return engineContext;
     }
@@ -225,6 +224,7 @@ protected:
 protected:
     Engine& engine;
     Core* core;
+    bool recursiveSyncGuard = false;
 
     std::unique_ptr<DataContext> globalContext;
     Vector<std::unique_ptr<DataContext>> contexts;
@@ -234,7 +234,6 @@ protected:
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
-    bool recursiveSyncGuard = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl
@@ -304,7 +303,7 @@ public:
         rendererParams.scaleY = 1.0f;
         Renderer::Initialize(renderer, rendererParams);
 
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
         vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
         vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
@@ -342,7 +341,7 @@ public:
 
             if (modules.empty() == true)
             {
-                engine.Quit(0);
+                engine.QuitAsync(0);
             }
         }
         context->swapBuffers(surface);
@@ -459,7 +458,7 @@ public:
 
         ToolsAssetGuard::Instance()->Init();
 
-        engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
+        PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
         DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
@@ -594,7 +593,7 @@ public:
 
     RenderWidget* GetRenderWidget() const override
     {
-        return engine.GetNativeService()->GetRenderWidget();
+        return PlatformApi::Qt::GetRenderWidget();
     }
 
     void Invoke(int operationId) override
@@ -778,7 +777,7 @@ Core::Core(Engine& engine, bool connectSignals)
 
 Core::~Core() = default;
 
-EngineContext* Core::GetEngineContext()
+const EngineContext* Core::GetEngineContext()
 {
     return impl->GetEngineContext();
 }

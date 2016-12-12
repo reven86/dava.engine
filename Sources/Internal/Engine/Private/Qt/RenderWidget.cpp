@@ -71,6 +71,8 @@ void RenderWidget::OnCreated()
     screenParams->logicalDPI = logicalDpiX();
 
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
+    QSize size = geometry().size();
+    emit Resized(size.width(), size.height());
 }
 
 void RenderWidget::OnInitialize()
