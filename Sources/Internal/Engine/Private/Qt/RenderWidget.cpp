@@ -77,6 +77,8 @@ void RenderWidget::OnInitialize()
 {
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize);
     setProperty(initializedPropertyName, true);
+
+    widgetDelegate->OnInitialized();
 }
 
 void RenderWidget::OnFrame()

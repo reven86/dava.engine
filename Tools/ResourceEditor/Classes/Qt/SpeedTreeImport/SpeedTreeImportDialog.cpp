@@ -5,7 +5,6 @@
 #endif
 #include "ui_treeimportdialog.h"
 #include "Qt/Main/mainwindow.h"
-#include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
@@ -69,7 +68,7 @@ void SpeedTreeImportDialog::OnOk()
 
     //import all trees
     {
-        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...", 0, 0);
         for (size_t i = 0; i < xmlFiles.size(); ++i)
         {
             SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);

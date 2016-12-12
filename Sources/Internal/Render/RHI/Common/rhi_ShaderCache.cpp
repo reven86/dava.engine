@@ -1,8 +1,5 @@
-#include "MCPP/mcpp_lib.h"
-#include "../rhi_ShaderSource.h"
-#include "../rhi_ShaderCache.h"
-#include "rhi_Utils.h"
-#include "PreProcess.h"
+    #include "../rhi_ShaderCache.h"
+    #include "../rhi_ShaderSource.h"
 
 namespace rhi
 {
@@ -46,26 +43,23 @@ void Load(const char* binFileName)
 
 //------------------------------------------------------------------------------
 
-bool GetProg(const DAVA::FastName& uid, std::vector<uint8>* bin)
+const std::vector<uint8>& GetProg(const DAVA::FastName& uid)
 {
-    bool success = false;
+    static const std::vector<uint8> empty(0);
 
     for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
         if (_ProgInfo[i].uid == uid)
         {
-            bin->clear();
-            bin->insert(bin->begin(), _ProgInfo[i].bin.begin(), _ProgInfo[i].bin.end());
-            success = true;
-            break;
+            return _ProgInfo[i].bin;
         }
     }
 
-    return success;
+    return empty;
 }
 
 //------------------------------------------------------------------------------
-
+/*
 static const char* _ShaderHeader_Metal =
 "#include <metal_stdlib>\n"
 "#include <metal_graphics>\n"
@@ -863,270 +857,21 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_END               return OUT; }\n"
 
 ;
-
-static void
-PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
-{
-    char src[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-    int src_len = 0;
-
-    // inject vattr definitions
-    {
-        struct
-        {
-            const char* name;
-            int value;
-        } vattr[] =
-        {
-          { "VATTR_POSITION", VATTR_POSITION },
-          { "VATTR_NORMAL", VATTR_NORMAL },
-          { "VATTR_TEXCOORD_0", VATTR_TEXCOORD_0 },
-          { "VATTR_TEXCOORD_1", VATTR_TEXCOORD_1 },
-          { "VATTR_TEXCOORD_2", VATTR_TEXCOORD_2 },
-          { "VATTR_TEXCOORD_3", VATTR_TEXCOORD_3 },
-          { "VATTR_TEXCOORD_4", VATTR_TEXCOORD_4 },
-          { "VATTR_TEXCOORD_5", VATTR_TEXCOORD_5 },
-          { "VATTR_TEXCOORD_6", VATTR_TEXCOORD_6 },
-          { "VATTR_TEXCOORD_7", VATTR_TEXCOORD_7 },
-          { "VATTR_COLOR_0", VATTR_COLOR_0 },
-          { "VATTR_COLOR_1", VATTR_COLOR_1 },
-          { "VATTR_TANGENT", VATTR_TANGENT },
-          { "VATTR_BINORMAL", VATTR_BINORMAL },
-          { "VATTR_BLENDWEIGHT", VATTR_BLENDWEIGHT },
-          { "VATTR_BLENDINDEX", VATTR_BLENDINDEX }
-
-        };
-
-        for (unsigned i = 0; i != countof(vattr); ++i)
-            src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
-    }
-
-    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_VERTEX \n");
-    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_INSTANCE \n");
-
-    switch (targetApi)
-    {
-    case RHI_DX9:
-    {
-        strcat(src, _ShaderDefine_DX9);
-    }
-    break;
-
-    case RHI_DX11:
-    {
-        strcat(src, _ShaderDefine_DX11);
-    }
-    break;
-
-    case RHI_GLES2:
-    {
-        src_len += sprintf(src + src_len, "%s", _ShaderDefine_GLES2);
-    }
-    break;
-
-    case RHI_METAL:
-    {
-        const char* s = srcText;
-        const char* decl;
-        bool vp_buf_declared[16];
-        bool fp_buf_declared[16];
-        bool fp_tex_declared[16];
-        bool vp_tex_declared[16];
-
-        for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
-            vp_buf_declared[i] = false;
-        for (unsigned i = 0; i != countof(fp_buf_declared); ++i)
-            fp_buf_declared[i] = false;
-        for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
-            fp_tex_declared[i] = false;
-        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
-            vp_tex_declared[i] = false;
-
-        while ((decl = strstr(s, "DECL_FPROG_BUFFER")))
-        {
-            int i = 0;
-
-            sscanf(decl, "DECL_FPROG_BUFFER(%i,", &i);
-
-            src_len += sprintf(src + src_len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i);
-            src_len += sprintf(src + src_len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i);
-            fp_buf_declared[i] = true;
-
-            s += strlen("DECL_FPROG_BUFFER");
-        }
-        for (unsigned i = 0; i != countof(fp_buf_declared); ++i)
-        {
-            if (!fp_buf_declared[i])
-            {
-                src_len += sprintf(src + src_len, "#define FPROG_IN_BUFFER_%i \n", i);
-                src_len += sprintf(src + src_len, "#define FPROG_BUFFER_%i \n", i);
-            }
-        }
-
-        s = srcText;
-        while ((decl = strstr(s, "DECL_FP_SAMPLER2D")))
-        {
-            int i = 0;
-
-            sscanf(decl, "DECL_FP_SAMPLER2D(%i,", &i);
-
-            src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i);
-            src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
-            fp_tex_declared[i] = true;
-
-            s += strlen("DECL_FP_SAMPLER2D");
-        }
-        s = srcText;
-        while ((decl = strstr(s, "DECL_FP_SAMPLERCUBE")))
-        {
-            int i = 0;
-
-            sscanf(decl, "DECL_FP_SAMPLERCUBE(%i,", &i);
-
-            src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i);
-            src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
-            fp_tex_declared[i] = true;
-
-            s += strlen("DECL_FP_SAMPLER2D");
-        }
-        for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
-        {
-            if (!fp_tex_declared[i])
-            {
-                src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i \n", i);
-                src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i \n", i);
-            }
-        }
-
-        s = srcText;
-        while ((decl = strstr(s, "DECL_VP_SAMPLER2D")))
-        {
-            int i = 0;
-
-            sscanf(decl, "DECL_VP_SAMPLER2D(%i,", &i);
-
-            src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i  , texture2d<float> vp_tex%i [[ texture(%i) ]]\n", i, i, i);
-            src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i   , sampler vp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
-            vp_tex_declared[i] = true;
-
-            s += strlen("DECL_VP_SAMPLER2D");
-        }
-        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
-        {
-            if (!vp_tex_declared[i])
-            {
-                src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i \n", i);
-                src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i \n", i);
-            }
-        }
-
-        s = srcText;
-        while ((decl = strstr(s, "DECL_VPROG_BUFFER")))
-        {
-            int i = 0;
-
-            sscanf(decl, "DECL_VPROG_BUFFER(%i,", &i);
-
-            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, MAX_VERTEX_STREAM_COUNT + i);
-            src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i);
-            vp_buf_declared[i] = true;
-
-            s += strlen("DECL_VPROG_BUFFER");
-        }
-        for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
-        {
-            if (!vp_buf_declared[i])
-            {
-                src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i \n", i);
-                src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i \n", i);
-            }
-        }
-
-        strcat(src, _ShaderDefine_Metal);
-    }
-    break;
-    }
-
-    strcat(src, srcText);
-
-    const char* argv[] =
-    {
-      "<mcpp>", // we just need first arg
-      "-P", // do not output #line directives
-      "-C", // keep comments
-      MCPP_Text
-    };
-
-    char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-    _mcpp_preprocessed_text.buffer = localBuffer;
-    _mcpp_preprocessed_text.pos = 0;
-    {
-        mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
-        mcpp_set_out_func(&mcpp_fputc_impl, &mcpp_fputs_impl, &mcpp_fprintf_impl);
-        mcpp_lib_main(countof(argv), const_cast<char**>(argv));
-        mcpp__cleanup();
-    }
-    *preprocessedText = std::string(localBuffer);
-    _mcpp_preprocessed_text.buffer = nullptr;
-    _mcpp_preprocessed_text.pos = 0;
-
-    switch (targetApi)
-    {
-    case RHI_DX11:
-        preprocessedText->insert(0, _ShaderHeader_DX11);
-        break;
-
-    case RHI_DX9:
-        preprocessedText->insert(0, _ShaderHeader_DX9);
-        break;
-
-    case RHI_GLES2:
-        preprocessedText->insert(0, _ShaderHeader_GLES2);
-            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-        preprocessedText->insert(0, "precision highp float;\n");
-            #endif
-        break;
-
-    case RHI_METAL:
-        preprocessedText->insert(0, _ShaderHeader_Metal);
-        break;
-    }
-
-    //DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
-}
-
+*/
 //------------------------------------------------------------------------------
 
 void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)
 {
-    std::string txt;
-    std::vector<uint8>* bin = nullptr;
+    ShaderSource src;
 
+    if (src.Construct(progType, srcText))
     {
-        ShaderPreprocessScope preprocessScope;
-        PreProcessSource(targetApi, srcText, &txt);
+        const std::string& code = src.GetSourceCode(targetApi);
+
+        UpdateProgBinary(targetApi, progType, uid, code.c_str(), unsigned(code.length()));
+        //DAVA::Logger::Info("\n\n--shader  \"%s\"", uid.c_str());
+        //DAVA::Logger::Info(code.c_str());
     }
-
-    for (unsigned i = 0; i != _ProgInfo.size(); ++i)
-    {
-        if (_ProgInfo[i].uid == uid)
-        {
-            bin = &(_ProgInfo[i].bin);
-            break;
-        }
-    }
-
-    if (!bin)
-    {
-        _ProgInfo.push_back(ProgInfo());
-
-        _ProgInfo.back().uid = uid;
-        bin = &(_ProgInfo.back().bin);
-    }
-
-    bin->clear();
-    bin->insert(bin->begin(), reinterpret_cast<const uint8*>(&(txt[0])), reinterpret_cast<const uint8*>(&(txt[txt.length() - 1]) + 1));
-    bin->push_back(0);
 }
 
 //------------------------------------------------------------------------------
@@ -1152,6 +897,8 @@ void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& ui
         pbin = &(_ProgInfo.back().bin);
     }
 
+    //- DAVA::Logger::Info("\n\n--shader  \"%s\"", uid.c_str());
+    //- DAVA::Logger::Info((const char*)bin);
     pbin->clear();
     pbin->insert(pbin->begin(), reinterpret_cast<const uint8*>(bin), reinterpret_cast<const uint8*>(bin) + binSize);
     pbin->push_back(0);

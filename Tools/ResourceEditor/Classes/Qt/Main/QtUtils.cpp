@@ -20,17 +20,12 @@
 
 using namespace DAVA;
 
-FilePath PathnameToDAVAStyle(const QString& convertedPathname)
-{
-    return FilePath(convertedPathname.toStdString());
-}
-
 FilePath GetOpenFileName(const String& title, const FilePath& pathname, const String& filter)
 {
     QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                    QString(filter.c_str()));
 
-    FilePath openedPathname = PathnameToDAVAStyle(filePath);
+    FilePath openedPathname(filePath.toStdString());
     if (!openedPathname.IsEmpty())
     {
         SceneValidator validator;
@@ -40,7 +35,7 @@ FilePath GetOpenFileName(const String& title, const FilePath& pathname, const St
             validator.SetPathForChecking(data->GetProjectPath());
         }
 
-        if (validator.IsPathCorrectForProject(openedPathname))
+        if (validator.IsPathCorrectForProject(openedPathname) == false)
         {
             //Need to Show Error
             DAVA::Logger::Error("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str());

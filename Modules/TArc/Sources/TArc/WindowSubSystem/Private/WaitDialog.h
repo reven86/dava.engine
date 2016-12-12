@@ -4,10 +4,11 @@
 #include "TArc/WindowSubSystem/UI.h"
 
 #include <QPointer>
+#include <QCursor>
 
 class QDialog;
 class QProgressBar;
-class QLabel;
+class QPlainTextEdit;
 namespace DAVA
 {
 namespace TArc
@@ -29,7 +30,8 @@ public:
 private:
     QPointer<QDialog> dlg;
     QPointer<QProgressBar> progressBar;
-    QPointer<QLabel> label;
+    QPointer<QPlainTextEdit> messageLabel;
+    QCursor originalCursor;
 };
 } // namespace TArc
 } // namespace DAVA

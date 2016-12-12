@@ -7,6 +7,7 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Scene/System/EditorStatisticsSystem.h"
 #include "Qt/Scene/System/EditorVegetationSystem.h"
+#include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
@@ -63,6 +64,10 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     InitializeInfo();
 
     viewport()->setBackgroundRole(QPalette::Window);
+
+    TextureCache* cache = TextureCache::Instance();
+    DVASSERT(cache != nullptr);
+    QObject::connect(cache, &TextureCache::CacheCleared, this, &SceneInfo::TexturesReloaded);
 }
 
 SceneInfo::~SceneInfo()
