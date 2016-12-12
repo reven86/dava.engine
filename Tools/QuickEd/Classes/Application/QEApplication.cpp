@@ -55,7 +55,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo QEApplication::GetInitInfo() const
     return initInfo;
 }
 
-void QEApplication::Init(DAVA::EngineContext* engineContext)
+void QEApplication::Init(const DAVA::EngineContext* engineContext)
 {
     using namespace DAVA;
 #if defined(__DAVAENGINE_MACOS__)
