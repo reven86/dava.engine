@@ -263,7 +263,7 @@ FTInternalFont::FTInternalFont(const FilePath& path)
     : fontPath(path)
 {
     ftm = FontManager::Instance()->GetFT();
-    DVASSERT(ftm)
+    DVASSERT(ftm);
 
     FT_Face face = nullptr;
     FT_Error error = ftm->LookupFace(this, &face);
