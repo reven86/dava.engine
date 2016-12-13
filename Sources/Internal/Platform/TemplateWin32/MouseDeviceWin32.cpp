@@ -6,8 +6,6 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
-#include "Engine/EngineModule.h"
-
 #if !defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA

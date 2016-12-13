@@ -31,7 +31,6 @@ GameCore::GameCore(Engine& e)
     engine.suspended.Connect(this, &GameCore::OnSuspend);
     engine.resumed.Connect(this, &GameCore::OnResume);
     engine.beginFrame.Connect(this, &GameCore::BeginFrame);
-    engine.draw.Connect(this, &GameCore::Draw);
     engine.endFrame.Connect(this, &GameCore::EndFrame);
 }
 
@@ -41,16 +40,15 @@ void GameCore::OnAppStarted()
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
 {
-    w->SetTitle("Scene Viewer");
+    engine.PrimaryWindow()->draw.Connect(this, &GameCore::Draw);
+
+    w->SetTitleAsync("Scene Viewer");
 #if defined(__DAVAENGINE_WIN_UAP__)
     ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
-    w->SetSize({ screenInfo.width, screenInfo.height });
+    w->SetSizeAsync({ screenInfo.width, screenInfo.height });
 #else
-    w->SetSize({ 1024, 768 });
+    w->SetSizeAsync({ 1024, 768 });
 #endif
-
-    // TODO FullScreen
-    //w->SetFullScreen(false);
 
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
@@ -118,7 +116,7 @@ void GameCore::BeginFrame()
 {
 }
 
-void GameCore::Draw()
+void GameCore::Draw(DAVA::Window* /*window*/)
 {
 #if 0
     rhi::RenderPassConfig pass_desc;

@@ -12,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {
@@ -56,7 +55,7 @@ void MovieViewControl::Initialize(const Rect& rect)
     }
 
     std::weak_ptr<MovieViewControl>* selfWeakPtr = new std::weak_ptr<MovieViewControl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaMovieView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaMovieView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();

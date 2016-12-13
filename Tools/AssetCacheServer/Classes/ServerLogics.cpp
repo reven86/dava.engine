@@ -56,7 +56,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
             dataBase->Insert(key, value);
 
             //add task for lazy sending of files;
-            serverTasks.emplace_back(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST);
+            AddServerTask(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST);
         }
         else
         {
@@ -79,9 +79,7 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA
 
             serverProxy->SendData(channel, key, value);
 
-            { //add task for lazy sending of files;
-                serverTasks.emplace_back(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST);
-            }
+            AddServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST);
         }
         else if (clientProxy->RequestData(key))
         { // Not found in db. Ask from remote cache.
@@ -174,7 +172,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
 
 void ServerLogics::ProcessServerTasks()
 {
-    if (!serverTasks.empty() && clientProxy && clientProxy->ChannelIsOpened())
+    if (!serverTasks.empty() && IsRemoteServerConnected())
     {
         for (const auto& task : serverTasks)
         {
@@ -192,9 +190,9 @@ void ServerLogics::ProcessServerTasks()
                 break;
             }
         }
-
-        serverTasks.clear();
     }
+
+    serverTasks.clear();
 }
 
 void ServerLogics::Update()
@@ -205,4 +203,9 @@ void ServerLogics::Update()
     {
         dataBase->Update();
     }
+}
+
+bool ServerLogics::IsRemoteServerConnected() const
+{
+    return (clientProxy && clientProxy->ChannelIsOpened());
 }

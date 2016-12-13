@@ -61,7 +61,7 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
     DAVA::Engine* engine = DAVA::Engine::Instance();
     DVASSERT(engine != nullptr);
-    DAVA::EngineContext* engineContext = engine->GetContext();
+    const DAVA::EngineContext* engineContext = engine->GetContext();
     DVASSERT(engineContext != nullptr);
     if (engineContext->inputSystem == nullptr)
     {

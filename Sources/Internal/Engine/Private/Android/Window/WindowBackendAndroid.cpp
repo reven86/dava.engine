@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
@@ -105,8 +104,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
 }
 
@@ -154,9 +152,19 @@ void WindowBackend::SetTitle(const String& title)
     // Android window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to android
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -271,11 +279,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
 
-        MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-        e.functor = [this, nativeWindow]() {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this, nativeWindow]() {
             ReplaceAndroidNativeWindow(nativeWindow);
-        };
-        mainDispatcher->PostEvent(e);
+        }));
     }
 
     windowWidth = static_cast<float32>(width);
@@ -311,11 +317,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
 
 void WindowBackend::SurfaceDestroyed()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-    e.functor = [this]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
-    };
-    mainDispatcher->PostEvent(e);
+    }));
 }
 
 void WindowBackend::ProcessProperties()

@@ -17,7 +17,6 @@
 #include "Base/Result.h"
 #include "DAVAVersion.h"
 #include "Engine/Engine.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Particles/ParticleEmitter.h"
@@ -195,7 +194,7 @@ EditorCore::EditorCore(DAVA::Engine& engine)
     ToolsAssetGuard::Instance()->Init();
 
     using namespace DAVA;
-    EngineContext* context = engine.GetContext();
+    const EngineContext* context = engine.GetContext();
 
     FileSystem* fs = context->fileSystem;
     fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
@@ -230,7 +229,7 @@ EditorCore::EditorCore(DAVA::Engine& engine)
 
     mainWindow.reset(new MainWindow());
 
-    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
     mainWindow->InjectRenderWidget(renderWidget);
 
     //we need to register preferences when whole class is initialized

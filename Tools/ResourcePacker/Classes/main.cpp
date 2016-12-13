@@ -223,7 +223,7 @@ int DAVAMain(Vector<String> cmdLine)
     e.update.Connect([&e](float32)
                      {
                          Process(e);
-                         e.Quit(0);
+                         e.QuitAsync(0);
                      });
 
     return e.Run();

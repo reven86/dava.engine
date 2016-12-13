@@ -20,6 +20,12 @@ id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
+DAVA::Semaphore* _Metal_DrawableDispatchSemaphore = nullptr; //used to prevent building command buffers
+const uint32 _Metal_DrawableDispatchSemaphoreFrameCount = 4;
+
+//We provide consts-data for metal directly from buffer, so we have to store consts-data for 3 frames.
+//Also now metal can work in render-thread and we have to store one more frame data.
+static const DAVA::uint32 METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER = 4;
 
 InitParam _Metal_InitParam;
 
@@ -27,16 +33,14 @@ Dispatch DispatchMetal = { 0 };
 
 //------------------------------------------------------------------------------
 
-static Api
-metal_HostApi()
+static Api metal_HostApi()
 {
     return RHI_METAL;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-metal_TextureFormatSupported(TextureFormat format, ProgType)
+static bool metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -77,6 +81,8 @@ metal_TextureFormatSupported(TextureFormat format, ProgType)
 
 static void metal_Uninitialize()
 {
+    if (_Metal_DrawableDispatchSemaphore != nullptr)
+        _Metal_DrawableDispatchSemaphore->Post(_Metal_DrawableDispatchSemaphoreFrameCount); //resume render thread if parked there
 }
 
 //------------------------------------------------------------------------------
@@ -181,6 +187,18 @@ void Metal_InitContext()
     depth_desc.depthWriteEnabled = YES;
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
+
+    NSString* reqSysVer = @"10.0";
+    NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
+    BOOL iosVersion10 = FALSE;
+    if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
+        iosVersion10 = TRUE;
+
+    if (iosVersion10 && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
+    {
+        DAVA::Logger::Error("A7 ios 10 detected");
+        _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
+    }
 }
 bool Metal_CheckSurface()
 {
@@ -192,10 +210,10 @@ bool Metal_CheckSurface()
 void metal_Initialize(const InitParam& param)
 {
     _Metal_InitParam = param;
-    int ringBufferSize = 4 * 1024 * 1024;
+    DAVA::uint32 ringBufferSize = 2 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 2); //TODO: 2 is for release 3.1 only, in 3.2 we will decrease this in game configuration and set corresponding multiplier here (supposed 3) (now supposed 4 as metal now can work in render thread as well)
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

@@ -2,6 +2,7 @@
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/TexturePacker.h"
 #include "CommandLine/CommandLineParser.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
@@ -15,8 +16,6 @@
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
 #include "Logger/Logger.h"
-
-#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

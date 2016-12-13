@@ -1,6 +1,6 @@
 #include <Base/BaseTypes.h>
+#include <Engine/Engine.h>
 #include <Logger/Logger.h>
-#include <Engine/EngineModule.h>
 #include <Debug/DVAssertDefaultHandlers.h>
 
 #include "CommandLineApplication.h"
@@ -28,7 +28,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
-    EngineContext* context = e.GetContext();
+    const EngineContext* context = e.GetContext();
     context->logger->SetLogLevel(Logger::LEVEL_INFO);
     context->logger->EnableConsoleMode();
 
@@ -40,7 +40,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
                          app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
                          app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
                          int retCode = app.Process(e.GetCommandLine());
-                         e.Quit(retCode);
+                         e.QuitAsync(retCode);
                      });
 
     return e.Run();

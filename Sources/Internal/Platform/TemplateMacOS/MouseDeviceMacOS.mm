@@ -75,7 +75,7 @@ void MouseDeviceMacOS::SetCursorInCenter()
 
 bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 {
-    bool isMouse = event->device == UIEvent::Device::MOUSE;
+    bool isMouse = event->device == eInputDevices::MOUSE;
     bool isMovePhase = event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE;
 
     if (isMouse && isMovePhase && skipMouseMoveEvents != 0)

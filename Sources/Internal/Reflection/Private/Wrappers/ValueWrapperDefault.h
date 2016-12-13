@@ -10,7 +10,7 @@ template <typename T>
 class ValueWrapperDefault : public ValueWrapper
 {
 public:
-    static const bool isConst = std::is_const<typename std::remove_pointer<T>::type>::value;
+    static const bool isConst = std::is_const<T>::value;
 
     ValueWrapperDefault() = default;
 

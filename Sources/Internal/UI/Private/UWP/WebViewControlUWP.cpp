@@ -9,8 +9,7 @@
 #include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -157,25 +156,21 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    nativeWebView = nullptr;
+#else
     using ::Windows::UI::Xaml::Controls::WebView;
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
-
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice]() {
-            nservice->RemoveXamlControl(p);
-        });
-#else
         core->RunOnUIThread([p]() {
             // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-#endif
         nativeWebView = nullptr;
     }
+#endif
 }
 
 void WebViewControl::OwnerIsDying()
@@ -185,25 +180,36 @@ void WebViewControl::OwnerIsDying()
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 
-    if (nativeWebView != nullptr)
+#if defined(__DAVAENGINE_COREV2__)
+    if (window != nullptr)
+#endif
     {
-        // Compiler complains of capturing nativeWebView data member in lambda
-        WebView ^ p = nativeWebView;
-        Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-        Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+        if (nativeWebView != nullptr)
+        {
+#if defined(__DAVAENGINE_COREV2__)
+            auto self{ shared_from_this() };
+            window->RunOnUIThreadAsync([this, self]() {
+                nativeWebView->NavigationStarting -= tokenNavigationStarting;
+                nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+                PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
+            });
+#else
+            // Compiler complains of capturing nativeWebView data member in lambda
+            WebView ^ p = nativeWebView;
+            Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
+            Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+
+            core->RunOnUIThread([p, tokenNS, tokenNC]() {
+                // We don't need blocking call here
+                p->NavigationStarting -= tokenNS;
+                p->NavigationCompleted -= tokenNC;
+            });
+#endif
+        }
 
 #if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
-#else
-        core->RunOnUIThread([p, tokenNS, tokenNC]() {
-            // We don't need blocking call here
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
 #endif
     }
 }
@@ -216,6 +222,11 @@ void WebViewControl::Initialize(const Rect& rect)
     properties.rectInWindowSpace = VirtualToWindow(rect);
     properties.rectChanged = true;
     properties.anyPropertyChanged = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+#endif
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
@@ -269,12 +280,15 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
-                if (nativeWebView != nullptr)
-                {
-                    SetNativePositionAndSize(rectInWindowSpace, true);
-                }
-            });
+            if (window != nullptr)
+            {
+                window->RunOnUIThreadAsync([this, self]() {
+                    if (nativeWebView != nullptr)
+                    {
+                        SetNativePositionAndSize(rectInWindowSpace, true);
+                    }
+                });
+            }
 #else
             core->RunOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
@@ -313,7 +327,7 @@ void WebViewControl::SetRenderToTexture(bool value)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
@@ -343,7 +357,7 @@ void WebViewControl::Update()
         auto self{ shared_from_this() };
         WebViewProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
-        window->RunAsyncOnUIThread([this, self, props]() {
+        window->RunOnUIThreadAsync([this, self, props]() {
             ProcessProperties(props);
         });
 #else
@@ -371,7 +385,7 @@ void WebViewControl::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddXamlControl(nativeWebView);
+    PlatformApi::Win10::AddXamlControl(window, nativeWebView);
 #else
     core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
@@ -413,7 +427,7 @@ void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAndWaitOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
@@ -459,7 +473,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
 
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+    RunOnMainThreadAsync([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             webViewDelegate->PageLoaded(uiWebView);
@@ -472,6 +486,21 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
             webViewDelegate->PageLoaded(uiWebView);
         }
     });
+#endif
+}
+
+void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    properties.rectInWindowSpace = VirtualToWindow(properties.rect);
+    properties.rectChanged = true;
+    properties.anyPropertyChanged = true;
+}
+
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
+    window = nullptr;
 #endif
 }
 
@@ -522,7 +551,7 @@ void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::Win10::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif
@@ -579,7 +608,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     auto self{shared_from_this()};
     create_task(js).then([this, self](Platform::String^ result) {
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
+        RunOnMainThreadAsync([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
                 String jsResult = WStringToString(result->Data());
@@ -609,8 +638,12 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-    return coordSystem->ConvertVirtualToInput(srcRect);
+#if defined(__DAVAENGINE_COREV2__)
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
+    return vcs->ConvertVirtualToInput(srcRect);
 }
 
 void WebViewControl::RenderToTexture()
@@ -644,7 +677,7 @@ void WebViewControl::RenderToTexture()
             if (sprite.Valid())
             {
 #if defined(__DAVAENGINE_COREV2__)
-                window->GetEngine()->RunAsyncOnMainThread([this, self, sprite]()
+                RunOnMainThreadAsync([this, self, sprite]()
                 {
                     if (uiWebView != nullptr)
                     {

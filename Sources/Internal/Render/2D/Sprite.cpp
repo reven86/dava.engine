@@ -672,7 +672,7 @@ void Sprite::PrepareForNewSize()
     int32 pos = int32(pathname.find(UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex())));
     String scaledName = pathname.substr(0, pos) + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetDesirableResourceIndex()) + pathname.substr(pos + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex()).length());
 
-    Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());
+    Logger::FrameworkDebug("Searching for file: %s", scaledName.c_str());
 
     File* fp = File::Create(scaledName, File::READ | File::OPEN);
 

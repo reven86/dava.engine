@@ -12,9 +12,8 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Engine/Engine.h"
 #include "Concurrency/LockGuard.h"
-
-#include "Engine/EngineModule.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"

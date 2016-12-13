@@ -39,7 +39,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     e.update.Connect([&e](float32)
                      {
                          int result = Process(e);
-                         e.Quit(result);
+                         e.QuitAsync(result);
                      });
 
     return e.Run();
