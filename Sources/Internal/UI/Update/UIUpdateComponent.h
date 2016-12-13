@@ -18,6 +18,10 @@ public:
     UIUpdateComponent(const UIUpdateComponent& src) = default;
     UIComponent* Clone() const override;
 
+    // Notificate what control with this component should
+    // receive update signal if it invisible
+    // Need for all native controls
+    // TODO: On CoreV2 use for this purpose update signal from core
     void SetUpdateInvisible(bool value);
     bool GetUpdateInvisible() const;
 
