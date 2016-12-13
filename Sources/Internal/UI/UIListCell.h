@@ -2,7 +2,7 @@
 #define __DAVAENGINE_UI_LIST_CELL_H__
 
 #include "UI/UIButton.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

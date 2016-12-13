@@ -1,6 +1,7 @@
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

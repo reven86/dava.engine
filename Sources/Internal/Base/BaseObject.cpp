@@ -3,6 +3,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Base/Introspection.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

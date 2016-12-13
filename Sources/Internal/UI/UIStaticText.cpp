@@ -12,6 +12,7 @@
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Utils/UTF8Utils.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

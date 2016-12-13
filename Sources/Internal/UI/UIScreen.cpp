@@ -4,6 +4,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RHI/Common/PreProcess.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

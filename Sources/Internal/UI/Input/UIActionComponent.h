@@ -4,7 +4,7 @@
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

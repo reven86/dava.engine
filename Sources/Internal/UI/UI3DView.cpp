@@ -9,6 +9,7 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

@@ -20,6 +20,8 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
 class TextFieldPlatformImpl : public TextFieldStbImpl

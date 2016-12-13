@@ -19,7 +19,7 @@
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
-
+#include "Reflection/ReflectionRegistrator.h"
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"

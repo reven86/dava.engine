@@ -2,7 +2,7 @@
 #define __DAVAENGINE_UI_PARTICLES__
 
 #include "UI/UIControl.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

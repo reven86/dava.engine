@@ -3,7 +3,7 @@
 
 #include "UIControl.h"
 #include "IWebViewControl.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

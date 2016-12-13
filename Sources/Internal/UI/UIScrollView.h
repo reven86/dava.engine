@@ -4,7 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 #include "UI/UIScrollBar.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

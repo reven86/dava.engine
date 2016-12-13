@@ -1,6 +1,7 @@
 #include "UIAnchorComponent.h"
 
 #include "UI/UIControl.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

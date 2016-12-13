@@ -6,6 +6,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/VariantType.h"
 #include "Render/2D/FontManager.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

@@ -7,6 +7,8 @@
 #include "UI/UIEvent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
 // Use these names for children buttons to define UISlider in .yaml

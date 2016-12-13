@@ -24,6 +24,7 @@
 #include "Render/RenderHelper.h"
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

@@ -2,6 +2,8 @@
 #define __DAVAENGINE_UI_COMPONENT_H__
 
 #include "Base/BaseObject.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

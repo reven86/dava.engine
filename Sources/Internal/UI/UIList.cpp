@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

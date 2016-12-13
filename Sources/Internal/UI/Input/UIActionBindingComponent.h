@@ -8,7 +8,7 @@
 #include "Functional/Signal.h"
 #include "UIActionMap.h"
 #include "UIInputMap.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

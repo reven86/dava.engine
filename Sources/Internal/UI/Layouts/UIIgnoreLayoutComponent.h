@@ -2,7 +2,7 @@
 #define __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

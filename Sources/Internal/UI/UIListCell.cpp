@@ -1,5 +1,6 @@
 #include "UI/UIListCell.h"
 #include "Base/ObjectFactory.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

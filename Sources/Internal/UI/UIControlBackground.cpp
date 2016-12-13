@@ -7,6 +7,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include <limits>
 
@@ -16,8 +17,8 @@ DAVA_REFLECTION_IMPL(UIControlBackground)
 {
     ReflectionRegistrator<UIControlBackground>::Begin()
     .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType)
-    .Field<FilePath, const FilePath&>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
-    .Field<int32, int32>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
+    .Field<FilePath (UIControlBackground::*)() const, void (UIControlBackground::*)(const FilePath&)>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
+    .Field<int32 (UIControlBackground::*)() const, void (UIControlBackground::*)(int32)>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
     .Field("mask", &UIControlBackground::GetMaskSpritePath, &UIControlBackground::SetMaskSpriteFromPath)
     .Field("detail", &UIControlBackground::GetDetailSpritePath, &UIControlBackground::SetDetailSpriteFromPath)
     .Field("gradient", &UIControlBackground::GetGradientSpritePath, &UIControlBackground::SetGradientSpriteFromPath)
