@@ -44,8 +44,7 @@ public:
 
     void* mappedData = nullptr;
     SamplerState::Descriptor::Sampler samplerState;
-    //-    std::vector<FramebufferGLES2_t> fbo;
-    GLint fbo;
+    GLint fbo = 0;
 
     uint32 isMapped : 1;
     uint32 updatePending : 1;

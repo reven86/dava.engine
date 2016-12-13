@@ -144,6 +144,7 @@ GLESGenerator::GLESGenerator(Allocator* allocator)
     scalarSwizzle4Function[0] = 0;
     sinCosFunction[0] = 0;
     outputPosition = false;
+    mrtUsed = false;
 }
 
 bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* entryName_, std::string* code)
