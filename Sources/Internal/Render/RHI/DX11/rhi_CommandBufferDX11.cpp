@@ -1621,7 +1621,6 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
         def_viewport.Height = static_cast<float>(sz.dy);
     }
 
-
     context->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
 
     for (unsigned i = 0; i != countof(rt_view); ++i)

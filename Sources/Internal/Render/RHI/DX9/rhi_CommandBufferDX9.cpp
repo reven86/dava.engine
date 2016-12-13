@@ -606,7 +606,6 @@ void CommandBufferDX9_t::Execute()
                         TextureDX9::ResolveMultisampling(passCfg.colorBuffer[t].multisampleTexture, passCfg.colorBuffer[t].texture);
                 }
 
-
                 if (_D3D9_BackBuf)
                 {
                     DX9_CALL(_D3D9_Device->SetRenderTarget(0, _D3D9_BackBuf), "SetRenderTarget");
