@@ -5,6 +5,7 @@
 #define BLENDING_SOFT_ADDITIVE          4
 #define BLENDING_MULTIPLICATIVE         5
 #define BLENDING_STRONG_MULTIPLICATIVE  6
+#define BLENDING_PREMULTIPLIED_ALPHA    7
 
 #ifndef BLENDING
 #define BLENDING BLENDING_NONE
@@ -16,5 +17,7 @@
     blending : src=one dst=one
 #elif BLENDING == BLENDING_ALPHA_ADDITIVE
     blending : src=src_alpha dst=one
+#elif BLENDING == BLENDING_PREMULTIPLIED_ALPHA
+    blending : src=one dst=inv_src_alpha
 #endif
 

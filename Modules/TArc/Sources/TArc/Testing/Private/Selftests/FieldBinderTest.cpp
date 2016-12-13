@@ -48,6 +48,9 @@ public:
         ON_CALL(*this, ValueChanged2(_))
         .WillByDefault(Invoke(this, &MockObject::ValueChangedCallback2));
     }
+    virtual ~MockObject()
+    {
+    }
     MOCK_METHOD1(ValueChanged, void(const DAVA::Any& v));
     MOCK_METHOD1(ValueChanged2, void(const DAVA::Any& v));
 

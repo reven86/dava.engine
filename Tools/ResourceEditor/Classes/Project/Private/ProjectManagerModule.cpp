@@ -178,7 +178,7 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
 void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 {
     ProjectManagerData* data = GetData();
-    connections.disconnect(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, nullptr, nullptr);
+    connections.RemoveConnection(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded);
     data->projectPath = incomePath;
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
@@ -188,7 +188,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     LoadMaterialsSettings(data);
 
     DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
-    DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
+    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
     DAVA::FileSystem* fileSystem = engineCtx->fileSystem;

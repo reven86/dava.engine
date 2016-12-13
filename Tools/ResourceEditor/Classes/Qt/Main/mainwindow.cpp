@@ -86,7 +86,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Reflection/ReflectedType.h"
 
 #include "Scene3D/Components/ActionComponent.h"
@@ -311,7 +310,7 @@ QtMainWindow::~QtMainWindow()
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
-    QObject::connect(DAVA::Engine::Instance()->GetNativeService()->GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 QString GetSaveFolderForEmitters()
