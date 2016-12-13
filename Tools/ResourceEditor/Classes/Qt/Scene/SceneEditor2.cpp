@@ -1,7 +1,9 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Commands2/Base/RECommandStack.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
@@ -9,12 +11,13 @@
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
-#include "Project/ProjectManager.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
+#include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -32,15 +35,47 @@
 
 #include <QShortcut>
 
-namespace
+namespace SceneEditorDetail
 {
-const DAVA::FastName MATERIAL_FOR_REBIND = DAVA::FastName("Global");
+struct EmitterDescriptor
+{
+    EmitterDescriptor(DAVA::ParticleEmitter* emitter_, DAVA::ParticleLayer* layer, DAVA::FilePath path, DAVA::String name)
+        : emitter(emitter_)
+        , ownerLayer(layer)
+        , yamlPath(path)
+        , entityName(name)
+    {
+    }
+
+    DAVA::ParticleEmitter* emitter = nullptr;
+    DAVA::ParticleLayer* ownerLayer = nullptr;
+    DAVA::FilePath yamlPath;
+    DAVA::String entityName;
+};
+
+void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName)
+{
+    DVASSERT(topLevelEmitter != nullptr);
+
+    for (auto& layer : topLevelEmitter->layers)
+    {
+        if (nullptr != layer->innerEmitter)
+        {
+            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
+            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
+        }
+    }
+
+    emitters.emplace_back(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName);
+}
 }
 
 SceneEditor2::SceneEditor2()
     : Scene()
     , commandStack(new RECommandStack())
 {
+    DVASSERT(DAVA::Engine::Instance()->IsConsoleMode() == false);
+
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
     SafeRelease(notify);
@@ -138,8 +173,8 @@ SceneEditor2::SceneEditor2()
 
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
     }
 
     selectionSystem->AddDelegate(modifSystem);
@@ -175,7 +210,14 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
     }
 
     SceneValidator::ExtractEmptyRenderObjects(this);
-    SceneValidator::Instance()->ValidateScene(this, path);
+
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+    validator.ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -302,7 +344,49 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
     return false;
 }
 
-const DAVA::FilePath& SceneEditor2::GetScenePath()
+void SceneEditor2::SaveEmitters(const DAVA::Function<DAVA::FilePath(const DAVA::String&, const DAVA::String&)>& getEmitterPathFn)
+{
+    DAVA::List<DAVA::Entity*> effectEntities;
+    GetChildEntitiesWithComponent(effectEntities, DAVA::Component::PARTICLE_EFFECT_COMPONENT);
+    if (effectEntities.empty())
+    {
+        return;
+    }
+
+    DAVA::List<SceneEditorDetail::EmitterDescriptor> emittersForSave;
+    for (DAVA::Entity* entityWithEffect : effectEntities)
+    {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
+        DAVA::ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
+        for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
+        {
+            SceneEditorDetail::CollectEmittersForSave(effect->GetEmitterInstance(i)->GetEmitter(), emittersForSave, entityName);
+        }
+    }
+
+    for (SceneEditorDetail::EmitterDescriptor& descriptor : emittersForSave)
+    {
+        DAVA::ParticleEmitter* emitter = descriptor.emitter;
+        const DAVA::String& entityName = descriptor.entityName;
+
+        DAVA::FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            yamlPathForSaving = getEmitterPathFn(entityName, emitter->name.c_str());
+        }
+
+        if (!yamlPathForSaving.IsEmpty())
+        {
+            if (nullptr != descriptor.ownerLayer)
+            {
+                descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+            }
+            emitter->SaveToYaml(yamlPathForSaving);
+        }
+    }
+}
+
+const DAVA::FilePath& SceneEditor2::GetScenePath() const
 {
     return curScenePath;
 }

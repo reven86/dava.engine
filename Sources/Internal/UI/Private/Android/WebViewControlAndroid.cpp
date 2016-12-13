@@ -1,6 +1,7 @@
 #if !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include "UI/Private/Android/WebViewControlAndroid.h"
+#include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -11,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {
@@ -88,7 +88,7 @@ void WebViewControl::Initialize(const Rect& rect)
     }
 
     std::weak_ptr<WebViewControl>* selfWeakPtr = new std::weak_ptr<WebViewControl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaWebView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaWebView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -169,7 +169,7 @@ void WebViewControl::SetRect(const Rect& rect)
 {
     if (javaWebView != nullptr)
     {
-        Rect rc = JNI::V2I(rect);
+        Rect rc = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
         rc.dx = std::max(0.0f, rc.dx);
         rc.dy = std::max(0.0f, rc.dy);
 
@@ -281,7 +281,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
     bool isRedirectedByMouseClick = jisRedirectedByMouseClick == JNI_TRUE;
     IUIWebViewDelegate::eAction action = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    window->GetEngine()->RunAndWaitOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
+    RunOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
         action = OnUrlChanged(url, isRedirectedByMouseClick);
     });
 
@@ -290,7 +290,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
 void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 {
-    window->GetEngine()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnPageLoaded();
     });
 }
@@ -298,7 +298,7 @@ void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 void WebViewControl::nativeOnExecuteJavaScript(JNIEnv* env, jstring jresult)
 {
     String result = JNI::JavaStringToString(jresult, env);
-    window->GetEngine()->RunAsyncOnMainThread([this, result]() {
+    RunOnMainThreadAsync([this, result]() {
         OnExecuteJavaScript(result);
     });
 }
@@ -373,7 +373,7 @@ JniWebView::JniWebView()
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
 {
     controls[id] = control;
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -492,7 +492,7 @@ void JniWebView::OpenFromBuffer(int id, const String& string, const String& base
 
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);

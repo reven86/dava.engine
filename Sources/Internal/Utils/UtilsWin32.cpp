@@ -40,10 +40,20 @@ String GenerateGUID()
 
 void OpenURL(const String& url)
 {
-    auto platform_string = ref new Platform::String(StringToWString(url).c_str());
-    auto uri = ref new Windows::Foundation::Uri(platform_string);
-    concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
-    launchUriOperation.get();
+    Windows::Foundation::Uri ^ uri = nullptr;
+
+    try
+    {
+        auto platformString = ref new Platform::String(StringToWString(url).c_str());
+        uri = ref new Windows::Foundation::Uri(platformString);
+    }
+    catch (Platform::InvalidArgumentException ^ )
+    {
+        // nothing to do if uri is invalid
+        return;
+    }
+
+    WaitAsync(Windows::System::Launcher::LaunchUriAsync(uri));
 }
 
 #elif defined(__DAVAENGINE_WIN32__)

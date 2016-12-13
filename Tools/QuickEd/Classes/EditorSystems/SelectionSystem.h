@@ -44,7 +44,7 @@ private:
     void FocusToChild(bool next);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
+    void ProcessMousePress(const DAVA::Vector2& point, DAVA::eMouseButtons buttonID);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 

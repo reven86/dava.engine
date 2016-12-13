@@ -1,6 +1,8 @@
 #include <QApplication>
 #include "WayEditSystem.h"
 #include "Math/AABBox3.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
@@ -237,9 +239,9 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
     }
 }
 
-void WayEditSystem::Input(DAVA::UIEvent* event)
+bool WayEditSystem::Input(DAVA::UIEvent* event)
 {
-    if (isEnabled && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
+    if (isEnabled && (DAVA::eMouseButtons::LEFT == event->mouseButton))
     {
         if (DAVA::UIEvent::Phase::MOVE == event->phase)
         {
@@ -275,14 +277,14 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             if (!shiftPressed)
             {
                 // we need to use shift key to add waypoint or edge
-                return;
+                return false;
             }
 
             DAVA::Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if (currentWayParent == nullptr)
             {
                 // we need to have entity with path component
-                return;
+                return false;
             }
 
             if (selectedWaypoints.IsEmpty() && cloneJustDone == false)
@@ -300,7 +302,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                         if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
                         {
                             // current path has waypoints but none of them was selected. Point adding is denied
-                            return;
+                            return false;
                         }
                     }
 
@@ -338,6 +340,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             }
         }
     }
+    return false;
 }
 
 void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& ret)
@@ -541,7 +544,15 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& cu
 
 bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    const DAVA::EngineContext* engineContext = engine->GetContext();
+    if (engineContext->inputSystem == nullptr)
+    {
+        return true;
+    }
+
+    const DAVA::KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
     if (isEnabled && shiftPressed)
     {

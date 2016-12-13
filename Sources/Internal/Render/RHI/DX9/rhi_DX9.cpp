@@ -1,16 +1,19 @@
 #include "rhi_DX9.h"
-    #include "../Common/rhi_Impl.h"
-    
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Core/Core.h"
+#include "../Common/rhi_BackendImpl.h"
+#include "../Common/rhi_CommonImpl.h"
+
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
-    #include "_dx9.h"
-    #include "../rhi_Type.h"
-    #include "../Common/dbg_StatSet.h"
+#include "_dx9.h"
+#include "../rhi_Type.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/RenderLoop.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include <vector>
+#include <vector>
 
 
 #define E_MINSPEC (-3) // Error code for gfx-card that doesn't meet min.spec
@@ -69,9 +72,9 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
     if (progType == PROG_VERTEX)
     {
         const char* found = strstr(DeviceCaps().deviceDescription, "GeForce");
-        if (found && strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
+        if (found && strlen(found) >= strlen("GeForce XXXX")) //filter GeForce 6 and 7 series
         {
-            if ((found[8] == '6' || found[8] == '7') && found[11] == '0')
+            if ((found[8] == '6' || found[8] == '7') && (found[11] == '0' || found[11] == '5'))
             {
                 supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
             }
@@ -83,8 +86,7 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
 
 //------------------------------------------------------------------------------
 
-static bool
-_IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
+static bool IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -114,20 +116,19 @@ _IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_Uninitialize()
+static void dx9_Uninitialize()
 {
     QueryBufferDX9::ReleaseQueryPool();
-    UninitializeRenderThreadDX9();
+    PerfQueryDX9::ReleasePerfQueryPool();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_Reset(const ResetParam& param)
+static void dx9_Reset(const ResetParam& param)
 {
+    bool paramsChanged = false;
+    _DX9_ResetParamsMutex.Lock();
     UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-
     if (param.width != _DX9_PresentParam.BackBufferWidth
         || param.height != _DX9_PresentParam.BackBufferHeight
         || param.fullScreen != !_DX9_PresentParam.Windowed
@@ -139,14 +140,17 @@ dx9_Reset(const ResetParam& param)
         _DX9_PresentParam.Windowed = !param.fullScreen;
         _DX9_PresentParam.PresentationInterval = interval;
 
-        ScheduleDeviceReset();
+        paramsChanged = true;
     }
+    _DX9_ResetParamsMutex.Unlock();
+
+    if (paramsChanged)
+        RenderLoop::SetResetPending();
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx9_NeedRestoreResources()
+static bool dx9_NeedRestoreResources()
 {
     uint32 pendingTextures = TextureDX9::NeedRestoreCount();
     uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
@@ -160,8 +164,13 @@ dx9_NeedRestoreResources()
     return needRestore;
 }
 
-//------------------------------------------------------------------------------
+static void dx9_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX9Command cmd = { DX9Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX9(&cmd, 1, false);
+}
 
+//------------------------------------------------------------------------------
 void DX9CheckMultisampleSupport()
 {
     const _D3DFORMAT formatsToCheck[] = { D3DFMT_A8R8G8B8, D3DFMT_D24S8 };
@@ -183,7 +192,7 @@ void DX9CheckMultisampleSupport()
 
         if (qualityLevels == 0)
         {
-            DAVA::Logger::Info("DX9 max multisample samples: %u", sampleCount);
+            DAVA::Logger::Info("[RHI-D3D9] Max multisample samples: %u", sampleCount);
             break;
         }
     }
@@ -191,7 +200,46 @@ void DX9CheckMultisampleSupport()
     MutableDeviceCaps::Get().maxSamples = sampleCount / 2;
 }
 
-//------------------------------------------------------------------------------
+void dx9_InitCaps()
+{
+    D3DCAPS9 caps = {};
+    _D3D9_Device->GetDeviceCaps(&caps);
+
+    DWORD shaderModel = DAVA::Min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
+    if (shaderModel < 3)
+    {
+        if (_DX9_InitParam.renderingErrorCallback)
+        {
+            _DX9_InitParam.renderingErrorCallback(RenderingError::UnsupportedShaderModel, _DX9_InitParam.renderingErrorCallbackContext);
+        }
+    }
+
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) >= 3);
+    MutableDeviceCaps::Get().isInstancingSupported = true;
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = true;
+
+    {
+        IDirect3DQuery9* freqQuery = nullptr;
+        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
+        MutableDeviceCaps::Get().isPerfQuerySupported = (freqQuery != nullptr);
+        DAVA::SafeRelease(freqQuery);
+    }
+
+    const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
+    if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
+    {
+        if (found[7] == 'X' && found[8] == '1')
+        {
+            MutableDeviceCaps::Get().isVertexTextureUnitsSupported = false;
+        }
+    }
+
+    DX9CheckMultisampleSupport();
+}
 
 struct AdapterInfo
 {
@@ -200,20 +248,52 @@ struct AdapterInfo
     D3DADAPTER_IDENTIFIER9 info;
 };
 
+const char* dx9_AdapterInfo(const D3DADAPTER_IDENTIFIER9& info)
+{
+    static char buffer[1024] = {};
+    memset(buffer, 0, sizeof(buffer));
+
+    sprintf(buffer, "`%s` at `%s` (vendor: 0x%04x, subsystem: 0x%04x, driver: %u.%u.%u.%u)",
+            info.Description, info.DeviceName, info.VendorId, info.SubSysId,
+            HIWORD(info.DriverVersion.HighPart), LOWORD(info.DriverVersion.HighPart),
+            HIWORD(info.DriverVersion.LowPart), LOWORD(info.DriverVersion.LowPart));
+
+    return buffer;
+}
+
 void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
 {
-    for (UINT i = 0, e = _D3D9->GetAdapterCount(); i < e; ++i)
+    UINT adaptersCount = _D3D9->GetAdapterCount();
+    DAVA::Logger::Info("[RHI-D3D9] GetAdapterCount reported %u adapters", adaptersCount);
+
+    for (UINT i = 0; i < adaptersCount; ++i)
     {
         AdapterInfo adapter = { i };
         HRESULT hr = _D3D9->GetAdapterIdentifier(i, 0, &adapter.info);
         if (SUCCEEDED(hr))
         {
+            DAVA::Logger::Info("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
             hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_HAL, &adapter.caps);
             if (SUCCEEDED(hr))
             {
-                DAVA::Logger::Info("DX9 DEVICE: %s", adapter.info.Description);
                 adapters.push_back(adapter);
             }
+            else
+            {
+                hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_REF, &adapter.caps);
+                if (SUCCEEDED(hr))
+                {
+                    DAVA::Logger::Error("[RHI-D3D9] GetDeviceCaps with D3DDEVTYPE_REF succeeded for %s", dx9_AdapterInfo(adapter.info));
+                }
+                else
+                {
+                    DAVA::Logger::Error("[RHI-D3D9] GetDeviceCaps with D3DDEVTYPE_REF failed for %s with error: %s", dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
+                }
+            }
+        }
+        else
+        {
+            DAVA::Logger::Error("[RHI-D3D9] GetAdapterIdentifier call failed for adapter %u with error: %s", i, D3D9ErrorText(hr));
         }
     }
 }
@@ -246,33 +326,37 @@ bool dx9_SelectAdapter(DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_proces
     vertex_processing = E_FAIL;
     for (const AdapterInfo& adapter : adapters)
     {
+        DAVA::Logger::Info("[RHI-D3D9] Attempting to select adapter: %s...", dx9_AdapterInfo(adapter.info));
         if (adapter.caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
         {
+            DAVA::Logger::Info("[RHI-D3D9] Selecting adapter %s with D3DCREATE_HARDWARE_VERTEXPROCESSING", dx9_AdapterInfo(adapter.info));
             vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
             _D3D9_Adapter = adapter.index;
             return true;
         }
-        else if (_IsValidIntelCardDX9(adapter.info.VendorId, adapter.info.DeviceId))
+        else if (IsValidIntelCardDX9(adapter.info.VendorId, adapter.info.DeviceId))
         {
+            DAVA::Logger::Info("[RHI-D3D9] Selecting valid Intel adapter %s with D3DCREATE_SOFTWARE_VERTEXPROCESSING", dx9_AdapterInfo(adapter.info));
             vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
             _D3D9_Adapter = adapter.index;
         }
         else
         {
-            Logger::Error("GPU %s does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required", adapter.info.Description);
+            Logger::Error("[RHI-D3D9] Adapter %s does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required", dx9_AdapterInfo(adapter.info));
         }
         ++indexInVector;
     }
     return (vertex_processing != E_FAIL);
 }
 
-void _InitDX9()
+void dx9_InitContext()
 {
+    LoadLibrary(L"D3DCompiler_43.dll");
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
     if (_D3D9 == nullptr)
     {
-        Logger::Error("Failed to create Direct3D object");
+        Logger::Error("[RHI-D3D9] Failed to create Direct3D object");
         return;
     }
 
@@ -306,14 +390,12 @@ void _InitDX9()
         {
             Memcpy(MutableDeviceCaps::Get().deviceDescription, adapter.info.Description,
                    DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(adapter.info.Description) + 1));
-
-            Logger::Info("Adapter [%u]: %s (%s), driver: %u.%u.%u.%u", _D3D9_Adapter, adapter.info.Description, adapter.info.DeviceName,
-                         HIWORD(adapter.info.DriverVersion.HighPart), LOWORD(adapter.info.DriverVersion.HighPart),
-                         HIWORD(adapter.info.DriverVersion.LowPart), LOWORD(adapter.info.DriverVersion.LowPart));
+            DAVA::Logger::Info("[RHI-D3D9] Device created with adapter: %s", dx9_AdapterInfo(adapter.info));
         }
         else
         {
-            Logger::Error("Failed to create device: %s", D3D9ErrorText(hr));
+            Logger::Error("[RHI-D3D9] Failed to create device with adapter %s, reported error: %s",
+                          dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
         }
 
         if (adapter.caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
@@ -323,8 +405,18 @@ void _InitDX9()
     }
     else
     {
-        Logger::Error("Failed to select adapter for D3D9");
+        uint32 adaptersCount = static_cast<uint32>(adapters.size());
+        Logger::Error("[RHI-D3D9] Failed to select adapter, selecting from %u adapters: ", adaptersCount);
+        for (const AdapterInfo& adapter : adapters)
+            DAVA::Logger::Error("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
     }
+
+    dx9_InitCaps();
+}
+
+bool dx9_CheckSurface()
+{
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -332,12 +424,11 @@ void _InitDX9()
 void dx9_Initialize(const InitParam& param)
 {
     _DX9_InitParam = param;
-    InitializeRenderThreadDX9((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
     QueryBufferDX9::SetupDispatch(&DispatchDX9);
-    PerfQuerySetDX9::SetupDispatch(&DispatchDX9);
+    PerfQueryDX9::SetupDispatch(&DispatchDX9);
     TextureDX9::SetupDispatch(&DispatchDX9);
     PipelineStateDX9::SetupDispatch(&DispatchDX9);
     ConstBufferDX9::SetupDispatch(&DispatchDX9);
@@ -351,6 +442,10 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+    DispatchDX9.impl_SyncCPUGPU = &dx9_SynchronizeCPUGPU;
+
+    DispatchDX9.impl_InitContext = &dx9_InitContext;
+    DispatchDX9.impl_ValidateSurface = &dx9_CheckSurface;
 
     SetDispatchTable(DispatchDX9);
 
@@ -373,15 +468,6 @@ void dx9_Initialize(const InitParam& param)
     stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
-
-    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
-    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
-    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
-    MutableDeviceCaps::Get().isInstancingSupported = true;
-    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
-    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
-    MutableDeviceCaps::Get().isCenterPixelMapping = true;
-    DX9CheckMultisampleSupport();
 }
 
 //==============================================================================

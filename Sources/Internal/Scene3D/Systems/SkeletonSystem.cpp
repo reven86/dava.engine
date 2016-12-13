@@ -4,7 +4,8 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -22,7 +23,12 @@ SkeletonSystem::~SkeletonSystem()
 void SkeletonSystem::AddEntity(Entity* entity)
 {
     entities.push_back(entity);
-    RebuildSkeleton(entity);
+
+    SkeletonComponent* component = GetSkeletonComponent(entity);
+    DVASSERT(component);
+
+    if (component->configUpdated)
+        RebuildSkeleton(entity);
 }
 
 void SkeletonSystem::RemoveEntity(Entity* entity)
@@ -48,7 +54,7 @@ void SkeletonSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SkeletonSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SkeletonSystem::Process")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SKELETON_SYSTEM);
 
     for (int32 i = 0, sz = static_cast<int32>(entities.size()); i < sz; ++i)
     {
@@ -81,6 +87,8 @@ void SkeletonSystem::Process(float32 timeElapsed)
 
 void SkeletonSystem::UpdatePose(SkeletonComponent* component)
 {
+    DVASSERT(!component->configUpdated);
+
     uint16 count = component->GetJointsCount();
     for (uint16 currJoint = component->startJoint; currJoint < count; ++currJoint)
     {
@@ -134,6 +142,8 @@ void SkeletonSystem::UpdatePose(SkeletonComponent* component)
 
 void SkeletonSystem::UpdateSkinnedMesh(SkeletonComponent* component, SkinnedMesh* skinnedMeshObject)
 {
+    DVASSERT(!component->configUpdated);
+
     //recalculate object box
     uint16 count = component->GetJointsCount();
     AABBox3 resBox;
@@ -154,6 +164,9 @@ void SkeletonSystem::RebuildSkeleton(Entity* entity)
 {
     SkeletonComponent* component = GetSkeletonComponent(entity);
     DVASSERT(component);
+
+    component->configUpdated = false;
+
     /*convert joint configs to joints*/
     component->jointsCount = component->GetConfigJointsCount();
 

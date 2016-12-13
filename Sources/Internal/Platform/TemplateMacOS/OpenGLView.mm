@@ -15,12 +15,8 @@ using namespace DAVA;
 - (id)initWithFrame:(NSRect)frameRect
 {
     NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
-	
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
+
     NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-    NSLog(@"Display bpp: %d", CGDisplayBitsPerPixel(kCGDirectMainDisplay));
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
     // Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
     NSOpenGLPixelFormatAttribute attrs[] =
@@ -29,12 +25,8 @@ using namespace DAVA;
       // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
       NSOpenGLPFANoRecovery,
 
-// Attributes Common to FullScreen and non-FullScreen
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
+      // Attributes Common to FullScreen and non-FullScreen
       NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]), //24,
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-      NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
       NSOpenGLPFADepthSize, 16,
       NSOpenGLPFAStencilSize, 8,
       NSOpenGLPFADoubleBuffer,
@@ -52,13 +44,9 @@ using namespace DAVA;
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
 
-    // enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-
     return self;
 }
 
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 - (size_t)displayBitsPerPixel:(CGDirectDisplayID)displayId
 {
     CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
@@ -77,7 +65,6 @@ using namespace DAVA;
 
     return depth;
 }
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
 - (void)dealloc
 {
@@ -166,11 +153,11 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
         // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
         if (NSEventPhaseNone != [curEvent momentumPhase] || NSEventPhaseNone != [curEvent phase])
         {
-            event.device = DAVA::UIEvent::Device::TOUCH_PAD;
+            event.device = DAVA::eInputDevices::TOUCH_PAD;
         }
         else
         {
-            event.device = DAVA::UIEvent::Device::MOUSE;
+            event.device = DAVA::eInputDevices::MOUSE;
         }
 
         if (YES == [curEvent hasPreciseScrollingDeltas])
@@ -234,7 +221,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     bool isFind = false;
     for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-        if (it->mouseButton == static_cast<UIEvent::MouseButton>(button))
+        if (it->mouseButton == static_cast<eMouseButtons>(button))
         {
             isFind = true;
             ConvertNSEventToUIEvent(self, curEvent, (*it), phase);
@@ -246,8 +233,8 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     if (!isFind)
     {
         UIEvent newTouch;
-        newTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
-        newTouch.device = UIEvent::Device::MOUSE;
+        newTouch.mouseButton = static_cast<eMouseButtons>(button);
+        newTouch.device = eInputDevices::MOUSE;
 
         ConvertNSEventToUIEvent(self, curEvent, newTouch, phase);
 
@@ -263,7 +250,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     {
         for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            if (it->mouseButton == static_cast<UIEvent::MouseButton>(button))
+            if (it->mouseButton == static_cast<eMouseButtons>(button))
             {
                 allTouches.erase(it);
                 break;
@@ -306,7 +293,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     NSUInteger nsModifiers = event.modifierFlags;
     uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
     ev.modifiers = davaModifiers;
-    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.device = DAVA::eInputDevices::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = 0.f;
     ev.gesture.dy = 0.f;
@@ -324,7 +311,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     NSUInteger nsModifiers = event.modifierFlags;
     uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
     ev.modifiers = davaModifiers;
-    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.device = DAVA::eInputDevices::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = 0.f;
     ev.gesture.dy = 0.f;
@@ -342,7 +329,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     NSUInteger nsModifiers = event.modifierFlags;
     uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
     ev.modifiers = davaModifiers;
-    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.device = DAVA::eInputDevices::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = [event deltaX] * (-1.f);
     ev.gesture.dy = [event deltaY] * (-1.f);
@@ -419,7 +406,7 @@ static int32 oldModifersFlags = 0;
         {
             ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
         }
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.key = davaKey;
         ev.modifiers = davaModifiers;
 
@@ -439,7 +426,7 @@ static int32 oldModifersFlags = 0;
         {
             ev.phase = UIEvent::Phase::CHAR;
         }
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.keyChar = static_cast<char16>(ch);
         ev.modifiers = davaModifiers;
 
@@ -460,7 +447,7 @@ static int32 oldModifersFlags = 0;
     uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
     ev.phase = DAVA::UIEvent::Phase::KEY_UP;
     ev.key = keyboard.GetDavaKeyForSystemKey(keyCode);
-    ev.device = UIEvent::Device::KEYBOARD;
+    ev.device = eInputDevices::KEYBOARD;
     ev.modifiers = davaModifiers;
 
     UIControlSystem::Instance()->OnInput(&ev);
@@ -485,7 +472,7 @@ static int32 oldModifersFlags = 0;
         if ((oldModifersFlags & masks[i]) != (newModifers & masks[i]))
         {
             DAVA::UIEvent ev;
-            ev.device = UIEvent::Device::KEYBOARD;
+            ev.device = eInputDevices::KEYBOARD;
             ev.modifiers = davaModifiers;
             ev.key = keyCodes[i];
             if (ev.key != Key::CAPSLOCK)

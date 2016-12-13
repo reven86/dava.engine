@@ -2,6 +2,7 @@
 #define __DAVAENGINE_IPADDRESS_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include <libuv/uv.h>
 
 namespace DAVA

@@ -6,7 +6,7 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
 
-#include "Engine/EngineModule.h"
+#if !defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -145,22 +145,22 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
     }
     if (context->deferredCapture)
     {
-        if (event->device != UIEvent::Device::MOUSE && context->focused)
+        if (event->device != eInputDevices::MOUSE && context->focused)
         {
             SetSystemMode(eCaptureMode::PINING);
             context->deferredCapture = false;
             return false;
         }
-        else if ((event->device == UIEvent::Device::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
+        else if ((event->device == eInputDevices::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
         {
             bool inRect = true;
 #if defined(__DAVAENGINE_COREV2__)
-            Vector2 windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
+            Size2f windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
 #else
             Vector2 windowSize = Core::Instance()->GetWindowSize();
 #endif
-            inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
-            inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
+            inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.dx);
+            inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.dy);
             if (inRect && context->focused)
             {
                 SetSystemMode(eCaptureMode::PINING);
@@ -182,3 +182,5 @@ void MouseDevice::SetSystemMode(eCaptureMode sysMode)
 }
 
 } // namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)

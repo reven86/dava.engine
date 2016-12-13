@@ -80,7 +80,7 @@ eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const
     image->height = bitstream->height;
     image->data = newData;
     image->customDeleter = ::free;
-    image->dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, image->format);
+    image->dataSize = ImageUtils::GetSizeInBytes(bitstream->width, bitstream->height, image->format);
     image->mipmapLevel = loadingParams.firstMipmapIndex;
 
     imageSet.push_back(image);
@@ -109,7 +109,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath& fileName, const Vector<Image
         SafeDeleteArray(outData);
     };
     uint32 outSize;
-    int stride = width * sizeof(*imageData) * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    int stride = ImageUtils::GetPitchInBytes(width, format);
     if (FORMAT_RGB888 == format)
     {
         if (quality == LOSSLESS_IMAGE_QUALITY)
@@ -193,7 +193,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File* infile) const
     {
         info.format = FORMAT_RGB888;
     }
-    info.dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, info.format);
+    info.dataSize = ImageUtils::GetSizeInBytes(bitstream->width, bitstream->height, info.format);
     info.mipmapsCount = 1;
     info.faceCount = 1;
 

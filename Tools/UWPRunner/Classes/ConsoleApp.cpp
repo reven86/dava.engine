@@ -1,7 +1,7 @@
 #include <iostream>
 #include <QFileInfo>
 
-#include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
@@ -16,7 +16,7 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments);
 
 PackageOptions ParseCommandLine()
 {
-    const Vector<String>& arguments = Core::Instance()->GetCommandLine();
+    const Vector<String>& arguments = Engine::Instance()->GetCommandLine();
 
     //no args
     if (arguments.size() == 1)

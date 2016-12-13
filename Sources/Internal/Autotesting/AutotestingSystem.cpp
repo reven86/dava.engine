@@ -3,6 +3,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DeviceInfo.h"
@@ -140,7 +141,7 @@ void AutotestingSystem::OnAppStarted()
 
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
 
-    Size2i size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
     Texture::FBODescriptor desc;
     desc.width = uint32(size.dx);
@@ -325,13 +326,10 @@ void AutotestingSystem::Update(float32 timeElapsed)
         if (timeBeforeExit <= 0.0f)
         {
             needExitApp = false;
-            String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
-            if (server != AutotestingDB::DB_ERROR_STR_VALUE)
-            {
-                AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
-            }
             JobManager::Instance()->WaitWorkerJobs();
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+            Engine::Instance()->QuitAsync(0);
+#else
             Core::Instance()->Quit();
 #endif
         }
@@ -360,7 +358,7 @@ void AutotestingSystem::Draw()
         {
             screenshotSync = rhi::GetCurrentFrameSyncObject();
 
-            const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+            const Size2i& pScreenSize = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.colorAttachment = screenshotTexture->handle;
@@ -427,7 +425,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->QuitAsync(0);
+#else
     Core::Instance()->Quit();
 #endif
 }
@@ -458,7 +458,7 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
     DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
-    const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
 
@@ -469,11 +469,20 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 
 void AutotestingSystem::ClickSystemBack()
 {
-    Logger::Info("AutotestingSystem::ClickSystemBack");
     UIEvent keyEvent;
-    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    UIControlSystem::Instance()->OnInput(&keyEvent);
+}
+
+void AutotestingSystem::PressEscape()
+{
+    UIEvent keyEvent;
+    keyEvent.device = eInputDevices::KEYBOARD;
+    keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+    keyEvent.key = DAVA::Key::ESCAPE;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }

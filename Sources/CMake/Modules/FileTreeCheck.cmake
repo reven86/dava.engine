@@ -4,7 +4,11 @@ MACRO ( FILE_TREE_CHECK arg_folders )
 
     set( TARGET_FILE_TREE_FOUND false )
 
-    if( PYTHONINTERP_FOUND AND NOT IGNORE_FILE_TREE_CHECK )
+    if( NOT PYTHONINTERP_FOUND )
+        set( PYTHON_EXECUTABLE python )
+    endif()
+
+    if( NOT IGNORE_FILE_TREE_CHECK )
         set( TARGET_FILE_TREE_FOUND true )
 
         string(REPLACE ";" " " folders "${arg_folders}" )

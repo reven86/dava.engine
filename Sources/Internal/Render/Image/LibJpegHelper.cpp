@@ -138,7 +138,7 @@ eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const
     image->width = cinfo.image_width;
     image->height = cinfo.image_height;
     image->format = format;
-    DVASSERT(cinfo.num_components == PixelFormatDescriptor::GetPixelFormatSizeInBytes(format));
+    DVASSERT(cinfo.num_components == PixelFormatDescriptor::GetPixelFormatSizeInBits(format) / 8);
 
     //as image->data will be rewrited, need to erase present buffer
     SafeDeleteArray(image->data);

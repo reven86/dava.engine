@@ -1,18 +1,19 @@
 #include "LibraryWidget.h"
 #include "LibraryFileSystemModel.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Application/REGlobal.h"
+#include "GlobalOperations.h"
 
-#include "Render/Image/ImageFormatInterface.h"
-
-
-#include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
-#include "Project/ProjectManager.h"
-#include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
 
 #include "Actions/DAEConverter.h"
 
 #include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
+
+#include "Render/Image/ImageFormatInterface.h"
+#include "Reflection/ReflectedType.h"
 
 #include <QToolBar>
 #include <QLineEdit>
@@ -150,8 +151,8 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
 void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
-    QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &LibraryWidget::ProjectOpened);
-    QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectClosed, this, &LibraryWidget::ProjectClosed);
+    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
+    projectDataWrapper.SetListener(this);
 
     QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
 
@@ -346,21 +347,6 @@ void LibraryWidget::OnFilesTypeChanged(int typeIndex)
     filesView->setRootIndex(filesModel->index(rootPathname));
 }
 
-void LibraryWidget::ProjectOpened(const QString& path)
-{
-    rootPathname = path + "/DataSource/3d/";
-
-    filesModel->Load(rootPathname);
-    filesView->setRootIndex(filesModel->index(rootPathname));
-}
-
-void LibraryWidget::ProjectClosed()
-{
-    rootPathname = QDir::rootPath();
-    filesView->setRootIndex(filesModel->index(rootPathname));
-    filesView->collapseAll();
-}
-
 void LibraryWidget::OnAddModel()
 {
     QVariant indexAsVariant = qobject_cast<QAction*>(sender())->data();
@@ -369,7 +355,7 @@ void LibraryWidget::OnAddModel()
     SceneEditor2* scene = sceneHolder.GetScene();
     if (nullptr != scene)
     {
-        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString());
+        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString(), 0, 0);
         scene->structureSystem->Add(fileInfo.absoluteFilePath().toStdString());
     }
 }
@@ -388,7 +374,7 @@ void LibraryWidget::OnConvertDae()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString());
+    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString(), 0, 0);
     DAEConverter::Convert(fileInfo.absoluteFilePath().toStdString());
 }
 
@@ -397,19 +383,39 @@ void LibraryWidget::OnRevealAtFolder()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    ShowFileInExplorer(fileInfo.absoluteFilePath());
+    QtHelpers::ShowInOSFileManager(fileInfo.absoluteFilePath());
 }
 
 void LibraryWidget::HidePreview() const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::HideScenePreview, DAVA::Any());
+    REGlobal::GetInvoker()->Invoke(REGlobal::HideScenePreviewOperation.ID);
 }
 
 void LibraryWidget::ShowPreview(const QString& pathname) const
 {
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::ShowScenePreview, DAVA::Any(pathname.toStdString()));
+    REGlobal::GetInvoker()->Invoke(REGlobal::ShowScenePreviewOperation.ID, DAVA::FilePath(pathname.toStdString()));
+}
+
+void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
+{
+    DVASSERT(projectDataWrapper == wrapper);
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        DAVA::FilePath projectPath = data->GetProjectPath();
+        if (!projectPath.IsEmpty())
+        {
+            rootPathname = QString::fromStdString((projectPath + "/DataSource/3d/").GetAbsolutePathname());
+
+            filesModel->Load(rootPathname);
+            filesView->setRootIndex(filesModel->index(rootPathname));
+            return;
+        }
+    }
+
+    rootPathname = QDir::rootPath();
+    filesView->setRootIndex(filesModel->index(rootPathname));
+    filesView->collapseAll();
 }
 
 void LibraryWidget::OnTreeDragStarted()

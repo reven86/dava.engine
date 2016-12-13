@@ -2,11 +2,9 @@
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
 #if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
-
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
@@ -45,8 +43,8 @@ private:
 
     void OnMouseMove(int32 x, int32 y);
     void OnMouseWheel(int32 wheelDelta, int32 x, int32 y);
-    void OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton button, int32 x, int32 y);
-    void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnMouseClick(UIEvent::Phase phase, eMouseButtons button, int32 x, int32 y);
+    void OnTouchEvent(UIEvent::Phase phase, eInputDevices deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -62,7 +60,7 @@ private:
 
     bool willQuit;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(eMouseButtons::COUNT)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 
     float32 minWindowWidth = 0.0f;

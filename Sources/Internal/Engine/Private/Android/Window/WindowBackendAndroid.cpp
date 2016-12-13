@@ -5,10 +5,10 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
+#include "Engine/Private/Android/AndroidJavaConst.h"
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
@@ -38,11 +38,11 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnS
     wbackend->SurfaceCreated(env, jsurfaceView);
 }
 
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height, jint surfaceWidth, jint surfaceHeight, jint dpi)
 {
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    wbackend->SurfaceChanged(env, surface, width, height);
+    wbackend->SurfaceChanged(env, surface, width, height, surfaceWidth, surfaceHeight, dpi);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
@@ -59,12 +59,41 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewPro
     wbackend->ProcessProperties();
 }
 
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnMouseEvent(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint buttonState, jfloat x, jfloat y, jfloat deltaX, jfloat deltaY, jint modifierKeys)
 {
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    wbackend->OnTouch(action, touchId, x, y);
+    wbackend->OnMouseEvent(action, buttonState, x, y, deltaX, deltaY, modifierKeys);
 }
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouchEvent(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y, jint modifierKeys)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnTouchEvent(action, touchId, x, y, modifierKeys);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnKeyEvent(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint keyCode, jint unicodeChar, jint modifierKeys, jboolean isRepeated)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnKeyEvent(action, keyCode, unicodeChar, modifierKeys, isRepeated == JNI_TRUE);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnGamepadButton(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint deviceId, jint action, jint keyCode)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnGamepadButton(deviceId, action, keyCode);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnGamepadMotion(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint deviceId, jint axis, jfloat value)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnGamepadMotion(deviceId, axis, value);
+}
+
 } // extern "C"
 
 namespace DAVA
@@ -75,8 +104,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
 }
 
@@ -88,6 +116,11 @@ WindowBackend::~WindowBackend()
 void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
 {
     // Android windows are always stretched to display size
+}
+
+void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
+{
+    // Fullscreen mode cannot be changed on Android
 }
 
 void WindowBackend::Close(bool appIsTerminating)
@@ -119,9 +152,19 @@ void WindowBackend::SetTitle(const String& title)
     // Android window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to android
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -145,6 +188,22 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    surfaceScale = scale;
+
+    const float32 surfaceWidth = windowWidth * scale;
+    const float32 surfaceHeight = windowHeight * scale;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, eFullscreen::On));
+}
+
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
 {
     jobject object = nullptr;
@@ -160,12 +219,25 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
     return object;
 }
 
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    // not implemented
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    // not implemented
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
@@ -202,20 +274,19 @@ void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
     }
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfaceWidth, int32 surfaceHeight, int32 dpi)
 {
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
 
-        MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-        e.functor = [this, nativeWindow]() {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this, nativeWindow]() {
             ReplaceAndroidNativeWindow(nativeWindow);
-        };
-        mainDispatcher->PostEvent(e);
+        }));
     }
 
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
+    windowWidth = static_cast<float32>(width);
+    windowHeight = static_cast<float32>(height);
+
     if (firstTimeSurfaceChanged)
     {
         uiDispatcher.LinkToCurrentThread();
@@ -232,30 +303,23 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                                w,
-                                                                                h,
-                                                                                1.0f,
-                                                                                1.0f));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                    w,
-                                                                                    h,
-                                                                                    1.0f,
-                                                                                    1.0f));
+        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, eFullscreen::On));
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-    e.functor = [this]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
-    };
-    mainDispatcher->PostEvent(e);
+    }));
 }
 
 void WindowBackend::ProcessProperties()
@@ -263,39 +327,134 @@ void WindowBackend::ProcessProperties()
     uiDispatcher.ProcessEvents();
 }
 
-void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
+void WindowBackend::OnMouseEvent(int32 action, int32 nativeButtonState, float32 x, float32 y, float32 deltaX, float32 deltaY, int32 nativeModifierKeys)
 {
-    enum
+    eModifierKeys modifierKeys = GetModifierKeys(nativeModifierKeys);
+    switch (action)
     {
-        ACTION_DOWN = 0,
-        ACTION_UP = 1,
-        ACTION_MOVE = 2,
-        ACTION_POINTER_DOWN = 5,
-        ACTION_POINTER_UP = 6
-    };
+    case AMotionEvent::ACTION_MOVE:
+    case AMotionEvent::ACTION_HOVER_MOVE:
+        if (lastMouseMoveX != x || lastMouseMoveY != y)
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
+            lastMouseMoveX = x;
+            lastMouseMoveY = y;
+        }
+        break;
+    case AMotionEvent::ACTION_SCROLL:
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
+        break;
+    default:
+        break;
+    }
 
+    // What you should know about mouse handling on android:
+    //  - android does not send which mouse button generates up event (ACTION_UP)
+    //  - android sometimes does not send mouse button down events (ACTION_DOWN)
+    //  - android sends mouse button states in every mouse event
+    // So we manually track mouse button states and send appropriate events into dava.engine.
+    std::bitset<MOUSE_BUTTON_COUNT> state = GetMouseButtonState(nativeButtonState);
+    std::bitset<MOUSE_BUTTON_COUNT> change = mouseButtonState ^ state;
+    if (change.any())
+    {
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, x, y, 1, modifierKeys, false);
+        for (size_t i = 0, n = change.size(); i < n; ++i)
+        {
+            if (change[i])
+            {
+                e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+                e.mouseEvent.button = static_cast<eMouseButtons>(i + 1);
+                mainDispatcher->PostEvent(e);
+            }
+        }
+    }
+    mouseButtonState = state;
+}
+
+void WindowBackend::OnTouchEvent(int32 action, int32 touchId, float32 x, float32 y, int32 nativeModifierKeys)
+{
     MainDispatcherEvent::eType type = MainDispatcherEvent::TOUCH_DOWN;
     switch (action)
     {
-    case ACTION_MOVE:
+    case AMotionEvent::ACTION_MOVE:
         type = MainDispatcherEvent::TOUCH_MOVE;
         break;
-    case ACTION_UP:
-    case ACTION_POINTER_UP:
+    case AMotionEvent::ACTION_UP:
+    case AMotionEvent::ACTION_POINTER_UP:
         type = MainDispatcherEvent::TOUCH_UP;
         break;
-    case ACTION_DOWN:
-    case ACTION_POINTER_DOWN:
+    case AMotionEvent::ACTION_DOWN:
+    case AMotionEvent::ACTION_POINTER_DOWN:
         type = MainDispatcherEvent::TOUCH_DOWN;
         break;
     default:
         return;
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                          type,
-                                                                          touchId,
-                                                                          x,
-                                                                          y));
+
+    eModifierKeys modifierKeys = GetModifierKeys(nativeModifierKeys);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, touchId, x, y, modifierKeys));
+}
+
+void WindowBackend::OnKeyEvent(int32 action, int32 keyCode, int32 unicodeChar, int32 nativeModifierKeys, bool isRepeated)
+{
+    if (keyCode == AKeyEvent::KEYCODE_BACK)
+    {
+        if (action == AKeyEvent::ACTION_UP)
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::BACK_NAVIGATION));
+        }
+    }
+    else
+    {
+        bool isPressed = action == AKeyEvent::ACTION_DOWN;
+        eModifierKeys modifierKeys = GetModifierKeys(nativeModifierKeys);
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, keyCode, modifierKeys, isRepeated));
+
+        if (isPressed && unicodeChar != 0)
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, unicodeChar, modifierKeys, isRepeated));
+        }
+    }
+}
+
+void WindowBackend::OnGamepadButton(int32 deviceId, int32 action, int32 keyCode)
+{
+    MainDispatcherEvent::eType type = action == AKeyEvent::ACTION_DOWN ? MainDispatcherEvent::GAMEPAD_BUTTON_DOWN : MainDispatcherEvent::GAMEPAD_BUTTON_UP;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadButtonEvent(deviceId, type, keyCode));
+}
+
+void WindowBackend::OnGamepadMotion(int32 deviceId, int32 axis, float32 value)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadMotionEvent(deviceId, axis, value));
+}
+
+std::bitset<WindowBackend::MOUSE_BUTTON_COUNT> WindowBackend::GetMouseButtonState(int32 nativeButtonState)
+{
+    std::bitset<MOUSE_BUTTON_COUNT> state;
+    // Android supports only three mouse buttons
+    state.set(0, (nativeButtonState & AMotionEvent::BUTTON_PRIMARY) == AMotionEvent::BUTTON_PRIMARY);
+    state.set(1, (nativeButtonState & AMotionEvent::BUTTON_SECONDARY) == AMotionEvent::BUTTON_SECONDARY);
+    state.set(2, (nativeButtonState & AMotionEvent::BUTTON_TERTIARY) == AMotionEvent::BUTTON_TERTIARY);
+    return state;
+}
+
+eModifierKeys WindowBackend::GetModifierKeys(int32 nativeModifierKeys)
+{
+    eModifierKeys result = eModifierKeys::NONE;
+    if (nativeModifierKeys & AKeyEvent::META_SHIFT_ON)
+    {
+        result |= eModifierKeys::SHIFT;
+    }
+    if (nativeModifierKeys & AKeyEvent::META_ALT_ON)
+    {
+        result |= eModifierKeys::ALT;
+    }
+    if (nativeModifierKeys & AKeyEvent::META_CTRL_ON)
+    {
+        result |= eModifierKeys::CONTROL;
+    }
+    return result;
 }
 
 } // namespace Private

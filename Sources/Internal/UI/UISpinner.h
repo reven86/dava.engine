@@ -29,6 +29,7 @@ public:
     class SelectionObserver
     {
     public:
+        virtual ~SelectionObserver() = default;
         /*
          * If isSelectedChanged == true selected element was actually changed.
          *
@@ -39,7 +40,7 @@ public:
     };
 
 protected:
-    virtual ~SpinnerAdapter(){};
+    virtual ~SpinnerAdapter() = default;
 
 public:
     /*

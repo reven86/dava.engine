@@ -20,7 +20,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
 
     for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
     {
-        const MultiMap<String, YamlNode*>& styleSheet = (*styleSheetIter)->AsMap();
+        const UnorderedMap<String, YamlNode*>& styleSheet = (*styleSheetIter)->AsMap();
 
         auto propertiesSectionIter = styleSheet.find("properties");
 

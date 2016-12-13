@@ -2,7 +2,8 @@
 #define __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
+#include <bitset>
 
 namespace DAVA
 {
@@ -76,7 +77,7 @@ private:
     void SetLayoutDirty();
     void SetFlag(eFlags flag, bool enabled);
 
-    Bitset<eFlags::FLAG_COUNT> flags;
+    std::bitset<eFlags::FLAG_COUNT> flags;
     float32 padding = 0.0f;
     float32 spacing = 0.0f;
 };

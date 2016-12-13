@@ -7,7 +7,6 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
-#include "Main/Guards.h"
 #include "Main/mainwindow.h"
 #include "Classes/Qt/GlobalOperations.h"
 #include "PlaneLODDialog/PlaneLODDialog.h"
@@ -337,7 +336,7 @@ void LODEditor::CreatePlaneLODClicked()
     PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
     if (dialog.exec() == QDialog::Accepted)
     {
-        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...", 0, 0);
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
     }
 }

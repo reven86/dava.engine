@@ -1,5 +1,3 @@
-#include "Base/Platform.h"
-
 #include "UI/UIMovieView.h"
 
 #include "Engine/Engine.h"

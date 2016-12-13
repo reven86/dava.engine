@@ -1,17 +1,18 @@
 #include "../Common/rhi_Private.h"
-    #include "../rhi_ShaderCache.h"
-    #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
+#include "../rhi_ShaderCache.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 
-    #include "rhi_ProgGLES2.h"
-    #include "rhi_GLES2.h"
-    
-    #include "Logger/Logger.h"
-    #include "FileSystem/File.h"
-    #include "FileSystem/FileSystem.h"
+#include "rhi_ProgGLES2.h"
+#include "rhi_GLES2.h"
+
+#include "Logger/Logger.h"
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
-    #include "_gl.h"
+#include "_gl.h"
 
 #define SAVE_GLES_SHADERS 0
 
@@ -260,7 +261,7 @@ VertexDeclGLES2
                     vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
+                if (DeviceCaps().isInstancingSupported && (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor))
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
@@ -446,11 +447,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     bool doAdd = true;
     uint32 vprogSrcHash;
     uint32 fprogSrcHash;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     vprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&vprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&vprog_bin[0]))));
     fprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&fprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&fprog_bin[0]))));
@@ -476,7 +474,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     {
         DAVA::FileSystem::Instance()->CreateDirectory("~doc:/ShaderSources");
 
-        DAVA::File* vfile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.vsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        DAVA::File* vfile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/vertex-prog-%03d.sl", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
         if (vfile)
         {
             vfile->Write("//", 2);
@@ -486,7 +484,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
             SafeRelease(vfile);
         }
 
-        DAVA::File* ffile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.fsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        DAVA::File* ffile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/fragment-prog-%03d.sl", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
         if (ffile)
         {
             ffile->Write("//", 2);
@@ -535,19 +533,17 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
 
             ExecGL(cmd1, countof(cmd1));
 
-            int status = 0;
             unsigned gl_prog = cmd1[0].retval;
             GLCommand cmd2[] =
             {
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
               { GLCommand::LINK_PROGRAM, { gl_prog } },
-              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, reinterpret_cast<uint64>(&status) } },
             };
 
             ExecGL(cmd2, countof(cmd2));
 
-            if (status)
+            if (cmd2[2].retval)
             {
                 entry.vprog->vdecl.InitVattr(gl_prog);
                 entry.vprog->GetProgParams(gl_prog);
@@ -566,17 +562,15 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
                 char info[1024];
 
                 GL_CALL(glGetProgramInfoLog(gl_prog, countof(info), 0, info));
-                Trace("prog-link failed:\n");
-                Trace(info);
+                Logger::Error("prog-link failed:\n");
+                Logger::Error(info);
             }
         }
 
         _ProgramEntry.push_back(entry);
-        //Logger::Info("gl-prog cnt = %u",_ProgramEntry.size());
         prog->vprog = entry.vprog;
         prog->fprog = entry.fprog;
         prog->glProg = entry.glProg;
-        ;
     }
 
     return success;
@@ -604,11 +598,8 @@ gles2_PipelineState_Create(const PipelineState::Descriptor& desc)
     Handle handle = PipelineStateGLES2Pool::Alloc();
     ;
     PipelineStateGLES2_t* ps = PipelineStateGLES2Pool::Get(handle);
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     if (PipelineStateGLES2_t::AcquireProgram(desc, &(ps->prog)))
     {

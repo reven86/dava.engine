@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SHADER_CACHE_H__
-#define __DAVAENGINE_SHADER_CACHE_H__
+#pragma once
 
 #include "Base/FastNameMap.h"
 #include "Base/Singleton.h"
@@ -15,12 +14,11 @@ void Uninitialize();
 void Clear();
 void ClearDynamicBindigs();
 
-void RelaoadShaders();
+void ReloadShaders();
 
+void SetLoadingNotifyEnabled(bool enable);
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 
-void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
+Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines);
 };
 };
-
-#endif // __DAVAENGINE_SHADER_CACHE_H__

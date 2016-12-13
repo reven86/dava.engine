@@ -331,6 +331,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[60] = Key::RSHIFT;
 
     keyTranslator[57] = Key::CAPSLOCK;
+    keyTranslator[54] = Key::RCMD;
     keyTranslator[55] = Key::LCMD; // LGUI in SDL
     keyTranslator[0x31] = Key::SPACE;
 
@@ -707,7 +708,7 @@ void KeyboardDevice::ClearAllKeys()
     {
         UIEvent e;
         e.phase = UIEvent::Phase::KEY_UP;
-        e.device = UIEvent::Device::KEYBOARD;
+        e.device = eInputDevices::KEYBOARD;
         e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         for (uint32 key = static_cast<uint32>(Key::ESCAPE); key < static_cast<uint32>(Key::TOTAL_KEYS_COUNT); key += 1)
         {

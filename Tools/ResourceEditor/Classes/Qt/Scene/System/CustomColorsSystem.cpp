@@ -3,6 +3,7 @@
 #include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
@@ -11,14 +12,21 @@
 #include "Scene/SceneSignals.h"
 #include "Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
-#include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+
+#include "TArc/DataProcessing/DataContext.h"
+
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "FileSystem/FileSystem.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
 {
     SetColor(colorIndex);
 }
@@ -53,7 +61,8 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
     DAVA::FilePath filePath = GetCurrentSaveFileName();
-    if (!filePath.IsEmpty())
+    DVASSERT(!filePath.IsEmpty());
+    if (DAVA::Engine::Instance()->GetContext()->fileSystem->Exists(filePath))
     {
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
@@ -72,7 +81,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     if (!toolImageTexture)
     {
-        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.png");
+        CreateToolImage("~res:/ResourceEditor/LandscapeEditor/Tools/customcolorsbrush/circle.png");
     }
 
     enabled = true;
@@ -97,7 +106,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing(bool saveNeeded)
 
     if (drawSystem->GetCustomColorsProxy()->GetChangesCount() && saveNeeded)
     {
-        SceneSignals::Instance()->EmitCustomColorsTextureShouldBeSaved(((SceneEditor2*)GetScene()));
+        SaveTexture();
     }
     FinishEditing(false);
 
@@ -133,16 +142,16 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void CustomColorsSystem::Input(DAVA::UIEvent* event)
+bool CustomColorsSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 
@@ -168,6 +177,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void CustomColorsSystem::FinishEditing(bool applyModification)
@@ -249,7 +259,7 @@ void CustomColorsSystem::AddRectToAccumulator(const DAVA::Rect& rect)
 DAVA::Rect CustomColorsSystem::GetUpdatedRect()
 {
     DAVA::Rect r = updatedRectAccumulator;
-    drawSystem->ClampToTexture(DAVA::Landscape::TEXTURE_COLOR, r);
+    drawSystem->ClampToTexture(LandscapeProxy::LANDSCAPE_TEXTURE_TOOL, r);
 
     return r;
 }
@@ -269,7 +279,13 @@ void CustomColorsSystem::SetBrushSize(DAVA::int32 brushSize, bool updateDrawSyst
 
 void CustomColorsSystem::SetColor(DAVA::int32 colorIndex)
 {
-    DAVA::Vector<DAVA::Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data == nullptr)
+    {
+        return;
+    }
+
+    DAVA::Vector<DAVA::Color> customColors = data->GetEditorConfig()->GetColorPropertyValues("LandscapeCustomColors");
     if (colorIndex >= 0 && colorIndex < static_cast<DAVA::int32>(customColors.size()))
     {
         drawColor = customColors[colorIndex];
@@ -304,6 +320,11 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
                                                     StoreSaveFileName(filePath);
                                                     drawSystem->GetCustomColorsProxy()->ResetChanges();
                                                 });
+}
+
+void CustomColorsSystem::SaveTexture()
+{
+    SaveTexture(GetCurrentSaveFileName());
 }
 
 bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool createUndo)
@@ -430,7 +451,20 @@ DAVA::FilePath CustomColorsSystem::GetCurrentSaveFileName()
         currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
     }
 
-    return GetAbsolutePathFromProjectPath(currentSaveName);
+    DAVA::FilePath currentTexturePath = GetAbsolutePathFromProjectPath(currentSaveName);
+    if (currentTexturePath.IsEmpty())
+    {
+        DAVA::FilePath scenePathName = static_cast<SceneEditor2*>(GetScene())->GetScenePath();
+        scenePathName.ReplaceExtension("");
+
+        DAVA::Texture* colorMapTexture = drawSystem->GetLandscapeProxy()->GetLandscapeTexture(DAVA::Landscape::TEXTURE_COLOR);
+        DVASSERT(colorMapTexture != nullptr);
+
+        DAVA::FilePath colorMapDir = colorMapTexture->GetPathname().GetDirectory();
+        currentTexturePath = colorMapDir + (scenePathName.GetFilename() + "_passability.png");
+    }
+
+    return currentTexturePath;
 }
 
 DAVA::FilePath CustomColorsSystem::GetScenePath()
@@ -459,7 +493,10 @@ DAVA::String CustomColorsSystem::GetRelativePathToProjectPath(const DAVA::FilePa
     if (absolutePath.IsEmpty())
         return DAVA::String();
 
-    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+
+    return absolutePath.GetRelativePathname(data->GetProjectPath());
 }
 
 DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::String& relativePath)
@@ -467,7 +504,9 @@ DAVA::FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const DAVA::St
     if (relativePath.empty())
         return DAVA::FilePath();
 
-    return ProjectManager::Instance()->GetProjectPath() + relativePath;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    DVASSERT(data != nullptr);
+    return data->GetProjectPath() + relativePath;
 }
 
 DAVA::int32 CustomColorsSystem::GetBrushSize()

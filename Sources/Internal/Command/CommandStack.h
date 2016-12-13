@@ -42,6 +42,7 @@ protected:
 
     void UpdateCleanState();
     void SetCurrentIndex(int32 currentIndex);
+    void EmitCurrentIndexChanged();
 
     static const int32 EMPTY_INDEX = -1;
 

@@ -4,19 +4,19 @@ import os
 import sys
 import shutil
 
-def updateGameCore(className):
-    """Updates GameCore.cpp to add new test"""
+def updateTestBed(className):
+    """Updates TestBed.cpp to add new test"""
 
-    gc_read = "Classes/Infrastructure/GameCore.cpp"
-    gc_write = "Classes/Infrastructure/GameCore.cpp.new"
+    gc_read = "Classes/Infrastructure/TestBed.cpp"
+    gc_write = "Classes/Infrastructure/TestBed.cpp.new"
 
     with open(gc_write, 'w') as outfile:
         with open(gc_read, 'r') as infile:
             for line in infile:
-                if line.startswith("//$UNITTEST_INCLUDE"):
+                if "//$UNITTEST_INCLUDE" in line:
                     outfile.write('#include "Tests/'+className+'.h"\n')
-                if line.startswith("//$UNITTEST_CTOR"):
-                    outfile.write('    new '+className+'();\n')
+                if "//$UNITTEST_CTOR" in line:
+                    outfile.write('    new '+className+'(*this);\n')
                 outfile.write(line)
 
     shutil.move(gc_write, gc_read)
@@ -75,6 +75,6 @@ if __name__ == "__main__":
 
     createHeader(test_class_name)
     createSource(test_class_name)
-    updateGameCore(test_class_name)
+    updateTestBed(test_class_name)
     print "Complete"
 

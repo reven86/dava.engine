@@ -21,8 +21,12 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -63,11 +67,35 @@ Landscape::Landscape()
 
     subdivision = new LandscapeSubdivision();
 
-    renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
-    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
-        renderMode = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
+    renderMode = RENDERMODE_NO_INSTANCING;
+    if (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported)
+    {
+        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING_MORPHING;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX))
+        {
+            renderMode = RENDERMODE_INSTANCING;
+            floatHeightTexture = true;
+        }
+    }
 
-    floatHeightTexture = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) ? false : true;
+#ifdef __DAVAENGINE_COREV2__
+    EngineSettings* settings = Engine::Instance()->GetContext()->settings;
+#else
+    EngineSettings* settings = EngineSettings::Instance();
+#endif
+
+    EngineSettings::eSettingValue landscapeSetting = settings->GetSetting<EngineSettings::SETTING_LANDSCAPE_RENDERMODE>().Get<EngineSettings::eSettingValue>();
+    if (landscapeSetting == EngineSettings::LANDSCAPE_NO_INSTANCING)
+        renderMode = RENDERMODE_NO_INSTANCING;
+    else if (landscapeSetting == EngineSettings::LANDSCAPE_INSTANCING && renderMode == RENDERMODE_INSTANCING_MORPHING)
+        renderMode = RENDERMODE_INSTANCING;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
@@ -799,8 +827,10 @@ void Landscape::DrawLandscapeNoInstancing()
     drawIndices = 0;
     flushQueueCounter = 0;
     activeRenderBatchArray.clear();
+    queuedQuadBuffer = -1;
 
-    ClearQueue();
+    DVASSERT(queueIndexCount == 0);
+
     AddPatchToRender(0, 0, 0);
     FlushQueue();
 }
@@ -911,34 +941,40 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
-    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
-    {
-        AllocateRenderBatch();
-    }
-
     DVASSERT(queuedQuadBuffer != -1);
 
-    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
-    DVASSERT(indexBuffer.allocatedindices == queueIndexCount);
+    uint16* indicesPtr = indices.data();
+    while (queueIndexCount != 0)
+    {
+        DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+        if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+        {
+            AllocateRenderBatch();
+        }
 
-    Memcpy(indexBuffer.data, indices.data(), queueIndexCount * sizeof(uint16));
-    RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
-    batch->indexBuffer = indexBuffer.buffer;
-    batch->indexCount = queueIndexCount;
-    batch->startIndex = indexBuffer.baseIndex;
-    batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
+        DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
+        DVASSERT(queueIndexCount >= indexBuffer.allocatedindices);
+        uint32 allocatedIndices = indexBuffer.allocatedindices - indexBuffer.allocatedindices % 3; //in buffer must be completed triangles
 
-    activeRenderBatchArray.push_back(batch);
-    ClearQueue();
+        Memcpy(indexBuffer.data, indicesPtr, allocatedIndices * sizeof(uint16));
+        RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
+        batch->indexBuffer = indexBuffer.buffer;
+        batch->indexCount = allocatedIndices;
+        batch->startIndex = indexBuffer.baseIndex;
+        batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
 
-    drawIndices += batch->indexCount;
-    ++flushQueueCounter;
-}
+        DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
 
-void Landscape::ClearQueue()
-{
-    queueIndexCount = 0;
+        activeRenderBatchArray.push_back(batch);
+
+        queueIndexCount -= allocatedIndices;
+        indicesPtr += allocatedIndices;
+
+        drawIndices += allocatedIndices;
+        ++flushQueueCounter;
+    }
+
+    DVASSERT(queueIndexCount == 0);
     queuedQuadBuffer = -1;
 }
 
@@ -1147,6 +1183,8 @@ void Landscape::DrawLandscapeInstancing()
         instanceDataPtr = nullptr;
 
         drawIndices = activeRenderBatchArray[0]->indexCount * activeRenderBatchArray[0]->instanceCount;
+
+        DAVA_PROFILER_GPU_RENDER_BATCH(activeRenderBatchArray[0], ProfilerGPUMarkerName::LANDSCAPE);
     }
 }
 
@@ -1202,7 +1240,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PREPARE_LANDSCAPE)
 
     RenderObject::PrepareToRender(camera);
 

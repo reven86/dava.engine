@@ -760,6 +760,9 @@ public:
         const uint8* readPtr = reinterpret_cast<const uint8*>(inData);
         uint8* writePtr = reinterpret_cast<uint8*>(outData);
 
+        const uint32 lineStride = (inHeight > outHeight) ? inWidth : 0;
+        const uint32 pixelStride = (inWidth > outWidth) ? 1 : 0;
+
         for (uint32 y = 0; y < outHeight; ++y)
         {
             const TYPE_IN* readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
@@ -773,9 +776,9 @@ public:
                 CHANNEL_TYPE a00, a01, a10, a11;
 
                 unpackFunc(readPtrLine, r00, g00, b00, a00);
-                unpackFunc(readPtrLine + 1, r01, g01, b01, a01);
-                unpackFunc(readPtrLine + inWidth, r10, g10, b10, a10);
-                unpackFunc(readPtrLine + inWidth + 1, r11, g11, b11, a11);
+                unpackFunc(readPtrLine + pixelStride, r01, g01, b01, a01);
+                unpackFunc(readPtrLine + lineStride, r10, g10, b10, a10);
+                unpackFunc(readPtrLine + lineStride + pixelStride, r11, g11, b11, a11);
 
                 CHANNEL_TYPE r = (r00 + r01 + r10 + r11) / 4;
                 CHANNEL_TYPE g = (g00 + g01 + g10 + g11) / 4;

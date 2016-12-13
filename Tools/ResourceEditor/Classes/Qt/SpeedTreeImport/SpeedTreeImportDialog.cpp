@@ -4,12 +4,14 @@
     #include "SpeedTreeImporter.h"
 #endif
 #include "ui_treeimportdialog.h"
-#include "Qt/Project/ProjectManager.h"
 #include "Qt/Main/mainwindow.h"
-#include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "GlobalOperations.h"
+
+#include "TArc/DataProcessing/DataContext.h"
 
 using namespace DAVA;
 
@@ -66,7 +68,7 @@ void SpeedTreeImportDialog::OnOk()
 
     //import all trees
     {
-        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...", 0, 0);
         for (size_t i = 0; i < xmlFiles.size(); ++i)
         {
             SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);
@@ -81,7 +83,7 @@ void SpeedTreeImportDialog::OnOk()
 
     QMessageBox::information(this, "SpeedTree Import", message, QMessageBox::Ok);
 
-    //open importet trees
+    //open imported trees
     if (ui->checkBox->isChecked())
     {
         for (size_t i = 0; i < outFiles.size(); ++i)
@@ -107,7 +109,9 @@ void SpeedTreeImportDialog::OnXMLSelect()
         xmlFiles.push_back(FilePath(selectedFiles.at(i).toStdString()));
 
     if (sc2FolderPath.IsEmpty())
-        SetSC2FolderValue(ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str());
+    {
+        SetSC2FolderValue(REGlobal::GetDataNode<ProjectManagerData>()->GetDataSourcePath().GetAbsolutePathname().c_str());
+    }
 
     ui->xmlListWidget->clear();
     ui->xmlListWidget->addItems(selectedFiles);
@@ -115,7 +119,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
 
 void SpeedTreeImportDialog::OnSc2Select()
 {
-    QString dialogPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    QString dialogPath = REGlobal::GetDataNode<ProjectManagerData>()->GetProjectPath().GetAbsolutePathname().c_str();
     if (!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 

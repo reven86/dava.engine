@@ -54,25 +54,33 @@ msaa:
   - 
    quality: "MSAA_2X"
   -
-   quality: "FXAA"
-  -
    quality: "NONE"
 
 materials:
  -
   group: "Water"
-  quality: ["HIGH", "MEDIUM", "LOW", "ULTRA_LOW"]
-  default: "ULTRA_LOW"
+  quality: ["ULTRA_HIGH", "HIGH", "LOW"]
+  default: "LOW"
+
+ -
+  group: "VegetationCount"
+  quality: ["500k", "60k", "regular"] 
+  default: "regular"
 
  -
   group: "Static object"
-  quality: ["HIGH", "MEDIUM" "LOW"]
-  default: "HIGH"
+  quality: ["MEDIUM", "LOW"]
+  default: "MEDIUM"
+
+ -
+  group: "Decoration Objects"
+  quality: ["ON", "OFF"]
+  default: "ON"
 
  -
   group: "Landscape"
-  quality: ["HIGH", "LOW"]
-  default: "HIGH"
+  quality: ["HIGH", "MEDIUM", "LOW"]
+  default: "MEDIUM"
 
  -
   group: "Particle"
@@ -92,6 +100,11 @@ materials:
  -
   group: "Spherical Harmonics"
   quality: ["HIGH", "MEDIUM", "LOW"]
+  default: "HIGH"
+  
+ -
+  group: "Lightmaps"
+  quality: ["HIGH", "LOW"] 
   default: "HIGH"
 
 landscape:

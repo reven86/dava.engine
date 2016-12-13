@@ -1,4 +1,6 @@
 #include "SceneHelper.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 #include "Deprecated/SceneValidator.h"
 
 SceneHelper::TextureCollector::TextureCollector(DAVA::uint32 options)
@@ -15,12 +17,19 @@ void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
     else
         material->CollectLocalTextures(materialTextures);
 
+    SceneValidator validator;
+    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (data)
+    {
+        validator.SetPathForChecking(data->GetProjectPath());
+    }
+
     for (auto const& matTex : materialTextures)
     {
         const DAVA::FilePath& texturePath = matTex->path;
         DAVA::Texture* texture = matTex->texture;
 
-        if (texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
+        if (texturePath.IsEmpty() || !validator.IsPathCorrectForProject(texturePath))
         {
             continue;
         }

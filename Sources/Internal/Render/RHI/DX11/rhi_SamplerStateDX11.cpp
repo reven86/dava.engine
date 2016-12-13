@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
 #include "Debug/DVAssert.h"
 #include "rhi_DX11.h"
 #include "_dx11.h"
@@ -153,9 +154,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
 
         DVASSERT(s_desc.MaxAnisotropy >= 1);
 
-        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s), hr);
         if (FAILED(hr))
         {
             state->fragmentSampler[s] = nullptr;
@@ -184,9 +184,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
 
         DVASSERT(s_desc.MaxAnisotropy >= 1);
 
-        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s), hr);
         if (FAILED(hr))
         {
             state->vertexSampler[s] = nullptr;
@@ -219,7 +218,7 @@ void SetToRHI(Handle hstate, ID3D11DeviceContext* context)
 
     context->PSSetSamplers(0, state->fragmentSamplerCount, state->fragmentSampler);
 
-    if (state->vertexSamplerCount)
+    if (state->vertexSamplerCount && DeviceCaps().isVertexTextureUnitsSupported)
     {
         context->VSSetSamplers(0, state->vertexSamplerCount, state->vertexSampler);
     }

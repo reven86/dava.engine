@@ -5,11 +5,23 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (FileSystemTest)
 {
+    FilePath tempDir = "~doc:/TestData/FileSystemTest_Temp/";
+
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
         bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
+    }
+
+    void SetUp(const String&)override
+    {
+        FileSystem::Instance()->CreateDirectory(tempDir);
+    }
+
+    void TearDown(const String&)override
+    {
+        FileSystem::Instance()->DeleteDirectory(tempDir);
     }
 
     DAVA_TEST (ResTestFunction)
@@ -361,6 +373,99 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
         FileSystem::Instance()->DeleteFile(textFilePath);
         FileSystem::Instance()->DeleteFile(textFilePath2);
+    }
+
+    DAVA_TEST (GetFrameworkPathTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        const FilePath tmp = fs->GetTempDirectoryPath();
+
+        if (!tmp.IsEmpty())
+        {
+            String tmps = tmp.GetStringValue();
+
+            const String dataDir = tmps + "/data/";
+            if (fs->CreateDirectory(dataDir, true) != FileSystem::DIRECTORY_CANT_CREATE)
+            {
+                const String innerDir = tmps + "/inner_data/";
+                if (fs->CreateDirectory(innerDir, true != FileSystem::DIRECTORY_CANT_CREATE))
+                {
+                    FilePath::AddResourcesFolder(dataDir);
+                    FilePath::AddResourcesFolder(innerDir);
+
+                    String filePath = innerDir + String("file.yaml");
+                    File* f = File::Create(filePath, File::CREATE | File::WRITE);
+
+                    if (f != nullptr)
+                    {
+                        SafeRelease(f);
+                    }
+
+                    String fullPath = tmps + "/inner_data/file.yaml";
+
+                    FilePath absPath(fullPath);
+
+                    FilePath resPath = absPath.GetFrameworkPath();
+                    TEST_VERIFY(resPath.GetStringValue() == "~res:/file.yaml");
+
+                    fs->DeleteDirectoryFiles(innerDir, true);
+                    fs->DeleteDirectory(innerDir);
+                }
+                fs->DeleteDirectory(dataDir);
+            }
+        }
+    }
+
+    DAVA_TEST (IsDirectoryTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+
+        TEST_VERIFY(fs->IsDirectory(dirPath) == false);
+        TEST_VERIFY(fs->IsFile(dirPath) == false);
+
+        FileSystem::eCreateDirectoryResult res = fs->CreateDirectory(dirPath);
+        TEST_VERIFY(res == FileSystem::eCreateDirectoryResult::DIRECTORY_CREATED)
+        TEST_VERIFY(fs->IsDirectory(dirPath) == true);
+        TEST_VERIFY(fs->IsFile(dirPath) == false);
+    }
+
+    DAVA_TEST (IsFileTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath filePath = tempDir + "file";
+
+        TEST_VERIFY(fs->IsDirectory(filePath) == false);
+        TEST_VERIFY(fs->IsFile(filePath) == false);
+
+        ScopedPtr<File> file(File::Create(filePath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() != nullptr)
+        TEST_VERIFY(fs->IsDirectory(filePath) == false);
+        TEST_VERIFY(fs->IsFile(filePath) == true);
+    }
+
+    DAVA_TEST (CreateFilePassingDirTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+
+        ScopedPtr<File> file(File::Create(dirPath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() == nullptr)
+    }
+
+    DAVA_TEST (CreateFilePassingExistingDirTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+        fs->CreateDirectory(dirPath);
+
+        ScopedPtr<File> file(File::Create(dirPath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() == nullptr)
     }
 }
 ;

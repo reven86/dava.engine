@@ -5,7 +5,7 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
-#include "Engine/EngineModule.h"
+#if !defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -84,5 +84,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
 }
 
 } //  namespace DAVA
+
+#endif //!defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN32__

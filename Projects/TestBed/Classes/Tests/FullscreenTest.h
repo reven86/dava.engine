@@ -29,10 +29,10 @@ private:
     void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    DAVA::Window* primaryWindow = nullptr;
+    DAVA::SigConnectionID sizeChangedSigConn = DAVA::SigConnectionID();
 
-    DAVA::UIStaticText* currentModeText;
-    DAVA::UIStaticText* currentScaleText;
+    DAVA::UIStaticText* currentModeText = nullptr;
+    DAVA::UIStaticText* currentScaleText = nullptr;
     DAVA::UI3DView* ui3dview = nullptr;
     DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
     DAVA::UIStaticText* currect3dScaleText = nullptr;

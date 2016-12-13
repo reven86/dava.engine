@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Math/Rect.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
@@ -13,7 +13,7 @@ namespace DAVA
 JniExtension::JniExtension()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
     vm = delegate->GetVM();
 #endif
@@ -25,7 +25,7 @@ JniExtension::~JniExtension()
 
 void JniExtension::SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName)
 {
-    *gJavaClass = (jclass)env->NewGlobalRef(env->FindClass(className));
+    *gJavaClass = static_cast<jclass>(env->NewGlobalRef(env->FindClass(className)));
     if (gJavaClassName)
         *gJavaClassName = className;
 }
@@ -54,7 +54,7 @@ JNIEnv* JniExtension::GetEnvironment() const
     // we shouldn't store JNIEnv.
 
     JNIEnv* env;
-    if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
@@ -63,8 +63,8 @@ JNIEnv* JniExtension::GetEnvironment() const
 
 Rect JniExtension::V2P(const Rect& srcRect) const
 {
-    Vector2 offset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(srcRect);
+    Vector2 offset = UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(srcRect);
 
     rect += offset;
     return rect;

@@ -98,9 +98,10 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
             data.pSysMem = desc.initialData;
             data.SysMemPitch = desc.size;
         }
+        D3D11_SUBRESOURCE_DATA* createBufferData = desc.initialData ? &data : nullptr;
 
-        HRESULT hr = _D3D11_Device->CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf);
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateBuffer(&desc11, createBufferData, &buf), hr);
         if (SUCCEEDED(hr))
         {
             handle = IndexBufferDX11Pool::Alloc();
@@ -111,10 +112,6 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
             ib->buffer = buf;
             ib->is32bit = desc.indexSize == INDEX_SIZE_32BIT;
             ib->isMapped = false;
-        }
-        else
-        {
-            Logger::Error("FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr));
         }
     }
 

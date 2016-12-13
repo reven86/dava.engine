@@ -5,10 +5,22 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#else
+#include "Core/Core.h"
+#endif
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Android/JNIBridge.h"
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#endif
 
 namespace DAVA
 {
@@ -27,6 +39,15 @@ const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languag
 };
 
 const char* LocalizationSystem::DEFAULT_LOCALE = "en";
+
+const KeyedArchive* GetOptions()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    return Engine::Instance()->GetOptions();
+#else
+    return Core::Instance()->GetOptions();
+#endif
+}
 
 LocalizationSystem::LocalizationSystem()
 {
@@ -52,16 +73,50 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
-
-#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
     String locale = GetDeviceLocale();
+
+    if (locale.empty())
+    {
+        DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
+        locale = GetOptions()->GetString("locale", DEFAULT_LOCALE);
+    }
     SetCurrentLocale(locale);
-#else
-    DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
-    String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
-    SetCurrentLocale(loc);
-#endif
 }
+
+#if !defined(__DAVAENGINE_ANDROID__)
+
+String LocalizationSystem::GetDeviceLocale(void) const
+{
+    if (!overridenLangId.empty())
+    {
+        return overridenLangId;
+    }
+
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
+}
+
+#else
+
+String LocalizationSystem::GetDeviceLocale(void) const
+{
+    if (!overridenLangId.empty())
+    {
+        return overridenLangId;
+    }
+
+    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
+    Function<jstring()> getLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+
+    return JNI::ToString(getLocale());
+}
+
+#endif
 
 void LocalizationSystem::Init()
 {
@@ -76,6 +131,11 @@ const String& LocalizationSystem::GetCurrentLocale() const
 const FilePath& LocalizationSystem::GetDirectoryPath() const
 {
     return directoryPath;
+}
+
+void LocalizationSystem::OverrideDeviceLocale(const String& langId)
+{
+    overridenLangId = langId;
 }
 
 void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)

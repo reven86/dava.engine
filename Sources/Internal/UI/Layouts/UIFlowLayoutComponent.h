@@ -2,7 +2,8 @@
 #define __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/Reflection.h"
+#include <bitset>
 
 namespace DAVA
 {
@@ -96,7 +97,7 @@ private:
     Array<float32, Vector2::AXIS_COUNT> padding;
     Array<float32, Vector2::AXIS_COUNT> spacing;
 
-    Bitset<eFlags::FLAG_COUNT> flags;
+    std::bitset<eFlags::FLAG_COUNT> flags;
 };
 }
 

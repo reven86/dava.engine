@@ -1,12 +1,15 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include <bitset>
+
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/EngineTypes.h"
 
 namespace DAVA
 {
@@ -19,18 +22,25 @@ ref struct WindowNativeBridge sealed
 
     void* GetHandle() const;
 
-    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd);
+    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_);
 
-    void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
+    void AddXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl);
+    void RemoveXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl);
+    void PositionXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
     void UnfocusXamlControl();
+    ::Windows::UI::Xaml::Input::Pointer ^ GetLastPressedPointer() const;
 
     void TriggerPlatformEvents();
 
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    void SetMinimumSize(float32 width, float32 height);
+    void SetFullscreen(eFullscreen newMode);
+    void SetCursorCapture(eCursorCapture mode);
+    void SetCursorVisibility(bool visible);
+
+    void SetSurfaceScale(const float32 scale);
 
 private:
     void OnTriggerPlatformEvents();
@@ -46,12 +56,13 @@ private:
 
     void OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerCaptureLost(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args);
 
-    static uint32 GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
-    static uint32 GetMouseButtonIndex(std::bitset<5> state);
-    static std::bitset<5> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
+    eModifierKeys GetModifierKeys() const;
+    static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
 
     void CreateBaseXamlUI();
     void InstallEventHandlers();
@@ -62,12 +73,13 @@ private:
     Window* window = nullptr;
     MainDispatcher* mainDispatcher = nullptr;
 
+    float32 surfaceScale = 1.0f;
+
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
     ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
-
-    std::bitset<5> mouseButtonState;
+    ::Windows::UI::Xaml::Input::Pointer ^ lastPressedPointer = nullptr;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;
@@ -78,11 +90,20 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenCompositionScaleChanged;
     ::Windows::Foundation::EventRegistrationToken tokenPointerPressed;
     ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerCaptureLost;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;
 
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
+
+    ::Windows::UI::Core::CoreCursor ^ defaultCursor = ref new ::Windows::UI::Core::CoreCursor(::Windows::UI::Core::CoreCursorType::Arrow, 0);
+    bool hasFocus = false;
+    bool mouseVisible = true;
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    uint32 mouseMoveSkipCount = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 
 inline void* WindowNativeBridge::GetHandle() const

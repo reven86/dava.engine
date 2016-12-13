@@ -1246,6 +1246,7 @@ public:
     void RemoveClass(const FastName& clazz);
     bool HasClass(const FastName& clazz) const;
     void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    FastName GetTaggedClass(const FastName& tag) const;
     void ResetTaggedClass(const FastName& tag);
 
     String GetClassesAsString() const;

@@ -1,15 +1,16 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSPANEL__
+#pragma once
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Main/Request.h"
+
+#include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/DataProcessing/DataListener.h"
 
 class QComboBox;
 class QPushButton;
 class SliderWidget;
 
-class CustomColorsPanel : public LandscapeEditorBasePanel
+class CustomColorsPanel : public LandscapeEditorBasePanel, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 
@@ -20,13 +21,10 @@ public:
     explicit CustomColorsPanel(QWidget* parent = 0);
 
 private slots:
-    void ProjectOpened(const QString& path);
-
     void SetBrushSize(int brushSize);
     void SetColor(int color);
     bool SaveTexture();
     void LoadTexture();
-    void SaveTextureIfNeeded(SceneEditor2* scene);
 
     void IncreaseBrushSize();
     void DecreaseBrushSize();
@@ -37,7 +35,7 @@ private slots:
     void NextTexture();
 
 protected:
-    bool GetEditorEnabled();
+    bool GetEditorEnabled() override;
 
     void SetWidgetsState(bool enabled) override;
     void BlockAllSignals(bool block) override;
@@ -57,11 +55,12 @@ private:
     DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
     DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
+
 private:
     QComboBox* comboColor = nullptr;
     SliderWidget* sliderWidgetBrushSize = nullptr;
     QPushButton* buttonSaveTexture = nullptr;
     QPushButton* buttonLoadTexture = nullptr;
+    DAVA::TArc::DataWrapper projectDataWrapper;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

@@ -1,7 +1,7 @@
-#include "REApplication.h"
+#include "Classes/Application/REApplication.h"
 
-int main(int argc, char* argv[])
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
-    REApplication a(argc, argv);
-    return a.Run();
+    REApplication app(std::move(cmdline));
+    return app.Run();
 }

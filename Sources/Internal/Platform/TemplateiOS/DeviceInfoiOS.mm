@@ -110,47 +110,46 @@ String DeviceInfoPrivate::GetModel()
             model = "iPhone 3G";
         if ([modelName hasPrefix:@"iPhone2,1"])
             model = "iPhone 3GS";
-
         if ([modelName hasPrefix:@"iPhone3,1"])
             model = "iPhone 4 GSM";
         if ([modelName hasPrefix:@"iPhone3,3"])
             model = "iPhone 4 CDMA";
-
         if ([modelName hasPrefix:@"iPhone4,1"])
             model = "iPhone 4S";
-
         if ([modelName hasPrefix:@"iPhone5,1"])
             model = "iPhone 5 GSM LTE";
         if ([modelName hasPrefix:@"iPhone5,2"])
             model = "iPhone 5 CDMA LTE";
-
         if ([modelName hasPrefix:@"iPhone5,3"])
             model = "iPhone 5C GSM";
         if ([modelName hasPrefix:@"iPhone5,4"])
             model = "iPhone 5C GSM+CDMA";
-
         if ([modelName hasPrefix:@"iPhone6,1"])
             model = "iPhone 5S GSM";
         if ([modelName hasPrefix:@"iPhone6,2"])
             model = "iPhone 5S GSM+CDMA";
-
         if ([modelName hasPrefix:@"iPhone7,1"])
             model = "iPhone 6 Plus";
         if ([modelName hasPrefix:@"iPhone7,2"])
             model = "iPhone 6";
-
         if ([modelName hasPrefix:@"iPhone8,1"])
             model = "iPhone 6s";
         if ([modelName hasPrefix:@"iPhone8,2"])
             model = "iPhone 6s Plus";
-
         if ([modelName hasPrefix:@"iPhone8,4"])
             model = "iPhone SE";
+        if ([modelName hasPrefix:@"iPhone9,1"])
+            model = "iPhone 7 CDMA";
+        if ([modelName hasPrefix:@"iPhone9,3"])
+            model = "iPhone 7 GSM";
+        if ([modelName hasPrefix:@"iPhone9,2"])
+            model = "iPhone 7 Plus CDMA";
+        if ([modelName hasPrefix:@"iPhone9,4"])
+            model = "iPhone 7 Plus GSM";
 
         // iPad
         if ([modelName hasPrefix:@"iPad1,1"])
             model = "iPad 1";
-
         if ([modelName hasPrefix:@"iPad2,1"])
             model = "iPad 2 WiFi";
         if ([modelName hasPrefix:@"iPad2,2"])
@@ -159,64 +158,54 @@ String DeviceInfoPrivate::GetModel()
             model = "iPad 2 3G CDMA";
         if ([modelName hasPrefix:@"iPad2,4"])
             model = "iPad 2 WiFi";
-
         if ([modelName hasPrefix:@"iPad2,5"])
             model = "iPad Mini WiFi";
         if ([modelName hasPrefix:@"iPad2,6"])
             model = "iPad Mini GSM LTE";
         if ([modelName hasPrefix:@"iPad2,7"])
             model = "iPad Mini GSM CDMA LTE";
-
         if ([modelName hasPrefix:@"iPad3,1"])
             model = "iPad 3 WiFi";
         if ([modelName hasPrefix:@"iPad3,2"])
             model = "iPad 3 CDMA LTE";
         if ([modelName hasPrefix:@"iPad3,3"])
             model = "iPad 3 GSM LTE";
-
         if ([modelName hasPrefix:@"iPad3,4"])
             model = "iPad 4 WiFi";
         if ([modelName hasPrefix:@"iPad3,5"])
             model = "iPad 4 GSM LTE";
         if ([modelName hasPrefix:@"iPad3,6"])
             model = "iPad 4 CDMA LTE";
-
         if ([modelName hasPrefix:@"iPad4,1"])
             model = "iPad 5 WiFi";
         if ([modelName hasPrefix:@"iPad4,2"])
             model = "iPad 5 GSM CDMA LTE";
         if ([modelName hasPrefix:@"iPad4,3"])
             model = "iPad 5 (China)";
-
         if ([modelName hasPrefix:@"iPad4,4"])
             model = "iPad Mini 2 WiFi";
         if ([modelName hasPrefix:@"iPad4,5"])
             model = "iPad Mini 2 GSM CDMA LTE";
         if ([modelName hasPrefix:@"iPad4,6"])
             model = "iPad Mini 2 (China)";
-
         if ([modelName hasPrefix:@"iPad4,7"])
             model = "iPad Mini 3 WiFi";
         if ([modelName hasPrefix:@"iPad4,8"])
             model = "iPad Mini 3 Cellular";
         if ([modelName hasPrefix:@"iPad4,9"])
             model = "iPad Mini 3 (China)";
-
         if ([modelName hasPrefix:@"iPad5,1"])
             model = "iPad Mini 4 WiFi";
         if ([modelName hasPrefix:@"iPad5,2"])
             model = "iPad Mini 4 Cellular";
-
         if ([modelName hasPrefix:@"iPad5,3"])
             model = "iPad 6 WiFi";
         if ([modelName hasPrefix:@"iPad5,4"])
             model = "iPad 6 Cellular";
-
         if ([modelName hasPrefix:@"iPad6,3"])
             model = "iPad Pro 9.7 WiFi";
         if ([modelName hasPrefix:@"iPad6,4"])
             model = "iPad Pro 9.7 Cellular";
-
         if ([modelName hasPrefix:@"iPad6,7"])
             model = "iPad Pro WiFi";
         if ([modelName hasPrefix:@"iPad6,8"])
@@ -335,10 +324,35 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
     return 0;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     return screenInfo;
 }
+
+void DeviceInfoPrivate::InitializeScreenInfo()
+{
+    //detecting physical screen size and initing core system with this size
+    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
+    screenInfo.width = [mainScreen bounds].size.width;
+    screenInfo.height = [mainScreen bounds].size.height;
+    screenInfo.scale = 1;
+
+    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
+    {
+        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
+        }
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
+        }
+    }
+}
+    
+#endif
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
@@ -391,27 +405,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
-}
-
-void DeviceInfoPrivate::InitializeScreenInfo()
-{
-    //detecting physical screen size and initing core system with this size
-    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
-    screenInfo.width = [mainScreen bounds].size.width;
-    screenInfo.height = [mainScreen bounds].size.height;
-    screenInfo.scale = 1;
-
-    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
-    {
-        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
-        {
-            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
-        }
-        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
-        {
-            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
-        }
-    }
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

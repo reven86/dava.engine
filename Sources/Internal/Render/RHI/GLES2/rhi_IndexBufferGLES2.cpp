@@ -1,12 +1,13 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_GLES2.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
+#include "rhi_GLES2.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_gl.h"
+#include "_gl.h"
 
 namespace rhi
 {

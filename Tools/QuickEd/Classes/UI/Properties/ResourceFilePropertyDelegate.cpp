@@ -3,18 +3,24 @@
 #include <QAction>
 #include <QLineEdit>
 #include <QApplication>
+#include <QMap>
 
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "ResourcesManageHelper.h"
+#include "Project/Project.h"
+
+#include "Engine/Engine.h"
 
 using namespace DAVA;
 
-ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString& resourceExtension_, const QString& resourceDir_, PropertiesTreeItemDelegate* delegate)
+ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
+const QString& resourceExtension_,
+const QString& resourceSubDir_,
+PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
     , resourceExtension(resourceExtension_)
-    , resourceDir(resourceDir_)
+    , resourceSubDir(resourceSubDir_)
 {
 }
 
@@ -22,8 +28,11 @@ ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 {
 }
 
-QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
+QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem&, const QModelIndex&)
 {
+    DVASSERT(context.project != nullptr);
+    project = context.project;
+    projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, &QLineEdit::editingFinished, this, &ResourceFilePropertyDelegate::OnEditingFinished);
@@ -92,10 +101,16 @@ void ResourceFilePropertyDelegate::selectFileClicked()
     }
     else
     {
-        dir = ResourcesManageHelper::GetResourceRootDirectory() + resourceDir;
+        dir = projectResourceDir + resourceSubDir;
     }
 
     QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);
+
+    if (project)
+    {
+        filePathText = project->RestoreSymLinkInFilePath(filePathText);
+    }
+
     if (!filePathText.isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(filePathText);
@@ -156,5 +171,7 @@ bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
         fullPath.append(resourceExtension);
     }
     DAVA::FilePath filePath(QStringToString(fullPath));
-    return FileSystem::Instance()->Exists(filePath);
+
+    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    return fileSystem->Exists(filePath);
 }

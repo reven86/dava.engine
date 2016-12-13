@@ -1,10 +1,12 @@
 #ifndef __RHI_PRIVATE_H__
 #define __RHI_PRIVATE_H__
 
-    #include "../rhi_Type.h"
+#include "../rhi_Type.h"
+#include "rhi_CommonImpl.h"
 
 namespace rhi
 {
+struct InitParam;
 ////////////////////////////////////////////////////////////////////////////////
 // render-target
 
@@ -59,18 +61,14 @@ int Value(Handle buf, uint32 objectIndex);
 ////////////////////////////////////////////////////////////////////////////////
 // perfquery-set
 
-namespace PerfQuerySet
+namespace PerfQuery
 {
-Handle Create(uint32 maxQueryCount);
-void Delete(Handle set);
+Handle Create();
+void Delete(Handle query);
+void Reset(Handle query);
 
-void Reset(Handle set);
-void SetCurrent(Handle set);
-
-void GetStatus(Handle set, bool* isReady, bool* isValid);
-bool GetFreq(Handle set, uint64* freq);
-bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp);
-bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1);
+bool IsReady(Handle query);
+uint64 Value(Handle query);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +139,7 @@ namespace SyncObject
 {
 Handle Create();
 void Delete(Handle obj);
-bool IsSygnaled(Handle obj);
+bool IsSignaled(Handle obj);
 }
 
 namespace CommandBuffer
@@ -164,7 +162,7 @@ void SetIndices(Handle cmdBuf, Handle ib);
 void SetQueryBuffer(Handle cmdBuf, Handle queryBuf);
 void SetQueryIndex(Handle cmdBuf, uint32 index);
 
-void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex);
+void IssueTimestampQuery(Handle cmdBuf, Handle perfQuery);
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf);
 void SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex);
@@ -182,19 +180,30 @@ void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
 
+namespace DispatchPlatform
+{
+void InitContext();
+bool ValidateSurface(); //TODO - may be this should be part of opengl only?
+void FinishRendering(); //perform finalization before going to suspend
+
+void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command); //called from render thread
+
+void FinishFrame(); //this functions is called from main thread
+void ExecuteFrame(const CommonImpl::Frame&); //should also handle command buffer sync here
+void RejectFrame(const CommonImpl::Frame&); //should also handle command buffer sync here
+
+bool PresentBuffer();
+void ResetBlock();
+}
+
+void InitializeImplementation(Api api, const InitParam& param);
+void UninitializeImplementation();
+
 struct RenderDeviceCaps;
 namespace MutableDeviceCaps
 {
 RenderDeviceCaps& Get();
 }
-
-void InitPacketListPool(uint32 maxCount);
-void InitTextreSetPool(uint32 maxCount);
-
-void BeginFreqMeasurement(Handle pqset);
-void EndFreqMeasurement(Handle pqset);
-
-void PresentImpl(Handle sync);
 
 // debug
 

@@ -6,7 +6,9 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <AppKit/NSScreen.h>
 #import <AppKit/NSOpenGL.h>
+#import <AppKit/NSTrackingArea.h>
 #import <OpenGL/OpenGL.h>
 
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
@@ -38,9 +40,52 @@
     // Create non-fullscreen pixel format.
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-    // Enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
+
+    [self setBackbufferScale:1.0f];
+
+    // Prepare tracking area to receive messages:
+    //  - mouseEntered and mouseExited, used with mouse capture handling
+    //  - mouseMoved which is delivered only when cursor inside active window
+    // clang-format off
+    NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                    NSTrackingActiveInKeyWindow |
+                                    NSTrackingInVisibleRect |
+                                    NSTrackingMouseMoved;
+    // clang-format on
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                                options:options
+                                                  owner:self
+                                               userInfo:nil];
+    [self addTrackingArea:trackingArea];
+
     return self;
+}
+
+- (void)reshape
+{
+    const NSSize frameSize = [self frame].size;
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+
+    const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
+    CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[self openGLContext] CGLContextObj]);
+}
+
+- (NSSize)convertSizeToBacking:(NSSize)size
+{
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+    size.width *= resultScale;
+    size.height *= resultScale;
+    return size;
+}
+
+- (NSSize)convertSizeFromBacking:(NSSize)size
+{
+    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+    size.width /= resultScale;
+    size.height /= resultScale;
+    return size;
 }
 
 - (uint32_t)displayBitsPerPixel:(CGDirectDisplayID)displayId
@@ -82,6 +127,16 @@
     bridge->MouseMove(theEvent);
 }
 
+- (void)mouseEntered:(NSEvent*)theEvent
+{
+    bridge->MouseEntered(theEvent);
+}
+
+- (void)mouseExited:(NSEvent*)theEvent
+{
+    bridge->MouseExited(theEvent);
+}
+
 - (void)scrollWheel:(NSEvent*)theEvent
 {
     bridge->MouseWheel(theEvent);
@@ -99,6 +154,7 @@
 
 - (void)mouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent
@@ -113,6 +169,7 @@
 
 - (void)rightMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)otherMouseDown:(NSEvent*)theEvent
@@ -127,6 +184,7 @@
 
 - (void)otherMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)keyDown:(NSEvent*)theEvent
@@ -141,6 +199,22 @@
 
 - (void)flagsChanged:(NSEvent*)theEvent
 {
+    bridge->FlagsChanged(theEvent);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)theEvent
+{
+    bridge->MagnifyWithEvent(theEvent);
+}
+
+- (void)rotateWithEvent:(NSEvent*)theEvent
+{
+    bridge->RotateWithEvent(theEvent);
+}
+
+- (void)swipeWithEvent:(NSEvent*)theEvent
+{
+    bridge->SwipeWithEvent(theEvent);
 }
 
 @end

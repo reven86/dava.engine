@@ -1,19 +1,18 @@
 #pragma once
 
-#include "NullType.h"
-#include "TypeList.h"
+#include "Base/BaseTypes.h"
+#include "Base/NullType.h"
+#include "Base/TypeList.h"
 
 #include <typeinfo>
 #include <type_traits>
 #include <utility>
 #include <cassert>
+#include <cstdlib>
 
 namespace DAVA
 {
-// Leave it for compatibility
-#define COMPILER_ASSERT(expr) static_assert(expr, #expr)
-
-// Template for intergal constant types
+// Template for integral constant types
 template <typename T, T Value>
 struct IntegralConstant
 {
@@ -381,3 +380,24 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 #endif
 
 #define SCOPE_EXIT auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = ::DAVA::ScopeGuardOnExit() + [&]()
+
+template <typename T, size_t N>
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
+{
+    return N;
+}
+
+/*
+Useful functions to offset pointer by specified number of bytes without long cast sequences.
+*/
+template <typename T>
+inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<T*>(static_cast<uint8_t*>(ptr) + offset);
+}
+
+template <typename T>
+inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<const T*>(static_cast<const uint8_t*>(ptr) + offset);
+}

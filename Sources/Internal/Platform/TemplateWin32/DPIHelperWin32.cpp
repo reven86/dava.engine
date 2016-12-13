@@ -7,6 +7,8 @@
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 
@@ -25,12 +27,7 @@ uint32 DPIHelper::GetScreenDPI()
     HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
     MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
 
-#if defined(__DAVAENGINE_COREV2__)
-    Window* w = Engine::Instance()->PrimaryWindow();
-    void* nativeWindow = w != nullptr ? w->GetNativeHandle() : nullptr;
-#else
     void* nativeWindow = Core::Instance()->GetNativeWindow();
-#endif
     if (nullptr != fn && nullptr != nativeWindow)
     {
         HWND hwnd = static_cast<HWND>(nativeWindow);
@@ -72,7 +69,6 @@ Size2i DPIHelper::GetScreenSize()
 
 uint32 DPIHelper::GetScreenDPI()
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     uint32 d(0);
     auto func = [&d]()
@@ -83,14 +79,10 @@ uint32 DPIHelper::GetScreenDPI()
     };
     core->RunOnUIThreadBlocked(func);
     return d;
-#else
-    return 0;
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
 float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     float64 scaleFactor = 0.0;
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     core->RunOnUIThreadBlocked([&scaleFactor]()
@@ -100,14 +92,10 @@ float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
                                    scaleFactor = displayInfo->RawPixelsPerViewPixel;
                                });
     return scaleFactor;
-#else
-    return 0;
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
 Size2i DPIHelper::GetScreenSize()
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     uint32 w(0), h(0);
     auto func = [&w, &h]()
@@ -118,11 +106,10 @@ Size2i DPIHelper::GetScreenSize()
     };
     core->RunOnUIThreadBlocked(func);
     return Size2i(w, h);
-#else
-    return Size2i(0, 0);
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
 #endif
 
 } // namespace DAVA
+
+#endif

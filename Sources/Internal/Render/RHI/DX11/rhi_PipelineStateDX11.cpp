@@ -1,22 +1,22 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../rhi_ShaderCache.h"
-    #include "rhi_DX11.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_DX11.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Debug/CPUProfiler.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
 using DAVA::uint8;
 
-    #include "_dx11.h"
-    #include <D3D11Shader.h>
-    #include <D3Dcompiler.h>
+#include "_dx11.h"
+#include <D3D11Shader.h>
+#include <D3Dcompiler.h>
 
-    #include <vector>
+#include <vector>
 
 namespace rhi
 {
@@ -136,9 +136,8 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
         ++elemCount;
     }
 
-    HRESULT hr = _D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl);
-    CHECK_HR(hr)
-
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
     return vdecl;
 }
 
@@ -296,9 +295,8 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
         }
     }
 
-    HRESULT hr = _D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl);
-    CHECK_HR(hr)
-
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
     return vdecl;
 }
 
@@ -334,14 +332,15 @@ private:
 
     ProgType progType = PROG_VERTEX;
     ID3D11Buffer* buf;
-    mutable float* value;
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
-    mutable float* inst;
-    mutable unsigned frame;
+    mutable float32* value;
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    mutable uint32 updateFrame;
+#else
+    mutable float32* inst;
+    mutable uint32 frame;
 #endif
-    unsigned buf_i;
-    unsigned regCount;
-    mutable uint32 updatePending : 1;
+    uint32 buf_i;
+    uint32 regCount;
 };
 
 static RingBuffer _DefConstRingBuf;
@@ -357,7 +356,7 @@ ConstBufDX11::ConstBufDX11()
 #endif
     , buf_i(DAVA::InvalidIndex)
     , regCount(0)
-    , updatePending(true)
+    , updateFrame(0)
 {
 }
 
@@ -415,19 +414,19 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.MiscFlags = 0;
 
-    HRESULT hr = _D3D11_Device->CreateBuffer(&desc, NULL, &buf);
-
+    HRESULT hr = E_FAIL;
+    DX11_DEVICE_CALL(_D3D11_Device->CreateBuffer(&desc, nullptr, &buf), hr);
     if (SUCCEEDED(hr))
     {
         progType = ptype;
         value = (float*)(malloc(regCnt * 4 * sizeof(float)));
         buf_i = bufIndex;
         regCount = regCnt;
-        updatePending = true;
+        updateFrame = _CurFrame;
     }
     else
     {
-        Logger::Error("FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr));
+        Logger::Error("FAILED to create index-buffer:\n%s\n", DX11_GetErrorText(hr));
     }
 }
 
@@ -470,7 +469,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-        updatePending = true;
+        updateFrame = _CurFrame;
 #else
         inst = nullptr;
 #endif
@@ -490,7 +489,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-        updatePending = true;
+        updateFrame = _CurFrame;
 #else
         inst = nullptr;
 #endif
@@ -505,10 +504,9 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
-    if (updatePending)
+    if (updateFrame == _CurFrame)
     {
         context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
-        updatePending = false;
     }
 
     buffer[buf_i] = buf;
@@ -547,13 +545,12 @@ const void* ConstBufDX11::Instance() const
 
 void ConstBufDX11::Invalidate()
 {
-    updatePending = true;
+    updateFrame = _CurFrame;
 }
 
 //==============================================================================
 
-static void
-DumpShaderText(const char* code, unsigned code_sz)
+static void DumpShaderText(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -671,8 +668,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     Handle handle = PipelineStateDX11Pool::Alloc();
     PipelineStateDX11_t* ps = PipelineStateDX11Pool::Get(handle);
     HRESULT hr;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
     ID3D10Blob* vp_code = nullptr;
     ID3D10Blob* vp_err = nullptr;
     ID3D10Blob* fp_code = nullptr;
@@ -684,11 +681,13 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     Logger::Info("  fprog= %s", desc.vprogUid.c_str());
     desc.vertexLayout.Dump();
 #endif
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    
+#if 0
+	DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
+	DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
+#endif
 
     // create vertex-shader
-
     hr = D3DCompile(
     (const char*)(&vprog_bin[0]), vprog_bin.size(),
     "vprog",
@@ -703,8 +702,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
 
     if (SUCCEEDED(hr))
     {
-        hr = _D3D11_Device->CreateVertexShader(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader));
-
+        hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateVertexShader(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader)), hr);
         if (SUCCEEDED(hr))
         {
             ID3D11ShaderReflection* reflection = NULL;
@@ -740,7 +739,6 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         else
         {
-            Logger::Error("FAILED to create vertex-shader:\n%s\n", D3D11ErrorText(hr));
             ps->vertexShader = nullptr;
         }
     }
@@ -774,8 +772,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
 
     if (SUCCEEDED(hr))
     {
-        hr = _D3D11_Device->CreatePixelShader(fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader));
-
+        hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreatePixelShader(fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader)), hr);
         if (SUCCEEDED(hr))
         {
             ID3D11ShaderReflection* reflection = NULL;
@@ -811,7 +809,6 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         else
         {
-            Logger::Error("FAILED to create pixel-shader:\n%s\n", D3D11ErrorText(hr));
             ps->pixelShader = nullptr;
             DVASSERT_MSG(ps->pixelShader, desc.fprogUid.c_str());
         }
@@ -824,7 +821,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
             Logger::Info((const char*)(fp_err->GetBufferPointer()));
         }
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
-        Logger::Error("vertex-shader text:\n");
+        Logger::Error("pixel-shader text:\n");
         DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
         ps->pixelShader = nullptr;
     }
@@ -867,8 +864,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
             bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
             bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
-            hr = _D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState));
-
+            hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState)), hr);
             if (SUCCEEDED(hr))
             {
                 ps->desc = desc;
@@ -1061,6 +1058,11 @@ void InvalidateAll()
     }
 }
 
+void InvalidateAllInstances()
+{
+    ++_CurFrame;
+}
+
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
@@ -1078,15 +1080,12 @@ void SetToRHI(Handle cb, const void* instData)
 
     cb11->SetToRHI(instData);
 }
+
 const void* Instance(Handle cb)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
 
     return cb11->Instance();
-}
-void InvalidateAllInstances()
-{
-    ++_CurFrame;
 }
 
 void InitializeRingBuffer(uint32 size)

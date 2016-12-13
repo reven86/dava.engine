@@ -1,9 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -14,9 +14,10 @@
 
 #import <UIKit/UIKit.h>
 
-// Wrapper over CADisplayLink to connect Objective-C's CADisplayLink object to
-// C++ class CoreNativeBridge
-@interface FrameTimer : NSObject
+// Objective-C class used for interoperation between Objective-C and C++.
+// CADisplayLink, NSNotificationCenter, etc expect Objective-C selectors to notify about events
+// so this class installs Objective-C handlers which transfer control into C++ class.
+@interface ObjectiveCInterop : NSObject
 {
     DAVA::Private::CoreNativeBridge* bridge;
     CADisplayLink* displayLink;
@@ -24,13 +25,13 @@
 }
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
-- (void)set:(DAVA::int32)interval;
-- (void)cancel;
-- (void)timerFired:(CADisplayLink*)dispLink;
+- (void)setDisplayLinkInterval:(DAVA::int32)interval;
+- (void)cancelDisplayLink;
+- (void)enableGameControllerObserver:(BOOL)enable;
 
 @end
 
-@implementation FrameTimer
+@implementation ObjectiveCInterop
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge
 {
@@ -39,13 +40,13 @@
     {
         bridge = nativeBridge;
         curInterval = 1;
-        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(timerFired:)];
+        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkTimerFired:)];
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
     return self;
 }
 
-- (void)set:(DAVA::int32)interval
+- (void)setDisplayLinkInterval:(DAVA::int32)interval
 {
     if (interval <= 0)
     {
@@ -58,14 +59,43 @@
     }
 }
 
-- (void)cancel
+- (void)cancelDisplayLink
 {
     [displayLink invalidate];
 }
 
-- (void)timerFired:(CADisplayLink*)dispLink
+- (void)displayLinkTimerFired:(CADisplayLink*)dispLink
 {
     bridge->OnFrameTimer();
+}
+
+- (void)enableGameControllerObserver:(BOOL)enable
+{
+    if (enable)
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(gameControllerDidConnected)
+                                                     name:@"GCControllerDidConnectNotification"
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(gameControllerDidDisconnected)
+                                                     name:@"GCControllerDidDisconnectNotification"
+                                                   object:nil];
+    }
+    else
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
+}
+
+- (void)gameControllerDidConnected
+{
+    bridge->GameControllerDidConnected();
+}
+
+- (void)gameControllerDidDisconnected
+{
+    bridge->GameControllerDidDisconnected();
 }
 
 @end
@@ -108,7 +138,7 @@ void CoreNativeBridge::OnFrameTimer()
     }
 
     int32 interval = static_cast<int32>(60.0 / fps + 0.5);
-    [frameTimer set:interval];
+    [objcInterop setDisplayLinkInterval:interval];
 }
 
 bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
@@ -117,17 +147,21 @@ bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* l
     return true;
 }
 
-bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
     engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(engineBackend->GetPrimaryWindow());
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create();
 
-    frameTimer = [[FrameTimer alloc] init:this];
-    [frameTimer set:1];
+    objcInterop = [[ObjectiveCInterop alloc] init:this];
+    [objcInterop setDisplayLinkInterval:1];
+
+    [objcInterop enableGameControllerObserver:YES];
+
+    NotifyListeners(ON_DID_FINISH_LAUNCHING, application, launchOptions);
     return true;
 }
 
@@ -136,6 +170,7 @@ void CoreNativeBridge::ApplicationDidBecomeActive()
     Logger::FrameworkDebug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
+    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationWillResignActive()
@@ -143,11 +178,14 @@ void CoreNativeBridge::ApplicationWillResignActive()
     Logger::FrameworkDebug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
+    NotifyListeners(ON_WILL_RESIGN_ACTIVE, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidEnterBackground()
 {
     core->didEnterForegroundBackground.Emit(false);
+    NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
+
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
@@ -155,13 +193,17 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
 {
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
+    NotifyListeners(ON_WILL_ENTER_FOREGROUND, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationWillTerminate()
 {
     Logger::FrameworkDebug("******** applicationWillTerminate");
 
-    [frameTimer cancel];
+    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr);
+
+    [objcInterop cancelDisplayLink];
+    [objcInterop enableGameControllerObserver:NO];
 
     engineBackend->OnGameLoopStopped();
     engineBackend->OnEngineCleanup();
@@ -170,6 +212,81 @@ void CoreNativeBridge::ApplicationWillTerminate()
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
 {
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
+}
+
+void CoreNativeBridge::GameControllerDidConnected()
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(0));
+}
+
+void CoreNativeBridge::GameControllerDidDisconnected()
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
+}
+
+void CoreNativeBridge::RegisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
+{
+    DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it == end(appDelegateListeners))
+    {
+        appDelegateListeners.push_back(listener);
+    }
+}
+
+void CoreNativeBridge::UnregisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
+{
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it != end(appDelegateListeners))
+    {
+        appDelegateListeners.erase(it);
+    }
+}
+
+void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)
+{
+    Vector<PlatformApi::Ios::UIApplicationDelegateListener*> listenersCopy;
+    {
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(appDelegateListeners.size());
+        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Ios::UIApplicationDelegateListener* l : listenersCopy)
+    {
+        switch (type)
+        {
+        case ON_DID_FINISH_LAUNCHING:
+            l->didFinishLaunchingWithOptions(static_cast<UIApplication*>(arg1), static_cast<NSDictionary*>(arg2));
+            break;
+        case ON_DID_BECOME_ACTIVE:
+            l->applicationDidBecomeActive();
+            break;
+        case ON_WILL_RESIGN_ACTIVE:
+            l->applicationDidResignActive();
+            break;
+        case ON_WILL_ENTER_FOREGROUND:
+            l->applicationWillEnterForeground();
+            break;
+        case ON_DID_ENTER_BACKGROUND:
+            l->applicationDidEnterBackground();
+            break;
+        case ON_WILL_TERMINATE:
+            l->applicationWillTerminate();
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 } // namespace Private

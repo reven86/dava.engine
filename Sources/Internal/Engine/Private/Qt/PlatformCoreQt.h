@@ -7,6 +7,7 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Functional/Signal.h"
 
 class QApplication;
 namespace DAVA
@@ -29,19 +30,14 @@ public:
     void Quit();
 
     QApplication* GetApplication();
-    NativeService* GetNativeService();
     RenderWidget* GetRenderWidget();
 
 private:
     EngineBackend& engineBackend;
     WindowBackend* primaryWindowBackend = nullptr;
-    std::unique_ptr<NativeService> nativeService;
-};
 
-inline NativeService* PlatformCore::GetNativeService()
-{
-    return nativeService.get();
-}
+    Signal<bool> applicationFocusChanged;
+};
 
 } // namespace Private
 } // namespace DAVA

@@ -37,7 +37,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 
             jlong jSize = env->GetLongField(item, jSizeField);
             jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);
-            jstring jName = (jstring)env->GetObjectField(item, jNameField);
+            jstring jName = static_cast<jstring>(env->GetObjectField(item, jNameField));
 
             JniFileListEntry entry;
             entry.name = JNI::ToString(jName);

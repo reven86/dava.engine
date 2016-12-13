@@ -36,7 +36,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
 {
     if (FileSystem::Instance()->Exists(path))
     {
-        YamlParser* parser = YamlParser::Create(path);
+        ScopedPtr<YamlParser> parser(YamlParser::Create(path));
         YamlNode* rootNode = parser->GetRootNode();
 
         if (NULL != rootNode)
@@ -329,8 +329,6 @@ void QualitySettingsSystem::Load(const FilePath& path)
                 particlesQualitySettings.LoadFromYaml(particlesNode);
             }
         }
-
-        parser->Release();
     }
 }
 

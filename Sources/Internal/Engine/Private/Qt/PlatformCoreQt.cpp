@@ -5,13 +5,13 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Window.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
 
 #include <QTimer>
 #include <QApplication>
+#include <QSurfaceFormat>
 
 namespace DAVA
 {
@@ -19,7 +19,6 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
-    , nativeService(new NativeService(this))
 {
 }
 
@@ -36,6 +35,9 @@ void PlatformCore::Run()
     int qtArgc = static_cast<int>(qtCommandLine.size());
 
     QApplication app(qtArgc, qtCommandLine.data());
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(0);
+    QSurfaceFormat::setDefaultFormat(format);
 
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
@@ -44,16 +46,25 @@ void PlatformCore::Run()
                          primaryWindowBackend->Update();
                      });
 
-    engineBackend.OnGameLoopStarted();
+    // First of all we should init primaryWindowBackend, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
     primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
+    engineBackend.OnGameLoopStarted();
+    applicationFocusChanged.Connect(primaryWindowBackend, &WindowBackend::OnApplicationFocusChanged);
     if (engineBackend.IsStandaloneGUIMode())
     {
         // Force RenderWidget creation and show it on screen
         RenderWidget* widget = GetRenderWidget();
         widget->show();
     }
+    // After OnGameLoopStarted, and client code injected RenderWidget into MainWindow and shown it we can activate rendering
+    // We can't activate rendering before RenderWidget was shown, because it will produce DAVA::OnFrame on showing e.g. in OnGameLoopStarted handler
+    primaryWindowBackend->ActivateRendering();
 
     timer.start(16.0);
+
+    QObject::connect(&app, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state) {
+        applicationFocusChanged.Emit(state == Qt::ApplicationActive);
+    });
 
     QObject::connect(&app, &QApplication::aboutToQuit, [this]() {
         engineBackend.OnGameLoopStopped();

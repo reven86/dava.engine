@@ -12,8 +12,6 @@
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 
-#include "Debug/CPUProfiler.h"
-
 namespace DAVA
 {
 const float32 RotationControllerSystem::maxViewAngle = 89.0f;
@@ -25,14 +23,22 @@ RotationControllerSystem::RotationControllerSystem(Scene* scene)
     , rotationSpeed(0.15f)
     , oldCamera(NULL)
 {
+#if defined(__DAVAENGINE_COREV2__)
+// inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevices::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
+#else
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
-    //    InputSystem::Instance()->AddInputCallback(*inputCallback);
+//    InputSystem::Instance()->AddInputCallback(*inputCallback);
+#endif
 }
 
 RotationControllerSystem::~RotationControllerSystem()
 {
+#if defined(__DAVAENGINE_COREV2__)
+// InputSystem::Instance()->RemoveHandler(inputHandlerToken);
+#else
     //    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
     SafeDelete(inputCallback);
+#endif
 }
 
 void RotationControllerSystem::AddEntity(Entity* entity)
@@ -49,8 +55,6 @@ void RotationControllerSystem::RemoveEntity(Entity* entity)
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("RotationControllerSystem::Process")
-
     Camera* camera = GetScene()->GetDrawCamera();
     if (camera != oldCamera)
     {
@@ -59,14 +63,24 @@ void RotationControllerSystem::Process(float32 timeElapsed)
     }
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+bool RotationControllerSystem::Input(UIEvent* event)
+#else
 void RotationControllerSystem::Input(UIEvent* event)
+#endif
 {
     const uint32 size = static_cast<uint32>(entities.size());
     if (0 == size)
+    {
+#if defined(__DAVAENGINE_COREV2__)
+        return false;
+#else
         return;
+#endif
+    }
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    if (event->mouseButton == UIEvent::MouseButton::RIGHT || event->mouseButton == UIEvent::MouseButton::MIDDLE)
+    if (event->mouseButton == eMouseButtons::RIGHT || event->mouseButton == eMouseButtons::MIDDLE)
 #endif
     {
         if (UIEvent::Phase::BEGAN == event->phase)
@@ -81,7 +95,13 @@ void RotationControllerSystem::Input(UIEvent* event)
 
             Camera* camera = GetScene()->GetDrawCamera();
             if (!camera)
+            {
+#if defined(__DAVAENGINE_COREV2__)
+                return false;
+#else
                 return;
+#endif
+            }
 
             //Find active wasd component
             for (uint32 i = 0; i < size; ++i)
@@ -91,11 +111,11 @@ void RotationControllerSystem::Input(UIEvent* event)
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                     RotateDirection(camera);
 #else
-                    if (event->mouseButton == DAVA::UIEvent::MouseButton::RIGHT)
+                    if (event->mouseButton == eMouseButtons::RIGHT)
                     {
                         RotateDirection(camera);
                     }
-                    else if (event->mouseButton == DAVA::UIEvent::MouseButton::MIDDLE)
+                    else if (event->mouseButton == eMouseButtons::MIDDLE)
                     {
                         KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
                         if (keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT))
@@ -112,6 +132,9 @@ void RotationControllerSystem::Input(UIEvent* event)
             }
         }
     }
+#if defined(__DAVAENGINE_COREV2__)
+    return false;
+#endif
 }
 
 void RotationControllerSystem::RotateDirection(Camera* camera)

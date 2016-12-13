@@ -68,6 +68,13 @@ public:
         return AddConnection(nullptr, Func(fn), tid);
     }
 
+    template <typename Obj, typename Fn>
+    DAVA_DEPRECATED(SigConnectionID Connect(Obj* obj, const Fn& fn, ThreadIDType tid = {})) //to Smile: it used in case when we need connect static func and use own TrackedObject (see ImGui.cpp)
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(TrackedObject::Cast(obj), Func(fn), tid);
+    }
+
     template <typename Obj, typename Cls>
     SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
@@ -93,9 +100,10 @@ public:
             if (nullptr != obj)
             {
                 obj->Untrack(this);
+                it->second.obj = nullptr;
             }
 
-            connections.erase(it);
+            it->second.deleted = true;
         }
     }
 
@@ -113,12 +121,11 @@ public:
                 if (it->second.obj == obj)
                 {
                     obj->Untrack(this);
-                    it = connections.erase(it);
+                    it->second.obj = nullptr;
+                    it->second.deleted = true;
                 }
-                else
-                {
-                    it++;
-                }
+
+                it++;
             }
         }
     }
@@ -133,10 +140,10 @@ public:
             if (nullptr != obj)
             {
                 obj->Untrack(this);
+                con.second.obj = nullptr;
             }
+            con.second.deleted = true;
         }
-
-        connections.clear();
     }
 
     void Track(SigConnectionID id, TrackedObject* obj)
@@ -152,7 +159,7 @@ public:
                 it->second.obj = nullptr;
             }
 
-            if (nullptr != obj)
+            if (nullptr != obj && !it->second.deleted)
             {
                 it->second.obj = obj;
                 obj->Track(this);
@@ -205,6 +212,7 @@ protected:
             , obj(obj_)
             , tid(tid_)
             , blocked(false)
+            , deleted(false)
         {
         }
 
@@ -212,6 +220,7 @@ protected:
         TrackedObject* obj;
         ThreadIDType tid;
         bool blocked;
+        bool deleted;
     };
 
     MutexType mutex;
@@ -249,19 +258,23 @@ public:
         auto iter = Base::connections.begin();
         while (iter != Base::connections.end())
         {
-            auto next = iter;
-            ++next;
-
-            if (!iter->second.blocked)
+            if (iter->second.deleted)
             {
-                // Make functor copy and call its copy:
-                //  when connected lambda with captured variables disconnects from signal while signal is emitting
-                //  compiler destroys lambda and its captured variables
-                auto fn = iter->second.fn;
-                fn(args...);
+                iter = Base::connections.erase(iter);
             }
+            else
+            {
+                if (!iter->second.blocked)
+                {
+                    // Make functor copy and call its copy:
+                    //  when connected lambda with captured variables disconnects from signal while signal is emitting
+                    //  compiler destroys lambda and its captured variables
+                    auto fn = iter->second.fn;
+                    fn(args...);
+                }
 
-            iter = next;
+                iter++;
+            }
         }
     }
 };

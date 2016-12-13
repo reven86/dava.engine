@@ -8,28 +8,28 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
-set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 include ( CMake-common )
 
-if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR})
-
-    if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
-    endif()
-    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
+    set( DEPLOY_ROOT ${DEPLOY_DIR} )
+    set( DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME} )
+    set( DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME} )
+    set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
 endif()
+
 
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
 
 add_definitions       (
+-D__DAVAENGINE_COREV2__
+-D__DAVAENGINE_QT__
 -DDISABLE_NATIVE_WEBVIEW
 -DDISABLE_NATIVE_TEXTFIELD
+-DDISABLE_NATIVE_MOVIEVIEW
 -DQT_QML_DEBUG_NO_WARNING
 )
 
@@ -37,9 +37,17 @@ if (UVR_DEV)
     add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
-find_package( QT5 REQUIRED)
+set ( DAVA_COREV2 1 )
+set ( DAVA_PLATFORM_QT 1 )
+set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
+
+find_package( QT5 REQUIRED )
+find_package( QtHelpers REQUIRED )
 find_package( DavaFramework REQUIRED )
-find_package( DavaTools  REQUIRED )
+find_package( DavaTools REQUIRED )
+find_package( QtTools REQUIRED )
+find_package( TArc REQUIRED )
+find_package( GMock REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -126,7 +134,9 @@ set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources "DataQt"
                 GROUP_SOURCE Generated )
 
-set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA         "Data = ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} = ${CMAKE_CURRENT_LIST_DIR}/Data" )
+
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} )
@@ -138,21 +148,31 @@ ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
+convert_graphics()
+
 setup_main_executable()
 
-convert_graphics()
 
 DEPLOY_SCRIPT (            COPY_WIN32  ${BEAST_DLL}
                            COPY_WIN64  ${BEAST_DLL}
                            COPY_DIR    ${DEPLOY_DIR})
 
-if (DEPLOY)
+if (DEPLOY OR WIN32 )
     if (NOT WIN32)
         set(BEAST_DIR "")
     endif()
+
+    if( NOT DEPLOY AND WIN32 )
+        set( DEPLOY_BEAST_DIR ${MIX_APP_DIR} )
+    endif()
+
+    if( NOT DEPLOY_BEAST_DIR )
+        set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
+    endif()
+
     ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
-            "${DEPLOY_ROOT}"
+            "${DEPLOY_BEAST_DIR}"
             "${BEAST_DIR}"
         )
 endif()

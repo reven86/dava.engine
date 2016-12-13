@@ -50,6 +50,9 @@ public:
     //external
     void SetExtertnalValue(const String& name, float32 value);
 
+    void SetInheritControlTransform(bool inherit);
+    bool GetInheritControlTransform() const;
+
 protected:
     void LoadEffect(const FilePath& path);
     void UnloadEffect();
@@ -73,18 +76,19 @@ protected:
 
 private:
     FilePath effectPath;
-    bool isAutostart;
-    float32 startDelay;
+    bool isAutostart = false;
+    float32 startDelay = 0.f;
 
-    ParticleEffectComponent* effect;
-    ParticleEffectSystem* system;
+    ParticleEffectComponent* effect = nullptr;
+    ParticleEffectSystem* system = nullptr;
     Matrix4 matrix;
-    float32 updateTime;
+    float32 updateTime = 0.f;
 
-    eDelayedActionType delayedActionType;
-    float32 delayedActionTime;
-    bool delayedDeleteAllParticles;
-    bool needHandleAutoStart;
+    eDelayedActionType delayedActionType = actionNone;
+    float32 delayedActionTime = 0.f;
+    bool delayedDeleteAllParticles = false;
+    bool needHandleAutoStart = false;
+    bool inheritControlTransform = true;
 
     static Camera* defaultCamera;
 };

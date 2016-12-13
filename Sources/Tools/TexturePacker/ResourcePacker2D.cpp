@@ -2,9 +2,11 @@
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/TexturePacker.h"
 #include "CommandLine/CommandLineParser.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Utils/StringUtils.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
@@ -13,8 +15,6 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -60,6 +60,13 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
     if (FileSystem::Instance()->Exists(inputGfxDirectory) == false)
     {
         AddError(Format("Input folder is not exist: '%s'", inputGfxDirectory.GetStringValue().c_str()));
+        SetRunning(false);
+        return;
+    }
+
+    if (StringUtils::HasWhitespace(texturePostfix))
+    {
+        AddError(Format("Texture name postfix '%s' has whitespaces", texturePostfix.c_str()).c_str());
         SetRunning(false);
         return;
     }
@@ -467,6 +474,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     packer.SetTwoSideMargin(useTwoSideMargin);
                     packer.SetTexturesMargin(marginInPixels);
                     packer.SetAlgorithms(packAlgorithms);
+                    packer.SetTexturePostfix(texturePostfix);
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {
@@ -547,6 +555,11 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
     cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
 
     cacheItemDescription.comment = comment;
+}
+
+void ResourcePacker2D::SetTexturePostfix(const String& postfix)
+{
+    texturePostfix = postfix;
 }
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)

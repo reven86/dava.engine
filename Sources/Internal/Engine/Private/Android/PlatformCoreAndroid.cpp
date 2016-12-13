@@ -4,17 +4,38 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
-#include "Engine/Android/NativeServiceAndroid.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
-#include "Platform/SystemTimer.h"
+#include "Debug/Backtrace.h"
+#include "Input/InputSystem.h"
 #include "Logger/Logger.h"
+#include "Platform/SystemTimer.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
+extern DAVA::Private::AndroidBridge* androidBridge;
+
+extern "C"
+{
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaGamepadManager_nativeOnGamepadAdded(JNIEnv* env, jclass jclazz, jint deviceId, jstring name, jboolean hasTriggerButtons)
+{
+    using namespace DAVA;
+    String deviceName = JNI::JavaStringToString(name, env);
+    androidBridge->core->OnGamepadAdded(deviceId, deviceName, hasTriggerButtons == JNI_TRUE);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaGamepadManager_nativeOnGamepadRemoved(JNIEnv* env, jclass jclazz, jint deviceId)
+{
+    androidBridge->core->OnGamepadRemoved(deviceId);
+}
+
+} // extern "C"
 
 namespace DAVA
 {
@@ -23,7 +44,6 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
     AndroidBridge::AttachPlatformCore(this);
 }
@@ -73,8 +93,6 @@ void PlatformCore::Quit()
 
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnCreate");
-
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
     WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
     return primaryWindowBackend;
@@ -82,23 +100,17 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnResume");
-
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
 void PlatformCore::ActivityOnPause()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnPause");
-
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 }
 
 void PlatformCore::ActivityOnDestroy()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnDestroy");
-
     // Dispatch application termination request initiated by system, i.e. android activity is finishing
     // Do nonblocking call as Java part will wait until native thread is finished
     engineBackend->PostAppTerminate(true);
@@ -106,13 +118,35 @@ void PlatformCore::ActivityOnDestroy()
 
 void PlatformCore::GameThread()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::GameThread: enter");
+    try
+    {
+        DAVAMain(std::move(androidBridge->cmdargs));
+    }
+    catch (const Exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+}
 
-    Vector<String> cmdline;
-    DAVAMain(std::move(cmdline));
+void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(deviceId));
+}
 
-    // Logger already is dead
-    ANDROID_LOG_DEBUG("=========== PlatformCore::GameThread: leave");
+void PlatformCore::OnGamepadRemoved(int32 deviceId)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(deviceId));
 }
 
 } // namespace Private

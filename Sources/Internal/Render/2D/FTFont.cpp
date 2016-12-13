@@ -10,7 +10,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FilePath.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 #ifdef __DAVAENGINE_WIN_UAP__
 #define generic GenericFromFreeTypeLibrary
@@ -355,10 +355,10 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     {
         FT_Fixed mul = 1 << 16;
         FT_Matrix matrix;
-        matrix.xx = FT_Fixed(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(mul)));
+        matrix.xx = FT_Fixed(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(mul)));
         matrix.xy = 0;
         matrix.yx = 0;
-        matrix.yy = FT_Fixed(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(mul)));
+        matrix.yy = FT_Fixed(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(mul)));
         FT_Set_Transform(face, &matrix, 0);
     }
 
@@ -367,16 +367,16 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
     if (!contentScaleIncluded)
     {
-        bufWidth = int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(bufWidth)));
-        bufHeight = int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(bufHeight)));
-        offsetY = int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(offsetY)));
-        offsetX = int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(offsetX)));
+        bufWidth = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(bufWidth)));
+        bufHeight = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(bufHeight)));
+        offsetY = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(offsetY)));
+        offsetX = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(offsetX)));
     }
 
     FT_Vector pen;
     pen.x = offsetX << ftToPixelShift;
     pen.y = offsetY << ftToPixelShift;
-    pen.y -= FT_Pos(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(faceBboxYMin))); //bring baseline up
+    pen.y -= FT_Pos(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(faceBboxYMin))); //bring baseline up
 
     uint8* resultBuf = static_cast<uint8*>(buffer);
 
@@ -386,7 +386,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     Prepare(advances);
 
     float32 bboxSize = std::ceil((faceBboxYMax - faceBboxYMin) / ftToPixelScale);
-    int32 baseSize = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(bboxSize)));
+    int32 baseSize = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(bboxSize)));
     int32 multilineOffsetY = baseSize + offsetY * 2;
 
     int32 justifyOffset = 0;
@@ -399,7 +399,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     }
 
     Font::StringMetrics metrics;
-    metrics.baseline = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale)));
+    metrics.baseline = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale)));
     metrics.height = baseSize;
     metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
 
@@ -473,7 +473,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
             if (charSizes)
             {
                 float32 charSize = float32(advances[i].x) / ftToPixelScale; // Convert to pixels
-                charSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(charSize); // Convert to virtual space
+                charSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(charSize); // Convert to virtual space
                 charSizes->push_back(charSize);
             }
 
@@ -555,13 +555,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
     if (!contentScaleIncluded)
     {
-        metrics.drawRect.x = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.x))));
-        metrics.drawRect.y = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
-        metrics.drawRect.dx = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
-        metrics.drawRect.dy = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
-        metrics.baseline = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
-        metrics.height = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.height))));
-        metrics.width = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(totalWidth)));
+        metrics.drawRect.x = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.drawRect.x))));
+        metrics.drawRect.y = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
+        metrics.drawRect.dx = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
+        metrics.drawRect.dy = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
+        metrics.baseline = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
+        metrics.height = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.height))));
+        metrics.width = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(totalWidth)));
     }
     else
     {
@@ -624,8 +624,8 @@ void FTInternalFont::Prepare(FT_Vector* advances)
                 // converts only glyph advances without kerning.
                 // It used for mobile platforms with different DPI and scale factor (iOS/Android).
                 // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform
-                prevAdvance->x += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
-                prevAdvance->y += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
+                prevAdvance->x += static_cast<FT_Pos>(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
+                prevAdvance->y += static_cast<FT_Pos>(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
                 prevAdvance->x += glyph.delta;
             }
         }

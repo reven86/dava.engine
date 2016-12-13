@@ -1,8 +1,8 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -20,7 +20,6 @@ class DownloadManager;
 
 class InputSystem;
 class UIControlSystem;
-class VirtualCoordinatesSystem;
 
 class SoundSystem;
 class AnimationManager;
@@ -32,6 +31,11 @@ class LocalNotificationController;
 class IPackManager;
 class AssetsManagerAndroid;
 class ModuleManager;
+class EngineSettings;
+
+class DeviceManager;
+
+class AutotestingSystem;
 
 namespace Net
 {
@@ -63,8 +67,8 @@ public:
     VersionInfo* versionInfo = nullptr;
 
     InputSystem* inputSystem = nullptr;
+    // TODO: move UI control system to Window
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;
@@ -76,9 +80,15 @@ public:
     IPackManager* packManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
+    EngineSettings* settings = nullptr;
+    
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif
+
+    DeviceManager* deviceManager = nullptr;
+
+    AutotestingSystem* autotestingSystem = nullptr;
 };
 
 } // namespace DAVA

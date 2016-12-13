@@ -7,6 +7,7 @@ namespace DAVA
 class SoundStreamDelegate
 {
 public:
+    virtual ~SoundStreamDelegate() = default;
     virtual void PcmDataCallback(uint8* data, uint32 datalen) = 0;
 };
 

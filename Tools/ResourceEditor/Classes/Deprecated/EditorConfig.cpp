@@ -65,8 +65,8 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
         if (rootNode)
         {
             const DAVA::Vector<DAVA::YamlNode*>& yamlNodes = rootNode->AsVector();
-            DAVA::int32 propertiesCount = yamlNodes.size();
-            for (DAVA::int32 i = 0; i < propertiesCount; ++i)
+            size_t propertiesCount = yamlNodes.size();
+            for (size_t i = 0; i < propertiesCount; ++i)
             {
                 DAVA::YamlNode* propertyNode = yamlNodes[i];
                 if (propertyNode)
@@ -82,9 +82,9 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                         if (type)
                         {
                             bool isOk = true;
-                            for (DAVA::uint32 n = 0; n < propertyNames.size(); ++n)
+                            for (const DAVA::String& propertyName : propertyNames)
                             {
-                                if (propertyNames[n] == nameStr)
+                                if (propertyName == nameStr)
                                 {
                                     isOk = false;
                                     DAVA::Logger::Error("EditorConfig::ParseConfig %s ERROR property %d property %s already exists", filePath.GetAbsolutePathname().c_str(), i, nameStr.c_str());
@@ -152,10 +152,9 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                                     if (comboNode)
                                     {
                                         const DAVA::Vector<DAVA::YamlNode*>& comboValueNodes = comboNode->AsVector();
-                                        DAVA::int32 comboValuesCount = comboValueNodes.size();
-                                        for (DAVA::int32 i = 0; i < comboValuesCount; ++i)
+                                        for (const DAVA::YamlNode* comboValueNode : comboValueNodes)
                                         {
-                                            properties[nameStr]->comboValues.push_back(comboValueNodes[i]->AsString());
+                                            properties[nameStr]->comboValues.push_back(comboValueNode->AsString());
                                         }
                                     }
                                 }
@@ -173,10 +172,8 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
                                     if (colorListNode)
                                     {
                                         const DAVA::Vector<DAVA::YamlNode*>& colorListNodes = colorListNode->AsVector();
-                                        DAVA::int32 colorListValuesCount = colorListNodes.size();
-                                        for (DAVA::int32 i = 0; i < colorListValuesCount; ++i)
+                                        for (const DAVA::YamlNode* colorNode : colorListNodes)
                                         {
-                                            const DAVA::YamlNode* colorNode = colorListNodes[i];
                                             if (!colorNode || colorNode->GetCount() != 4)
                                                 continue;
 
@@ -217,32 +214,34 @@ void EditorConfig::ParseConfig(const DAVA::FilePath& filePath)
     // else file not found - ok, no custom properties
 }
 
-const DAVA::Vector<DAVA::String>& EditorConfig::GetProjectPropertyNames()
+const DAVA::Vector<DAVA::String>& EditorConfig::GetProjectPropertyNames() const
 {
     return propertyNames;
 }
 
-const DAVA::Vector<DAVA::String>& EditorConfig::GetComboPropertyValues(const DAVA::String& nameStr)
+const DAVA::Vector<DAVA::String>& EditorConfig::GetComboPropertyValues(const DAVA::String& nameStr) const
 {
-    if (properties.find(nameStr) != properties.end())
-        return properties[nameStr]->comboValues;
+    auto itemNode = properties.find(nameStr);
+    if (itemNode != properties.end())
+        return itemNode->second->comboValues;
     else
     {
         return empty;
     }
 }
 
-const DAVA::Vector<DAVA::Color>& EditorConfig::GetColorPropertyValues(const DAVA::String& nameStr)
+const DAVA::Vector<DAVA::Color>& EditorConfig::GetColorPropertyValues(const DAVA::String& nameStr) const
 {
-    if (properties.find(nameStr) != properties.end())
-        return properties[nameStr]->colorListValues;
+    auto iter = properties.find(nameStr);
+    if (iter != properties.end())
+        return iter->second->colorListValues;
     else
         return emptyColors;
 }
 
-PropertyDescription* EditorConfig::GetPropertyDescription(const DAVA::String& propertyName)
+const PropertyDescription* EditorConfig::GetPropertyDescription(const DAVA::String& propertyName) const
 {
-    DAVA::Map<DAVA::String, PropertyDescription*>::iterator findIt = properties.find(propertyName);
+    DAVA::Map<DAVA::String, PropertyDescription*>::const_iterator findIt = properties.find(propertyName);
     if (findIt != properties.end())
     {
         return findIt->second;
@@ -250,12 +249,12 @@ PropertyDescription* EditorConfig::GetPropertyDescription(const DAVA::String& pr
     return NULL;
 }
 
-bool EditorConfig::HasProperty(const DAVA::String& propertyName)
+bool EditorConfig::HasProperty(const DAVA::String& propertyName) const
 {
     return (GetPropertyDescription(propertyName) != NULL);
 }
 
-DAVA::int32 EditorConfig::GetValueTypeFromPropertyType(DAVA::int32 propertyType)
+DAVA::int32 EditorConfig::GetValueTypeFromPropertyType(DAVA::int32 propertyType) const
 {
     DAVA::int32 type = DAVA::VariantType::TYPE_NONE;
     switch (propertyType)
@@ -278,10 +277,10 @@ DAVA::int32 EditorConfig::GetValueTypeFromPropertyType(DAVA::int32 propertyType)
     return type;
 }
 
-DAVA::int32 EditorConfig::GetPropertyValueType(const DAVA::String& propertyName)
+DAVA::int32 EditorConfig::GetPropertyValueType(const DAVA::String& propertyName) const
 {
     DAVA::int32 type = DAVA::VariantType::TYPE_NONE;
-    PropertyDescription* propertyDescription = GetPropertyDescription(propertyName);
+    const PropertyDescription* propertyDescription = GetPropertyDescription(propertyName);
     if (propertyDescription)
     {
         type = GetValueTypeFromPropertyType(propertyDescription->type);
@@ -289,10 +288,10 @@ DAVA::int32 EditorConfig::GetPropertyValueType(const DAVA::String& propertyName)
     return type;
 }
 
-DAVA::VariantType* EditorConfig::GetPropertyDefaultValue(const DAVA::String& propertyName)
+const DAVA::VariantType* EditorConfig::GetPropertyDefaultValue(const DAVA::String& propertyName) const
 {
-    DAVA::VariantType* defaultValue = NULL;
-    PropertyDescription* propertyDescription = GetPropertyDescription(propertyName);
+    const DAVA::VariantType* defaultValue = NULL;
+    const PropertyDescription* propertyDescription = GetPropertyDescription(propertyName);
     if (propertyDescription)
     {
         defaultValue = &propertyDescription->defaultValue;

@@ -611,6 +611,11 @@
 
 /* PATHMAX is the maximum length of path-list on the host system.   */
 /* _POSIX_* only to get PATH_MAX    */
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
+#endif
+
 #define _POSIX_ 1
 #define _POSIX_SOURCE 1
 #ifndef _POSIX_C_SOURCE
@@ -628,6 +633,10 @@
 #define PATHMAX PATH_MAX /* Posix macro  */
 #else
 #define PATHMAX FILENAME_MAX
+#endif
+
+#if __clang__
+#pragma clang diagnostic pop
 #endif
 
 /* islower(), isupper(), toupper(), isdigit(), isxdigit(), iscntrl()        */

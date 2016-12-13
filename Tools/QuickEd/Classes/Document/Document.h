@@ -22,6 +22,7 @@ class UIEvent;
 class CommandStack;
 }
 
+class Project;
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
@@ -39,7 +40,7 @@ class Document final : public QObject
     Q_PROPERTY(bool canClose READ CanClose WRITE SetCanClose NOTIFY CanCloseChanged);
 
 public:
-    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
+    explicit Document(Project* project, const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
     const DAVA::FilePath& GetPackageFilePath() const;
@@ -55,6 +56,7 @@ public:
     bool CanSave() const;
     bool CanClose() const;
     bool IsDocumentExists() const;
+    void RefreshAllControlProperties();
 
 signals:
     void FileChanged(Document* document);
@@ -62,7 +64,7 @@ signals:
     void CanCloseChanged(bool canClose);
 
 public slots:
-    void RefreshAllControlProperties();
+    void OnFontPresetChanged(const DAVA::String& presetName);
     void SetCanClose(bool canClose);
 
 private slots:

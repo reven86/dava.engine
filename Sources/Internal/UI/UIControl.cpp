@@ -1,5 +1,6 @@
 #include "UI/UIControl.h"
 
+#include "Engine/Engine.h"
 #include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
@@ -13,10 +14,10 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 
 #include "Components/UIComponent.h"
@@ -999,6 +1000,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
+    styledProperties = srcControl->styledProperties;
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
@@ -1214,14 +1216,21 @@ void UIControl::DrawPivotPoint(const Rect& drawRect)
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {
     Vector2 point = _point;
-
+#if defined(__DAVAENGINE_COREV2__)
+    if (GetPrimaryWindow()->GetCursorCapture() == eCursorCapture::PINNING)
+    {
+        Size2f sz = GetPrimaryWindow()->GetVirtualSize();
+        point.x = sz.dx / 2.f;
+        point.y = sz.dy / 2.f;
+    }
+#else
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
-        const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
         point.y = virtScreenSize.dy / 2.f;
     }
-
+#endif // !defined(__DAVAENGINE_COREV2__)
     const UIGeometricData& gd = GetGeometricData();
     Rect rect = gd.GetUnrotatedRect();
     if (expandWithFocus)
@@ -1313,12 +1322,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
                 if (!multiInput)
                 {
                     currentInputID = currentInput->touchId;
                 }
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 Input(currentInput);
                 return true;
@@ -2413,6 +2422,11 @@ void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     {
         SetStyleSheetDirty();
     }
+}
+
+FastName UIControl::GetTaggedClass(const FastName& tag) const
+{
+    return classes.GetTaggedClass(tag);
 }
 
 void UIControl::ResetTaggedClass(const FastName& tag)

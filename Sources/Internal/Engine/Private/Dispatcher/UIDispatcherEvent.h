@@ -1,9 +1,11 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Functional/Function.h"
+#include "Engine/EngineTypes.h"
 
 namespace DAVA
 {
@@ -18,7 +20,12 @@ struct UIDispatcherEvent final
         CREATE_WINDOW,
         CLOSE_WINDOW,
         SET_TITLE,
+        SET_MINIMUM_SIZE,
+        SET_FULLSCREEN,
         FUNCTOR,
+        SET_CURSOR_CAPTURE,
+        SET_CURSOR_VISIBILITY,
+        SET_SURFACE_SCALE
     };
 
     struct ResizeEvent
@@ -30,6 +37,26 @@ struct UIDispatcherEvent final
     struct SetTitleEvent
     {
         const char8* title;
+    };
+
+    struct SetFullscreenEvent
+    {
+        eFullscreen mode;
+    };
+
+    struct SetCursorCaptureEvent
+    {
+        eCursorCapture mode;
+    };
+
+    struct SetCursorVisibilityEvent
+    {
+        bool visible;
+    };
+
+    struct SetSurfaceScaleEvent
+    {
+        float32 scale;
     };
 
     UIDispatcherEvent() = default;
@@ -44,12 +71,21 @@ struct UIDispatcherEvent final
     {
         ResizeEvent resizeEvent;
         SetTitleEvent setTitleEvent;
+        SetFullscreenEvent setFullscreenEvent;
+        SetCursorCaptureEvent setCursorCaptureEvent;
+        SetCursorVisibilityEvent setCursorVisibilityEvent;
+        SetSurfaceScaleEvent setSurfaceScaleEvent;
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
+    static UIDispatcherEvent CreateMinimumSizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
+    static UIDispatcherEvent CreateSetFullscreenEvent(eFullscreen mode);
+    static UIDispatcherEvent CreateSetCursorCaptureEvent(eCursorCapture mode);
+    static UIDispatcherEvent CreateSetCursorVisibilityEvent(bool visible);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
+    static UIDispatcherEvent CreateSetSurfaceScaleEvent(const float32 scale);
 };
 
 } // namespace Private

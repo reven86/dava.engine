@@ -1,8 +1,8 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
-#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include <shellapi.h>
 #include <thread>
 
@@ -15,10 +15,8 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "Debug/CPUProfiler.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif
@@ -277,8 +275,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         Logger::Info("system not supported touch input");
     }
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+    UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
     return true;
 }
@@ -299,17 +297,17 @@ void CoreWin32Platform::ClearMouseButtons()
     UIEvent e;
 
     e.phase = UIEvent::Phase::ENDED;
-    e.device = UIEvent::Device::MOUSE;
+    e.device = eInputDevices::MOUSE;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
     e.modifiers = GetKeyboardModifiers();
 
-    for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-         mouseButton <= static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+    for (uint32 mouseButton = static_cast<uint32>(eMouseButtons::FIRST);
+         mouseButton <= static_cast<uint32>(eMouseButtons::LAST);
          mouseButton += 1)
     {
         if (mouseButtonState[mouseButton - 1])
         {
-            e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
+            e.mouseButton = static_cast<eMouseButtons>(mouseButton);
 
             UIControlSystem::Instance()->OnInput(&e);
         }
@@ -476,8 +474,8 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
 
         Logger::FrameworkDebug("[CoreWin32Platform] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        UIControlSystem::Instance()->vcs->SetPhysicalScreenSize(currentMode.width, currentMode.height);
     }
     return true;
 }
@@ -533,19 +531,19 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
 {
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
-    e.device = UIEvent::Device::MOUSE;
+    e.device = eInputDevices::MOUSE;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
 
     if (mouseButtonState.any())
     {
-        for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::LEFT);
-             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::NUM_BUTTONS);
+        for (unsigned buttonIndex = static_cast<unsigned>(eMouseButtons::FIRST);
+             buttonIndex <= static_cast<unsigned>(eMouseButtons::LAST);
              ++buttonIndex)
         {
             if (mouseButtonState[buttonIndex - 1])
             {
-                e.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
+                e.mouseButton = static_cast<eMouseButtons>(buttonIndex);
                 e.phase = UIEvent::Phase::DRAG;
                 UIControlSystem::Instance()->OnInput(&e);
             }
@@ -553,7 +551,7 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     }
     else
     {
-        e.mouseButton = UIEvent::MouseButton::NONE;
+        e.mouseButton = eMouseButtons::NONE;
         e.phase = UIEvent::Phase::MOVE;
         UIControlSystem::Instance()->OnInput(&e);
     }
@@ -563,7 +561,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
 {
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
-    e.device = UIEvent::Device::MOUSE;
+    e.device = eInputDevices::MOUSE;
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
@@ -581,7 +579,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
     UIControlSystem::Instance()->OnInput(&e);
 }
 
-void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton button, int32 x, int32 y)
+void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, eMouseButtons button, int32 x, int32 y)
 {
     bool isButtonDown = phase == UIEvent::Phase::BEGAN;
     unsigned buttonIndex = static_cast<unsigned>(button) - 1;
@@ -592,7 +590,7 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton 
 
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
-    e.device = UIEvent::Device::MOUSE;
+    e.device = eInputDevices::MOUSE;
     e.phase = phase;
     e.mouseButton = button;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
@@ -612,7 +610,7 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton 
     }
 }
 
-void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
+void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, eInputDevices deviceId, uint32 fingerId, float32 x, float32 y, float presure)
 {
     UIEvent newTouch;
     newTouch.touchId = fingerId;
@@ -711,53 +709,53 @@ bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM w
     int xPos = GET_X_LPARAM(lPampam);
     int yPos = GET_Y_LPARAM(lPampam);
 
-    UIEvent::MouseButton button = UIEvent::MouseButton::NONE;
-    UIEvent::MouseButton extButton = UIEvent::MouseButton::NONE;
+    eMouseButtons button = eMouseButtons::NONE;
+    eMouseButtons extButton = eMouseButtons::NONE;
     UIEvent::Phase phase = UIEvent::Phase::ERROR;
 
     if (message == WM_LBUTTONDOWN)
     {
-        button = UIEvent::MouseButton::LEFT;
+        button = eMouseButtons::LEFT;
         phase = UIEvent::Phase::BEGAN;
     }
     else if (message == WM_LBUTTONUP)
     {
-        button = UIEvent::MouseButton::LEFT;
+        button = eMouseButtons::LEFT;
         phase = UIEvent::Phase::ENDED;
     }
     else if (message == WM_LBUTTONDBLCLK)
     {
-        button = UIEvent::MouseButton::LEFT;
+        button = eMouseButtons::LEFT;
         phase = UIEvent::Phase::ENDED;
     }
     else if (message == WM_RBUTTONDOWN)
     {
-        button = UIEvent::MouseButton::RIGHT;
+        button = eMouseButtons::RIGHT;
         phase = UIEvent::Phase::BEGAN;
     }
     else if (message == WM_RBUTTONUP)
     {
-        button = UIEvent::MouseButton::RIGHT;
+        button = eMouseButtons::RIGHT;
         phase = UIEvent::Phase::ENDED;
     }
     else if (message == WM_RBUTTONDBLCLK)
     {
-        button = UIEvent::MouseButton::RIGHT;
+        button = eMouseButtons::RIGHT;
         phase = UIEvent::Phase::ENDED;
     }
     else if (message == WM_MBUTTONDOWN)
     {
-        button = UIEvent::MouseButton::MIDDLE;
+        button = eMouseButtons::MIDDLE;
         phase = UIEvent::Phase::BEGAN;
     }
     else if (message == WM_MBUTTONUP)
     {
-        button = UIEvent::MouseButton::MIDDLE;
+        button = eMouseButtons::MIDDLE;
         phase = UIEvent::Phase::ENDED;
     }
     else if (message == WM_MBUTTONDBLCLK)
     {
-        button = UIEvent::MouseButton::MIDDLE;
+        button = eMouseButtons::MIDDLE;
         phase = UIEvent::Phase::ENDED;
     }
 
@@ -768,21 +766,21 @@ bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM w
 
         if ((xButton & XBUTTON1) != 0)
         {
-            button = UIEvent::MouseButton::EXTENDED1;
+            button = eMouseButtons::EXTENDED1;
         }
 
         if ((xButton & XBUTTON2) != 0)
         {
-            extButton = UIEvent::MouseButton::EXTENDED2;
+            extButton = eMouseButtons::EXTENDED2;
         }
     }
 
-    if (button != UIEvent::MouseButton::NONE)
+    if (button != eMouseButtons::NONE)
     {
         OnMouseClick(phase, button, xPos, yPos);
         return true;
     }
-    if (extButton != UIEvent::MouseButton::NONE)
+    if (extButton != eMouseButtons::NONE)
     {
         OnMouseClick(phase, extButton, xPos, yPos);
         return true;
@@ -914,8 +912,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     const UINT WM_ACTIVATE_POSTED = WM_USER + 12;
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-
     RECT rect;
 
     // win32 app don't have ui-scaling option,
@@ -949,6 +945,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break
     case WM_KEYUP:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -964,7 +962,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         UIEvent ev;
         ev.phase = UIEvent::Phase::KEY_UP;
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
@@ -977,6 +975,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break;
     case WM_KEYDOWN:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -999,7 +999,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             ev.phase = UIEvent::Phase::KEY_DOWN_REPEAT;
         }
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
@@ -1021,7 +1021,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
         }
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
@@ -1055,15 +1055,15 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
                 if (input.dwFlags & TOUCHEVENTF_DOWN)
                 {
-                    core->OnTouchEvent(UIEvent::Phase::BEGAN, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
+                    core->OnTouchEvent(UIEvent::Phase::BEGAN, eInputDevices::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
                 }
                 else if (input.dwFlags & TOUCHEVENTF_MOVE)
                 {
-                    core->OnTouchEvent(UIEvent::Phase::DRAG, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
+                    core->OnTouchEvent(UIEvent::Phase::DRAG, eInputDevices::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
                 }
                 else if (input.dwFlags & TOUCHEVENTF_UP)
                 {
-                    core->OnTouchEvent(UIEvent::Phase::ENDED, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
+                    core->OnTouchEvent(UIEvent::Phase::ENDED, eInputDevices::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
                 }
             }
         }
@@ -1076,12 +1076,18 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_NCACTIVATE:
+    {
         // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
         // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
         // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
         // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
-        keyboard.ClearAllKeys();
+        InputSystem* inputSystem = InputSystem::Instance();
+        if (inputSystem != nullptr)
+        {
+            inputSystem->GetKeyboard().ClearAllKeys();
+        }
         break;
+    }
 
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:

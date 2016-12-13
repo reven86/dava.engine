@@ -10,16 +10,29 @@
 #include <QJsonParseError>
 #include <QRegularExpression>
 
-namespace ConfigParser_local
+namespace ConfigParserDetails
 {
 bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
 {
     QJsonObject launcherObject = value.toObject();
     QJsonObject platformObject = launcherObject[platformString].toObject();
-    version = platformObject["version"].toString();
-    url = platformObject["url"].toString();
-    news = launcherObject["news"].toString();
-    return !version.isEmpty() && !url.isEmpty() && !news.isEmpty();
+
+    QJsonValue versionValue = platformObject["version"];
+    if (versionValue.isString())
+    {
+        version = versionValue.toString();
+    }
+    QJsonValue urlValue = platformObject["url"];
+    if (urlValue.isString())
+    {
+        url = urlValue.toString();
+    }
+    QJsonValue newsValue = launcherObject["news"];
+    if (newsValue.isString())
+    {
+        news = newsValue.toString();
+    }
+    return !launcherObject.isEmpty();
 }
 
 bool GetLauncherStrings(const QJsonValue& value, QMap<QString, QString>& strings)
@@ -94,10 +107,48 @@ QString ProcessID(const QString& id)
     return result;
 }
 
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
+{
+    QString buildType = entry["build_type"].toString();
+    appVer->id = ProcessID(buildType);
+    appVer->url = entry["artifacts"].toString();
+    appVer->buildNum = entry["build_num"].toString();
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
+    return !appVer->id.isEmpty();
+}
+
+bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
+{
+    if (appName.isEmpty())
+    {
+        return false;
+    }
+    Application* app = branch->GetApplication(appName);
+    if (app == nullptr)
+    {
+        branch->applications.append(Application(appName));
+        app = &branch->applications.last();
+    }
+    QString buildType = entry["build_type"].toString();
+    if (buildType.isEmpty())
+    {
+        return false;
+    }
+    AppVersion* appVer = app->GetVersion(buildType);
+    if (appVer == nullptr)
+    {
+        app->versions.append(AppVersion());
+        appVer = &app->versions.last();
+    }
+    return FillAppFields(appVer, entry, toolset);
+}
+
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
-    bool isValid = !array.isEmpty();
+    //this array can be empty
+    bool isValid = true;
     for (const QJsonValueRef& ref : array)
     {
         QJsonObject entry = ref.toObject();
@@ -111,7 +162,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         QString branchName = entry[branchNameID].toString();
 
         Branch* branch = nullptr;
-        //foreach will cause deeo copy in this case
+        //foreach will cause deep copy in this case
         int branchCount = branches.size();
         for (int i = 0; i < branchCount; ++i)
         {
@@ -127,37 +178,19 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         }
 
         QString appName = entry["build_name"].toString();
-        if (appName.isEmpty())
+        if (appName.startsWith("toolset", Qt::CaseInsensitive))
         {
-            isValid = false;
-            continue;
+            for (const QString& toolsetApp : ConfigParser::GetToolsetApplications())
+            {
+                isValid &= ExtractApp(toolsetApp, entry, branch, true);
+            }
         }
-        Application* app = branch->GetApplication(appName);
-        if (app == nullptr)
+        else
         {
-            branch->applications.append(Application(appName));
-            app = &branch->applications.last();
+            isValid &= ExtractApp(appName, entry, branch, false);
         }
-        QString verID = entry["build_type"].toString();
-        if (verID.isEmpty())
-        {
-            isValid = false;
-            continue;
-        }
-        AppVersion* appVer = app->GetVersion(verID);
-        if (appVer == nullptr)
-        {
-            app->versions.append(AppVersion());
-            appVer = &app->versions.last();
-        }
-
-        appVer->id = ProcessID(verID);
-        appVer->url = entry["artifacts"].toString();
-        appVer->runPath = entry["exe_location"].toString();
-        appVer->buildNum = entry["build_num"].toString();
-        isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
     }
-    //hotfix to sort downloaded items without rewriting mainWindow
+    //hot fix to sort downloaded items without rewriting mainWindow
     for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
     {
         QVector<Application>& apps = branchIter->applications;
@@ -292,12 +325,16 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         return false;
     }
     QJsonObject rootObj = document.object();
+    if (rootObj.keys().isEmpty())
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("Got an empty config from server "));
+    }
     for (const QString& key : rootObj.keys())
     {
         QJsonValue value = rootObj.value(key);
         if (key == "launcher")
         {
-            if (!ConfigParser_local::GetLauncherVersionAndURL(value, launcherVersion, launcherURL, webPageURL))
+            if (!ConfigParserDetails::GetLauncherVersionAndURL(value, launcherVersion, launcherURL, webPageURL))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong launcher version object"));
                 continue;
@@ -305,7 +342,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         }
         else if (key == "seo_list")
         {
-            if (!ConfigParser_local::GetLauncherStrings(value, strings))
+            if (!ConfigParserDetails::GetLauncherStrings(value, strings))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong seo strings object"));
                 continue;
@@ -313,14 +350,14 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         }
         else if (key == "branches")
         {
-            if (!ConfigParser_local::GetFavorites(value, favorites))
+            if (!ConfigParserDetails::GetFavorites(value, favorites))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading favorites list"));
             }
         }
         else if (key == "builds")
         {
-            if (!ConfigParser_local::GetBranches(value, branches))
+            if (!ConfigParserDetails::GetBranches(value, branches))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading branches list"));
             }
@@ -396,9 +433,10 @@ bool ConfigParser::Parse(const QByteArray& configData)
             return false;
         }
     }
-    catch (YAML::ParserException& e)
+    catch (YAML::Exception& e)
     {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+        QString errorMessage = QObject::tr("Can not parse config file.\nError text: %1").arg(e.msg.c_str());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, errorMessage);
         return false;
     }
     return true;
@@ -431,67 +469,69 @@ void ConfigParser::UpdateApplicationsNames()
     }
 }
 
-QByteArray ConfigParser::Serialize()
+QByteArray ConfigParser::Serialize() const
 {
-    YAML::Emitter emitter;
-    emitter.SetIndent(4);
-    emitter << YAML::BeginMap;
+    QJsonObject rootObject;
 
-    //Launcher info
-    emitter << YAML::Key << CONFIG_LAUNCHER_KEY << YAML::Value << YAML::BeginMap;
-    emitter << YAML::Key << CONFIG_LAUNCHER_WEBPAGE_KEY << YAML::Value << webPageURL.toStdString();
-    emitter << YAML::Key << CONFIG_LAUNCHER_NEWSID_KEY << YAML::Value << newsID.toStdString();
+    QJsonObject launcherObject;
+    launcherObject["url"] = webPageURL;
+    rootObject["launcher"] = launcherObject;
 
-    int favCount = favorites.size();
-    if (favCount)
+    QJsonArray favoritesArray;
+    for (const QString& favoriteBranch : favorites)
     {
-        emitter << YAML::Key << CONFIG_LAUNCHER_FAVORITES_KEY << YAML::Value;
-        emitter << YAML::BeginSeq;
-        for (int i = 0; i < favCount; i++)
-            emitter << favorites[i].toStdString();
-        emitter << YAML::EndSeq;
+        QJsonObject favObject = {
+            { "branch_name", favoriteBranch },
+            { "favourite", "1" }
+        };
+        favoritesArray.append(favObject);
     }
+    rootObject["branches"] = favoritesArray;
 
-    emitter << YAML::EndMap;
-
-    //Strings
-    emitter << YAML::Key << CONFIG_STRINGS_KEY << YAML::Value << YAML::BeginMap;
-    QMap<QString, QString>::Iterator it = strings.begin();
-    QMap<QString, QString>::Iterator itEnd = strings.end();
+    QJsonArray stringsArray;
+    QMap<QString, QString>::ConstIterator it = strings.constBegin();
+    QMap<QString, QString>::ConstIterator itEnd = strings.constEnd();
     for (; it != itEnd; ++it)
-        emitter << YAML::Key << it.key().toStdString() << YAML::Value << it.value().toStdString();
-    emitter << YAML::EndMap;
+    {
+        QJsonObject stringsObj = {
+            { "build_tag", it.key() },
+            { "build_name", it.value() },
+            { "os", platformString }
+        };
+        stringsArray.append(stringsObj);
+    }
+    rootObject["seo_list"] = stringsArray;
 
-    //Applications
-    emitter << YAML::Key << CONFIG_BRANCHES_KEY << YAML::Value << YAML::BeginMap;
+    QJsonArray buildsArray;
     for (int i = 0; i < branches.size(); ++i)
     {
-        Branch* branch = GetBranch(i);
-        emitter << YAML::Key << branch->id.toStdString() << YAML::Value << YAML::BeginMap;
+        const Branch* branch = GetBranch(i);
         for (int j = 0; j < branch->GetAppCount(); ++j)
         {
-            Application* app = branch->GetApplication(j);
-            emitter << YAML::Key << app->id.toStdString() << YAML::Value << YAML::BeginMap;
+            const Application* app = branch->GetApplication(j);
             for (int k = 0; k < app->GetVerionsCount(); ++k)
             {
-                AppVersion* ver = app->GetVersion(k);
-                emitter << YAML::Key << ver->id.toStdString() << YAML::Value << YAML::BeginMap;
-                emitter << YAML::Key << CONFIG_APPVERSION_RUNPATH_KEY << YAML::Value << ver->runPath.toStdString();
-                emitter << YAML::Key << CONFIG_APPVERSION_CMD_KEY << YAML::Value << ver->cmd.toStdString();
-                emitter << YAML::Key << CONFIG_URL_KEY << YAML::Value << ver->url.toStdString();
-                emitter << YAML::EndMap;
+                const AppVersion* ver = app->GetVersion(k);
+                QString appName = ver->isToolSet ? "ToolSet" : app->id;
+                QJsonObject buildObj = {
+                    { "buildNum", ver->buildNum },
+                    { "build_type", ver->id },
+                    { "build_name", appName },
+                    { "branchName", branch->id },
+                    { "artifacts", ver->url },
+                    { "exe_location", ver->runPath }
+                };
+                buildsArray.append(buildObj);
             }
-            emitter << YAML::EndMap;
         }
-        emitter << YAML::EndMap;
     }
-    emitter << YAML::EndMap;
+    rootObject["builds"] = buildsArray;
 
-    emitter << YAML::EndMap;
-    return emitter.c_str();
+    QJsonDocument document(rootObject);
+    return document.toJson();
 }
 
-void ConfigParser::SaveToFile(const QString& filePath)
+void ConfigParser::SaveToFile(const QString& filePath) const
 {
     QFile file(filePath);
     if (file.open(QFile::WriteOnly | QFile::Truncate))
@@ -519,6 +559,21 @@ void ConfigParser::RemoveBranch(const QString& branchID)
 }
 
 void ConfigParser::InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version)
+{
+    if (version.isToolSet)
+    {
+        for (const QString& fakeAppID : GetTranslatedToolsetApplications())
+        {
+            InsertApplicationImpl(branchID, fakeAppID, version);
+        }
+    }
+    else
+    {
+        InsertApplicationImpl(branchID, appID, version);
+    }
+}
+
+void ConfigParser::InsertApplicationImpl(const QString& branchID, const QString& appID, const AppVersion& version)
 {
     Branch* branch = GetBranch(branchID);
     if (!branch)
@@ -560,6 +615,41 @@ void ConfigParser::RemoveApplication(const QString& branchID, const QString& app
         RemoveBranch(branchID);
 }
 
+QStringList ConfigParser::GetToolsetApplications()
+{
+    static QStringList applications;
+    if (applications.isEmpty())
+    {
+        applications << "AssetCacheServer"
+                     << "ResourceEditor"
+                     << "QuickEd";
+        //try to get project name as it stored in ba-manager
+        QString prefix =
+#ifdef Q_OS_WIN
+        "_win";
+#elif defined(Q_OS_MAC)
+        "_mac";
+#else
+#error "unsupported platform"
+#endif //platform
+        for (auto iter = applications.begin(); iter != applications.end(); ++iter)
+        {
+            *iter += prefix;
+        }
+    }
+    return applications;
+}
+
+QStringList ConfigParser::GetTranslatedToolsetApplications() const
+{
+    QStringList applications = GetToolsetApplications();
+    for (auto iter = applications.begin(); iter != applications.end(); ++iter)
+    {
+        *iter = GetString(*iter);
+    }
+    return applications;
+}
+
 int ConfigParser::GetBranchCount()
 {
     return branches.size();
@@ -578,7 +668,7 @@ Branch* ConfigParser::GetBranch(int branchIndex)
     if (branchIndex >= 0 && branchIndex < branches.size())
         return &branches[branchIndex];
 
-    return 0;
+    return nullptr;
 }
 
 Branch* ConfigParser::GetBranch(const QString& branch)
@@ -588,7 +678,17 @@ Branch* ConfigParser::GetBranch(const QString& branch)
         if (branches[i].id == branch)
             return &branches[i];
 
-    return 0;
+    return nullptr;
+}
+
+const Branch* ConfigParser::GetBranch(int branchIndex) const
+{
+    return const_cast<ConfigParser*>(this)->GetBranch(branchIndex);
+}
+
+const Branch* ConfigParser::GetBranch(const QString& branch) const
+{
+    return const_cast<ConfigParser*>(this)->GetBranch(branch);
 }
 
 Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID)

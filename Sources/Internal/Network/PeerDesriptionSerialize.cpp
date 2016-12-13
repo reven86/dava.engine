@@ -124,9 +124,11 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     SerializedGeneralInfo* general = reinterpret_cast<SerializedGeneralInfo*>(header + 1);
     general->platfromType = static_cast<uint32>(platformType);
     general->gpuFamily = static_cast<uint32>(gpuFamily);
+#if !defined(__DAVAENGINE_COREV2__)
     general->screenWidth = screenInfo.width;
     general->screenHeight = screenInfo.height;
     general->screenScale = static_cast<int32>(screenInfo.scale);
+#endif
     strncpy(general->platform.data(), platform.c_str(), general->platform.size());
     general->platform[general->platform.size() - 1] = '\0';
     strncpy(general->version.data(), version.c_str(), general->version.size());
@@ -186,7 +188,9 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     const SerializedGeneralInfo* general = reinterpret_cast<const SerializedGeneralInfo*>(header + 1);
     temp.platformType = IntToPlatform(general->platfromType);
     temp.gpuFamily = IntToGPUFamily(general->gpuFamily);
+#if !defined(__DAVAENGINE_COREV2__)
     temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, static_cast<float32>(general->screenScale));
+#endif
     temp.platform = general->platform.data();
     temp.version = general->version.data();
     temp.manufacturer = general->manufacturer.data();

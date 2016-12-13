@@ -1,10 +1,8 @@
-#ifndef __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
-#define __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
+#pragma once
 
 #include "Command/Command.h"
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
-#include "Main/Request.h"
 
 class CustomColorsSystem : public LandscapeEditorSystem
 {
@@ -16,13 +14,14 @@ public:
     bool DisableLandscapeEdititing(bool saveNeeded = true);
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Input(DAVA::UIEvent* event) override;
+    bool Input(DAVA::UIEvent* event) override;
 
     void SetBrushSize(DAVA::int32 brushSize, bool updateDrawSystem = true);
     DAVA::int32 GetBrushSize();
     void SetColor(DAVA::int32 colorIndex);
     DAVA::int32 GetColor();
 
+    void SaveTexture(); // with current of default generated path
     void SaveTexture(const DAVA::FilePath& filePath);
     bool LoadTexture(const DAVA::FilePath& filePath, bool createUndo);
     DAVA::FilePath GetCurrentSaveFileName();
@@ -64,5 +63,3 @@ private:
     DAVA::Rect updatedRectAccumulator;
     bool editingIsEnabled = false;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

@@ -112,6 +112,7 @@ public:
     bool RemoveClass(const FastName& clazz);
     bool HasClass(const FastName& clazz) const;
     bool SetTaggedClass(const FastName& tag, const FastName& clazz);
+    FastName GetTaggedClass(const FastName& tag) const;
     bool ResetTaggedClass(const FastName& tag);
 
     bool RemoveAllClasses();

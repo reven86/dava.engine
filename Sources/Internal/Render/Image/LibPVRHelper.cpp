@@ -303,8 +303,6 @@ bool LibPVRHelper::CanDecompressFrom(PixelFormat format)
     default:
         return false;
     }
-
-    return false;
 }
 
 bool LibPVRHelper::DecompressToRGBA(const Image* encodedImage, Image* decodedImage)

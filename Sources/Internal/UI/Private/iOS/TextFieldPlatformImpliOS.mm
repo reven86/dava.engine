@@ -8,14 +8,14 @@
 #include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #include "UI/Private/iOS/UITextFieldHolder.h"
 #include "Core/Core.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
+#include "UI/UIControlSystem.h"
 #include "Utils/NSStringUtils.h"
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 #include "UI/Private/iOS/WebViewControliOS.h"
@@ -41,8 +41,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
 {
     DVASSERT(isSingleLine);
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->GetUIViewFromPool("UITextFieldHolder"));
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(PlatformApi::Ios::GetUIViewFromPool(window, "UITextFieldHolder"));
     [bridge->textFieldHolder attachWindow:window];
 
     DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
@@ -76,8 +75,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         [textFieldHolder addSubview:textFieldHolder->textCtrl];
     }
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReturnUIViewToPool(textFieldHolder);
+    PlatformApi::Ios::ReturnUIViewToPool(window, textFieldHolder);
 }
 #else // defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
@@ -146,13 +144,7 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
-    scaledSize /= window->GetScaleX();
-#else
-    float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
-    scaledSize /= Core::Instance()->GetScreenScaleFactor();
-#endif
+    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(size);
 
     UIView* view = bridge->textFieldHolder->textCtrl;
     UIFont* font = [UIFont systemFontOfSize:scaledSize];
@@ -371,23 +363,8 @@ void TextFieldPlatformImpl::HideField()
 
 void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffset)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    float32 divider = window->GetScaleX();
-#else
-    float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-#endif
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
-    Vector2 physicalOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x) / divider, (physicalRect.y + physicalOffset.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
-
-    nativeRect = CGRectIntegral(nativeRect);
-    nativeRect.origin.x += xOffset;
-
-    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
-    nativeRect.size.width = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.width);
-    nativeRect.size.height = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.height);
-
-    bridge->textFieldHolder->textCtrl.frame = nativeRect;
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(virtualRect);
+    [bridge->textFieldHolder->textCtrl setFrame:CGRectMake(r.x + xOffset, r.y, r.dx, r.dy)];
 }
 
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
@@ -673,10 +650,10 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     if (renderToTexture && deltaMoveControl != 0 && text.length > 0)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(textView);
+        UIImage* nativeImage = PlatformApi::Ios::RenderUIViewToUIImage(textView);
         if (nativeImage != nullptr)
         {
-            RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+            RefPtr<Image> image(PlatformApi::Ios::ConvertUIImageToImage(nativeImage));
             if (image != nullptr)
             {
                 RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));

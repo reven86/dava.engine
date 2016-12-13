@@ -87,7 +87,7 @@ void ClipTest::LoadResources()
     DVASSERT(font);
     font->SetSize(13);
     //start points
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     float32 startX = 0.f, startY = 0.f, w = 0.f, h = 0.f;
     w = screenSize.dx * 0.25f;
     h = screenSize.dy * 0.05f;

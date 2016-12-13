@@ -27,6 +27,7 @@ public:
     void RemoveGlobalClass(const FastName& clazz);
     bool HasGlobalClass(const FastName& clazz) const;
     void SetGlobalTaggedClass(const FastName& tag, const FastName& clazz);
+    FastName GetGlobalTaggedClass(const FastName& tag) const;
     void ResetGlobalTaggedClass(const FastName& tag);
     void ClearGlobalClasses();
 

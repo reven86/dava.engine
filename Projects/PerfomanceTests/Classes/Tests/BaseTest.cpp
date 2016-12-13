@@ -19,7 +19,7 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
 
 void BaseTest::LoadResources()
 {
-    const Size2i& size = DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    const Size2i& size = DAVA::UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
 
     scene = new Scene();
 
@@ -99,6 +99,10 @@ void BaseTest::UpdateUI()
     elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", elapsedTime / 1000.0f)));
     framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", GetTestFrameNumber())));
 }
+
+#if defined(__DAVAENGINE_APPLE__)
+#include <mach/mach.h>
+#endif
 
 uint32 BaseTest::GetAllocatedMemory()
 {

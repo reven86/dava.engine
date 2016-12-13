@@ -1,11 +1,11 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -15,10 +15,8 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* engineBackend);
+    PlatformCore(EngineBackend* engineBackend_);
     ~PlatformCore();
-
-    NativeService* GetNativeService() const;
 
     void Init();
     void Run();
@@ -26,28 +24,48 @@ public:
     void Quit();
 
     // Forwarded methods from UWPApplication
-    void OnLaunched();
-    void OnActivated();
+    void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args);
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();
     void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
+    void OnBackPressed();
+    void OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ gamepad);
+    void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
+    void OnDpiChanged();
+
+    static bool IsPhoneContractPresent();
+    static void EnableHighResolutionTimer(bool enable);
+
+    void RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
+    void UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
 
 private:
     void GameThread();
 
-private:
-    EngineBackend& engineBackend;
-    MainDispatcher& dispatcher;
-    std::unique_ptr<NativeService> nativeService;
+    enum eNotificationType
+    {
+        ON_LAUNCHED,
+        ON_ACTIVATED,
+    };
+    void NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1);
+
+    EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
+
+    Mutex listenersMutex;
+    List<PlatformApi::Win10::XamlApplicationListener*> xamlApplicationListeners;
+    ::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ savedActivatedEventArgs = nullptr;
+
+    static bool isPhoneContractPresent;
 };
 
-inline NativeService* PlatformCore::GetNativeService() const
+inline bool PlatformCore::IsPhoneContractPresent()
 {
-    return nativeService.get();
+    return isPhoneContractPresent;
 }
 
 } // namespace Private

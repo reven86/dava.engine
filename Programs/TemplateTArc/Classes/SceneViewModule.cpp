@@ -26,7 +26,7 @@ SceneViewModule::SceneViewModule()
 
 void SceneViewModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
-    w->sizeScaleChanged.Connect(DAVA::MakeFunction(this, &SceneViewModule::OnWindowResized));
+    w->sizeChanged.Connect(this, &SceneViewModule::OnWindowResized);
 }
 
 void SceneViewModule::OnContextCreated(DAVA::TArc::DataContext& context)
@@ -46,12 +46,12 @@ void SceneViewModule::PostInit()
     RegisterOperation<void, SceneViewModule, const DAVA::String&>(SceneViewOperations::OpenScene, this, &SceneViewModule::OpenScene);
 }
 
-void SceneViewModule::OnWindowResized(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void SceneViewModule::OnWindowResized(DAVA::Window* w, DAVA::Size2f size, DAVA::Size2f surfaceSize)
 {
     DVASSERT(uiScreen);
     DVASSERT(ui3dView);
-    uiScreen->SetSize(DAVA::Vector2(width, height));
-    ui3dView->SetSize(DAVA::Vector2(width, height));
+    uiScreen->SetSize(DAVA::Vector2(size.dx, size.dy));
+    ui3dView->SetSize(DAVA::Vector2(size.dx, size.dy));
 }
 
 void SceneViewModule::SetupRenderWidget()

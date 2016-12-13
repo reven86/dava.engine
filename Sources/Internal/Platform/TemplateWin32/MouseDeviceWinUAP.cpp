@@ -2,6 +2,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "UI/UIEvent.h"
 
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
@@ -45,7 +47,7 @@ void MouseDeviceUWP::SetCursorInCenter()
 
 bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
 {
-    if (event->device == UIEvent::Device::MOUSE && (event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE))
+    if (event->device == eInputDevices::MOUSE && (event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE))
     {
         if (skipMouseMoveEvents)
         {
@@ -57,5 +59,7 @@ bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
 }
 
 } // namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN_UAP__

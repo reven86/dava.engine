@@ -1,7 +1,9 @@
 #include "UI/UIScreen.h"
+#include "UI/UIControlSystem.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
-#include <Render/2D/Systems/RenderSystem2D.h>
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RHI/Common/PreProcess.h"
 
 namespace DAVA
 {
@@ -80,9 +82,9 @@ void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
     drawData.AddGeometricData(geometricData);
 
     Rect drawRect = drawData.GetUnrotatedRect();
-    Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    Vector2 virtualSize = Vector2(static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
-                                  static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy));
+    Rect fullRect = UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect();
+    Vector2 virtualSize = Vector2(static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx),
+                                  static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy));
     if (fullRect.x < 0)
     {
         auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
@@ -103,6 +105,8 @@ void UIScreen::LoadGroup()
 {
     //Logger::FrameworkDebug("load group started");
     //uint64 loadGroupStart = SystemTimer::Instance()->AbsoluteMS();
+    ShaderPreprocessScope preprocessScope;
+
     if (groupId < 0)
     {
         if (isLoaded)

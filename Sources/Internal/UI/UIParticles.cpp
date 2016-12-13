@@ -21,16 +21,8 @@ DAVA_REFLECTION_IMPL(UIParticles)
 
 UIParticles::UIParticles(const Rect& rect)
     : UIControl(rect)
-    , isAutostart(false)
-    , startDelay(0.0f)
-    , effect(nullptr)
-    , system(new ParticleEffectSystem(nullptr, true))
-    , updateTime(0)
-    , delayedActionType(UIParticles::actionNone)
-    , delayedActionTime(0.0f)
-    , delayedDeleteAllParticles(false)
-    , needHandleAutoStart(false)
 {
+    system = new ParticleEffectSystem(nullptr, true);
     if (defaultCamera != nullptr)
     {
         defaultCamera->Retain();
@@ -95,7 +87,6 @@ void UIParticles::DoStart()
 
     effect->isPaused = false;
     system->AddToActive(effect);
-    effect->effectRenderObject->SetWorldTransformPtr(&matrix);
     system->RunEffect(effect);
 }
 
@@ -207,15 +198,27 @@ void UIParticles::Draw(const UIGeometricData& geometricData)
 
     RenderSystem2D::Instance()->Flush();
 
-    matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
-    matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
-    effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
     updateTime = 0.0f;
 
+    if (inheritControlTransform)
+    {
+        matrix = Matrix4::MakeScale(Vector3(geometricData.scale.x, geometricData.scale.y, 1.f)) * Matrix4::MakeRotation(Vector3::UnitZ, -geometricData.angle);
+        matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &matrix, reinterpret_cast<pointer_size>(&matrix));
+
+        effect->effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY);
+    }
+    else
+    {
+        matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
+        matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
+        effect->effectRenderObject->BindDynamicParameters(defaultCamera);
+        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
+    }
+
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, reinterpret_cast<pointer_size>(&Vector3::Zero));
     effect->effectRenderObject->PrepareToRender(defaultCamera);
-    effect->effectRenderObject->BindDynamicParameters(defaultCamera);
 
     rhi::Packet packet;
     for (int32 i = 0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i < sz; ++i)
@@ -243,6 +246,21 @@ void UIParticles::SetExtertnalValue(const String& name, float32 value)
 {
     if (effect != nullptr)
         effect->SetExtertnalValue(name, value);
+}
+
+void UIParticles::SetInheritControlTransform(bool inherit)
+{
+    inheritControlTransform = inherit;
+
+    if (!IsStopped())
+    {
+        Restart();
+    }
+}
+
+bool UIParticles::GetInheritControlTransform() const
+{
+    return inheritControlTransform;
 }
 
 void UIParticles::LoadEffect(const FilePath& path)
@@ -273,7 +291,6 @@ void UIParticles::LoadEffect(const FilePath& path)
     {
         DVASSERT(!effect);
         effect = newEffect;
-        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
         needHandleAutoStart = true;
     }
 }
@@ -342,6 +359,7 @@ void UIParticles::CopyDataFrom(UIControl* srcControl)
     SetEffectPath(src->GetEffectPath());
     SetStartDelay(src->GetStartDelay());
     SetAutostart(src->IsAutostart());
+    SetInheritControlTransform(src->GetInheritControlTransform());
 }
 
 void UIParticles::HandleAutostart()

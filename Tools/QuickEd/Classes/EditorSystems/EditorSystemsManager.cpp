@@ -1,5 +1,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Engine/Qt/RenderWidget.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -39,11 +41,12 @@ private:
     EditorSystemsManager* systemManager = nullptr;
 };
 
-EditorSystemsManager::EditorSystemsManager()
+EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     : rootControl(new UIControl())
     , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
+    , renderWidget(renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -68,6 +71,11 @@ EditorSystemsManager::EditorSystemsManager()
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
+
+DAVA::RenderWidget* EditorSystemsManager::GetRenderWidget() const
+{
+    return renderWidget;
+}
 
 UIControl* EditorSystemsManager::GetRootControl() const
 {
@@ -148,9 +156,8 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
             return insertToEnd ? i + 1 : i;
         }
     }
-    DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
 
-    return 0;
+    return controlsNode->GetCount();
 }
 
 void EditorSystemsManager::SelectAll()

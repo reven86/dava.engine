@@ -5,6 +5,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
+#include "Render/Image/Image.h"
 #include "Sound/SoundSystem.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
@@ -213,7 +214,7 @@ bool FfmpegPlayer::InitVideo()
 
     frameHeight = videoCodecContext->height;
     frameWidth = videoCodecContext->width;
-    frameBufferSize = frameWidth * frameHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(pixelFormat);
+    frameBufferSize = ImageUtils::GetSizeInBytes(frameWidth, frameHeight, pixelFormat);
 
     DVASSERT(nullptr == videoDecodingThread)
 

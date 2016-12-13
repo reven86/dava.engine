@@ -468,7 +468,7 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        if (UIEvent::Device::MOUSE == currentInput->device)
+        if (eInputDevices::MOUSE == currentInput->device)
         {
             newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
         }
@@ -510,6 +510,7 @@ void UIList::Input(UIEvent* currentInput)
     }
     break;
     case UIEvent::Phase::ENDED:
+    case UIEvent::Phase::CANCELLED:
     {
         lockTouch = false;
         mainTouch = -1;
@@ -568,7 +569,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
                 }
             }
         }
-        else if (currentInput->touchId == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
+        else if (currentInput->touchId == mainTouch && (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED))
         {
             mainTouch = -1;
             lockTouch = false;
@@ -577,6 +578,14 @@ bool UIList::SystemInput(UIEvent* currentInput)
     }
 
     return UIControl::SystemInput(currentInput);
+}
+
+void UIList::InputCancelled(UIEvent* currentInput)
+{
+    lockTouch = false;
+    mainTouch = -1;
+
+    UIControl::InputCancelled(currentInput);
 }
 
 void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerData)

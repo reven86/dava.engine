@@ -1,9 +1,21 @@
 #include "PackManager/Private/PacksDB.h"
-#include <sqlite_modern_cpp.h>
 #include "MemoryManager/MemoryManager.h"
 #include "FileSystem/FileSystem.h"
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
 #include "Base/Exception.h"
+#include "Concurrency/Thread.h"
+
+
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite_modern_cpp.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 namespace DAVA
 {
@@ -48,6 +60,7 @@ class PacksDBData
 public:
     PacksDBData(const String& dbPath, bool dbInMemory)
     {
+        DVASSERT(Thread::IsMainThread());
 #ifdef DAVA_MEMORY_PROFILING_ENABLE
         sqlite3_mem_methods mem = {
             &SqliteMalloc,
@@ -75,6 +88,7 @@ public:
     }
     ~PacksDBData()
     {
+        DVASSERT(Thread::IsMainThread());
         UnregisterDavaVFSForSqlite3();
     }
     sqlite::database& GetDB()

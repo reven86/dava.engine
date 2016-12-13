@@ -2,7 +2,7 @@
 #define __DAVAENGINE_ENDPOINT_H__
 
 #include <Base/BaseTypes.h>
-
+#include "Base/Platform.h"
 #include <Network/Base/IPAddress.h>
 
 namespace DAVA

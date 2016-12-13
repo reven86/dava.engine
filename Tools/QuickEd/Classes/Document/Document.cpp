@@ -5,18 +5,20 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "Project/Project.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
-#include "EditorCore.h"
+#include <QFileSystemWatcher>
+#include <QFile>
 
 using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
+Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
-    , commandExecutor(new QtModelPackageCommandExecutor(this))
+    , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
 {
@@ -26,7 +28,6 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
-    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
     commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
@@ -114,6 +115,11 @@ bool Document::CanSave() const
 bool Document::IsDocumentExists() const
 {
     return fileExists;
+}
+
+void Document::OnFontPresetChanged(const DAVA::String& presetName)
+{
+    RefreshAllControlProperties();
 }
 
 void Document::RefreshAllControlProperties()

@@ -258,7 +258,6 @@ public:
 
     IPackManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
-    const ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -266,6 +265,8 @@ protected:
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
+
+    static void OnRenderingError(rhi::RenderingError error, void* context);
 
 private:
     KeyedArchive* options;
@@ -292,7 +293,6 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
     std::unique_ptr<Analytics::Core> analyticsCore;

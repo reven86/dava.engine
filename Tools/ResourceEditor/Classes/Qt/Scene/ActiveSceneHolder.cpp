@@ -1,6 +1,8 @@
 #include "ActiveSceneHolder.h"
 #include "SceneSignals.h"
 
+#include "TArc/Utils/QtConnections.h"
+
 namespace ActiveSceneHolderDetails
 {
 class ActiveSceneHolderImpl : public DAVA::Singleton<ActiveSceneHolderImpl>
@@ -21,7 +23,7 @@ public:
     }
 
     SceneEditor2* activeScene = nullptr;
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
 };
 }
 

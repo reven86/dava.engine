@@ -1,7 +1,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;
@@ -93,13 +93,13 @@ void CoreV2Test::UnloadResources()
 void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: sending quit...");
-    engine.Quit(4);
+    engine.QuitAsync(4);
 }
 
 void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: closing primary window...");
-    engine.PrimaryWindow()->Close();
+    engine.PrimaryWindow()->CloseAsync();
 }
 
 void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -116,7 +116,7 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         w = 1024.0f;
         h = 768.0f;
     }
-    engine.PrimaryWindow()->Resize(w, h);
+    engine.PrimaryWindow()->SetSizeAsync({ w, h });
 }
 
 void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -137,13 +137,13 @@ void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     if (obj == buttonRunOnMain)
     {
-        engine.RunAsyncOnMainThread([]() {
+        RunOnMainThreadAsync([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
     else if (obj == buttonRunOnUI)
     {
-        engine.PrimaryWindow()->RunAsyncOnUIThread([]() {
+        RunOnUIThreadAsync([]() {
             Logger::Error("******** KABOOM on UI thread********");
         });
     }

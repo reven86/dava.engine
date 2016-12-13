@@ -3,8 +3,7 @@
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -13,7 +12,9 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/UIControlSystem.h"
 #include "UI/UIWebView.h"
+#include "Platform/Steam.h"
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
@@ -212,7 +213,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddNSView(bridge->webView);
+    PlatformApi::Mac::AddNSView(window, bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -223,11 +224,19 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
+#if defined(__DAVAENGINE_STEAM__)
+    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+#endif
+
     SetBackgroundTransparency(true);
 }
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
     window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
 #else
@@ -239,7 +248,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveNSView(bridge->webView);
+    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -327,25 +336,9 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-    rect.dx = std::max(0.0f, rect.dx);
-    rect.dy = std::max(0.0f, rect.dy);
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    NSRect controlRect = [[bridge->webView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#else
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#endif
-    [bridge->webView setFrame:controlRect];
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+    float32 dy = static_cast<float32>(UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
+    [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)
     {
@@ -357,11 +350,30 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
 
-    if (!isRenderToTexture)
+    if (!isRenderToTexture
+#if defined(__DAVAENGINE_STEAM__)
+        && !overlayVisible
+#endif
+        )
     {
         SetNativeVisible(isVisible);
     }
 }
+
+#if defined(__DAVAENGINE_STEAM__)
+void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
+{
+    overlayVisible = overlayActivated;
+    if (overlayActivated)
+    {
+        SetNativeVisible(false);
+    }
+    else if (!isRenderToTexture)
+    {
+        SetNativeVisible(isVisible);
+    }
+}
+#endif
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {

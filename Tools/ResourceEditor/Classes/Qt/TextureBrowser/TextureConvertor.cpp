@@ -15,7 +15,6 @@
 
 #include "FileSystem/FileSystem.h"
 
-#include "QtLayer.h"
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"
@@ -25,33 +24,30 @@ TextureConvertor::TextureConvertor()
     : jobIdCounter(1)
     , convertJobQueueSize(0)
     , waitingComletion(0)
-    , curJobThumbnail(NULL)
-    , curJobOriginal(NULL)
-    , curJobConverted(NULL)
     , waitDialog(NULL)
+    , watcherConverted(DAVA::JobManager::Instance())
+    , watcherOriginal(DAVA::JobManager::Instance())
+    , watcherThumbnail(DAVA::JobManager::Instance())
 {
     // slots will be called in connector(this) thread
-    QObject::connect(&thumbnailWatcher, SIGNAL(finished()), this, SLOT(threadThumbnailFinished()), Qt::QueuedConnection);
-    QObject::connect(&originalWatcher, SIGNAL(finished()), this, SLOT(threadOriginalFinished()), Qt::QueuedConnection);
-    QObject::connect(&convertedWatcher, SIGNAL(finished()), this, SLOT(threadConvertedFinished()), Qt::QueuedConnection);
+    watcherConverted.Init(DAVA::MakeFunction(this, &TextureConvertor::GetConvertedThread), DAVA::MakeFunction(this, &TextureConvertor::ThreadConvertedFinished));
+    watcherOriginal.Init(DAVA::MakeFunction(this, &TextureConvertor::GetOriginalThread), DAVA::MakeFunction(this, &TextureConvertor::ThreadOriginalFinished));
+    watcherThumbnail.Init(DAVA::MakeFunction(this, &TextureConvertor::GetThumbnailThread), DAVA::MakeFunction(this, &TextureConvertor::ThreadThumbnailFinished));
 }
 
 TextureConvertor::~TextureConvertor()
 {
     CancelConvert();
-    thumbnailWatcher.waitForFinished();
-    originalWatcher.waitForFinished();
-    convertedWatcher.waitForFinished();
 }
 
 int TextureConvertor::GetThumbnail(const DAVA::TextureDescriptor* descriptor)
 {
     int ret = 0;
 
-    if (NULL != descriptor)
+    if (descriptor != nullptr)
     {
         // check if requested texture isn't the same that is loading now
-        if (NULL == curJobThumbnail || curJobThumbnail->descriptor != descriptor)
+        if (watcherThumbnail.IsFinished() || watcherThumbnail.GetCurrentJobItem()->descriptor != descriptor)
         {
             JobItem newJob;
             newJob.id = jobIdCounter++;
@@ -71,10 +67,10 @@ int TextureConvertor::GetOriginal(const DAVA::TextureDescriptor* descriptor)
 {
     int ret = 0;
 
-    if (NULL != descriptor)
+    if (descriptor != nullptr)
     {
         // check if requested texture isn't the same that is loading now
-        if (NULL == curJobOriginal || curJobOriginal->descriptor != descriptor)
+        if (watcherOriginal.IsFinished() || watcherOriginal.GetCurrentJobItem()->descriptor != descriptor)
         {
             JobItem newJob;
             newJob.id = jobIdCounter++;
@@ -95,7 +91,7 @@ int TextureConvertor::GetConverted(const DAVA::TextureDescriptor* descriptor, DA
 {
     int ret = 0;
 
-    if (NULL != descriptor)
+    if (descriptor != nullptr)
     {
         JobItem newJob;
         newJob.id = jobIdCounter++;
@@ -211,58 +207,47 @@ void TextureConvertor::CancelConvert()
 
 void TextureConvertor::jobRunNextThumbnail()
 {
-    // if there is no already running work
-    if ((thumbnailWatcher.isFinished() || thumbnailWatcher.isCanceled()) && NULL == curJobThumbnail)
+    if (watcherThumbnail.IsFinished())
     {
-        // get the new work
-        curJobThumbnail = jobStackThumbnail.pop();
-        if (NULL != curJobThumbnail)
+        std::unique_ptr<JobItem> item(jobStackThumbnail.pop());
+        if (item != nullptr)
         {
-            // copy descriptor
-            QFuture<TextureInfo> f = QtConcurrent::run(this, &TextureConvertor::GetThumbnailThread, curJobThumbnail);
-            thumbnailWatcher.setFuture(f);
+            watcherThumbnail.RunJob(std::move(item));
         }
     }
 }
 
 void TextureConvertor::jobRunNextOriginal()
 {
-    // if there is no already running work
-    if ((originalWatcher.isFinished() || originalWatcher.isCanceled()) && NULL == curJobOriginal)
+    if (watcherOriginal.IsFinished())
     {
-        // get the new work
-        curJobOriginal = jobStackOriginal.pop();
-        if (NULL != curJobOriginal)
+        std::unique_ptr<JobItem> item(jobStackOriginal.pop());
+        if (item != nullptr)
         {
-            // copy descriptor
-            QFuture<TextureInfo> f = QtConcurrent::run(this, &TextureConvertor::GetOriginalThread, curJobOriginal);
-            originalWatcher.setFuture(f);
+            watcherOriginal.RunJob(std::move(item));
         }
     }
 }
 
 void TextureConvertor::jobRunNextConvert()
 {
-    // if there is no already running work
-    if ((convertedWatcher.isFinished() || convertedWatcher.isCanceled()) && NULL == curJobConverted)
+    if (watcherConverted.IsFinished())
     {
-        // get the next job
-        curJobConverted = jobStackConverted.pop();
-        if (NULL != curJobConverted)
+        std::unique_ptr<JobItem> item(jobStackConverted.pop());
+        if (item != nullptr)
         {
-            const DAVA::TextureDescriptor* desc = curJobConverted->descriptor;
+            const DAVA::TextureDescriptor* desc = item->descriptor;
+            int jobType = item->type;
+            watcherConverted.RunJob(std::move(item));
 
-            QFuture<TextureInfo> f = QtConcurrent::run(this, &TextureConvertor::GetConvertedThread, curJobConverted);
-            convertedWatcher.setFuture(f);
-
-            emit ConvertStatusImg(desc->pathname.GetAbsolutePathname().c_str(), curJobConverted->type);
+            emit ConvertStatusImg(desc->pathname.GetAbsolutePathname().c_str(), jobType);
             emit ConvertStatusQueue(convertJobQueueSize - jobStackConverted.size(), convertJobQueueSize);
 
             // generate current wait message, that can be displayed by wait dialog
             waitStatusText = "Path: ";
             waitStatusText += desc->pathname.GetAbsolutePathname().c_str();
             waitStatusText += "\n\nGPU: ";
-            waitStatusText += GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(curJobConverted->type);
+            waitStatusText += GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(jobType);
 
             if (NULL != waitDialog)
             {
@@ -303,48 +288,27 @@ void TextureConvertor::jobRunNextConvert()
     }
 }
 
-void TextureConvertor::threadThumbnailFinished()
+void TextureConvertor::ThreadThumbnailFinished(const TextureInfo& info, const JobItem* item)
 {
-    if (thumbnailWatcher.isFinished() && NULL != curJobThumbnail)
-    {
-        const DAVA::TextureDescriptor* thumbnailDescriptor = (DAVA::TextureDescriptor*)curJobThumbnail->descriptor;
-        emit ReadyThumbnail(thumbnailDescriptor, thumbnailWatcher.result());
-        delete curJobThumbnail;
-        curJobThumbnail = nullptr;
-    }
-
+    DVASSERT(watcherThumbnail.IsFinished());
+    const DAVA::TextureDescriptor* thumbnailDescriptor = item->descriptor;
+    emit ReadyThumbnail(thumbnailDescriptor, info);
     jobRunNextThumbnail();
 }
 
-void TextureConvertor::threadOriginalFinished()
+void TextureConvertor::ThreadOriginalFinished(const TextureInfo& info, const JobItem* item)
 {
-    if (originalWatcher.isFinished() && NULL != curJobOriginal)
-    {
-        const DAVA::TextureDescriptor* originalDescriptor = (DAVA::TextureDescriptor*)curJobOriginal->descriptor;
-
-        TextureInfo watcherResult = originalWatcher.result();
-        emit ReadyOriginal(originalDescriptor, watcherResult);
-
-        delete curJobOriginal;
-        curJobOriginal = NULL;
-    }
-
+    DVASSERT(watcherOriginal.IsFinished());
+    const DAVA::TextureDescriptor* originalDescriptor = item->descriptor;
+    emit ReadyOriginal(originalDescriptor, info);
     jobRunNextOriginal();
 }
 
-void TextureConvertor::threadConvertedFinished()
+void TextureConvertor::ThreadConvertedFinished(const TextureInfo& info, const JobItem* item)
 {
-    if (convertedWatcher.isFinished() && NULL != curJobConverted)
-    {
-        const DAVA::TextureDescriptor* convertedDescriptor = (DAVA::TextureDescriptor*)curJobConverted->descriptor;
-
-        TextureInfo watcherResult = convertedWatcher.result();
-        emit ReadyConverted(convertedDescriptor, (DAVA::eGPUFamily)curJobConverted->type, watcherResult);
-
-        delete curJobConverted;
-        curJobConverted = NULL;
-    }
-
+    DVASSERT(watcherConverted.IsFinished());
+    const DAVA::TextureDescriptor* convertedDescriptor = item->descriptor;
+    emit ReadyConverted(convertedDescriptor, static_cast<DAVA::eGPUFamily>(item->type), info);
     jobRunNextConvert();
 }
 
@@ -353,11 +317,9 @@ void TextureConvertor::waitCanceled()
     CancelConvert();
 }
 
-TextureInfo TextureConvertor::GetThumbnailThread(JobItem* item)
+TextureInfo TextureConvertor::GetThumbnailThread(const JobItem* item)
 {
     TextureInfo result;
-
-    void* pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
 
     if (NULL != item && NULL != item->descriptor)
     {
@@ -390,16 +352,12 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem* item)
         result.fileSize = fileSize;
     }
 
-    DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-
     return result;
 }
 
-TextureInfo TextureConvertor::GetOriginalThread(JobItem* item)
+TextureInfo TextureConvertor::GetOriginalThread(const JobItem* item)
 {
     TextureInfo result;
-
-    void* pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
 
     if (NULL != item && NULL != item->descriptor)
     {
@@ -439,15 +397,11 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem* item)
         }
     }
 
-    DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-
     return result;
 }
 
-TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
+TextureInfo TextureConvertor::GetConvertedThread(const JobItem* item)
 {
-    void* pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
-
     TextureInfo result;
 
     DAVA::Vector<DAVA::Image*> convertedImages;
@@ -537,8 +491,6 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
             result.images.push_back(img);
         }
     }
-
-    DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 
     return result;
 }
