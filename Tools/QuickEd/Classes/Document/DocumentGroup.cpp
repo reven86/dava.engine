@@ -695,7 +695,10 @@ QStringList DocumentGroup::GetUnsavedDocumentsNames() const
     QStringList unsavedDocumentsNames;
     for (const Document* document : documents)
     {
-        unsavedDocumentsNames << document->GetName();
+        if (document->CanSave())
+        {
+            unsavedDocumentsNames << document->GetName();
+        }
     }
     return unsavedDocumentsNames;
 }
