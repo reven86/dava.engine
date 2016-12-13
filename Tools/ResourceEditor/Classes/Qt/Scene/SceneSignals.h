@@ -62,7 +62,6 @@ signals:
     void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
-    void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
@@ -137,10 +136,6 @@ public:
         emit DropperHeightChanged(scene, (double)height);
     };
 
-    void EmitCustomColorsTextureShouldBeSaved(SceneEditor2* scene)
-    {
-        emit CustomColorsTextureShouldBeSaved(scene);
-    };
     void EmitRulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength)
     {
         emit RulerToolLengthChanged(scene, length, previewLength);

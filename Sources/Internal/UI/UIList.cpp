@@ -459,11 +459,7 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-#if defined(__DAVAENGINE_COREV2__)
         if (eInputDevices::MOUSE == currentInput->device)
-#else
-        if (UIEvent::Device::MOUSE == currentInput->device)
-#endif
         {
             // In horizontal list also work horizontal wheel
             if (!FLOAT_EQUAL(currentInput->wheelDelta.x, 0.f) && ORIENTATION_HORIZONTAL == orientation)

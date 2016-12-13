@@ -828,14 +828,26 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 {
                                     if (curInfo.newSize != newFile->Write(newData, curInfo.newSize))
                                     {
+                                        ret = false;
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't write data to file %s", newFile->GetFilename().GetAbsolutePathname().c_str());
+                                    }
+                                    else
+                                    {
+                                        if (!newFile->Flush())
+                                        {
+                                            ret = false;
+                                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't flush newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
+                                        }
+                                    }
+
+                                    if (!ret)
+                                    {
                                         lastFileErrno = errno;
                                         lastErrorDetails.expected.path = tmpNewPath;
                                         lastErrorDetails.expected.size = curInfo.newSize;
                                         lastErrorDetails.actual.path = "";
                                         lastErrorDetails.actual.size = static_cast<uint32>(newFile->GetSize());
                                         lastError = ERROR_NEW_WRITE;
-                                        ret = false;
-                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't write data to file %s", newFile->GetFilename().GetAbsolutePathname().c_str());
                                     }
                                 }
                                 else
@@ -853,14 +865,8 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't allocate %d bytes for new data", curInfo.newSize);
                             }
                         }
-                        if (!newFile->Flush())
-                        {
-                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't flush newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
-                        }
-                        if (0 != newFile->Release())
-                        {
-                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't release newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
-                        }
+
+                        newFile->Release();
 
                         // if no errors - check for new file CRC
                         if (ret)

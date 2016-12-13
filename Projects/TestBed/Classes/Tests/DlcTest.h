@@ -56,7 +56,7 @@ private:
     void DecDlThreads(BaseObject* obj, void* data, void* callerData);
     void Start(BaseObject* obj, void* data, void* callerData);
     void Cancel(BaseObject* obj, void* data, void* callerData);
-    void Restart(BaseObject* obj, void* data, void* callerData);
+    void Clear(BaseObject* obj, void* data, void* callerData);
 
 protected:
     const FilePath optionsPath = "~doc:/dlc_options.yaml";
@@ -74,6 +74,7 @@ protected:
     DAVA::FilePath destinationDir;
 
     UITextField* gameVersionIn = nullptr;
+    UITextField* gpuIn = nullptr;
     UITextField* dlSpeedIn = nullptr;
     UIStaticText* infoText = nullptr;
     WideString infoStr;
@@ -82,6 +83,10 @@ protected:
     UIControl* animControl = nullptr;
     UIControl* progressControl = nullptr;
     UIStaticText* progressStatistics = nullptr;
+
+    UIButton* startButton = nullptr;
+    UIButton* cancelButton = nullptr;
+    UIButton* clearButton = nullptr;
 
     float32 angle = 0;
     float32 lastUpdateTime = 0.f;

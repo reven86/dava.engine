@@ -10,10 +10,15 @@ namespace TArc
 {
 namespace DataWrapperDetail
 {
-Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
+Reflection GetDataDefault(const DataContext* context, const ReflectedType* type)
 {
     Reflection ret;
-    DataNode* node = context.GetData(type);
+    if (context == nullptr)
+    {
+        return ret;
+    }
+
+    DataNode* node = context->GetData(type);
     if (node != nullptr)
     {
         ret = Reflection::Create(node);
@@ -29,13 +34,19 @@ struct DataWrapper::Impl
     DataAccessor dataAccessor;
     Vector<Any> cachedValues;
 
-    Set<DataListener*> listeners;
-    Set<DataListener*> listenersToRemove;
+    DataListener* listener = nullptr;
+    DataListener* nextListenerToSet = nullptr;
+#ifdef __DAVAENGINE_DEBUG__
+    String typeName;
+#endif
 };
 
 DataWrapper::DataWrapper(const ReflectedType* type)
     : DataWrapper(Bind(&DataWrapperDetail::GetDataDefault, std::placeholders::_1, type))
 {
+#ifdef __DAVAENGINE_DEBUG__
+    impl->typeName = type->GetPermanentName();
+#endif
 }
 
 DataWrapper::DataWrapper(const DataAccessor& accessor)
@@ -70,6 +81,22 @@ void DataWrapper::SetContext(DataContext* context)
     impl->activeContext = context;
 }
 
+void DataWrapper::ClearListener(DataListener* listenerForCheck)
+{
+    if (impl == nullptr)
+    {
+        return;
+    }
+
+    DVASSERT(listenerForCheck == impl->listener);
+    if (impl->listener == impl->nextListenerToSet)
+    {
+        impl->nextListenerToSet = nullptr;
+    }
+
+    impl->listener = nullptr;
+}
+
 bool DataWrapper::HasData() const
 {
     if (impl == nullptr || impl->activeContext == nullptr)
@@ -80,7 +107,7 @@ bool DataWrapper::HasData() const
     Reflection reflection;
     try
     {
-        reflection = impl->dataAccessor(*impl->activeContext);
+        reflection = impl->dataAccessor(impl->activeContext);
     }
     catch (const std::runtime_error& e)
     {
@@ -91,26 +118,14 @@ bool DataWrapper::HasData() const
     return reflection.IsValid();
 }
 
-void DataWrapper::AddListener(DataListener* listener)
+void DataWrapper::SetListener(DataListener* listener)
 {
     if (impl == nullptr)
     {
         return;
     }
 
-    DVASSERT(listener != nullptr);
-    listener->InitListener(*this);
-    impl->listeners.insert(listener);
-}
-
-void DataWrapper::RemoveListener(DataListener* listener)
-{
-    if (impl == nullptr)
-    {
-        return;
-    }
-
-    impl->listenersToRemove.insert(listener);
+    impl->nextListenerToSet = listener;
 }
 
 bool DataWrapper::IsActive() const
@@ -118,9 +133,26 @@ bool DataWrapper::IsActive() const
     return !impl.unique();
 }
 
-void DataWrapper::Sync(bool notifyListeners)
+void DataWrapper::Sync(bool notifyListener)
 {
     DVASSERT(impl != nullptr);
+
+    bool listenerWasChanged = false;
+    if (impl->nextListenerToSet != impl->listener)
+    {
+        if (impl->listener != nullptr)
+        {
+            impl->listener->RemoveWrapper(*this);
+        }
+        listenerWasChanged = true;
+        impl->listener = impl->nextListenerToSet;
+        impl->cachedValues.clear();
+        if (impl->nextListenerToSet != nullptr)
+        {
+            impl->listener->AddWrapper(*this);
+        }
+    }
+
     if (HasData())
     {
         Reflection reflection = GetData();
@@ -133,19 +165,19 @@ void DataWrapper::Sync(bool notifyListeners)
             {
                 impl->cachedValues.push_back(field.ref.GetValue());
             }
-            NotifyListeners(notifyListeners);
+            NotifyListener(notifyListener);
         }
         else
         {
-            Set<String> fieldNames;
-            std::function<void(const String&)> nameInserter;
-            if (notifyListeners)
+            Vector<Any> fieldNames;
+            std::function<void(const Any&)> nameInserter;
+            if (notifyListener)
             {
-                nameInserter = [&fieldNames](const String& name) { fieldNames.insert(name); };
+                nameInserter = [&fieldNames](const Any& name) { fieldNames.push_back(name); };
             }
             else
             {
-                nameInserter = [](const String&) {};
+                nameInserter = [](const Any&) {};
             }
 
             for (size_t i = 0; i < fields.size(); ++i)
@@ -164,31 +196,24 @@ void DataWrapper::Sync(bool notifyListeners)
                 if (!valuesEqual)
                 {
                     impl->cachedValues[i] = newValue;
-                    nameInserter(field.key.Cast<String>());
+                    nameInserter(field.key);
                 }
             }
 
             if (!fieldNames.empty())
             {
-                NotifyListeners(notifyListeners, fieldNames);
+                NotifyListener(notifyListener, fieldNames);
             }
         }
     }
     else
     {
-        if (!impl->cachedValues.empty())
+        if (!impl->cachedValues.empty() || listenerWasChanged == true)
         {
             impl->cachedValues.clear();
-            NotifyListeners(notifyListeners);
+            NotifyListener(notifyListener);
         }
     }
-
-    for (DataListener* listener : impl->listenersToRemove)
-    {
-        listener->Clear();
-        impl->listeners.erase(listener);
-    }
-    impl->listenersToRemove.clear();
 }
 
 void DataWrapper::SyncWithEditor(const Reflection& etalonData)
@@ -221,20 +246,22 @@ void DataWrapper::SyncWithEditor(const Reflection& etalonData)
     }
 }
 
-void DataWrapper::NotifyListeners(bool sendNotify, const Set<String>& fields)
+void DataWrapper::NotifyListener(bool sendNotify, const Vector<Any>& fields)
 {
     if (sendNotify == false)
         return;
 
     DVASSERT(impl != nullptr);
-    auto fn = std::bind(&DataListener::OnDataChanged, std::placeholders::_1, std::cref(*this), std::cref(fields));
-    std::for_each(impl->listeners.begin(), impl->listeners.end(), fn);
+    if (impl->listener)
+    {
+        impl->listener->OnDataChanged(*this, fields);
+    }
 }
 
 Reflection DataWrapper::GetData() const
 {
     DVASSERT(HasData());
-    return impl->dataAccessor(*impl->activeContext);
+    return impl->dataAccessor(impl->activeContext);
 }
 } // namespace TArc
 } // namespace DAVA
