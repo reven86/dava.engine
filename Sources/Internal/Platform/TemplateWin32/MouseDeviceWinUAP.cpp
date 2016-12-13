@@ -47,7 +47,7 @@ void MouseDeviceUWP::SetCursorInCenter()
 
 bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
 {
-    if (event->device == UIEvent::Device::MOUSE && (event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE))
+    if (event->device == eInputDevices::MOUSE && (event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE))
     {
         if (skipMouseMoveEvents)
         {

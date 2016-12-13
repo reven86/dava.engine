@@ -1,9 +1,8 @@
 #pragma once
 
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
-
-#include "Base/BaseTypes.h"
-
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <UIKit/UIApplication.h>

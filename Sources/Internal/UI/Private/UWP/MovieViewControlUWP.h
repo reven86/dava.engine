@@ -9,9 +9,8 @@
 
 namespace DAVA
 {
-#if defined(__DAVAENGINE_COREV2__)
 class Window;
-#else
+#if !defined(__DAVAENGINE_COREV2__)
 class CorePlatformWinUAP;
 #endif
 class MovieViewControl : public IMovieViewControl,
@@ -92,6 +91,10 @@ private: // MediaElement event handlers
     void OnMediaEnded();
     void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args);
 
+    // Signal handlers
+    void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
+    void OnWindowDestroyed(Window* w);
+
 private:
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
@@ -103,6 +106,9 @@ private:
     bool movieLoaded = false; // Movie has been successfully loaded and decoded
 
     MovieViewProperties properties;
+
+    size_t windowSizeChangedConnection = 0;
+    size_t windowDestroyedConnection = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////

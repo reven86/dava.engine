@@ -482,6 +482,22 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
             break;
         }
 
+        case BSON_DATE:
+        {
+            int oneSecond = 1000;
+            time_t rawTime = static_cast<time_t>(bson_iterator_date(&it) / oneSecond);
+            tm tms = { 0 };
+#if defined(__DAVAENGINE_WINDOWS__)
+            localtime_s(&tms, &rawTime);
+#else // __DAVAENGINE_WINDOWS__
+            localtime_r(&rawTime, &tms);
+#endif // __DAVAENGINE_WINDOWS__
+            Array<char8, 50> buf = { { 0 } };
+            strftime(buf.data(), buf.size(), "%d.%b.%Y_%H-%M-%S", &tms);
+            archive->SetString(key, String(buf.data()));
+            break;
+        }
+
         case BSON_OID:
             //TODO: add 12-bytes array
             //bson_append_oid(object, key, bson_iterator_oid(&it));

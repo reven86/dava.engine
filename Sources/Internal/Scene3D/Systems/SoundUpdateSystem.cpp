@@ -9,8 +9,7 @@
 #include "Sound/SoundEvent.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -71,7 +70,7 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
     if (activeCamera)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        SoundSystem* ss = Engine::Instance()->GetContext()->soundSystem;
+        SoundSystem* ss = GetEngineContext()->soundSystem;
 #else
         SoundSystem* ss = SoundSystem::Instance();
 #endif

@@ -5,7 +5,7 @@
 #include <cstdio>
 namespace DAVA
 {
-void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
     // Use printf instead of std::cout as std::cout can produce mess when
     // logging from several threads
@@ -18,7 +18,7 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 #import <Foundation/Foundation.h>
 namespace DAVA
 {
-void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
     NSLog(@"[%s] %s", GetLogLevelString(ll), text);
 }

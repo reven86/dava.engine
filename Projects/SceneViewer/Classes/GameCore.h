@@ -29,7 +29,7 @@ public:
     void OnResume();
 
     void BeginFrame();
-    void Draw();
+    void Draw(DAVA::Window* window);
     void EndFrame();
 
     void SetScenePath(const DAVA::FilePath& path)
