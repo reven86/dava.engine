@@ -11,7 +11,7 @@ class ReflectedType;
 namespace TArc
 {
 class ContextAccessor;
-class FieldBinder
+class FieldBinder final
 {
 public:
     FieldBinder(ContextAccessor* accessor);
