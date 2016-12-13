@@ -51,7 +51,8 @@ void RemoveNSView(Window* targetWindow, NSView* nsview);
 
     Application can register a callback from any thread, but callbacks are invoked in the context of UI thread.
     The best place to call this function is before calling `Engine::Run` or in `Engine::gameLoopStarted` signal handler.
-
+    
+    \note The `listener` will also be retained. It will be released either when `UnregisterDVEApplicationListener` is called or when app exits
     \pre `listener` should not be null pointer
     \pre Function shall not be called before `Engine::Init` or after `Engine::cleanup` signal.
 */
