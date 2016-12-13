@@ -4,6 +4,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseObject.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -256,7 +257,7 @@ protected:
         Application should be gracefully closed with all required actions (dump memory, update analytics, etc),
         Assumed to be "no-return" callback. Application behaviour after this callback assumed to be undefined.
     */
-    virtual void OnRenderingIsNotPossible();
+    virtual void OnRenderingIsNotPossible(rhi::RenderingError);
 
 #if defined(__DAVAENGINE_ANDROID__)
 protected:

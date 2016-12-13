@@ -20,6 +20,10 @@ id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
 
+//We provide consts-data for metal directly from buffer, so we have to store consts-data for 3 frames.
+//Also now metal can work in render-thread and we have to store one more frame data.
+static const DAVA::uint32 METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER = 4;
+
 InitParam _Metal_InitParam;
 
 Dispatch DispatchMetal = { 0 };
@@ -191,10 +195,10 @@ bool Metal_CheckSurface()
 void metal_Initialize(const InitParam& param)
 {
     _Metal_InitParam = param;
-    int ringBufferSize = 4 * 1024 * 1024;
+    DAVA::uint32 ringBufferSize = 2 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 2); //TODO: 2 is for release 3.1 only, in 3.2 we will decrease this in game configuration and set corresponding multiplier here (supposed 3) (now supposed 4 as metal now can work in render thread as well)
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

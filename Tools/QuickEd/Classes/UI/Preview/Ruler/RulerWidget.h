@@ -7,6 +7,8 @@
 #include <QPixmap>
 #include <QMouseEvent>
 
+class LazyUpdater;
+
 class RulerWidget : public QWidget
 {
     Q_OBJECT
@@ -54,6 +56,8 @@ private:
 
     // Marker position.
     int markerPosition = 0;
+
+    LazyUpdater* lazyUpdater = nullptr;
 };
 
 #endif /* defined(__RULER_WIDGET__H__) */

@@ -2,7 +2,9 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
+#include "Base/Exception.h"
 #include "Concurrency/Thread.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
 #include "Network/NetConfig.h"
@@ -24,15 +26,6 @@ using namespace DAVA;
 String GetCurrentArchitecture();
 QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
 FilePath ExtractManifest(const FilePath& package);
-
-void ThrowException(int line, const char* func, const char* file, const char* msg)
-{
-    StringStream ss;
-    ss << "Exception in " << func << " in " << file << "::" << line << ": " << msg;
-    throw std::runtime_error(ss.str());
-}
-
-#define RUNNER_EXCEPTION(msg) ThrowException(__LINE__, __FUNCTION__, __FILE__, msg);
 
 UWPRunner::UWPRunner(const PackageOptions& opt)
     : options(opt)
@@ -56,6 +49,11 @@ UWPRunner::~UWPRunner()
 
 void UWPRunner::Run()
 {
+    if (GetEngineContext()->netCore == nullptr)
+    {
+        DAVA_THROW(Exception, "NetCore module is not created");
+    }
+
     //Create Qt runner
     Logger::Info("Preparing to launch...");
     ProcessPackageOptions();
@@ -84,7 +82,7 @@ void UWPRunner::Run()
     //Check runner state
     if (!runner.isValid())
     {
-        RUNNER_EXCEPTION("Runner core is not valid");
+        DAVA_THROW(Exception, "Runner core is not valid");
     }
 
     Run(runner);
@@ -103,7 +101,7 @@ void UWPRunner::Run(Runner& runner)
         Logger::Info("Installing package...");
         if (!runner.install(true))
         {
-            RUNNER_EXCEPTION("Can't install application package");
+            DAVA_THROW(Exception, "Can't install application package");
             return;
         }
     }
@@ -117,7 +115,7 @@ void UWPRunner::Run(Runner& runner)
     Logger::Info("Starting application...");
     if (!runner.start())
     {
-        RUNNER_EXCEPTION("Can't install application package");
+        DAVA_THROW(Exception, "Can't install application package");
         return;
     }
 
@@ -138,7 +136,7 @@ void UWPRunner::WaitApp()
 
     do
     {
-        Net::NetCore::Instance()->Poll();
+        GetEngineContext()->netCore->Poll();
 
         if (logConsumer.IsChannelOpen())
         {
@@ -213,7 +211,7 @@ void UWPRunner::ProcessBundlePackage()
     }
     else
     {
-        RUNNER_EXCEPTION("Can't extract app package from bundle");
+        DAVA_THROW(Exception, "Can't extract app package from bundle");
     }
 }
 
@@ -224,7 +222,7 @@ void UWPRunner::ProcessProfileInfo()
     FilePath manifest = ExtractManifest(options.packageToInstall);
     if (manifest.IsEmpty())
     {
-        RUNNER_EXCEPTION("Can't extract manifest file from package");
+        DAVA_THROW(Exception, "Can't extract manifest file from package");
     }
 
     //figure out if app should be started on mobile device
@@ -241,14 +239,13 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
         bool ipOverUsbConfigured = ConfigureIpOverUsb();
         if (!ipOverUsbConfigured)
         {
-            RUNNER_EXCEPTION("Cannot configure IpOverUSB service");
+            DAVA_THROW(Exception, "Cannot configure IpOverUSB service");
         }
     }
 
-    NetCore::Instance()->RegisterService(
-    NetCore::SERVICE_LOG,
-    [this](uint32 serviceId, void*) -> IChannelListener* { return &logConsumer; },
-    [](IChannelListener* obj, void*) -> void {});
+    auto logCreator = [this](uint32, void*) -> IChannelListener* { return &logConsumer; };
+    auto logDestroyer = [](IChannelListener* obj, void*) {};
+    GetEngineContext()->netCore->RegisterService(NetCore::SERVICE_LOG, logCreator, logDestroyer);
 
     eNetworkRole role;
     Endpoint endPoint;
@@ -268,14 +265,14 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
     config.AddService(NetCore::SERVICE_LOG);
 
     const uint32 timeout = 5 * 60 * 1000; //5 min
-    controllerId = NetCore::Instance()->CreateController(config, nullptr, timeout);
+    controllerId = GetEngineContext()->netCore->CreateController(config, nullptr, timeout);
 }
 
 void UWPRunner::UnInitializeNetwork()
 {
     if (controllerId != Net::NetCore::INVALID_TRACK_ID)
     {
-        Net::NetCore* netCore = Net::NetCore::Instance();
+        Net::NetCore* netCore = GetEngineContext()->netCore;
         netCore->DestroyControllerBlocked(controllerId);
         netCore->UnregisterService(Net::NetCore::SERVICE_LOG);
         controllerId = Net::NetCore::INVALID_TRACK_ID;
@@ -293,7 +290,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"DestinationAddress", desiredAddr))
         {
-            RUNNER_EXCEPTION("Unable to set DestinationAddress");
+            DAVA_THROW(Exception, "Unable to set DestinationAddress");
         }
         changed = true;
     }
@@ -303,7 +300,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"DestinationPort", desiredPort))
         {
-            RUNNER_EXCEPTION("Unable to set DestinationPort");
+            DAVA_THROW(Exception, "Unable to set DestinationPort");
         }
         changed = true;
     }
@@ -313,7 +310,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"LocalAddress", desiredAddr))
         {
-            RUNNER_EXCEPTION("Unable to set LocalAddress");
+            DAVA_THROW(Exception, "Unable to set LocalAddress");
         }
         changed = true;
     }
@@ -323,7 +320,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue(L"LocalPort", desiredPort))
         {
-            RUNNER_EXCEPTION("Unable to set LocalPort");
+            DAVA_THROW(Exception, "Unable to set LocalPort");
         }
         changed = true;
     }
@@ -337,19 +334,19 @@ bool UWPRunner::RestartIpOverUsb()
     SvcHelper service(L"IpOverUsbSvc");
     if (!service.IsInstalled())
     {
-        RUNNER_EXCEPTION("Can't open IpOverUsb service");
+        DAVA_THROW(Exception, "Can't open IpOverUsb service");
     }
 
     //stop it
     if (!service.Stop())
     {
-        RUNNER_EXCEPTION("Can't stop IpOverUsb service");
+        DAVA_THROW(Exception, "Can't stop IpOverUsb service");
     }
 
     //start it
     if (!service.Start())
     {
-        RUNNER_EXCEPTION("Can't start IpOverUsb service");
+        DAVA_THROW(Exception, "Can't start IpOverUsb service");
     }
 
     return true;
@@ -363,7 +360,7 @@ bool UWPRunner::ConfigureIpOverUsb()
     RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     if (!key.IsExist())
     {
-        RUNNER_EXCEPTION("Can't open or create key");
+        DAVA_THROW(Exception, "Can't open or create key");
     }
     needRestart |= key.IsCreated();
 
@@ -449,8 +446,7 @@ void UWPRunner::NetLogOutput(const String& logString)
             if (!outputFile)
             {
                 FileSystem::Instance()->DeleteFile(options.outputFile);
-                uint32 attributes = File::WRITE;
-                outputFile.Set(File::Create(options.outputFile, attributes));
+                outputFile.Set(File::Create(options.outputFile, File::WRITE));
             }
 
             if (outputFile)
@@ -465,6 +461,11 @@ void UWPRunner::NetLogOutput(const String& logString)
     {
         davaApplicationTerminated = true;
     }
+}
+
+const DAVA::EngineContext* UWPRunner::GetEngineContext() const
+{
+    return Engine::Instance()->GetContext();
 }
 
 String GetCurrentArchitecture()

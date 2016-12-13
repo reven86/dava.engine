@@ -14,8 +14,6 @@ public:
     {
         OpenScene, // args - scenePath: DAVA::String
         SetNameAsFilter, // args - name: DAVA::String
-        ShowScenePreview, // args - scenePath: DAVA::String
-        HideScenePreview, // args - empty
         ShowMaterial, // args - material::DAVA::NMaterial*
         ReloadTexture, // args - empty
     };
@@ -35,7 +33,7 @@ class WaitDialogGuard
 {
 public:
     WaitDialogGuard(std::shared_ptr<GlobalOperations> globalOperations_, const DAVA::String& tittle,
-                    const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100)
+                    const DAVA::String& message, DAVA::uint32 min, DAVA::uint32 max)
         : globalOperations(globalOperations_)
     {
         DVASSERT(globalOperations != nullptr);

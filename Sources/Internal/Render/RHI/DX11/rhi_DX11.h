@@ -70,12 +70,12 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
 void InvalidateAll();
+void InvalidateAllInstances();
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer);
 #else
 void SetToRHI(Handle cb, const void* instData);
 const void* Instance(Handle cb);
-void InvalidateAllInstances();
 #endif
 }
 

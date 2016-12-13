@@ -17,7 +17,7 @@
 #include "Concurrency/LockGuard.h"
 #include "PackManager/PackManager.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -514,7 +514,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         IPackManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
-        EngineContext* context = e->GetContext();
+        const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
         pm = context->packManager;
 #else
