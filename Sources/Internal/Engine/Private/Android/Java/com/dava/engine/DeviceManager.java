@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+// import android.support.annotation.RequiresApi;
 import android.view.Display;
 import android.view.Surface;
 import android.content.Context;
