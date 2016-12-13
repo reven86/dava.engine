@@ -1,4 +1,4 @@
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/Private/DCLManagerImpl.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/ZipArchive.h"
@@ -72,25 +72,25 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 }
 
 #ifdef __DAVAENGINE_COREV2__
-PackManagerImpl::PackManagerImpl(Engine& engine_)
+DCLManagerImpl::DCLManagerImpl(Engine& engine_)
     : engine(engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    sigConnectionUpdate = engine.update.Connect(this, &PackManagerImpl::Update);
+    sigConnectionUpdate = engine.update.Connect(this, &DCLManagerImpl::Update);
 }
 
-PackManagerImpl::~PackManagerImpl()
+DCLManagerImpl::~DCLManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Disconnect(sigConnectionUpdate);
 }
 #endif
 
-void PackManagerImpl::Initialize(const String& architecture_,
-                                 const FilePath& dirToDownloadPacks_,
-                                 const FilePath& dbFileName_,
-                                 const String& urlToServerSuperpack_,
-                                 const Hints& hints_)
+void DCLManagerImpl::Initialize(const String& architecture_,
+                                const FilePath& dirToDownloadPacks_,
+                                const FilePath& dbFileName_,
+                                const String& urlToServerSuperpack_,
+                                const Hints& hints_)
 {
     DVASSERT(Thread::IsMainThread());
     // TODO check if signal asyncConnectStateChanged has any subscriber
@@ -130,7 +130,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
     initState = InitState::LoadingRequestAskFooter;
 }
 
-bool PackManagerImpl::IsInitialized() const
+bool DCLManagerImpl::IsInitialized() const
 {
     // current inputState can be in differect states becouse of
     // offline mode
@@ -145,25 +145,25 @@ bool PackManagerImpl::IsInitialized() const
 }
 
 // start ISync //////////////////////////////////////
-IPackManager::InitState PackManagerImpl::GetInitState() const
+IPackManager::InitState DCLManagerImpl::GetInitState() const
 {
     DVASSERT(Thread::IsMainThread());
     return initState;
 }
 
-IPackManager::InitError PackManagerImpl::GetInitError() const
+IPackManager::InitError DCLManagerImpl::GetInitError() const
 {
     DVASSERT(Thread::IsMainThread());
     return initError;
 }
 
-const String& PackManagerImpl::GetLastErrorMessage() const
+const String& DCLManagerImpl::GetLastErrorMessage() const
 {
     DVASSERT(Thread::IsMainThread());
     return initErrorMsg;
 }
 
-void PackManagerImpl::RetryInit()
+void DCLManagerImpl::RetryInit()
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -178,7 +178,7 @@ void PackManagerImpl::RetryInit()
 
 // end Initialization ////////////////////////////////////////
 
-void PackManagerImpl::Update(float frameDelta)
+void DCLManagerImpl::Update(float frameDelta)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -206,7 +206,7 @@ void PackManagerImpl::Update(float frameDelta)
     }
 }
 
-void PackManagerImpl::ContinueInitialization(float frameDelta)
+void DCLManagerImpl::ContinueInitialization(float frameDelta)
 {
     if (timeWaitingNextInitializationAttempt > 0.f)
     {
@@ -290,12 +290,12 @@ void PackManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-void PackManagerImpl::InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_)
+void DCLManagerImpl::InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_)
 {
     db_.InitializePacks(packs_);
 }
 
-void PackManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_)
+void DCLManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_)
 {
     index_.clear();
     uint32 packIndex = 0;
@@ -305,7 +305,7 @@ void PackManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vecto
     }
 }
 
-void PackManagerImpl::AskFooter()
+void DCLManagerImpl::AskFooter()
 {
     //Logger::FrameworkDebug("pack manager ask_footer");
 
@@ -354,7 +354,7 @@ void PackManagerImpl::AskFooter()
     }
 }
 
-void PackManagerImpl::GetFooter()
+void DCLManagerImpl::GetFooter()
 {
     //Logger::FrameworkDebug("pack manager get_footer");
 
@@ -389,7 +389,7 @@ void PackManagerImpl::GetFooter()
     }
 }
 
-void PackManagerImpl::AskFileTable()
+void DCLManagerImpl::AskFileTable()
 {
     //Logger::FrameworkDebug("pack manager ask_file_table");
 
@@ -406,7 +406,7 @@ void PackManagerImpl::AskFileTable()
     initState = InitState::LoadingRequestGetFileTable;
 }
 
-void PackManagerImpl::GetFileTable()
+void DCLManagerImpl::GetFileTable()
 {
     //Logger::FrameworkDebug("pack manager get_file_table");
 
@@ -447,7 +447,7 @@ void PackManagerImpl::GetFileTable()
     }
 }
 
-void PackManagerImpl::CompareLocalDBWitnRemoteHash()
+void DCLManagerImpl::CompareLocalDBWitnRemoteHash()
 {
     //Logger::FrameworkDebug("pack manager calc_local_db_with_remote_crc32");
 
@@ -485,7 +485,7 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
     }
 }
 
-void PackManagerImpl::AskDB()
+void DCLManagerImpl::AskDB()
 {
     //Logger::FrameworkDebug("pack manager ask_db");
 
@@ -510,7 +510,7 @@ void PackManagerImpl::AskDB()
     initState = InitState::LoadingRequestGetDB;
 }
 
-void PackManagerImpl::GetDB()
+void DCLManagerImpl::GetDB()
 {
     //Logger::FrameworkDebug("pack manager get_db");
 
@@ -539,7 +539,7 @@ void PackManagerImpl::GetDB()
     }
 }
 
-void PackManagerImpl::UnpackingDB()
+void DCLManagerImpl::UnpackingDB()
 {
     //Logger::FrameworkDebug("pack manager unpacking_db");
 
@@ -582,7 +582,7 @@ void PackManagerImpl::UnpackingDB()
     initState = InitState::DeleteDownloadedPacksIfNotMatchHash;
 }
 
-void PackManagerImpl::StoreAllMountedPackNames()
+void DCLManagerImpl::StoreAllMountedPackNames()
 {
     size_t numMountedPacks = std::count_if(
     begin(packs),
@@ -602,7 +602,7 @@ void PackManagerImpl::StoreAllMountedPackNames()
     }
 }
 
-void PackManagerImpl::DeleteOldPacks()
+void DCLManagerImpl::DeleteOldPacks()
 {
     //Logger::FrameworkDebug("pack manager delete_old_packs");
 
@@ -657,7 +657,7 @@ void PackManagerImpl::DeleteOldPacks()
     initState = InitState::LoadingPacksDataFromLocalDB;
 }
 
-void PackManagerImpl::ReloadState()
+void DCLManagerImpl::ReloadState()
 {
     bool dbInMemory = true;
     std::unique_ptr<PacksDB> tmpDb(new PacksDB(dbLocalName, dbInMemory));
@@ -701,7 +701,7 @@ void PackManagerImpl::ReloadState()
     }
 }
 
-void PackManagerImpl::LoadPacksDataFromDB()
+void DCLManagerImpl::LoadPacksDataFromDB()
 {
     //Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
@@ -738,7 +738,7 @@ void PackManagerImpl::LoadPacksDataFromDB()
     initState = InitState::MountingDownloadedPacks;
 }
 
-void PackManagerImpl::MountDownloadedPacks()
+void DCLManagerImpl::MountDownloadedPacks()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
 
@@ -778,14 +778,14 @@ void PackManagerImpl::MountDownloadedPacks()
     initState = InitState::Ready;
 }
 
-void PackManagerImpl::DeleteLocalDBFiles()
+void DCLManagerImpl::DeleteLocalDBFiles()
 {
     FileSystem* fs = FileSystem::Instance();
     fs->DeleteFile(dbLocalName);
     fs->DeleteFile(dbLocalNameZipped);
 }
 
-void PackManagerImpl::UnmountAllPacks()
+void DCLManagerImpl::UnmountAllPacks()
 {
     for (auto& pack : packs)
     {
@@ -811,7 +811,7 @@ static void CheckPackCrc32(const FilePath& path, const uint32 hashFromDB)
     }
 }
 
-void PackManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path)
+void DCLManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path)
 {
     FileSystem* fs = FileSystem::Instance();
     // first check all dependencies already mounted and mount if not
@@ -868,7 +868,7 @@ void PackManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path
     pack.state = Pack::Status::Mounted;
 }
 
-void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency)
+void DCLManagerImpl::CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<Pack*>& dependency)
 {
     const Pack& packState = pm.FindPack(packName);
     for (const String& dependName : packState.dependency)
@@ -896,7 +896,7 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
     }
 }
 
-const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
+const IPackManager::Pack& DCLManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -961,7 +961,7 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
     DAVA_THROW(DAVA::Exception, "can't process request initialization not finished");
 }
 
-void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
+void DCLManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
 {
     DVASSERT(Thread::IsMainThread());
     DVASSERT(IsInitialized());
@@ -1008,7 +1008,7 @@ void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Fu
     db->ListFiles(relative, filterMountedPacks);
 }
 
-const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
+const IPackManager::IRequest* DCLManagerImpl::FindRequest(const String& packName) const
 {
     DVASSERT(Thread::IsMainThread());
     try
@@ -1021,7 +1021,7 @@ const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packNam
     }
 }
 
-void PackManagerImpl::SetRequestOrder(const String& packName, float newPriority)
+void DCLManagerImpl::SetRequestOrder(const String& packName, float newPriority)
 {
     DVASSERT(Thread::IsMainThread());
     if (requestManager->IsInQueue(packName))
@@ -1030,7 +1030,7 @@ void PackManagerImpl::SetRequestOrder(const String& packName, float newPriority)
     }
 }
 
-void PackManagerImpl::MountOnePack(const FilePath& filePath)
+void DCLManagerImpl::MountOnePack(const FilePath& filePath)
 {
     String fileName = filePath.GetBasename();
     auto it = packsIndex.find(fileName);
@@ -1053,7 +1053,7 @@ void PackManagerImpl::MountOnePack(const FilePath& filePath)
     }
 }
 
-void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
+void DCLManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 {
     for_each(begin(basePacks), end(basePacks), [this](const FilePath& filePath)
              {
@@ -1061,7 +1061,7 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
              });
 }
 
-void PackManagerImpl::DeletePack(const String& packName)
+void DCLManagerImpl::DeletePack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -1092,7 +1092,7 @@ void PackManagerImpl::DeletePack(const String& packName)
     }
 }
 
-uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& packPath)
+uint32_t DCLManagerImpl::DownloadPack(const String& packName, const FilePath& packPath)
 {
     Pack& pack = GetPack(packName);
     String serverRelativePackFileName = packName + RequestManager::packPostfix;
@@ -1122,13 +1122,13 @@ uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& p
     return result;
 }
 
-bool PackManagerImpl::IsRequestingEnabled() const
+bool DCLManagerImpl::IsRequestingEnabled() const
 {
     DVASSERT(Thread::IsMainThread());
     return isProcessingEnabled;
 }
 
-void PackManagerImpl::EnableRequesting()
+void DCLManagerImpl::EnableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -1144,7 +1144,7 @@ void PackManagerImpl::EnableRequesting()
     }
 }
 
-void PackManagerImpl::DisableRequesting()
+void DCLManagerImpl::DisableRequesting()
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -1160,14 +1160,14 @@ void PackManagerImpl::DisableRequesting()
     }
 }
 
-const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
+const String& DCLManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
     LockGuard<Mutex> lock(protectPM);
     const String& result = db->FindPack(relativePathInPack);
     return result;
 }
 
-uint32 PackManagerImpl::GetPackIndex(const String& packName) const
+uint32 DCLManagerImpl::GetPackIndex(const String& packName) const
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -1179,7 +1179,7 @@ uint32 PackManagerImpl::GetPackIndex(const String& packName) const
     DAVA_THROW(DAVA::Exception, "can't find pack with name: " + packName);
 }
 
-IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
+IPackManager::Pack& DCLManagerImpl::GetPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
     DVASSERT(IsInitialized());
@@ -1188,7 +1188,7 @@ IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
     return packs.at(index);
 }
 
-const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) const
+const IPackManager::Pack& DCLManagerImpl::FindPack(const String& packName) const
 {
     DVASSERT(Thread::IsMainThread());
     DVASSERT(IsInitialized());
@@ -1197,19 +1197,19 @@ const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) cons
     return packs.at(index);
 }
 
-const Vector<IPackManager::Pack>& PackManagerImpl::GetPacks() const
+const Vector<IPackManager::Pack>& DCLManagerImpl::GetPacks() const
 {
     DVASSERT(Thread::IsMainThread());
     return packs;
 }
 
-const FilePath& PackManagerImpl::GetLocalPacksDirectory() const
+const FilePath& DCLManagerImpl::GetLocalPacksDirectory() const
 {
     DVASSERT(Thread::IsMainThread());
     return dirToDownloadedPacks;
 }
 
-const String& PackManagerImpl::GetSuperPackUrl() const
+const String& DCLManagerImpl::GetSuperPackUrl() const
 {
     DVASSERT(Thread::IsMainThread());
     return urlToSuperPack;

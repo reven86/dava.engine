@@ -1,6 +1,6 @@
 #include "PackManager/Private/PackRequest.h"
 #include "PackManager/Private/RequestManager.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/Private/DCLManagerImpl.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
@@ -9,7 +9,7 @@
 
 namespace DAVA
 {
-PackRequest::PackRequest(PackManagerImpl& packManager_, DLCManager::Pack& pack_)
+PackRequest::PackRequest(DCLManagerImpl& packManager_, DLCManager::Pack& pack_)
     : packManagerImpl(&packManager_)
     , rootPack(&pack_)
 {
@@ -17,7 +17,7 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, DLCManager::Pack& pack_)
     DVASSERT(rootPack != nullptr);
     // find all dependencies
     // put it all into vector and put final pack into vector too
-    PackManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyList);
+    DCLManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyList);
 
     dependencies.reserve(dependencyList.size() + 1);
 

@@ -14,11 +14,8 @@ public:
     PacksDB(const FilePath& filePath, bool dbInMemory);
     ~PacksDB();
 
-    const String& FindPack(const FilePath& relativeFilePath) const;
-    void ListFiles(const String& relativePathDir, const Function<void(const String&, const String&)>& fn);
-    void ListDependentPacks(const String& pack, const Function<void(const String&)>& fn);
-
-    void InitializePacks(Vector<DLCManager::Pack>& out) const;
+    void CollectDependentPackNames(const String& packName, Vector<String>& dependencies);
+    void CollectFilenamesForPack(const String& packName, Vector<String>& pathNames);
 
 private:
     std::unique_ptr<PacksDBData> data;

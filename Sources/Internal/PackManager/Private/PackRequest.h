@@ -6,12 +6,12 @@
 
 namespace DAVA
 {
-class PackManagerImpl;
+class DCLManagerImpl;
 
 class PackRequest : public DLCManager::IRequest
 {
 public:
-    PackRequest(PackManagerImpl& packManager_, DLCManager::Pack& pack_);
+    PackRequest(DCLManagerImpl& packManager_, DLCManager::Pack& pack_);
 
     void Start();
     void Update();
@@ -75,7 +75,7 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    PackManagerImpl* packManagerImpl = nullptr;
+    DCLManagerImpl* packManagerImpl = nullptr;
     DLCManager::Pack* rootPack = nullptr;
     Vector<DLCManager::Pack*> dependencyList;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request

@@ -2,7 +2,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/Private/DCLManagerImpl.h"
 #include "Base/Exception.h"
 
 namespace DAVA

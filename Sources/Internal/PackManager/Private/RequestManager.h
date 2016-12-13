@@ -7,7 +7,7 @@ namespace DAVA
 class RequestManager
 {
 public:
-    explicit RequestManager(PackManagerImpl& packManager_)
+    explicit RequestManager(DCLManagerImpl& packManager_)
         : packManager(packManager_)
     {
     }
@@ -40,7 +40,7 @@ public:
 private:
     void CheckRestartLoading();
 
-    PackManagerImpl& packManager;
+    DCLManagerImpl& packManager;
     String loadingPackName;
     Vector<PackRequest> requests;
 };

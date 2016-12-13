@@ -13,7 +13,7 @@
 
 namespace DAVA
 {
-class PackManagerImpl : public IPackManager
+class DCLManagerImpl final
 {
 public:
     enum class InitState : uint32
@@ -50,115 +50,66 @@ public:
 
     static const String& ToString(InitError state);
 
-    /**
-	Pack with all details.
-	Read only data, you don't need to create or destroy Pack's.
-	During initialization all packs are created simultaneously.
-	*/
-    struct Pack
-    {
-        enum class Status : uint32
-        {
-            NotRequested, //!< initial state
-            Requested, //!< client made request and pack in queue
-            Downloading, //!< loading pack data from server superpack
-            Mounted, //!< if all good after loading and checking hash
-            ErrorLoading, //!< downloadError - value returned from DLC DownloadManager
-            OtherError //!< mount failed, check hash failed, file IO failed see otherErrorMsg
-        };
-
-        Vector<String> dependency; //!< names of dependency packs or empty
-
-        String name; //!< unique pack name
-        String otherErrorMsg; //!< extended error message
-
-        float32 downloadProgress = 0.f; //!< [0.0f to 1.0f]
-        float32 priority = 0.f; //!< [0.0f to 1.0f]
-
-        uint32 hashFromDB = 0; //!< crc32 hash from DB file
-
-        uint64 downloadedSize = 0; //!< current downloaded size, used only during loading
-        uint64 totalSize = 0; //!< current total size on file system
-        uint64 totalSizeFromDB = 0; //!< size from DB
-
-        DownloadError downloadError = DLE_NO_ERROR; //!< download manager error
-        Status state = Status::NotRequested; //!< current pack state
-
-        bool isGPU = false; //!< value from DB
-    };
-
 #ifdef __DAVAENGINE_COREV2__
-    explicit PackManagerImpl(Engine& engine_);
-    ~PackManagerImpl() override;
+    explicit DCLManagerImpl(Engine& engine_);
+    ~DCLManagerImpl();
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
 #else
-    PackManagerImpl() = default;
-    ~PackManagerImpl() = default;
+    DCLManagerImpl() = default;
+    ~DCLManagerImpl() = default;
 #endif
 
     void Initialize(const String& architecture_,
                     const FilePath& dirToDownloadPacks_,
                     const FilePath& pathToBasePacksDB_,
                     const String& urlToServerSuperpack_,
-                    const Hints& hints_) override;
+                    const DLCManager::Hints& hints_);
 
     void RetryInit();
 
-    bool IsInitialized() const override;
+    bool IsInitialized() const;
 
-    InitState GetInitState() const override;
+    InitState GetInitState() const;
 
-    InitError GetInitError() const override;
+    InitError GetInitError() const;
 
-    const String& GetLastErrorMessage() const override;
+    const String& GetLastErrorMessage() const;
 
-    bool IsRequestingEnabled() const override;
+    bool IsRequestingEnabled() const;
 
-    void EnableRequesting() override;
+    void EnableRequesting();
 
-    void DisableRequesting() override;
+    void DisableRequesting();
 
     void Update(float frameDelta);
 
-    const String& FindPackName(const FilePath& relativePathInPack) const override;
+    const String& FindPackName(const FilePath& relativePathInPack) const;
 
-    const Pack& RequestPack(const String& packName) override;
+    const DLCManager::IRequest* RequestPack(const String& packName);
 
-    void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) override;
+    const DLCManager::IRequest* FindRequest(const String& pack) const;
 
-    const IRequest* FindRequest(const String& pack) const override;
-
-    void SetRequestOrder(const String& packName, float newPriority) override;
-    void MountOnePack(const FilePath& filePath);
-    uint32 GetPackIndex(const String& packName) const;
-    Pack& GetPack(const String& packName);
-
-    const Pack& FindPack(const String& packName) const override;
-
-    void MountPacks(const Set<FilePath>& basePacks);
-
-    void DeletePack(const String& packName) override;
+    void SetRequestOrder(const DLCManager::IRequest*, unsigned orderIndex);
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
-    const Vector<Pack>& GetPacks() const override;
+    const FilePath& GetLocalPacksDirectory() const;
 
-    const FilePath& GetLocalPacksDirectory() const override;
-
-    const String& GetSuperPackUrl() const override;
+    const String& GetSuperPackUrl() const;
 
     uint32 GetServerFooterCrc32() const
     {
         return initFooterOnServer.infoCrc32;
     }
 
-    const Hints& GetHints() const
+    const DLCManager::Hints& GetHints() const
     {
-        return hints;
+        DVASSERT(hints != nullptr);
+        return *hints;
     }
 
-    static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
+    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<DLCManager::IRequest*>& dependency);
 
 private:
     // initialization state functions
@@ -178,10 +129,7 @@ private:
     // helper functions
     void DeleteLocalDBFiles();
     void ContinueInitialization(float frameDelta);
-    static void InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_);
-    static void BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_);
     void UnmountAllPacks();
-    void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
     mutable Mutex protectPM;
 
@@ -190,8 +138,6 @@ private:
     String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
-    UnorderedMap<String, uint32> packsIndex;
-    Vector<Pack> packs;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
@@ -211,7 +157,7 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 
-    Hints hints;
+    DLCManager::Hints* hints = nullptr;
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session

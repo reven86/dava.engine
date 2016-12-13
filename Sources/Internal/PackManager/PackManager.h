@@ -18,7 +18,7 @@ namespace DAVA
  ```
  DLCManager& pm = *engine.GetContext()->packManager;
  // if init failed we will know about it
- pm.cdnAvailable.Connect(this, &PackManagerTest::OnInitChange);
+ pm.networkReady.Connect(this, &PackManagerTest::OnInitChange);
 
  String gpuArchitecture = "mali";
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
@@ -62,7 +62,7 @@ public:
     };
 
     /** you have to subscribe to this signal before call `Initialize` */
-    Signal<bool> cdnAvailable;
+    Signal<bool> networkReady;
     /** signal per user request with complete size of all depended packs */
     Signal<const IRequest&> requestProgressChanged;
 
@@ -76,7 +76,7 @@ public:
 
      You also should subscribe to all signals especially state changes
      before you call Initialize.
-     At least subscribe to `cdnAvailable` signal
+     At least subscribe to `networkReady` signal
     */
     void Initialize(const String& architecture,
                     const FilePath& dirToDownloadPacks,
@@ -90,14 +90,11 @@ public:
 
     void SetRequestingEnabled(bool value);
 
-    /** return unique pack name or empty string on error */
-    const String& FindPackName(const FilePath& relativePathInArchive) const;
-
     /** return nullptr if can't find pack */
     const IRequest* RequestPack(const String& packName);
 
     /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    void SetRequestOrder(const IRequest* request, unsigned order);
+    void SetRequestOrder(const IRequest* request, unsigned orderIndex);
 
 private:
     std::unique_ptr<DCLManagerImpl> impl;

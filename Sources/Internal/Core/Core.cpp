@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/Private/DCLManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -63,7 +63,7 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/Private/DCLManagerImpl.h"
 #include "Analytics/Analytics.h"
 
 namespace DAVA
@@ -258,7 +258,7 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl);
+    packManager.reset(new DCLManagerImpl);
     analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
@@ -666,7 +666,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
+        static_cast<DCLManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
