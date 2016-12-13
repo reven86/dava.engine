@@ -616,6 +616,12 @@ void CommandBufferGLES2_t::Execute()
                         if (passCfg.colorBuffer[i].loadAction == LOADACTION_CLEAR)
                             glClearBufferfv(GL_COLOR, i, passCfg.colorBuffer[i].clearColor);
                     }
+
+                    if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
+                    {
+                        glClearBufferfi(GL_DEPTH_STENCIL, 0, passCfg.depthStencilBuffer.clearDepth, 0);
+                        flags = 0;
+                    }
                 }
                 else
                 {
@@ -646,6 +652,11 @@ void CommandBufferGLES2_t::Execute()
                 {
                     GL_CALL(glClear(flags));
                 }
+                #if __DAVAENGINE_MACOS__
+                // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
+                GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                #endif
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
