@@ -36,7 +36,7 @@ public final class DeviceManager
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    // @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private class DisplayManagerListener implements DisplayManager.DisplayListener
     {
         @Override
@@ -96,7 +96,7 @@ public final class DeviceManager
         return displaysInfo.toArray(new DisplayInfo[displaysInfo.size()]);
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    // @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void startTrackingChanges()
     {
         if (runningOnPostJellyBeanMR1() && !isTrackingChanges)
@@ -111,7 +111,7 @@ public final class DeviceManager
         }
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    // @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void stopTrackingChanges()
     {
         if (isTrackingChanges)
@@ -166,7 +166,7 @@ public final class DeviceManager
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    // @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private static DisplayManager getDisplayManager()
     {
         final DavaActivity activity = DavaActivity.instance();
