@@ -30,21 +30,14 @@ public:
     void Quit();
 
     QApplication* GetApplication();
-    NativeService* GetNativeService();
     RenderWidget* GetRenderWidget();
 
 private:
     EngineBackend& engineBackend;
     WindowBackend* primaryWindowBackend = nullptr;
-    std::unique_ptr<NativeService> nativeService;
 
     Signal<bool> applicationFocusChanged;
 };
-
-inline NativeService* PlatformCore::GetNativeService()
-{
-    return nativeService.get();
-}
 
 } // namespace Private
 } // namespace DAVA

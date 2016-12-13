@@ -17,10 +17,13 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
+#include "TArc/DataProcessing/DataContext.h"
+
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "FileSystem/FileSystem.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"
-
-#include "TArc/DataProcessing/DataContext.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
@@ -58,7 +61,8 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
     DAVA::FilePath filePath = GetCurrentSaveFileName();
-    if (!filePath.IsEmpty())
+    DVASSERT(!filePath.IsEmpty());
+    if (DAVA::Engine::Instance()->GetContext()->fileSystem->Exists(filePath))
     {
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
@@ -102,7 +106,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing(bool saveNeeded)
 
     if (drawSystem->GetCustomColorsProxy()->GetChangesCount() && saveNeeded)
     {
-        SceneSignals::Instance()->EmitCustomColorsTextureShouldBeSaved(((SceneEditor2*)GetScene()));
+        SaveTexture();
     }
     FinishEditing(false);
 
@@ -318,6 +322,11 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
                                                 });
 }
 
+void CustomColorsSystem::SaveTexture()
+{
+    SaveTexture(GetCurrentSaveFileName());
+}
+
 bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool createUndo)
 {
     if (filePath.IsEmpty())
@@ -442,7 +451,20 @@ DAVA::FilePath CustomColorsSystem::GetCurrentSaveFileName()
         currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
     }
 
-    return GetAbsolutePathFromProjectPath(currentSaveName);
+    DAVA::FilePath currentTexturePath = GetAbsolutePathFromProjectPath(currentSaveName);
+    if (currentTexturePath.IsEmpty())
+    {
+        DAVA::FilePath scenePathName = static_cast<SceneEditor2*>(GetScene())->GetScenePath();
+        scenePathName.ReplaceExtension("");
+
+        DAVA::Texture* colorMapTexture = drawSystem->GetLandscapeProxy()->GetLandscapeTexture(DAVA::Landscape::TEXTURE_COLOR);
+        DVASSERT(colorMapTexture != nullptr);
+
+        DAVA::FilePath colorMapDir = colorMapTexture->GetPathname().GetDirectory();
+        currentTexturePath = colorMapDir + (scenePathName.GetFilename() + "_passability.png");
+    }
+
+    return currentTexturePath;
 }
 
 DAVA::FilePath CustomColorsSystem::GetScenePath()

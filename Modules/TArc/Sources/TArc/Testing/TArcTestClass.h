@@ -1,8 +1,12 @@
 #pragma once
 
 #include "TArc/Core/Core.h"
+#include "TArc/Testing/MockInvoker.h"
 
 #include "UnitTests/TestClass.h"
+
+#include <QList>
+#include <QWidget>
 
 namespace DAVA
 {
@@ -21,14 +25,21 @@ public:
 
     virtual void CreateTestedModules();
 
-protected:
-    OperationInvoker* GetMockInvoker();
+    MockInvoker* GetMockInvoker();
     DataContext* GetActiveContext();
     DataContext* GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
+    ContextAccessor* GetAccessor();
+    ContextManager* GetContextManager();
+
+    QWidget* GetWindow(const WindowKey& wndKey);
+    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
+
+    static Signal<Core*> coreChanged;
 
 protected:
     std::unique_ptr<Core> core;
+    std::unique_ptr<MockInvoker> mockInvoker;
 };
 
 } // namespace TArc
