@@ -382,7 +382,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 

@@ -1011,9 +1011,9 @@ static void dx11_EndFrame()
     pendingSecondaryCmdListSync.Lock();
     pendingSecondaryCmdLists.push_back(cmdList);
     pendingSecondaryCmdListSync.Unlock();
-#else
-    ConstBufferDX11::InvalidateAllInstances();
 #endif
+
+    ConstBufferDX11::InvalidateAllInstances();
 }
 
 static void dx11_RejectFrame(const CommonImpl::Frame& frame)
@@ -1572,11 +1572,9 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
 
-    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
+    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
     unsigned rt_count = 0;
     ID3D11DepthStencilView* ds_view = NULL;
-
-    memset(rt_view, 0, sizeof(rt_view));
 
     if (passCfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {

@@ -72,6 +72,7 @@ public:
     void MakeScreenShot();
     bool GetIsScreenShotSaving() const;
     void ClickSystemBack();
+    void PressEscape();
 
     // DB Master-Helper relations
 

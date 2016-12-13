@@ -8,7 +8,7 @@
 
 class QDialog;
 class QProgressBar;
-class QLabel;
+class QPlainTextEdit;
 namespace DAVA
 {
 namespace TArc
@@ -30,7 +30,7 @@ public:
 private:
     QPointer<QDialog> dlg;
     QPointer<QProgressBar> progressBar;
-    QPointer<QLabel> label;
+    QPointer<QPlainTextEdit> messageLabel;
     QCursor originalCursor;
 };
 } // namespace TArc

@@ -19,7 +19,7 @@ protected:
     virtual void SaveOnWindowClose(const WindowKey& key) = 0;
     virtual void RestoreOnWindowClose(const WindowKey& key) = 0;
 
-    ContextManager& GetContextManager();
+    ContextManager* GetContextManager();
 
     friend class Core;
 };
