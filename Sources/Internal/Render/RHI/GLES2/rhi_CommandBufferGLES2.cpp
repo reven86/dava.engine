@@ -611,6 +611,7 @@ void CommandBufferGLES2_t::Execute()
                     GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
                     _GLES2_Bound_FrameBuffer = fbo;
 
+                    #if !defined(__DAVAENGINE_ANDROID__)
                     for (unsigned i = 0; i != rt_count; ++i)
                     {
                         if (passCfg.colorBuffer[i].loadAction == LOADACTION_CLEAR)
@@ -622,6 +623,7 @@ void CommandBufferGLES2_t::Execute()
                         glClearBufferfi(GL_DEPTH_STENCIL, 0, passCfg.depthStencilBuffer.clearDepth, 0);
                         flags = 0;
                     }
+                    #endif
                 }
                 else
                 {
@@ -652,7 +654,7 @@ void CommandBufferGLES2_t::Execute()
                 {
                     GL_CALL(glClear(flags));
                 }
-                #if __DAVAENGINE_MACOS__
+                #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
                 // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
                 GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
                 GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
