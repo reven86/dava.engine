@@ -613,6 +613,10 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                                     writer.Write("gl_FragData[0]");
                                 else if (stricmp(f->semantic, "SV_TARGET1") == 0)
                                     writer.Write("gl_FragData[1]");
+                                else if (stricmp(f->semantic, "SV_TARGET2") == 0)
+                                    writer.Write("gl_FragData[2]");
+                                else if (stricmp(f->semantic, "SV_TARGET3") == 0)
+                                    writer.Write("gl_FragData[3]");
                             }
                             else
                             {
