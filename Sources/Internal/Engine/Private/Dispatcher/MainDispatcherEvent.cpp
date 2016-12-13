@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
@@ -50,6 +50,16 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadMotionEvent(uint32 deviceI
     e.gamepadEvent.axis = axis;
     e.gamepadEvent.value = value;
     e.gamepadEvent.button = 0;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count)
+{
+    DVASSERT(displayInfo != nullptr && count > 0);
+
+    MainDispatcherEvent e(DISPLAY_CONFIG_CHANGED);
+    e.displayConfigEvent.displayInfo = displayInfo;
+    e.displayConfigEvent.count = count;
     return e;
 }
 

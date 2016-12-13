@@ -107,7 +107,7 @@ private:
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
     void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
-    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex, uint32 modifiers);
+    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, eInputDevices deviceIndex, uint32 modifiers);
 
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
@@ -125,7 +125,7 @@ private:
     // in units of effective (view) pixels
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
-    void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
+    void SendPressedMouseButtons(float32 x, float32 y, eInputDevices type);
     void SendBackKeyEvents();
 
 private:
@@ -170,21 +170,21 @@ private:
 
     bool isMouseCursorShown = true;
 
-    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
+    std::bitset<static_cast<size_t>(eMouseButtons::COUNT)> mouseButtonsState;
 
     struct MouseButtonChange
     {
         UIEvent::Phase beginOrEnd;
-        UIEvent::MouseButton button;
+        eMouseButtons button;
     };
 
     void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties, Vector<MouseButtonChange>& out);
 
     Vector<MouseButtonChange> mouseButtonChanges;
 
-    bool GetMouseButtonState(UIEvent::MouseButton button);
+    bool GetMouseButtonState(eMouseButtons button);
 
-    void SetMouseButtonState(UIEvent::MouseButton button, bool value);
+    void SetMouseButtonState(eMouseButtons button, bool value);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 
@@ -200,13 +200,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-inline bool WinUAPXamlApp::GetMouseButtonState(UIEvent::MouseButton button)
+inline bool WinUAPXamlApp::GetMouseButtonState(eMouseButtons button)
 {
     unsigned index = static_cast<unsigned>(button) - 1;
     return mouseButtonsState[index];
 }
 
-inline void WinUAPXamlApp::SetMouseButtonState(UIEvent::MouseButton button, bool value)
+inline void WinUAPXamlApp::SetMouseButtonState(eMouseButtons button, bool value)
 {
     unsigned index = static_cast<unsigned>(button) - 1;
     mouseButtonsState[index] = value;

@@ -1,8 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Functional/Function.h"
 #include "Engine/EngineTypes.h"
 
@@ -19,6 +20,7 @@ struct UIDispatcherEvent final
         CREATE_WINDOW,
         CLOSE_WINDOW,
         SET_TITLE,
+        SET_MINIMUM_SIZE,
         SET_FULLSCREEN,
         FUNCTOR,
         SET_CURSOR_CAPTURE,
@@ -76,6 +78,7 @@ struct UIDispatcherEvent final
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
+    static UIDispatcherEvent CreateMinimumSizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
     static UIDispatcherEvent CreateSetFullscreenEvent(eFullscreen mode);
