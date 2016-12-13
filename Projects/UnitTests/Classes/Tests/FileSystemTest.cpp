@@ -5,11 +5,23 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (FileSystemTest)
 {
+    FilePath tempDir = "~doc:/TestData/FileSystemTest_Temp/";
+
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
         bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
+    }
+
+    void SetUp(const String&)override
+    {
+        FileSystem::Instance()->CreateDirectory(tempDir);
+    }
+
+    void TearDown(const String&)override
+    {
+        FileSystem::Instance()->DeleteDirectory(tempDir);
     }
 
     DAVA_TEST (ResTestFunction)
@@ -403,6 +415,57 @@ DAVA_TESTCLASS (FileSystemTest)
                 fs->DeleteDirectory(dataDir);
             }
         }
+    }
+
+    DAVA_TEST (IsDirectoryTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+
+        TEST_VERIFY(fs->IsDirectory(dirPath) == false);
+        TEST_VERIFY(fs->IsFile(dirPath) == false);
+
+        FileSystem::eCreateDirectoryResult res = fs->CreateDirectory(dirPath);
+        TEST_VERIFY(res == FileSystem::eCreateDirectoryResult::DIRECTORY_CREATED)
+        TEST_VERIFY(fs->IsDirectory(dirPath) == true);
+        TEST_VERIFY(fs->IsFile(dirPath) == false);
+    }
+
+    DAVA_TEST (IsFileTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath filePath = tempDir + "file";
+
+        TEST_VERIFY(fs->IsDirectory(filePath) == false);
+        TEST_VERIFY(fs->IsFile(filePath) == false);
+
+        ScopedPtr<File> file(File::Create(filePath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() != nullptr)
+        TEST_VERIFY(fs->IsDirectory(filePath) == false);
+        TEST_VERIFY(fs->IsFile(filePath) == true);
+    }
+
+    DAVA_TEST (CreateFilePassingDirTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+
+        ScopedPtr<File> file(File::Create(dirPath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() == nullptr)
+    }
+
+    DAVA_TEST (CreateFilePassingExistingDirTest)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath dirPath = tempDir + "Dir/";
+        fs->CreateDirectory(dirPath);
+
+        ScopedPtr<File> file(File::Create(dirPath, File::CREATE | File::WRITE));
+        TEST_VERIFY(file.get() == nullptr)
     }
 }
 ;

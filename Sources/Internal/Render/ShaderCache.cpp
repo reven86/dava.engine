@@ -87,8 +87,8 @@ Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>
 
 void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
 {
-    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
-    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
+    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.sl");
+    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.sl");
 
     //later move it into FileSystem
 
@@ -236,69 +236,104 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    ShaderPreprocessScope preprocessScope;
+    ShaderSourceCode sourceCode = GetSourceCode(name);
+    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText.data(), static_cast<uint32>(strlen(sourceCode.vertexProgText.data())));
+    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText.data(), static_cast<uint32>(strlen(sourceCode.fragmentProgText.data())));
+    const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
+    const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
 
-    const ShaderSourceCode& sourceCode = GetSourceCode(name);
+#define TRACE_CACHE_USAGE 0
 
-    const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, sourceCode.vSrcHash);
-    rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    if (vSource == nullptr)
+    if (vSource)
     {
-        char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-        Memcpy(localBuffer, sourceCode.vertexProgText.data(), strlen(sourceCode.vertexProgText.data()));
-        vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
-        rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
-        vSource = &vSource2;
+#if TRACE_CACHE_USAGE
+        Logger::Info("using cached \"%s\"", vProgUid.c_str());
+#endif
     }
-#if (RHI_TRACE_CACHE_USAGE)
     else
     {
-        Logger::Info("Using cached vertex shader: %s", vProgUid.c_str());
-    }
+#if TRACE_CACHE_USAGE
+        Logger::Info("building \"%s\"", vProgUid.c_str());
 #endif
+        vSource = rhi::ShaderSourceCache::Add(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str(), vProgUid, rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
 
-    const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, sourceCode.fSrcHash);
-    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
-    if (fSource == nullptr)
-    {
-        char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-        memcpy(localBuffer, sourceCode.fragmentProgText.data(), strlen(sourceCode.fragmentProgText.data()));
-        fSource2.Construct(rhi::PROG_FRAGMENT, localBuffer, progDefines);
-        rhi::ShaderSourceCache::Update(fProgUid, sourceCode.fSrcHash, fSource2);
-        fSource = &fSource2;
+        if (!vSource)
+        {
+            Logger::Error("failed to construct \"%s\"", vProgUid.c_str());
+            vSource = nullptr;
+        }
     }
-#if (RHI_TRACE_CACHE_USAGE)
+
+    if (fSource)
+    {
+#if TRACE_CACHE_USAGE
+        Logger::Info("using cached \"%s\"", fProgUid.c_str());
+#endif
+    }
     else
     {
-        Logger::Info("Using cached: %s", fProgUid.c_str());
-    }
+#if TRACE_CACHE_USAGE
+        Logger::Info("building \"%s\"", fProgUid.c_str());
 #endif
+        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
 
-    {
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
+        if (!fSource)
+        {
+            Logger::Error("failed to construct \"%s\"", fProgUid.c_str());
+        }
     }
 
-    ShaderDescriptor* res = nullptr;
+    if (!vSource || !fSource)
     {
+        // don't try to create pipeline-state, return 'not-valid'
         rhi::PipelineState::Descriptor psDesc;
         psDesc.vprogUid = vProgUid;
         psDesc.fprogUid = fProgUid;
-        psDesc.vertexLayout = vSource->ShaderVertexLayout();
-        psDesc.blending = fSource->Blending();
-        rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-        res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
+        ShaderDescriptor* res = new ShaderDescriptor(rhi::HPipelineState(rhi::InvalidHandle), vProgUid, fProgUid);
         res->sourceName = name;
         res->defines = defines;
-        res->valid = piplineState.IsValid(); //later add another conditions
-        if (res->valid)
-        {
-            res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
-            res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
-        }
+        res->valid = false;
+        shaderDescriptors[key] = res;
+        return res;
     }
-    shaderDescriptors[key] = res;
 
+#if 0
+    Logger::Info("\n\n%s", vProgUid.c_str());
+    vSource->Dump();
+#endif
+    const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
+#if 0
+    Logger::Info("\n\n%s", fProgUid.c_str());
+    fSource->Dump();
+#endif
+    const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
+
+    //ShaderDescr
+    rhi::PipelineState::Descriptor psDesc;
+    psDesc.vprogUid = vProgUid;
+    psDesc.fprogUid = fProgUid;
+    psDesc.vertexLayout = vSource->ShaderVertexLayout();
+    psDesc.blending = fSource->Blending();
+    rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
+    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
+    res->sourceName = name;
+    res->defines = defines;
+    res->valid = piplineState.IsValid(); //later add another conditions
+    if (res->valid)
+    {
+        res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
+        res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
+    }
+    else
+    {
+        DAVA::Logger::Error("failed to get pipeline-state");
+        DAVA::Logger::Info("  vprog-uid = %s", vProgUid.c_str());
+        DAVA::Logger::Info("  fprog-uid = %s", fProgUid.c_str());
+    }
+
+    shaderDescriptors[key] = res;
     return res;
 }
 
@@ -325,13 +360,15 @@ void ReloadShaders()
         for (auto& it : shader->defines)
         {
             progDefines.push_back(String(it.first.c_str()));
-            progDefines.push_back(Format("%d", it.second));
+            progDefines.push_back(DAVA::Format("%d", it.second));
         }
         vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
         fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vSource.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fSource.SourceCode());
+        const std::string& vpBin = vSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
+        const std::string& fpBin = fSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
 
         //ShaderDescr
         rhi::PipelineState::Descriptor psDesc;

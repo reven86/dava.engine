@@ -427,9 +427,10 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4* externalCl
         m.Transpose();
         Vector4 v = Vector4(Sign(clipPlane.x), Sign(clipPlane.y), 1, 1) * m;
 
+        Vector4 m4(projMatrix.data[3], projMatrix.data[7], projMatrix.data[11], projMatrix.data[15]);
         if (rhi::DeviceCaps().isZeroBaseClipRange)
         {
-            Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));
+            Vector4 scaledPlane = clipPlane * (v.DotProduct(m4) / v.DotProduct(clipPlane));
             projMatrix.data[2] = scaledPlane.x;
             projMatrix.data[6] = scaledPlane.y;
             projMatrix.data[10] = scaledPlane.z;
@@ -437,7 +438,7 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4* externalCl
         }
         else
         {
-            Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));
+            Vector4 scaledPlane = clipPlane * (2.0f * v.DotProduct(m4) / v.DotProduct(clipPlane));
             projMatrix.data[2] = scaledPlane.x;
             projMatrix.data[6] = scaledPlane.y;
             projMatrix.data[10] = scaledPlane.z + 1.0f;

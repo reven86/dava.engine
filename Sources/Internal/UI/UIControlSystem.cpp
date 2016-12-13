@@ -24,7 +24,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "Debug/ProfilerOverlay.h"
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
 
 namespace DAVA
@@ -596,7 +596,7 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
         
 #if defined(__DAVAENGINE_COREV2__)
-        float32 dpi = Engine::Instance()->PrimaryWindow()->GetDPI();
+        float32 dpi = GetPrimaryWindow()->GetDPI();
         float32 doubleClickPhysSquare = doubleClickInchSquare * (dpi * dpi);
 #endif
 

@@ -164,7 +164,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         {
             Logger::Error("[UpdateConfigFromSource] Invalid vertex const-buffer index. Index: %u, Count: %u", prop.bufferindex, vertexConstBuffersCount);
             Logger::Error("Shader source code:");
-            Logger::Error("%s", vSource->SourceCode());
+            Logger::Error("%s", vSource->GetSourceCode(rhi::HostApi()).c_str());
         }
 
         bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
@@ -175,7 +175,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         {
             Logger::Error("[UpdateConfigFromSource] Invalid fragment const-buffer index. Index: %u, Count: %u", prop.bufferindex, fragmentConstBuffersCount);
             Logger::Error("Shader source code:");
-            Logger::Error("%s", fSource->SourceCode());
+            Logger::Error("%s", fSource->GetSourceCode(rhi::HostApi()).c_str());
         }
 
         bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
@@ -186,13 +186,13 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;
             constBuffers[i].targetSlot = i;
-            constBuffers[i].updateType = vSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = vSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
         else
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Fragment;
             constBuffers[i].targetSlot = i - vertexConstBuffersCount;
-            constBuffers[i].updateType = fSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = fSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
 
         constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
@@ -200,7 +200,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
     {
-        if (constBuffers[i].updateType == rhi::ShaderProp::STORAGE_DYNAMIC)
+        if (constBuffers[i].updateType == rhi::ShaderProp::SOURCE_AUTO)
         {
             rhi::HConstBuffer dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)
