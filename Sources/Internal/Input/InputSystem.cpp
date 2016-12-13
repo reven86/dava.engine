@@ -1,8 +1,9 @@
+#include "Input/InputSystem.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
-#include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
@@ -12,12 +13,11 @@ namespace DAVA
 {
 InputSystem* InputSystem::Instance()
 {
-    return Engine::Instance()->GetContext()->inputSystem;
+    return GetEngineContext()->inputSystem;
 }
 
 InputSystem::InputSystem(Engine* engine)
-    : uiControlSystem(engine->GetContext()->uiControlSystem)
-    , keyboard(new KeyboardDevice())
+    : keyboard(new KeyboardDevice())
     , gamepad(new GamepadDevice(this))
 {
     engine->update.Connect(MakeFunction(this, &InputSystem::Update));
@@ -86,8 +86,9 @@ void InputSystem::HandleInputEvent(UIEvent* uie)
             }
         }
     }
-    if (!handled && uiControlSystem != nullptr)
+    if (!handled && uie->window != nullptr)
     {
+        UIControlSystem* uiControlSystem = uie->window->GetUIControlSystem();
         uiControlSystem->OnInput(uie);
     }
 }
@@ -146,15 +147,15 @@ void InputSystem::ProcessInputEvent(UIEvent* event)
 {
     for (InputCallback& iCallBack : callbacks)
     {
-        if (event->device == UIEvent::Device::KEYBOARD && (iCallBack.devices & INPUT_DEVICE_KEYBOARD))
+        if (event->device == eInputDevices::KEYBOARD && (iCallBack.devices & INPUT_DEVICE_KEYBOARD))
         {
             iCallBack(event);
         }
-        else if (event->device == UIEvent::Device::GAMEPAD && (iCallBack.devices & INPUT_DEVICE_JOYSTICK))
+        else if (event->device == eInputDevices::GAMEPAD && (iCallBack.devices & INPUT_DEVICE_JOYSTICK))
         {
             iCallBack(event);
         }
-        else if ((event->device == UIEvent::Device::TOUCH_SURFACE || event->device == UIEvent::Device::MOUSE) && (iCallBack.devices & INPUT_DEVICE_TOUCH))
+        else if ((event->device == eInputDevices::TOUCH_SURFACE || event->device == eInputDevices::MOUSE) && (iCallBack.devices & INPUT_DEVICE_TOUCH))
         {
             iCallBack(event);
         }

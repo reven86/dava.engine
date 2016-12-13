@@ -1167,7 +1167,7 @@ DAVA::RefPtr<SceneEditor2> SceneManagerModule::OpenSceneImpl(const DAVA::FilePat
     scene->SetScenePath(scenePath);
 
     ContextAccessor* accessor = GetAccessor();
-    DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+    const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
 
     if (engineCtx->fileSystem->Exists(scenePath))
     {
@@ -1229,6 +1229,7 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
     }
 
     scene->SetScenePath(pathToSaveScene);
+    recentItems->Add(pathToSaveScene.GetAbsolutePathname());
     return true;
 }
 
@@ -1238,7 +1239,7 @@ DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<SceneEdit
 
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
-    DAVA::EngineContext* engineContext = accessor->GetEngineContext();
+    const DAVA::EngineContext* engineContext = accessor->GetEngineContext();
 
     DAVA::FilePath initialPath = scene->GetScenePath();
     if (!engineContext->fileSystem->Exists(initialPath))

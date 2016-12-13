@@ -8,6 +8,9 @@
 #include "Utils/TextBox.h"
 #include "Utils/StringUtils.h"
 
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+
 #include <numeric>
 
 namespace DAVA
@@ -427,6 +430,8 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_RECALC_PARAMS);
+
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -1015,6 +1020,7 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
+        DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_PREPARE);
         PrepareInternal();
     }
 

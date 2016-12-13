@@ -29,7 +29,6 @@ private:
     void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    DAVA::Window* primaryWindow = nullptr;
     DAVA::SigConnectionID sizeChangedSigConn = DAVA::SigConnectionID();
 
     DAVA::UIStaticText* currentModeText = nullptr;
@@ -39,7 +38,4 @@ private:
     DAVA::UIStaticText* currect3dScaleText = nullptr;
     DAVA::UIStaticText* pinningText = nullptr;
     DAVA::UIStaticText* pinningMousePosText = nullptr;
-
-    bool cursorCaptured = false;
-    bool cursorVisible = true;
 };
