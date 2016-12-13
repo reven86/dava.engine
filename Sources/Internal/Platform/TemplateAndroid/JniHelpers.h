@@ -11,7 +11,7 @@
 #include "Functional/Function.h"
 #include "Math/Rect.h"
 
-#define DAVA_JNI_EXCEPTION_CHECK \
+#define DAVA_JNI_EXCEPTION_CHECK() \
 do {\
     JNIEnv* env = JNI::GetEnv();\
     jthrowable e = env->ExceptionOccurred();\
