@@ -72,6 +72,7 @@ private:
 
     // RenderWidget::Delegate
     void OnCreated() override;
+    void OnInitialized() override;
     bool OnUserCloseRequest() override;
     void OnDestroyed() override;
     void OnFrame() override;

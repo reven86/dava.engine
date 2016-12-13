@@ -304,7 +304,7 @@ protected:
     std::vector<SimpleStruct*> simVec;
     D* dptr = nullptr;
     A* aptr = nullptr;
-    DHolder dholder;
+    DHolder dholder = DHolder();
 
     DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
     {

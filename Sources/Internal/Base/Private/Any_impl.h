@@ -135,7 +135,7 @@ void Any::Set(T&& value, NotAny<T>)
 
     type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
-    compareFn = &AnyCompare<std::remove_cv_t<T>>::IsEqual;
+    compareFn = &AnyCompare<U>::IsEqual;
 }
 
 template <typename T>

@@ -38,6 +38,8 @@ int BaseApplication::RunImpl()
 
     if (CommandLineParser::CommandIsFound("--selftest"))
     {
+        isTestEnv = true;
+
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
         const EngineContext* engineContext = e.GetContext();
@@ -80,6 +82,11 @@ bool BaseApplication::AllowMultipleInstances() const
 QString BaseApplication::GetInstanceKey() const
 {
     return QString();
+}
+
+bool BaseApplication::IsTestEnvironment() const
+{
+    return isTestEnv;
 }
 
 } // namespace TArc

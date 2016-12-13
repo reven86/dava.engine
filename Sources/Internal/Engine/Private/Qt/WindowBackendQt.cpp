@@ -325,6 +325,15 @@ void WindowBackend::OnCreated()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 }
 
+void WindowBackend::OnInitialized()
+{
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        OnVisibilityChanged(true);
+        OnApplicationFocusChanged(true);
+    }
+}
+
 bool WindowBackend::OnUserCloseRequest()
 {
     if (!closeRequestByApp)
@@ -563,7 +572,10 @@ void WindowBackend::ReleaseContext()
 
 void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    }
 }
 
 void WindowBackend::Update()
