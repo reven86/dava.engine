@@ -19,6 +19,8 @@
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
 
+#import "Engine/PlatformApiMac.h"
+
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
 #if defined(__MAC_10_11)

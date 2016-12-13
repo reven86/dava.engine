@@ -17,6 +17,8 @@
 #import <CoreMedia/CoreMedia.h>
 #import <AppKit/AppKit.h>
 
+#import "Engine/PlatformApiMac.h"
+
 enum MoviePlayerHelperState
 {
     eStateNone,

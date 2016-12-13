@@ -6,10 +6,23 @@
 
 #import <Foundation/Foundation.h>
 
+#include <Engine/PlatformApiMac.h>
 #include <Logger/Logger.h>
 #include <Utils/NSStringUtils.h>
 
-void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notification)
+@interface NativeDelegateMac : NSObject<DVEApplicationListener>
+- (void)applicationDidFinishLaunching:(NSNotification*)notification;
+- (void)applicationWillTerminate:(NSNotification*)notification;
+- (void)applicationDidBecomeActive:(NSNotification*)notification;
+- (void)applicationDidResignActive:(NSNotification*)notification;
+- (void)application:(NSApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo;
+- (void)application:(NSApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken;
+- (void)application:(NSApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error;
+@end
+
+@implementation NativeDelegateMac
+
+- (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
     using namespace DAVA;
     String name = StringFromNSString([notification name]);
@@ -26,22 +39,22 @@ void NativeDelegateMac::applicationDidFinishLaunching(NSNotification* notificati
     Logger::Debug("TestBed.NativeDelegateMac::applicationDidFinishLaunching: leave");
 }
 
-void NativeDelegateMac::applicationDidBecomeActive()
+- (void)applicationDidBecomeActive:(NSNotification*)notification
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationDidBecomeActive");
 }
 
-void NativeDelegateMac::applicationDidResignActive()
+- (void)applicationDidResignActive:(NSNotification*)notification
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationDidResignActive");
 }
 
-void NativeDelegateMac::applicationWillTerminate()
+- (void)applicationWillTerminate:(NSNotification*)notification
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateMac::applicationWillTerminate");
 }
 
-void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo)
+- (void)application:(NSApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo;
 {
     using namespace DAVA;
     Logger::Debug("TestBed.NativeDelegateMac::didReceiveRemoteNotification: enter");
@@ -55,16 +68,24 @@ void NativeDelegateMac::didReceiveRemoteNotification(NSApplication* application,
     Logger::Debug("TestBed.NativeDelegateMac::didReceiveRemoteNotification: leave");
 }
 
-void NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken)
+- (void)application:(NSApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateMac::didRegisterForRemoteNotificationsWithDeviceToken");
 }
 
-void NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error)
+- (void)application:(NSApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
 {
     using namespace DAVA;
     String descr = StringFromNSString([error localizedDescription]);
     DAVA::Logger::Debug("TestBed.NativeDelegateMac::didFailToRegisterForRemoteNotificationsWithError: %s", descr.c_str());
+}
+
+@end
+
+void RegisterMacApplicationListener()
+{
+    // Will be retained inside of implementation and released when app exits
+    DAVA::PlatformApi::Mac::RegisterDVEApplicationListener([[[NativeDelegateMac alloc] init] autorelease]);
 }
 
 #endif // __DAVAENGINE_MACOS__

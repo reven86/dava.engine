@@ -11,11 +11,13 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSObject;
+@class NSMutableArray;
 @class NSNotification;
 @class NSUserNotification;
-
 @class FrameTimer;
 @class AppDelegate;
+
+@protocol DVEApplicationListener;
 
 namespace DAVA
 {
@@ -50,8 +52,8 @@ struct CoreNativeBridge final
     void ApplicationWillTerminate(NSNotification* notification);
     void ApplicationDidActivateNotification(NSUserNotification* notification);
 
-    void RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
-    void UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
+    void RegisterDVEApplicationListener(id<DVEApplicationListener> listener);
+    void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener);
 
     enum eNotificationType
     {
@@ -73,7 +75,7 @@ struct CoreNativeBridge final
     FrameTimer* frameTimer = nullptr;
 
     Mutex listenersMutex;
-    List<PlatformApi::Mac::NSApplicationDelegateListener*> appDelegateListeners;
+    NSMutableArray* appDelegateListeners;
 
     bool quitSent = false;
     bool closeRequestByApp = false;

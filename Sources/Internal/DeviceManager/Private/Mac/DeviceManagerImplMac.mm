@@ -9,6 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #import <AppKit/NSScreen.h>
+#import <AppKit/NSApplication.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
 
 namespace DAVA
