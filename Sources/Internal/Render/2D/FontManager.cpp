@@ -1,27 +1,7 @@
 #include "Base/Platform.h"
-
-#ifdef __DAVAENGINE_WIN_UAP__
-#define generic GenericFromFreeTypeLibrary
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#endif
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __DAVAENGINE_WIN_UAP__
-#undef generic
-#endif
-
 #include "Render/2D/FontManager.h"
 #include "Render/2D/FTFont.h"
+#include "Render/2D/Private/FTManager.h"
 #include "Logger/Logger.h"
 #include "Render/2D/Sprite.h"
 #include "Core/Core.h"
@@ -32,25 +12,14 @@
 namespace DAVA
 {
 FontManager::FontManager()
+    : ftmanager(std::make_unique<FTManager>())
 {
-    FT_Error error = FT_Init_FreeType(&library);
-    if (error)
-    {
-        Logger::Error("FontManager FT_Init_FreeType failed");
-    }
 }
 
 FontManager::~FontManager()
 {
     FTFont::ClearCache();
-
     UnregisterFonts();
-
-    FT_Error error = FT_Done_FreeType(library);
-    if (error)
-    {
-        Logger::Error("FontManager FT_Done_FreeType failed");
-    }
 }
 
 void FontManager::RegisterFont(Font* font)
