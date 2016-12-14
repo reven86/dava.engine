@@ -100,11 +100,13 @@ void UIScrollViewContainer::Input(UIEvent* currentTouch)
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
         Vector2 wheelDelta(currentTouch->wheelDelta.x * GetWheelSensitivity(), currentTouch->wheelDelta.y * GetWheelSensitivity());
+        if (currentTouch->device == eInputDevices::MOUSE
 #if defined(__DAVAENGINE_COREV2__)
-        if (currentTouch->device == eInputDevices::MOUSE && (currentTouch->modifiers & eModifierKeys::SHIFT) != eModifierKeys::NONE)
+            && (currentTouch->modifiers & eModifierKeys::SHIFT) != eModifierKeys::NONE
 #else
-        if (currentTouch->device == UIEvent::Device::MOUSE && (currentTouch->modifiers & UIEvent::SHIFT_DOWN) != 0)
+            && (currentTouch->modifiers & UIEvent::SHIFT_DOWN) != 0
 #endif
+            )
         {
             std::swap(wheelDelta.x, wheelDelta.y);
         }

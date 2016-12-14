@@ -471,7 +471,7 @@ void UIList::Input(UIEvent* currentInput)
                 newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
             }
         }
-        else // UIEvent::Device::TOUCH_PAD
+        else // eInputDevices::TOUCH_PAD
         {
             if (ORIENTATION_HORIZONTAL == orientation)
             {
