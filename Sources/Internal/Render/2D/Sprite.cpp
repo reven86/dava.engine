@@ -95,11 +95,6 @@ Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)
     spr->resourceSizeIndex = resourceSizeIndex;
     spr->relativePathname = spriteName;
 
-    if (spriteName.GetExtension() == ".txt")
-    {
-        printf("11");
-    }
-
     spr->InitFromFile(spriteFile);
     SafeRelease(spriteFile);
 
