@@ -95,6 +95,11 @@ Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)
     spr->resourceSizeIndex = resourceSizeIndex;
     spr->relativePathname = spriteName;
 
+    if (spriteName.GetExtension() == ".txt")
+    {
+        printf("11");
+    }
+
     spr->InitFromFile(spriteFile);
     SafeRelease(spriteFile);
 
@@ -667,21 +672,17 @@ void Sprite::PrepareForNewSize()
     if (relativePathname.IsEmpty())
         return;
 
-    String pathname = relativePathname.GetAbsolutePathname();
-
-    int32 pos = int32(pathname.find(UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex())));
-    String scaledName = pathname.substr(0, pos) + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetDesirableResourceIndex()) + pathname.substr(pos + UIControlSystem::Instance()->vcs->GetResourceFolder(UIControlSystem::Instance()->vcs->GetBaseResourceIndex()).length());
-
-    Logger::FrameworkDebug("Searching for file: %s", scaledName.c_str());
-
-    File* fp = File::Create(scaledName, File::READ | File::OPEN);
-
-    if (!fp)
+    // Check if sprite exists by trying to open it.
+    // If file not exists preparation can't be continued
     {
-        Logger::FrameworkDebug("Can't find file: %s", scaledName.c_str());
-        return;
+        int resIndex = 0;
+
+        File* fp = GetSpriteFile(relativePathname, resIndex);
+        if (fp == nullptr)
+            return;
+
+        SafeRelease(fp);
     }
-    SafeRelease(fp);
 
     Vector2 tempPivotPoint = defaultPivotPoint;
 
@@ -711,7 +712,7 @@ void Sprite::PrepareForNewSize()
 
     clipPolygon = 0;
 
-    PureCreate(pathname.substr(0, pathname.length() - 4), this);
+    PureCreate(relativePathname, this);
     //TODO: следующая строка кода написада здесь только до тех времен
     //		пока defaultPivotPoint не начнет задаваться прямо в спрайте,
     //		но возможно это навсегда.
