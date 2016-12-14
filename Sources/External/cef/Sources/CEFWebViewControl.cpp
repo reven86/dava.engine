@@ -1,6 +1,7 @@
 ﻿#include <cef/include/cef_browser.h>
 #include <regex>
 
+#include "Engine/Engine.h"
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
@@ -8,7 +9,6 @@
 #include "CEFWebViewControl.h"
 #include "CEFDavaResourceHandler.h"
 #include "Utils/Utils.h"
-#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -89,7 +89,12 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 void CEFWebViewControl::Deinitialize()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    Engine::Instance()->PrimaryWindow()->sizeChanged.Disconnect(onWindowSizeChangedId);
+    // TODO: Deinitialize is called when UIScreen with webview is destroyed. Singletons are deleted at the end of life and if app is closing when UIScreen with webview active, window is null
+    Window* primaryWindow = Engine::Instance()->PrimaryWindow();
+    if (primaryWindow != nullptr)
+    {
+        primaryWindow->sizeChanged.Disconnect(onWindowSizeChangedId);
+    }
 #endif
 
     // Close browser and release object
@@ -434,7 +439,6 @@ int32 ConvertDAVAModifiersToCef(eKeyModifiers modifier)
 int32 ConvertMouseTypeDavaToCef(UIEvent* input)
 {
     int32 mouseType = 0;
-#if defined(__DAVAENGINE_COREV2__)
     if (input->mouseButton == eMouseButtons::LEFT)
     {
         mouseType = cef_mouse_button_type_t::MBT_LEFT;
@@ -447,20 +451,6 @@ int32 ConvertMouseTypeDavaToCef(UIEvent* input)
     {
         mouseType = cef_mouse_button_type_t::MBT_RIGHT;
     }
-#else
-    if (input->mouseButton == UIEvent::MouseButton::LEFT)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_LEFT;
-    }
-    else if (input->mouseButton == UIEvent::MouseButton::MIDDLE)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_MIDDLE;
-    }
-    else if (input->mouseButton == UIEvent::MouseButton::RIGHT)
-    {
-        mouseType = cef_mouse_button_type_t::MBT_RIGHT;
-    }
-#endif
     return mouseType;
 }
 
@@ -492,7 +482,6 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-#if defined(__DAVAENGINE_COREV2__)
     switch (currentInput->device)
     {
     case eInputDevices::MOUSE:
@@ -524,39 +513,6 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     default:
         break;
     }
-#else
-    switch (currentInput->device)
-    {
-    case DAVA::UIEvent::Device::MOUSE:
-        webViewPos = webView.GetAbsolutePosition();
-        switch (currentInput->phase)
-        {
-        case DAVA::UIEvent::Phase::BEGAN:
-        case DAVA::UIEvent::Phase::ENDED:
-            OnMouseClick(currentInput);
-            break;
-        case DAVA::UIEvent::Phase::MOVE:
-        case DAVA::UIEvent::Phase::DRAG:
-            OnMouseMove(currentInput);
-            break;
-        case DAVA::UIEvent::Phase::WHEEL:
-            OnMouseWheel(currentInput);
-            break;
-        default:
-            break;
-        }
-        break;
-    case DAVA::UIEvent::Device::KEYBOARD:
-        OnKey(currentInput);
-        break;
-    case DAVA::UIEvent::Device::TOUCH_SURFACE:
-        break;
-    case DAVA::UIEvent::Device::TOUCH_PAD:
-        break;
-    default:
-        break;
-    }
-#endif
 }
 
 void CEFWebViewControl::OnWindowSizeChanged(Window*, Size2f, Size2f)

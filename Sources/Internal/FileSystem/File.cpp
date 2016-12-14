@@ -98,7 +98,10 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
+    if (filename.IsDirectoryPathname())
+    {
+        return nullptr;
+    }
 
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
@@ -113,7 +116,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // access Engine object after it has beem destroyed
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
-        EngineContext* context = e->GetContext();
+        const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
         IPackManager* pm = context->packManager;
 #else

@@ -270,7 +270,7 @@ void CorePlatformAndroid::KeyUp(int32 keyCode, uint32 modifiers)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent keyEvent;
-    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
@@ -287,7 +287,7 @@ void CorePlatformAndroid::KeyDown(int32 keyCode, uint32 modifiers)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent keyEvent;
-    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
@@ -323,7 +323,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
-    newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
+    newEvent.device = eInputDevices::GAMEPAD;
     newEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     newEvent.modifiers = modifiers;
 

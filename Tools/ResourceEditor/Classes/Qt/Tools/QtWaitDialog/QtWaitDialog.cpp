@@ -91,7 +91,6 @@ void QtWaitDialog::WaitCanceled()
 void QtWaitDialog::ResetImpl()
 {
     wasCanceled = false;
-    emit canceled();
 
     if (isRunnedFromExec)
     {

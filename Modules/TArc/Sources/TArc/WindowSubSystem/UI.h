@@ -121,21 +121,23 @@ struct ModalMessageParams
 {
     enum Button
     {
+        NoButton = 0,
         Ok = 0x1,
-        Cancel = 0x2,
-        Close = 0x4,
-        Yes = 0x8,
-        YesToAll = 0x10,
-        No = 0x20,
-        NoToAll = 0x40,
-        Discard = 0x80,
-        Apply = 0x100,
-        Save = 0x200,
-        SaveAll = 0x400,
-        Abort = 0x800,
-        Retry = 0x1000,
-        Ignore = 0x2000,
-        Reset = 0x4000
+        Open = 0x2,
+        Cancel = 0x4,
+        Close = 0x8,
+        Yes = 0x10,
+        YesToAll = 0x20,
+        No = 0x40,
+        NoToAll = 0x80,
+        Discard = 0x100,
+        Apply = 0x200,
+        Save = 0x400,
+        SaveAll = 0x800,
+        Abort = 0x1000,
+        Retry = 0x2000,
+        Ignore = 0x4000,
+        Reset = 0x8000
     };
 
     Q_DECLARE_FLAGS(Buttons, Button);
@@ -143,6 +145,7 @@ struct ModalMessageParams
     QString title;
     QString message;
     Buttons buttons = Buttons(Ok | Cancel);
+    Button defaultButton = NoButton;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
@@ -167,10 +170,12 @@ public:
     virtual ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) = 0;
 
     virtual QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
+    virtual QString GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
     virtual QString GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params = DirectoryDialogParams()) = 0;
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
     virtual bool HasActiveWaitDalogues() const = 0;
+    Signal<> lastWaitDialogWasClosed;
 
     DAVA_DEPRECATED(virtual QWidget* GetWindow(const WindowKey& windowKey) = 0);
 };

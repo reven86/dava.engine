@@ -356,6 +356,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DeviceManager/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DeviceManager/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DeviceManager/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
@@ -382,7 +385,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -412,6 +416,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/ModuleManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
@@ -420,6 +425,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/Parser/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \

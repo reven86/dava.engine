@@ -1,18 +1,19 @@
 #pragma once
 
 #include "TArc/Core/ClientModule.h"
-#include "TArc/DataProcessing/DataContext.h"
-#include "TArc/DataProcessing/DataListener.h"
 
-class LaunchModule : public DAVA::TArc::ClientModule, private DAVA::TArc::DataListener
+#include "QtTools/Utils/QtDelayedExecutor.h"
+
+class LaunchModule : public DAVA::TArc::ClientModule
 {
-protected:
-    void OnContextCreated(DAVA::TArc::DataContext& context) override;
-    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
-    void PostInit() override;
+public:
+    ~LaunchModule();
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+protected:
+    void PostInit() override;
+    void UnpackHelpDoc();
 
 private:
-    DAVA::TArc::DataWrapper projectDataWrapper;
+    class FirstSceneCreator;
+    QtDelayedExecutor delayedExecutor;
 };

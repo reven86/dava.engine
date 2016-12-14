@@ -1,79 +1,12 @@
 #pragma once
 
-#ifndef __Dava_Type__
+#ifndef __Dava_RtType__
 #include "Base/Type.h"
 #endif
 
-#include <atomic>
-
 namespace DAVA
 {
-inline size_t Type::GetSize() const
-{
-    return size;
-}
-
-inline const char* Type::GetName() const
-{
-    return name;
-}
-
-inline const TypeInheritance* Type::GetInheritance() const
-{
-    return inheritance.get();
-}
-
-inline bool Type::IsConst() const
-{
-    return flags.test(static_cast<size_t>(TypeFlag::isConst));
-}
-
-inline bool Type::IsPointer() const
-{
-    return flags.test(static_cast<size_t>(TypeFlag::isPointer));
-}
-
-inline bool Type::IsReference() const
-{
-    return flags.test(static_cast<size_t>(TypeFlag::isReference));
-}
-
-inline bool Type::IsFundamental() const
-{
-    return flags.test(static_cast<size_t>(TypeFlag::isFundamental));
-}
-
-inline bool Type::IsTrivial() const
-{
-    return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
-}
-
-inline const Type* Type::Decay() const
-{
-    return decayType;
-}
-
-inline const Type* Type::Deref() const
-{
-    return derefType;
-}
-
-inline const Type* Type::Pointer() const
-{
-    return pointerType;
-}
-
-inline const TypeInheritance::InheritanceMap& TypeInheritance::GetBaseTypes() const
-{
-    return baseTypes;
-}
-
-inline const TypeInheritance::InheritanceMap& TypeInheritance::GetDerivedTypes() const
-{
-    return derivedTypes;
-}
-
-namespace TypeDetail
+namespace RttiTypeDetail
 {
 template <typename T>
 struct TypeSize
@@ -105,14 +38,6 @@ const Type* GetTypeIfTrue(std::true_type)
     return Type::Instance<T>();
 }
 
-template <typename From, typename To>
-void* CastFromTo(void* p)
-{
-    From* from = static_cast<From*>(p);
-    To* to = static_cast<To*>(from);
-    return to;
-}
-
 template <typename T>
 struct TypeHolder
 {
@@ -121,8 +46,85 @@ struct TypeHolder
 
 template <typename T>
 const Type* TypeHolder<T>::type = nullptr;
-
 } // namespace TypeDetails
+
+inline size_t Type::GetSize() const
+{
+    return size;
+}
+
+inline const char* Type::GetName() const
+{
+    return stdTypeInfo->name();
+}
+
+inline std::type_index Type::GetTypeIndex() const
+{
+    return std::type_index(*stdTypeInfo);
+}
+
+inline const TypeInheritance* Type::GetInheritance() const
+{
+    return static_cast<const TypeInheritance*>(inheritance.get());
+}
+
+inline bool Type::IsConst() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isConst));
+}
+
+inline bool Type::IsPointer() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isPointer));
+}
+
+inline bool Type::IsReference() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isReference));
+}
+
+inline bool Type::IsFundamental() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isFundamental));
+}
+
+inline bool Type::IsTrivial() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
+}
+
+inline bool Type::IsIntegral() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isIntegral));
+}
+
+inline bool Type::IsFloatingPoint() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isFloatingPoint));
+}
+
+inline bool Type::IsEnum() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isEnum));
+}
+
+inline const Type* Type::Decay() const
+{
+    if (nullptr != decayType)
+        return decayType;
+
+    return this;
+}
+
+inline const Type* Type::Deref() const
+{
+    return derefType;
+}
+
+inline const Type* Type::Pointer() const
+{
+    return pointerType;
+}
 
 template <typename T>
 void Type::Init(Type** ptype)
@@ -139,25 +141,29 @@ void Type::Init(Type** ptype)
     static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
 
+    type.size = RttiTypeDetail::TypeSize<T>::size;
     type.name = typeid(T).name();
-    type.size = TypeDetail::TypeSize<T>::size;
+    type.stdTypeInfo = &typeid(T);
 
     type.flags.set(isConst, std::is_const<T>::value);
     type.flags.set(isPointer, std::is_pointer<T>::value);
     type.flags.set(isReference, std::is_reference<T>::value);
     type.flags.set(isFundamental, std::is_fundamental<T>::value);
     type.flags.set(isTrivial, std::is_trivial<T>::value);
+    type.flags.set(isIntegral, std::is_integral<T>::value);
+    type.flags.set(isFloatingPoint, std::is_floating_point<T>::value);
+    type.flags.set(isEnum, std::is_enum<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
-    type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);
+    type.derefType = RttiTypeDetail::GetTypeIfTrue<DerefU>(condDeref);
 
     auto condDecay = std::integral_constant<bool, needDecay>();
-    type.decayType = TypeDetail::GetTypeIfTrue<DecayU>(condDecay);
+    type.decayType = RttiTypeDetail::GetTypeIfTrue<DecayU>(condDecay);
 
     auto condPointer = std::integral_constant<bool, needPointer>();
-    type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
+    type.pointerType = RttiTypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
-    TypeDetail::TypeHolder<T>::type = &type;
+    RttiTypeDetail::TypeHolder<T>::type = &type;
 }
 
 template <typename T>
@@ -171,43 +177,6 @@ const Type* Type::Instance()
     }
 
     return type;
-}
-
-template <typename T, typename... Bases>
-void TypeInheritance::RegisterBases()
-{
-    const Type* type = Type::Instance<T>();
-
-    bool basesUnpack[] = { false, TypeInheritance::AddBaseType<T, Bases>()... };
-    bool derivedUnpack[] = { false, TypeInheritance::AddDerivedType<Bases, T>()... };
-}
-
-template <typename T, typename B>
-bool TypeInheritance::AddBaseType()
-{
-    const Type* type = Type::Instance<T>();
-    if (type->inheritance == nullptr)
-    {
-        type->inheritance.reset(new TypeInheritance());
-    }
-
-    const Type* base = Type::Instance<B>();
-    type->inheritance->baseTypes.emplace(Type::Instance<B>(), &TypeDetail::CastFromTo<T, B>);
-    return true;
-}
-
-template <typename T, typename D>
-bool TypeInheritance::AddDerivedType()
-{
-    const Type* type = Type::Instance<T>();
-    if (type->inheritance == nullptr)
-    {
-        type->inheritance.reset(new TypeInheritance());
-    }
-
-    const Type* derived = Type::Instance<D>();
-    type->inheritance->derivedTypes.emplace(derived, &TypeDetail::CastFromTo<T, D>);
-    return true;
 }
 
 } // namespace DAVA
