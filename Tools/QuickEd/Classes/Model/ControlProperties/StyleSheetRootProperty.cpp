@@ -11,16 +11,19 @@
 
 using namespace DAVA;
 
-StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode* aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
+StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode* aStyleSheet, const DAVA::UIStyleSheetSourceInfo& sourceInfo, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
     : styleSheet(aStyleSheet) // weak
 {
     propertyTable = new UIStyleSheetPropertyTable();
 
     selectors = new StyleSheetSelectorsSection("Selectors");
     selectors->SetParent(this);
+
     for (const UIStyleSheetSelectorChain& chain : selectorChains)
     {
-        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain));
+        UIStyleSheetSourceInfo ssSourceInfo(sourceInfo);
+
+        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain, ssSourceInfo));
         selector->SetStyleSheetPropertyTable(propertyTable);
         selectors->AddProperty(selector);
     }

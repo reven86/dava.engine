@@ -374,32 +374,42 @@ void PackageNode::RemoveImportedPackage(PackageNode* node)
 
 void PackageNode::RebuildStyleSheets()
 {
-    Vector<UIPriorityStyleSheet> importedStyleSheets;
-    for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
-    {
-        PackageNode* node = importedPackagesNode->GetImportedPackage(i);
-        const Vector<UIPriorityStyleSheet>& styleSheets = node->GetContext()->GetSortedStyleSheets();
-        for (const UIPriorityStyleSheet& ss : styleSheets)
-        {
-            importedStyleSheets.emplace_back(UIPriorityStyleSheet(ss.GetStyleSheet(), ss.GetPriority() + 1));
-        }
-    }
+    Vector<DepthPackageNode> importedPackages = CollectImportedPackagesRecursively();
+
+    std::sort(importedPackages.begin(), importedPackages.end(),
+              [](const DepthPackageNode& a, const DepthPackageNode& b)
+              {
+                  return a.packageNode->GetPath() == b.packageNode->GetPath() ?
+                  a.depth < b.depth :
+                  a.packageNode->GetPath() < b.packageNode->GetPath();
+              });
+
+    auto lastNeeded = std::unique(importedPackages.begin(), importedPackages.end(),
+                                  [](const DepthPackageNode& a, const DepthPackageNode& b)
+                                  {
+                                      return a.packageNode->GetPath() == b.packageNode->GetPath();
+                                  });
+
+    importedPackages.erase(lastNeeded, importedPackages.end());
 
     packageContext->RemoveAllStyleSheets();
-    for (const UIPriorityStyleSheet& styleSheet : importedStyleSheets)
-    {
-        packageContext->AddStyleSheet(styleSheet);
-    }
 
-    for (int32 i = 0; i < styleSheets->GetCount(); i++)
+    for (const DepthPackageNode& importedPackage : importedPackages)
     {
-        StyleSheetNode* node = styleSheets->Get(i);
-        Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
-        for (UIStyleSheet* styleSheet : styleSheets)
+        StyleSheetsNode* styleSheetsNode = importedPackage.packageNode->GetStyleSheets();
+        for (int32 i = 0; i < styleSheetsNode->GetCount(); i++)
         {
-            packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
+            StyleSheetNode* node = styleSheetsNode->Get(i);
+            Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
+            for (UIStyleSheet* styleSheet : styleSheets)
+            {
+                packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet, importedPackage.depth));
+            }
         }
     }
+
+    for (PackageListener* listener : listeners)
+        listener->StyleSheetsWereRebuilt();
 }
 
 void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
@@ -527,4 +537,31 @@ void PackageNode::NotifyPropertyChanged(ControlNode* control)
     {
         NotifyPropertyChanged(control->Get(i));
     }
+}
+
+Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecursively()
+{
+    Vector<DepthPackageNode> result;
+
+    result.push_back(DepthPackageNode{ 0, this });
+
+    // collect imported packages recursively
+    int32 firstUnprocessedPackage = 0;
+
+    while (firstUnprocessedPackage < result.size())
+    {
+        PackageNode* packageNode = result[firstUnprocessedPackage].packageNode;
+        int32 depth = result[firstUnprocessedPackage].depth;
+
+        ImportedPackagesNode* importedPackagesNode = packageNode->GetImportedPackagesNode();
+        for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
+        {
+            PackageNode* node = importedPackagesNode->GetImportedPackage(i);
+            result.push_back(DepthPackageNode{ depth + 1, node });
+        }
+
+        ++firstUnprocessedPackage;
+    }
+
+    return result;
 }

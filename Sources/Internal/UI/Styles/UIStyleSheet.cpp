@@ -28,6 +28,11 @@ const UIStyleSheetSelectorChain& UIStyleSheet::GetSelectorChain() const
     return selectorChain;
 }
 
+const UIStyleSheetSourceInfo& UIStyleSheet::GetSourceInfo() const
+{
+    return sourceInfo;
+}
+
 void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
 {
     properties = newProperties;
@@ -38,6 +43,11 @@ void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& newSelector
     selectorChain = newSelectorChain;
 
     RecalculateScore();
+}
+
+void UIStyleSheet::SetSourceInfo(const UIStyleSheetSourceInfo& aSourceInfo)
+{
+    sourceInfo = aSourceInfo;
 }
 
 void UIStyleSheet::RecalculateScore()

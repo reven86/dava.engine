@@ -128,6 +128,11 @@ public:
 private:
     Vector<UIStyleSheetClass> classes;
 };
+
+struct UIStyleSheetSourceInfo
+{
+    FilePath file;
+};
 };
 
 #endif

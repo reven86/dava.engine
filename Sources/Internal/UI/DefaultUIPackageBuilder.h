@@ -60,6 +60,7 @@ private:
     BaseObject* currentObject;
 
     RefPtr<UIPackage> package;
+    FilePath currentPackagePath;
 
     Vector<UIPackage*> importedPackages;
     Vector<UIPriorityStyleSheet> styleSheets;

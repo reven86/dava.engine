@@ -13,6 +13,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ProjectView::ReloadSprites);
     connect(mainWindow->ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindFileInProject);
+
+    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->ui->styleSheetInspector, &StyleSheetInspector::OnSelectionChanged);
 }
 
 void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)

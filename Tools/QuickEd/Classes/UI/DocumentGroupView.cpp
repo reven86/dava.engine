@@ -6,6 +6,7 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/Preview/PreviewWidget.h"
 #include "UI/Properties/PropertiesWidget.h"
+#include "UI/StyleSheetInspector/StyleSheetInspector.h"
 
 #include "ui_mainwindow.h"
 
@@ -18,6 +19,7 @@ MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->packageWidget, &PackageWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->libraryWidget, &LibraryWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->styleSheetInspector, &StyleSheetInspector::OnDocumentChanged);
 
     connect(mainWindow->ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
     connect(mainWindow->ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);

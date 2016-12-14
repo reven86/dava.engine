@@ -91,6 +91,12 @@ public:
     bool CanUpdateAll() const;
 
 private:
+    struct DepthPackageNode
+    {
+        DAVA::int32 depth = 0;
+        PackageNode* packageNode = nullptr;
+    };
+
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
     void RefreshControlStylesAndLayout(ControlNode* node, bool canUpdateAll = true);
@@ -98,6 +104,7 @@ private:
     void CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots);
     void RestoreProperties(ControlNode* control);
     void NotifyPropertyChanged(ControlNode* control);
+    DAVA::Vector<DepthPackageNode> CollectImportedPackagesRecursively();
 
     enum eSection
     {

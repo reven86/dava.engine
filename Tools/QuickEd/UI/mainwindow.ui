@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -256,6 +256,14 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="StyleSheetInspector" name="styleSheetInspector">
+   <property name="windowTitle">
+    <string>Style Sheet Inspector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
   </widget>
   <action name="actionOpenProject">
    <property name="enabled">
@@ -570,6 +578,12 @@
    <class>LogWidget</class>
    <extends>QWidget</extends>
    <header>QtTools/ConsoleWidget/logwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StyleSheetInspector</class>
+   <extends>QDockWidget</extends>
+   <header>UI/StyleSheetInspector/StyleSheetInspector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -81,6 +81,7 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath& packagePath)
 {
     DVASSERT(!package.Valid());
     package = RefPtr<UIPackage>(new UIPackage());
+    currentPackagePath = packagePath;
 }
 
 void DefaultUIPackageBuilder::EndPackage()
@@ -147,11 +148,15 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
 {
     for (const UIStyleSheetSelectorChain& chain : selectorChains)
     {
+        UIStyleSheetSourceInfo sourceInfo;
+        sourceInfo.file = currentPackagePath;
+
         ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
         styleSheet->SetSelectorChain(chain);
         ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
         propertiesTable->SetProperties(properties);
         styleSheet->SetPropertyTable(propertiesTable);
+        styleSheet->SetSourceInfo(sourceInfo);
 
         package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
     }

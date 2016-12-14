@@ -549,7 +549,7 @@ void PackageWidget::OnAddStyle()
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
 
-    ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
+    ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(), selectorChains, properties));
     DVASSERT(!document.isNull());
     PackageNode* package = document->GetPackage();
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();

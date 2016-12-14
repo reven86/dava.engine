@@ -8,11 +8,12 @@
 
 using namespace DAVA;
 
-StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain& chain)
+StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain& chain, const UIStyleSheetSourceInfo& aSourceInfo)
     : ValueProperty("Selector", VariantType::TYPE_STRING)
 {
     styleSheet = new UIStyleSheet();
     styleSheet->SetSelectorChain(chain);
+    styleSheet->SetSourceInfo(aSourceInfo);
 
     SetOverridden(true);
     value = chain.ToString();
