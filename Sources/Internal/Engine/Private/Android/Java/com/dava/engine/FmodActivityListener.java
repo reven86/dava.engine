@@ -20,9 +20,9 @@ public class FmodActivityListener extends DavaActivity.ActivityListenerImpl
                 
                 activity.registerActivityListener(instance);
                 
-                // Handle a case when FmodActivityListener is being created while activity is already visible
-                // We need to start fmod device in this case since onStart won't be called
-                if (activity.isVisible())
+                // Handle a case when FmodActivityListener is being created while activity is already resumed
+                // We need to start fmod device in this case since onResume won't be called
+                if (!activity.isPaused())
                 {
                     fmodDevice.start();
                 }
@@ -40,13 +40,13 @@ public class FmodActivityListener extends DavaActivity.ActivityListenerImpl
     }
     
     @Override
-    public void onStart()
+    public void onResume()
     {   
         fmodDevice.start();
     }
     
     @Override
-    public void onStop()
+    public void onPause()
     {
         fmodDevice.stop();
     }

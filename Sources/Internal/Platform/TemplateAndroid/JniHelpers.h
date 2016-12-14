@@ -29,7 +29,7 @@ do {\
         env->ReleaseStringUTFChars(estring, utf);\
         DVASSERT_MSG(false, error.c_str());\
     }\
-} while (0);
+} while (0)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wclass-varargs"

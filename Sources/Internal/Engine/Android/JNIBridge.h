@@ -31,7 +31,7 @@ DAVA_DECLARE_CUSTOM_JNI_TYPE(jstringArray, jobjectArray, "[Ljava/lang/String;");
         } catch (const DAVA::JNI::Exception& e) { \
             DVASSERT_MSG(false, e.what()); \
         } \
-    } while (0);
+    } while (0)
 
 namespace DAVA
 {

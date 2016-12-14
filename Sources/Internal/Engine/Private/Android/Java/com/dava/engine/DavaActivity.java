@@ -108,8 +108,8 @@ public final class DavaActivity extends Activity
     private static DavaActivity activitySingleton;
     private static Thread nativeThread; // Thread where native C++ code is running
 
-    protected boolean isVisible = false; // Activity is visible between onStart & onStop calls
-    protected boolean isPaused = true; // Activity isn't paused between onResume & onPaused calls
+    protected boolean isStopped = true; // Activity is stopped after onStop and before onStart
+    protected boolean isPaused = true; // Activity is paused after onPause and before onResume
     protected boolean hasFocus = false;
     
     protected String externalFilesDir;
@@ -284,7 +284,7 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onStart");
         super.onStart();
 
-        isVisible = true;
+        isStopped = false;
         
         notifyListeners(ON_ACTIVITY_START, null);
     }
@@ -322,7 +322,7 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onStop");
         super.onStop();
         
-        isVisible = false;
+        isStopped = true;
 
         notifyListeners(ON_ACTIVITY_STOP, null);
     }
