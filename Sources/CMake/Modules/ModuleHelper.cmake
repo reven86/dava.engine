@@ -36,12 +36,24 @@ macro ( add_plugin NAME SOURCE_DIR )
 
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
             string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUT_PLUGIN_DIR} )
+            
+            if( APPLE )
+                set_target_properties( ${NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUT_PLUGIN_DIR} )                
+            else()
+                set_target_properties( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUT_PLUGIN_DIR} )
+            endif()
+
+
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
         
     else()
         set( OUT_PLUGIN_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>" )
-        set_target_properties( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY  ${OUT_PLUGIN_DIR} )
+
+        if( APPLE )
+            set_target_properties( ${NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY  ${OUT_PLUGIN_DIR} )
+        else()
+            set_target_properties( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY  ${OUT_PLUGIN_DIR} )
+        endif()
     endif()
 
 

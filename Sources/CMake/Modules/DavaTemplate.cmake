@@ -876,10 +876,10 @@ if( DEPLOY )
         qt_deploy( )
     endif()
 
-    if( PLUGIN_LIST )
-        add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
-    endif()
+endif()
 
+if( PLUGIN_LIST )
+    add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
 endif()
 
 coverage_processing()
