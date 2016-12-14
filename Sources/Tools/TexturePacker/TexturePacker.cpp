@@ -270,7 +270,7 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
     }
 }
 
-String TexturePacker::MakeTextureName(const char* basename, uint32 textureIndex)
+String TexturePacker::MakeTextureName(const char* basename, uint32 textureIndex) const
 {
     std::stringstream name;
     name << basename << textureIndex << texturePostfix;

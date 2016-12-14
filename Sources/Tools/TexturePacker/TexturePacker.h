@@ -103,7 +103,7 @@ private:
 
     void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const SpriteBoundsRect& drawRect, const Rect2i& frameRect);
 
-    String MakeTextureName(const char* basename, uint32 textureIndex);
+    String MakeTextureName(const char* basename, uint32 textureIndex) const;
 
     uint32 maxTextureSize;
 
