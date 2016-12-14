@@ -272,7 +272,7 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     {
         //event.device = DAVA::UIEvent::Device::MOUSE;
         // Invert scroll directions back because MacOS do it by self when Shift pressed
-        if (([curEvent modifierFlags] & NSEventModifierFlagShift) != 0)
+        if (([theEvent modifierFlags] & NSShiftKeyMask) != 0)
         {
             std::swap(wheelDeltaX, wheelDeltaY);
         }

@@ -159,7 +159,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
         {
             event.device = DAVA::eInputDevices::MOUSE;
             // Invert scroll directions back because MacOS do it by self when Shift pressed
-            if (([curEvent modifierFlags] & NSEventModifierFlagShift) != 0)
+            if (([curEvent modifierFlags] & NSShiftKeyMask) != 0)
             {
                 std::swap(rawScrollDeltaX, rawScrollDeltaY);
             }
