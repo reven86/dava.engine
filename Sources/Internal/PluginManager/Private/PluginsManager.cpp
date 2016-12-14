@@ -21,7 +21,7 @@ Vector<FilePath> PluginManager::PluginList(const FilePath& folder, EFindPlugunMo
     bool debugMode = false;
 #endif
 
-#if defined(__DAVAENGINE_MACOS__) 
+#if defined(__DAVAENGINE_MACOS__)
     String dlibExtension = ".dylib";
 #elif defined(__DAVAENGINE_WIN32__)
     String dlibExtension = ".dll";
@@ -82,22 +82,22 @@ void PluginManager::InitPlugin(const FilePath& pluginPatch)
     plugin.handle = OpenPlugin(pluginPath.c_str());
     if (nullptr == plugin.handle)
     {
-        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str() );
+        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
     }
 
     plugin.namePlugin = pluginPatch.GetFilename();
-    plugin.creatPluginFunc = LoadFunction<CreatPluginFuncPtr>( plugin.handle, "CreatPlugin" );
-    plugin.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>( plugin.handle, "DestroyPlugin" );
+    plugin.creatPluginFunc = LoadFunction<CreatPluginFuncPtr>(plugin.handle, "CreatPlugin");
+    plugin.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>(plugin.handle, "DestroyPlugin");
 
-    if ( nullptr == plugin.creatPluginFunc )
+    if (nullptr == plugin.creatPluginFunc)
     {
-        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatPlugin" );
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatPlugin");
         DVASSERT(nullptr != plugin.creatPluginFunc);
     }
 
-    if ( nullptr == plugin.destroyPluginFunc )
+    if (nullptr == plugin.destroyPluginFunc)
     {
-        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin" );
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
         DVASSERT(nullptr != plugin.destroyPluginFunc);
     }
 
@@ -110,7 +110,6 @@ void PluginManager::InitPlugin(const FilePath& pluginPatch)
     plugins.emplace_back(plugin);
 
     Logger::Debug("Plugin loaded - %s", plugin.namePlugin.c_str());
-
 }
 
 void PluginManager::ShutdownPlugins()
@@ -123,7 +122,7 @@ void PluginManager::ShutdownPlugins()
     for (auto it = rbegin(plugins); it != rend(plugins); ++it)
     {
         it->destroyPluginFunc(it->ptrPlugin);
-        ClosePlugin( it->handle );
+        ClosePlugin(it->handle);
         Logger::Debug("Plugin unloaded - %s", it->namePlugin.c_str());
     }
 
@@ -131,11 +130,11 @@ void PluginManager::ShutdownPlugins()
 }
 
 PluginManager::PluginManager(Engine* engine)
-  : rootEngine(engine )
+    : rootEngine(engine)
 {
 }
 
 PluginManager::~PluginManager()
 {
-    DVASSERT( !plugins.size() );
+    DVASSERT(!plugins.size());
 }

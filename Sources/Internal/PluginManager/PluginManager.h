@@ -23,7 +23,7 @@ class IModule;
 class Engine;
 
 typedef IModule* (*CreatPluginFuncPtr)(Engine*);
-typedef void(*DestroyPluginFuncPtr)(IModule*);
+typedef void (*DestroyPluginFuncPtr)(IModule*);
 
 class PluginManager final
 {
@@ -40,7 +40,6 @@ public:
     void InitPlugin(const FilePath& pluginPatch);
     void ShutdownPlugins();
 
-
     PluginManager(Engine* engine);
     ~PluginManager();
 
@@ -48,6 +47,5 @@ private:
     struct PointersToPluginFuctions;
     Vector<PointersToPluginFuctions> plugins;
     Engine* rootEngine;
-
 };
 }

@@ -14,7 +14,7 @@
 
 ///
 
-#if defined(__DAVAENGINE_MACOS__) 
+#if defined(__DAVAENGINE_MACOS__)
 
 typedef void* PluginHandle;
 #define NULL_PLUGIN_HANDLE nullptr
@@ -24,7 +24,7 @@ typedef void* PluginHandle;
 typedef HINSTANCE PluginHandle;
 #define NULL_PLUGIN_HANDLE NULL
 
-#else 
+#else
 
 typedef HINSTANCE PluginHandle;
 #define NULL_PLUGIN_HANDLE nullptr
@@ -33,50 +33,50 @@ typedef HINSTANCE PluginHandle;
 
 ///
 
-#if defined(__DAVAENGINE_MACOS__) 
+#if defined(__DAVAENGINE_MACOS__)
 
-PluginHandle OpenPlugin( const char* pluginPath )
+PluginHandle OpenPlugin(const char* pluginPath)
 {
     return dlopen(pluginPath, RTLD_NOW);
 }
 
-template<class T>
-T LoadFunction( PluginHandle handle, const char* funcName )
+template <class T>
+T LoadFunction(PluginHandle handle, const char* funcName)
 {
-    return reinterpret_cast<T>( dlsym( handle, funcName ) );
+    return reinterpret_cast<T>(dlsym(handle, funcName));
 }
 
-void ClosePlugin( PluginHandle handle )
+void ClosePlugin(PluginHandle handle)
 {
-    dlclose( handle );
+    dlclose(handle);
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
 
-PluginHandle OpenPlugin( const char* pluginPath )
+PluginHandle OpenPlugin(const char* pluginPath)
 {
-    return LoadLibraryA( pluginPath );
+    return LoadLibraryA(pluginPath);
 }
 
-template<class T>
-T LoadFunction( PluginHandle handle, const char* funcName )
+template <class T>
+T LoadFunction(PluginHandle handle, const char* funcName)
 {
     return reinterpret_cast<T>(GetProcAddress(handle, funcName));
 }
 
-void ClosePlugin( PluginHandle handle )
+void ClosePlugin(PluginHandle handle)
 {
-    FreeLibrary( handle );
+    FreeLibrary(handle);
 }
 
-#else 
+#else
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
     return NULL_PLUGIN_HANDLE;
 }
 
-template<class T>
+template <class T>
 T LoadFunction(PluginHandle handle, const char* funcName)
 {
     return nullptr;
@@ -84,12 +84,7 @@ T LoadFunction(PluginHandle handle, const char* funcName)
 
 void ClosePlugin(PluginHandle handle)
 {
-    dlclose( handle );
+    dlclose(handle);
 }
  
 #endif
-
-
-
-
-
