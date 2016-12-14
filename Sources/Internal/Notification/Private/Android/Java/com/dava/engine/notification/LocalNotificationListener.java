@@ -28,7 +28,7 @@ public class LocalNotificationListener extends DavaActivity.ActivityListenerImpl
     @Override
     public void onDestroy()
     {
-        DavaActivity.instance().unregisterActivityListener(this);
+		release();
     }
 
     @Override

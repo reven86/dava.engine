@@ -32,7 +32,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver
             }
             catch (ClassNotFoundException e)
             {
-                Log.d(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
+                Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
                 return;
             }
         }
