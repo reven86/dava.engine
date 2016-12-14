@@ -3,30 +3,21 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Base/BaseMath.h"
-
-struct FT_LibraryRec_;
-using FT_Library = struct FT_LibraryRec_*;
 
 namespace DAVA
 {
 class Font;
-class FTFont;
-class FTInternalFont;
-class Sprite;
-class UIStaticText;
+class FTManager;
 
 class FontManager : public Singleton<FontManager>
 {
-    FT_Library library;
-
 public:
     FontManager();
     virtual ~FontManager();
 
-    FT_Library GetFTLibrary()
+    FTManager* GetFT()
     {
-        return library;
+        return ftmanager.get();
     }
 
     /**
@@ -77,6 +68,7 @@ private:
 private:
     Map<Font*, String> registeredFonts;
     Map<String, Font*> fontMap;
+    std::unique_ptr<FTManager> ftmanager;
 };
 };
 

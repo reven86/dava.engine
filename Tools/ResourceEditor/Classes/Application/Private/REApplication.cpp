@@ -4,6 +4,7 @@
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/SceneManager/EntityProducerModule.h"
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
 
 #include "TextureCompression/PVRConverter.h"
@@ -106,7 +107,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::EngineContext* engineContext)
+void REApplication::Init(const DAVA::EngineContext* engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -172,6 +173,7 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
+    tarcCore->CreateModule<EntityProducerModule>();
     tarcCore->CreateModule<LaunchModule>();
     tarcCore->CreateModule<MitsubaExporter>();
 }

@@ -143,7 +143,7 @@ void SceneRenderWidget::InitDavaUI()
 
     davaUIScreen = new DAVA::UIScreen();
 
-    DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+    const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
 
     engineCtx->uiScreenManager->RegisterScreen(davaUIScreenID, davaUIScreen.Get());
     engineCtx->uiScreenManager->SetScreen(davaUIScreenID);
@@ -153,7 +153,10 @@ void SceneRenderWidget::OnRenderWidgetResized(DAVA::uint32 w, DAVA::uint32 h)
 {
     using namespace DAVA::TArc;
 
-    accessor->GetEngineContext()->uiControlSystem->vcs->SetVirtualScreenSize(w, h);
+    DAVA::VirtualCoordinatesSystem* vcs = accessor->GetEngineContext()->uiControlSystem->vcs;
+    vcs->SetVirtualScreenSize(w, h);
+    vcs->UnregisterAllAvailableResourceSizes();
+    vcs->RegisterAvailableResourceSize(w, h, "Gfx");
 
     davaUIScreen->SetSize(DAVA::Vector2(w, h));
     dava3DView->SetSize(DAVA::Vector2(w - 2 * dava3DViewMargin, h - 2 * dava3DViewMargin));

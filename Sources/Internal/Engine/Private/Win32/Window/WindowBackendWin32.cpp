@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
@@ -9,7 +8,6 @@
 #include <ShellScalingAPI.h>
 
 #include "Engine/Window.h"
-#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
@@ -31,8 +29,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);
@@ -97,6 +94,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -105,6 +107,11 @@ void WindowBackend::SetFullscreen(eFullscreen newMode)
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -205,6 +212,12 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
+{
+    minWidth = static_cast<int>(width);
+    minHeight = static_cast<int>(height);
+}
+
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
     if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
@@ -300,10 +313,10 @@ void WindowBackend::UpdateClipCursor()
     }
 }
 
-void WindowBackend::HandleWindowFocusChanging(bool focusState)
+void WindowBackend::HandleWindowFocusChanging(bool hasFocus)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
-    if (!focusState)
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    if (!hasFocus)
     {
         if (captureMode != eCursorCapture::OFF)
         {
@@ -312,6 +325,8 @@ void WindowBackend::HandleWindowFocusChanging(bool focusState)
         }
         DoSetCursorVisibility(true);
     }
+
+    PlatformCore::EnableHighResolutionTimer(hasFocus);
 }
 
 void WindowBackend::DoSetCursorVisibility(bool visible)
@@ -361,6 +376,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         DoSetFullscreen(e.setFullscreenEvent.mode);
@@ -434,9 +452,8 @@ LRESULT WindowBackend::OnExitSizeMove()
 
 LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 {
-    // Limit minimum window size to some reasonable value
-    minMaxInfo->ptMinTrackSize.x = 128;
-    minMaxInfo->ptMinTrackSize.y = 128;
+    minMaxInfo->ptMinTrackSize.x = minWidth;
+    minMaxInfo->ptMinTrackSize.y = minHeight;
     return 0;
 }
 
@@ -689,7 +706,8 @@ LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
     {
         eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
         MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
     }
     else if (pointerInfo.pointerType == PT_TOUCH)
     {
@@ -710,15 +728,16 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
     eModifierKeys modifierKeys = GetModifierKeys();
     if (pointerInfo.pointerType == PT_MOUSE)
     {
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
         if (pointerInfo.ButtonChangeType != POINTER_CHANGE_NONE)
         {
             // First mouse button down (and last mouse button up) comes with WM_POINTERDOWN/WM_POINTERUP, other mouse clicks come here
             bool isPressed = false;
             eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
         }
-        if (captureMode == eCursorCapture::PINNING)
+        if (isRelative)
         {
             return OnMouseMoveRelativeEvent(x, y);
         }
@@ -863,7 +882,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_POINTERHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
         POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
@@ -883,12 +901,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         if (message == WM_MOUSEHWHEEL)
         {
-            using std::swap;
             std::swap(deltaX, deltaY);
         }
-        int32 x = GET_X_LPARAM(lparam);
-        int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(deltaX, deltaY, x, y);
+
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
@@ -958,6 +977,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
         lresult = OnDpiChanged(suggestedRect);
     }
+    else if (message == WM_DISPLAYCHANGE)
+    {
+        engineBackend->UpdateDisplayConfig();
+    }
     else
     {
         isHandled = false;
@@ -1026,36 +1049,23 @@ bool WindowBackend::RegisterWindowClass()
 
 float32 WindowBackend::GetDpi() const
 {
-    float32 ret = 0.0f;
-
-    using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
-
-    // we are trying to get pointer on GetDpiForMonitor function with GetProcAddress
-    // because this function is available only on win8.1 and win10 but we should be able
-    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
-    // and GetDpiForMonitor wont be called
-    HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
-    MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
-
-    if (nullptr != fn)
+    float32 result = 0.0f;
+    if (DllImport::fnGetDpiForMonitor != nullptr)
     {
         UINT x = 0;
         UINT y = 0;
-        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
-        (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
-
-        ret = static_cast<float32>(x);
+        HMONITOR hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &x, &y);
+        result = static_cast<float32>(x);
     }
     else
     {
-        // default behavior for windows (ver < 8.1)
-        // get dpi from caps
-        HDC screen = GetDC(NULL);
-        ret = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
-        ReleaseDC(NULL, screen);
+        // default behavior for Windows with version < 8.1
+        HDC hdcScreen = ::GetDC(nullptr);
+        result = static_cast<float32>(::GetDeviceCaps(hdcScreen, LOGPIXELSX));
+        ::ReleaseDC(NULL, hdcScreen);
     }
-
-    return ret;
+    return result;
 }
 
 eModifierKeys WindowBackend::GetModifierKeys()
