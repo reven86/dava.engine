@@ -70,7 +70,7 @@ void LaunchModule::PostInit()
 
 void LaunchModule::UnpackHelpDoc()
 {
-    DAVA::EngineContext* engineContext = GetAccessor()->GetEngineContext();
+    const DAVA::EngineContext* engineContext = GetAccessor()->GetEngineContext();
     DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
     DAVA::FilePath docsPath = DAVA::FilePath(ResourceEditor::DOCUMENTATION_PATH);
     if (editorVer != APPLICATION_BUILD_VERSION || !engineContext->fileSystem->Exists(docsPath))

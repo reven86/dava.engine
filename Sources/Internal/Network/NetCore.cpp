@@ -6,7 +6,7 @@
 #include <Network/Private/Announcer.h>
 #include <Network/Private/Discoverer.h>
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

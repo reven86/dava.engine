@@ -34,20 +34,20 @@ namespace DAVA
 {
 namespace
 {
-UIEvent::Device ToDavaDeviceId(::Windows::Devices::Input::PointerDeviceType type)
+eInputDevices ToDavaDeviceId(::Windows::Devices::Input::PointerDeviceType type)
 {
     using ::Windows::Devices::Input::PointerDeviceType;
     switch (type)
     {
     case PointerDeviceType::Mouse:
-        return UIEvent::Device::MOUSE;
+        return eInputDevices::MOUSE;
     case PointerDeviceType::Pen:
-        return UIEvent::Device::PEN;
+        return eInputDevices::PEN;
     case PointerDeviceType::Touch:
-        return UIEvent::Device::TOUCH_SURFACE;
+        return eInputDevices::TOUCH_SURFACE;
     default:
         DVASSERT(false && "can't be!");
-        return UIEvent::Device::UNKNOWN;
+        return eInputDevices::UNKNOWN;
     }
 }
 } // anonymous namespace
@@ -427,42 +427,42 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 {
     out.clear();
 
-    if (GetMouseButtonState(UIEvent::MouseButton::LEFT) != pointProperties->IsLeftButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::LEFT) != pointProperties->IsLeftButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::LEFT;
+        change.button = eMouseButtons::LEFT;
         change.beginOrEnd = pointProperties->IsLeftButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::RIGHT) != pointProperties->IsRightButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::RIGHT) != pointProperties->IsRightButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::RIGHT;
+        change.button = eMouseButtons::RIGHT;
         change.beginOrEnd = pointProperties->IsRightButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::MIDDLE) != pointProperties->IsMiddleButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::MIDDLE) != pointProperties->IsMiddleButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::MIDDLE;
+        change.button = eMouseButtons::MIDDLE;
         change.beginOrEnd = pointProperties->IsMiddleButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED1) != pointProperties->IsXButton1Pressed)
+    if (GetMouseButtonState(eMouseButtons::EXTENDED1) != pointProperties->IsXButton1Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::EXTENDED1;
+        change.button = eMouseButtons::EXTENDED1;
         change.beginOrEnd = pointProperties->IsXButton1Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED2) != pointProperties->IsXButton2Pressed)
+    if (GetMouseButtonState(eMouseButtons::EXTENDED2) != pointProperties->IsXButton2Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::EXTENDED2;
+        change.button = eMouseButtons::EXTENDED2;
         change.beginOrEnd = pointProperties->IsXButton2Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
@@ -576,7 +576,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             {
                 phase = UIEvent::Phase::MOVE;
                 core->RunOnMainThread([this, phase, x, y, type, modifiers]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type), modifiers);
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(eMouseButtons::NONE), ToDavaDeviceId(type), modifiers);
                 });
             }
             else
@@ -701,7 +701,7 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
         UIEvent uiEvent;
-        uiEvent.device = UIEvent::Device::KEYBOARD;
+        uiEvent.device = eInputDevices::KEYBOARD;
         uiEvent.phase = phase;
         uiEvent.modifiers = modifiers;
         uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
@@ -732,7 +732,7 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
         UIEvent ev;
         DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
         ev.keyChar = unicodeChar;
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         ev.modifiers = modifiers;
         if (isRepeat)
@@ -747,10 +747,10 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
     });
 }
 
-void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device device)
+void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, eInputDevices device)
 {
     uint32 modifiers = GetKeyboardModifier();
-    auto SendDragOnButtonChange = [this, x, y, device, modifiers](UIEvent::MouseButton button) {
+    auto SendDragOnButtonChange = [this, x, y, device, modifiers](eMouseButtons button) {
         if (GetMouseButtonState(button))
         {
             core->RunOnMainThread([this, x, y, button, device, modifiers]() {
@@ -759,11 +759,11 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
         }
     };
 
-    SendDragOnButtonChange(UIEvent::MouseButton::LEFT);
-    SendDragOnButtonChange(UIEvent::MouseButton::RIGHT);
-    SendDragOnButtonChange(UIEvent::MouseButton::MIDDLE);
-    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED1);
-    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
+    SendDragOnButtonChange(eMouseButtons::LEFT);
+    SendDragOnButtonChange(eMouseButtons::RIGHT);
+    SendDragOnButtonChange(eMouseButtons::MIDDLE);
+    SendDragOnButtonChange(eMouseButtons::EXTENDED1);
+    SendDragOnButtonChange(eMouseButtons::EXTENDED2);
 }
 
 void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args)
@@ -780,7 +780,7 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
         for (auto& change : mouseButtonChanges)
         {
             auto fn = [this, window_x, window_y, change, modifiers]() {
-                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE, modifiers);
+                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), eInputDevices::MOUSE, modifiers);
             };
             core->RunOnMainThread(fn);
         }
@@ -797,18 +797,18 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, dx, dy, modifiers]() {
-                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE, modifiers);
+                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(eMouseButtons::NONE), eInputDevices::MOUSE, modifiers);
                 });
             }
             else
             {
-                SendPressedMouseButtons(dx, dy, UIEvent::Device::MOUSE);
+                SendPressedMouseButtons(dx, dy, eInputDevices::MOUSE);
             }
         }
     }
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device, uint32 modifiers)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, eInputDevices device, uint32 modifiers)
 {
     UIEvent newTouch;
     newTouch.touchId = id;
@@ -1089,7 +1089,7 @@ void WinUAPXamlApp::SendBackKeyEvents()
         ev.keyChar = 0;
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.key = Key::BACK;
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.modifiers = modifiers;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 

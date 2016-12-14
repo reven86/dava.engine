@@ -4,7 +4,6 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/iOS/WindowNativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
@@ -22,7 +21,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this, engineBackend->GetOptions()))
-    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 
@@ -76,6 +74,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to iOS window
+}
+
 void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
 {
     // Fullscreen mode cannot be changed on iOS
@@ -84,6 +87,11 @@ void WindowBackend::SetFullscreen(eFullscreen /*newMode*/)
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
