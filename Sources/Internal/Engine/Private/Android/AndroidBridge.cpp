@@ -167,6 +167,8 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
     cmdargs = GetCommandArgs(cmdline);
     engineBackend = new EngineBackend(cmdargs);
 
+    // Log parameters only after EngineBackend instance is created
+    // Since it's responsible for creating Logger instance
     Logger::FrameworkDebug("=========== externalDocumentsDir='%s'", externalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== internalDocumentsDir='%s'", internalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== appPath='%s'", appPath.c_str());
