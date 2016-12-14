@@ -1,12 +1,19 @@
 
-#include "ModuleManager/ModuleManager.h"
+#include "PluginManager/PluginManager.h"
+#include "PluginManager/Private/PluginHelper.h"
 #include "ModuleManager/IModule.h"
-#include "FileSystem/FileSystem.h"
-#include <dlfcn.h>
 
-namespace DAVA
+struct PluginManager::PointersToPluginFuctions
 {
-Vector<FilePath> ModuleManager::PluginList(const FilePath& folder, EFindPlugunMode mode) const
+    CreatPluginFuncPtr creatPluginFunc;
+    DestroyPluginFuncPtr destroyPluginFunc;
+    IModule* ptrPlugin;
+    String namePlugin;
+
+    PluginHandle handle;
+};
+
+Vector<FilePath> PluginManager::PluginList(const FilePath& folder, EFindPlugunMode mode) const
 {
 #ifdef __DAVAENGINE_DEBUG__
     bool debugMode = true;
@@ -14,8 +21,15 @@ Vector<FilePath> ModuleManager::PluginList(const FilePath& folder, EFindPlugunMo
     bool debugMode = false;
 #endif
 
-    String debugSuffix = "Debug";
+#if defined(__DAVAENGINE_MACOS__) 
     String dlibExtension = ".dylib";
+#elif defined(__DAVAENGINE_WIN32__)
+    String dlibExtension = ".dll";
+#else
+    String dlibExtension = ".so";
+#endif
+
+    String debugSuffix = "Debug";
 
     Vector<FilePath> pluginsList;
 
@@ -59,25 +73,32 @@ Vector<FilePath> ModuleManager::PluginList(const FilePath& folder, EFindPlugunMo
     return pluginsList;
 }
 
-void ModuleManager::InitPlugin(const FilePath& pluginPatch)
+void PluginManager::InitPlugin(const FilePath& pluginPatch)
 {
     PointersToPluginFuctions plugin;
 
     // Open the library.
     String pluginPath = pluginPatch.GetAbsolutePathname();
-    plugin.libHandle = dlopen(pluginPath.c_str(), RTLD_NOW);
-    if (nullptr == plugin.libHandle)
+    plugin.handle = OpenPlugin(pluginPath.c_str());
+    if (nullptr == plugin.handle)
     {
-        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, dlerror());
+        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str() );
     }
 
     plugin.namePlugin = pluginPatch.GetFilename();
-    plugin.creatPluginFunc = reinterpret_cast<CreatPluginFuncPtr>(dlsym(plugin.libHandle, "CreatPlugin"));
-    plugin.destroyPluginFunc = reinterpret_cast<DestroyPluginFuncPtr>(dlsym(plugin.libHandle, "DestroyPlugin"));
+    plugin.creatPluginFunc = LoadFunction<CreatPluginFuncPtr>( plugin.handle, "CreatPlugin" );
+    plugin.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>( plugin.handle, "DestroyPlugin" );
 
-    if (nullptr == plugin.creatPluginFunc || nullptr == plugin.destroyPluginFunc)
+    if ( nullptr == plugin.creatPluginFunc )
     {
-        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, dlerror());
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatPlugin" );
+        DVASSERT(nullptr != plugin.creatPluginFunc);
+    }
+
+    if ( nullptr == plugin.destroyPluginFunc )
+    {
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin" );
+        DVASSERT(nullptr != plugin.destroyPluginFunc);
     }
 
     plugin.ptrPlugin = plugin.creatPluginFunc(rootEngine);
@@ -89,9 +110,10 @@ void ModuleManager::InitPlugin(const FilePath& pluginPatch)
     plugins.emplace_back(plugin);
 
     Logger::Debug("Plugin loaded - %s", plugin.namePlugin.c_str());
+
 }
 
-void ModuleManager::ShutdownPlugins()
+void PluginManager::ShutdownPlugins()
 {
     for (auto it = rbegin(plugins); it != rend(plugins); ++it)
     {
@@ -101,10 +123,19 @@ void ModuleManager::ShutdownPlugins()
     for (auto it = rbegin(plugins); it != rend(plugins); ++it)
     {
         it->destroyPluginFunc(it->ptrPlugin);
-        dlclose(it->libHandle);
+        ClosePlugin( it->handle );
         Logger::Debug("Plugin unloaded - %s", it->namePlugin.c_str());
     }
 
     plugins.clear();
 }
+
+PluginManager::PluginManager(Engine* engine)
+  : rootEngine(engine )
+{
+}
+
+PluginManager::~PluginManager()
+{
+    DVASSERT( !plugins.size() );
 }

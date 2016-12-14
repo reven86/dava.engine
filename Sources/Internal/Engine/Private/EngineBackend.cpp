@@ -28,6 +28,7 @@
 #include "Job/JobManager.h"
 #include "Logger/Logger.h"
 #include "ModuleManager/ModuleManager.h"
+#include "PluginManager/PluginManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
 #include "PackManager/Private/PackManagerImpl.h"
@@ -707,6 +708,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
+    context->pluginManager = new PluginManager(GetEngine());
     context->analyticsCore = new Analytics::Core;
 }
 
@@ -716,6 +718,9 @@ void EngineBackend::DestroySubsystems()
     delete context->settings;
     context->moduleManager->ShutdownModules();
     delete context->moduleManager;
+
+    context->pluginManager->ShutdownPlugins();
+    delete context->pluginManager;
 
     if (context->jobManager != nullptr)
     {

@@ -8,7 +8,6 @@ struct ModuleManager::PointersToModules
 };
 
 ModuleManager::ModuleManager(Engine* engine)
-    : rootEngine(engine)
 {
 }
 

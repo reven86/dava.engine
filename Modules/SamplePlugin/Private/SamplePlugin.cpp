@@ -1,4 +1,5 @@
-#include "SamplePlugin.h"
+#include "PluginManager/PluginManager.h"
+#include "ModuleManager/IModule.h"
 
 class SamplePlugin : public DAVA::IModule
 {
@@ -16,6 +17,10 @@ public:
         statusList.emplace_back(eStatus::ES_UNKNOWN);
     }
     
+    ~SamplePlugin()
+    {
+    }
+
     void Init() override
     {
         statusList.emplace_back(eStatus::ES_INIT);
@@ -31,15 +36,21 @@ private:
     
 };
 
+//
 
-EXPORT
-DAVA::IModule* CreatPlugin( DAVA::Engine* engine )
-{
-    return new SamplePlugin( engine );
-}
+extern "C" {
 
-EXPORT
-void DestroyPlugin(  DAVA::IModule* plugin )
-{
-    delete plugin;
+    //required a function
+    PLUGIN_FUNCTION_EXPORT
+    DAVA::IModule* CreatPlugin(DAVA::Engine* engine)
+    {
+        return new SamplePlugin(engine);
+    }
+
+    PLUGIN_FUNCTION_EXPORT
+    void DestroyPlugin(DAVA::IModule* plugin)
+    {
+        delete plugin;
+    }
+
 }

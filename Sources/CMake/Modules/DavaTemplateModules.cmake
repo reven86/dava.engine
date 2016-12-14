@@ -569,6 +569,9 @@ macro( setup_main_module )
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
                 add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
 
+                if( WIN32 )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
+                endif()            
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 

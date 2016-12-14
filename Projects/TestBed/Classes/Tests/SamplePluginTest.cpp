@@ -1,5 +1,5 @@
 #include "Tests/SamplePluginTest.h"
-#include "ModuleManager/ModuleManager.h"
+#include "PluginManager/PluginManager.h"
 
 using namespace DAVA;
 
@@ -14,13 +14,13 @@ void SamplePluginTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    ModuleManager& mm = *engine.GetContext()->moduleManager;
+    PluginManager& mm = *engine.GetContext()->pluginManager;
     FileSystem& ff = *engine.GetContext()->fileSystem;
 
     FilePath executDir = ff.GetCurrentExecutableDirectory();
 
     Vector<FilePath> pluginsList;
-    pluginsList = mm.PluginList(executDir, ModuleManager::EFP_Auto);
+    pluginsList = mm.PluginList(executDir, PluginManager::EFP_Auto);
 
     for (auto it = rbegin(pluginsList); it != rend(pluginsList); ++it)
     {
@@ -32,6 +32,6 @@ void SamplePluginTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
 
-    ModuleManager& mm = *engine.GetContext()->moduleManager;
+    PluginManager& mm = *engine.GetContext()->pluginManager;
     mm.ShutdownPlugins();
 }

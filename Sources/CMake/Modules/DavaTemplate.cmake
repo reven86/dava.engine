@@ -58,6 +58,8 @@ load_property( PROPERTY_LIST
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}
+
+        PLUGIN_LIST
     )
 
 if( COVERAGE )
@@ -780,12 +782,6 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 endif()
 
 if( DEPLOY )
-    if( MACOS AND NOT MAC_DISABLE_BUNDLE)
-        set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/MacOS )
-    else()
-        set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR} )
-    endif()
-
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
     
@@ -878,6 +874,10 @@ if( DEPLOY )
 
     if( QT5_FOUND AND NOT QT_POST_DEPLOY )
         qt_deploy( )
+    endif()
+
+    if( PLUGIN_LIST )
+        add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
     endif()
 
 endif()
