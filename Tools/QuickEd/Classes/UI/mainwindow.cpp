@@ -26,8 +26,6 @@ using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(MainWindow,
                               PREF_ARG("isPixelized", false),
-                              PREF_ARG("state", String()),
-                              PREF_ARG("geometry", String()),
                               PREF_ARG("consoleState", String())
                               )
 
@@ -369,30 +367,6 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
     }
 #endif
     return false;
-}
-
-String MainWindow::GetState() const
-{
-    QByteArray state = saveState().toBase64();
-    return state.toStdString();
-}
-
-void MainWindow::SetState(const String& array)
-{
-    QByteArray state = QByteArray::fromStdString(array);
-    restoreState(QByteArray::fromBase64(state));
-}
-
-String MainWindow::GetGeometry() const
-{
-    QByteArray geometry = saveGeometry().toBase64();
-    return geometry.toStdString();
-}
-
-void MainWindow::SetGeometry(const String& array)
-{
-    QByteArray geometry = QByteArray::fromStdString(array);
-    restoreGeometry(QByteArray::fromBase64(geometry));
 }
 
 String MainWindow::GetConsoleState() const
