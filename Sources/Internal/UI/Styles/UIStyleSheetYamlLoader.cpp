@@ -35,7 +35,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
                 const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
                 if (propertyDescr.field_s != nullptr)
                 {
-                    propertiesToSet.push_back(UIStyleSheetProperty{ index, propertyIter.second->AsAny(propertyDescr.field_s->reflectedType) });
+                    propertiesToSet.push_back(UIStyleSheetProperty{ index, propertyIter.second->AsAny(propertyDescr.field_s) });
                 }
             }
 

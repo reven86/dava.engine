@@ -69,8 +69,10 @@ void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, 
     ReflectedType* rt = const_cast<ReflectedType*>(reflectedType);
 
     DVASSERT(rt != nullptr);
-    DVASSERT(rt->permanentName.empty() && "Name is already set");
-    DVASSERT(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
+
+    // TODO: Return back later
+    //DVASSERT(rt->permanentName.empty() && "Name is already set");
+    //DVASSERT(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
 
     rt->permanentName = permanentName;
     permanentNameToReflectedTypeMap[permanentName] = rt;

@@ -524,30 +524,29 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
     return VariantType();
 }
 
-Any YamlNode::AsAny(const ReflectedType* ref_type) const
+Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
 {
     // TODO: Make better
-    const Type* type = ref_type->GetType()->Decay();
-    const ReflectedStructure* rs = ref_type->GetStrucutre();
-    if (rs->meta->HasMeta<const EnumMap*>())
+    const Type* type = field->valueWrapper->GetType()->Decay();
+    if (field->meta && field->meta->HasMeta<EnumMeta>())
     {
         int32 val = 0;
-        const EnumMap* enumMap = *rs->meta->GetMeta<const EnumMap*>();
-        const uint32 count = GetCount();
-        if (count == 0)
+        const EnumMeta* emeta = field->meta->GetMeta<EnumMeta>();
+        if (GetType() == TYPE_STRING)
         {
-            if (enumMap->ToValue(AsString().c_str(), val))
+            if (emeta->value->ToValue(AsString().c_str(), val))
             {
-                return Any(val);
+                return emeta->cast(val);
             }
         }
         else
         {
+            const uint32 count = GetCount();
             for (uint32 i = 0; i < count; i++)
             {
                 const YamlNode* flagNode = Get(i);
                 int32 flag = 0;
-                if (enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                if (emeta->value->ToValue(flagNode->AsString().c_str(), flag))
                 {
                     val |= flag;
                 }
@@ -556,7 +555,7 @@ Any YamlNode::AsAny(const ReflectedType* ref_type) const
                     DVASSERT(false);
                 }
             }
-            return Any(val);
+            return emeta->cast(val);
         }
         DVASSERT(false);
     }
@@ -593,8 +592,7 @@ Any YamlNode::AsAny(const Reflection& ref) const
     {
         int32 val = 0;
         const EnumMeta* emeta = ref.GetMeta<EnumMeta>();
-        const uint32 count = GetCount();
-        if (count == 0)
+        if (GetType() == TYPE_STRING)
         {
             if (emeta->value->ToValue(AsString().c_str(), val))
             {
@@ -603,6 +601,7 @@ Any YamlNode::AsAny(const Reflection& ref) const
         }
         else
         {
+            const uint32 count = GetCount();
             for (uint32 i = 0; i < count; i++)
             {
                 const YamlNode* flagNode = Get(i);

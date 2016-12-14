@@ -246,7 +246,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
                         if (valueNode)
                         {
-                            Any value(valueNode->AsAny(propertyDescr.field_s->reflectedType));
+                            Any value(valueNode->AsAny(propertyDescr.field_s));
 
                             UIStyleSheetProperty property{ index, value };
 
