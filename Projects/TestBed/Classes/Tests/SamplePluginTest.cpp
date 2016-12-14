@@ -1,5 +1,7 @@
 #include "Tests/SamplePluginTest.h"
 #include "PluginManager/PluginManager.h"
+#include "Infrastructure/TestBed.h"
+#include "Engine/Engine.h"
 
 using namespace DAVA;
 
