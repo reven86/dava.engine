@@ -237,7 +237,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
                 {
                     uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                    if (propertyDescr.memberInfo != nullptr)
+                    if (propertyDescr.field_s != nullptr)
                     {
                         const YamlNode* propertyNode = propertyIter.second;
                         const YamlNode* valueNode = propertyNode;
@@ -246,7 +246,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
                         if (valueNode)
                         {
-                            VariantType value(valueNode->AsVariantType(propertyDescr.memberInfo));
+                            Any value(valueNode->AsAny(propertyDescr.field_s->reflectedType));
 
                             UIStyleSheetProperty property{ index, value };
 
@@ -345,7 +345,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             control->SetName(nameNode->AsFastName());
         }
-        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
+        LoadControlPropertiesFromYamlNode(control, Reflection::Create(&control), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);
@@ -369,21 +369,24 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    const InspInfo* baseInfo = typeInfo->BaseInfo();
-    if (baseInfo)
-        LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
-
-    builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
-    for (int32 i = 0; i < typeInfo->MembersCount(); i++)
+    builder->BeginControlPropertiesSection(ref.GetValueType()->GetName());
+    auto& fields = ref.GetFields();
+    for (auto& field : fields)
     {
-        const InspMember* member = typeInfo->Member(i);
+        String name(field.key.Cast<String>());
 
-        VariantType res;
+        if (name == "components" || name == "background")
+        {
+            // TODO: Make loading components by reflection here
+            continue;
+        }
+
+        Any res;
         if (node)
-            res = ReadVariantTypeFromYamlNode(member, node, member->Name().c_str());
-        builder->ProcessProperty(member, res);
+            res = ReadVariantTypeFromYamlNode(field.ref, node, name);
+        builder->ProcessProperty(field, res);
     }
     builder->EndControlPropertiesSection();
 }
@@ -396,25 +399,26 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
-            const InspInfo* insp = component->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            const Reflection& componentRef = Reflection::Create(&component);
+            auto& fields = componentRef.GetFields();
+            for (auto& field : fields)
             {
-                const InspMember* member = insp->Member(j);
-                VariantType res;
+                Any res;
                 if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && member->Name() == FastName("orientation"))
+                    FastName name(field.key.Cast<String>());
+                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && name == FastName("orientation"))
                     {
-                        const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
+                        const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
                         if (valueNode)
                         {
                             if (valueNode->AsString() == "Horizontal")
                             {
-                                res.SetInt32(UILinearLayoutComponent::LEFT_TO_RIGHT);
+                                res = UILinearLayoutComponent::LEFT_TO_RIGHT;
                             }
                             else if (valueNode->AsString() == "Vertical")
                             {
-                                res.SetInt32(UILinearLayoutComponent::TOP_DOWN);
+                                res = UILinearLayoutComponent::TOP_DOWN;
                             }
                             else
                             {
@@ -424,12 +428,12 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                     }
                 }
 
-                if (res.GetType() == VariantType::TYPE_NONE)
+                if (res.IsEmpty())
                 {
-                    res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name().c_str());
+                    res = ReadVariantTypeFromYamlNode(field.ref, nodeDescr.node, field.key.Cast<String>());
                 }
 
-                builder->ProcessProperty(member, res);
+                builder->ProcessProperty(field, res);
             }
         }
 
@@ -454,12 +458,12 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
         UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
         if (component)
         {
-            const InspInfo* insp = component->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            const Reflection& componentRef = Reflection::Create(&component);
+            auto& fields = componentRef.GetFields();
+            for (auto& field : fields)
             {
-                const InspMember* member = insp->Member(j);
-                VariantType res = ReadVariantTypeFromYamlNode(member, node, legacyAlignsMap[String(member->Name().c_str())]);
-                builder->ProcessProperty(member, res);
+                Any res = ReadVariantTypeFromYamlNode(field.ref, node, legacyAlignsMap[field.key.Cast<String>()]);
+                builder->ProcessProperty(field, res);
             }
         }
 
@@ -523,31 +527,31 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
         UIControlBackground* bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
         if (bg)
         {
-            const InspInfo* insp = bg->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            const Reflection& bgRef = Reflection::Create(&bg);
+            auto& fields = bgRef.GetFields();
+            for (auto& field : fields)
             {
-                const InspMember* member = insp->Member(j);
-                VariantType res;
+                Any res;
                 if (componentNode)
                 {
                     if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
                     {
-                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
+                        const YamlNode* valueNode = componentNode->Get(field.key.Cast<String>());
                         if (valueNode)
                         {
-                            if (member->Name() == FastName("spriteModification"))
+                            if (field.key.Cast<String>() == "spriteModification")
                             {
-                                res.SetInt32(valueNode->AsInt32());
+                                res = valueNode->AsInt32();
                             }
                         }
                     }
 
-                    if (res.GetType() == VariantType::TYPE_NONE)
+                    if (res.IsEmpty())
                     {
-                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                        res = ReadVariantTypeFromYamlNode(field.ref, componentNode, field.key.Cast<String>());
                     }
                 }
-                builder->ProcessProperty(member, res);
+                builder->ProcessProperty(field, res);
             }
         }
         builder->EndBgPropertiesSection();
@@ -566,30 +570,28 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl* contr
         UIControl* internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
         if (internalControl)
         {
-            const InspInfo* insp = internalControl->GetTypeInfo();
-
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            const Reflection& internalRef = Reflection::Create(&internalControl);
+            auto& fields = internalRef.GetFields();
+            for (auto& field : fields)
             {
-                const InspMember* member = insp->Member(j);
-
-                VariantType value;
+                Any value;
                 if (componentNode)
-                    value = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-                builder->ProcessProperty(member, value);
+                    value = ReadVariantTypeFromYamlNode(field.ref, componentNode, field.key.Cast<String>());
+                builder->ProcessProperty(field, value);
             }
         }
         builder->EndInternalControlSection();
     }
 }
 
-VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const String& propertyName)
+Any UIPackageLoader::ReadVariantTypeFromYamlNode(const Reflection& reflection, const YamlNode* node, const String& name)
 {
-    const YamlNode* valueNode = node->Get(propertyName);
+    const YamlNode* valueNode = node->Get(name);
 
     if (valueNode)
     {
-        return valueNode->AsVariantType(member);
+        return valueNode->AsAny(reflection);
     }
-    return VariantType();
+    return Any();
 }
 }

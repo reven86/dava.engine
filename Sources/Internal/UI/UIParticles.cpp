@@ -14,6 +14,8 @@ Camera* UIParticles::defaultCamera = nullptr;
 DAVA_REFLECTION_IMPL(UIParticles)
 {
     ReflectionRegistrator<UIParticles>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIParticles* o) { o->Release(); })
     .Field("effectPath", &UIParticles::GetEffectPath, &UIParticles::SetEffectPath)
     .Field("autoStart", &UIParticles::IsAutostart, &UIParticles::SetAutostart)
     .Field("startDelay", &UIParticles::GetStartDelay, &UIParticles::SetStartDelay)

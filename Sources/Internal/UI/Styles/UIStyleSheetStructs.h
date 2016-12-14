@@ -38,13 +38,21 @@ struct UIStyleSheetPropertyDescriptor
     FastName name;
     Any defaultValue;
     String fieldName;
+    const ReflectedStructure::Field* field_s = nullptr;
 
-    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const Any& defaultValue_, const String& fieldName)
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const Any& defaultValue_, const ReflectedType* reftype_, const String& fieldname_)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
-        , fieldName(fieldName)
     {
+        const ReflectedStructure* s = reftype_->GetStrucutre();
+        auto it = std::find_if(s->fields.begin(), s->fields.end(), [&fieldname_](const std::unique_ptr<ReflectedStructure::Field>& field) {
+            return field->name == fieldname_;
+        });
+        if (it != s->fields.end())
+        {
+            field_s = it->get();
+        }
     }
 
     inline String GetFullName() const

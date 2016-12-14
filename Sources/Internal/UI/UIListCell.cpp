@@ -7,6 +7,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIListCell)
 {
     ReflectionRegistrator<UIListCell>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIListCell* o) { o->Release(); })
     .Field("identifier", &UIListCell::GetIdentifier, &UIListCell::SetIdentifier)
     .End();
 }

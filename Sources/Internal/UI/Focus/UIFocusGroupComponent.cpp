@@ -5,6 +5,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIFocusGroupComponent)
 {
     ReflectionRegistrator<UIFocusGroupComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIFocusGroupComponent* o) { o->Release(); })
     .End();
 }
 

@@ -2,6 +2,7 @@
 #define __DAVAENGINE_GLOBAL_ENUM_H__
 
 #include "Base/EnumMap.h"
+#include "Base/Any.h"
 
 template <typename T>
 class GlobalEnumMap
@@ -37,6 +38,43 @@ void GlobalEnumMap<T>::Register(const int e, const char* s)
 {
     Instance()->Register(e, s);
 }
+
+/** Struct for store meta information about enum in reflection */
+// TODO: Wait mechanism implementation to work with enums in reflection
+struct EnumMeta
+{
+    template <typename T>
+    static EnumMeta Create(bool autocast = true)
+    {
+        if (autocast)
+        {
+            auto cast = [](DAVA::int32 value) -> Any
+            {
+                return DAVA::Any(static_cast<T>(value));
+            };
+            return EnumMeta(GlobalEnumMap<T>::Instance(), cast);
+        }
+        else
+        {
+            auto nocast = [](DAVA::int32 value) -> Any
+            {
+                return Any(value);
+            };
+            return EnumMeta(GlobalEnumMap<T>::Instance(), nocast);
+        }
+    }
+
+    typedef DAVA::Any (*CastFn)(DAVA::int32);
+
+    EnumMeta(const EnumMap* v, CastFn c)
+        : value(v)
+        , cast(c)
+    {
+    }
+
+    const EnumMap* const value;
+    CastFn const cast;
+};
 
 #define ENUM_DECLARE(eType) template <> void GlobalEnumMap<eType>::RegisterAll()
 #define ENUM_ADD(eValue) Register(eValue, #eValue)

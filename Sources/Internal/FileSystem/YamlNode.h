@@ -81,6 +81,8 @@ public:
     VariantType AsVariantType() const;
 
     VariantType AsVariantType(const InspMember* insp) const;
+    Any AsAny(const ReflectedType* type) const;
+    Any AsAny(const Reflection& ref) const;
 
     //These functions work only if type of node is array or map
     uint32 GetCount() const;

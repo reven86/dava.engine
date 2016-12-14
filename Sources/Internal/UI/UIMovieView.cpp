@@ -31,6 +31,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIMovieView)
 {
     ReflectionRegistrator<UIMovieView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIMovieView* o) { o->Release(); })
     .End();
 }
 

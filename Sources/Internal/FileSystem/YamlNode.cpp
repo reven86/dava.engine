@@ -3,6 +3,8 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+#include "Base/Type.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -520,6 +522,127 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
 
     DVASSERT(false);
     return VariantType();
+}
+
+Any YamlNode::AsAny(const ReflectedType* ref_type) const
+{
+    // TODO: Make better
+    const Type* type = ref_type->GetType()->Decay();
+    const ReflectedStructure* rs = ref_type->GetStrucutre();
+    if (rs->meta->HasMeta<const EnumMap*>())
+    {
+        int32 val = 0;
+        const EnumMap* enumMap = *rs->meta->GetMeta<const EnumMap*>();
+        const uint32 count = GetCount();
+        if (count == 0)
+        {
+            if (enumMap->ToValue(AsString().c_str(), val))
+            {
+                return Any(val);
+            }
+        }
+        else
+        {
+            for (uint32 i = 0; i < count; i++)
+            {
+                const YamlNode* flagNode = Get(i);
+                int32 flag = 0;
+                if (enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                {
+                    val |= flag;
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
+            return Any(val);
+        }
+        DVASSERT(false);
+    }
+    else if (type == Type::Instance<bool>()->Decay())
+        return Any(AsBool());
+    else if (type == Type::Instance<int32>()->Decay())
+        return Any(AsInt32());
+    else if (type == Type::Instance<uint32>()->Decay())
+        return Any(AsUInt32());
+    else if (type == Type::Instance<String>()->Decay())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>()->Decay())
+        return Any(AsWString());
+    else if (type == Type::Instance<float32>()->Decay())
+        return Any(AsFloat());
+    else if (type == Type::Instance<Vector2>()->Decay())
+        return Any(AsVector2());
+    else if (type == Type::Instance<Color>()->Decay())
+        return Any(AsColor());
+    else if (type == Type::Instance<Vector4>()->Decay())
+        return Any(AsVector4());
+    else if (type == Type::Instance<FilePath>()->Decay())
+        return Any(FilePath(AsString()));
+
+    DVASSERT(false);
+    return Any();
+}
+
+Any YamlNode::AsAny(const Reflection& ref) const
+{
+    // TODO: Make better
+    const Type* type = ref.GetValueType()->Decay();
+    if (ref.HasMeta<EnumMeta>())
+    {
+        int32 val = 0;
+        const EnumMeta* emeta = ref.GetMeta<EnumMeta>();
+        const uint32 count = GetCount();
+        if (count == 0)
+        {
+            if (emeta->value->ToValue(AsString().c_str(), val))
+            {
+                return emeta->cast(val);
+            }
+        }
+        else
+        {
+            for (uint32 i = 0; i < count; i++)
+            {
+                const YamlNode* flagNode = Get(i);
+                int32 flag = 0;
+                if (emeta->value->ToValue(flagNode->AsString().c_str(), flag))
+                {
+                    val |= flag;
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
+            return emeta->cast(val);
+        }
+        DVASSERT(false);
+    }
+    else if (type == Type::Instance<bool>()->Decay())
+        return Any(AsBool());
+    else if (type == Type::Instance<int32>()->Decay())
+        return Any(AsInt32());
+    else if (type == Type::Instance<uint32>()->Decay())
+        return Any(AsUInt32());
+    else if (type == Type::Instance<String>()->Decay())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>()->Decay())
+        return Any(AsWString());
+    else if (type == Type::Instance<float32>()->Decay())
+        return Any(AsFloat());
+    else if (type == Type::Instance<Vector2>()->Decay())
+        return Any(AsVector2());
+    else if (type == Type::Instance<Color>()->Decay())
+        return Any(AsColor());
+    else if (type == Type::Instance<Vector4>()->Decay())
+        return Any(AsVector4());
+    else if (type == Type::Instance<FilePath>()->Decay())
+        return Any(FilePath(AsString()));
+
+    DVASSERT(false);
+    return Any();
 }
 
 const Vector<YamlNode*>& YamlNode::AsVector() const

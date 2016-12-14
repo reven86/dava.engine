@@ -103,7 +103,7 @@ void ScriptingTest::LoadResources()
 
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/ScriptingTest.yaml", &pkgBuilder);
-    UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
+    UIControl* dialog = pkgBuilder.GetPackage()->GetControl("MainFrame");
     AddControl(dialog);
 
     scriptText = static_cast<UITextField*>(dialog->FindByName("ScriptText"));

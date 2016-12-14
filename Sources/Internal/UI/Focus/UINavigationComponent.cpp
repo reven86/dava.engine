@@ -5,6 +5,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UINavigationComponent)
 {
     ReflectionRegistrator<UINavigationComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UINavigationComponent* o) { o->Release(); })
     .Field("left", &UINavigationComponent::GetNextFocusLeft, &UINavigationComponent::SetNextFocusLeft)
     .Field("right", &UINavigationComponent::GetNextFocusRight, &UINavigationComponent::SetNextFocusRight)
     .Field("up", &UINavigationComponent::GetNextFocusUp, &UINavigationComponent::SetNextFocusUp)

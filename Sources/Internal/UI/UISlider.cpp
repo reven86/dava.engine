@@ -19,6 +19,8 @@ static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 DAVA_REFLECTION_IMPL(UISlider)
 {
     ReflectionRegistrator<UISlider>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISlider* o) { o->Release(); })
     .Field("minValue", &UISlider::GetMinValue, &UISlider::SetMinValue)
     .Field("maxValue", &UISlider::GetMaxValue, &UISlider::SetMaxValue)
     .Field("value", &UISlider::GetValue, &UISlider::SetValue)

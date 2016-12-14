@@ -5,6 +5,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIModalInputComponent)
 {
     ReflectionRegistrator<UIModalInputComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIModalInputComponent* o) { o->Release(); })
     .Field("enabled", &UIModalInputComponent::IsEnabled, &UIModalInputComponent::SetEnabled)
     .End();
 }

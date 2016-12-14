@@ -11,6 +11,8 @@ static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 DAVA_REFLECTION_IMPL(UIScrollView)
 {
     ReflectionRegistrator<UIScrollView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScrollView* o) { o->Release(); })
     .Field("autoUpdate", &UIScrollView::IsAutoUpdate, &UIScrollView::SetAutoUpdate)
     .Field("centerContent", &UIScrollView::IsCenterContent, &UIScrollView::SetCenterContent)
     .End();

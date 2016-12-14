@@ -11,7 +11,9 @@ static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 DAVA_REFLECTION_IMPL(UIScrollBar)
 {
     ReflectionRegistrator<UIScrollBar>::Begin()
-    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation)
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScrollBar* o) { o->Release(); })
+    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation) // TODO: make enum
     .End();
 }
 

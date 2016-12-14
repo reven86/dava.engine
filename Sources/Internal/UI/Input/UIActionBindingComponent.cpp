@@ -8,6 +8,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIActionBindingComponent)
 {
     ReflectionRegistrator<UIActionBindingComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIActionBindingComponent* o) { o->Release(); })
     .Field("actions", &UIActionBindingComponent::GetActionsAsString, &UIActionBindingComponent::SetActionsFromString)
     .Field("blockOtherShortcuts", &UIActionBindingComponent::IsBlockOtherKeyboardShortcuts, &UIActionBindingComponent::SetBlockOtherKeyboardShortcuts)
     .End();

@@ -8,8 +8,13 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIFlowLayoutComponent)
 {
     ReflectionRegistrator<UIFlowLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIFlowLayoutComponent* o) { o->Release(); })
     .Field("enabled", &UIFlowLayoutComponent::IsEnabled, &UIFlowLayoutComponent::SetEnabled)
-    .Field("orientation", &UIFlowLayoutComponent::GetOrientationAsInt, &UIFlowLayoutComponent::SetOrientationFromInt)
+    .Field("orientation", &UIFlowLayoutComponent::GetOrientation, &UIFlowLayoutComponent::SetOrientation)
+    [
+    Meta<EnumMeta>(EnumMeta::Create<eOrientation>())
+    ]
     .Field("hPadding", &UIFlowLayoutComponent::GetHorizontalPadding, &UIFlowLayoutComponent::SetHorizontalPadding)
     .Field("hDynamicPadding", &UIFlowLayoutComponent::IsDynamicHorizontalPadding, &UIFlowLayoutComponent::SetDynamicHorizontalPadding)
     .Field("hDynamicInLinePadding", &UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding, &UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding)

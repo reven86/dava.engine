@@ -7,6 +7,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIIgnoreLayoutComponent)
 {
     ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIIgnoreLayoutComponent* o) { o->Release(); })
     .Field("enabled", &UIIgnoreLayoutComponent::IsEnabled, &UIIgnoreLayoutComponent::SetEnabled)
     .End();
 }

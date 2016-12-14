@@ -367,22 +367,23 @@ void DefaultUIPackageBuilder::EndInternalControlSection()
     currentObject = nullptr;
 }
 
-void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
+void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
 {
     DVASSERT(currentObject);
 
-    if (currentObject && value.GetType() != VariantType::TYPE_NONE)
+    if (currentObject && !value.IsEmpty())
     {
-        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
+        FastName name(field.key.Cast<String>());
+        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(name))
         {
             UIControl* control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name()), true);
+            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(name), true);
         }
 
-        if (member->Name() == PROPERTY_NAME_TEXT)
-            member->SetValue(currentObject, VariantType(LocalizedUtf8String(value.AsString())));
+        if (name == PROPERTY_NAME_TEXT)
+            field.ref.SetValue(Any(LocalizedUtf8String(value.Cast<String>())));
         else
-            member->SetValue(currentObject, value);
+            field.ref.SetValue(value);
     }
 }
 

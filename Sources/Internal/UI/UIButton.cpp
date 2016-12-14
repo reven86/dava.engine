@@ -16,6 +16,8 @@ static const String statePostfix[] = { "Normal", "PressedOutside", "PressedInsid
 DAVA_REFLECTION_IMPL(UIButton)
 {
     ReflectionRegistrator<UIButton>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIButton* o) { o->Release(); })
     .End();
 }
 

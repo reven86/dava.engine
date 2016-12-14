@@ -31,6 +31,8 @@ const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_i
 DAVA_REFLECTION_IMPL(UIControl)
 {
     ReflectionRegistrator<UIControl>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIControl* o) { o->Release(); })
     .Field("position", &UIControl::GetPosition, &UIControl::SetPosition)
     .Field("size", &UIControl::GetSize, &UIControl::SetSize)
     .Field("scale", &UIControl::GetScale, &UIControl::SetScale)
@@ -45,10 +47,10 @@ DAVA_REFLECTION_IMPL(UIControl)
     .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)
     .Field("tag", &UIControl::GetTag, &UIControl::SetTag)
     .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
-    .Field("background", &UIControl::GetBackground, &UIControl::SetBackground)
-    .Field("components", &UIControl::GetComponents, nullptr)
     .Field("debugDraw", &UIControl::GetDebugDraw, &UIControl::SetDebugDrawNotHierarchic)
     .Field("debugDrawColor", &UIControl::GetDebugDrawColor, &UIControl::SetDebugDrawColor)
+    .Field("background", &UIControl::GetBackground, &UIControl::SetBackground)
+    .Field("components", &UIControl::GetComponents, nullptr)
     .End();
 }
 

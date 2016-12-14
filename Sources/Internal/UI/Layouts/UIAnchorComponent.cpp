@@ -8,6 +8,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIAnchorComponent)
 {
     ReflectionRegistrator<UIAnchorComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIAnchorComponent* o) { o->Release(); })
     .Field("enabled", &UIAnchorComponent::IsEnabled, &UIAnchorComponent::SetEnabled)
     .Field("leftAnchorEnabled", &UIAnchorComponent::IsLeftAnchorEnabled, &UIAnchorComponent::SetLeftAnchorEnabled)
     .Field("leftAnchor", &UIAnchorComponent::GetLeftAnchor, &UIAnchorComponent::SetLeftAnchor)

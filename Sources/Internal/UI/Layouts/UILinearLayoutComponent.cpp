@@ -7,8 +7,13 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UILinearLayoutComponent)
 {
     ReflectionRegistrator<UILinearLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UILinearLayoutComponent* o) { o->Release(); })
     .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)
-    .Field("orientation", &UILinearLayoutComponent::GetOrientationAsInt, &UILinearLayoutComponent::SetOrientationFromInt)
+    .Field("orientation", &UILinearLayoutComponent::GetOrientation, &UILinearLayoutComponent::SetOrientation)
+    [
+    Meta<EnumMeta>(EnumMeta::Create<eOrientation>())
+    ]
     .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)
     .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)
     .Field("spacing", &UILinearLayoutComponent::GetSpacing, &UILinearLayoutComponent::SetSpacing)

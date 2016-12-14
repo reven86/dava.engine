@@ -5,6 +5,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UITabOrderComponent)
 {
     ReflectionRegistrator<UITabOrderComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UITabOrderComponent* o) { o->Release(); })
     .Field("tab", &UITabOrderComponent::GetTabOrder, &UITabOrderComponent::SetTabOrder)
     .End();
 }

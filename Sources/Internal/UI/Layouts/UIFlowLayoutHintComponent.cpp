@@ -8,6 +8,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UIFlowLayoutHintComponent)
 {
     ReflectionRegistrator<UIFlowLayoutHintComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIFlowLayoutHintComponent* o) { o->Release(); })
     .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)
     .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)
     .End();

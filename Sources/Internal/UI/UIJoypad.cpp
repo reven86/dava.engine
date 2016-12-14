@@ -10,6 +10,8 @@ static const FastName UIJOYPAD_STICK_NAME("stick");
 DAVA_REFLECTION_IMPL(UIJoypad)
 {
     ReflectionRegistrator<UIJoypad>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIJoypad* o) { o->Release(); })
     .Field("deadAreaSize", &UIJoypad::GetDeadAreaSize, &UIJoypad::SetDeadAreaSize)
     .Field("digitalSense", &UIJoypad::GetDigitalSense, &UIJoypad::SetDigitalSense)
     .End();

@@ -14,6 +14,8 @@ int32 UIScreen::groupIdCounter = -1;
 DAVA_REFLECTION_IMPL(UIScreen)
 {
     ReflectionRegistrator<UIScreen>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScreen* o) { o->Release(); })
     .End();
 }
 

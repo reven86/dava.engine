@@ -283,7 +283,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
     case ePropertyOwner::CONTROL:
     {
         Reflection cRef = Reflection::Create(&control);
-        Reflection fRef = cRef.GetField(descr.fieldName).ref;
+        Reflection fRef = cRef.GetField(descr.field_s->name);
         if (fRef.IsValid())
         {
             action(control, fRef);
@@ -295,7 +295,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         {
             UIControlBackground* background = control->GetBackgroundComponent(0);
             Reflection bRef = Reflection::Create(&background);
-            Reflection fRef = bRef.GetField(descr.fieldName).ref;
+            Reflection fRef = bRef.GetField(descr.field_s->name);
             if (fRef.IsValid())
             {
                 action(control, fRef);
@@ -306,7 +306,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {
             Reflection cRef = Reflection::Create(&component);
-            Reflection fRef = cRef.GetField(descr.fieldName).ref;
+            Reflection fRef = cRef.GetField(descr.field_s->name);
             if (fRef.IsValid())
             {
                 action(control, fRef);

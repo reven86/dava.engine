@@ -16,6 +16,8 @@ namespace DAVA
 DAVA_REFLECTION_IMPL(UI3DView)
 {
     ReflectionRegistrator<UI3DView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UI3DView* o) { o->Release(); })
     .Field("drawToFrameBuffer", &UI3DView::GetDrawToFrameBuffer, &UI3DView::SetDrawToFrameBuffer)
     .Field("frameBufferScaleFactor", &UI3DView::GetFrameBufferScaleFactor, &UI3DView::SetFrameBufferScaleFactor)
     .End();
