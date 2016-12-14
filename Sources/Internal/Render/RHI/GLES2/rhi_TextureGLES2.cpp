@@ -874,7 +874,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             }
         }
 
-        if (depthStencil != InvalidHandle)
+        if (depthStencil != InvalidHandle && depthStencil != DefaultDepthBuffer)
         {
             TextureGLES2_t* ds = TextureGLES2Pool::Get(depthStencil);
 
