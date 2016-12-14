@@ -4,7 +4,6 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 namespace DAVA

@@ -21,9 +21,7 @@ StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode* aStyleSheet, cons
 
     for (const UIStyleSheetSelectorChain& chain : selectorChains)
     {
-        UIStyleSheetSourceInfo ssSourceInfo(sourceInfo);
-
-        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain, ssSourceInfo));
+        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain, sourceInfo));
         selector->SetStyleSheetPropertyTable(propertyTable);
         selectors->AddProperty(selector);
     }
