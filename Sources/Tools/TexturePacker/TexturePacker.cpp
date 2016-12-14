@@ -255,17 +255,14 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
 
     for (uint32 imageNum = 0; imageNum < finalImages.size(); ++imageNum)
     {
-        std::stringstream name;
-        name << basename << imageNum << texturePostfix;
-        FilePath textureName = outputPath + name.str();
-        ExportImage(finalImages[imageNum], imageExportKeys, textureName);
+        String textureName = MakeTextureName(basename, imageNum);
+        FilePath texturePathWithoutExtension = outputPath + textureName;
+        ExportImage(finalImages[imageNum], imageExportKeys, texturePathWithoutExtension);
     }
 
     for (const DefinitionFile::Pointer& defFile : defList)
     {
         String fileName = defFile->filename.GetFilename();
-        FilePath textureName = outputPath + "texture";
-
         if (!WriteMultipleDefinition(resultSheets, outputPath, basename, *(defFile.Get())))
         {
             AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
@@ -273,8 +270,15 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
     }
 }
 
+String TexturePacker::MakeTextureName(const char* basename, uint32 textureIndex)
+{
+    std::stringstream name;
+    name << basename << textureIndex << texturePostfix;
+    return name.str();
+}
+
 bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedSheets, const FilePath& outputPath,
-                                            const String& _textureName, const DefinitionFile& defFile)
+                                            const char* textureBasename, const DefinitionFile& defFile)
 {
     String fileName = defFile.filename.GetFilename();
     Logger::FrameworkDebug("* Write definition: %s", fileName.c_str());
@@ -322,7 +326,8 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
         if (itFound != sheetIndexToFileIndex.end())
         {
             // here we write filename for i-th texture and write to map real index in file for this texture
-            fprintf(fp, "%s%d%s\n", _textureName.c_str(), i, textureExtension.c_str());
+            String textureName = MakeTextureName(textureBasename, i);
+            fprintf(fp, "%s%s\n", textureName.c_str(), textureExtension.c_str());
             itFound->second = realIndex++;
         }
     }
