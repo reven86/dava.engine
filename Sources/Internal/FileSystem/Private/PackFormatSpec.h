@@ -28,7 +28,7 @@ struct PackFile
                 uint32 compressedCrc32;
                 Compressor::Type type;
                 uint32 originalCrc32;
-                Array<char8, 4> reserved; // null bytes, leave for future
+                uint32 customUserData; // can be castom user index in metaData
             };
 
             Vector<Data> files;
@@ -45,7 +45,7 @@ struct PackFile
 
     struct FooterBlock
     {
-        Array<char, 4> reserved; // null bytes (space for future)
+        uint32 sizeOfMetaData; // 0 or size of castom user meta data before filesTable
         uint32 infoCrc32;
         struct Info
         {
