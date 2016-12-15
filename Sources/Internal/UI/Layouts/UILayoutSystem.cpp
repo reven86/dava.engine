@@ -17,6 +17,8 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
 
 namespace DAVA
 {

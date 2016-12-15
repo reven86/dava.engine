@@ -7,6 +7,8 @@
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Render/Renderer.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
 
 namespace DAVA
 {
