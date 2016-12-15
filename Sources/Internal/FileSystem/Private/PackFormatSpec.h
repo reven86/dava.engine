@@ -15,6 +15,11 @@ struct PackFile
     {
     } rawBytesOfCompressedFiles;
 
+    // 0 to footer.sizeOfMetaData bytes
+    struct CastomMetadataBlock
+    {
+    } metadata;
+
     struct FilesTableBlock
     {
         // table with info per file in archive (0 to N_files * sizeof(Data))
@@ -45,7 +50,7 @@ struct PackFile
 
     struct FooterBlock
     {
-        uint32 sizeOfMetaData; // 0 or size of castom user meta data before filesTable
+        uint32 sizeOfMetaData; // 0 or size of castom user meta data
         uint32 infoCrc32;
         struct Info
         {
