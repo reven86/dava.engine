@@ -76,12 +76,6 @@ void ProcessRecourcePacker(Engine& e)
         return;
     }
 
-    if (resourcePacker.rootDirectory.GetLastDirectoryName() != "DataSource")
-    {
-        Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
-        return;
-    }
-
     FilePath pvrTexToolFolder = CommandLineParser::GetCommandParam("-pvrTexToolPath");
     if (pvrTexToolFolder.IsEmpty())
     {
