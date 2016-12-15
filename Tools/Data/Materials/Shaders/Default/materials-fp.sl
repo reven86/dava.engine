@@ -454,7 +454,7 @@ fragment_out fp_main( fragment_in input )
                 #if FAST_METAL
                     float geometricFactor = 1.0;
                 #else
-                    float geometricFactor = 1.0 / LdotH * LdotH;
+                    float geometricFactor = 1.0;// / LdotH * LdotH; //once upon a time it was written wrong, just keep it for history
                 #endif
 
                 ColorType specular = specularNormalized * geometricFactor * fresnelOut;

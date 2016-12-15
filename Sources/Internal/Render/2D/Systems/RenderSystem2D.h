@@ -374,8 +374,8 @@ private:
 
     bool spriteClipping = true;
 
-    uint8* currentVertexBuffer = nullptr;
-    uint16* currentIndexBuffer = nullptr;
+    Vector<uint8> currentVertexBuffer;
+    Vector<uint16> currentIndexBuffer;
     rhi::Packet currentPacket;
     uint32 currentTexcoordStreamCount = 1; //1 is for default draw
     uint32 currentIndexBase = 0;
