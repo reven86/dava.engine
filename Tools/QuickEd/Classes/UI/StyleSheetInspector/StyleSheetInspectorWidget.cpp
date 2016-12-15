@@ -49,6 +49,16 @@ void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected
     Update();
 }
 
+void StyleSheetInspectorWidget::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+{
+    Update();
+}
+
+void StyleSheetInspectorWidget::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
+{
+    Update();
+}
+
 void StyleSheetInspectorWidget::StyleSheetsWereRebuilt()
 {
     Update();

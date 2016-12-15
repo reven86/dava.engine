@@ -20,6 +20,8 @@ public slots:
 
 private:
     // PackageListener
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+    void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property) override;
     void StyleSheetsWereRebuilt() override;
 
     void Update();
