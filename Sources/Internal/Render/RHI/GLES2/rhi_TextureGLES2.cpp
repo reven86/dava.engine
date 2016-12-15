@@ -44,8 +44,7 @@ public:
 
     void* mappedData = nullptr;
     SamplerState::Descriptor::Sampler samplerState;
-    //-    std::vector<FramebufferGLES2_t> fbo;
-    GLint fbo;
+    GLint fbo = 0;
 
     uint32 isMapped : 1;
     uint32 updatePending : 1;
@@ -875,7 +874,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             }
         }
 
-        if (depthStencil != InvalidHandle)
+        if (depthStencil != InvalidHandle && depthStencil != DefaultDepthBuffer)
         {
             TextureGLES2_t* ds = TextureGLES2Pool::Get(depthStencil);
 

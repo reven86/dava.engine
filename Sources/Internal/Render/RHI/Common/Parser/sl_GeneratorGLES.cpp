@@ -144,6 +144,7 @@ GLESGenerator::GLESGenerator(Allocator* allocator)
     scalarSwizzle4Function[0] = 0;
     sinCosFunction[0] = 0;
     outputPosition = false;
+    mrtUsed = false;
 }
 
 bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* entryName_, std::string* code)
@@ -605,7 +606,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                         {
                             writer.Write("gl_Position");
                         }
-                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0 || stricmp(f->semantic, "SV_TARGET1") == 0))
+                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0 || stricmp(f->semantic, "SV_TARGET1") == 0 || stricmp(f->semantic, "SV_TARGET2") == 0 || stricmp(f->semantic, "SV_TARGET3") == 0))
                         {
                             if (mrtUsed)
                             {
@@ -613,6 +614,10 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                                     writer.Write("gl_FragData[0]");
                                 else if (stricmp(f->semantic, "SV_TARGET1") == 0)
                                     writer.Write("gl_FragData[1]");
+                                else if (stricmp(f->semantic, "SV_TARGET2") == 0)
+                                    writer.Write("gl_FragData[2]");
+                                else if (stricmp(f->semantic, "SV_TARGET3") == 0)
+                                    writer.Write("gl_FragData[3]");
                             }
                             else
                             {
