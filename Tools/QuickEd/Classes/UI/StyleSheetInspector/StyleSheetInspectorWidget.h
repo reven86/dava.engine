@@ -8,7 +8,11 @@
 
 #include <memory>
 #include <QDockWidget>
-#include "ui_StyleSheetInspectorWidget.h"
+
+namespace Ui
+{
+class StyleSheetInspectorWidget;
+}
 
 class Document;
 
@@ -17,6 +21,7 @@ class StyleSheetInspectorWidget : public QDockWidget, PackageListener
     Q_OBJECT
 public:
     explicit StyleSheetInspectorWidget(QWidget* parent = nullptr);
+    ~StyleSheetInspectorWidget() override;
 
 public slots:
     void OnDocumentChanged(Document* context);

@@ -6,6 +6,8 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/QtDavaConvertion.h"
 
+#include "ui_StyleSheetInspectorWidget.h"
+
 using namespace DAVA;
 
 StyleSheetInspectorWidget::StyleSheetInspectorWidget(QWidget* parent /* = nullptr*/)
@@ -14,6 +16,8 @@ StyleSheetInspectorWidget::StyleSheetInspectorWidget(QWidget* parent /* = nullpt
 {
     ui->setupUi(this);
 }
+
+StyleSheetInspectorWidget::~StyleSheetInspectorWidget() = default;
 
 void StyleSheetInspectorWidget::OnDocumentChanged(Document* context)
 {
