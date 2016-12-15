@@ -200,7 +200,15 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
         data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
     }
 
-    data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
+    DAVA::FilePath editorConfigPath = data->GetProjectPath() + "EditorConfig.yaml";
+    if (fileSystem->Exists(editorConfigPath))
+    {
+        data->editorConfig->ParseConfig(editorConfigPath);
+    }
+    else
+    {
+        DAVA::Logger::Warning("Selected project doesn't contains EditorConfig.yaml");
+    }
 
     recentProject->Add(incomePath.GetAbsolutePathname());
 }
