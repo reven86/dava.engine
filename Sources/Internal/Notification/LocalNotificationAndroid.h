@@ -7,7 +7,6 @@
 
 #include "Engine/Android/JNIBridge.h"
 #include "Notification/LocalNotificationImpl.h"
-#include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
 #include "Concurrency/Mutex.h"
 
