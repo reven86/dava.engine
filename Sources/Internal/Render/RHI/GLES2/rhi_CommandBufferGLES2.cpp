@@ -648,14 +648,15 @@ void CommandBufferGLES2_t::Execute()
 
                 GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
 
+                #if defined(__DAVAENGINE_MACOS__)
+                // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
+                GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                #else
                 if (flags)
                 {
                     GL_CALL(glClear(flags));
                 }
-                #if __DAVAENGINE_MACOS__
-                // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
-                GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
-                GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
                 #endif
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
