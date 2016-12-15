@@ -1,9 +1,10 @@
 #ifndef __JNI_EXTENSIONS_H__
 #define __JNI_EXTENSIONS_H__
 
+#include "Base/BaseTypes.h"
+
 #if !defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>

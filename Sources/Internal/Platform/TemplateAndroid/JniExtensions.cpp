@@ -10,19 +10,13 @@
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Android/JNIBridge.h"
-#endif
-
 namespace DAVA
 {
 JniExtension::JniExtension()
 {
-#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
     vm = delegate->GetVM();
-#endif
 }
 
 JniExtension::~JniExtension()
@@ -55,19 +49,15 @@ jmethodID JniExtension::GetMethodID(const char* methodName, const char* paramCod
 
 JNIEnv* JniExtension::GetEnvironment() const
 {
-// right way to take JNIEnv
-// JNIEnv is valid only for the thread where it was gotten.
-// we shouldn't store JNIEnv.
-#if !defined(__DAVAENGINE_COREV2__)
+    // right way to take JNIEnv
+    // JNIEnv is valid only for the thread where it was gotten.
+    // we shouldn't store JNIEnv.
     JNIEnv* env;
     if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
     return env;
-#else
-    return JNI::GetEnv();
-#endif
 };
 
 Rect JniExtension::V2P(const Rect& srcRect) const
