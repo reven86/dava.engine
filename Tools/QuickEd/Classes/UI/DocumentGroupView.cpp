@@ -65,6 +65,7 @@ void MainWindow::DocumentGroupView::SetDocumentActionsEnabled(bool enabled)
     mainWindow->ui->packageWidget->setEnabled(enabled);
     mainWindow->ui->propertiesWidget->setEnabled(enabled);
     mainWindow->ui->libraryWidget->setEnabled(enabled);
+    mainWindow->ui->styleSheetInspectorWidget->setEnabled(enabled);
 
     mainWindow->ui->actionSaveDocument->setEnabled(enabled);
     mainWindow->ui->actionSaveAllDocuments->setEnabled(enabled);
