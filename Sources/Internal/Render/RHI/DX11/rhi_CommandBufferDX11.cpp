@@ -1580,7 +1580,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     {
         ds_view = _D3D11_DepthStencilView;
     }
-    else if (passCfg.depthStencilBuffer.texture == rhi::InvalidHandle)
+    else if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
     {
         if (passCfg.UsingMSAA())
             TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
