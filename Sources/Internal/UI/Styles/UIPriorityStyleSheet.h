@@ -11,7 +11,7 @@ class UIStyleSheet;
 class UIPriorityStyleSheet
 {
 public:
-    UIPriorityStyleSheet();
+    UIPriorityStyleSheet() = default;
     UIPriorityStyleSheet(UIStyleSheet* styleSheet, int32 priority = 0);
     UIPriorityStyleSheet(const UIPriorityStyleSheet& other);
     virtual ~UIPriorityStyleSheet();

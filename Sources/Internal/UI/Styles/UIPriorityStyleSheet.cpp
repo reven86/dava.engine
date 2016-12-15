@@ -4,10 +4,6 @@
 
 namespace DAVA
 {
-UIPriorityStyleSheet::UIPriorityStyleSheet()
-{
-}
-
 UIPriorityStyleSheet::UIPriorityStyleSheet(UIStyleSheet* aStyleSheet, int32 aPriority)
     : styleSheet(SafeRetain(aStyleSheet))
     , priority(aPriority)

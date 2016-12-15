@@ -1,17 +1,18 @@
-#include "UI/StyleSheetInspector/StyleSheetInspector.h"
+#include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;
 
-StyleSheetInspector::StyleSheetInspector(QWidget* parent /* = 0*/)
+StyleSheetInspectorWidget::StyleSheetInspectorWidget(QWidget* parent /* = nullptr*/)
     : QDockWidget(parent)
+    , ui(new Ui::StyleSheetInspectorWidget())
 {
-    setupUi(this);
+    ui->setupUi(this);
 }
 
-void StyleSheetInspector::OnDocumentChanged(Document* context)
+void StyleSheetInspectorWidget::OnDocumentChanged(Document* context)
 {
     if (packageNode)
     {
@@ -29,7 +30,7 @@ void StyleSheetInspector::OnDocumentChanged(Document* context)
     Update();
 }
 
-void StyleSheetInspector::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     for (auto node : selected)
     {
@@ -48,14 +49,14 @@ void StyleSheetInspector::OnSelectionChanged(const SelectedNodes& selected, cons
     Update();
 }
 
-void StyleSheetInspector::StyleSheetsWereRebuilt()
+void StyleSheetInspectorWidget::StyleSheetsWereRebuilt()
 {
     Update();
 }
 
-void StyleSheetInspector::Update()
+void StyleSheetInspectorWidget::Update()
 {
-    listWidget->clear();
+    ui->listWidget->clear();
 
     if (currentControl)
     {
@@ -93,8 +94,8 @@ void StyleSheetInspector::Update()
 
             QListWidgetItem* styleSheetItem = new QListWidgetItem(selector.c_str());
             styleSheetItem->setFont(boldFont);
-            styleSheetItem->setToolTip(ss->GetSourceInfo().file.GetStringValue().c_str());
-            listWidget->addItem(styleSheetItem);
+            styleSheetItem->setToolTip(ss->GetSourceInfo().file.GetFrameworkPath().c_str());
+            ui->listWidget->addItem(styleSheetItem);
 
             const UIStyleSheetPropertyTable* propertyTable = ss->GetPropertyTable();
             for (const UIStyleSheetProperty& prop : propertyTable->GetProperties())
@@ -118,7 +119,7 @@ void StyleSheetInspector::Update()
                     styleSheetPropertyItem->setTextColor(Qt::red);
                 }
 
-                listWidget->addItem(styleSheetPropertyItem);
+                ui->listWidget->addItem(styleSheetPropertyItem);
             }
 
             samePriorityPropertySet |= propertyTable->GetPropertySet();

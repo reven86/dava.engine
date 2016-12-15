@@ -131,6 +131,13 @@ private:
 
 struct UIStyleSheetSourceInfo
 {
+    UIStyleSheetSourceInfo() = default;
+
+    UIStyleSheetSourceInfo(const FilePath& aFile)
+        : file(aFile)
+    {
+    }
+
     FilePath file;
 };
 };

@@ -216,7 +216,9 @@ void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode* node)
     if (node->GetRootProperty()->CanAddSelector())
     {
         UIStyleSheetSelectorChain chain;
-        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain, UIStyleSheetSourceInfo()));
+        UIStyleSheetSourceInfo sourceInfo(document->GetPackageFilePath());
+
+        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain, sourceInfo));
         ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, true)));
     }
 }

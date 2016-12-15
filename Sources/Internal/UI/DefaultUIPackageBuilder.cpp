@@ -148,15 +148,12 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
 {
     for (const UIStyleSheetSelectorChain& chain : selectorChains)
     {
-        UIStyleSheetSourceInfo sourceInfo;
-        sourceInfo.file = currentPackagePath;
-
         ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
         styleSheet->SetSelectorChain(chain);
         ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
         propertiesTable->SetProperties(properties);
         styleSheet->SetPropertyTable(propertiesTable);
-        styleSheet->SetSourceInfo(sourceInfo);
+        styleSheet->SetSourceInfo(UIStyleSheetSourceInfo(currentPackagePath));
 
         package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
     }

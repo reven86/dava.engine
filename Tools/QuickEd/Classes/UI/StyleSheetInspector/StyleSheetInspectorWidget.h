@@ -3,26 +3,28 @@
 #include "EditorSystems/SelectionContainer.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Base/BaseTypes.h"
-#include "ui_StyleSheetInspector.h"
+#include "ui_StyleSheetInspectorWidget.h"
 #include <QWidget>
 #include <QDockWidget>
 #include <QPointer>
 
-class StyleSheetInspector : public QDockWidget, public Ui::StyleSheetInspector, PackageListener
+class StyleSheetInspectorWidget : public QDockWidget, PackageListener
 {
     Q_OBJECT
 public:
-    explicit StyleSheetInspector(QWidget* parent = 0);
+    explicit StyleSheetInspectorWidget(QWidget* parent = nullptr);
 
 public slots:
     void OnDocumentChanged(Document* context);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
+    // PackageListener
     void StyleSheetsWereRebuilt() override;
 
     void Update();
 
+    std::unique_ptr<Ui::StyleSheetInspectorWidget> ui;
     DAVA::RefPtr<DAVA::UIControl> currentControl;
     PackageNode* packageNode = nullptr;
 };
