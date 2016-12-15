@@ -488,9 +488,9 @@ public final class DavaActivity extends Activity
         return isPaused;
     }
     
-    public boolean isVisible()
+    public boolean isStopped()
     {
-    	return isVisible;
+    	return isStopped;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
