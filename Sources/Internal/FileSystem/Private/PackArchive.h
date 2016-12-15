@@ -23,7 +23,8 @@ public:
 
     static void FillFilesInfo(const PackFormat::PackFile& packFile,
                               const String& fileNames,
-                              UnorderedMap<String, const PackFormat::FileTableEntry*>& mapFileData,
+                              UnorderedMap<String,
+                                           const PackFormat::FileTableEntry*>& mapFileData,
                               Vector<ResourceArchive::FileInfo>& filesInfo);
 
 private:
