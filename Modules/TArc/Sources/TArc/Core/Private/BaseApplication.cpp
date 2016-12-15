@@ -38,9 +38,11 @@ int BaseApplication::RunImpl()
 
     if (CommandLineParser::CommandIsFound("--selftest"))
     {
+        isTestEnv = true;
+
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
-        EngineContext* engineContext = e.GetContext();
+        const EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
         Init(engineContext);
 
@@ -58,7 +60,7 @@ int BaseApplication::RunImpl()
     }
 }
 
-void BaseApplication::Init(EngineContext* /*engineContext*/)
+void BaseApplication::Init(const EngineContext* /*engineContext*/)
 {
 }
 
@@ -80,6 +82,11 @@ bool BaseApplication::AllowMultipleInstances() const
 QString BaseApplication::GetInstanceKey() const
 {
     return QString();
+}
+
+bool BaseApplication::IsTestEnvironment() const
+{
+    return isTestEnv;
 }
 
 } // namespace TArc

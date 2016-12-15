@@ -17,7 +17,7 @@ namespace Analytics
 Analytics::Core& GetCore()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return *Engine::Instance()->GetContext()->analyticsCore;
+    return *GetEngineContext()->analyticsCore;
 #else
     return DAVA::Core::Instance()->GetAnalyticsCore();
 #endif
