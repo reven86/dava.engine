@@ -18,7 +18,7 @@ public class Utils
     
     public static void disableSleepTimer()
     {
-        final Activity activity = DavaActivity.instance();
+        final DavaActivity activity = DavaActivity.instance();
         activity.runOnUiThread(new Runnable()
         {
             @Override
@@ -31,7 +31,7 @@ public class Utils
     
     public static void enableSleepTimer()
     {
-        final Activity activity = DavaActivity.instance();
+        final DavaActivity activity = DavaActivity.instance();
         activity.runOnUiThread(new Runnable()
         {
             @Override
@@ -44,7 +44,7 @@ public class Utils
 
     public static void openURL(final String url)
     {
-        final Activity activity = DavaActivity.instance();
+        final DavaActivity activity = DavaActivity.instance();
         activity.runOnUiThread(new Runnable()
         {
             @Override
