@@ -119,7 +119,7 @@ struct TypeSignature<jbooleanArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[Z";
     }
 };
 template <>
@@ -127,7 +127,7 @@ struct TypeSignature<jbyteArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[B";
     }
 };
 template <>
@@ -135,7 +135,7 @@ struct TypeSignature<jcharArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[C";
     }
 };
 template <>
@@ -143,7 +143,7 @@ struct TypeSignature<jshortArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[S";
     }
 };
 template <>
@@ -151,7 +151,7 @@ struct TypeSignature<jintArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[I";
     }
 };
 template <>
@@ -159,7 +159,7 @@ struct TypeSignature<jlongArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[J";
     }
 };
 template <>
@@ -167,7 +167,7 @@ struct TypeSignature<jfloatArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[F";
     }
 };
 template <>
@@ -175,7 +175,7 @@ struct TypeSignature<jdoubleArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[D";
     }
 };
 
