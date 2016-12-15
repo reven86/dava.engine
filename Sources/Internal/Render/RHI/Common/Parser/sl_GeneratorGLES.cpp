@@ -606,7 +606,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                         {
                             writer.Write("gl_Position");
                         }
-                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0 || stricmp(f->semantic, "SV_TARGET1") == 0) || stricmp(f->semantic, "SV_TARGET2") == 0 || stricmp(f->semantic, "SV_TARGET3") == 0)
+                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0 || stricmp(f->semantic, "SV_TARGET1") == 0 || stricmp(f->semantic, "SV_TARGET2") == 0 || stricmp(f->semantic, "SV_TARGET3") == 0))
                         {
                             if (mrtUsed)
                             {
