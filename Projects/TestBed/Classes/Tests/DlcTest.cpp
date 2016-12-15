@@ -117,7 +117,7 @@ void DlcTest::LoadResources()
 
     gpuIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W * 2 + SPACE * 2, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
     gpuIn->SetDebugDraw(true);
-    gpuIn->SetText(StringToWString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
+    gpuIn->SetText(UTF8Utils::EncodeToWideString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
     gpuIn->GetOrCreateComponent<UIFocusComponent>();
     gpuIn->SetDelegate(this);
     gpuIn->SetFont(font);
@@ -266,7 +266,7 @@ void DlcTest::UpdateInfoStr()
     infoStr += UTF8Utils::EncodeToWideString(Format("\nSpeedLimit %d", 0));
 
     infoStr += L"\nGPU: ";
-    infoStr += StringToWString(Format("%s", GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily()).c_str()));
+    infoStr += UTF8Utils::EncodeToWideString(Format("%s", GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily()).c_str()));
 
     if (nullptr != infoText)
     {
@@ -327,12 +327,12 @@ void DlcTest::Update(float32 timeElapsed)
             {
                 DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
                 String statText = Format("%lld(%lld) Kb, %lld Kb/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
-                progressStatistics->SetText(StringToWString(statText));
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
             }
             else
             {
                 String statText = Format("%lld(%lld)", cur, total);
-                progressStatistics->SetText(StringToWString(statText));
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
             }
         }
 
@@ -523,7 +523,7 @@ void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
 
     lastDLCState = dlc->GetState();
 
-    DeviceInfo::SetOverridenGPU(GPUFamilyDescriptor::GetGPUByName(WStringToString(gpuIn->GetText())));
+    DeviceInfo::SetOverridenGPU(GPUFamilyDescriptor::GetGPUByName(UTF8Utils::EncodeToUTF8(gpuIn->GetText())));
 
     staticText->SetText(L"Starting DLC...");
     dlc->Start();

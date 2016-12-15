@@ -642,6 +642,7 @@ WideString VariantType::AsWideString() const
     {
         return UTF8Utils::EncodeToWideString(*stringValue);
     }
+    return L""; // no warning
 }
 
 const uint8* VariantType::AsByteArray() const
