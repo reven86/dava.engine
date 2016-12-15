@@ -24,7 +24,7 @@ public class Utils
             @Override
             public void run() 
             {
-                DavaActivity.instance().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
     }
@@ -37,7 +37,7 @@ public class Utils
             @Override
             public void run()
             {
-                DavaActivity.instance().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
     }
@@ -52,8 +52,7 @@ public class Utils
             {
                 try
                 {
-                    final DavaActivity activity = DavaActivity.instance();
-                    if (null == activity || activity.isPaused())
+                    if (activity.isPaused())
                     {
                         return;
                     }
