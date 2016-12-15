@@ -192,6 +192,10 @@ void ParticleEditorWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
 
         ProcessSelection(scene, selection);
     }
+    else
+    {
+        ResetEditorMode();
+    }
 }
 
 void ParticleEditorWidget::ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection)

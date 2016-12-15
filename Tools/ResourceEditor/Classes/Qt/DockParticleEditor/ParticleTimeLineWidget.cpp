@@ -816,6 +816,12 @@ void ParticleTimeLineWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
 
         ProcessSelection(scene, selection);
     }
+    else
+    {
+        activeScene = nullptr;
+        CleanupTimelines();
+        emit ChangeVisible(false);
+    }
 }
 
 void ParticleTimeLineWidget::ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection)
