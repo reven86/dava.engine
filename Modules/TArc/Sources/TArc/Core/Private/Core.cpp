@@ -111,7 +111,7 @@ public:
         }
     }
 
-    uint32 GetContextCount() const
+    uint32 GetContextCount() const override
     {
         return static_cast<uint32>(contexts.size());
     }
@@ -157,7 +157,7 @@ public:
         return wrapper;
     }
 
-    PropertiesItem CreatePropertiesNode(const String& nodeName)
+    PropertiesItem CreatePropertiesNode(const String& nodeName) override
     {
         DVASSERT(propertiesHolder != nullptr);
         return propertiesHolder->CreateSubHolder(nodeName);
@@ -725,7 +725,7 @@ private:
         }
     }
 
-    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne) override
     {
         for (std::unique_ptr<ClientModule>& module : modules)
         {
