@@ -1,6 +1,9 @@
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
+#include "Document/Document.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;

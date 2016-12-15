@@ -1,6 +1,8 @@
 #include "QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 #include <QString>
 #include <QColor>
+#include <QVariant>
 #include <QVector2D>
 
 using namespace DAVA;

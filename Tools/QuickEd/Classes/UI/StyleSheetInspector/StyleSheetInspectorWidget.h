@@ -1,12 +1,16 @@
 #pragma once
 
-#include "EditorSystems/SelectionContainer.h"
-#include "Model/PackageHierarchy/PackageListener.h"
 #include "Base/BaseTypes.h"
-#include "ui_StyleSheetInspectorWidget.h"
-#include <QWidget>
+#include "Base/RefPtr.h"
+#include "EditorSystems/SelectionContainer.h"
+#include "UI/UIControl.h"
+#include "Model/PackageHierarchy/PackageListener.h"
+
+#include <memory>
 #include <QDockWidget>
-#include <QPointer>
+#include "ui_StyleSheetInspectorWidget.h"
+
+class Document;
 
 class StyleSheetInspectorWidget : public QDockWidget, PackageListener
 {
