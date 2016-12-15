@@ -563,7 +563,6 @@ void CommandBufferGLES2_t::Execute()
 #if defined(__DAVAENGINE_IPHONE__)
                 ios_gl_begin_frame();
 #endif
-                GLuint flags = 0;
                 Handle rt[MAX_RENDER_TARGET_COUNT];
                 TextureFace rt_face[MAX_RENDER_TARGET_COUNT];
                 unsigned rt_level[MAX_RENDER_TARGET_COUNT];
@@ -620,44 +619,44 @@ void CommandBufferGLES2_t::Execute()
                     if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
                     {
                         glClearBufferfi(GL_DEPTH_STENCIL, 0, passCfg.depthStencilBuffer.clearDepth, 0);
-                        flags = 0;
                     }
+
+                    #if defined(__DAVAENGINE_MACOS__)
+                    // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
+                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
+                    GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                    #endif
                 }
                 else
                 {
+                    GLuint flags = 0;
+
                     if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                     {
                         GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
                         flags |= GL_COLOR_BUFFER_BIT;
                     }
-                }
 
-                if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
-                {
-                        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                    GL_CALL(glStencilMask(0xFFFFFFFF));
-                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
-                        #else
-                    GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
-                    GL_CALL(glStencilMask(0xFFFFFFFF));
-                    GL_CALL(glClearStencil(0));
-                        #endif
+                    if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
+                    {
+                            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+                        GL_CALL(glStencilMask(0xFFFFFFFF));
+                        GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
+                            #else
+                        GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
+                        GL_CALL(glStencilMask(0xFFFFFFFF));
+                        GL_CALL(glClearStencil(0));
+                            #endif
 
-                    flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                        flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                    }
+
+                    if (flags)
+                        GL_CALL(glClear(flags));
                 }
 
                 GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
-
-                #if defined(__DAVAENGINE_MACOS__)
-                // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
-                GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
-                GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
-                #else
-                if (flags)
-                {
-                    GL_CALL(glClear(flags));
-                }
-                #endif
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
