@@ -74,12 +74,6 @@ void ProcessRecourcePacker(Engine& e)
         return;
     }
 
-    if (resourcePacker.rootDirectory.GetLastDirectoryName() != "DataSource")
-    {
-        Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
-        return;
-    }
-
     if (commandLine.size() < 3)
     {
         Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");

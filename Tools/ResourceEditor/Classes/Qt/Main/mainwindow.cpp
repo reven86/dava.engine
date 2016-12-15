@@ -461,12 +461,6 @@ void QtMainWindow::SetupToolBars()
     ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
-    // undo/redo
-    QToolButton* undoBtn = (QToolButton*)ui->mainToolBar->widgetForAction(ui->actionUndo);
-    QToolButton* redoBtn = (QToolButton*)ui->mainToolBar->widgetForAction(ui->actionRedo);
-    undoBtn->setPopupMode(QToolButton::MenuButtonPopup);
-    redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
-
     // modification widget
     modificationWidget = new ModificationWidget(nullptr);
     ui->modificationToolBar->insertWidget(ui->actionModifyReset, modificationWidget);
