@@ -5,6 +5,7 @@
 #include "Base/FastName.h"
 #include "UIStyleSheetStructs.h"
 #include "UI/UISystem.h"
+#include "Base/RefPtr.h"
 
 namespace DAVA
 {
