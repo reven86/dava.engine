@@ -110,7 +110,7 @@ public final class DavaActivity extends Activity
 
     protected boolean isStopped = true; // Activity is stopped after onStop and before onStart
     protected boolean isPaused = true; // Activity is paused after onPause and before onResume
-    protected boolean hasFocus = false;
+    protected boolean isFocused = false;
     
     protected String externalFilesDir;
     protected String internalFilesDir;
@@ -365,8 +365,8 @@ public final class DavaActivity extends Activity
     {
         Log.d(LOG_TAG, String.format("DavaActivity.onWindowFocusChanged: focus=%b", hasWindowFocus));
 
-        hasFocus = hasWindowFocus;
-        if (hasFocus)
+        isFocused = hasWindowFocus;
+        if (isFocused)
         {
             hideNavigationBar();
             handleResume();
@@ -490,7 +490,12 @@ public final class DavaActivity extends Activity
     
     public boolean isStopped()
     {
-    	return isStopped;
+        return isStopped;
+    }
+
+    public boolean isFocused()
+    {
+        return isFocused;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -499,7 +504,7 @@ public final class DavaActivity extends Activity
     {
         if (primarySurfaceView != null && isNativeThreadRunning())
         {
-            if (isPaused && hasFocus)
+            if (isPaused && isFocused)
             {
                 isPaused = false;
                 nativeOnResume();
