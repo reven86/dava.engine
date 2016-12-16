@@ -30,7 +30,7 @@ void SelectSceneScreen::LoadResources()
     if (scenePath.IsEmpty())
         fileNameText->SetText(L"Select scene file");
     else
-        fileNameText->SetText(StringToWString(scenePath.GetStringValue()));
+        fileNameText->SetText(UTF8Utils::EncodeToWideString(scenePath.GetStringValue()));
 
     ScopedPtr<UIButton> selectButtonRes(CreateButton(Rect(screenRect.dx - buttonSize * 10, 0, buttonSize * 3, buttonSize), L"~res:/"));
     selectButtonRes->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnSelectResourcesPath));
@@ -127,7 +127,7 @@ void SelectSceneScreen::OnStart(BaseObject* caller, void* param, void* callerDat
 void SelectSceneScreen::OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile)
 {
     SetScenePath(pathToFile);
-    fileNameText->SetText(StringToWString(scenePath.GetStringValue()));
+    fileNameText->SetText(UTF8Utils::EncodeToWideString(scenePath.GetStringValue()));
 }
 
 void SelectSceneScreen::OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog)
