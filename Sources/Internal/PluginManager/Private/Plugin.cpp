@@ -20,7 +20,7 @@ PluginHandle OpenPlugin(const char* pluginPath)
 
 void* LoadFunction(PluginHandle handle, const char* funcName)
 {
-    return reinterpret_cast<T>(dlsym(handle, funcName));
+    return dlsym(handle, funcName);
 }
 
 void ClosePlugin(PluginHandle handle)

@@ -52,25 +52,25 @@ Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMo
 
         if (fileExtension == dlibExtension)
         {
-            bool emplace_back = false;
+            bool isModeMatched = false;
 
             switch (mode)
             {
             case EFP_Auto:
-                emplace_back = debugMode == debugLib;
+                isModeMatched = debugMode == debugLib;
                 break;
 
             case EFT_Release:
-                emplace_back = !debugLib;
+                isModeMatched = !debugLib;
 
                 break;
 
             case EFT_Debug:
-                emplace_back = debugLib;
+                isModeMatched = debugLib;
                 break;
             }
 
-            if (emplace_back)
+            if (isModeMatched)
             {
                 pluginsList.push_back(path);
             }
@@ -91,7 +91,7 @@ PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& plugi
     desc.handle = OpenPlugin(pluginPath.c_str());
     if (nullptr == desc.handle)
     {
-        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
+        Logger::Warning("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
         return nullptr;
     }
 
@@ -101,13 +101,13 @@ PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& plugi
 
     if (nullptr == desc.createPluginFunc)
     {
-        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
+        Logger::Warning("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
         success = false;
     }
 
     if (nullptr == desc.destroyPluginFunc)
     {
-        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
+        Logger::Warning("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
         success = false;
     }
 
