@@ -34,7 +34,7 @@ void GPUTest::LoadResources()
         textControl->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 
         String text = Format("Detected GPU: %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily())));
-        textControl->SetText(StringToWString(text));
+        textControl->SetText(UTF8Utils::EncodeToWideString(text));
         AddControl(textControl);
     }
 
