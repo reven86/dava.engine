@@ -12,7 +12,7 @@ public:
     FindCollector();
     ~FindCollector();
 
-    void CollectFiles(FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
+    void CollectFiles(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
     const DAVA::Vector<FindItem>& GetItems();
 
 private:

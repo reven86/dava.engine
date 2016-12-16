@@ -16,13 +16,13 @@ FindCollector::~FindCollector()
 {
 }
 
-void FindCollector::CollectFiles(FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
+void FindCollector::CollectFiles(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
 {
     QStringList files = cache->GetFiles("yaml");
 
     PackageInformationCache packagesCache;
 
-    for (QString& pathStr : files)
+    for (const QString& pathStr : files)
     {
         FilePath path(pathStr.toStdString());
         if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 && path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
