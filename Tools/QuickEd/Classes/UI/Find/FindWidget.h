@@ -6,6 +6,7 @@
 #include "ui_FindWidget.h"
 
 #include "UI/Find/FindItem.h"
+#include "UI/Find/FindFilter.h"
 #include "Base/BaseTypes.h"
 
 class Document;
@@ -18,6 +19,7 @@ public:
     FindWidget(QWidget* parent = nullptr);
     ~FindWidget() = default;
 
+    void Find(std::unique_ptr<FindFilter> filter);
     void ShowResults(const DAVA::Vector<FindItem>& items);
 
 public slots:
@@ -37,6 +39,7 @@ private:
 
     Ui::FindWidget ui;
     DAVA::Vector<FindItem> items;
+    std::unique_ptr<FindFilter> filter;
     QStandardItemModel* model = nullptr;
 
     Project* project = nullptr;

@@ -226,6 +226,11 @@ const QStringList& Project::GetDefaultPresetNames() const
     return editorFontSystem->GetDefaultPresetNames();
 }
 
+const FileSystemCache* Project::GetFileSystemCache() const
+{
+    return fileSystemCache.get();
+}
+
 EditorFontSystem* Project::GetEditorFontSystem() const
 {
     return editorFontSystem.get();
@@ -364,10 +369,7 @@ void Project::OnFindPrototypeInstances()
             FilePath path = controlNode->GetPackage()->GetPath();
             String name = controlNode->GetName();
 
-            FindCollector findCollector;
-            PrototypeUsagesFilter filter(path.GetFrameworkPath(), FastName(name));
-            findCollector.CollectFiles(fileSystemCache.get(), filter, GetPrototypes());
-            view->ShowResults(findCollector.GetItems());
+            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
         }
     }
 }

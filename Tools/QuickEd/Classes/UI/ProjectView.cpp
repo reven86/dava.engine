@@ -169,9 +169,9 @@ void MainWindow::ProjectView::SelectControl(const DAVA::String& controlPath)
     mainWindow->ui->previewWidget->SelectControl(controlPath);
 }
 
-void MainWindow::ProjectView::ShowResults(const DAVA::Vector<FindItem>& items)
+void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter> filter)
 {
-    mainWindow->ui->findWidget->ShowResults(items);
+    mainWindow->ui->findWidget->Find(std::move(filter));
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)

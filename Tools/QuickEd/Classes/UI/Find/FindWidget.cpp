@@ -4,9 +4,16 @@
 
 #include "Document/Document.h"
 #include "Project/Project.h"
+#include "UI/Find/FindCollector.h"
+
 #include "UI/UIControl.h"
+#include "QtTools/Utils/QtThread.h"
 
 using namespace DAVA;
+
+class Widget : public QtThread
+{
+};
 
 FindWidget::FindWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -17,6 +24,16 @@ FindWidget::FindWidget(QWidget* parent)
     ui.treeView->setModel(model);
     connect(ui.treeView, &QTreeView::activated, this, &FindWidget::OnActivated);
     ui.treeView->installEventFilter(this);
+}
+
+void FindWidget::Find(std::unique_ptr<FindFilter> filter)
+{
+    if (project != nullptr)
+    {
+        FindCollector findCollector;
+        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
+        ShowResults(findCollector.GetItems());
+    }
 }
 
 void FindWidget::ShowResults(const DAVA::Vector<FindItem>& items_)
