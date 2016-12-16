@@ -18,7 +18,7 @@ class PackageInformationBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
     PackageInformationBuilder(PackageInformationCache* cache);
-    virtual ~PackageInformationBuilder();
+    ~PackageInformationBuilder() override;
 
     void BeginPackage(const DAVA::FilePath& packagePath) override;
     void EndPackage() override;
@@ -50,20 +50,10 @@ public:
     std::shared_ptr<PackageInformation> GetPackage() const;
 
 private:
-    struct Descr
-    {
-        std::shared_ptr<ControlInformation> controlInformation;
-        bool addToParent = false;
-
-        Descr(std::shared_ptr<ControlInformation> controlInformation_, bool addToParent_)
-            : controlInformation(controlInformation_)
-            , addToParent(addToParent_)
-        {
-        }
-    };
+    struct Description;
 
     std::shared_ptr<PackageInformation> packageInformation;
-    DAVA::Vector<Descr> stack;
+    DAVA::Vector<Description> stack;
 
     PackageInformationCache* cache = nullptr;
 };

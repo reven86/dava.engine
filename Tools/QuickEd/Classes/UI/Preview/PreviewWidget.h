@@ -75,7 +75,6 @@ private slots:
     void OnPositionChanged(const QPoint& position);
 
 private:
-    bool SelectControlImpl(PackageControlsNode* controls, const DAVA::String& path);
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;

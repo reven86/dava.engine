@@ -32,7 +32,7 @@ private:
     enum
     {
         PACKAGE_DATA = Qt::UserRole + 1,
-        CONTROL_DATA = Qt::UserRole + 2,
+        CONTROL_DATA = Qt::UserRole
     };
 
     Ui::FindWidget ui;

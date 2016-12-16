@@ -1,4 +1,4 @@
-#pragma onces
+#pragma once
 
 #include "FileSystem/FilePath.h"
 #include "Base/FastName.h"

@@ -175,7 +175,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& contro
     }
     else
     {
-        Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
+        DVASSERT(false);
     }
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));

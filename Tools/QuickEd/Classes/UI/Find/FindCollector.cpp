@@ -25,23 +25,20 @@ void FindCollector::CollectFiles(const FileSystemCache* cache, const FindFilter&
     for (const QString& pathStr : files)
     {
         FilePath path(pathStr.toStdString());
-        if (path.GetFrameworkPath().find("~res:/UI/TechTree/") == -1 && path.GetFrameworkPath().find("~res:/UI/Fonts/") == -1)
-        {
-            PackageInformationBuilder builder(&packagesCache);
+        PackageInformationBuilder builder(&packagesCache);
 
-            if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
+        if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
+        {
+            const std::shared_ptr<PackageInformation>& package = builder.GetPackage();
+            if (filter.CanAcceptPackage(package))
             {
-                const std::shared_ptr<PackageInformation>& package = builder.GetPackage();
-                if (filter.CanAcceptPackage(package))
+                for (const std::shared_ptr<ControlInformation>& control : package->GetControls())
                 {
-                    for (const std::shared_ptr<ControlInformation>& control : package->GetControls())
-                    {
-                        CollectControls(path, control, filter, false);
-                    }
-                    for (const std::shared_ptr<ControlInformation>& prototype : package->GetPrototypes())
-                    {
-                        CollectControls(path, prototype, filter, true);
-                    }
+                    CollectControls(path, control, filter, false);
+                }
+                for (const std::shared_ptr<ControlInformation>& prototype : package->GetPrototypes())
+                {
+                    CollectControls(path, prototype, filter, true);
                 }
             }
         }
@@ -50,7 +47,7 @@ void FindCollector::CollectFiles(const FileSystemCache* cache, const FindFilter&
     std::sort(items.begin(), items.end());
 }
 
-const DAVA::Vector<FindItem>& FindCollector::GetItems()
+const DAVA::Vector<FindItem>& FindCollector::GetItems() const
 {
     return items;
 }

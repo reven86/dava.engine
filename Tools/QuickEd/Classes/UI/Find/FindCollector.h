@@ -13,7 +13,7 @@ public:
     ~FindCollector();
 
     void CollectFiles(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
-    const DAVA::Vector<FindItem>& GetItems();
+    const DAVA::Vector<FindItem>& GetItems() const;
 
 private:
     void CollectControls(const DAVA::FilePath& path, const std::shared_ptr<ControlInformation>& control, const FindFilter& filter, bool inPrototypeSection);

@@ -30,7 +30,6 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
-#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -117,9 +116,15 @@ void PreviewWidget::SelectControl(const DAVA::String& path)
     if (document != nullptr)
     {
         PackageNode* package = document->GetPackage();
-        if (!SelectControlImpl(package->GetPrototypes(), path))
+        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
+        if (!node)
         {
-            SelectControlImpl(package->GetPackageControlsNode(), path);
+            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
+        }
+        if (node != nullptr)
+        {
+            systemsManager->ClearSelection();
+            systemsManager->SelectNode(node);
         }
     }
 }
@@ -438,36 +443,6 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     QPoint canvasPosition = scrollAreaController->GetPosition();
     canvasPosition.setX(hPosition);
     scrollAreaController->SetPosition(canvasPosition);
-}
-
-bool PreviewWidget::SelectControlImpl(PackageControlsNode* controls, const DAVA::String& path)
-{
-    Vector<String> strPath;
-    Split(path, "/", strPath, false, true);
-
-    ControlsContainerNode* c = controls;
-    for (String& name : strPath)
-    {
-        bool found = false;
-        for (int32 index = 0; index < c->GetCount(); index++)
-        {
-            if (c->Get(index)->GetName() == name)
-            {
-                found = true;
-                c = DynamicTypeCheck<ControlsContainerNode*>(c->Get(index));
-                break;
-            }
-        }
-        if (!found)
-        {
-            return false;
-        }
-    }
-
-    ControlNode* node = DynamicTypeCheck<ControlNode*>(c);
-    systemsManager->ClearSelection();
-    systemsManager->SelectNode(node);
-    return true;
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)

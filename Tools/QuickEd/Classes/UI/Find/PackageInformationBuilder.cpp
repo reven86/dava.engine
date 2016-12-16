@@ -2,6 +2,18 @@
 #include "Utils/Utils.h"
 using namespace DAVA;
 
+struct PackageInformationBuilder::Description
+{
+    std::shared_ptr<ControlInformation> controlInformation;
+    bool addToParent = false;
+
+    Description(const std::shared_ptr<ControlInformation>& controlInformation_, bool addToParent_)
+        : controlInformation(controlInformation_)
+        , addToParent(addToParent_)
+    {
+    }
+};
+
 PackageInformationBuilder::PackageInformationBuilder(PackageInformationCache* cache_)
     : cache(cache_)
 {
@@ -55,13 +67,13 @@ void PackageInformationBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UISty
 
 DAVA::UIControl* PackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
 {
-    stack.push_back(Descr(std::make_shared<ControlInformation>(controlName), true));
+    stack.emplace_back(Description(std::make_shared<ControlInformation>(controlName), true));
     return nullptr;
 }
 
 DAVA::UIControl* PackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
 {
-    stack.push_back(Descr(std::make_shared<ControlInformation>(controlName), true));
+    stack.emplace_back(Description(std::make_shared<ControlInformation>(controlName), true));
     return nullptr;
 }
 
@@ -97,7 +109,7 @@ DAVA::UIControl* PackageInformationBuilder::BeginControlWithPrototype(const Fast
     DVASSERT(prototypePackage.get() != nullptr);
     DVASSERT(prototype.get() != nullptr);
 
-    stack.push_back(Descr(std::make_shared<ControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
+    stack.emplace_back(Description(std::make_shared<ControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
     return nullptr;
 }
 
@@ -120,7 +132,7 @@ DAVA::UIControl* PackageInformationBuilder::BeginControlWithPath(const DAVA::Str
         }
 
         DVASSERT(ptr.get() != nullptr);
-        stack.push_back(Descr(ptr, false));
+        stack.emplace_back(Description(ptr, false));
     }
     else
     {
@@ -132,13 +144,13 @@ DAVA::UIControl* PackageInformationBuilder::BeginControlWithPath(const DAVA::Str
 
 DAVA::UIControl* PackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
 {
-    stack.push_back(Descr(std::make_shared<ControlInformation>(controlName), true));
+    stack.emplace_back(Description(std::make_shared<ControlInformation>(controlName), true));
     return nullptr; // do nothing
 }
 
 void PackageInformationBuilder::EndControl(eControlPlace controlPlace)
 {
-    Descr descr = stack.back();
+    Description descr = stack.back();
     stack.pop_back();
 
     if (descr.addToParent)
