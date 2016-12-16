@@ -348,7 +348,7 @@ const Compressor* GetCompressor(Compressor::Type compressorType)
     }
 }
 
-bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, File* outputFile)
+bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& metaDb, File* outputFile)
 {
     PackFormat::PackFile packFile;
 
@@ -360,6 +360,12 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     {
         compressor = GetCompressor(compressionType);
         DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
+    }
+
+    // TODO load metadata
+    // CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack_index INTEGER NOT NULL);
+    // CREATE TABLE IF NOT EXISTS packs(index INTEGER PRIMARY KEY, name TEXT UNIQUE, dependency TEXT NOT NULL);
+    {
     }
 
     uint64 dataOffset = 0;
@@ -416,6 +422,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           fileEntry.type = useCompression;
                           fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
                           fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
+                          if ()
                           fileEntry.reserved.fill(0); // do it or your crc32 randomly change on same files
 
                           dataOffset += static_cast<uint32>(useBuffer.size());
@@ -516,7 +523,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     return true;
 }
 
-bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
+bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath, const FilePath& metaDb)
 {
     ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
     if (!outputFile)
@@ -525,7 +532,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
         return false;
     }
 
-    bool packWasSuccessfull = Pack(collectedFiles, compressionType, outputFile);
+    bool packWasSuccessfull = Pack(collectedFiles, compressionType, metaDb, outputFile);
     outputFile.reset();
 
     if (packWasSuccessfull)
@@ -576,7 +583,7 @@ bool CreateArchive(const Params& params)
         }
     }
 
-    if (Pack(collectedFiles, params.compressionType, params.archivePath))
+    if (Pack(collectedFiles, params.compressionType, params.archivePath, params.metaDbPath))
     {
         Logger::Info("packing done");
 

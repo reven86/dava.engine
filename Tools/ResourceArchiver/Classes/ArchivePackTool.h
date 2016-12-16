@@ -34,5 +34,6 @@ private:
     DAVA::Vector<DAVA::String> srcFiles;
     DAVA::String packFileName;
     DAVA::String baseDir;
+    DAVA::String metaDbPath;
     Source source = Source::Unknown;
 };

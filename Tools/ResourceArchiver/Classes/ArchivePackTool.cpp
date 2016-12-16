@@ -21,6 +21,7 @@ const DAVA::String LogFile = "-log";
 const DAVA::String Src = "-src";
 const DAVA::String ListFile = "-listfile";
 const DAVA::String BaseDir = "-basedir";
+const DAVA::String MetaDbFile = "-metadb";
 };
 
 ArchivePackTool::ArchivePackTool()
@@ -38,6 +39,7 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::Src, VariantType(String("")), "source files directory", true);
     options.AddOption(OptionNames::ListFile, VariantType(String("")), "text files containing list of source files", true);
     options.AddOption(OptionNames::BaseDir, VariantType(String("")), "source base directory");
+    options.AddOption(OptionNames::MetaDbFile, VariantType(String("")), "sqlite db with metadata");
     options.AddArgument("packfile");
 }
 
@@ -60,6 +62,7 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
     assetCacheParams.timeoutms = options.GetOption(OptionNames::Timeout).AsUInt64();
     logFileName = options.GetOption(OptionNames::LogFile).AsString();
     baseDir = options.GetOption(OptionNames::BaseDir).AsString();
+    metaDbPath = options.GetOption(OptionNames::MetaDbFile).AsString();
 
     source = Source::Unknown;
 
@@ -182,8 +185,9 @@ int ArchivePackTool::ProcessInternal()
     params.logPath = logFilePath;
     params.assetCacheClient = assetCache.get();
     params.baseDirPath = (baseDir.empty() ? FileSystem::Instance()->GetCurrentWorkingDirectory() : baseDir);
+    params.metaDbPath = metaDbPath;
 
-    ResourceArchiver::CreateArchive(params);
+    CreateArchive(params);
 
     if (assetCache)
     {
