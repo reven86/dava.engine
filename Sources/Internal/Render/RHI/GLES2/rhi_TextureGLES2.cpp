@@ -890,7 +890,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
         }
 
 	#if !(defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__)
-        GLenum b[MAX_RENDER_TARGET_COUNT] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+        GLenum b[MAX_RENDER_TARGET_COUNT] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
         GL_CALL(glDrawBuffers(colorCount, b));
 	#endif
 

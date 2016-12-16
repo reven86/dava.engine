@@ -419,6 +419,8 @@ void GameCore::rtInit()
 
     rtColor0 = rhi::Texture::Create(colorDesc);
     rtColor1 = rhi::Texture::Create(colorDesc);
+    rtColor2 = rhi::Texture::Create(colorDesc);
+    rtColor3 = rhi::Texture::Create(colorDesc);
     rtDepthStencil = rhi::Texture::Create(depthDesc);
 
     rhi::TextureSetDescriptor tsDesc;
@@ -461,6 +463,7 @@ void GameCore::mrtInit()
     "    float4 pos    : SV_POSITION;\n"
     "    float2 uv     : TEXCOORD0;\n"
     "    float4 color  : TEXCOORD1;\n"
+    "    float  depth  : TEXCOORD2;\n"
     "};\n"
     "\n"
     "[global] property float4x4 ViewProjection;\n"
@@ -478,6 +481,7 @@ void GameCore::mrtInit()
     "    output.pos    = mul( wpos, ViewProjection );\n"
     "    output.uv     = input.uv;\n"
     "    output.color  = float4(i,i,i,i);\n"
+    "    output.depth  = wpos.z;\n"
     "\n"
     "    return output;\n"
     "}\n"
@@ -488,12 +492,15 @@ void GameCore::mrtInit()
     "{\n"
     "    float2 uv     : TEXCOORD0;\n"
     "    float4 color  : TEXCOORD1;\n"
+    "    float  depth  : TEXCOORD2;\n"
     "};\n"
     "\n"
     "fragment_out\n"
     "{\n"
     "    float4 color0  : SV_TARGET0;\n"
     "    float4 color1  : SV_TARGET1;\n"
+    "    float4 color2  : SV_TARGET2;\n"
+    "    float4 color3  : SV_TARGET3;\n"
     "};\n"
     "\n"
     "[unique] property float4 Tint;\n"
@@ -507,6 +514,8 @@ void GameCore::mrtInit()
     "\n"
     "    output.color0 = diffuse * input.color * Tint;\n"
     "    output.color1 = input.color;\n"
+    "    output.color2 = input.color * Tint;\n"
+    "    output.color3 = float4(input.depth,0,0,1.0);\n"
     "    return output;\n"
     "}\n"
     );
@@ -541,6 +550,36 @@ void GameCore::mrtInit()
     rtQuadBatch1.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     rtQuadBatch1.primitiveCount = 2;
     rtQuadBatch1.textureSet = rhi::AcquireTextureSet(tsDesc);
+
+    tsDesc.fragmentTextureCount = 1;
+    tsDesc.fragmentTexture[0] = rhi::HTexture(rtColor2);
+
+    rtQuadBatch2.vertexStreamCount = 1;
+    rtQuadBatch2.vertexStream[0] = rtQuad.vb;
+    rtQuadBatch2.vertexConstCount = 2;
+    rtQuadBatch2.vertexConst[0] = rtQuad.vp_const[0];
+    rtQuadBatch2.vertexConst[1] = rtQuad.vp_const[1];
+    rtQuadBatch2.fragmentConstCount = 0;
+    rtQuadBatch2.renderPipelineState = rtQuad.ps;
+    rtQuadBatch2.samplerState = rtQuad.samplerState;
+    rtQuadBatch2.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    rtQuadBatch2.primitiveCount = 2;
+    rtQuadBatch2.textureSet = rhi::AcquireTextureSet(tsDesc);
+
+    tsDesc.fragmentTextureCount = 1;
+    tsDesc.fragmentTexture[0] = rhi::HTexture(rtColor3);
+
+    rtQuadBatch3.vertexStreamCount = 1;
+    rtQuadBatch3.vertexStream[0] = rtQuad.vb;
+    rtQuadBatch3.vertexConstCount = 2;
+    rtQuadBatch3.vertexConst[0] = rtQuad.vp_const[0];
+    rtQuadBatch3.vertexConst[1] = rtQuad.vp_const[1];
+    rtQuadBatch3.fragmentConstCount = 0;
+    rtQuadBatch3.renderPipelineState = rtQuad.ps;
+    rtQuadBatch3.samplerState = rtQuad.samplerState;
+    rtQuadBatch3.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    rtQuadBatch3.primitiveCount = 2;
+    rtQuadBatch3.textureSet = rhi::AcquireTextureSet(tsDesc);
 }
 
 void GameCore::SetupTank()
@@ -1843,6 +1882,8 @@ void GameCore::mrtDraw()
     #if USE_RT
         pass_desc.colorBuffer[0].texture = rtColor0;
         pass_desc.colorBuffer[1].texture = rtColor1;
+        pass_desc.colorBuffer[2].texture = rtColor2;
+        pass_desc.colorBuffer[3].texture = rtColor3;
         pass_desc.depthStencilBuffer.texture = rtDepthStencil;
 
         pass_desc.colorBuffer[1].loadAction = rhi::LOADACTION_CLEAR;
@@ -1851,6 +1892,20 @@ void GameCore::mrtDraw()
         pass_desc.colorBuffer[1].clearColor[1] = 0.15f;
         pass_desc.colorBuffer[1].clearColor[2] = 0.15f;
         pass_desc.colorBuffer[1].clearColor[3] = 1.0f;
+
+        pass_desc.colorBuffer[2].loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.colorBuffer[2].storeAction = rhi::STOREACTION_STORE;
+        pass_desc.colorBuffer[2].clearColor[0] = 0.20f;
+        pass_desc.colorBuffer[2].clearColor[1] = 0.12f;
+        pass_desc.colorBuffer[2].clearColor[2] = 0.00f;
+        pass_desc.colorBuffer[2].clearColor[3] = 1.0f;
+
+        pass_desc.colorBuffer[3].loadAction = rhi::LOADACTION_CLEAR;
+        pass_desc.colorBuffer[3].storeAction = rhi::STOREACTION_STORE;
+        pass_desc.colorBuffer[3].clearColor[0] = 0.00f;
+        pass_desc.colorBuffer[3].clearColor[1] = 0.00f;
+        pass_desc.colorBuffer[3].clearColor[2] = 0.05f;
+        pass_desc.colorBuffer[3].clearColor[3] = 1.0f;
     #endif
         pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
         pass_desc.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
@@ -1970,8 +2025,10 @@ void GameCore::mrtDraw()
         Matrix4 view_proj;
         float ratio = float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy);
 
+        // target-0
+        {
         world = Matrix4::MakeRotation(Vector3(0, 1, 0), (30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
-        world.SetTranslationVector(Vector3(-2, 0, 15));
+        world.SetTranslationVector(Vector3(-2, -1.5, 15));
 
         view_proj.Identity();
         view_proj.BuildProjectionFovLH(75.0f, ratio, 1.0f, 1000.0f);
@@ -1980,11 +2037,31 @@ void GameCore::mrtDraw()
         rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
 
         rhi::AddPacket(pl, rtQuadBatch0);
+        }
 
+        // target-1
+        {
         world = Matrix4::MakeRotation(Vector3(0, 1, 0), (-30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
-        world.SetTranslationVector(Vector3(2, 0, 15));
+        world.SetTranslationVector(Vector3(2, -1.5, 15));
         rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
         rhi::AddPacket(pl, rtQuadBatch1);
+        }
+
+        // target-2
+        {
+            world = Matrix4::MakeRotation(Vector3(0, 1, 0), (-30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+            world.SetTranslationVector(Vector3(-2, 1.5, 15));
+            rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+            rhi::AddPacket(pl, rtQuadBatch2);
+        }
+
+        // target-3
+        {
+            world = Matrix4::MakeRotation(Vector3(0, 1, 0), (30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+            world.SetTranslationVector(Vector3(2, 1.5, 15));
+            rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+            rhi::AddPacket(pl, rtQuadBatch3);
+        }
 
         rhi::EndPacketList(pl);
         rhi::RenderPass::End(pass);

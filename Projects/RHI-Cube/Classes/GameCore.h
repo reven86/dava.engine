@@ -128,8 +128,12 @@ protected:
     Object rtQuad;
     rhi::Packet rtQuadBatch0;
     rhi::Packet rtQuadBatch1;
+    rhi::Packet rtQuadBatch2;
+    rhi::Packet rtQuadBatch3;
     rhi::Handle rtColor0;
     rhi::Handle rtColor1;
+    rhi::Handle rtColor2;
+    rhi::Handle rtColor3;
     rhi::Handle rtDepthStencil;
 
     struct Tank
