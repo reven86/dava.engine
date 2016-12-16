@@ -750,7 +750,7 @@ final class DavaTextField implements TextWatcher,
         int inputType = nativeTextField.getInputType();
         if (password)
         {
-            inputType |= EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
+            inputType = EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
         }
         else
         {
