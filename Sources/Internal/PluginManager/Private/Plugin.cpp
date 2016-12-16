@@ -1,17 +1,13 @@
-#pragma once
 
 ///
 #include "Base/Platform.h"
+#include "PluginManager/Plugin.h"
 
 #if defined(__DAVAENGINE_MACOS__) 
 
 #include <dlfcn.h>
 
 #endif
-
-///
-
-using PluginHandle = void*;
 
 ///
 
@@ -22,8 +18,7 @@ PluginHandle OpenPlugin(const char* pluginPath)
     return dlopen(pluginPath, RTLD_NOW);
 }
 
-template <class T>
-T LoadFunction(PluginHandle handle, const char* funcName)
+void* LoadFunction(PluginHandle handle, const char* funcName)
 {
     return reinterpret_cast<T>(dlsym(handle, funcName));
 }
@@ -45,15 +40,9 @@ void* LoadFunction(PluginHandle handle, const char* funcName)
     return GetProcAddress(static_cast<HMODULE>(handle), funcName);
 }
 
-template <class T>
-T LoadFunction(PluginHandle handle, const char* funcName)
-{
-    return reinterpret_cast<T>( LoadFunction(handle, funcName) );
-}
-
 void ClosePlugin(PluginHandle handle)
 {
-    FreeLibrary( static_cast<HMODULE>(handle) );
+    FreeLibrary(static_cast<HMODULE>(handle));
 }
 
 #else
@@ -63,8 +52,7 @@ PluginHandle OpenPlugin(const char* pluginPath)
     return nullptr;
 }
 
-template <class T>
-T LoadFunction(PluginHandle handle, const char* funcName)
+void* LoadFunction(PluginHandle handle, const char* funcName)
 {
     return nullptr;
 }

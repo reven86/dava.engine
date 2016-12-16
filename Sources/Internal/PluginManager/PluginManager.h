@@ -3,36 +3,6 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
 
-#if defined(__DAVAENGINE_MACOS__) 
-
-#define PLUGIN_FUNCTION_EXPORT __attribute__((visibility("default")))
-
-#elif defined(__DAVAENGINE_WIN32__) 
-
-#define PLUGIN_FUNCTION_EXPORT __declspec(dllexport)
-
-#else
-
-#define PLUGIN_FUNCTION_EXPORT 
-
-#endif
-
-//
-
-#define EXPORT_PLUGIN( PLUGIN ) \
-extern "C" { \
-    PLUGIN_FUNCTION_EXPORT \
-    DAVA::IModule* CreatePlugin(DAVA::Engine* engine)\
-    {\
-        return new PLUGIN(engine);\
-    }\
-    PLUGIN_FUNCTION_EXPORT\
-    void DestroyPlugin(DAVA::IModule* plugin)\
-    {\
-        delete plugin;\
-    }\
-}
-
 //
 
 namespace DAVA
@@ -43,7 +13,6 @@ class Engine;
 class PluginManager final
 {
 public:
-
     struct PluginDescriptor;
 
     enum eFrustumPlane
@@ -62,7 +31,7 @@ public:
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
     PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
-    bool ShutdownPlugin( PluginDescriptor* desc );
+    bool ShutdownPlugin(PluginDescriptor* desc);
     void ShutdownPlugins();
 
     PluginManager(Engine* engine);

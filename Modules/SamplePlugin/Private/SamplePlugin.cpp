@@ -1,4 +1,4 @@
-#include "PluginManager/PluginManager.h"
+#include "PluginManager/Plugin.h"
 #include "ModuleManager/IModule.h"
 
 class SamplePlugin : public DAVA::IModule

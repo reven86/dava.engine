@@ -7,7 +7,7 @@ using namespace DAVA;
 
 SamplePluginTest::SamplePluginTest(TestBed& app)
     : BaseScreen(app, "Sample plugin test")
-    ,engine(app.GetEngine())
+    , engine(app.GetEngine())
 {
 }
 
@@ -23,7 +23,7 @@ void SamplePluginTest::LoadResources()
     Vector<FilePath> pluginsList;
     pluginsList = mm.GetPlugins(executDir, PluginManager::EFP_Auto);
 
-    for ( auto& path : pluginsList )
+    for (auto& path : pluginsList)
     {
         mm.InitPlugin(path);
     }

@@ -2,178 +2,176 @@
 #include "Engine/Engine.h"
 #include "Utils/StringUtils.h"
 #include "PluginManager/PluginManager.h"
-#include "PluginManager/Private/PluginHelper.h"
+#include "PluginManager/Plugin.h"
 #include "ModuleManager/IModule.h"
 
 namespace DAVA
 {
+using CreatePluginFuncPtr = IModule* (*)(Engine*);
+using DestroyPluginFuncPtr = void (*)(IModule*);
 
-    using CreatePluginFuncPtr = IModule* (*)(Engine*);
-    using DestroyPluginFuncPtr = void(*)(IModule*);
+struct PluginManager::PluginDescriptor
+{
+    CreatePluginFuncPtr createPluginFunc;
+    DestroyPluginFuncPtr destroyPluginFunc;
+    IModule* plugin;
+    String pluginName;
 
-    struct PluginManager::PluginDescriptor
-    {
-        CreatePluginFuncPtr createPluginFunc;
-        DestroyPluginFuncPtr destroyPluginFunc;
-        IModule* plugin;
-        String pluginName;
+    PluginHandle handle;
+};
 
-        PluginHandle handle;
-    };
-
-    Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMode mode) const
-    {
+Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMode mode) const
+{
 #ifdef __DAVAENGINE_DEBUG__
-        bool debugMode = true;
+    bool debugMode = true;
 #else
-        bool debugMode = false;
+    bool debugMode = false;
 #endif
 
 #if defined(__DAVAENGINE_MACOS__)
-        String dlibExtension = ".dylib";
+    String dlibExtension = ".dylib";
 #elif defined(__DAVAENGINE_WIN32__)
-        String dlibExtension = ".dll";
+    String dlibExtension = ".dll";
 #else
-        String dlibExtension = ".so";
+    String dlibExtension = ".so";
 #endif
 
-        String debugSuffix = "Debug";
+    String debugSuffix = "Debug";
 
-        Vector<FilePath> pluginsList;
+    Vector<FilePath> pluginsList;
 
-        FileSystem* fs = rootEngine->GetContext()->fileSystem;
-        Vector<FilePath> cacheDirContent = fs->EnumerateFilesInDirectory(folder, false);
+    FileSystem* fs = rootEngine->GetContext()->fileSystem;
+    Vector<FilePath> cacheDirContent = fs->EnumerateFilesInDirectory(folder, false);
 
-        for (auto& path : cacheDirContent)
+    for (auto& path : cacheDirContent)
+    {
+        String fileName = path.GetBasename();
+        String fileExtension = path.GetExtension();
+
+        bool debugLib = StringUtils::EndsWith(fileName, debugSuffix);
+
+        if (fileExtension == dlibExtension)
         {
-            String fileName = path.GetBasename();
-            String fileExtension = path.GetExtension();
+            bool emplace_back = false;
 
-            bool debugLib = StringUtils::EndsWith(fileName, debugSuffix);
-
-            if (fileExtension == dlibExtension)
+            switch (mode)
             {
-                bool emplace_back = false;
+            case EFP_Auto:
+                emplace_back = debugMode == debugLib;
+                break;
 
-                switch (mode)
-                {
-                case EFP_Auto:
-                    emplace_back = debugMode == debugLib;
-                    break;
+            case EFT_Release:
+                emplace_back = !debugLib;
 
-                case EFT_Release:
-                    emplace_back = !debugLib;
+                break;
 
-                    break;
+            case EFT_Debug:
+                emplace_back = debugLib;
+                break;
+            }
 
-                case EFT_Debug:
-                    emplace_back = debugLib;
-                    break;
-                }
-
-                if (emplace_back)
-                {
-                    pluginsList.push_back( path );
-                }
+            if (emplace_back)
+            {
+                pluginsList.push_back(path);
             }
         }
-
-        return pluginsList;
     }
 
-    PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
+    return pluginsList;
+}
+
+PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
+{
+    PluginDescriptor desc;
+
+    bool success = true;
+
+    // Open the library.
+    String pluginPath = pluginPatch.GetAbsolutePathname();
+    desc.handle = OpenPlugin(pluginPath.c_str());
+    if (nullptr == desc.handle)
     {
-        PluginDescriptor desc;
-
-        bool success = true;
-
-        // Open the library.
-        String pluginPath = pluginPatch.GetAbsolutePathname();
-        desc.handle = OpenPlugin(pluginPath.c_str());
-        if (nullptr == desc.handle)
-        {
-            Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
-            return nullptr;
-        }
-
-        desc.pluginName = pluginPatch.GetFilename();
-        desc.createPluginFunc = LoadFunction<CreatePluginFuncPtr>(desc.handle, "CreatePlugin");
-        desc.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>(desc.handle, "DestroyPlugin");
-
-        if (nullptr == desc.createPluginFunc)
-        {
-            Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
-            success = false;
-        }
-
-        if (nullptr == desc.destroyPluginFunc)
-        {
-            Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
-            success = false;
-        }
-
-        if (success)
-        {
-            desc.plugin = desc.createPluginFunc( rootEngine );
-        }
-
-        if( !success && nullptr == desc.plugin )
-        { 
-            ClosePlugin(desc.handle);
-            return nullptr;
-        }
-
-        desc.plugin->Init();
-
-        pluginDescriptors.push_back( desc );
-
-        Logger::Debug("Plugin loaded - %s", desc.pluginName.c_str());
-        
-        return &pluginDescriptors.back();
+        Logger::Error("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
+        return nullptr;
     }
 
-    bool PluginManager::ShutdownPlugin(PluginDescriptor* desc)
+    desc.pluginName = pluginPatch.GetFilename();
+    desc.createPluginFunc = LoadFunction<CreatePluginFuncPtr>(desc.handle, "CreatePlugin");
+    desc.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>(desc.handle, "DestroyPlugin");
+
+    if (nullptr == desc.createPluginFunc)
     {
-        DVASSERT( desc != nullptr );
-
-        for (auto it = begin(pluginDescriptors); it != end(pluginDescriptors); ++it)
-        { 
-            if( &(*it) == desc )
-            {
-                it->plugin->Shutdown();
-                pluginDescriptors.erase( it );
-                return true;
-            }
-        }
-
-        return false;
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
+        success = false;
     }
 
-    void PluginManager::ShutdownPlugins()
+    if (nullptr == desc.destroyPluginFunc)
     {
-        for (auto& desc : pluginDescriptors)
+        Logger::Error("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
+        success = false;
+    }
+
+    if (success)
+    {
+        desc.plugin = desc.createPluginFunc(rootEngine);
+    }
+
+    if (!success && nullptr == desc.plugin)
+    {
+        ClosePlugin(desc.handle);
+        return nullptr;
+    }
+
+    desc.plugin->Init();
+
+    pluginDescriptors.push_back(desc);
+
+    Logger::Debug("Plugin loaded - %s", desc.pluginName.c_str());
+
+    return &pluginDescriptors.back();
+}
+
+bool PluginManager::ShutdownPlugin(PluginDescriptor* desc)
+{
+    DVASSERT(desc != nullptr);
+
+    for (auto it = begin(pluginDescriptors); it != end(pluginDescriptors); ++it)
+    {
+        if (&(*it) == desc)
         {
-            desc.plugin->Shutdown();
+            it->plugin->Shutdown();
+            pluginDescriptors.erase(it);
+            return true;
         }
-
-        for (auto& desc : pluginDescriptors)
-        {
-            desc.destroyPluginFunc(desc.plugin);
-            ClosePlugin(desc.handle);
-            Logger::Debug("Plugin unloaded - %s", desc.pluginName.c_str());
-        }
-
-        pluginDescriptors.clear();
     }
 
-    PluginManager::PluginManager(Engine* engine)
-        : rootEngine(engine)
+    return false;
+}
+
+void PluginManager::ShutdownPlugins()
+{
+    for (auto& desc : pluginDescriptors)
     {
+        desc.plugin->Shutdown();
     }
 
-    PluginManager::~PluginManager()
+    for (auto& desc : pluginDescriptors)
     {
-        DVASSERT(pluginDescriptors.empty());
+        desc.destroyPluginFunc(desc.plugin);
+        ClosePlugin(desc.handle);
+        Logger::Debug("Plugin unloaded - %s", desc.pluginName.c_str());
     }
 
+    pluginDescriptors.clear();
+}
+
+PluginManager::PluginManager(Engine* engine)
+    : rootEngine(engine)
+{
+}
+
+PluginManager::~PluginManager()
+{
+    DVASSERT(pluginDescriptors.empty());
+}
 }
