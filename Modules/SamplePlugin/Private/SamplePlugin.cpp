@@ -36,21 +36,7 @@ private:
     
 };
 
-//
+EXPORT_PLUGIN( SamplePlugin )
 
-extern "C" {
 
-    //required a function
-    PLUGIN_FUNCTION_EXPORT
-    DAVA::IModule* CreatPlugin(DAVA::Engine* engine)
-    {
-        return new SamplePlugin(engine);
-    }
 
-    PLUGIN_FUNCTION_EXPORT
-    void DestroyPlugin(DAVA::IModule* plugin)
-    {
-        delete plugin;
-    }
-
-}

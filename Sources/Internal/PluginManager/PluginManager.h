@@ -17,35 +17,59 @@
 
 #endif
 
+//
+
+#define EXPORT_PLUGIN( PLUGIN ) \
+extern "C" { \
+    PLUGIN_FUNCTION_EXPORT \
+    DAVA::IModule* CreatePlugin(DAVA::Engine* engine)\
+    {\
+        return new PLUGIN(engine);\
+    }\
+    PLUGIN_FUNCTION_EXPORT\
+    void DestroyPlugin(DAVA::IModule* plugin)\
+    {\
+        delete plugin;\
+    }\
+}
+
+//
+
 namespace DAVA
 {
 class IModule;
 class Engine;
 
-typedef IModule* (*CreatPluginFuncPtr)(Engine*);
-typedef void (*DestroyPluginFuncPtr)(IModule*);
-
 class PluginManager final
 {
 public:
-    enum EFindPlugunMode
+
+    struct PluginDescriptor;
+
+    enum eFrustumPlane
+    {
+        EFP_LEFT = 0,
+        EFP_RIGHT
+    };
+
+    enum eFindPlugunMode
     {
         EFP_Auto,
         EFT_Release,
         EFT_Debug
     };
 
-    Vector<FilePath> PluginList(const FilePath& folder, EFindPlugunMode mode) const;
+    Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
-    void InitPlugin(const FilePath& pluginPatch);
+    PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
+    bool ShutdownPlugin( PluginDescriptor* desc );
     void ShutdownPlugins();
 
     PluginManager(Engine* engine);
     ~PluginManager();
 
 private:
-    struct PointersToPluginFuctions;
-    Vector<PointersToPluginFuctions> plugins;
+    Vector<PluginDescriptor> pluginDescriptors;
     Engine* rootEngine;
 };
 }
