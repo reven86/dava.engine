@@ -28,7 +28,7 @@ public:
     int32 DecodeInt(const String& key);
     float32 DecodeFloat(const String& key);
     const String& DecodeString(const String& key);
-    const WideString& DecodeWideString(const String& key);
+    const WideString DecodeWideString(const String& key);
     const VariantType& DecodeVariant(const String& key);
 
 private:

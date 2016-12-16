@@ -92,7 +92,7 @@ void ProfilerTest::LoadResources()
 
     AddControl(ScopedPtr<UIButton>(CreateButton(Rect(5.f, 445.f, 400.f, 35.f), L"Dump JSON (Custom Profiler)", Message(this, &ProfilerTest::OnDumpJSON))));
     AddControl(ScopedPtr<UIButton>(CreateButton(Rect(5.f, 485.f, 400.f, 35.f), L"Dump JSON (Global CPU-GPU)", Message(this, &ProfilerTest::OnDumpGlobalCPUGPU))));
-    AddControl(ScopedPtr<UIStaticText>(CreateStaticText(Rect(5.f, 525.f, 400.f, 35.f), L"JSON path: \"" + StringToWString(PROFILER_TEST_DUMP_JSON_PATH) + L"\"", textFont, Color::White)));
+    AddControl(ScopedPtr<UIStaticText>(CreateStaticText(Rect(5.f, 525.f, 400.f, 35.f), L"JSON path: \"" + UTF8Utils::EncodeToWideString(PROFILER_TEST_DUMP_JSON_PATH) + L"\"", textFont, Color::White)));
 
     dumpScrollView = new UIScrollView();
     dumpScrollView->SetDebugDraw(true);
@@ -225,7 +225,7 @@ void ProfilerTest::DumpAverageToUI(DAVA::ProfilerCPU* profiler, DAVA::int32 snap
     std::stringstream stream;
     profiler->DumpAverage(marker, 10, stream, snapshotID);
 
-    dumpText->SetText(StringToWString(stream.str()));
+    dumpText->SetText(UTF8Utils::EncodeToWideString(stream.str()));
     dumpText->SetSize(dumpText->GetContentPreferredSize(dumpText->GetSize()));
     dumpScrollView->RecalculateContentSize();
     dumpScrollView->SetVerticalScrollPosition(0.f);

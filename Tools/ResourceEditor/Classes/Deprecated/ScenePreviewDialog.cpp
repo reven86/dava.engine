@@ -27,7 +27,7 @@ ScenePreviewDialog::ScenePreviewDialog()
 
     DAVA::ScopedPtr<DAVA::UIButton> button(ControlsFactory::CreateButton(DAVA::Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
                                                                                     ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
-                                                                         DAVA::LocalizedString(L"dialog.close")));
+                                                                         DAVA::LocalizedWideString("dialog.close")));
     button->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ScenePreviewDialog::OnClose));
     draggableDialog->AddControl(button);
 }
@@ -77,36 +77,36 @@ void ScenePreviewDialog::Show(const DAVA::FilePath& scenePathname)
         {
         case DAVA::SceneFileV2::ERROR_FAILED_TO_CREATE_FILE:
         {
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.failedtocreeatefile"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.failedtocreeatefile"));
             break;
         }
 
         case DAVA::SceneFileV2::ERROR_FILE_WRITE_ERROR:
         {
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.filewriteerror"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.filewriteerror"));
             break;
         }
 
         case DAVA::SceneFileV2::ERROR_VERSION_IS_TOO_OLD:
         {
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.versionistooold"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.versionistooold"));
             break;
         }
 
         case ScenePreviewControl::ERROR_CANNOT_OPEN_FILE:
         {
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.cannotopenfile"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.cannotopenfile"));
             break;
         }
 
         case ScenePreviewControl::ERROR_WRONG_EXTENSION:
         {
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.wrongextension"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.wrongextension"));
             break;
         }
 
         default:
-            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.unknownerror"));
+            errorMessage->SetText(DAVA::LocalizedWideString("library.errormessage.unknownerror"));
             break;
         }
 
