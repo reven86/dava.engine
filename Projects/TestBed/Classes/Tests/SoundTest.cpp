@@ -101,7 +101,7 @@ void SoundTest::OnPlaySoundGroup1(BaseObject* sender, void* data, void* callerDa
 
 void SoundTest::OnApplySpeedGroup1(BaseObject* sender, void* data, void* callerData)
 {
-    float speed = static_cast<float>(std::atof(WStringToString(speedTextFieldGroup1->GetText()).c_str()));
+    float speed = static_cast<float>(std::atof(UTF8Utils::EncodeToUTF8(speedTextFieldGroup1->GetText()).c_str()));
     SoundSystem::Instance()->SetGroupSpeed(FastName("group-1"), speed);
 }
 
@@ -112,6 +112,6 @@ void SoundTest::OnPlaySoundGroup2(BaseObject* sender, void* data, void* callerDa
 
 void SoundTest::OnApplySpeedGroup2(BaseObject* sender, void* data, void* callerData)
 {
-    float speed = static_cast<float>(std::atof(WStringToString(speedTextFieldGroup2->GetText()).c_str()));
+    float speed = static_cast<float>(std::atof(UTF8Utils::EncodeToUTF8(speedTextFieldGroup2->GetText()).c_str()));
     SoundSystem::Instance()->SetGroupSpeed(FastName("group-2"), speed);
 }

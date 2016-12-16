@@ -1,4 +1,4 @@
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
@@ -141,7 +141,7 @@ Vector<String> GetCommandLineArgs()
         args.reserve(argc);
         for (int i = 0; i < argc; ++i)
         {
-            args.emplace_back(WStringToString(szArglist[i]));
+            args.emplace_back(UTF8Utils::EncodeToUTF8(szArglist[i]));
         }
     }
     ::LocalFree(szArglist);

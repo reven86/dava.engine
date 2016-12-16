@@ -20,7 +20,7 @@ public:
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
     {
-        Logger::Debug("****** TextDelegate1::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
+        Logger::Debug("****** TextDelegate1::TextFieldOnTextChanged: new=%s, old=%s", UTF8Utils::EncodeToUTF8(newText).c_str(), UTF8Utils::EncodeToUTF8(oldText).c_str());
     }
     void TextFieldShouldReturn(UITextField* textField) override
     {
@@ -45,7 +45,7 @@ public:
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
     {
-        Logger::Debug("****** TextDelegate2::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
+        Logger::Debug("****** TextDelegate2::TextFieldOnTextChanged: new=%s, old=%s", UTF8Utils::EncodeToUTF8(newText).c_str(), UTF8Utils::EncodeToUTF8(oldText).c_str());
     }
 };
 
@@ -175,7 +175,7 @@ UIButton* MultilineTest::CreateUIButton(Font* font, const Rect& rect, const Stri
 {
     UIButton* button = new UIButton(rect);
     button->SetStateFont(0xFF, font);
-    button->SetStateText(0xFF, StringToWString(text));
+    button->SetStateText(0xFF, UTF8Utils::EncodeToWideString(text));
     button->SetStateFontColor(0xFF, Color::White);
     button->SetDebugDraw(true);
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
