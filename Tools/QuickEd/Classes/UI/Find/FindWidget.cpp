@@ -5,14 +5,34 @@
 #include "Document/Document.h"
 #include "Project/Project.h"
 #include "UI/Find/FindCollector.h"
+#include "QtTools/Utils/QtThread.h"
 
 #include "UI/UIControl.h"
-#include "QtTools/Utils/QtThread.h"
 
 using namespace DAVA;
 
-class Widget : public QtThread
+class FindWorker : public QObject
 {
+    Q_OBJECT
+public:
+    FindWorker(std::unique_ptr<FindFilter> filter_, Project* project_)
+        : filter(std::move(filter_))
+        , project(project_)
+    {
+    }
+
+    void process()
+    {
+        FindCollector findCollector;
+        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
+        //ShowResults(findCollector.GetItems());
+
+        emit finished();
+    }
+
+private:
+    std::unique_ptr<FindFilter> filter;
+    Project* project = nullptr;
 };
 
 FindWidget::FindWidget(QWidget* parent)
@@ -30,9 +50,17 @@ void FindWidget::Find(std::unique_ptr<FindFilter> filter)
 {
     if (project != nullptr)
     {
-        FindCollector findCollector;
-        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
-        ShowResults(findCollector.GetItems());
+        QtThread* thread = new QtThread;
+        FindWorker* worker = new FindWorker(std::move(filter), project);
+        worker->moveToThread(thread);
+
+        connect(thread, SIGNAL(started()), worker, SLOT(process()));
+        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start();
+
+        //        FindCollector findCollector;
+        //        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
+        //        ShowResults(findCollector.GetItems());
     }
 }
 

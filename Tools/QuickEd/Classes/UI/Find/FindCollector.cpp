@@ -8,7 +8,7 @@
 
 using namespace DAVA;
 
-FindCollector::FindCollector()
+FindCollector::FindCollector(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
 {
 }
 
@@ -16,7 +16,7 @@ FindCollector::~FindCollector()
 {
 }
 
-void FindCollector::CollectFiles(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
+void FindCollector::CollectFiles()
 {
     QStringList files = cache->GetFiles("yaml");
 
