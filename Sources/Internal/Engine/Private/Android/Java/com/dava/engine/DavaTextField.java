@@ -548,6 +548,11 @@ final class DavaTextField implements TextWatcher,
                                                  int dstart,
                                                  int dend)
             {
+                if (programmaticTextChange)
+                {
+                    return source;
+                }
+
                 // Workaround on lost focus filter called once more
                 // so if in this moment we are loading/creating 
                 // new TextField synchronously we will get deadlock
