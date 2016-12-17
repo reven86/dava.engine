@@ -11,7 +11,7 @@
 #include "Network/Services/LogConsumer.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #include "Logger/TeamCityTestsOutput.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 #include "AppxBundleHelper.h"
 #include "ArchiveExtraction.h"
@@ -281,7 +281,7 @@ void UWPRunner::UnInitializeNetwork()
 
 bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 {
-    const WideString desiredAddr = StringToWString(UAPNetworkHelper::UAP_IP_ADDRESS);
+    const WideString desiredAddr = UTF8Utils::EncodeToWideString(UAPNetworkHelper::UAP_IP_ADDRESS);
     const DWORD desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
     bool changed = false;
 
