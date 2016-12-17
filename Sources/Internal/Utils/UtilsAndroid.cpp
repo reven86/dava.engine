@@ -49,9 +49,8 @@ String JniUtils::GenerateGUID()
 {
     JNIEnv* env = JNI::GetEnv();
     jstring jstr = generateGUID();
-    const char* str = env->GetStringUTFChars(jstr, 0);
-    DAVA::String result(str);
-    env->ReleaseStringUTFChars(jstr, str);
+    DAVA::String result = JNI::ToString(jstr);
+    env->DeleteLocalRef(jstr);
     return result;
 }
 

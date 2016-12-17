@@ -66,7 +66,11 @@ void DeviceManagerImpl::UpdateDisplayConfig()
 DisplayInfo DeviceManagerImpl::ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary)
 {
     DisplayInfo displayInfo;
-    displayInfo.name = JNI::ToString(static_cast<jstring>(env->GetObjectField(javaDisplayInfo, javaDisplayInfoNameField)));
+
+    jstring nameJava = static_cast<jstring>(env->GetObjectField(javaDisplayInfo, javaDisplayInfoNameField));
+    displayInfo.name = JNI::ToString(nameJava);
+    env->DeleteLocalRef(nameJava);
+
     displayInfo.systemId = static_cast<uintptr_t>(env->GetIntField(javaDisplayInfo, javaDisplayInfoIdField));
     displayInfo.rect.x = 0; // No information available from Android API for both x and y values
     displayInfo.rect.y = 0;

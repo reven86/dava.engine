@@ -30,6 +30,9 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
     env->DeleteLocalRef(jCountryCode);
 
     WideString result = JNI::ToWideString(obj);
+
+    env->DeleteLocalRef(obj);
+    
     return result;
 }
 

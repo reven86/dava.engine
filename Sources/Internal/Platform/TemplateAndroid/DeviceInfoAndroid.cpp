@@ -222,6 +222,8 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         jstring jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
 
         info.path = JNI::ToString(jStr);
+
+        env->DeleteLocalRef(jStr);
     }
 
     return info;
