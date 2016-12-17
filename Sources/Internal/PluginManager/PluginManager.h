@@ -10,17 +10,11 @@ namespace DAVA
 class IModule;
 class Engine;
 
+struct PluginDescriptor;
+
 class PluginManager final
 {
 public:
-    struct PluginDescriptor;
-
-    enum eFrustumPlane
-    {
-        EFP_LEFT = 0,
-        EFP_RIGHT
-    };
-
     enum eFindPlugunMode
     {
         EFP_Auto,
@@ -30,15 +24,15 @@ public:
 
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
-    PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
-    bool ShutdownPlugin(PluginDescriptor* desc);
+    const PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
+    bool ShutdownPlugin(const PluginDescriptor* desc);
     void ShutdownPlugins();
 
     PluginManager(Engine* engine);
     ~PluginManager();
 
 private:
-    Vector<PluginDescriptor> pluginDescriptors;
+    List<PluginDescriptor> pluginDescriptors;
     Engine* rootEngine;
 };
 }

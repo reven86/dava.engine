@@ -10,7 +10,7 @@ namespace DAVA
 using CreatePluginFuncPtr = IModule* (*)(Engine*);
 using DestroyPluginFuncPtr = void (*)(IModule*);
 
-struct PluginManager::PluginDescriptor
+struct PluginDescriptor
 {
     CreatePluginFuncPtr createPluginFunc;
     DestroyPluginFuncPtr destroyPluginFunc;
@@ -80,7 +80,7 @@ Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMo
     return pluginsList;
 }
 
-PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
+const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
 {
     PluginDescriptor desc;
 
@@ -114,9 +114,15 @@ PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& plugi
     if (success)
     {
         desc.plugin = desc.createPluginFunc(rootEngine);
+
+        if (nullptr == desc.plugin)
+        {
+            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str() );
+            success = false;
+        }
     }
 
-    if (!success && nullptr == desc.plugin)
+    if (!success )
     {
         ClosePlugin(desc.handle);
         return nullptr;
@@ -131,7 +137,7 @@ PluginManager::PluginDescriptor* PluginManager::InitPlugin(const FilePath& plugi
     return &pluginDescriptors.back();
 }
 
-bool PluginManager::ShutdownPlugin(PluginDescriptor* desc)
+bool PluginManager::ShutdownPlugin(const PluginDescriptor* desc)
 {
     DVASSERT(desc != nullptr);
 
@@ -139,7 +145,9 @@ bool PluginManager::ShutdownPlugin(PluginDescriptor* desc)
     {
         if (&(*it) == desc)
         {
-            it->plugin->Shutdown();
+            desc->plugin->Shutdown();
+            desc->destroyPluginFunc( desc->plugin );
+            ClosePlugin( desc->handle );
             pluginDescriptors.erase(it);
             return true;
         }

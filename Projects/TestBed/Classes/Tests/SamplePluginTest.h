@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
+#include "PluginManager/PluginManager.h"
 
 class TestBed;
 
@@ -15,4 +16,5 @@ protected:
 
 private:
     DAVA::Engine& engine;
+    const DAVA::PluginDescriptor* pluginDescriptor;
 };

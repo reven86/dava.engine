@@ -1,5 +1,4 @@
 #include "Tests/SamplePluginTest.h"
-#include "PluginManager/PluginManager.h"
 #include "Infrastructure/TestBed.h"
 #include "Engine/Engine.h"
 
@@ -8,6 +7,7 @@ using namespace DAVA;
 SamplePluginTest::SamplePluginTest(TestBed& app)
     : BaseScreen(app, "Sample plugin test")
     , engine(app.GetEngine())
+    , pluginDescriptor(nullptr)
 {
 }
 
@@ -25,7 +25,8 @@ void SamplePluginTest::LoadResources()
 
     for (auto& path : pluginsList)
     {
-        mm.InitPlugin(path);
+        pluginDescriptor = mm.InitPlugin(path);
+        DVASSERT(pluginDescriptor != nullptr);
     }
 }
 
@@ -34,5 +35,5 @@ void SamplePluginTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     PluginManager& mm = *engine.GetContext()->pluginManager;
-    mm.ShutdownPlugins();
+    mm.ShutdownPlugin(pluginDescriptor);    
 }
