@@ -446,21 +446,38 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND AND WIN32 )
+if ( QT5_FOUND )
     set (QTCONF_TARGET_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     if (DEPLOY_DIR AND DEPLOY)
         set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
+    if (MACOS)
+        set (QTCONF_TARGET_DIR "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources")
+    endif()
     set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
 
     get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
     set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
     set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
     set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
+
+    if (DEPLOY)
+        if ( MACOS )
+            set ( PLUGINS_PATH  "PlugIns" )
+            set ( QML_IMPORT_PATH "Resources/qml" )
+            set ( QML2_IMPORT_PATH "Resources/qml" )
+        elseif( WIN32 )
+            set ( PLUGINS_PATH  "." )
+            set ( QML_IMPORT_PATH "." )
+            set ( QML2_IMPORT_PATH "." )
+        else()
+            ASSERT(false, "Unsuported platform for Qt based application")
+        endif()
+    endif()
  
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                             ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in  )
+                    ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
