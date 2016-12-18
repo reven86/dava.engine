@@ -7,6 +7,7 @@ class SpritesPacker;
 class QComboBox;
 class FindItem;
 class FindFilter;
+class Project;
 
 class MainWindow::ProjectView : public QObject
 {
@@ -41,6 +42,10 @@ signals:
     void JumpToPrototype();
     void FindPrototypeInstances();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void ProjectChanged(Project* project);
+
+public slots:
+    void OnProjectChanged(Project* project);
 
 private slots:
     void OnRtlChanged(int arg);

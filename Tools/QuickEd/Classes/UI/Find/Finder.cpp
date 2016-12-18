@@ -1,6 +1,4 @@
-#include "FindCollector.h"
-
-#include "QtTools/ProjectInformation/FileSystemCache.h"
+#include "Finder.h"
 
 #include "UI/Find/PackageInformationBuilder.h"
 
@@ -8,30 +6,30 @@
 
 using namespace DAVA;
 
-FindCollector::FindCollector(const FileSystemCache* cache_, std::unique_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
-    : cache(cache_)
+Finder::Finder(const QStringList& files_, std::unique_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
+    : files(files_)
     , filter(std::move(filter_))
     , prototypes(prototypes_)
 {
 }
 
-FindCollector::~FindCollector()
+Finder::~Finder()
 {
 }
 
-const DAVA::Vector<FindItem>& FindCollector::GetItems() const
+void Finder::Process()
 {
-    return items;
-}
-
-void FindCollector::CollectFiles()
-{
-    QStringList files = cache->GetFiles("yaml");
+    files.sort();
 
     PackageInformationCache packagesCache;
 
+    int filesProcessed = 0;
     for (const QString& pathStr : files)
     {
+        if (canceling)
+        {
+            break;
+        }
         FilePath path(pathStr.toStdString());
         PackageInformationBuilder builder(&packagesCache);
 
@@ -40,6 +38,8 @@ void FindCollector::CollectFiles()
             const std::shared_ptr<PackageInformation>& package = builder.GetPackage();
             if (filter->CanAcceptPackage(package))
             {
+                currentItem = FindItem(package->GetPath());
+
                 for (const std::shared_ptr<ControlInformation>& control : package->GetControls())
                 {
                     CollectControls(path, control, false);
@@ -48,19 +48,30 @@ void FindCollector::CollectFiles()
                 {
                     CollectControls(path, prototype, true);
                 }
+
+                if (!currentItem.GetControlPaths().empty())
+                {
+                    emit ItemFound(currentItem);
+                }
             }
         }
+        filesProcessed++;
+        emit ProgressChanged(filesProcessed, files.size());
     }
 
-    std::sort(items.begin(), items.end());
+    emit Finished();
 }
 
-void FindCollector::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection)
+void Finder::Cancel()
+{
+    canceling = true;
+}
+
+void Finder::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection)
 {
     if (filter->CanAcceptControl(control))
     {
-        Logger::Debug("FilePath: %s", path.GetAbsolutePathname().c_str());
-        items.push_back(FindItem(path, control->GetPathToControl()));
+        currentItem.AddPathToControl(control->GetPathToControl());
     }
 
     for (const std::shared_ptr<ControlInformation>& child : control->GetChildren())

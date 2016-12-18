@@ -11,21 +11,27 @@
 
 class Document;
 class Project;
+class QtThread;
 
 class FindWidget : public QDockWidget
 {
     Q_OBJECT
 public:
     FindWidget(QWidget* parent = nullptr);
-    ~FindWidget() = default;
+    ~FindWidget() override;
 
     void Find(std::unique_ptr<FindFilter> filter);
-    void ShowResults(const DAVA::Vector<FindItem>& items);
+
+signals:
+    void StopAll();
 
 public slots:
-    void OnDocumentChanged(Document* document);
+    void OnProjectChanged(Project* project);
 
 private slots:
+    void OnItemFound(FindItem item);
+    void OnProgressChanged(int filesProcessed, int totalFiles);
+    void OnFindFinished();
     void OnActivated(const QModelIndex& index);
 
 private:
@@ -38,9 +44,9 @@ private:
     };
 
     Ui::FindWidget ui;
-    DAVA::Vector<FindItem> items;
     std::unique_ptr<FindFilter> filter;
     QStandardItemModel* model = nullptr;
 
     Project* project = nullptr;
+    QtThread* thread = nullptr;
 };

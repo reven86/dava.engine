@@ -2,6 +2,7 @@
 
 #include "Project/Project.h"
 #include "UI/mainwindow.h"
+#include "UI/ProjectView.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
@@ -245,6 +246,7 @@ EditorCore::EditorCore(DAVA::Engine& engine)
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
     connect(mainWindow.get(), &MainWindow::Exit, this, &EditorCore::OnExit);
     connect(mainWindow.get(), &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+    connect(this, &EditorCore::ProjectChanged, mainWindow->GetProjectView(), &MainWindow::ProjectView::OnProjectChanged);
 
     UnpackHelp();
 
@@ -292,6 +294,7 @@ void EditorCore::OpenProject(const QString& path)
     if (newProject.get())
     {
         project = std::move(newProject);
+        emit ProjectChanged(project.get());
         AddRecentProject(project->GetProjectPath());
 
         mainWindow->SetRecentProjects(GetRecentProjects());
@@ -331,6 +334,8 @@ bool EditorCore::CloseProject()
     disconnect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
     DisableCacheClient();
+
+    emit ProjectChanged(nullptr);
     project = nullptr;
     return true;
 }

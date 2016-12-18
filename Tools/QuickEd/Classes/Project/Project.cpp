@@ -8,7 +8,7 @@
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "UI/ProjectView.h"
-#include "UI/Find/FindCollector.h"
+#include "UI/Find/FindFilter.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"

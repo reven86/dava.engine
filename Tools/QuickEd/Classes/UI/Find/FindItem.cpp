@@ -1,8 +1,11 @@
 #include "FindItem.h"
 
-FindItem::FindItem(const DAVA::FilePath& file_, const DAVA::String& pathToControl_)
+FindItem::FindItem()
+{
+}
+
+FindItem::FindItem(const DAVA::FilePath& file_)
     : file(file_)
-    , pathToControl(pathToControl_)
 {
 }
 
@@ -15,16 +18,23 @@ const DAVA::FilePath& FindItem::GetFile() const
     return file;
 }
 
-const DAVA::String& FindItem::GetPathToControl() const
+const DAVA::Vector<DAVA::String>& FindItem::GetControlPaths() const
 {
-    return pathToControl;
+    return controlPaths;
 }
 
-bool FindItem::operator<(const FindItem& other) const
+void FindItem::AddPathToControl(const DAVA::String& path)
 {
-    if (file.GetFrameworkPath() == other.GetFile().GetFrameworkPath())
-    {
-        return pathToControl < other.pathToControl;
-    }
-    return file.GetFrameworkPath() < other.GetFile().GetFrameworkPath();
+    controlPaths.push_back(path);
+}
+
+bool FindItem::IsValid() const
+{
+    return !file.IsEmpty();
+}
+
+void FindItem::Reset()
+{
+    file = DAVA::FilePath();
+    controlPaths.clear();
 }

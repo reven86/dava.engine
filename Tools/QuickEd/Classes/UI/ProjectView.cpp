@@ -1,6 +1,8 @@
 #include "ProjectView.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "ui_mainwindow.h"
+#include "Project/Project.h"
+
 
 #include <QComboBox>
 
@@ -18,13 +20,10 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
 
+    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
+
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
-}
-
-void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
-{
-    mainWindow->SetProjectPath(projectPath);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
@@ -131,6 +130,16 @@ void MainWindow::ProjectView::InitGlobalClasses()
     mainWindow->ui->toolBarPlugins->addSeparator();
     mainWindow->ui->toolBarPlugins->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::ProjectView::OnGlobalClassesChanged);
+}
+
+void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
+{
+    mainWindow->SetProjectPath(projectPath);
+}
+
+void MainWindow::ProjectView::OnProjectChanged(Project* project)
+{
+    emit ProjectChanged(project);
 }
 
 void MainWindow::ProjectView::OnRtlChanged(int arg)

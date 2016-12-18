@@ -5,15 +5,19 @@
 class FindItem
 {
 public:
-    FindItem(const DAVA::FilePath& file, const DAVA::String& pathToControl);
+    FindItem();
+    FindItem(const DAVA::FilePath& file);
     ~FindItem();
 
     const DAVA::FilePath& GetFile() const;
-    const DAVA::String& GetPathToControl() const;
 
-    bool operator<(const FindItem& other) const;
+    const DAVA::Vector<DAVA::String>& GetControlPaths() const;
+    void AddPathToControl(const DAVA::String& control);
+
+    bool IsValid() const;
+    void Reset();
 
 private:
     DAVA::FilePath file;
-    DAVA::String pathToControl;
+    DAVA::Vector<DAVA::String> controlPaths;
 };

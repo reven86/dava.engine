@@ -4,8 +4,9 @@
 
 #include "Document/Document.h"
 #include "Project/Project.h"
-#include "UI/Find/FindCollector.h"
+#include "UI/Find/Finder.h"
 #include "QtTools/Utils/QtThread.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "UI/UIControl.h"
 
@@ -14,6 +15,8 @@ using namespace DAVA;
 FindWidget::FindWidget(QWidget* parent)
     : QDockWidget(parent)
 {
+    qRegisterMetaType<FindItem>("FindItem");
+
     ui.setupUi(this);
 
     model = new QStandardItemModel();
@@ -22,77 +25,89 @@ FindWidget::FindWidget(QWidget* parent)
     ui.treeView->installEventFilter(this);
 }
 
+FindWidget::~FindWidget()
+{
+}
+
 void FindWidget::Find(std::unique_ptr<FindFilter> filter)
 {
-    if (project != nullptr)
+    if (thread == nullptr)
     {
-        QtThread* thread = new QtThread;
-        FindCollector* collector = new FindCollector(project->GetFileSystemCache(), std::move(filter), &(project->GetPrototypes()));
-        collector->moveToThread(thread);
+        model->removeRows(0, model->rowCount());
+        setVisible(true);
+        raise();
 
-        connect(thread, SIGNAL(started()), collector, SLOT(CollectFiles()));
-        connect(collector, SIGNAL(finished()), thread, SLOT(quit()));
-        thread->start();
+        if (project != nullptr)
+        {
+            thread = new QtThread;
+            QStringList files = project->GetFileSystemCache()->GetFiles("yaml");
+            Finder* finder = new Finder(files, std::move(filter), &(project->GetPrototypes()));
+            finder->moveToThread(thread);
 
-        //findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
-        //        ShowResults(collector->GetItems());
+            connect(thread, &QtThread::started, finder, &Finder::Process);
+            connect(thread, &QtThread::finished, this, &FindWidget::OnFindFinished);
+
+            connect(finder, &Finder::Finished, thread, &QtThread::quit);
+            connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
+            connect(finder, &Finder::ProgressChanged, this, &FindWidget::OnProgressChanged, Qt::QueuedConnection);
+
+            connect(this, &FindWidget::StopAll, finder, &Finder::Cancel, Qt::DirectConnection);
+            thread->start();
+        }
     }
 }
 
-void FindWidget::ShowResults(const DAVA::Vector<FindItem>& items_)
+void FindWidget::OnProjectChanged(Project* project_)
 {
+    emit StopAll();
+    project = project_;
     model->removeRows(0, model->rowCount());
-    items = items_;
+}
 
-    String prevFwPath;
-    QStandardItem* pathItem = nullptr;
-    for (const FindItem& item : items)
+void FindWidget::OnItemFound(FindItem item)
+{
+    String fwPath = item.GetFile().GetFrameworkPath();
+    QStandardItem* pathItem = new QStandardItem(fwPath.c_str());
+    pathItem->setEditable(false);
+    pathItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
+    model->appendRow(pathItem);
+
+    for (const String& pathToControl : item.GetControlPaths())
     {
-        String fwPath = item.GetFile().GetFrameworkPath();
-        if (pathItem == nullptr || prevFwPath != fwPath)
-        {
-            prevFwPath = fwPath;
-            pathItem = new QStandardItem(fwPath.c_str());
-            pathItem->setEditable(false);
-            pathItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
-            model->appendRow(pathItem);
-        }
-
-        QStandardItem* controlItem = new QStandardItem(item.GetPathToControl().c_str());
+        QStandardItem* controlItem = new QStandardItem(QString::fromStdString(pathToControl));
         controlItem->setEditable(false);
         controlItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
-        controlItem->setData(QString::fromStdString(item.GetPathToControl()), CONTROL_DATA);
+        controlItem->setData(QString::fromStdString(pathToControl), CONTROL_DATA);
         pathItem->appendRow(controlItem);
-        pathItem->setEditable(false);
     }
-
-    setVisible(true);
-    raise();
 }
 
-void FindWidget::OnDocumentChanged(Document* document)
+void FindWidget::OnProgressChanged(int filesProcessed, int totalFiles)
 {
-    if (document != nullptr)
-    {
-        project = document->GetProject();
-    }
-    else
-    {
-        project = nullptr;
-    }
+    this->setWindowTitle(QString("Find - %1%").arg(filesProcessed * 100 / totalFiles));
+}
+
+void FindWidget::OnFindFinished()
+{
+    delete thread;
+    thread = nullptr;
+    this->setWindowTitle(QString("Find - Finished"));
 }
 
 void FindWidget::OnActivated(const QModelIndex& index)
 {
-    QString path = index.data(PACKAGE_DATA).toString();
-    if (index.data(CONTROL_DATA).isValid())
+    if (project)
     {
-        QString control = index.data(CONTROL_DATA).toString();
-        project->JumpToControl(FilePath(path.toStdString()), control.toStdString());
-    }
-    else
-    {
-        project->JumpToPackage(FilePath(path.toStdString()));
+        QString path = index.data(PACKAGE_DATA).toString();
+        if (index.data(CONTROL_DATA).isValid())
+        {
+            QString control = index.data(CONTROL_DATA).toString();
+            project->JumpToControl(FilePath(path.toStdString()), control.toStdString());
+        }
+        else
+        {
+            project->JumpToPackage(FilePath(path.toStdString()));
+        }
     }
 }
 
