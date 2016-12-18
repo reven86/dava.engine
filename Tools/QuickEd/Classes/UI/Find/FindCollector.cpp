@@ -8,12 +8,20 @@
 
 using namespace DAVA;
 
-FindCollector::FindCollector(const FileSystemCache* cache, const FindFilter& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
+FindCollector::FindCollector(const FileSystemCache* cache_, std::unique_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
+    : cache(cache_)
+    , filter(std::move(filter_))
+    , prototypes(prototypes_)
 {
 }
 
 FindCollector::~FindCollector()
 {
+}
+
+const DAVA::Vector<FindItem>& FindCollector::GetItems() const
+{
+    return items;
 }
 
 void FindCollector::CollectFiles()
@@ -27,18 +35,18 @@ void FindCollector::CollectFiles()
         FilePath path(pathStr.toStdString());
         PackageInformationBuilder builder(&packagesCache);
 
-        if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
+        if (UIPackageLoader(*prototypes).LoadPackage(path, &builder))
         {
             const std::shared_ptr<PackageInformation>& package = builder.GetPackage();
-            if (filter.CanAcceptPackage(package))
+            if (filter->CanAcceptPackage(package))
             {
                 for (const std::shared_ptr<ControlInformation>& control : package->GetControls())
                 {
-                    CollectControls(path, control, filter, false);
+                    CollectControls(path, control, false);
                 }
                 for (const std::shared_ptr<ControlInformation>& prototype : package->GetPrototypes())
                 {
-                    CollectControls(path, prototype, filter, true);
+                    CollectControls(path, prototype, true);
                 }
             }
         }
@@ -47,20 +55,16 @@ void FindCollector::CollectFiles()
     std::sort(items.begin(), items.end());
 }
 
-const DAVA::Vector<FindItem>& FindCollector::GetItems() const
+void FindCollector::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection)
 {
-    return items;
-}
-
-void FindCollector::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, const FindFilter& filter, bool inPrototypeSection)
-{
-    if (filter.CanAcceptControl(control))
+    if (filter->CanAcceptControl(control))
     {
+        Logger::Debug("FilePath: %s", path.GetAbsolutePathname().c_str());
         items.push_back(FindItem(path, control->GetPathToControl()));
     }
 
     for (const std::shared_ptr<ControlInformation>& child : control->GetChildren())
     {
-        CollectControls(path, child, filter, inPrototypeSection);
+        CollectControls(path, child, inPrototypeSection);
     }
 }

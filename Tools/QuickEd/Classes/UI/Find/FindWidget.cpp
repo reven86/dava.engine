@@ -11,30 +11,6 @@
 
 using namespace DAVA;
 
-class FindWorker : public QObject
-{
-    Q_OBJECT
-public:
-    FindWorker(std::unique_ptr<FindFilter> filter_, Project* project_)
-        : filter(std::move(filter_))
-        , project(project_)
-    {
-    }
-
-    void process()
-    {
-        FindCollector findCollector;
-        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
-        //ShowResults(findCollector.GetItems());
-
-        emit finished();
-    }
-
-private:
-    std::unique_ptr<FindFilter> filter;
-    Project* project = nullptr;
-};
-
 FindWidget::FindWidget(QWidget* parent)
     : QDockWidget(parent)
 {
@@ -51,16 +27,15 @@ void FindWidget::Find(std::unique_ptr<FindFilter> filter)
     if (project != nullptr)
     {
         QtThread* thread = new QtThread;
-        FindWorker* worker = new FindWorker(std::move(filter), project);
-        worker->moveToThread(thread);
+        FindCollector* collector = new FindCollector(project->GetFileSystemCache(), std::move(filter), &(project->GetPrototypes()));
+        collector->moveToThread(thread);
 
-        connect(thread, SIGNAL(started()), worker, SLOT(process()));
-        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+        connect(thread, SIGNAL(started()), collector, SLOT(CollectFiles()));
+        connect(collector, SIGNAL(finished()), thread, SLOT(quit()));
         thread->start();
 
-        //        FindCollector findCollector;
-        //        findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
-        //        ShowResults(findCollector.GetItems());
+        //findCollector.CollectFiles(project->GetFileSystemCache(), *filter.get(), project->GetPrototypes());
+        //        ShowResults(collector->GetItems());
     }
 }
 
