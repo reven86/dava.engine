@@ -325,6 +325,13 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         {
             UpdateVirtualCoordinatesSystem();
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            // TODO: comments
+            if (uiControlSystem->vcs->GetReloadResourceOnResize())
+            {
+                Sprite::ValidateForSize();
+                TextBlock::ScreenResolutionChanged();
+            }
         }
     }
 }

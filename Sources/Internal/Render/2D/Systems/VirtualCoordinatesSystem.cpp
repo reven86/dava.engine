@@ -115,13 +115,13 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
 
 #if !defined(__DAVAENGINE_COREV2__)
     virtualSizeChanged.Emit(virtualScreenSize);
-#endif
 
     if (enabledReloadResourceOnResize)
     {
         Sprite::ValidateForSize();
         TextBlock::ScreenResolutionChanged();
     }
+#endif
 
     RenderSystem2D::Instance()->ScreenSizeChanged();
     UIControlSystem::Instance()->ScreenSizeChanged(GetFullScreenVirtualRect());
@@ -130,6 +130,11 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
 void VirtualCoordinatesSystem::EnableReloadResourceOnResize(bool enable)
 {
     enabledReloadResourceOnResize = enable;
+}
+
+bool VirtualCoordinatesSystem::GetReloadResourceOnResize() const
+{
+    return enabledReloadResourceOnResize;
 }
 
 void VirtualCoordinatesSystem::SetPhysicalScreenSize(int32 width, int32 height)
