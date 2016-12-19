@@ -3,6 +3,10 @@
 */
 #pragma once
 
+#ifndef __OBJC__
+#error This file can only be included from .mm file
+#endif
+
 @protocol NSObject;
 @class NSNotification;
 @class NSApplication;
