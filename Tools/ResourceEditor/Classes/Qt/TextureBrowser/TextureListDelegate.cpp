@@ -254,7 +254,7 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
             ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
             if (data)
             {
-                DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+                DAVA::FilePath dataSourcePath = data->GetDataSource3DPath();
 
                 infoText += "\nPath: ";
                 infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
