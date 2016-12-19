@@ -125,7 +125,7 @@ void ProtoDriver::OnDisconnected(const char* message)
         if (channels[i].service != NULL && true == channels[i].confirmed)
         {
             channels[i].confirmed = false;
-            NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnChannelClosed, channels[i].service, &channels[i], message));
+            channels[i].service->OnChannelClosed(&channels[i], message);
         }
     }
     ClearQueues();
@@ -185,7 +185,7 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-            NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnPacketSent, ch->service, ch, curPacket.data, curPacket.dataLength));
+            ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
         }
     }
@@ -222,8 +222,7 @@ bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
     {
         // Send back delivery confirmation
         SendControl(TYPE_DELIVERY_ACK, result->channelId, result->packetId);
-        NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnPacketReceived, ch->service, ch, result->data, result->dataSize));
-
+        ch->service->OnPacketReceived(ch, result->data, result->dataSize);
         return true;
     }
     DVASSERT(0);
@@ -248,7 +247,7 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
             if (ch->service != NULL)
             {
                 ch->confirmed = true;
-                NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnChannelOpen, ch->service, ch));
+                ch->service->OnChannelOpen(ch);
             }
             return true;
         }
@@ -265,7 +264,7 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
     if (ch != NULL && ch->service != NULL)
     {
         ch->confirmed = true;
-        NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnChannelOpen, ch->service, ch));
+        ch->service->OnChannelOpen(ch);
         return true;
     }
     DVASSERT(ch != NULL);
@@ -280,7 +279,7 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
-        NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnChannelClosed, ch->service, ch, "Remote service is unavailable"));
+        ch->service->OnChannelClosed(ch, "Remote service is unavailable");
         return true;
     }
     DVASSERT(ch != NULL);
@@ -300,7 +299,7 @@ bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
         DVASSERT(pendingId == result->packetId);
         if (pendingId == result->packetId)
         {
-            NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnPacketDelivered, ch->service, ch, pendingId));
+            ch->service->OnPacketDelivered(ch, pendingId);
             return true;
         }
     }
@@ -312,7 +311,7 @@ void ProtoDriver::ClearQueues()
     if (curPacket.data != NULL)
     {
         Channel* ch = GetChannel(curPacket.channelId);
-        NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnPacketSent, ch->service, ch, curPacket.data, curPacket.dataLength));
+        ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
 
         curPacket.data = NULL;
     }
@@ -320,7 +319,7 @@ void ProtoDriver::ClearQueues()
     {
         Packet& packet = *i;
         Channel* ch = GetChannel(packet.channelId);
-        NetCore::Instance()->AddCallback(DAVA::Bind(&IChannelListener::OnPacketSent, ch->service, ch, packet.data, packet.dataLength));
+        ch->service->OnPacketSent(ch, packet.data, packet.dataLength);
     }
     dataQueue.clear();
     pendingAckQueue.clear();

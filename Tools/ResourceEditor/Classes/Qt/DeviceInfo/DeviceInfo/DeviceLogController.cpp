@@ -3,6 +3,7 @@
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "DeviceLogController.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
+#include "Network/NetCore.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -11,6 +12,7 @@ DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerD
     : QObject(parent)
     , parentWidget(_parentWidget)
     , peer(peerDescr)
+    , channelListenerAsync(this, NetCore::Instance()->GetNetCallbacksHolder())
 {
     ShowView();
 }

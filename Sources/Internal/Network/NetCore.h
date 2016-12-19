@@ -11,8 +11,9 @@
 #include "Network/ServiceRegistrar.h"
 #include "Network/IController.h"
 #include "Network/NetworkCommon.h"
+#include "Network/IChannel.h"
+#include "Network/NetCallbacksHolder.h"
 #include "Concurrency/Thread.h"
-#include "Job/JobQueue.h"
 
 namespace DAVA
 {
@@ -91,11 +92,11 @@ public:
 
     static bool IsNetworkEnabled();
 
-    void AddCallback(const Function<void()>& fn);
+    NetCallbacksHolder* GetNetCallbacksHolder();
     void ExecPendingCallbacks();
 
 private:
-    void NetThreadHandler(BaseObject* caller, void* callerData, void* userData);
+    void NetThreadHandler();
     void DoStart(IController* ctrl);
     void DoRestart();
     void DoDestroy(TrackId id, volatile bool* stoppedFlag);
@@ -119,8 +120,8 @@ private:
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
 #endif
-    Thread* netThread;
-    DAVA::JobQueueWorker callbackQueue;
+    RefPtr<Thread> netThread;
+    NetCallbacksHolder netCallbacksHolder;
 };
 
 //////////////////////////////////////////////////////////////////////////

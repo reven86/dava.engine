@@ -8,6 +8,7 @@
 #include "Logger/Logger.h"
 #include "Platform/DateTime.h"
 #include "Network/Services/MMNet/MMNetClient.h"
+#include "Network/NetCore.h"
 
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
@@ -24,6 +25,7 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , profiledPeer(peerDescr)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
+    , channelListenerAsync(netClient.get(), NetCore::Instance()->GetNetCallbacksHolder())
 {
     ShowView();
     netClient->InstallCallbacks(MakeFunction(this, &MemProfController::NetConnEstablished),
@@ -39,6 +41,7 @@ MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* pare
     , parentWidget(parentWidget_)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
+    , channelListenerAsync(netClient.get(), NetCore::Instance()->GetNetCallbacksHolder())
 {
     if (profilingSession->LoadFromFile(srcDir))
     {
@@ -100,9 +103,9 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-DAVA::Net::IChannelListener* MemProfController::NetObject() const
+DAVA::Net::IChannelListener* MemProfController::NetObject()
 {
-    return netClient.get();
+    return &channelListenerAsync;
 }
 
 bool MemProfController::IsFileLoaded() const

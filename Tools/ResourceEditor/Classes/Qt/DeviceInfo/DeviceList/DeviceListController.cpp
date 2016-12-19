@@ -117,7 +117,7 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
     {
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        return services.log;
+        return services.log->GetAsyncChannelListener();
     }
     return NULL;
 }

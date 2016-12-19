@@ -5,6 +5,7 @@
 #include "Network/NetworkCommon.h"
 #include "Network/NetCore.h"
 #include "Network/IChannel.h"
+#include "Network/ChannelListenerAsync.h"
 
 namespace DAVA
 {
@@ -45,6 +46,7 @@ private:
     Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
     Net::IChannelListener* listener = nullptr;
+    Net::ChannelListenerAsync channelListenerAsync;
 };
 
 inline const Net::Endpoint& Connection::GetEndpoint() const

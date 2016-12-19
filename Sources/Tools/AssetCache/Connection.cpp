@@ -33,6 +33,7 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
 Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
     : endpoint(_endpoint)
     , listener(_listener)
+    , channelListenerAsync(this, Net::NetCore::Instance()->GetNetCallbacksHolder())
 {
     Connect(_role, transport, timeoutMs);
 }
@@ -64,7 +65,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
         config.AddTransport(transport, endpoint);
         config.AddService(serviceID);
 
-        controllerId = Net::NetCore::Instance()->CreateController(config, this, timeoutMs);
+        controllerId = Net::NetCore::Instance()->CreateController(config, &channelListenerAsync, timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
             return true;
@@ -94,7 +95,7 @@ void Connection::DisconnectBlocked()
 
 Net::IChannelListener* Connection::Create(uint32 serviceId, void* context)
 {
-    auto connection = static_cast<Net::IChannelListener*>(context);
+    Net::IChannelListener* connection = static_cast<Net::IChannelListener*>(context);
     return connection;
 }
 

@@ -6,6 +6,8 @@
 
 #include "FileSystem/FilePath.h"
 #include "Network/PeerDesription.h"
+#include "Network/IChannel.h"
+#include "Network/ChannelListenerAsync.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
 namespace DAVA
@@ -40,7 +42,7 @@ public:
 
     void ShowView();
 
-    DAVA::Net::IChannelListener* NetObject() const;
+    DAVA::Net::IChannelListener* NetObject();
 
     int Mode() const;
     bool IsFileLoaded() const;
@@ -80,6 +82,7 @@ private:
     DAVA::Net::PeerDescription profiledPeer;
     std::unique_ptr<DAVA::Net::MMNetClient> netClient;
     std::unique_ptr<ProfilingSession> profilingSession;
+    DAVA::Net::ChannelListenerAsync channelListenerAsync;
 };
 
 //////////////////////////////////////////////////////////////////////////
