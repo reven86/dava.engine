@@ -1614,7 +1614,7 @@ QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
     QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
-    DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+    DAVA::FilePath dataSourcePath = data->GetDataSource3DPath();
 
     if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
     {

@@ -10,7 +10,7 @@ class MockControllerModule : public ControllerModule
 {
 public:
     MOCK_METHOD1(OnRenderSystemInitialized, void(Window* w));
-    MOCK_METHOD1(CanWindowBeClosedSilently, bool(const WindowKey& key));
+    MOCK_METHOD2(CanWindowBeClosedSilently, bool(const WindowKey& key, String& requestWindowText));
     MOCK_METHOD1(SaveOnWindowClose, void(const WindowKey& key));
     MOCK_METHOD1(RestoreOnWindowClose, void(const WindowKey& key));
     MOCK_METHOD1(OnContextCreated, void(DataContext& context));
