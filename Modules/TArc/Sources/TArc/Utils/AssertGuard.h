@@ -10,7 +10,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class ToolsAssetGuard : public QObject, public StaticSingleton<ToolsAssetGuard>
+class ToolsAssertGuard : public QObject, public StaticSingleton<ToolsAssertGuard>
 {
     Q_OBJECT
 public:

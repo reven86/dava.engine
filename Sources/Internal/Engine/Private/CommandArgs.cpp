@@ -1,11 +1,12 @@
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
-#include <windows.h>
 #include <shellapi.h>
 #endif
 
@@ -96,7 +97,7 @@ Vector<String> GetCommandArgs()
 Vector<String> GetCommandArgs()
 {
     LPWSTR cmdline = ::GetCommandLineW();
-    return GetCommandArgs(WStringToString(cmdline));
+    return GetCommandArgs(UTF8Utils::EncodeToUTF8(cmdline));
 }
 
 #endif

@@ -5,9 +5,9 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
-#include "FileSystem/KeyedArchive.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
 
@@ -362,7 +362,7 @@ void LocalizationSystem::UnloadStringFile(const FilePath& fileName)
     DVASSERT(0 && "Method do not implemented");
 }
 
-String LocalizationSystem::GetLocalizedString(const String& utf8Key) const
+const String& LocalizationSystem::GetLocalizedString(const String& utf8Key) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
@@ -377,7 +377,7 @@ String LocalizationSystem::GetLocalizedString(const String& utf8Key) const
     return utf8Key;
 }
 
-String LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
+const String& LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
@@ -473,13 +473,8 @@ String LocalizationSystem::GetCountryCode() const
     return "en_US";
 }
 
-WideString LocalizedString(const String& utf8Key)
+WideString LocalizedWideString(const String& utf8Key)
 {
     return UTF8Utils::EncodeToWideString(LocalizationSystem::Instance()->GetLocalizedString(utf8Key));
-}
-
-WideString LocalizedString(const WideString& key)
-{
-    return UTF8Utils::EncodeToWideString(LocalizationSystem::Instance()->GetLocalizedString(UTF8Utils::EncodeToUTF8(key)));
 }
 };

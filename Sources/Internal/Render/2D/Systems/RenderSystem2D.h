@@ -161,6 +161,7 @@ public:
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
@@ -373,8 +374,8 @@ private:
 
     bool spriteClipping = true;
 
-    uint8* currentVertexBuffer = nullptr;
-    uint16* currentIndexBuffer = nullptr;
+    Vector<uint8> currentVertexBuffer;
+    Vector<uint16> currentIndexBuffer;
     rhi::Packet currentPacket;
     uint32 currentTexcoordStreamCount = 1; //1 is for default draw
     uint32 currentIndexBase = 0;

@@ -27,6 +27,12 @@ public:
     {
         AddConnection(sender, signal, [fn]() { fn(); }, connectionType);
     }
+
+    template <typename Func1>
+    void RemoveConnection(const typename QtPrivate::FunctionPointer<Func1>::Object* sender, Func1 signal)
+    {
+        QObject::disconnect(sender, signal, this, nullptr);
+    }
 };
 } // namespace TArc
 } // namespace DAVA
