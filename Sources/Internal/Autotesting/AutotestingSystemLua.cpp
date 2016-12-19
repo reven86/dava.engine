@@ -297,7 +297,7 @@ String AutotestingSystemLua::GetDeviceName()
     }
     else
     {
-        deviceName = WStringToString(DeviceInfo::GetName());
+        deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
     }
     replace(deviceName.begin(), deviceName.end(), ' ', '_');
     replace(deviceName.begin(), deviceName.end(), '-', '_');
@@ -508,7 +508,7 @@ bool AutotestingSystemLua::SetText(const String& path, const String& text)
     UITextField* tf = dynamic_cast<UITextField*>(FindControl(path));
     if (tf)
     {
-        tf->SetText(StringToWString(text));
+        tf->SetText(UTF8Utils::EncodeToWideString(text));
         return true;
     }
     return false;
@@ -696,13 +696,13 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
     {
-        String actualText = WStringToString(uiStaticText->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
         return (actualText == expectedText);
     }
     UITextField* uiTextField = dynamic_cast<UITextField*>(control);
     if (uiTextField)
     {
-        String actualText = WStringToString(uiTextField->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiTextField->GetText());
         return (actualText == expectedText);
     }
     return false;
@@ -710,7 +710,7 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
 
 bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String& key)
 {
-    WideString expectedText = StringToWString(key);
+    WideString expectedText = UTF8Utils::EncodeToWideString(key);
 
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
