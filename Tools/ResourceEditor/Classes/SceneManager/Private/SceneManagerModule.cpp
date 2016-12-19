@@ -78,7 +78,7 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     }
 }
 
-bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     return false;
 }
@@ -630,7 +630,7 @@ void SceneManagerModule::OpenScene()
     DVASSERT(data != nullptr);
 
     FileDialogParams params;
-    params.dir = QString::fromStdString(data->GetDataSourcePath().GetAbsolutePathname());
+    params.dir = QString::fromStdString(data->GetDataSource3DPath().GetAbsolutePathname());
     params.filters = QStringLiteral("DAVA Scene V2 (*.sc2)");
     params.title = QStringLiteral("Open scene file");
 
@@ -1245,7 +1245,7 @@ DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<SceneEdit
     {
         ProjectManagerData* data = accessor->GetGlobalContext()->GetData<ProjectManagerData>();
         DVASSERT(data != nullptr);
-        DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+        DAVA::FilePath dataSourcePath = data->GetDataSource3DPath();
         initialPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
     }
 

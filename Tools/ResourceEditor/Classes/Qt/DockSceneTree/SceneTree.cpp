@@ -66,7 +66,7 @@ DAVA::FilePath GetDataSourcePath()
     if (data == nullptr)
         return DAVA::FilePath();
 
-    return data->GetDataSourcePath();
+    return data->GetDataSource3DPath();
 }
 
 void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, DAVA::ParticleEmitter* emitter,

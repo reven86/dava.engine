@@ -12,23 +12,16 @@ namespace DAVA
 FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
-
     Vector<Image*> inputImages;
-    auto loadResult = ImageSystem::Load(fileToConvert, inputImages);
-
+    eErrorCode loadResult = ImageSystem::Load(fileToConvert, inputImages);
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
         Logger::Error("[DXTConverter::ConvertToDxt] can't open %s", fileToConvert.GetStringValue().c_str());
         return FilePath();
     }
 
-    Vector<Image*> imagesToSave;
-
-    FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
-
-    DVASSERT(descriptor.compression);
     const TextureDescriptor::Compression* compression = &descriptor.compression[gpuFamily];
-
+    Vector<Image*> imagesToSave;
     if (inputImages.size() == 1)
     {
         Image* image = inputImages[0];
@@ -78,7 +71,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
 
         if (descriptor.dataSettings.GetGenerateMipMaps())
         {
-            auto mipmapCounter = 0;
+            uint32 mipmapCounter = 0;
             for (auto i = firstImageIndex; i < inputImages.size(); ++i, ++mipmapCounter)
             {
                 imagesToSave.push_back(SafeRetain(inputImages[i]));
@@ -92,6 +85,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
         }
     }
 
+    FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
     eErrorCode retCode = ImageSystem::Save(outputName, imagesToSave, static_cast<PixelFormat>(compression->format));
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);

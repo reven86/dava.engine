@@ -7,8 +7,8 @@ DAVA_TESTCLASS (StringFormatTest)
 {
     inline void CheckFloatFormat(const WideString& format, float32 value)
     {
-        String wideFormatting = WStringToString(Format(format.c_str(), value));
-        String narrowFormatting = Format(WStringToString(format).c_str(), value);
+        String wideFormatting = UTF8Utils::EncodeToUTF8(Format(format.c_str(), value));
+        String narrowFormatting = Format(UTF8Utils::EncodeToUTF8(format).c_str(), value);
         TEST_VERIFY_WITH_MESSAGE(wideFormatting == narrowFormatting, "'" + wideFormatting + " == " + narrowFormatting + "'");
     }
 
@@ -19,7 +19,7 @@ DAVA_TESTCLASS (StringFormatTest)
         WideString formatStr1 = L"%ls %ls";
         WideString value1 = L"test string";
         WideString value2 = L"second";
-        TEST_VERIFY(Format(formatStr1.c_str(), value1.c_str(), value2.c_str()) == StringToWString(Format(WStringToString(formatStr1).c_str(), value1.c_str(), value2.c_str())));
+        TEST_VERIFY(Format(formatStr1.c_str(), value1.c_str(), value2.c_str()) == UTF8Utils::EncodeToWideString(Format(UTF8Utils::EncodeToUTF8(formatStr1).c_str(), value1.c_str(), value2.c_str())));
 #endif
     }
 
@@ -28,16 +28,16 @@ DAVA_TESTCLASS (StringFormatTest)
         int32 value = 1234567890;
         int64 value64 = 1234567890123456789;
 
-        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
-        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
-        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == UTF8Utils::EncodeToWideString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == UTF8Utils::EncodeToWideString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == UTF8Utils::EncodeToWideString(Format("%lld%%", value64)));
 
         value *= -1;
         value64 *= -1;
 
-        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
-        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
-        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == UTF8Utils::EncodeToWideString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == UTF8Utils::EncodeToWideString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == UTF8Utils::EncodeToWideString(Format("%lld%%", value64)));
     }
 
     DAVA_TEST (FloatTestFunction)

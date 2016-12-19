@@ -422,7 +422,7 @@ private:
             ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
             DVASSERT(data != nullptr);
             QString defaultPath = data->GetProjectPath().GetAbsolutePathname().c_str();
-            DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+            DAVA::FilePath dataSourcePath = data->GetDataSource3DPath();
 
             // calculate appropriate default path
             if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
