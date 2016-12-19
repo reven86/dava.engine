@@ -117,24 +117,19 @@ protected:
     friend class Scene;
 
     Scene* GetScene() const;
-    void SetScene(Scene* scene);
+    virtual void SetScene(Scene* scene);
 
 private:
-    uint64 requiredComponents;
-    Scene* scene;
+    uint64 requiredComponents = 0;
+    Scene* scene = nullptr;
 
-    bool locked;
+    bool locked = false;
 };
 
 // Inline
 inline Scene* SceneSystem::GetScene() const
 {
     return scene;
-}
-
-inline void SceneSystem::SetScene(Scene* scene_)
-{
-    scene = scene_;
 }
 
 inline void SceneSystem::SetRequiredComponents(uint64 _requiredComponents)
