@@ -179,7 +179,9 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 {
     ProjectManagerData* data = GetData();
     connections.RemoveConnection(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded);
+
     data->projectPath = incomePath;
+    DAVA::FilePath::AddResourcesFolder(data->GetDataSourcePath());
     DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
     DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
@@ -187,15 +189,15 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
     LoadMaterialsSettings(data);
 
-    DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+    DAVA::QualitySettingsSystem::Instance()->Load(data->projectPath + "DataSource/quality.yaml");
     const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
     DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
     fileSystem->CreateDirectory(data->GetWorkspacePath(), true);
-    if (fileSystem->Exists(data->GetDataSourcePath()))
+    if (fileSystem->Exists(data->GetDataSource3DPath()))
     {
-        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
     }
 
     DAVA::FilePath editorConfigPath = data->GetProjectPath() + "EditorConfig.yaml";
@@ -213,8 +215,6 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
 void ProjectManagerModule::OpenLastProject()
 {
-    ProjectManagerData* data = GetData();
-
     DAVA::FilePath projectPath;
     {
         DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
@@ -248,11 +248,12 @@ bool ProjectManagerModule::CloseProject()
         }
 
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+        DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
 
         DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
-        if (fileSystem->Exists(data->GetDataSourcePath()))
+        if (fileSystem->Exists(data->GetDataSource3DPath()))
         {
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
         }
 
         data->projectPath = "";
