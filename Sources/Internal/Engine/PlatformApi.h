@@ -97,7 +97,7 @@ void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
 
 #elif defined(__DAVAENGINE_MACOS__)
 
-// PlatformApiMac.h
+// Mac/PlatformApi.h
 
 #elif defined(__DAVAENGINE_IPHONE__)
 

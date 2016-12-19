@@ -6,7 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include <Engine/PlatformApiMac.h>
+#include <Engine/Mac/PlatformApi.h>
 #include <Logger/Logger.h>
 #include <Utils/NSStringUtils.h>
 

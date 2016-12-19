@@ -14,7 +14,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #import "Engine/Private/OsX/AppDelegateOsX.h"
-#import "Engine/Mac/PlatformApiMac.h"
+#import "Engine/Mac/PlatformApi.h"
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
