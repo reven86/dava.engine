@@ -101,26 +101,21 @@ void BindHardwareCommandBufferDispatch(Dispatch* dispatch);
 void BindSoftwareCommandBufferDispatch(Dispatch* dispatch);
 
 Handle Allocate(const RenderPassConfig& passConfig, bool isFirstInPass, bool isLastInPass);
-void ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumber);
+void ExecuteAndRelease(Handle handle, uint32 frameNumber);
 void SignalAndRelease(Handle handle);
 }
 
 namespace SyncObjectDX11
 {
 bool IsAlive(Handle handle);
-void SetProperties(Handle handle, DAVA::uint32 frameNumber, bool signaled, bool used);
-void SetSignaledAndUsedProperties(Handle handle, bool signaled, bool used);
-void SetFrameNumberAndSignaledProperties(Handle handle, DAVA::uint32 frameNumber, bool signaled);
-void CheckFrameAndSignalUsed(DAVA::uint32 frameNumber);
-
 void SetupDispatch(Dispatch* dispatch);
 }
 
 void ValidateDX11Device(const char* call);
 void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
-bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, DAVA::uint32 line);
-bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const DAVA::uint32 line);
-void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
+bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, uint32 line);
+bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const uint32 line);
+void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line);
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 
 #define DX11DeviceCommand(CMD, ...) ExecDX11DeviceCommand(DX11Command(CMD, __VA_ARGS__), #CMD, __FILE__, __LINE__)

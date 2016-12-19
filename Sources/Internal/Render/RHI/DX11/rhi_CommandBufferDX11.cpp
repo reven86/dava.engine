@@ -5,9 +5,23 @@
 #include "../Common/RenderLoop.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Platform/SystemTimer.h"
+#include <wrl/client.h>
+
+/*
+ * Structure of this file:
+ - CommandBufferDX11_t methods
+ - Software command buffer implemetation
+ - Hardware command buffer implemetation
+ - RHI methods implementation
+ - Render pass implementation
+ - Sync object implementation
+ */
 
 namespace rhi
 {
+using namespace Microsoft::WRL;
+
 #define RHI_DX11_CB_COMPILE_WITH_HARDWARE 1
 #define RHI_DX11_CB_COMPILE_WITH_SOFTWARE 1
 
@@ -78,9 +92,32 @@ public:
     void ApplyConstBuffers();
 #endif
 };
-
 using CommandBufferPoolDX11 = ResourcePool<CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false>;
 RHI_IMPL_POOL(CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false);
+
+struct RenderPassDX11_t
+{
+    DAVA::Vector<Handle> commandBuffers;
+    Handle perfQueryStart = InvalidHandle;
+    Handle perfQueryEnd = InvalidHandle;
+    int priority = 0;
+};
+using RenderPassPoolDX11 = ResourcePool<RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false>;
+RHI_IMPL_POOL(RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
+
+struct SyncObjectDX11_t
+{
+    uint32 frame = 0;
+    uint32 is_signaled : 1;
+    uint32 is_used : 1;
+    uint32 pad : 30;
+};
+using SyncObjectPoolDX11 = ResourcePool<SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false>;
+RHI_IMPL_POOL(SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
+
+static DAVA::Mutex _DX11_SyncObjectsSync;
+static DAVA::Mutex _DX11_PendingSecondaryCmdListSync;
+static DAVA::Vector<ComPtr<ID3D11CommandList>> _DX11_PendingSecondaryCmdLists;
 
 /*
  * CommandBufferDX11_t methods
@@ -277,7 +314,7 @@ bool CommandBufferDX11_t::RasterizerStateDX11_t::operator==(const RasterizerPara
  * Software command buffer implemetation
  *
  *================================================================================*
- * Implementation for hardware command buffers could be found below 
+ * Implementation for hardware command buffers could be found below
  */
 
 #if (RHI_DX11_CB_COMPILE_WITH_SOFTWARE)
@@ -504,8 +541,8 @@ void CommandBufferDX11_t::ExecuteSoftware()
 {
     DVASSERT(dx11.useHardwareCommandBuffers == false);
 
-    const DAVA::uint32 immediateCommandCheckInterval = 10;
-    DAVA::uint32 commandsExecuted = 0;
+    const uint32 immediateCommandCheckInterval = 10;
+    uint32 commandsExecuted = 0;
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
@@ -1234,7 +1271,7 @@ Handle CommandBufferDX11::Allocate(const RenderPassConfig& passDesc, bool isFirs
     return handle;
 }
 
-void CommandBufferDX11::ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumber)
+void CommandBufferDX11::ExecuteAndRelease(Handle handle, uint32 frameNumber)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(handle);
 
@@ -1263,7 +1300,11 @@ void CommandBufferDX11::ExecuteAndRelease(Handle handle, DAVA::uint32 frameNumbe
 #endif
 
     if (cb->sync != InvalidHandle)
-        SyncObjectDX11::SetFrameNumberAndSignaledProperties(cb->sync, frameNumber, false);
+    {
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(handle);
+        s->is_signaled = false;
+        s->frame = frameNumber;
+    }
 
     CommandBufferPoolDX11::Free(handle);
 }
@@ -1272,7 +1313,11 @@ void CommandBufferDX11::SignalAndRelease(Handle handle)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(handle);
     if (cb->sync != InvalidHandle)
-        SyncObjectDX11::SetSignaledAndUsedProperties(cb->sync, true, true);
+    {
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(handle);
+        s->is_signaled = true;
+        s->is_used = true;
+    }
 
 #if (RHI_DX11_CB_COMPILE_WITH_HARDWARE)
     if (dx11.useHardwareCommandBuffers)
@@ -1280,5 +1325,381 @@ void CommandBufferDX11::SignalAndRelease(Handle handle)
 #endif
 
     CommandBufferPoolDX11::Free(handle);
+}
+
+/*
+ *
+ * RHI methods implementation
+ *
+ */
+static void dx11_ExecuteFrame(const CommonImpl::Frame& frame)
+{
+    DVASSERT(frame.readyToExecute);
+    DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX11::IsAlive(frame.sync));
+
+    StatSet::ResetAll();
+
+    DAVA::Vector<RenderPassDX11_t*> pass;
+    pass.reserve(frame.pass.size());
+    for (Handle p : frame.pass)
+    {
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(p);
+        pass.emplace_back(pp);
+    }
+
+    // sort from highest to lowest priorities
+    std::stable_sort(pass.begin(), pass.end(), [](RenderPassDX11_t* l, RenderPassDX11_t* r)
+                     {
+                         return l->priority > r->priority;
+                     });
+
+    if (frame.sync != InvalidHandle)
+    {
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(frame.sync);
+        s->frame = frame.frameNumber;
+        s->is_signaled = false;
+        s->is_used = true;
+    }
+
+    PerfQueryDX11::ObtainPerfQueryMeasurment(dx11.ImmediateContext());
+    PerfQueryDX11::BeginMeasurment(dx11.ImmediateContext());
+
+    if (frame.perfQueryStart != InvalidHandle)
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryStart, dx11.ImmediateContext());
+
+    if (dx11.useHardwareCommandBuffers)
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(_DX11_PendingSecondaryCmdListSync);
+        for (ComPtr<ID3D11CommandList> cmdList : _DX11_PendingSecondaryCmdLists)
+            dx11.context->ExecuteCommandList(cmdList.Get(), FALSE);
+        _DX11_PendingSecondaryCmdLists.clear();
+    }
+
+    for (RenderPassDX11_t* pp : pass)
+    {
+        if (pp->perfQueryStart != InvalidHandle)
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryStart, dx11.ImmediateContext());
+
+        for (Handle cb_h : pp->commandBuffers)
+            CommandBufferDX11::ExecuteAndRelease(cb_h, frame.frameNumber);
+
+        if (pp->perfQueryEnd != InvalidHandle)
+            PerfQueryDX11::IssueTimestampQuery(pp->perfQueryEnd, dx11.ImmediateContext());
+    }
+
+    for (Handle p : frame.pass)
+        RenderPassPoolDX11::Free(p);
+
+    if (frame.perfQueryEnd != InvalidHandle)
+        PerfQueryDX11::IssueTimestampQuery(frame.perfQueryEnd, dx11.ImmediateContext());
+
+    DAVA::LockGuard<DAVA::Mutex> lock(_DX11_SyncObjectsSync);
+    for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
+    {
+        if (s->is_used && (frame.frameNumber - s->frame >= 2))
+            s->is_signaled = true;
+    }
+}
+
+static void dx11_RejectFrame(const CommonImpl::Frame& frame)
+{
+    if (frame.sync != InvalidHandle)
+    {
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(frame.sync);
+        s->is_signaled = true;
+        s->is_used = true;
+    }
+
+    for (Handle p : frame.pass)
+        RenderPassDX11::RejectCommandBuffersAndRelease(p);
+}
+
+static void dx11_FinishFrame()
+{
+    if (dx11.useHardwareCommandBuffers)
+    {
+        ComPtr<ID3D11CommandList> cmdList;
+        {
+            DAVA::LockGuard<DAVA::Mutex> lock(dx11.deferredContextLock);
+            DX11Check(dx11.deferredContext->FinishCommandList(TRUE, cmdList.GetAddressOf()));
+        }
+        {
+            DAVA::LockGuard<DAVA::Mutex> lock(_DX11_PendingSecondaryCmdListSync);
+            _DX11_PendingSecondaryCmdLists.emplace_back(cmdList);
+        }
+    }
+
+    ConstBufferDX11::InvalidateAllInstances();
+}
+
+static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
+{
+    DX11Command* commandData = reinterpret_cast<DX11Command*>(command->cmdData);
+    for (DX11Command *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
+    {
+        uint64* arg = cmd->arguments.arg;
+
+        Trace("exec %i\n", int(cmd->func));
+        switch (cmd->func)
+        {
+        case DX11Command::NOP:
+            break;
+
+        case DX11Command::MAP:
+            cmd->retval = dx11.context->Map((ID3D11Resource*)(arg[0]), UINT(arg[1]), D3D11_MAP(arg[2]), UINT(arg[3]), (D3D11_MAPPED_SUBRESOURCE*)(arg[4]));
+            break;
+
+        case DX11Command::UNMAP:
+            dx11.context->Unmap((ID3D11Resource*)(arg[0]), UINT(arg[1]));
+            break;
+
+        case DX11Command::UPDATE_SUBRESOURCE:
+            dx11.context->UpdateSubresource((ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]));
+            break;
+
+        case DX11Command::COPY_RESOURCE:
+            dx11.context->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
+            break;
+
+        case DX11Command::SYNC_CPU_GPU:
+        {
+            if (DeviceCaps().isPerfQuerySupported)
+            {
+                ID3D11Query* tsQuery = nullptr;
+                ID3D11Query* fqQuery = nullptr;
+
+                D3D11_QUERY_DESC desc = { D3D11_QUERY_TIMESTAMP };
+                DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &tsQuery);
+
+                desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+                DX11DeviceCommand(DX11Command::CREATE_QUERY, &desc, &fqQuery);
+
+                if (tsQuery && fqQuery)
+                {
+                    dx11.context->Begin(fqQuery);
+                    dx11.context->End(tsQuery);
+                    dx11.context->End(fqQuery);
+
+                    uint64 timestamp = 0;
+                    while (S_FALSE == dx11.context->GetData(tsQuery, &timestamp, sizeof(uint64), 0))
+                    {
+                    };
+
+                    if (timestamp)
+                    {
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                        D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
+                        while (S_FALSE == dx11.context->GetData(fqQuery, &data, sizeof(data), 0))
+                        {
+                        };
+
+                        if (!data.Disjoint && data.Frequency)
+                        {
+                            *reinterpret_cast<uint64*>(arg[1]) = timestamp / (data.Frequency / 1000000); //mcs
+                        }
+                    }
+                }
+                DAVA::SafeRelease(tsQuery);
+                DAVA::SafeRelease(fqQuery);
+            }
+        }
+        break;
+        case DX11Command::QUERY_INTERFACE:
+        {
+            ValidateDX11Device("QueryInterface");
+            cmd->retval = dx11.device.Get()->QueryInterface(*(const GUID*)(arg[0]), (void**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_DEFERRED_CONTEXT:
+        {
+            ValidateDX11Device("CreateDeferredContext");
+            cmd->retval = dx11.device->CreateDeferredContext((UINT)arg[0], (ID3D11DeviceContext**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_BLEND_STATE:
+        {
+            ValidateDX11Device("CreateBlendState");
+            cmd->retval = dx11.device->CreateBlendState((const D3D11_BLEND_DESC*)(arg[0]), (ID3D11BlendState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_SAMPLER_STATE:
+        {
+            ValidateDX11Device("CreateSamplerState");
+            cmd->retval = dx11.device->CreateSamplerState((const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_RASTERIZER_STATE:
+        {
+            ValidateDX11Device("CreateRasterizerState");
+            cmd->retval = dx11.device->CreateRasterizerState((const D3D11_RASTERIZER_DESC*)(arg[0]), (ID3D11RasterizerState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_DEPTH_STENCIL_STATE:
+        {
+            ValidateDX11Device("CreateDepthStencilState");
+            cmd->retval = dx11.device->CreateDepthStencilState((const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_VERTEX_SHADER:
+        {
+            ValidateDX11Device("CreateVertexShader");
+            cmd->retval = dx11.device->CreateVertexShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11VertexShader**)(arg[3]));
+            break;
+        }
+        case DX11Command::CREATE_PIXEL_SHADER:
+        {
+            ValidateDX11Device("CreatePixelShader");
+            cmd->retval = dx11.device->CreatePixelShader((const void*)(arg[0]), (SIZE_T)(arg[1]), (ID3D11ClassLinkage*)(arg[2]), (ID3D11PixelShader**)(arg[3]));
+            break;
+        }
+        case DX11Command::CREATE_INPUT_LAYOUT:
+        {
+            ValidateDX11Device("CreateInputLayout");
+            cmd->retval = dx11.device->CreateInputLayout((const D3D11_INPUT_ELEMENT_DESC*)(arg[0]), (UINT)(arg[1]), (const void*)(arg[2]), (SIZE_T)(arg[3]), (ID3D11InputLayout**)(arg[4]));
+            break;
+        }
+        case DX11Command::CREATE_QUERY:
+        {
+            ValidateDX11Device("CreateQuery");
+            cmd->retval = dx11.device->CreateQuery((const D3D11_QUERY_DESC*)(arg[0]), (ID3D11Query**)(arg[1]));
+            break;
+        }
+        case DX11Command::CREATE_BUFFER:
+        {
+            ValidateDX11Device("CreateBuffer");
+            cmd->retval = dx11.device->CreateBuffer((const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_TEXTURE_2D:
+        {
+            ValidateDX11Device("CreateTexture2D");
+            cmd->retval = dx11.device->CreateTexture2D((const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_RENDER_TARGET_VIEW:
+        {
+            ValidateDX11Device("CreateRenderTargetView");
+            cmd->retval = dx11.device->CreateRenderTargetView((ID3D11Resource*)(arg[0]), (const D3D11_RENDER_TARGET_VIEW_DESC*)(arg[1]), (ID3D11RenderTargetView**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_DEPTH_STENCIL_VIEW:
+        {
+            ValidateDX11Device("CreateDepthStencilView");
+            cmd->retval = dx11.device->CreateDepthStencilView((ID3D11Resource*)(arg[0]), (const D3D11_DEPTH_STENCIL_VIEW_DESC*)(arg[1]), (ID3D11DepthStencilView**)(arg[2]));
+            break;
+        }
+        case DX11Command::CREATE_SHADER_RESOURCE_VIEW:
+        {
+            ValidateDX11Device("CreateShaderResourceView");
+            cmd->retval = dx11.device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
+            break;
+        }
+        default:
+        {
+            DAVA::String message = DAVA::Format("Invalid or unsupported DX11 command: %u", cmd->func);
+            DVASSERT_MSG(0, message.c_str());
+        }
+        }
+    }
+}
+
+/*
+ *
+ * Render pass implementation
+ *
+ */
+static Handle dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+{
+    DVASSERT(cmdBufCount > 0);
+    DVASSERT(passDesc.IsValid());
+
+    Handle handle = RenderPassPoolDX11::Alloc();
+    RenderPassDX11_t* pass = RenderPassPoolDX11::Get(handle);
+    pass->commandBuffers.resize(cmdBufCount);
+    pass->priority = passDesc.priority;
+    pass->perfQueryStart = passDesc.perfQueryStart;
+    pass->perfQueryEnd = passDesc.perfQueryEnd;
+    for (uint32 i = 0; i != cmdBufCount; ++i)
+    {
+        Handle cbHandle = CommandBufferDX11::Allocate(passDesc, (i == 0), (i + 1 == cmdBufCount));
+        pass->commandBuffers[i] = cbHandle;
+        cmdBuf[i] = cbHandle;
+    }
+    return handle;
+}
+
+static void dx11_RenderPass_Begin(Handle pass)
+{
+}
+
+static void dx11_RenderPass_End(Handle pass)
+{
+}
+
+void RenderPassDX11::SetupDispatch(Dispatch* dispatch)
+{
+    dispatch->impl_Renderpass_Allocate = &dx11_RenderPass_Allocate;
+    dispatch->impl_Renderpass_Begin = &dx11_RenderPass_Begin;
+    dispatch->impl_Renderpass_End = &dx11_RenderPass_End;
+    dispatch->impl_ProcessImmediateCommand = &dx11_ExecImmediateCommand;
+    dispatch->impl_ExecuteFrame = &dx11_ExecuteFrame;
+    dispatch->impl_RejectFrame = &dx11_RejectFrame;
+    dispatch->impl_FinishFrame = &dx11_FinishFrame;
+}
+
+void RenderPassDX11::RejectCommandBuffersAndRelease(Handle handle)
+{
+    RenderPassDX11_t* pp = RenderPassPoolDX11::Get(handle);
+
+    for (Handle cmdBuffer : pp->commandBuffers)
+        CommandBufferDX11::SignalAndRelease(cmdBuffer);
+    pp->commandBuffers.clear();
+
+    RenderPassPoolDX11::Free(handle);
+}
+
+/*
+ *
+ * Sync object implementation
+ *
+ */
+static Handle dx11_SyncObject_Create()
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
+
+    Handle handle = SyncObjectPoolDX11::Alloc();
+    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(handle);
+    sync->is_signaled = false;
+    sync->is_used = false;
+    return handle;
+}
+
+static void dx11_SyncObject_Delete(Handle obj)
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
+    SyncObjectPoolDX11::Free(obj);
+}
+
+static bool dx11_SyncObject_IsSignaled(Handle obj)
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
+    if (!SyncObjectPoolDX11::IsAlive(obj))
+        return true;
+
+    bool signaled = false;
+    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(obj);
+
+    if (sync)
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+void SyncObjectDX11::SetupDispatch(Dispatch* dispatch)
+{
+    dispatch->impl_SyncObject_Create = &dx11_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete = &dx11_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled = &dx11_SyncObject_IsSignaled;
 }
 }

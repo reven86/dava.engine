@@ -243,7 +243,7 @@ D3D11_STENCIL_OP DX11_StencilOp(StencilOperation op)
     return D3D11_STENCIL_OP_KEEP;
 }
 
-D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, DAVA::uint32 anisotropy)
+D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, uint32 anisotropy)
 {
     switch (mip_filter)
     {

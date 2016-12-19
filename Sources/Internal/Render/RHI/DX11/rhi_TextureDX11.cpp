@@ -6,10 +6,10 @@ namespace rhi
 struct TextureDX11_t
 {
     Texture::Descriptor descriptor;
-    DAVA::uint32 arraySize = 1;
-    DAVA::uint32 mipLevelCount = 0;
-    DAVA::uint32 lastUnit = DAVA::InvalidIndex;
-    DAVA::uint32 mappedLevel = 0;
+    uint32 arraySize = 1;
+    uint32 mipLevelCount = 0;
+    uint32 lastUnit = DAVA::InvalidIndex;
+    uint32 mappedLevel = 0;
     TextureFace mappedFace = TextureFace(-1);
     ID3D11Texture2D* tex2d = nullptr;
     ID3D11ShaderResourceView* tex2d_srv = nullptr;
@@ -21,24 +21,24 @@ struct TextureDX11_t
     struct RTView
     {
         ID3D11RenderTargetView* view = nullptr;
-        DAVA::uint32 level = 0;
+        uint32 level = 0;
         TextureFace face = TEXTURE_FACE_NEGATIVE_X;
-        RTView(ID3D11RenderTargetView* v, DAVA::uint32 l, TextureFace f);
+        RTView(ID3D11RenderTargetView* v, uint32 l, TextureFace f);
     };
     std::vector<RTView> rt_view;
-    ID3D11RenderTargetView* getRenderTargetView(DAVA::uint32 level, TextureFace face);
+    ID3D11RenderTargetView* getRenderTargetView(uint32 level, TextureFace face);
 };
 using TextureDX11Pool = ResourcePool<TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true>;
 RHI_IMPL_POOL(TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
-TextureDX11_t::RTView::RTView(ID3D11RenderTargetView* v, DAVA::uint32 l, TextureFace f)
+TextureDX11_t::RTView::RTView(ID3D11RenderTargetView* v, uint32 l, TextureFace f)
     : view(v)
     , level(l)
     , face(f)
 {
 }
 
-ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(DAVA::uint32 level, TextureFace face)
+ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, TextureFace face)
 {
     for (const RTView& v : rt_view)
     {
@@ -151,11 +151,11 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     D3D11_SUBRESOURCE_DATA data[128] = {};
     DVASSERT(countof(data) <= countof(desc.initialData));
 
-    for (DAVA::uint32 s = 0; s != desc2d.ArraySize; ++s)
+    for (uint32 s = 0; s != desc2d.ArraySize; ++s)
     {
-        for (DAVA::uint32 m = 0; m != desc.levelCount; ++m)
+        for (uint32 m = 0; m != desc.levelCount; ++m)
         {
-            DAVA::uint32 di = s * desc.levelCount + m;
+            uint32 di = s * desc.levelCount + m;
             if (desc.initialData[di])
             {
                 // multisampled texture should be created without initial data
@@ -286,15 +286,15 @@ static void dx11_Texture_Delete(Handle tex)
     TextureDX11Pool::Free(tex);
 }
 
-static void* dx11_Texture_Map(Handle tex, DAVA::uint32 level, TextureFace face)
+static void* dx11_Texture_Map(Handle tex, uint32 level, TextureFace face)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
     DVASSERT(!self->isMapped);
 
     TextureFormat fmt = self->descriptor.format;
-    DAVA::uint32 w = self->descriptor.width;
-    DAVA::uint32 h = self->descriptor.height;
+    uint32 w = self->descriptor.width;
+    uint32 h = self->descriptor.height;
 
     if (self->descriptor.cpuAccessRead)
     {
@@ -344,8 +344,8 @@ static void dx11_Texture_Unmap(Handle tex)
     DVASSERT(self->isMapped);
 
     TextureFormat fmt = self->descriptor.format;
-    DAVA::uint32 w = self->descriptor.width;
-    DAVA::uint32 h = self->descriptor.height;
+    uint32 w = self->descriptor.width;
+    uint32 h = self->descriptor.height;
 
     if (self->descriptor.cpuAccessRead)
     {
@@ -373,8 +373,8 @@ static void dx11_Texture_Unmap(Handle tex)
             _SwapRB5551(self->mappedData, self->mappedData, TextureSize(fmt, w, h, self->mappedLevel));
         }
 
-        DAVA::uint32 rc_i = 0;
-        DAVA::uint32 face = 0;
+        uint32 rc_i = 0;
+        uint32 face = 0;
 
         if (self->arraySize == 6)
         {
@@ -416,11 +416,11 @@ static void dx11_Texture_Unmap(Handle tex)
     }
 }
 
-void dx11_Texture_Update(Handle tex, const void* data, DAVA::uint32 level, TextureFace face)
+void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
     void* dst = dx11_Texture_Map(tex, level, face);
-    DAVA::uint32 sz = TextureSize(self->descriptor.format, self->descriptor.width, self->descriptor.height, level);
+    uint32 sz = TextureSize(self->descriptor.format, self->descriptor.width, self->descriptor.height, level);
 
     memcpy(dst, data, sz);
     dx11_Texture_Unmap(tex);
@@ -433,7 +433,7 @@ bool dx11_Texture_NeedRestore(Handle tex)
 
 namespace TextureDX11
 {
-void Init(DAVA::uint32 maxCount)
+void Init(uint32 maxCount)
 {
     TextureDX11Pool::Reserve(maxCount);
 }
@@ -448,7 +448,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_NeedRestore = &dx11_Texture_NeedRestore;
 }
 
-void SetToRHIFragment(Handle tex, DAVA::uint32 unit_i, ID3D11DeviceContext* context)
+void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
     DVASSERT(self->tex2d_srv != nullptr);
@@ -456,14 +456,14 @@ void SetToRHIFragment(Handle tex, DAVA::uint32 unit_i, ID3D11DeviceContext* cont
     self->lastUnit = unit_i;
 }
 
-void SetToRHIVertex(Handle tex, DAVA::uint32 unit_i, ID3D11DeviceContext* context)
+void SetToRHIVertex(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
     DVASSERT(self->tex2d_srv != nullptr);
     context->VSSetShaderResources(unit_i, 1, &(self->tex2d_srv));
 }
 
-void SetRenderTarget(Handle color, Handle depthstencil, DAVA::uint32 level, TextureFace face, ID3D11DeviceContext* context)
+void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFace face, ID3D11DeviceContext* context)
 {
     bool hasDepthStencil = depthstencil != InvalidHandle;
     bool usesOwnDepthStencil = depthstencil != DefaultDepthBuffer;

@@ -50,7 +50,7 @@ void BufferDX11_t::Destroy()
     updatePending = false;
 }
 
-bool BufferDX11_t::Update(const void* inData, DAVA::uint32 inOffset, DAVA::uint32 inSize)
+bool BufferDX11_t::Update(const void* inData, uint32 inOffset, uint32 inSize)
 {
     DVASSERT(usage == USAGE_DEFAULT);
     DVASSERT(inOffset + inSize <= bufferSize);
@@ -69,7 +69,7 @@ bool BufferDX11_t::Update(const void* inData, DAVA::uint32 inOffset, DAVA::uint3
     return success;
 }
 
-void* BufferDX11_t::Map(DAVA::uint32 inOffset, DAVA::uint32 inSize)
+void* BufferDX11_t::Map(uint32 inOffset, uint32 inSize)
 {
     DVASSERT(inOffset + inSize <= bufferSize);
     DVASSERT(usage != USAGE_STATICDRAW);

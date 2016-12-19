@@ -34,10 +34,10 @@ private:
     ID3D11Buffer* buffer = nullptr;
     float* value = nullptr;
     float* inst = nullptr;
-    DAVA::uint32 frame = 0;
-    DAVA::uint32 buf_i = DAVA::InvalidIndex;
-    DAVA::uint32 regCount = 0;
-    DAVA::uint32 lastUpdateFrame = static_cast<uint32>(-1);
+    uint32 frame = 0;
+    uint32 buf_i = DAVA::InvalidIndex;
+    uint32 regCount = 0;
+    uint32 lastUpdateFrame = static_cast<uint32>(-1);
 };
 using ConstBufDX11Pool = ResourcePool<ConstBufDX11_t, RESOURCE_CONST_BUFFER, ConstBufDX11_t::Desc, false>;
 RHI_IMPL_POOL_SIZE(ConstBufDX11_t, RESOURCE_CONST_BUFFER, ConstBufDX11_t::Desc, false, 12 * 1024);
@@ -75,7 +75,7 @@ void ConstBufDX11_t::Destroy()
     regCount = 0;
     inst = nullptr;
     value = nullptr;
-    lastUpdateFrame = static_cast<DAVA::uint32>(0);
+    lastUpdateFrame = static_cast<uint32>(0);
     buf_i = DAVA::InvalidIndex;
 }
 

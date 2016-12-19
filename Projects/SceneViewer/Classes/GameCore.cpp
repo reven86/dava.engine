@@ -41,7 +41,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     engine.PrimaryWindow()->draw.Connect(this, &GameCore::Draw);
 
     w->SetTitleAsync("Scene Viewer");
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_COREV2__)
     ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
     w->SetSizeAsync({ screenInfo.width, screenInfo.height });
 #else

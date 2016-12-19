@@ -28,13 +28,13 @@ static void dx11_VertexBuffer_Delete(Handle handle)
     }
 }
 
-static bool dx11_VertexBuffer_Update(Handle handle, const void* data, DAVA::uint32 offset, DAVA::uint32 size)
+static bool dx11_VertexBuffer_Update(Handle handle, const void* data, uint32 offset, uint32 size)
 {
     BufferDX11_t* buffer = VertexBufferDX11Pool::Get(handle);
     return buffer->Update(data, offset, size);
 }
 
-static void* dx11_VertexBuffer_Map(Handle handle, DAVA::uint32 offset, DAVA::uint32 size)
+static void* dx11_VertexBuffer_Map(Handle handle, uint32 offset, uint32 size)
 {
     BufferDX11_t* buffer = VertexBufferDX11Pool::Get(handle);
     return buffer->Map(offset, size);

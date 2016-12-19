@@ -64,7 +64,7 @@ struct DX11Command
 
     struct Arguments
     {
-        DAVA::uint64 arg[12];
+        uint64 arg[12];
     };
 
     Func func = Func::NOP;
@@ -74,7 +74,7 @@ struct DX11Command
     template <class... args>
     DX11Command(Func f, args&&... a)
         : func(f)
-        , arguments({ DAVA::uint64(a)... })
+        , arguments({ uint64(a)... })
     {
     }
 };
@@ -124,6 +124,6 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
 D3D11_COMPARISON_FUNC DX11_CmpFunc(CmpFunc func);
 D3D11_STENCIL_OP DX11_StencilOp(StencilOperation op);
 D3D11_TEXTURE_ADDRESS_MODE DX11_TextureAddrMode(TextureAddrMode mode);
-D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, DAVA::uint32 anisotropy);
+D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, uint32 anisotropy);
 D3D11_BLEND DX11_BlendOp(BlendOp op);
 }
