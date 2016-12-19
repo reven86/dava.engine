@@ -10,6 +10,8 @@ class PackMetaData
 {
 public:
     /** Create meta from sqlite db file
+	    open DB and read and fill tableFiles vector
+		and tablePacks vector
 		    Throw exception on error
 		*/
     explicit PackMetaData(const FilePath& metaDb);
@@ -18,23 +20,20 @@ public:
 		*/
     PackMetaData(const void* ptr, std::size_t size);
 
-    uint32 GetPackIndexForFile(const String& relativeFilePath) const;
+    uint32 GetPackIndexForFile(const uint32 fileIndex) const;
     void GetPackInfo(const uint32 packIndex, String& packName, String& dependencies) const;
 
-    Vector<char> Serialize() const;
+    Vector<uint8> Serialize() const;
+    void Deserialize(const void* ptr, size_t size);
 
 private:
-    // TODO fileNames already in DVPK format optimize
-    // TODO
+    // fileNames already in DVPK format
     // table 1.
-    // fileName -> fileIndex | packIndex
-    Vector<std::tuple<uint32, uint32>> tableFiles;
+    // fileName -> fileIndex(0-NUM_FILES) -> packIndex(0-NUM_PACKS)
+    Vector<uint32> tableFiles;
     // table 2.
-    // packIndex | packName | dependencies
-    Vector<std::tuple<uint32, String, String>> tablePacks;
-    // TODO optimization
-    // how to pack fileNames?
-    // 3d/gfx/tank/t-34/tex.pvr ->
+    // packIndex(0-NUM_PACKS) -> packName, dependencies
+    Vector<std::tuple<String, String>> tablePacks;
 };
 
 } // end namespace DAVA

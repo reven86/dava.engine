@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <Utils/CRC32.h>
+#include <FileSystem/Private/PackMetaData.h>
 
 ENUM_DECLARE(DAVA::Compressor::Type)
 {
@@ -362,15 +363,34 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
         DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
     }
 
+    FileSystem* fs = FileSystem::Instance();
+
     // TODO load metadata
     // CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack_index INTEGER NOT NULL);
     // CREATE TABLE IF NOT EXISTS packs(index INTEGER PRIMARY KEY, name TEXT UNIQUE, dependency TEXT NOT NULL);
+    std::unique_ptr<PackMetaData> meta;
+
+    if (!metaDb.IsEmpty())
     {
+        if (fs->Exists(metaDb))
+        {
+            try
+            {
+                meta.reset(new PackMetaData(metaDb));
+            }
+            catch (std::exception& ex)
+            {
+                Logger::Error("can't open metaDb: %s", ex.what());
+            }
+        }
+        else
+        {
+            Logger::Error("no metaDb found: %s", metaDb.GetAbsolutePathname().c_str());
+            return false;
+        }
     }
 
     uint64 dataOffset = 0;
-
-    FileSystem* fs = FileSystem::Instance();
 
     try
     {
@@ -422,8 +442,8 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           fileEntry.type = useCompression;
                           fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
                           fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
-                          if ()
-                          fileEntry.reserved.fill(0); // do it or your crc32 randomly change on same files
+                          // TODO check it
+                          fileEntry.customUserData = 0; // do it or your crc32 randomly change on same files
 
                           dataOffset += static_cast<uint32>(useBuffer.size());
 
@@ -512,7 +532,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     footerBlock.info.namesSizeOriginal = static_cast<uint32>(namesOriginal.size());
 
     footerBlock.infoCrc32 = CRC32::ForBuffer(&footerBlock.info, sizeof(footerBlock.info));
-    footerBlock.reserved.fill(0);
+    footerBlock.sizeOfMetaData = 0; // TODO check it
 
     if (!WriteHeaderBlock(outputFile, footerBlock))
     {
