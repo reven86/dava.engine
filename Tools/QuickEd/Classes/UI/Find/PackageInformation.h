@@ -29,8 +29,6 @@ private:
 class PackageInformationCache
 {
 public:
-    PackageInformationCache();
-
     void Put(const std::shared_ptr<PackageInformation>& package);
     std::shared_ptr<PackageInformation> Find(const DAVA::String& path);
 

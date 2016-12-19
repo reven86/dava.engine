@@ -6,7 +6,7 @@
 
 using namespace DAVA;
 
-Finder::Finder(const QStringList& files_, std::unique_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
+Finder::Finder(const QStringList& files_, std::unique_ptr<FindFilter>&& filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
     : files(files_)
     , filter(std::move(filter_))
     , prototypes(prototypes_)

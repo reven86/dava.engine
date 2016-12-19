@@ -11,7 +11,7 @@ class Finder : public QObject
     Q_OBJECT
 
 public:
-    Finder(const QStringList& files_, std::unique_ptr<FindFilter> filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes);
+    Finder(const QStringList& files_, std::unique_ptr<FindFilter>&& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes);
     ~Finder() override;
 
 public slots:

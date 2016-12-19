@@ -20,7 +20,7 @@ public:
     FindWidget(QWidget* parent = nullptr);
     ~FindWidget() override;
 
-    void Find(std::unique_ptr<FindFilter> filter);
+    void Find(std::unique_ptr<FindFilter>&& filter);
 
 signals:
     void StopAll();
@@ -40,7 +40,7 @@ private:
     enum
     {
         PACKAGE_DATA = Qt::UserRole + 1,
-        CONTROL_DATA = Qt::UserRole
+        CONTROL_DATA
     };
 
     Ui::FindWidget ui;

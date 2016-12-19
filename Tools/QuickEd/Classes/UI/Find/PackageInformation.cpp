@@ -54,10 +54,6 @@ std::shared_ptr<ControlInformation> PackageInformation::FindPrototypeByName(cons
     return std::shared_ptr<ControlInformation>();
 }
 
-PackageInformationCache::PackageInformationCache()
-{
-}
-
 void PackageInformationCache::Put(const std::shared_ptr<PackageInformation>& package)
 {
     DVASSERT(packages.find(package->GetPath()) == packages.end());

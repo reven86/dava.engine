@@ -29,7 +29,7 @@ FindWidget::~FindWidget()
 {
 }
 
-void FindWidget::Find(std::unique_ptr<FindFilter> filter)
+void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {
     if (thread == nullptr)
     {

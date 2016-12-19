@@ -22,7 +22,7 @@ public:
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
     void SelectControl(const DAVA::String& controlPath);
-    void FindControls(std::unique_ptr<FindFilter> filter);
+    void FindControls(std::unique_ptr<FindFilter>&& filter);
 
     void ExecDialogReloadSprites(SpritesPacker* packer);
 
