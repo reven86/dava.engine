@@ -78,7 +78,7 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     }
 }
 
-bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     return false;
 }

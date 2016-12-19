@@ -4,28 +4,17 @@
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
 
-#include "QtTools/FileDialogs/FileDialog.h"
-#include "QtTools/ReloadSprites/DialogReloadSprites.h"
-#include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/Utils/AssertGuard.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Utils/Utils.h"
-
-#include "TextureCompression/PVRConverter.h"
 #include "version.h"
-
+#include "FileSystem/FileSystem.h"
 #include "Base/Result.h"
 #include "DAVAVersion.h"
 #include "Engine/Engine.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/YamlNode.h"
-#include "Particles/ParticleEmitter.h"
-#include "UI/Input/UIInputSystem.h"
-#include "UI/Layouts/UILayoutSystem.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+
+#include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QFile>
 #include <QDir>
@@ -36,16 +25,6 @@ namespace EditorCoreDetails
 {
 static const char* EDITOR_TITLE = "DAVA Framework - QuickEd | %s-%s [%u bit]";
 static const DAVA::String DOCUMENTATION_DIRECTORY("~doc:/Help/");
-
-void InitPVRTexTool()
-{
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
-}
 
 std::tuple<std::unique_ptr<Project>, ResultList> CreateProject(const QString& path, MainWindow* mainWindow)
 {
@@ -179,7 +158,7 @@ std::tuple<QString, DAVA::ResultList> CreateNewProject()
 
     return std::make_tuple(fullProjectFilePath, resultList);
 }
-};
+}
 
 REGISTER_PREFERENCES_ON_START(EditorCore,
                               PREF_ARG("isUsingAssetCache", false),
@@ -187,70 +166,25 @@ REGISTER_PREFERENCES_ON_START(EditorCore,
                               PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
                               )
 
-EditorCore::EditorCore(DAVA::Engine& engine)
+EditorCore::EditorCore()
 {
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-    ToolsAssetGuard::Instance()->Init();
-
-    using namespace DAVA;
-    const EngineContext* context = engine.GetContext();
-
-    FileSystem* fs = context->fileSystem;
-    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
-    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
-
-    UIControlSystem* uiControlSystem = context->uiControlSystem;
-    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
-
-    UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), UIInputSystem::ACTION_FOCUS_RIGHT);
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::UP), UIInputSystem::ACTION_FOCUS_UP);
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::DOWN), UIInputSystem::ACTION_FOCUS_DOWN);
-
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
-    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, eModifierKeys::SHIFT), UIInputSystem::ACTION_FOCUS_PREV);
-
-    context->logger->SetLogFilename("QuickEd.txt");
-
-    Renderer::SetDesiredFPS(60);
-
-    const char* settingsPath = "QuickEdSettings.archive";
-    FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-
-    EditorCoreDetails::InitPVRTexTool();
-
-    qInstallMessageHandler(DAVAMessageHandler);
-
-    Q_INIT_RESOURCE(QtToolsResources);
-    Themes::InitFromQApplication();
-
-    mainWindow.reset(new MainWindow());
-
-    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
-    mainWindow->InjectRenderWidget(renderWidget);
-
-    //we need to register preferences when whole class is initialized
-    PreferencesStorage::Instance()->RegisterPreferences(this);
+    mainWindow = new MainWindow();
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
 
     mainWindow->SetEditorTitle(GenerateEditorTitle());
 
-    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
-    connect(mainWindow.get(), &MainWindow::NewProject, this, &EditorCore::OnNewProject);
-    connect(mainWindow.get(), &MainWindow::OpenProject, this, &EditorCore::OnOpenProject);
-    connect(mainWindow.get(), &MainWindow::RecentProject, this, &EditorCore::OpenProject);
-    connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
-    connect(mainWindow.get(), &MainWindow::Exit, this, &EditorCore::OnExit);
-    connect(mainWindow.get(), &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+    connect(mainWindow, &MainWindow::NewProject, this, &EditorCore::OnNewProject);
+    connect(mainWindow, &MainWindow::OpenProject, this, &EditorCore::OnOpenProject);
+    connect(mainWindow, &MainWindow::RecentProject, this, &EditorCore::OpenProject);
+    connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
+    connect(mainWindow, &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+
     connect(this, &EditorCore::ProjectChanged, mainWindow->GetProjectView(), &MainWindow::ProjectView::OnProjectChanged);
-
     UnpackHelp();
-
-    mainWindow->show();
+    //we need to register preferences when whole class is initialized
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
@@ -272,6 +206,37 @@ void EditorCore::OnRenderingInitialized()
     }
 }
 
+MainWindow* EditorCore::GetMainWindow() const
+{
+    return mainWindow;
+}
+
+bool EditorCore::CanCloseProjectSilently() const
+{
+    if (project)
+    {
+        return project->CanCloseSilently();
+    }
+    return true;
+}
+
+QStringList EditorCore::GetUnsavedDocumentsNames() const
+{
+    if (project)
+    {
+        return project->GetUnsavedDocumentsNames();
+    }
+    return QStringList();
+}
+
+void EditorCore::SaveAllDocuments()
+{
+    if (project)
+    {
+        project->SaveAllDocuments();
+    }
+}
+
 void EditorCore::OnShowHelp()
 {
     FilePath docsPath = EditorCoreDetails::DOCUMENTATION_DIRECTORY + "index.html";
@@ -281,7 +246,7 @@ void EditorCore::OnShowHelp()
 
 void EditorCore::OpenProject(const QString& path)
 {
-    if (!CloseProject())
+    if (!CloseProject(false))
     {
         return;
     }
@@ -289,7 +254,7 @@ void EditorCore::OpenProject(const QString& path)
     ResultList resultList;
     std::unique_ptr<Project> newProject;
 
-    std::tie(newProject, resultList) = EditorCoreDetails::CreateProject(path, mainWindow.get());
+    std::tie(newProject, resultList) = EditorCoreDetails::CreateProject(path, mainWindow);
 
     if (newProject.get())
     {
@@ -300,7 +265,6 @@ void EditorCore::OpenProject(const QString& path)
         mainWindow->SetRecentProjects(GetRecentProjects());
 
         connect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
-        connect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
         if (assetCacheEnabled)
         {
@@ -315,37 +279,27 @@ void EditorCore::OpenProject(const QString& path)
 
 void EditorCore::OnCloseProject()
 {
-    CloseProject();
+    CloseProject(false);
 }
 
-bool EditorCore::CloseProject()
+bool EditorCore::CloseProject(bool force)
 {
     if (project == nullptr)
     {
         return true;
     }
-
-    if (!TryCloseDocuments())
+    if (project->CloseAllDocuments(force) == false)
     {
         return false;
     }
 
     disconnect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
-    disconnect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
     DisableCacheClient();
 
     emit ProjectChanged(nullptr);
     project = nullptr;
     return true;
-}
-
-void EditorCore::OnExit()
-{
-    if (CloseProject())
-    {
-        qApp->quit();
-    }
 }
 
 bool EditorCore::IsUsingAssetCache() const
@@ -441,7 +395,7 @@ void EditorCore::OnOpenProject()
         defaultPath = QDir::currentPath();
     }
 
-    QString projectPath = QFileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
+    QString projectPath = QFileDialog::getOpenFileName(mainWindow, tr("Select a project file"),
                                                        defaultPath, tr("Project files(*.quicked *.uieditor)"));
 
     if (projectPath.isEmpty())

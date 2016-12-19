@@ -70,6 +70,10 @@ public:
     bool TryCloseAllDocuments();
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
     void JumpToPackage(const DAVA::FilePath& packagePath);
+    bool CloseAllDocuments(bool force);
+    void SaveAllDocuments();
+    bool CanCloseSilently() const;
+    QStringList GetUnsavedDocumentsNames() const;
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);

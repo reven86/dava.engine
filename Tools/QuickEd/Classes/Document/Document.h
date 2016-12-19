@@ -42,6 +42,7 @@ public:
     explicit Document(Project* project, const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
+    QString GetName() const;
     const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     DAVA::CommandStack* GetCommandStack() const;

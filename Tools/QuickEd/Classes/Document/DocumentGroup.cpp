@@ -563,12 +563,10 @@ int DocumentGroup::GetIndexByPackagePath(const QString& path) const
 
 void DocumentGroup::InsertTab(QTabBar* tabBar, Document* document, int index)
 {
-    QFileInfo fileInfo(document->GetPackageAbsolutePath());
-    QString tabText(fileInfo.fileName());
     bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
-    int insertedIndex = tabBar->insertTab(index, tabText);
+    int insertedIndex = tabBar->insertTab(index, document->GetName());
     tabBar->blockSignals(blockSignals);
-    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
+    tabBar->setTabToolTip(insertedIndex, document->GetPackageAbsolutePath());
 }
 
 void DocumentGroup::SaveDocument(Document* document, bool force)
@@ -691,6 +689,19 @@ bool DocumentGroup::HasUnsavedDocuments() const
     bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](const Document* document) { return document->CanSave(); }) != documents.end();
 
     return hasUnsaved;
+}
+
+QStringList DocumentGroup::GetUnsavedDocumentsNames() const
+{
+    QStringList unsavedDocumentsNames;
+    for (const Document* document : documents)
+    {
+        if (document->CanSave())
+        {
+            unsavedDocumentsNames << document->GetName();
+        }
+    }
+    return unsavedDocumentsNames;
 }
 
 void DocumentGroup::CloseAllDocuments()
