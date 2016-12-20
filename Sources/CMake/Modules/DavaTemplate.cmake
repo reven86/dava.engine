@@ -897,6 +897,42 @@ endif()
 
 if( PLUGIN_LIST )
     add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
+
+    if( DEPLOY )
+        set( PLUGIN_OUT_DIR ${DEPLOY_EXECUTE_DIR} )
+    else()
+        set( PLUGIN_OUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>" )
+    endif()
+
+    foreach( PLUGIN ${PLUGIN_LIST} )
+
+        get_property( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+
+        if( APPLE )
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/../PlugIns" )
+        else ()
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/PlugIns" )
+        endif()
+
+        if( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+            set( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR}/${${PLUGIN}_RELATIVE_PATH_TO_FOLDER} )
+        endif()
+
+        set_property( GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                        
+            if( APPLE )
+                set_target_properties( ${PLUGIN} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )                
+            else()
+                set_target_properties( ${PLUGIN} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )
+            endif()
+
+        endforeach( )
+                    
+    endforeach( )
+
 endif()
 
 coverage_processing()

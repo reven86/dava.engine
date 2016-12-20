@@ -95,7 +95,17 @@ EXCLUDE_FROM_ALL
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
 #
+PLUGIN_RELATIVE_PATH_TO_FOLDER
+#
 )
+
+#
+set(  GLOBAL_PROPERTY_VALUES ${MAIN_MODULE_VALUES}  TARGET_MODULES_LIST 
+                                                    QT_DEPLOY_LIST_VALUE 
+                                                    QT_LINKAGE_LIST 
+                                                    QT_LINKAGE_LIST_VALUE 
+                                                    DEPENDENT_LIST
+                                                    GROUP_SOURCE )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
     foreach( FOLDER_MODULE ${EXTERNAL_MODULES} )
@@ -253,13 +263,7 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${MAIN_MODULE_VALUES}
-                                         TARGET_MODULES_LIST 
-                                         QT_DEPLOY_LIST_VALUE 
-                                         QT_LINKAGE_LIST 
-                                         QT_LINKAGE_LIST_VALUE 
-                                         DEPENDENT_LIST
-                                         GROUP_SOURCE )
+    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -565,6 +569,8 @@ macro( setup_main_module )
 
             elseif( ${MODULE_TYPE} STREQUAL "PLUGIN" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
+                append_property( PLUGIN_LIST ${NAME_MODULE} )
+
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST ) 
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
                 add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
@@ -575,11 +581,7 @@ macro( setup_main_module )
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX Debug   )
-                if( APPLE AND PLUGIN_OUT_DIR )
-                    get_filename_component( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR} ABSOLUTE )
-                    set_target_properties( ${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${PLUGIN_OUT_DIR} )
-                endif()              
+                                                                 DEBUG_POSTFIX Debug   )             
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
@@ -594,6 +596,23 @@ macro( setup_main_module )
                                                  BINARY_WIN64_DIR_RELEASE 
                                                  BINARY_WIN64_DIR_DEBUG
                                                  BINARY_WIN64_DIR_RELWITHDEB )
+                endif()
+
+                if( PLUGIN_OUT_DIR )
+                    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+                        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                        
+                        if( APPLE )
+                            set_target_properties( ${NAME_MODULE} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )                
+                        else()
+                            set_target_properties( ${NAME_MODULE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )
+                        endif()
+
+                    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+                endif()
+                 
+                if( PLUGIN_RELATIVE_PATH_TO_FOLDER )
+                    set_property( GLOBAL PROPERTY ${NAME_MODULE}_RELATIVE_PATH_TO_FOLDER ${PLUGIN_RELATIVE_PATH_TO_FOLDER} )
                 endif()
 
             endif()
