@@ -27,29 +27,29 @@ public:
     };
 
     /**
-     \brief get list of plug-ins
-     \param[in] folder - folder where find plug-ins
-     \param[in] mode - plugin search mode, EFP_Auto - automatic, EFT_Release - only release version, EFT_Debug - only debug
-     \returns returns a list of plug-ins
+     \brief get list of plugins
+     \param[in] folder - folder where find plugins
+     \param[in] mode - plugins search mode, EFP_Auto - automatic, EFT_Release - only release version, EFT_Debug - only debug
+     \returns - returns a list of plugins
      */
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
     /**
      \brief initializes and load plugin
      \param[in] pluginPatch - path to plugin
-     \returns pointer descriptor to plugin
+     \returns - pointer descriptor to plugin
      */
     const PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
 
     /**
      \brief delete downloaded plugin
      \param[in] desc - pointer to plugin descriptor
-     \returns returns true - success, false - error
+     \returns - returns true - success, false - error
      */
     bool ShutdownPlugin(const PluginDescriptor* desc);
 
     /**
-     \brief removes all loaded plugs
+     \brief removes all loaded plugin
      */
     void ShutdownPlugins();
 
