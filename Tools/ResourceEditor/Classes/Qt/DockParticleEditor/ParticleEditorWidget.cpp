@@ -233,7 +233,7 @@ void ParticleEditorWidget::ProcessSelection(SceneEditor2* scene, const Selectabl
     {
         DAVA::ParticleLayer* layer = obj.Cast<DAVA::ParticleLayer>();
         DAVA::ParticleEmitterInstance* instance = scene->particlesSystem->GetLayerOwner(layer);
-        if ((instance != nullptr) && (instance->GetEmitter()->ContainsLayer(layer)))
+        if (instance != nullptr)
         {
             shouldReset = false;
             SwitchEditorToLayerMode(scene, instance->GetOwner(), instance, layer);

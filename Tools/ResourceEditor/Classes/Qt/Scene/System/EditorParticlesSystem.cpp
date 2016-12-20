@@ -233,7 +233,11 @@ DAVA::ParticleLayer* EditorParticlesSystem::GetForceOwner(DAVA::ParticleForce* f
         {
             if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
             {
-                return getForceOwner(layer->innerEmitter, force);
+                DAVA::ParticleLayer* foundLayer = getForceOwner(layer->innerEmitter, force);
+                if (foundLayer != nullptr)
+                {
+                    return foundLayer;
+                }
             }
 
             if (std::find(layer->forces.begin(), layer->forces.end(), force) != layer->forces.end())
@@ -281,7 +285,11 @@ DAVA::ParticleEmitterInstance* EditorParticlesSystem::GetLayerOwner(DAVA::Partic
 
             if (l->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
             {
-                return hasLayerOwner(l->innerEmitter, layer);
+                bool found = hasLayerOwner(l->innerEmitter, layer);
+                if (found)
+                {
+                    return true;
+                }
             }
         }
 

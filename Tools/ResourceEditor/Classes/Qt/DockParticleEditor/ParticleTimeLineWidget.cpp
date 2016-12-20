@@ -862,7 +862,7 @@ void ParticleTimeLineWidget::ProcessSelection(SceneEditor2* scene, const Selecta
     {
         DAVA::ParticleLayer* layer = obj.Cast<DAVA::ParticleLayer>();
         DAVA::ParticleEmitterInstance* instance = scene->particlesSystem->GetLayerOwner(layer);
-        if ((instance != nullptr) && (instance->GetEmitter()->ContainsLayer(layer)))
+        if (instance != nullptr)
         {
             shouldReset = false;
             HandleEmitterSelected(instance->GetOwner(), instance, layer);
