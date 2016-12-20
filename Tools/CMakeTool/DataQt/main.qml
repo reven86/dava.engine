@@ -46,6 +46,10 @@ ApplicationWindow {
         property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
+            function compare(left, right) {
+                return left.source.localeCompare(right.source);
+            }
+            history.sort(compare);
             historyStr = JSON.stringify(history)
             historyVersion = applicationWindow.historyVersion;
         }
