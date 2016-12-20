@@ -117,12 +117,12 @@ const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
 
         if (nullptr == desc.plugin)
         {
-            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str() );
+            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str());
             success = false;
         }
     }
 
-    if (!success )
+    if (!success)
     {
         ClosePlugin(desc.handle);
         return nullptr;
@@ -146,8 +146,8 @@ bool PluginManager::ShutdownPlugin(const PluginDescriptor* desc)
         if (&(*it) == desc)
         {
             desc->plugin->Shutdown();
-            desc->destroyPluginFunc( desc->plugin );
-            ClosePlugin( desc->handle );
+            desc->destroyPluginFunc(desc->plugin);
+            ClosePlugin(desc->handle);
             pluginDescriptors.erase(it);
             return true;
         }

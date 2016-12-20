@@ -35,5 +35,5 @@ void SamplePluginTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     PluginManager& mm = *engine.GetContext()->pluginManager;
-    mm.ShutdownPlugin(pluginDescriptor);    
+    mm.ShutdownPlugin(pluginDescriptor);
 }

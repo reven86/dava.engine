@@ -12,6 +12,9 @@ class Engine;
 
 struct PluginDescriptor;
 
+/**
+ \defgroup plugin manager system
+ */
 class PluginManager final
 {
 public:
@@ -22,10 +25,31 @@ public:
         EFT_Debug
     };
 
+    /**
+     \brief get list of plug-ins
+     \param[in] folder - folder where find plug-ins
+     \param[in] mode - plugin search mode, EFP_Auto - automatic, EFT_Release - only release version, EFT_Debug - only debug
+     \returns returns a list of plug-ins
+     */
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
+    /**
+     \brief initializes and load plugin
+     \param[in] pluginPatch - path to plugin
+     \returns pointer descriptor to plugin
+     */
     const PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
+
+    /**
+     \brief delete downloaded plugin
+     \param[in] desc - pointer to plugin descriptor
+     \returns returns true - success, false - error
+     */
     bool ShutdownPlugin(const PluginDescriptor* desc);
+
+    /**
+     \brief removes all loaded plugs
+     */
     void ShutdownPlugins();
 
     PluginManager(Engine* engine);

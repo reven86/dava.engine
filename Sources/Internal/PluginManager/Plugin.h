@@ -30,16 +30,35 @@ extern "C" { \
     }\
 }
 
+/**
+ \brief handle plugin
+ */
 using PluginHandle = void*;
 
 ///
 
+/**
+ \brief plugin download function
+ \param[in] pluginPath - path to plugin file
+ */
 PluginHandle OpenPlugin(const char* pluginPath);
 
+/**
+ \brief loading function of plugin
+ \param[in] handle - handle plug, funcName - function name
+ */
 void* LoadFunction(PluginHandle handle, const char* funcName);
 
+/**
+ \brief close plugin function
+ \param[in] handle - handle plugn
+ */
 void ClosePlugin(PluginHandle handle);
 
+/**
+ \brief loading function of plugin
+ \param[in] handle - handle plug, funcName - function name
+ */
 template <class T>
 T LoadFunction(PluginHandle handle, const char* funcName)
 {
