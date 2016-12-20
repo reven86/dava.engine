@@ -119,7 +119,7 @@ private:
     Q_SLOT void OnClientDelegateDestroyed();
 
     void ActivateRendering();
-    bool IsInitialized();
+    bool IsInitialized() const;
 
 private:
     IWindowDelegate* widgetDelegate = nullptr;
