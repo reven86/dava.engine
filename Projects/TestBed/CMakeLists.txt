@@ -82,7 +82,7 @@ endif ()
 if (ANDROID)
     # Libraries and classes to load at startup
     set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;TestBed")
-    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBedBoot")
+    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBed")
 endif()
 
 setup_main_executable()
@@ -91,6 +91,5 @@ convert_graphics()
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled
     # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager
-    set_xcode_property( ${PROJECT_NAME} GCC_GENERATE_DEBUGGING_SYMBOLS YES )
     set_xcode_property( ${PROJECT_NAME} STRIP_INSTALLED_PRODUCT NO )
 endif()

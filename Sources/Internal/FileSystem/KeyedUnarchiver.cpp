@@ -64,7 +64,8 @@ const String& KeyedUnarchiver::DecodeString(const String& key)
 {
     return objectMap[key].AsString();
 }
-const WideString& KeyedUnarchiver::DecodeWideString(const String& key)
+// internally we always use utf8 in std::string, so can't return ref
+const WideString KeyedUnarchiver::DecodeWideString(const String& key)
 {
     return objectMap[key].AsWideString();
 }

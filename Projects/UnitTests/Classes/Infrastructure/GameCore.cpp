@@ -1,5 +1,5 @@
-#include "Engine/EngineModule.h"
 #include "Base/BaseTypes.h"
+#include "Engine/Engine.h"
 #include "UnitTests/UnitTests.h"
 #include "CommandLine/CommandLineParser.h"
 #include "FileSystem/KeyedArchive.h"
@@ -166,7 +166,7 @@ void GameCore::OnAppStarted()
     {
         Logger::Error("%s", "There are no test classes");
 #if defined(__DAVAENGINE_COREV2__)
-        engine.Quit();
+        engine.QuitAsync(0);
 #else
         Core::Instance()->Quit();
 #endif
@@ -330,7 +330,7 @@ void GameCore::FinishTests()
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
 #if defined(__DAVAENGINE_COREV2__)
-    engine.Quit();
+    engine.QuitAsync(0);
 #else
     Core::Instance()->Quit();
 #endif

@@ -86,7 +86,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Reflection/ReflectedType.h"
 
 #include "Scene3D/Components/ActionComponent.h"
@@ -205,7 +204,6 @@ DAVA::RefPtr<SceneEditor2> GetCurrentScene()
 QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , waitDialog(nullptr)
     , beastWaitDialog(nullptr)
     , globalInvalidate(false)
     , modificationWidget(nullptr)
@@ -311,7 +309,7 @@ QtMainWindow::~QtMainWindow()
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
-    QObject::connect(DAVA::Engine::Instance()->GetNativeService()->GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 QString GetSaveFolderForEmitters()
@@ -455,12 +453,6 @@ void QtMainWindow::SetupToolBars()
     ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
-
-    // undo/redo
-    QToolButton* undoBtn = (QToolButton*)ui->mainToolBar->widgetForAction(ui->actionUndo);
-    QToolButton* redoBtn = (QToolButton*)ui->mainToolBar->widgetForAction(ui->actionRedo);
-    undoBtn->setPopupMode(QToolButton::MenuButtonPopup);
-    redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
     // modification widget
     modificationWidget = new ModificationWidget(nullptr);
@@ -1410,20 +1402,23 @@ void QtMainWindow::On2DSpriteDialog()
 {
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
-    DAVA::FilePath projectPath = data->GetProjectPath();
-    projectPath += "Data/Gfx/";
+    DAVA::FilePath projectPath = data->GetParticlesGfxPath();
 
-    QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
+    QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.psd)"));
     if (filePath.isEmpty())
         return;
+
+    filePath = filePath.replace("/DataSource/", "/Data/");
     filePath.remove(filePath.size() - 4, 4);
-    DAVA::Sprite* sprite = DAVA::Sprite::Create(filePath.toStdString());
+
+    DAVA::ScopedPtr<DAVA::Sprite> sprite(DAVA::Sprite::Create(filePath.toStdString()));
     if (!sprite)
         return;
 
-    DAVA::Entity* sceneNode = new DAVA::Entity();
+    DAVA::ScopedPtr<DAVA::Entity> sceneNode(new DAVA::Entity());
     sceneNode->SetName(ResourceEditor::EDITOR_SPRITE);
-    DAVA::SpriteObject* spriteObject = new DAVA::SpriteObject(sprite, 0, DAVA::Vector2(1, 1), DAVA::Vector2(0.5f * sprite->GetWidth(), 0.5f * sprite->GetHeight()));
+
+    DAVA::ScopedPtr<DAVA::SpriteObject> spriteObject(new DAVA::SpriteObject(sprite, 0, DAVA::Vector2(1, 1), DAVA::Vector2(0.5f * sprite->GetWidth(), 0.5f * sprite->GetHeight())));
     spriteObject->AddFlag(DAVA::RenderObject::ALWAYS_CLIPPING_VISIBLE);
     sceneNode->AddComponent(new DAVA::RenderComponent(spriteObject));
     DAVA::Matrix4 m = DAVA::Matrix4(1, 0, 0, 0,
@@ -1436,9 +1431,6 @@ void QtMainWindow::On2DSpriteDialog()
     {
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor.Get())));
     }
-    SafeRelease(sceneNode);
-    SafeRelease(spriteObject);
-    SafeRelease(sprite);
 }
 
 void QtMainWindow::OnAddEntityFromSceneTree()
@@ -1617,7 +1609,7 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
         ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
         DVASSERT(data != nullptr);
         QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-                                                           data->GetDataSourcePath().GetAbsolutePathname().c_str(),
+                                                           data->GetDataSource3DPath().GetAbsolutePathname().c_str(),
                                                            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if (selectedPath.isEmpty())

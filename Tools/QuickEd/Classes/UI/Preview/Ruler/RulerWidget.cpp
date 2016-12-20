@@ -7,10 +7,14 @@
 #include <cmath>
 #include <sstream>
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 RulerWidget::RulerWidget(QWidget* parent)
     : QWidget(parent)
 {
+    DAVA::Function<void()> updateRuler(this, static_cast<void (QWidget::*)(void)>(&RulerWidget::update));
+    lazyUpdater = new LazyUpdater(updateRuler, this);
+
     UpdateDoubleBufferImage();
 }
 
@@ -36,7 +40,7 @@ void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
 void RulerWidget::OnMarkerPositionChanged(int position)
 {
     markerPosition = position;
-    update();
+    lazyUpdater->Update();
 }
 
 void RulerWidget::paintEvent(QPaintEvent* /*event*/)

@@ -530,6 +530,8 @@ bool RenderPassMetal_t::Initialize()
 
     if (need_drawable && !_Metal_currentDrawable)
     {
+        if (_Metal_DrawableDispatchSemaphore != nullptr)
+            _Metal_DrawableDispatchSemaphore->Wait();
         @autoreleasepool
         {
             _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
@@ -1626,6 +1628,13 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
                                                              DAVA::LockGuard<DAVA::Mutex> guard(_Metal_SyncObjectsSync);
                                                              SyncObjectMetal_t* sync = SyncObjectPoolMetal::Get(syncObject);
                                                              sync->is_signaled = true;
+                                                           }];
+                }
+                if (_Metal_DrawableDispatchSemaphore != nullptr)
+                {
+                    [rp->commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> cb)
+                                                           {
+                                                             _Metal_DrawableDispatchSemaphore->Post();
                                                            }];
                 }
             }
