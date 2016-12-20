@@ -3,20 +3,20 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/Private/PackMetaData.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
-
 #include "AssetCache/AssetCacheClient.h"
-
 #include "ResourceArchiver/ResourceArchiver.h"
 
+#include <sqlite_modern_cpp.h>
+
 #include <algorithm>
-#include <Utils/CRC32.h>
-#include <FileSystem/Private/PackMetaData.h>
 
 ENUM_DECLARE(DAVA::Compressor::Type)
 {
@@ -231,6 +231,53 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
+bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath, Vector<CollectedFile>& collectedFiles)
+{
+    sqlite::database db(metaDbPath.GetAbsolutePathname());
+
+    size_t numFiles = 0;
+
+    db << "SELECT count(*) FROM files"
+    >> [&](int64 countFiles)
+    {
+        DVASSERT(countFiles > 0);
+        numFiles = static_cast<size_t>(countFiles);
+    };
+
+    collectedFiles.clear();
+    collectedFiles.reserve(numFiles);
+
+    FileSystem* fs = FileSystem::Instance();
+
+    try
+    {
+        db << "SELECT path FROM files"
+        >> [&](String path)
+        {
+            FilePath fullPath = baseDirPath + path;
+            if (!fs->Exists(fullPath))
+            {
+                Logger::Error("can't find file: %s", fullPath.GetAbsolutePathname().c_str());
+                DAVA_THROW(Exception, "file not found");
+            }
+            else
+            {
+                CollectedFile collectedFile;
+                collectedFile.absPath = fullPath;
+                collectedFile.archivePath = path;
+                collectedFiles.push_back(collectedFile);
+            }
+        };
+    }
+    catch (std::exception& ex)
+    {
+        Logger::Error("%s", ex.what());
+        return false;
+    }
+
+    return true;
+}
+
 bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
     for (String source : sources)
@@ -365,7 +412,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     FileSystem* fs = FileSystem::Instance();
 
-    // TODO load metadata
+    // load metadata
     // CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack_index INTEGER NOT NULL);
     // CREATE TABLE IF NOT EXISTS packs(index INTEGER PRIMARY KEY, name TEXT UNIQUE, dependency TEXT NOT NULL);
     std::unique_ptr<PackMetaData> meta;
@@ -381,6 +428,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
             catch (std::exception& ex)
             {
                 Logger::Error("can't open metaDb: %s", ex.what());
+                return false;
             }
         }
         else
@@ -394,75 +442,74 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     try
     {
-        std::for_each(begin(collectedFiles), end(collectedFiles), [&](const CollectedFile& f)
-                      {
-                          const CollectedFile& collectedFile = f;
-                          PackFormat::FileTableEntry fileEntry = { 0 };
+        for (unsigned fileIndex = 0; fileIndex < collectedFiles.size(); ++fileIndex)
+        {
+            const CollectedFile& collectedFile = collectedFiles[fileIndex];
+            PackFormat::FileTableEntry fileEntry = { 0 };
 
-                          origFileBuffer.clear();
-                          compressedFileBuffer.clear();
+            origFileBuffer.clear();
+            compressedFileBuffer.clear();
 
-                          if (fs->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
-                          {
-                              throw std::runtime_error("Can't read contents of " + collectedFile.absPath.GetAbsolutePathname());
-                          }
+            if (fs->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
+            {
+                throw std::runtime_error("Can't read contents of " + collectedFile.absPath.GetAbsolutePathname());
+            }
 
-                          bool useCompressedBuffer = (compressionType != Compressor::Type::None);
-                          Compressor::Type useCompression = compressionType;
+            bool useCompressedBuffer = (compressionType != Compressor::Type::None);
+            Compressor::Type useCompression = compressionType;
 
-                          if (origFileBuffer.empty())
-                          {
-                              useCompressedBuffer = false;
-                              useCompression = Compressor::Type::None;
-                          }
+            if (origFileBuffer.empty())
+            {
+                useCompressedBuffer = false;
+                useCompression = Compressor::Type::None;
+            }
 
-                          if (useCompressedBuffer)
-                          {
-                              if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
-                              {
-                                  throw std::runtime_error("Can't compress contents of " + collectedFile.absPath.GetAbsolutePathname());
-                              }
+            if (useCompressedBuffer)
+            {
+                if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
+                {
+                    throw std::runtime_error("Can't compress contents of " + collectedFile.absPath.GetAbsolutePathname());
+                }
 
-                              if (compressedFileBuffer.size() < origFileBuffer.size())
-                              {
-                                  useCompressedBuffer = true;
-                              }
-                              else
-                              {
-                                  useCompressedBuffer = false;
-                                  useCompression = Compressor::Type::None;
-                              }
-                          }
+                if (compressedFileBuffer.size() < origFileBuffer.size())
+                {
+                    useCompressedBuffer = true;
+                }
+                else
+                {
+                    useCompressedBuffer = false;
+                    useCompression = Compressor::Type::None;
+                }
+            }
 
-                          Vector<uint8>& useBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
+            Vector<uint8>& useBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
 
-                          fileEntry.startPosition = dataOffset;
-                          fileEntry.originalSize = static_cast<uint32>(origFileBuffer.size());
-                          fileEntry.compressedSize = static_cast<uint32>(useBuffer.size());
-                          fileEntry.type = useCompression;
-                          fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
-                          fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
-                          // TODO check it
-                          fileEntry.customUserData = 0; // do it or your crc32 randomly change on same files
+            fileEntry.startPosition = dataOffset;
+            fileEntry.originalSize = static_cast<uint32>(origFileBuffer.size());
+            fileEntry.compressedSize = static_cast<uint32>(useBuffer.size());
+            fileEntry.type = useCompression;
+            fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
+            fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
+            fileEntry.customUserData = fileIndex; // do it or your crc32 randomly change on same files
 
-                          dataOffset += static_cast<uint32>(useBuffer.size());
+            dataOffset += static_cast<uint32>(useBuffer.size());
 
-                          if (!WriteRawData(outputFile, useBuffer))
-                          {
-                              throw std::runtime_error("can't write buffer to output file");
-                          }
+            if (!WriteRawData(outputFile, useBuffer))
+            {
+                throw std::runtime_error("can't write buffer to output file");
+            }
 
-                          packFile.filesTable.data.files.push_back(fileEntry);
+            packFile.filesTable.data.files.push_back(fileEntry);
 
-                          static String deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
-                          DateTime dateTime = DateTime::Now();
-                          String date = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedDate());
-                          String time = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedTime());
-                          Logger::Debug("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s, crc32: 0x%X",
-                                        deviceName.c_str(), date.c_str(), time.c_str(),
-                                        collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,
-                                        GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.type)), fileEntry.compressedCrc32);
-                      });
+            static String deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
+            DateTime dateTime = DateTime::Now();
+            String date = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedDate());
+            String time = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedTime());
+            Logger::Debug("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s, crc32: 0x%X",
+                          deviceName.c_str(), date.c_str(), time.c_str(),
+                          collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,
+                          GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.type)), fileEntry.compressedCrc32);
+        };
     }
     catch (std::exception& ex)
     {
@@ -578,7 +625,16 @@ bool CreateArchive(const Params& params)
     }
 
     Vector<CollectedFile> collectedFiles;
-    if (false == CollectFiles(params.sourcesList, params.baseDirPath, params.addHiddenFiles, collectedFiles))
+    if (!params.metaDbPath.IsEmpty())
+    {
+        Logger::Info("collect only files from metaDB");
+        if (false == CollectFilesFromDB(params.baseDirPath, params.metaDbPath, collectedFiles))
+        {
+            Logger::Error("Collecting files error");
+            return false;
+        }
+    }
+    else if (false == CollectFiles(params.sourcesList, params.baseDirPath, params.addHiddenFiles, collectedFiles))
     {
         Logger::Error("Collecting files error");
         return false;

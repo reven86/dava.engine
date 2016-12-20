@@ -119,7 +119,7 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write num_files failed");
     }
 
-    uint32 sizeOfFilesMetaIndexes = tableFiles.size() * 4;
+    uint32 sizeOfFilesMetaIndexes = static_cast<uint32>(tableFiles.size() * 4);
     if (sizeOfFilesMetaIndexes != file->Write(&tableFiles[0], sizeOfFilesMetaIndexes))
     {
         DAVA_THROW(Exception, "write meta file indexes failed");
@@ -175,7 +175,7 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     }
     tableFiles.resize(numFiles);
 
-    const size_t numFilesBytes = numFiles * 4;
+    const uint32 numFilesBytes = numFiles * 4;
     if (numFilesBytes != file->Read(&tableFiles[0], numFilesBytes))
     {
         DAVA_THROW(Exception, "read metadata error - no tableFiles");
