@@ -3,11 +3,10 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 namespace DAVA
 {
-class UIStyleSheet;
-
 class UIPriorityStyleSheet
 {
 public:
