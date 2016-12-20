@@ -63,9 +63,9 @@ private:
 
 UISwitch::UISwitch(const Rect& rect)
     : UIControl(rect)
-    , buttonLeft(new UIButton())
-    , buttonRight(new UIButton())
-    , toggle(new UIButton())
+    , buttonLeft(new UIControl())
+    , buttonRight(new UIControl())
+    , toggle(new UIControl())
     , switchOnTapBesideToggle(true)
 {
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
@@ -108,15 +108,15 @@ void UISwitch::AddControl(UIControl* control)
 
     if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft.Get() != control)
     {
-        buttonLeft = DynamicTypeCheck<UIButton*>(control);
+        buttonLeft = control;
     }
     else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle.Get() != control)
     {
-        toggle = DynamicTypeCheck<UIButton*>(control);
+        toggle = control;
     }
     else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight.Get() != control)
     {
-        buttonRight = DynamicTypeCheck<UIButton*>(control);
+        buttonRight = control;
     }
 }
 

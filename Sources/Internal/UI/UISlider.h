@@ -7,7 +7,6 @@
 
 namespace DAVA
 {
-class UIButton;
 class UISlider : public UIControl
 {
     DAVA_VIRTUAL_REFLECTION(UISlider, UIControl);

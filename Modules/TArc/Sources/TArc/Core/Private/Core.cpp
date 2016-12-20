@@ -111,7 +111,7 @@ public:
         }
     }
 
-    uint32 GetContextCount() const
+    uint32 GetContextCount() const override
     {
         return static_cast<uint32>(contexts.size());
     }
@@ -157,7 +157,7 @@ public:
         return wrapper;
     }
 
-    PropertiesItem CreatePropertiesNode(const String& nodeName)
+    PropertiesItem CreatePropertiesNode(const String& nodeName) override
     {
         DVASSERT(propertiesHolder != nullptr);
         return propertiesHolder->CreateSubHolder(nodeName);
@@ -456,7 +456,7 @@ public:
     {
         Impl::OnLoopStarted();
 
-        ToolsAssetGuard::Instance()->Init();
+        ToolsAssertGuard::Instance()->Init();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
@@ -660,22 +660,27 @@ public:
         DVASSERT(controllerModule != nullptr);
         bool result = true;
         QCloseEvent closeEvent;
+        String requestWindowText;
         if (controllerModule->ControlWindowClosing(key, &closeEvent))
         {
             result = closeEvent.isAccepted();
         }
-        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        else if (controllerModule->CanWindowBeClosedSilently(key, requestWindowText) == false)
         {
+            if (requestWindowText.empty())
+            {
+                requestWindowText = "Some files have been modified\nDo you want to save changes?";
+            }
             ModalMessageParams params;
-            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
-            params.message = "Some files have been modified\nDo you want to save changes?";
+            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::SaveAll | ModalMessageParams::NoToAll | ModalMessageParams::Cancel);
+            params.message = QString::fromStdString(requestWindowText);
             params.title = "Save Changes?";
             ModalMessageParams::Button resultButton = uiManager->ShowModalMessage(key, params);
-            if (resultButton == ModalMessageParams::Yes)
+            if (resultButton == ModalMessageParams::SaveAll)
             {
                 controllerModule->SaveOnWindowClose(key);
             }
-            else if (resultButton == ModalMessageParams::No)
+            else if (resultButton == ModalMessageParams::NoToAll)
             {
                 controllerModule->RestoreOnWindowClose(key);
             }
@@ -720,7 +725,7 @@ private:
         }
     }
 
-    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne) override
     {
         for (std::unique_ptr<ClientModule>& module : modules)
         {

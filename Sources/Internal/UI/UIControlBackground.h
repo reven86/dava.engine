@@ -432,9 +432,9 @@ inline FilePath UIControlBackground::GetMaskSpritePath() const
 inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        mask = Sprite::Create(path);
+        mask.Set(Sprite::Create(path));
     else
-        mask = nullptr;
+        mask.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
@@ -445,9 +445,9 @@ inline FilePath UIControlBackground::GetDetailSpritePath() const
 inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        detail = Sprite::Create(path);
+        detail.Set(Sprite::Create(path));
     else
-        detail = nullptr;
+        detail.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
@@ -458,9 +458,9 @@ inline FilePath UIControlBackground::GetGradientSpritePath() const
 inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        gradient = Sprite::Create(path);
+        gradient.Set(Sprite::Create(path));
     else
-        gradient = nullptr;
+        gradient.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetContourSpritePath() const
 {
@@ -471,9 +471,9 @@ inline FilePath UIControlBackground::GetContourSpritePath() const
 inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        contour = Sprite::Create(path);
+        contour.Set(Sprite::Create(path));
     else
-        contour = nullptr;
+        contour.Set(nullptr);
 }
 
 inline int32 UIControlBackground::GetGradientBlendMode() const

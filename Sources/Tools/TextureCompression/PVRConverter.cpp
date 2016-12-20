@@ -46,8 +46,6 @@ static DAVA::String ETC_QUALITY_SETTING[] =
 
 PVRConverter::PVRConverter()
 {
-    //	PVRTC1_2, PVRTC1_4, PVRTC1_2_RGB, PVRTC1_4_RGB, PVRTC2_2, PVRTC2_4, ETC1, BC1, BC2, BC3,UYVY, YUY2, 1BPP, RGBE9995, RGBG8888, GRGB8888, ETC2_RGB, ETC2_RGBA, ETC2_RGB_A1, EAC_R11, EAC_RG11
-
     // pvr map
     pixelFormatToPVRFormat[FORMAT_RGBA8888] = "r8g8b8a8"; //"OGL8888";
     pixelFormatToPVRFormat[FORMAT_RGBA4444] = "r4g4b4a4"; //"OGL4444";
@@ -68,6 +66,9 @@ PVRConverter::PVRConverter()
     pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
     pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
     pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
+
+    pixelFormatToPVRFormat[FORMAT_RGBA16F] = "r16g16b16a16,SF";
+    pixelFormatToPVRFormat[FORMAT_RGBA32F] = "r32g32b32a32,SF";
 }
 
 PVRConverter::~PVRConverter()
