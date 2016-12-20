@@ -59,7 +59,7 @@ void ClosePlugin(PluginHandle handle);
 
 /**
  \brief loading function of plugin
- \param[in] handle - handle plug, funcName - function name
+ \param[in] handle - handle plugin, funcName - function name
  \returns - returns pointer to function of plugin
  */
 template <class T>
