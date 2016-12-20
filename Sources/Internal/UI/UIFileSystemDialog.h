@@ -9,6 +9,7 @@
 namespace DAVA
 {
 class FileList;
+class UIButton;
 class UIStaticText;
 class UITextField;
 class UIFileSystemDialog;

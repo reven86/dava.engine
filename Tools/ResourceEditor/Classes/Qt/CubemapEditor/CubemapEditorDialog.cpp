@@ -78,7 +78,7 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
     FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
-                                                            data->GetDataSourcePath().GetAbsolutePathname());
+                                                            data->GetDataSource3DPath().GetAbsolutePathname());
 
     QString fileName = FileDialog::getOpenFileName(this,
                                                    tr("Open Cubemap Face Image"),
