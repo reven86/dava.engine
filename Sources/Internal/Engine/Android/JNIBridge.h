@@ -82,50 +82,54 @@ inline jstring ToJNIString(const DAVA::WideString& string)
 
     `ObjectRef` is not intended for direct use, instead use `GlobalRef<T>` alias for global references and `LocalRef<T>` for local references.
 
+    Rules when creating ObjectRef instance or assigning with raw jobject:
+    1. if ObjectRef is GlobalRef:
+        if jobject is global reference then GlobalRef takes ownership of jobject
+        if jobject is local reference then GlobalRef creates and manages global reference and delete jobject
+    2. if ObjectRef is LocalRef:
+        if jobject is global reference then LocalRef creates and manages local reference
+        if jobject is local reference then LocalRef takes ownership of jobject
+
     Samples:
     \code
-    GlobalRef<jstring> g1; // Some global jstring object
-    LocalRef<jobject> l1 = ...; // Usually methods return local refrences to jobjects
-    g1 = l1; // Convert and create new global reference to jstring, local reference will be automatically deleted
+        GlobalRef<jstring> g1; // Some global jstring object
+        LocalRef<jobject> l1 = ...; // Usually java methods return local references to jobjects,
+                                    // l1 will take ownership of returned jobject
+        GlobalRef<jobject> g8 = ...; // Java method returns local reference and g8 creates and manages global
+                                     // reference and deletes returned local reference
+        g1 = l1; // Convert and create new global reference to jstring, local reference will be automatically deleted
 
-    LocalRef<jobject> l2 = ...;
-    GlobalRef<jstring> g2(std::move(l2)); // Convert and create new global reference to jstring, automatically deleting local reference
-    \endcode
-
-    Caution:
-    \code
-    // Some JNI method returning local reference to jobject
-    jobject someJniMethod();
-
-    // Use with caution
-    GlobalRef<jobject> g(someJniMethod()); // !!! Local reference can be leaked if not garbage collected by java
-
-    // Use the following technique to avoid reference leak
-    GlobalRef<jobject> g(LocalRef<jobject>(someJniMethod()));
-    // or
-    LocalRef<jobject> l = someJniMethod();
-    GlobalRef<jobject> g(std::move(l));
+        LocalRef<jobject> l2 = ...;
+        GlobalRef<jstring> g2(std::move(l2)); // Convert and create new global reference to jstring, automatically deleting local reference
     \endcode
 */
 template <typename T, jobject (JNIEnv::*NewRef)(jobject), void (JNIEnv::*DeleteRef)(jobject)>
 struct ObjectRef
 {
+    // clang-format off
     static_assert(std::is_base_of<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>::value, "T must be jobject or jobject-based type");
+    static_assert(
+        (NewRef == &JNIEnv::NewGlobalRef && DeleteRef == &JNIEnv::DeleteGlobalRef) ||
+        (NewRef == &JNIEnv::NewLocalRef && DeleteRef == &JNIEnv::DeleteLocalRef),
+        "NewRef and DeleteRef must be consistent");
+    // clang-format on
 
     using Type = T; //<! T, the jobject-related type managed by this `ObjectRef`
+
+    static const bool isGlobalRef = NewRef == &JNIEnv::NewGlobalRef && DeleteRef == &JNIEnv::DeleteGlobalRef;
 
     ObjectRef() = default;
 
     /** Constructor that takes ownership of object that is the same type as T. */
     ObjectRef(T obj)
-        : object(obj)
+        : object(Assign(obj))
     {
     }
 
     /** Constructor that takes ownership of object that is the convertible to T. */
     template <typename Other>
     ObjectRef(Other obj)
-        : object(obj)
+        : ObjectRef(static_cast<T>(obj))
     {
     }
 
@@ -208,7 +212,7 @@ struct ObjectRef
         if (object != obj)
         {
             Release();
-            object = obj;
+            object = Assign(obj);
         }
         return *this;
     }
@@ -225,6 +229,40 @@ struct ObjectRef
     }
 
 private:
+    T Assign(T obj)
+    {
+        T result = nullptr;
+        if (obj != nullptr)
+        {
+            jobjectRefType otherType = GetEnv()->GetObjectRefType(obj);
+            DVASSERT(otherType == JNILocalRefType || otherType == JNIGlobalRefType);
+            if (isGlobalRef)
+            {
+                if (otherType == JNILocalRefType)
+                {
+                    result = Retain(obj);
+                    GetEnv()->DeleteLocalRef(obj);
+                }
+                else if (otherType == JNIGlobalRefType)
+                {
+                    result = obj;
+                }
+            }
+            else
+            {
+                if (otherType == JNILocalRefType)
+                {
+                    result = obj;
+                }
+                else if (otherType == JNIGlobalRefType)
+                {
+                    result = Retain(obj);
+                }
+            }
+        }
+        return result;
+    }
+
     template <typename U>
     T Retain(U obj)
     {
