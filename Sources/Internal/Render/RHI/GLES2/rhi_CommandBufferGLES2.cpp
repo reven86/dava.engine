@@ -603,6 +603,8 @@ void CommandBufferGLES2_t::Execute()
                     }
                 }
 
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
+
                 if (apply_fb)
                 {
                     Handle ds = (passCfg.UsingMSAA()) ? passCfg.depthStencilBuffer.multisampleTexture : passCfg.depthStencilBuffer.texture;
@@ -642,14 +644,14 @@ void CommandBufferGLES2_t::Execute()
 
                     if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
                     {
-                            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+                        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
                         GL_CALL(glStencilMask(0xFFFFFFFF));
                         GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
-                            #else
+                        #else
                         GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
                         GL_CALL(glStencilMask(0xFFFFFFFF));
                         GL_CALL(glClearStencil(0));
-                            #endif
+                        #endif
 
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
@@ -658,7 +660,6 @@ void CommandBufferGLES2_t::Execute()
                         GL_CALL(glClear(flags));
                 }
 
-                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
