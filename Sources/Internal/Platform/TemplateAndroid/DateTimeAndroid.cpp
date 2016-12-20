@@ -32,7 +32,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
     WideString result = JNI::ToWideString(obj);
 
     env->DeleteLocalRef(obj);
-    
+
     return result;
 }
 

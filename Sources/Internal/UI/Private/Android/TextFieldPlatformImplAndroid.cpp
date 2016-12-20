@@ -20,8 +20,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
-    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnFocusChange(JNIEnv* env, jclass jclazz, jlong backendPointer, jboolean hasFocus)
