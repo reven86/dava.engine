@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Project/Project.h"
-
 #include "Base/Introspection.h"
 #include "AssetCache/AssetCacheClient.h"
 
@@ -28,26 +26,29 @@ class EditorCore : public QObject, public DAVA::InspBase
 {
     Q_OBJECT
 public:
-    explicit EditorCore(DAVA::Engine& engine);
+    EditorCore();
 
     ~EditorCore();
 
     void OnRenderingInitialized();
 
+    MainWindow* GetMainWindow() const;
+    bool CanCloseProjectSilently() const;
+    QStringList GetUnsavedDocumentsNames() const;
+    void SaveAllDocuments();
+    bool CloseProject(bool force);
+
 signals:
     void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
-    bool TryCloseDocuments();
 
 private slots:
     void OnNewProject();
     void OnOpenProject();
     void OnCloseProject();
-    void OnExit();
     void OnShowHelp();
 
 private:
     void OpenProject(const QString& path);
-    bool CloseProject();
 
     bool IsUsingAssetCache() const;
     void SetUsingAssetCacheEnabled(bool enabled);
@@ -69,7 +70,9 @@ private:
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
     std::unique_ptr<Project> project;
-    std::unique_ptr<MainWindow> mainWindow;
+
+    //TArc is owner of mainWindow
+    MainWindow* mainWindow = nullptr;
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;

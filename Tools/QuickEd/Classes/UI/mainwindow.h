@@ -56,12 +56,9 @@ signals:
     void NewProject();
     void OpenProject();
     void CloseProject();
-    void Exit();
     void RecentProject(const QString& path);
 
     void ShowHelp();
-
-    bool CanClose();
 
     void EmulationModeChanged(bool emulationMode);
 
@@ -89,15 +86,7 @@ private:
 
     void UpdateWindowTitle();
 
-    void closeEvent(QCloseEvent* event) override;
-
     bool eventFilter(QObject* object, QEvent* event) override;
-
-    DAVA::String GetState() const;
-    void SetState(const DAVA::String& array);
-
-    DAVA::String GetGeometry() const;
-    void SetGeometry(const DAVA::String& array);
 
     DAVA::String GetConsoleState() const;
     void SetConsoleState(const DAVA::String& array);
@@ -129,8 +118,6 @@ private:
 public:
     INTROSPECTION(MainWindow,
                   PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
-                  PROPERTY("state", "MainWindowInternal/State", GetState, SetState, DAVA::I_PREFERENCE)
-                  PROPERTY("geometry", "MainWindowInternal/Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
                   PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };

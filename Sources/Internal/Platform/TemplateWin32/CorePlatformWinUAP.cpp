@@ -23,7 +23,7 @@ int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 //////////////////////////////////////////////////////////////////////////
 void CorePlatformWinUAP::InitArgs()
 {
-    SetCommandLine(WStringToString(::GetCommandLineW()));
+    SetCommandLine(UTF8Utils::EncodeToUTF8(::GetCommandLineW()));
 }
 
 void CorePlatformWinUAP::Run()
