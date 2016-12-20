@@ -1,9 +1,11 @@
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
 #include "Utils/StringUtils.h"
-#include "PluginManager/PluginManager.h"
+
 #include "PluginManager/Plugin.h"
 #include "ModuleManager/IModule.h"
+#include "PluginManager/PluginManager.h"
 
 namespace DAVA
 {
@@ -183,3 +185,5 @@ PluginManager::~PluginManager()
     DVASSERT(pluginDescriptors.empty());
 }
 }
+
+#endif __DAVAENGINE_COREV2__

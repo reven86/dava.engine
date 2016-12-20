@@ -4,7 +4,7 @@
 
 #define PLUGIN_FUNCTION_EXPORT __attribute__((visibility("default")))
 
-#elif defined(__DAVAENGINE_WIN32__) 
+#elif defined(__DAVAENGINE_WIN32__)  && !defined(__DAVAENGINE_WIN_UAP__)
 
 #define PLUGIN_FUNCTION_EXPORT __declspec(dllexport)
 
