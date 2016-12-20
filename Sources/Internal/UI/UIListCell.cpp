@@ -4,7 +4,7 @@
 namespace DAVA
 {
 UIListCell::UIListCell(const Rect& rect, const String& cellIdentifier)
-    : UIButton(rect)
+    : UIControl(rect)
     , currentIndex(-1)
     , identifier(cellIdentifier)
     , cellStore(NULL)
@@ -39,7 +39,7 @@ UIListCell* UIListCell::Clone()
 
 void UIListCell::CopyDataFrom(UIControl* srcControl)
 {
-    UIButton::CopyDataFrom(srcControl);
+    UIControl::CopyDataFrom(srcControl);
     UIListCell* srcListCell = static_cast<UIListCell*>(srcControl);
     identifier = srcListCell->identifier;
 }
