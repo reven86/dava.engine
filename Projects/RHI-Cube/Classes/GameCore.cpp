@@ -2027,24 +2027,24 @@ void GameCore::mrtDraw()
 
         // target-0
         {
-        world = Matrix4::MakeRotation(Vector3(0, 1, 0), (30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
-        world.SetTranslationVector(Vector3(-2, -1.5, 15));
+            world = Matrix4::MakeRotation(Vector3(0, 1, 0), (30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+            world.SetTranslationVector(Vector3(-2, -1.5, 15));
 
-        view_proj.Identity();
-        view_proj.BuildProjectionFovLH(75.0f, ratio, 1.0f, 1000.0f);
+            view_proj.Identity();
+            view_proj.BuildProjectionFovLH(75.0f, ratio, 1.0f, 1000.0f);
 
-        rhi::ConstBuffer::SetConst(rtQuad.vp_const[0], 0, 4, view_proj.data);
-        rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+            rhi::ConstBuffer::SetConst(rtQuad.vp_const[0], 0, 4, view_proj.data);
+            rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
 
-        rhi::AddPacket(pl, rtQuadBatch0);
+            rhi::AddPacket(pl, rtQuadBatch0);
         }
 
         // target-1
         {
-        world = Matrix4::MakeRotation(Vector3(0, 1, 0), (-30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
-        world.SetTranslationVector(Vector3(2, -1.5, 15));
-        rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
-        rhi::AddPacket(pl, rtQuadBatch1);
+            world = Matrix4::MakeRotation(Vector3(0, 1, 0), (-30.0f * 3.1415f / 180.0f)) * Matrix4::MakeScale(Vector3(ratio, 1, 1));
+            world.SetTranslationVector(Vector3(2, -1.5, 15));
+            rhi::ConstBuffer::SetConst(rtQuad.vp_const[1], 0, 4, world.data);
+            rhi::AddPacket(pl, rtQuadBatch1);
         }
 
         // target-2

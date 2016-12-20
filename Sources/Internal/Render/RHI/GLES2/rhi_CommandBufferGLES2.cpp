@@ -660,7 +660,6 @@ void CommandBufferGLES2_t::Execute()
                         GL_CALL(glClear(flags));
                 }
 
-
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
         }
