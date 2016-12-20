@@ -140,7 +140,11 @@ void UIScrollBarLinkSystem::LinkScrollBar(UIScrollBarDelegateComponent* componen
 {
     if (!RestoreLink(Link::SCROLL_BAR_LINKED, [component](const Link& l) { return l.component == component; }))
     {
-        links.push_back(Link(component));
+        UIScrollBar* scrollBar = dynamic_cast<UIScrollBar*>(component->GetControl());
+        if (scrollBar != nullptr)
+        {
+            links.push_back(Link(component));
+        }
     }
 }
 
