@@ -186,4 +186,4 @@ PluginManager::~PluginManager()
 }
 }
 
-#endif __DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_COREV2__
