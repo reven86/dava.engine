@@ -1,11 +1,10 @@
 #include "FindWidget.h"
 
-#include <QStandardItem>
+#include <QtConcurrent>
 
 #include "Document/Document.h"
 #include "Project/Project.h"
 #include "UI/Find/Finder.h"
-#include "QtTools/Utils/QtThread.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "UI/UIControl.h"
@@ -31,7 +30,7 @@ FindWidget::~FindWidget()
 
 void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {
-    if (thread == nullptr)
+    if (finder == nullptr)
     {
         model->removeRows(0, model->rowCount());
         setVisible(true);
@@ -39,27 +38,25 @@ void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 
         if (project != nullptr)
         {
-            thread = new QtThread;
             QStringList files = project->GetFileSystemCache()->GetFiles("yaml");
-            Finder* finder = new Finder(files, std::move(filter), &(project->GetPrototypes()));
-            finder->moveToThread(thread);
+            finder = new Finder(files, std::move(filter), &(project->GetPrototypes()));
 
-            connect(thread, &QtThread::started, finder, &Finder::Process);
-            connect(thread, &QtThread::finished, this, &FindWidget::OnFindFinished);
-
-            connect(finder, &Finder::Finished, thread, &QtThread::quit);
-            connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
             connect(finder, &Finder::ProgressChanged, this, &FindWidget::OnProgressChanged, Qt::QueuedConnection);
+            connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
+            connect(finder, &Finder::Finished, this, &FindWidget::OnFindFinished, Qt::QueuedConnection);
 
-            connect(this, &FindWidget::StopAll, finder, &Finder::Cancel, Qt::DirectConnection);
-            thread->start();
+            QtConcurrent::run([this]() { finder->Process(); });
         }
     }
 }
 
 void FindWidget::OnProjectChanged(Project* project_)
 {
-    emit StopAll();
+    if (finder)
+    {
+        finder->Stop();
+    }
+
     project = project_;
     model->removeRows(0, model->rowCount());
 }
@@ -89,8 +86,12 @@ void FindWidget::OnProgressChanged(int filesProcessed, int totalFiles)
 
 void FindWidget::OnFindFinished()
 {
-    delete thread;
-    thread = nullptr;
+    if (finder)
+    {
+        finder->deleteLater();
+        finder = nullptr;
+    }
+
     this->setWindowTitle(QString("Find - Finished"));
 }
 

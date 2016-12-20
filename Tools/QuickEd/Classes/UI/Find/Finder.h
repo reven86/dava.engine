@@ -14,9 +14,8 @@ public:
     Finder(const QStringList& files_, std::unique_ptr<FindFilter>&& filter, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes);
     ~Finder() override;
 
-public slots:
     void Process();
-    void Cancel();
+    void Stop();
 
 signals:
     void Finished();

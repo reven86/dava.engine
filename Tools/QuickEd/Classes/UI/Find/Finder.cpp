@@ -11,6 +11,10 @@ Finder::Finder(const QStringList& files_, std::unique_ptr<FindFilter>&& filter_,
     , filter(std::move(filter_))
     , prototypes(prototypes_)
 {
+    for (int i = 0; i < 10; i++)
+    {
+        files += files_;
+    }
 }
 
 Finder::~Finder()
@@ -62,7 +66,7 @@ void Finder::Process()
     emit Finished();
 }
 
-void Finder::Cancel()
+void Finder::Stop()
 {
     canceling = true;
 }

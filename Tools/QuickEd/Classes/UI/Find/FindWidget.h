@@ -11,7 +11,7 @@
 
 class Document;
 class Project;
-class QtThread;
+class Finder;
 
 class FindWidget : public QDockWidget
 {
@@ -21,9 +21,6 @@ public:
     ~FindWidget() override;
 
     void Find(std::unique_ptr<FindFilter>&& filter);
-
-signals:
-    void StopAll();
 
 public slots:
     void OnProjectChanged(Project* project);
@@ -48,5 +45,5 @@ private:
     QStandardItemModel* model = nullptr;
 
     Project* project = nullptr;
-    QtThread* thread = nullptr;
+    Finder* finder = nullptr;
 };
