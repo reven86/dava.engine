@@ -1,14 +1,17 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+
+@class NSObject;
+@class NSNotification;
 
 @class FrameTimer;
 @class AppDelegate;
@@ -35,7 +38,7 @@ struct CoreNativeBridge final
 
     // Callbacks from OsXAppDelegate
     void ApplicationWillFinishLaunching();
-    void ApplicationDidFinishLaunching();
+    void ApplicationDidFinishLaunching(NSNotification* notification);
     void ApplicationDidChangeScreenParameters();
     void ApplicationDidBecomeActive();
     void ApplicationDidResignActive();
@@ -45,10 +48,28 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate();
 
+    void RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
+    void UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
+
+    enum eNotificationType
+    {
+        ON_DID_FINISH_LAUNCHING,
+        ON_DID_BECOME_ACTIVE,
+        ON_DID_RESIGN_ACTIVE,
+        ON_WILL_TERMINATE,
+        ON_DID_RECEIVE_REMOTE_NOTIFICATION,
+        ON_DID_REGISTER_REMOTE_NOTIFICATION,
+        ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION,
+    };
+    void NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3);
+
     PlatformCore* core = nullptr;
 
     AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;
+
+    Mutex listenersMutex;
+    List<PlatformApi::Mac::NSApplicationDelegateListener*> appDelegateListeners;
 
     bool quitSent = false;
     bool closeRequestByApp = false;

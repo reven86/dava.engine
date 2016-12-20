@@ -3,7 +3,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "UI/UIButton.h"
 
 namespace DAVA
 {
@@ -44,15 +43,15 @@ public:
     }
     void SetIsLeftSelected(bool aIsLeftSelected);
 
-    UIButton* GetButtonNext() const
+    UIControl* GetButtonNext() const
     {
         return buttonLeft.Get();
     }
-    UIButton* GetButtonPrevious() const
+    UIControl* GetButtonPrevious() const
     {
         return buttonRight.Get();
     }
-    UIButton* GetToggle() const
+    UIControl* GetToggle() const
     {
         return toggle.Get();
     }
@@ -74,13 +73,15 @@ protected:
     void InitControls();
     void ReleaseControls();
 
-    float32 GetToggleUttermostPosition();
+    float32 GetToggleUttermostPosition() const;
+    float32 GetToggleLeftPosition() const;
+    float32 GetToggleRightPosition() const;
     void CheckToggleSideChange(UIEvent* inputEvent = NULL);
     void ChangeVisualState();
 
-    RefPtr<UIButton> buttonLeft;
-    RefPtr<UIButton> buttonRight;
-    RefPtr<UIButton> toggle;
+    RefPtr<UIControl> buttonLeft;
+    RefPtr<UIControl> buttonRight;
+    RefPtr<UIControl> toggle;
 
     // Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
