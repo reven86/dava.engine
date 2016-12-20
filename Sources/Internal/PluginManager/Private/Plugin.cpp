@@ -59,7 +59,6 @@ void* LoadFunction(PluginHandle handle, const char* funcName)
 
 void ClosePlugin(PluginHandle handle)
 {
-    dlclose(handle);
 }
  
 #endif
