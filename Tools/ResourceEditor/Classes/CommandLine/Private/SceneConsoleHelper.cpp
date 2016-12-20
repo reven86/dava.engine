@@ -40,7 +40,7 @@ DAVA::FilePath CreateQualityPathname(const DAVA::FilePath& qualityPathname, cons
     DAVA::String::size_type pos = fullPath.find("/Data");
     if (pos != DAVA::String::npos)
     {
-        return (fullPath.substr(0, pos) + "/Data/quality.yaml");
+        return (fullPath.substr(0, pos) + "/DataSource/quality.yaml");
     }
 
     return DAVA::FilePath();

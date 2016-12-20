@@ -102,17 +102,26 @@ void DlcTest::LoadResources()
     ver->SetFont(font);
     ver->SetMultiline(false);
     ver->SetTextAlign(ALIGN_LEFT);
-    ver->SetText(L"Game Veision :");
+    ver->SetText(L"Game Version, GPU:");
     AddControl(ver);
     SafeRelease(ver);
 
     gameVersionIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W + SPACE, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
     gameVersionIn->SetDebugDraw(true);
     String gameVer = options->GetString(gameVersion, defaultGameVersion);
-    gameVersionIn->SetText(StringToWString(gameVer));
+    gameVersionIn->SetText(UTF8Utils::EncodeToWideString(gameVer));
     gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
     gameVersionIn->SetDelegate(this);
+    gameVersionIn->SetFont(font);
     AddControl(gameVersionIn);
+
+    gpuIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W * 2 + SPACE * 2, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
+    gpuIn->SetDebugDraw(true);
+    gpuIn->SetText(UTF8Utils::EncodeToWideString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
+    gpuIn->GetOrCreateComponent<UIFocusComponent>();
+    gpuIn->SetDelegate(this);
+    gpuIn->SetFont(font);
+    AddControl(gpuIn);
 
     //=========================
 
@@ -150,7 +159,7 @@ void DlcTest::LoadResources()
 
     uint64 spd = options->GetUInt64(downloadSpeed, 0);
     String spdStr(Format("%lld", spd));
-    dlSpeedIn->SetText(StringToWString(spdStr));
+    dlSpeedIn->SetText(UTF8Utils::EncodeToWideString(spdStr));
     dlSpeedIn->GetOrCreateComponent<UIFocusComponent>();
     dlSpeedIn->SetDelegate(this);
     AddControl(dlSpeedIn);
@@ -178,9 +187,8 @@ void DlcTest::LoadResources()
     //=========================
 
     staticText = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y, WIDTH - 2 * BUTTON_H, BUTTON_H));
-    staticText->SetFont(font);
+    staticText->SetFont(fontSmall);
     staticText->SetTextColor(Color::White);
-    staticText->SetDebugDraw(true);
     staticText->SetText(L"Press Start ...");
     AddControl(staticText);
 
@@ -201,32 +209,35 @@ void DlcTest::LoadResources()
 
     //=========================
 
-    UIButton* startButton = new UIButton(Rect(LEFT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
+    startButton = new UIButton(Rect(LEFT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
     startButton->SetStateFont(0xFF, font);
     startButton->SetStateFontColor(0xFF, Color::White);
-    startButton->SetStateText(0xFF, L"Start download");
+    startButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    startButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    startButton->SetStateText(0xFF, L"Start");
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Start));
     AddControl(startButton);
-    SafeRelease(startButton);
 
-    UIButton* cancelButton = new UIButton(Rect(RIGHT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
+    cancelButton = new UIButton(Rect(RIGHT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
     cancelButton->SetStateFont(0xFF, font);
     cancelButton->SetStateFontColor(0xFF, Color::White);
-    cancelButton->SetStateText(0xFF, L"Cancel download");
+    cancelButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    cancelButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    cancelButton->SetStateText(0xFF, L"Cancel");
     cancelButton->SetDebugDraw(true);
     cancelButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Cancel));
     AddControl(cancelButton);
-    SafeRelease(cancelButton);
 
-    UIButton* restartButton = new UIButton(Rect(LEFT_COLUMN_X, START_CANCEL_Y + BUTTON_H + SPACE, WIDTH, BUTTON_H));
-    restartButton->SetStateFont(0xFF, font);
-    restartButton->SetStateFontColor(0xFF, Color::White);
-    restartButton->SetStateText(0xFF, L"Restart DLC");
-    restartButton->SetDebugDraw(true);
-    restartButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Restart));
-    AddControl(restartButton);
-    SafeRelease(restartButton);
+    clearButton = new UIButton(Rect(RIGHT_COLUMN_X, START_CANCEL_Y + BUTTON_H + SPACE, BUTTON_W, BUTTON_H));
+    clearButton->SetStateFont(0xFF, font);
+    clearButton->SetStateFontColor(0xFF, Color::White);
+    clearButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    clearButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    clearButton->SetStateText(0xFF, L"Clear");
+    clearButton->SetDebugDraw(true);
+    clearButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Clear));
+    AddControl(clearButton);
 
     DAVA::FilePath::AddResourcesFolder(destinationDir);
 
@@ -234,13 +245,7 @@ void DlcTest::LoadResources()
     crashTest.Init(workingDir, destinationDir);
 #endif
 
-    FileSystem::Instance()->CreateDirectory(workingDir);
-    FileSystem::Instance()->CreateDirectory(destinationDir);
-    String url = options->GetString(currentDownloadUrl, localServerUrl);
-    String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
-    dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
-
-    lastDLCState = dlc->GetState();
+    lastDLCState = DLC::DS_DONE;
 
     SafeRelease(font);
     SafeRelease(fontSmall);
@@ -249,16 +254,19 @@ void DlcTest::LoadResources()
 void DlcTest::UpdateInfoStr()
 {
     infoStr = L"DLCWorkingDir: ";
-    infoStr += StringToWString(workingDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(workingDir.GetAbsolutePathname());
     infoStr += L"\nResourcesDir: ";
-    infoStr += StringToWString(destinationDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(destinationDir.GetAbsolutePathname());
     infoStr += L"\nURL: ";
     DAVA::String url = options->GetString(currentDownloadUrl, localServerUrl);
-    infoStr += StringToWString(url);
+    infoStr += UTF8Utils::EncodeToWideString(url);
     infoStr += L"\nDownloading threads count: ";
     uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
-    infoStr += StringToWString(Format("%d", currentThreadsCount));
-    infoStr += StringToWString(Format("\nSpeedLimit %d", 0));
+    infoStr += UTF8Utils::EncodeToWideString(Format("%d", currentThreadsCount));
+    infoStr += UTF8Utils::EncodeToWideString(Format("\nSpeedLimit %d", 0));
+
+    infoStr += L"\nGPU: ";
+    infoStr += UTF8Utils::EncodeToWideString(Format("%s", GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily()).c_str()));
 
     if (nullptr != infoText)
     {
@@ -275,12 +283,20 @@ void DlcTest::UnloadResources()
 
     SafeRelease(dlSpeedIn);
     SafeRelease(gameVersionIn);
+    SafeRelease(gpuIn);
     SafeRelease(infoText);
     SafeRelease(staticText);
     SafeRelease(progressStatistics);
     SafeRelease(animControl);
+
     dlc->Cancel();
     SafeDelete(dlc);
+
+    SafeRelease(startButton);
+    SafeRelease(cancelButton);
+    SafeRelease(clearButton);
+
+    DeviceInfo::SetOverridenGPU(GPU_INVALID);
 }
 
 void DlcTest::OnActive()
@@ -301,7 +317,24 @@ void DlcTest::Update(float32 timeElapsed)
         dlc->GetProgress(cur, total);
         DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
         String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
-        progressStatistics->SetText(StringToWString(statText));
+        progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
+
+        if (nullptr != dlc)
+        {
+            dlc->GetProgress(cur, total);
+
+            if (dlc->GetState() == DLC::DS_DOWNLOADING)
+            {
+                DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
+                String statText = Format("%lld(%lld) Kb, %lld Kb/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
+            }
+            else
+            {
+                String statText = Format("%lld(%lld)", cur, total);
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
+            }
+        }
 
         // update animation
         angle += 0.10f;
@@ -311,12 +344,6 @@ void DlcTest::Update(float32 timeElapsed)
 
         // update progress control
         Rect r = staticText->GetRect();
-
-        if (nullptr == dlc)
-        {
-            return;
-        }
-
         if (r.dx > 0)
         {
             float32 w = 0;
@@ -326,11 +353,6 @@ void DlcTest::Update(float32 timeElapsed)
             case DLC::DS_DOWNLOADING:
             case DLC::DS_PATCHING:
             {
-                uint64 cur = 0;
-                uint64 total = 0;
-
-                dlc->GetProgress(cur, total);
-
                 if (total > 0)
                 {
                     w = cur * r.dx / total;
@@ -355,7 +377,15 @@ void DlcTest::Update(float32 timeElapsed)
         }
     }
 
-    uint32 dlcState = dlc->GetState();
+    uint32 dlcState = lastDLCState;
+    uint32 dlcError = DLC::DE_NO_ERROR;
+
+    if (nullptr != dlc)
+    {
+        dlcState = dlc->GetState();
+        dlcError = dlc->GetError();
+    }
+
     if (lastDLCState != dlcState)
     {
         lastDLCState = dlcState;
@@ -384,13 +414,13 @@ void DlcTest::Update(float32 timeElapsed)
             staticText->SetText(L"Canceling...");
             break;
         case DLC::DS_DONE:
-            if (dlc->GetError() == DLC::DE_NO_ERROR)
+            if (dlcError == DLC::DE_NO_ERROR)
             {
-                staticText->SetText(L"Done!");
+                staticText->SetText(L"Done, OK!");
             }
             else
             {
-                DAVA::String errorText = DAVA::Format("Error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetError()));
+                DAVA::String errorText = DAVA::Format("Done, error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetError()));
                 DAVA::WideString wErrorText;
                 DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)errorText.c_str(), errorText.size(), wErrorText);
                 staticText->SetText(wErrorText);
@@ -399,6 +429,20 @@ void DlcTest::Update(float32 timeElapsed)
         default:
             break;
         }
+    }
+
+    if (nullptr != startButton && nullptr != cancelButton)
+    {
+        bool isDone = dlcState == DLC::DS_DONE;
+
+        startButton->SetDisabled(!isDone);
+        startButton->SetInputEnabled(isDone);
+
+        clearButton->SetDisabled(!isDone);
+        clearButton->SetInputEnabled(isDone);
+
+        cancelButton->SetDisabled(isDone);
+        cancelButton->SetInputEnabled(!isDone);
     }
 
 #ifdef DLC_TEST
@@ -414,12 +458,12 @@ void DlcTest::TextFieldOnTextChanged(UITextField* textField, const WideString& n
 {
     if (gameVersionIn == textField)
     {
-        options->SetString(gameVersion, WStringToString(newText));
+        options->SetString(gameVersion, UTF8Utils::EncodeToUTF8(newText));
     }
 
     if (dlSpeedIn == textField)
     {
-        uint64 speedLimit = std::atoi(WStringToString(newText).c_str());
+        uint64 speedLimit = std::atoi(UTF8Utils::EncodeToUTF8(newText).c_str());
         options->SetUInt64(downloadSpeed, speedLimit);
     }
 }
@@ -462,47 +506,40 @@ void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
 
 void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
 {
-    staticText->SetText(L"Starting DLC...");
     options->SaveToYamlFile(optionsPath);
 
+    if (nullptr != dlc)
+    {
+        dlc->Cancel();
+        SafeDelete(dlc);
+    }
+
+    FileSystem::Instance()->CreateDirectory(workingDir);
+    FileSystem::Instance()->CreateDirectory(destinationDir);
+
+    String url = options->GetString(currentDownloadUrl, localServerUrl);
+    String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
+    dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
+
+    lastDLCState = dlc->GetState();
+
+    DeviceInfo::SetOverridenGPU(GPUFamilyDescriptor::GetGPUByName(UTF8Utils::EncodeToUTF8(gpuIn->GetText())));
+
+    staticText->SetText(L"Starting DLC...");
     dlc->Start();
 }
 
 void DlcTest::Cancel(BaseObject* obj, void* data, void* callerData)
 {
-    staticText->SetText(L"Cancelling DLC...");
-
+    staticText->SetText(L"Canceling DLC...");
     dlc->Cancel();
 }
 
-void DlcTest::Restart(BaseObject* obj, void* data, void* callerData)
+void DlcTest::Clear(BaseObject* obj, void* data, void* callerData)
 {
-    volatile static bool isRestarting = false;
-    if (!isRestarting)
-    {
-        staticText->SetText(L"Restarting DLC...");
-
-        isRestarting = true;
-        dlc->Cancel();
-
-        FileSystem::Instance()->DeleteDirectory(workingDir);
-        FileSystem::Instance()->DeleteDirectory(sourceDir);
-        FileSystem::Instance()->DeleteDirectory(destinationDir);
-
-        SafeDelete(dlc);
-
-        FileSystem::Instance()->CreateDirectory(workingDir);
-        FileSystem::Instance()->CreateDirectory(destinationDir);
-
-        String url = options->GetString(currentDownloadUrl, localServerUrl);
-        String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
-        dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
-
-        lastDLCState = dlc->GetState();
-
-        Start(obj, data, callerData);
-        isRestarting = false;
-    }
+    FileSystem::Instance()->DeleteDirectory(workingDir);
+    FileSystem::Instance()->DeleteDirectory(sourceDir);
+    FileSystem::Instance()->DeleteDirectory(destinationDir);
 }
 
 void DLCCrashTest::Init(const DAVA::FilePath& workingDir, const DAVA::FilePath& destinationDir)

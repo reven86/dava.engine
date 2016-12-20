@@ -54,7 +54,7 @@ void TextDrawSystem::Draw()
     {
         for (const auto& textToDraw : textToDraw)
         {
-            WideString wStr = StringToWString(textToDraw.text);
+            WideString wStr = UTF8Utils::EncodeToWideString(textToDraw.text);
             vertices.resize(4 * wStr.length());
 
             float32 x = textToDraw.pos.x;

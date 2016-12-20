@@ -21,7 +21,7 @@ class SceneManagerModule : public DAVA::TArc::ControllerModule, private SceneRen
 {
 protected:
     void OnRenderSystemInitialized(DAVA::Window* w) override;
-    bool CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key) override;
+    bool CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText) override;
     bool ControlWindowClosing(const DAVA::TArc::WindowKey& key, QCloseEvent* event) override;
     void SaveOnWindowClose(const DAVA::TArc::WindowKey& key) override;
     void RestoreOnWindowClose(const DAVA::TArc::WindowKey& key) override;

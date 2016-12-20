@@ -62,11 +62,20 @@
  name: "Textured Alphablend with Alphamask"
  path: Textured.Alphablend.Alphamask.material
 -
+ name: "Textured Alphablend with Flowmap"
+ path: Textured.Alphablend.Flowmap.material 
+-
+ name: "Textured Alphablend with Flowmap and Alphamask"
+ path: Textured.Alphablend.Flowmap.Alphamask.material 
+-
  name: "Textured Alphatest"
  path: Textured.Alphatest.material
 -
  name: "Textured Opaque"
  path: Textured.Opaque.material
+-
+ name: "Textured Opaque with Flowmap"
+ path: Textured.Opaque.Flowmap.material
 -
  name: "Textured VertexColor Alphatest"
  path: Textured.VertexColor.Alphatest.material
@@ -106,6 +115,9 @@
 -
  name: "Skyobject"
  path: Skyobject.material
+-
+ name: "Skyobject Flowmap"
+ path: Skyobject.Flowmap.material
 -
  name: "Landscape AllQualities"
  path: TileMaskAllQualities.material

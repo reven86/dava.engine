@@ -10,7 +10,10 @@ import android.widget.FrameLayout;
 import java.util.LinkedList;
 import java.util.List;
 
-class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListener
+import android.util.Log;
+
+class DavaKeyboardState extends DavaActivity.ActivityListenerImpl
+                        implements ViewTreeObserver.OnGlobalLayoutListener
 {
     public interface KeyboardStateListener
     {
@@ -24,7 +27,9 @@ class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListener
     private Rect keyboardRect = new Rect();
     private List<KeyboardStateListener> listeners = new LinkedList<KeyboardStateListener>();
 
-    void start()
+    // DavaActivity.ActivityListener interface
+    @Override
+    public void onResume()
     {
         if (layout == null)
         {
@@ -50,7 +55,8 @@ class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListener
         }
     }
 
-    void stop()
+    @Override
+    public void onPause()
     {
         if (layout != null)
         {

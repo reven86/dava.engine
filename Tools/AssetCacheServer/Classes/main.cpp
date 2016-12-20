@@ -27,7 +27,7 @@ int Process(Engine& e)
 
     QApplication a(argc, argv.data());
 
-    EngineContext* context = e.GetContext();
+    const EngineContext* context = e.GetContext();
     context->logger->SetLogFilename("AssetCacheServer.txt");
     context->logger->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
@@ -78,7 +78,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
     e.update.Connect([&e](float32)
                      {
                          int result = Process(e);
-                         e.Quit(result);
+                         e.QuitAsync(result);
                      });
 
     return e.Run();

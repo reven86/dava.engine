@@ -113,7 +113,6 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnCreated();
-    Q_SLOT void OnInitialize();
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void OnSceneGraphInvalidated();

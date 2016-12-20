@@ -448,11 +448,7 @@ bool OnInput(UIEvent* input)
 
     DAVA::VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     Vector2 physPoint = vcs->ConvertVirtualToPhysical(vcs->ConvertInputToVirtual(input->physPoint));
-#if defined(__DAVAENGINE_COREV2__)
     int32 mouseButton = (input->device == DAVA::eInputDevices::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
-#else
-    int32 mouseButton = (input->device == UIEvent::Device::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
-#endif
 
     switch (input->phase)
     {

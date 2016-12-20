@@ -3,7 +3,7 @@
 #include "mongodb/mongo.h"
 #include "mongodb/gridfs.h"
 
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
 
 #include "FileSystem/KeyedArchive.h"
@@ -488,9 +488,9 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
             time_t rawTime = static_cast<time_t>(bson_iterator_date(&it) / oneSecond);
             tm tms = { 0 };
 #if defined(__DAVAENGINE_WINDOWS__)
-            localtime_s(&tms, &rawTime);
+            gmtime_s(&tms, &rawTime);
 #else // __DAVAENGINE_WINDOWS__
-            localtime_r(&rawTime, &tms);
+            gmtime_r(&rawTime, &tms);
 #endif // __DAVAENGINE_WINDOWS__
             Array<char8, 50> buf = { { 0 } };
             strftime(buf.data(), buf.size(), "%d.%b.%Y_%H-%M-%S", &tms);
@@ -573,7 +573,7 @@ void MongodbClient::WriteData(MongodbObject* mongoObj, const String& key, Varian
         break;
         case VariantType::TYPE_WIDE_STRING:
         {
-            mongoObj->AddString(key, WStringToString(value->AsWideString()));
+            mongoObj->AddString(key, UTF8Utils::EncodeToUTF8(value->AsWideString()));
         }
         break;
         case VariantType::TYPE_BYTE_ARRAY:

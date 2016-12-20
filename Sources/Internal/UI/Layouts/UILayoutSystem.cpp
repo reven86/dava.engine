@@ -14,6 +14,8 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 #include "Concurrency/Thread.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -78,6 +80,8 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
 
     CollectControls(control, true);
 
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
+
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
 
@@ -91,6 +95,8 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     CollectControls(control, false);
+
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);

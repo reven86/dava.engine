@@ -77,7 +77,7 @@ public:
         model->activeTab = current->GetID();
     }
 
-    void PostInitImpl()
+    void PostInitImpl() override
     {
         GetAccessor()->GetGlobalContext()->CreateData(std::make_unique<TabsModel>());
 
@@ -94,6 +94,10 @@ class TestProxy
 public:
     TestProxy(DAVA::TArc::TestClass* tstClass)
         : testClass(tstClass)
+    {
+    }
+
+    virtual ~TestProxy()
     {
     }
 
@@ -128,7 +132,7 @@ public:
         TEST_VERIFY(updateCount < updateLimit);
     }
 
-    bool IsCompleted()
+    bool IsCompleted() override
     {
         QList<QWidget*> w = testClass->LookupWidget(wndKey, tabbarObjectName);
         TEST_VERIFY(w.size() == 1);
@@ -178,7 +182,7 @@ public:
         TEST_VERIFY(updateCount < updateLimit);
     }
 
-    bool IsCompleted()
+    bool IsCompleted() override
     {
         QList<QWidget*> w = testClass->LookupWidget(wndKey, tabbarObjectName);
         TEST_VERIFY(w.size() == 1);
