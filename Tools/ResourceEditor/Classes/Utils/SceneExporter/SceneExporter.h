@@ -23,6 +23,7 @@ public:
         OBJECT_SCENE = 0,
         OBJECT_TEXTURE,
         OBJECT_HEIGHTMAP,
+        OBJECT_EMITTER_CONFIG,
 
         OBJECT_COUNT
     };
@@ -68,6 +69,7 @@ private:
     bool ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
     bool ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
     bool ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
+    bool ExportEmitterConfigFile(const DAVA::FilePath& configPathname, const DAVA::String& configLink);
 
     bool ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 

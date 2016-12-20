@@ -38,7 +38,7 @@ void UpdateFormatInfo(PixelFormat format, UIStaticText* formatName, UIStaticText
     }
 
     const PixelFormatDescriptor& descriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
-    formatName->SetText(StringToWString(descriptor.name.c_str()));
+    formatName->SetText(UTF8Utils::EncodeToWideString(descriptor.name.c_str()));
 
     if (format == FORMAT_DXT1A)
     {
