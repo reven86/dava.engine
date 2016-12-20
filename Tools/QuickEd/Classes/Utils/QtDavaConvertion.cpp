@@ -103,38 +103,38 @@ QString VariantToQString(const VariantType& val, const InspMember* memberInfo)
     case VariantType::TYPE_UINT16:
         return QVariant(val.AsUInt16()).toString();
     case VariantType::TYPE_INT32:
+    {
+        const InspDesc& memberInspDesc = memberInfo->Desc();
+        if (memberInspDesc.type == InspDesc::T_ENUM)
         {
-            const InspDesc& memberInspDesc = memberInfo->Desc();
-            if (memberInspDesc.type == InspDesc::T_ENUM)
-            {
-                int32 e = val.AsInt32();
-                return QString::fromStdString(memberInspDesc.enumMap->ToString(e));
-            }
-            else if (memberInfo->Desc().type == InspDesc::T_FLAGS)
-            {
-                int32 e = val.AsInt32();
-                QString res = "";
-                int p = 0;
-                while (e)
-                {
-                    if ((e & 0x01) != 0)
-                    {
-                        if (!res.isEmpty())
-                            res += " | ";
-
-                        const int32 enumValue = 1 << p;
-                        res += QString::fromStdString(memberInspDesc.enumMap->ToString(enumValue));
-                    }
-                    p++;
-                    e >>= 1;
-                }
-                return res;
-            }
-            else
-            {
-                return QVariant(val.AsInt32()).toString();
-            }
+            int32 e = val.AsInt32();
+            return QString::fromStdString(memberInspDesc.enumMap->ToString(e));
         }
+        else if (memberInfo->Desc().type == InspDesc::T_FLAGS)
+        {
+            int32 e = val.AsInt32();
+            QString res = "";
+            int p = 0;
+            while (e)
+            {
+                if ((e & 0x01) != 0)
+                {
+                    if (!res.isEmpty())
+                        res += " | ";
+
+                    const int32 enumValue = 1 << p;
+                    res += QString::fromStdString(memberInspDesc.enumMap->ToString(enumValue));
+                }
+                p++;
+                e >>= 1;
+            }
+            return res;
+        }
+        else
+        {
+            return QVariant(val.AsInt32()).toString();
+        }
+    }
 
     case VariantType::TYPE_UINT32:
         return QVariant(val.AsUInt32()).toString();
