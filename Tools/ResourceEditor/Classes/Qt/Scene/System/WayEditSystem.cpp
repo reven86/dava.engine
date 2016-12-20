@@ -280,7 +280,6 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
                 return false;
             }
 
-            SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
             DAVA::Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if (currentWayParent == nullptr)
             {

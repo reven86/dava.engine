@@ -272,9 +272,9 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
     return err;
 }
 
-void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 componentFlags, DAVA::uint32 processFlags, DAVA::SceneSystem* insertBeforeSceneForProcess)
+void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 componentFlags, DAVA::uint32 processFlags, DAVA::SceneSystem* insertBeforeSceneForProcess, DAVA::SceneSystem* insertBeforeSceneForInput)
 {
-    Scene::AddSystem(sceneSystem, componentFlags, processFlags, insertBeforeSceneForProcess);
+    Scene::AddSystem(sceneSystem, componentFlags, processFlags, insertBeforeSceneForProcess, insertBeforeSceneForInput);
 
     EditorSceneSystem* editorSystem = dynamic_cast<EditorSceneSystem*>(sceneSystem);
     if (editorSystem != nullptr)

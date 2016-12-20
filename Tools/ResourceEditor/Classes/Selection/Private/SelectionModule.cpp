@@ -24,7 +24,7 @@ void SelectionModule::OnContextCreated(DAVA::TArc::DataContext* context)
 
     std::unique_ptr<SelectionData> selectionData = std::make_unique<SelectionData>();
     selectionData->selectionSystem.reset(new SelectionSystem(scene));
-    scene->AddSystem(selectionData->selectionSystem.get(), 0, DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS | DAVA::Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem);
+    scene->AddSystem(selectionData->selectionSystem.get(), 0, DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS | DAVA::Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem, scene->heightmapEditorSystem);
 
     //TODO: Workaround to save old process
     selectionData->selectionSystem->AddDelegate(scene->modifSystem);
