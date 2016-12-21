@@ -4,6 +4,7 @@
 const char* packageName = "ConfigRefresher";
 
 ConfigRefresher::ConfigRefresher(QObject* parent /*= nullptr*/)
+    : QObject(parent)
 {
     timer = new QTimer(this);
     timer->setSingleShot(false);
