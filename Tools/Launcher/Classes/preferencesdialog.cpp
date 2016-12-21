@@ -2,7 +2,8 @@
 #include "filemanager.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
-#include "BAManagerClient.h"
+#include "bamanagerclient.h"
+#include "configrefresher.h"
 
 #include <QFileDialog>
 #include <QJsonObject>
@@ -14,6 +15,8 @@ const char* propertyKey = "urlType";
 const char* settingsFileName = "LauncherPreferences.json";
 const char* filesDirectoryKey = "storage path";
 const char* launcherProtocolKey = "BA-manager key";
+const char* autorefreshEnabledKey = "autorefresh enabled";
+const char* autorefreshTimeoutKey = "autorefresh timeout";
 const QMap<ConfigDownloader::eURLType, QString> urlKeys = {
     { ConfigDownloader::LauncherInfoURL, "launcherInfo url" },
     { ConfigDownloader::StringsURL, "launcher strings url" },
@@ -22,17 +25,17 @@ const QMap<ConfigDownloader::eURLType, QString> urlKeys = {
 };
 }
 
-void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, QWidget* parent)
+void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* refresher, QWidget* parent)
 {
     PreferencesDialog dialog(parent);
-    dialog.Init(fileManager, configDownloader);
+    dialog.Init(fileManager, configDownloader, refresher);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.AcceptData();
     }
 }
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener)
+void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
 {
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
@@ -41,10 +44,14 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     {
         rootObject[iter.value()] = configDownloader->GetURL(iter.key());
     }
+
+    rootObject[PreferencesDialogDetails::autorefreshEnabledKey] = refresher->IsEnabled();
+    rootObject[PreferencesDialogDetails::autorefreshTimeoutKey] = refresher->GetTimeout();
+
     QJsonDocument document(rootObject);
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);
-    if (settingsFile.open(QFile::WriteOnly))
+    if (settingsFile.open(QFile::WriteOnly | QFile::Truncate))
     {
         settingsFile.write(document.toJson());
     }
@@ -54,7 +61,7 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     }
 }
 
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener)
+void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
 {
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);
@@ -91,6 +98,18 @@ void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     {
         commandListener->SetProtocolKey(protocolKeyValue.toString());
     }
+
+    QJsonValue autorefreshEnabledValue = rootObject[PreferencesDialogDetails::autorefreshEnabledKey];
+    if (autorefreshEnabledValue.isBool())
+    {
+        refresher->SetEnabled(autorefreshEnabledValue.toBool());
+    }
+
+    QJsonValue autorefreshTimeoutValue = rootObject[PreferencesDialogDetails::autorefreshTimeoutKey];
+    if (autorefreshTimeoutValue.isDouble())
+    {
+        refresher->SetTimeout(autorefreshTimeoutValue.toInt());
+    }
 }
 
 PreferencesDialog::PreferencesDialog(QWidget* parent)
@@ -101,12 +120,14 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
     connect(lineEdit_launcherDataPath, &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
 }
 
-void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* configDownloader_)
+void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* configDownloader_, ConfigRefresher* refresher_)
 {
     fileManager = fileManager_;
     configDownloader = configDownloader_;
+    configRefresher = refresher_;
     Q_ASSERT(fileManager != nullptr);
     Q_ASSERT(configDownloader != nullptr);
+    Q_ASSERT(configRefresher != nullptr);
 
     lineEdit_launcherDataPath->setText(fileManager->GetFilesDirectory());
 
@@ -130,6 +151,11 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
         connect(resetUrlWidgets[type], &QPushButton::clicked, this, &PreferencesDialog::OnButtonResetURLClicked);
         connect(urlWidgets[type], &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
     }
+
+    checkBox_autorefreshEnabled->setChecked(configRefresher->IsEnabled());
+    spinBox_autorefreshTimeout->setMaximum(LONG_MAX);
+    spinBox_autorefreshTimeout->setMinimum(configRefresher->GetMinimumTimeout());
+    spinBox_autorefreshTimeout->setValue(configRefresher->GetTimeout());
 }
 
 void PreferencesDialog::AcceptData()
@@ -144,6 +170,9 @@ void PreferencesDialog::AcceptData()
         ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
         configDownloader->SetURL(type, urlWidgets[type]->text());
     }
+
+    configRefresher->SetEnabled(checkBox_autorefreshEnabled->isChecked());
+    configRefresher->SetTimeout(spinBox_autorefreshTimeout->value());
 }
 
 void PreferencesDialog::OnButtonChooseFilesPathClicked()

@@ -13,6 +13,7 @@
 #include "branchesFilterModel.h"
 #include "BAManagerClient.h"
 #include "appscommandssender.h"
+#include "configrefresher.h"
 
 #include <QSet>
 #include <QQueue>
@@ -114,7 +115,7 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, &QTextBrowser::anchorClicked, this, &MainWindow::OnlinkClicked);
-    connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::OnRefreshClicked);
+    connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::Refresh);
     connect(ui->action_downloadAll, &QAction::triggered, this, &MainWindow::OnInstallAll);
     connect(ui->action_removeAll, &QAction::triggered, this, &MainWindow::OnRemoveAll);
     connect(ui->listView, &QListView::clicked, this, &MainWindow::OnListItemClicked);
@@ -128,6 +129,9 @@ MainWindow::MainWindow(QWidget* parent)
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
     baManagerClient = new BAManagerClient(appManager, this);
+    configRefresher = new ConfigRefresher(this);
+
+    connect(configRefresher, &ConfigRefresher::RefreshConfig, this, &MainWindow::Refresh);
 
     //create secret shortcut
     //it will be used to get commands manually for testing reasons
@@ -144,14 +148,14 @@ MainWindow::MainWindow(QWidget* parent)
     ui->listView->setModel(filterModel);
 
     //if run this method directly qApp->exec() will be called twice
-    QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "Refresh", Qt::QueuedConnection);
 
     QSettings settings;
     restoreGeometry(settings.value(geometryKey).toByteArray());
     restoreState(settings.value(stateKey).toByteArray());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::LoadPreferences(fileManager, configDownloader, baManagerClient);
+    ::LoadPreferences(fileManager, configDownloader, baManagerClient, configRefresher);
 }
 
 MainWindow::~MainWindow()
@@ -161,7 +165,7 @@ MainWindow::~MainWindow()
     settings.setValue(stateKey, saveState());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::SavePreferences(fileManager, configDownloader, baManagerClient);
+    ::SavePreferences(fileManager, configDownloader, baManagerClient, configRefresher);
     SafeDelete(ui);
 }
 
@@ -268,7 +272,7 @@ void MainWindow::OnRemove(int rowNumber)
     }
 }
 
-void MainWindow::OnRefreshClicked()
+void MainWindow::Refresh()
 {
     ui->action_updateConfiguration->setEnabled(false);
     FileManager* fileManager = appManager->GetFileManager();
@@ -339,7 +343,7 @@ void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QBy
 void MainWindow::OpenPreferencesEditor()
 {
     FileManager* fileManager = appManager->GetFileManager();
-    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, this);
+    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, configRefresher, this);
 }
 
 void MainWindow::ShowTable(const QString& branchID)

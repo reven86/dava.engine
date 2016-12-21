@@ -103,6 +103,7 @@ void UpdateDialog::UpdateButton()
     ui->cancelButton->setDefault(true);
     ui->cancelButton->setIcon(QIcon(":/Icons/ok.png"));
     ui->cancelButton->setFocusPolicy(Qt::StrongFocus);
+    accept();
 }
 
 void UpdateDialog::StartNextTask()

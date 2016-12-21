@@ -15,6 +15,7 @@ class QSortFilterProxyModel;
 class FileManager;
 class ConfigDownloader;
 class BAManagerClient;
+class ConfigRefresher;
 
 namespace Ui
 {
@@ -30,7 +31,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void OnRefreshClicked();
+    void Refresh();
     void OnListItemClicked(QModelIndex);
 
     void OnRun(int rowNumber);
@@ -69,6 +70,7 @@ private:
     Ui::MainWindow* ui = nullptr;
     ApplicationManager* appManager = nullptr;
     BAManagerClient* baManagerClient = nullptr;
+    ConfigRefresher* configRefresher = nullptr;
 
     FileDownloader* newsDownloader = nullptr;
     ConfigDownloader* configDownloader = nullptr;
