@@ -210,7 +210,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     using Private::MainDispatcherEvent;
     if (MainDispatcherEvent::IsInputEvent(e.type))
     {
-        // Skip input events if window does not have focus or pinning switching logic tells to ignore inpy event
+        // Skip input events if window does not have focus or pinning switching logic tells to ignore input event
         if (!hasFocus || HandleInputActivation(e))
         {
             return;
