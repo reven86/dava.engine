@@ -6,6 +6,7 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/EntityProducerModule.h"
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
+#include "Classes/ShadersModule/ShadersModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -176,6 +177,7 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<EntityProducerModule>();
     tarcCore->CreateModule<LaunchModule>();
     tarcCore->CreateModule<MitsubaExporter>();
+    tarcCore->CreateModule<ShadersModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

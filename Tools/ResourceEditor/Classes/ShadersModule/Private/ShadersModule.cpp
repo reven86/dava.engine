@@ -1,0 +1,130 @@
+#include "Classes/ShadersModule/ShadersModule.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/SceneManager/SceneData.h"
+#include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Scene/System/EditorMaterialSystem.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/Settings/Settings.h"
+
+#include "TArc/WindowSubSystem/ActionUtils.h"
+#include "TArc/WindowSubSystem/UI.h"
+#include "TArc/WindowSubSystem/QtAction.h"
+
+#include "Functional/Function.h"
+#include "FileSystem/FilePath.h"
+#include "Logger/Logger.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/ShaderCache.h"
+#include "Scene3D/Systems/FoliageSystem.h"
+
+void ShadersModule::PostInit()
+{
+    using namespace DAVA::TArc;
+
+    QtAction* reloadShadersAction = new QtAction(GetAccessor(), QIcon(":/QtIcons/reload_shaders.png"), QString("Reload Shaders"));
+
+    FieldDescriptor fieldDescriptor(DAVA::ReflectedTypeDB::Get<ProjectManagerData>(), DAVA::FastName(ProjectManagerData::ProjectPathProperty));
+    reloadShadersAction->SetStateUpdationFunction(QtAction::Enabled, fieldDescriptor, [](const DAVA::Any& fieldValue) -> DAVA::Any
+                                                  {
+                                                      return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
+                                                  });
+
+    ActionPlacementInfo menuPlacement(CreateMenuPoint("menuScene", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "actionEnableCameraLight")));
+    GetUI()->AddAction(REGlobal::MainWindowKey, menuPlacement, reloadShadersAction);
+
+    ActionPlacementInfo toolbarPlacement(CreateToolbarPoint("sceneToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "Reload Sprites")));
+    GetUI()->AddAction(REGlobal::MainWindowKey, toolbarPlacement, reloadShadersAction);
+
+    connections.AddConnection(reloadShadersAction, &QAction::triggered, DAVA::MakeFunction(this, &ShadersModule::ReloadShaders));
+
+    fieldBinder.reset(new DAVA::TArc::FieldBinder(GetAccessor()));
+    fieldBinder->BindField(fieldDescriptor, DAVA::MakeFunction(this, &ShadersModule::OnProjectChanged));
+}
+
+void ShadersModule::ReloadShaders()
+{
+    DAVA::ShaderDescriptorCache::ReloadShaders();
+
+    GetAccessor()->ForEachContext([](DAVA::TArc::DataContext& ctx)
+                                  {
+                                      SceneData* sceneData = ctx.GetData<SceneData>();
+                                      DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
+
+                                      const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
+
+                                      for (auto material : topParents)
+                                      {
+                                          material->InvalidateRenderVariants();
+                                      }
+                                      const DAVA::Map<DAVA::uint64, DAVA::NMaterial*>& particleInstances = sceneEditor->particleEffectSystem->GetMaterialInstances();
+                                      for (auto material : particleInstances)
+                                      {
+                                          material.second->InvalidateRenderVariants();
+                                      }
+
+                                      DAVA::Set<DAVA::NMaterial*> materialList;
+                                      sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);
+                                      for (auto material : materialList)
+                                      {
+                                          if (material)
+                                              material->InvalidateRenderVariants();
+                                      }
+
+                                      sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
+                                      sceneEditor->renderSystem->SetForceUpdateLights();
+
+                                      sceneEditor->visibilityCheckSystem->InvalidateMaterials();
+                                  });
+    
+#define INVALIDATE_2D_MATERIAL(material) \
+    if (DAVA::RenderSystem2D::material) \
+    { \
+        DAVA::RenderSystem2D::material->InvalidateRenderVariants(); \
+        DAVA::RenderSystem2D::material->PreBuildMaterial(DAVA::RenderSystem2D::RENDER_PASS_NAME); \
+    }
+
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
+    
+#undef INVALIDATE_2D_MATERIAL
+}
+
+void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
+{
+    DAVA::FilePath shadersDebugPathname = SettingsManager::GetValue(Settings::Debug_DataWithMaterialsPathname).AsString();
+    if (shadersDebugPathname.IsEmpty())
+    {
+        return;
+    }
+    shadersDebugPathname.MakeDirectoryPathname();
+
+    DAVA::String lastFolder = shadersDebugPathname.GetLastDirectoryName();
+    if (lastFolder != "Data")
+    {
+        DAVA::Logger::Warning("Pathname for reloading of shaders should be to Data direcory: %s", shadersDebugPathname.GetStringValue().c_str());
+        return;
+    }
+
+    DAVA::FilePath newProjectPathname;
+    if (projectFieldValue.CanGet<DAVA::FilePath>())
+    {
+        newProjectPathname = projectFieldValue.Get<DAVA::FilePath>();
+    }
+
+    if (newProjectPathname.IsEmpty())
+    {
+        DAVA::FilePath::RemoveResourcesFolder(shadersDebugPathname);
+    }
+    else
+    {
+        DAVA::FilePath::AddResourcesFolder(shadersDebugPathname);
+    }
+}

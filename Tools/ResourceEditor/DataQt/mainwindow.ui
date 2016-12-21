@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1205</width>
-    <height>969</height>
+    <height>807</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,16 +36,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
    </layout>
@@ -78,16 +69,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -114,16 +96,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
        </layout>
@@ -141,16 +114,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -210,7 +174,7 @@
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="path" stdset="0">
@@ -378,7 +342,6 @@
      <addaction name="actionReleaseCurrentFrame"/>
     </widget>
     <addaction name="actionEnableCameraLight"/>
-    <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
     <addaction name="actionHeightMapEditor"/>
@@ -524,16 +487,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -585,16 +539,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -626,16 +571,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -690,16 +626,7 @@
    </attribute>
    <widget class="QWidget" name="dockLODEditorContent">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -713,7 +640,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>94</height>
+          <height>76</height>
          </rect>
         </property>
        </widget>
@@ -762,7 +689,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionReloadShader"/>
    <addaction name="actionConvertModifiedTextures"/>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
@@ -819,16 +745,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -842,7 +759,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>94</height>
+          <height>76</height>
          </rect>
         </property>
        </widget>
@@ -1715,15 +1632,6 @@
    </property>
    <property name="text">
     <string>Vegetation</string>
-   </property>
-  </action>
-  <action name="actionReloadShader">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/reload_shaders.png</normaloff>:/QtIcons/reload_shaders.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Shaders</string>
    </property>
   </action>
   <action name="actionSwitchesWithDifferentLODs">

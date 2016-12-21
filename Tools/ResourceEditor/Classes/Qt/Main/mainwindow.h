@@ -161,8 +161,6 @@ public slots:
     void OnMaterialLightViewChanged(bool);
     void OnCustomQuality();
 
-    void OnReloadShaders();
-
     void OnSwitchWithDifferentLODs(bool checked);
 
     void OnGenerateHeightDelta();
