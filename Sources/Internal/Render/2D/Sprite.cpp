@@ -94,6 +94,7 @@ Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)
 
     spr->resourceSizeIndex = resourceSizeIndex;
     spr->relativePathname = spriteName;
+    spr->relativePathname.TruncateExtension();
 
     spr->InitFromFile(spriteFile);
     SafeRelease(spriteFile);
@@ -189,6 +190,7 @@ void Sprite::InitFromFile(File* file)
 
         FilePath tp = pathName.GetDirectory() + String(textureCharName);
         Texture* testTexture = Texture::CreateFromFile(tp);
+
         textures[k] = testTexture;
         textureNames[k] = tp;
         DVASSERT_MSG(textures[k], "ERROR: Texture loading failed" /* + pathName*/);
@@ -489,6 +491,7 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
     if (relativePathname.IsEmpty())
     {
         relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+        relativePathname.TruncateExtension();
     }
 
     spriteMapMutex.Lock();
@@ -735,7 +738,7 @@ void Sprite::ValidateForSize()
         (*it)->PrepareForNewSize();
     }
     Logger::FrameworkDebug("----------- Sprites validation for new resolution DONE  --------------");
-    //	Texture::DumpTextures();
+    // Texture::DumpTextures();
 }
 
 void Sprite::DumpSprites()
@@ -916,6 +919,7 @@ void Sprite::SetRelativePathname(const FilePath& path)
     spriteMapMutex.Lock();
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     relativePathname = path;
+    relativePathname.TruncateExtension();
     spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
     spriteMapMutex.Unlock();
     GetTexture()->SetPathname(path);
