@@ -120,8 +120,6 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity* entity)
         SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
         RenderHelper* drawer = editorScene->GetRenderSystem()->GetDebugDrawer();
 
-        const SelectableGroup& selection = Selection::GetSelection();
-
         AABBox3 worldBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
         DVASSERT(!worldBox.IsEmpty());
         DAVA::float32 delta = worldBox.GetSize().Length() / 4;
@@ -259,12 +257,13 @@ void DebugDrawSystem::DrawWindNode(DAVA::Entity* entity)
 void DebugDrawSystem::DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& color)
 {
     SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
-
-    AABBox3 worldBox;
     AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
-    DVASSERT(!localBox.IsEmpty());
-    localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    if (localBox.IsEmpty() == false)
+    {
+        AABBox3 worldBox;
+        localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    }
 }
 
 void DebugDrawSystem::DrawHangingObjects(DAVA::Entity* entity)
