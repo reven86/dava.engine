@@ -261,6 +261,8 @@ void EngineBackend::RunConsole()
 
 void EngineBackend::OnGameLoopStarted()
 {
+    SystemTimer::Init();
+
     engine->gameLoopStarted.Emit();
 }
 
@@ -310,9 +312,10 @@ void EngineBackend::DoEvents()
 
 void EngineBackend::OnFrameConsole()
 {
-    context->systemTimer->Start();
-    float32 frameDelta = context->systemTimer->FrameDelta();
-    context->systemTimer->UpdateGlobalTime(frameDelta);
+    SystemTimer::StartFrame();
+    float32 frameDelta = SystemTimer::GetFrameDelta();
+    SystemTimer::ComputeRealFrameDelta();
+    SystemTimer::UpdateGlobalTime(frameDelta);
 
     DoEvents();
     engine->update.Emit(frameDelta);
@@ -324,9 +327,8 @@ int32 EngineBackend::OnFrame()
 {
     DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(ProfilerCPUMarkerName::ENGINE_ON_FRAME, globalFrameIndex);
 
-    context->systemTimer->Start();
-    float32 frameDelta = context->systemTimer->FrameDelta();
-    context->systemTimer->UpdateGlobalTime(frameDelta);
+    SystemTimer::StartFrame();
+    float32 frameDelta = SystemTimer::GetFrameDelta();
 
 #if defined(__DAVAENGINE_QT__)
     if (Renderer::IsInitialized())
@@ -338,6 +340,9 @@ int32 EngineBackend::OnFrame()
     DoEvents();
     if (!appIsSuspended)
     {
+        SystemTimer::ComputeRealFrameDelta();
+        SystemTimer::UpdateGlobalTime(frameDelta);
+
         if (Renderer::IsInitialized())
         {
             Update(frameDelta);
@@ -685,7 +690,6 @@ void EngineBackend::UpdateDisplayConfig()
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 {
     context->allocatorFactory = new AllocatorFactory();
-    context->systemTimer = new SystemTimer();
     context->random = new Random();
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
@@ -902,11 +906,6 @@ void EngineBackend::DestroySubsystems()
     {
         context->fileSystem->Release();
         context->fileSystem = nullptr;
-    }
-    if (context->systemTimer != nullptr)
-    {
-        context->systemTimer->Release();
-        context->systemTimer = nullptr;
     }
     if (context->deviceManager != nullptr)
     {

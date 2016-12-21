@@ -231,7 +231,7 @@ void Core::CreateSingletons()
 
     new EngineSettings();
     new LocalizationSystem();
-    new SystemTimer();
+    SystemTimer::Init();
     new Random();
     new AnimationManager();
     new FontManager();
@@ -349,8 +349,6 @@ void Core::ReleaseSingletons()
 #ifdef __DAVAENGINE_ANDROID__
     AssetsManagerAndroid::Instance()->Release();
 #endif
-
-    SystemTimer::Instance()->Release();
 }
 
 void Core::SetOptions(KeyedArchive* archiveOfOptions)
@@ -632,7 +630,9 @@ void Core::SystemProcessFrame()
         return;
     }
 
-    SystemTimer::Instance()->Start();
+    SystemTimer::StartFrame();
+    SystemTimer::ComputeRealFrameDelta();
+
     {
         InputSystem::Instance()->OnBeforeUpdate();
 
@@ -647,8 +647,8 @@ void Core::SystemProcessFrame()
         }
 #endif
 
-        float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-        SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+        float32 frameDelta = SystemTimer::GetFrameDelta();
+        SystemTimer::UpdateGlobalTime(frameDelta);
 
         if (Replay::IsRecord())
         {
