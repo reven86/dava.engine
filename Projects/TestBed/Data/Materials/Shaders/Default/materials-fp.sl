@@ -269,7 +269,7 @@ fragment_out fp_main( fragment_in input )
             bool isXodd;
             bool isYodd;            
             
-            if(fract(floor(input.varTexCoord1.x*lightmapSize)/2.0) == 0.0)
+            if(frac(floor(input.varTexCoord1.x*lightmapSize)/2.0) == 0.0)
             {
                 isXodd = true;
             }
@@ -278,7 +278,7 @@ fragment_out fp_main( fragment_in input )
                 isXodd = false;
             }
             
-            if(fract(floor(input.varTexCoord1.y*lightmapSize)/2.0) == 0.0)
+            if(frac(floor(input.varTexCoord1.y*lightmapSize)/2.0) == 0.0)
             {
                 isYodd = true;
             }

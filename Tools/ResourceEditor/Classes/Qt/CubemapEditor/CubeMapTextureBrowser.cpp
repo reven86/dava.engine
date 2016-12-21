@@ -36,7 +36,7 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
 
-    DAVA::FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir", data->GetDataSourcePath().GetAbsolutePathname());
+    DAVA::FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir", data->GetDataSource3DPath().GetAbsolutePathname());
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
     ReloadTextures(projectPath.GetAbsolutePathname());
