@@ -931,6 +931,11 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
     abort();
 }
 
+void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
+{
+    SystemTimer::Adjust(adjustMicro);
+}
+
 } // namespace Private
 } // namespace DAVA
 

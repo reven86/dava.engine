@@ -100,6 +100,14 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
+    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeMicros() - goBackgroundTimeRelativeToBoot;
+    int64 timeSpentInBackground2 = SystemTimer::GetAbsoluteMicros() - goBackgroundTime;
+    // Do adjustment only if SystemTimer has stopped ticking
+    if (timeSpentInBackground1 - timeSpentInBackground2 > 3000000l)
+    {
+        EngineBackend::AdjustSystemTimer(timeSpentInBackground1);
+    }
+
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -107,6 +115,9 @@ void PlatformCore::ActivityOnPause()
 {
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
+
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeMicros();
+    goBackgroundTime = SystemTimer::GetAbsoluteMicros();
 }
 
 void PlatformCore::ActivityOnDestroy()
