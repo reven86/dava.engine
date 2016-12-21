@@ -324,11 +324,8 @@ void WindowBackend::OnCreated()
     float32 h = static_cast<float32>(renderWidget->height());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        OnVisibilityChanged(true);
-        OnApplicationFocusChanged(true);
-    }
+    OnVisibilityChanged(true);
+    OnApplicationFocusChanged(true);
 }
 
 bool WindowBackend::OnUserCloseRequest()

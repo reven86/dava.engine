@@ -858,6 +858,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
 
     ui->actionSnapCameraToLandscape->setEnabled(enable);
+    ui->actionHeightmap_Delta_Tool->setEnabled(enable);
 
     // Fix for menuBar rendering
     const auto isMenuBarEnabled = ui->menuBar->isEnabled();

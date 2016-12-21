@@ -253,9 +253,11 @@ void DebugDrawSystem::DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& col
 {
     AABBox3 worldBox;
     AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
-    DVASSERT(!localBox.IsEmpty());
-    localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    if (localBox.IsEmpty() == false)
+    {
+        localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    }
 }
 
 void DebugDrawSystem::DrawHangingObjects(DAVA::Entity* entity)
