@@ -94,6 +94,10 @@ UIControl* EditorSystemsManager::GetScalableControl() const
 
 bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 {
+    if (dragState != DragControls)
+    {
+        return false;
+    }
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         if ((*it)->OnInput(currentInput))
@@ -158,6 +162,21 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     }
 
     return controlsNode->GetCount();
+}
+
+void EditorSystemsManager::SetDragState(eDragState dragState_)
+{
+    if (dragState_ == dragState)
+    {
+        return;
+    }
+    dragState = dragState_;
+    dragStateChanged.Emit(dragState);
+}
+
+EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const
+{
+    return dragState;
 }
 
 void EditorSystemsManager::SelectAll()

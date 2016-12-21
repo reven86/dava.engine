@@ -122,7 +122,12 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemsManager->emulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemsManager->editingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
-    systemsManager->transformStateChanged.Connect([this](bool inTransformState_) { inTransformState = inTransformState_; });
+    systemsManager->transformStateChanged.Connect([this](bool inTransformState_) {
+        inTransformState = inTransformState_;
+    });
+    systemsManager->dragStateChanged.Connect([this](EditorSystemsManager::eDragState) {
+        OnMagnetLinesChanged(Vector<MagnetLineInfo>());
+    });
 }
 
 HUDSystem::~HUDSystem()

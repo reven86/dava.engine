@@ -123,6 +123,20 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
+void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragState)
+{
+    if (dragState == EditorSystemsManager::DragScreen)
+    {
+        lastMousePos = mapFromGlobal(QCursor::pos());
+        lastCursor = renderWidget->cursor();
+        renderWidget->setCursor(Qt::OpenHandCursor);
+    }
+    else
+    {
+        renderWidget->setCursor(lastCursor);
+    }
+}
+
 void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
     DVASSERT(renderWidget_ != nullptr);
@@ -376,6 +390,7 @@ void PreviewWidget::OnWindowCreated()
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
     systemsManager->transformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
+    systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
@@ -642,10 +657,6 @@ void PreviewWidget::OnMousePressed(QMouseEvent* event)
         isMouseMidButtonPressed = true;
     }
     UpdateDragScreenState();
-    if (CanDragScreen())
-    {
-        lastMousePos = event->pos();
-    }
 }
 
 void PreviewWidget::OnMouseReleased(QMouseEvent* event)
@@ -691,7 +702,7 @@ void PreviewWidget::OnMouseMove(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
-    if (CanDragScreen())
+    if (systemsManager->GetDragState() == EditorSystemsManager::DragScreen)
     {
         QPoint delta(event->pos() - lastMousePos);
         lastMousePos = event->pos();
@@ -821,6 +832,10 @@ void PreviewWidget::OnDrop(QDropEvent* event)
 
 void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 {
+    if (event->isAutoRepeat())
+    {
+        return;
+    }
     int key = event->key();
     if (key == Qt::Key_Space)
     {
@@ -843,7 +858,7 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 
 void PreviewWidget::OnKeyReleased(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Space)
+    if (event->isAutoRepeat() == false && event->key() == Qt::Key_Space)
     {
         isSpacePressed = false;
         UpdateDragScreenState();
@@ -929,28 +944,12 @@ void PreviewWidget::NotifySelectionChanged()
     tmpDeselected.clear();
 }
 
-bool PreviewWidget::CanDragScreen() const
-{
-    return inDragScreenState;
-}
-
 void PreviewWidget::UpdateDragScreenState()
 {
-    bool inDragScreenState_ = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
-    if (inDragScreenState == inDragScreenState_)
-    {
-        return;
-    }
-    inDragScreenState = inDragScreenState_;
-    if (inDragScreenState)
-    {
-        lastCursor = renderWidget->cursor();
-        renderWidget->setCursor(Qt::OpenHandCursor);
-    }
-    else
-    {
-        renderWidget->setCursor(lastCursor);
-    }
+    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    EditorSystemsManager::eDragState dragState = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
+
+    systemsManager->SetDragState(dragState);
 }
 
 float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const

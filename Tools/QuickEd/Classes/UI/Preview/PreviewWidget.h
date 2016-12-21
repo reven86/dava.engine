@@ -82,7 +82,7 @@ private:
     void LoadContext();
     void SaveContext();
 
-public:
+private:
     void CreateActions();
     void ApplyPosChanges();
     void OnWheel(QWheelEvent* event) override;
@@ -108,9 +108,9 @@ public:
 
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void NotifySelectionChanged();
-    bool CanDragScreen() const;
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
+    void OnDragStateChanged(EditorSystemsManager::eDragState dragState);
 
     QPoint lastMousePos;
     QCursor lastCursor;
@@ -134,8 +134,6 @@ public:
 
     SelectedNodes tmpSelected; //for continuousUpdater
     SelectedNodes tmpDeselected; //for continuousUpdater
-
-    bool inDragScreenState = false;
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;

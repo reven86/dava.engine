@@ -77,6 +77,11 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
+    enum eDragState
+    {
+        DragControls,
+        DragScreen
+    };
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
 
@@ -98,6 +103,9 @@ public:
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
+    void SetDragState(eDragState dragState);
+    eDragState GetDragState() const;
+
     void SelectAll();
     void FocusNextChild();
     void FocusPreviousChild();
@@ -115,6 +123,7 @@ public:
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageNodeChanged;
     DAVA::Signal<bool> transformStateChanged; //indicates when user transform control
+    DAVA::Signal<eDragState> dragStateChanged;
 
 private:
     class InputLayerControl;
@@ -145,6 +154,8 @@ private:
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     DAVA::RenderWidget* renderWidget = nullptr;
     HUDSystem* hudSystemPtr = nullptr;
+
+    eDragState dragState = DragControls;
 };
 
 template <class OutIt, class Predicate>
