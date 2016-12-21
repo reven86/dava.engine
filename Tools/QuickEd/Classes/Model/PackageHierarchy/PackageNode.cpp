@@ -543,7 +543,7 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
 {
     Vector<DepthPackageNode> result;
 
-    result.push_back(DepthPackageNode{ 0, this });
+    result.push_back(DepthPackageNode(0, this));
 
     // collect imported packages recursively
     int32 firstUnprocessedPackage = 0;
@@ -557,7 +557,7 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
         for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
         {
             PackageNode* node = importedPackagesNode->GetImportedPackage(i);
-            result.push_back(DepthPackageNode{ depth + 1, node });
+            result.push_back(DepthPackageNode(depth + 1, node));
         }
 
         ++firstUnprocessedPackage;

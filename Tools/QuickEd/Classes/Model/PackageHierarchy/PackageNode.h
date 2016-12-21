@@ -93,6 +93,12 @@ public:
 private:
     struct DepthPackageNode
     {
+        DepthPackageNode(DAVA::int32 _depth, PackageNode* _packageNode)
+            : depth(_depth)
+            , packageNode(_packageNode)
+        {
+        }
+
         DAVA::int32 depth = 0;
         PackageNode* packageNode = nullptr;
     };
