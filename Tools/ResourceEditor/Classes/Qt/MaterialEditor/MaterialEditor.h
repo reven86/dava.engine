@@ -35,6 +35,8 @@ public:
     void SelectMaterial(DAVA::NMaterial* material);
     void SelectEntities(DAVA::NMaterial* material);
 
+    void RefreshMaterialProperties();
+
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
@@ -62,7 +64,6 @@ protected:
     void SetCurMaterial(const QList<DAVA::NMaterial*>& materials);
 
     void FillTemplates(const QList<DAVA::NMaterial*>& materials);
-    void RefreshMaterialProperties();
 
 private slots:
     void onFilterChanged();

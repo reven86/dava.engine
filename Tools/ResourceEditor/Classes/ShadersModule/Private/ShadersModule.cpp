@@ -1,6 +1,7 @@
 #include "Classes/ShadersModule/ShadersModule.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/Qt/MaterialEditor/MaterialEditor.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorMaterialSystem.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
@@ -95,6 +96,11 @@ void ShadersModule::ReloadShaders()
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
     
 #undef INVALIDATE_2D_MATERIAL
+
+    if (MaterialEditor::Instance() != nullptr)
+    {
+        MaterialEditor::Instance()->RefreshMaterialProperties();
+    }
 }
 
 void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
