@@ -13,7 +13,7 @@ DAVA_REFLECTION_IMPL(UIFlowLayoutComponent)
     .Field("enabled", &UIFlowLayoutComponent::IsEnabled, &UIFlowLayoutComponent::SetEnabled)
     .Field("orientation", &UIFlowLayoutComponent::GetOrientation, &UIFlowLayoutComponent::SetOrientation)
     [
-    Meta<EnumMeta>(EnumMeta::Create<eOrientation>())
+    EnumMeta::Create<eOrientation>()
     ]
     .Field("hPadding", &UIFlowLayoutComponent::GetHorizontalPadding, &UIFlowLayoutComponent::SetHorizontalPadding)
     .Field("hDynamicPadding", &UIFlowLayoutComponent::IsDynamicHorizontalPadding, &UIFlowLayoutComponent::SetDynamicHorizontalPadding)

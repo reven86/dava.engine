@@ -3,6 +3,7 @@
 
 #include "Base/EnumMap.h"
 #include "Base/Any.h"
+#include "Reflection/ReflectedMeta.h"
 
 template <typename T>
 class GlobalEnumMap
@@ -44,7 +45,7 @@ void GlobalEnumMap<T>::Register(const int e, const char* s)
 struct EnumMeta
 {
     template <typename T>
-    static EnumMeta Create(bool autocast = true)
+    static DAVA::Meta<EnumMeta> Create(bool autocast = true)
     {
         if (autocast)
         {
@@ -52,15 +53,15 @@ struct EnumMeta
             {
                 return DAVA::Any(static_cast<T>(value));
             };
-            return EnumMeta(GlobalEnumMap<T>::Instance(), cast);
+            return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), cast));
         }
         else
         {
             auto nocast = [](DAVA::int32 value) -> Any
             {
-                return Any(value);
+                return DAVA::Any(value);
             };
-            return EnumMeta(GlobalEnumMap<T>::Instance(), nocast);
+            return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), nocast));
         }
     }
 

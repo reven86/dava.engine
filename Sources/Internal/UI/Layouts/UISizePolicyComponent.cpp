@@ -12,14 +12,14 @@ DAVA_REFLECTION_IMPL(UISizePolicyComponent)
     .DestructorByPointer([](UISizePolicyComponent* o) { o->Release(); })
     .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)
     [
-    Meta<EnumMeta>(EnumMeta::Create<UISizePolicyComponent::eSizePolicy>())
+    EnumMeta::Create<UISizePolicyComponent::eSizePolicy>()
     ]
     .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)
     .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)
     .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)
     .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)
     [
-    Meta<EnumMeta>(EnumMeta::Create<UISizePolicyComponent::eSizePolicy>())
+    EnumMeta::Create<UISizePolicyComponent::eSizePolicy>()
     ]
     .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)
     .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)

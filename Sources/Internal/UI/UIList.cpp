@@ -17,7 +17,7 @@ DAVA_REFLECTION_IMPL(UIList)
     .DestructorByPointer([](UIList* o) { o->Release(); })
     .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation) // TODO: make enum
     [
-    Meta<EnumMeta>(EnumMeta::Create<eListOrientation>(false))
+    EnumMeta::Create<eListOrientation>(false)
     ]
     .Field("aggregatorPath", &UIList::GetAggregatorPath, &UIList::SetAggregatorPath)
     .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)

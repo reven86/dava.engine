@@ -16,6 +16,10 @@ static float32 dragAnchorX = UISWITCH_ANCHOR_UNDEFINED;
 
 DAVA_REFLECTION_IMPL(UISwitch)
 {
+    ReflectionRegistrator<UISwitch>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISwitch* o) { o->Release(); })
+    .End();
 }
 
 class TogglePositionAnimation : public LinearAnimation<float32>
@@ -108,14 +112,17 @@ void UISwitch::AddControl(UIControl* control)
 
     if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft.Get() != control)
     {
+        UIControl::RemoveControl(buttonLeft.Get());
         buttonLeft = control;
     }
     else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle.Get() != control)
     {
+        UIControl::RemoveControl(toggle.Get());
         toggle = control;
     }
     else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight.Get() != control)
     {
+        UIControl::RemoveControl(buttonRight.Get());
         buttonRight = control;
     }
 }
