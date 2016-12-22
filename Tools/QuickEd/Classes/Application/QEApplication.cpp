@@ -10,6 +10,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Scroll/UIScrollBarLinkSystem.h"
 
 #include "FileSystem/FileSystem.h"
 
@@ -71,6 +72,7 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 
     UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+    uiControlSystem->GetSystem<UIScrollBarLinkSystem>()->SetRestoreLinks(true);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
