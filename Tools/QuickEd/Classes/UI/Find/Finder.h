@@ -30,4 +30,5 @@ private:
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes;
     FindItem currentItem;
     bool canceling = false;
+    QMutex mutex;
 };

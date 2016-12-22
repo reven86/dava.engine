@@ -11,10 +11,6 @@ Finder::Finder(const QStringList& files_, std::unique_ptr<FindFilter>&& filter_,
     , filter(std::move(filter_))
     , prototypes(prototypes_)
 {
-    for (int i = 0; i < 10; i++)
-    {
-        files += files_;
-    }
 }
 
 Finder::~Finder()
@@ -30,10 +26,12 @@ void Finder::Process()
     int filesProcessed = 0;
     for (const QString& pathStr : files)
     {
+        QMutexLocker locker(&mutex);
         if (canceling)
         {
             break;
         }
+
         FilePath path(pathStr.toStdString());
         PackageInformationBuilder builder(&packagesCache);
 
@@ -68,6 +66,7 @@ void Finder::Process()
 
 void Finder::Stop()
 {
+    QMutexLocker locker(&mutex);
     canceling = true;
 }
 
