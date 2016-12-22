@@ -336,16 +336,19 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_DESTROY, null);
         activityListeners.clear();
 
+        Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
         nativeOnDestroy();
         if (isNativeThreadRunning())
         {
             try {
+                Log.d(LOG_TAG, "Joining native thread");
                 nativeThread.join();
             } catch (Exception e) {
                 Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
             }
             nativeThread = null;
         }
+        Log.d(LOG_TAG, "DavaActivity.nativeShutdownEngine");
         nativeShutdownEngine();
         bootstrapObjects.clear();
         activitySingleton = null;
