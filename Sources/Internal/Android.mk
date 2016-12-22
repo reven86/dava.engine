@@ -447,6 +447,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Scroll/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
