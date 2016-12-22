@@ -46,6 +46,8 @@ public:
     void* GetHandle() const;
     HWND GetHWND() const;
 
+    void SetIcon(const wchar_t* iconResourceName);
+
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
 

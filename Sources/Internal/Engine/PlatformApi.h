@@ -30,10 +30,14 @@ RenderWidget* GetRenderWidget();
 } // namespace PlatformApi
 } // namespace DAVA
 
+#elif defined(__DAVAENGINE_WIN32__)
+
+// moved to Engine/Win32/PlatformApi.h
+
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 /**
-    \defgroup engine_win10 Engine facilities specific to Windows Unoversal Platform (Win10)
+    \defgroup engine_win10 Engine facilities specific to Windows Universal Platform (Win10)
 */
 
 namespace DAVA

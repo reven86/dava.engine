@@ -114,6 +114,16 @@ void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
     uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
+void WindowBackend::SetIcon(const wchar_t* iconResourceName)
+{
+    HICON hicon = reinterpret_cast<HICON>(::LoadImageW(PlatformCore::Win32AppInstance(), iconResourceName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
+    if (hicon != nullptr)
+    {
+        ::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hicon));
+        ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hicon));
+    }
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;
