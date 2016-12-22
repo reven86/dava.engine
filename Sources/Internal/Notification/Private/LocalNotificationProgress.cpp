@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationProgress.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {
@@ -36,4 +37,4 @@ void LocalNotificationProgress::ImplShow()
 {
     impl->ShowProgress(title, text, total, progress, useSound);
 }
-}
+} // namespace DAVA
