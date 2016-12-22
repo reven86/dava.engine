@@ -944,8 +944,9 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
-        // Forward WM_SYSKEYUP and WM_SYSKEYDOWN to DefWindowProc to allow system shortcuts: Alt+F4, etc
-        isHandled = (message == WM_KEYUP || message == WM_KEYDOWN);
+        // Mark only WM_SYSKEYUP message as handled to prevent entering modal loop when Alt is released,
+        // but leave WM_SYSKEYDOWN as unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        isHandled = (message == WM_SYSKEYUP);
     }
     else if (message == WM_UNICHAR)
     {
@@ -965,6 +966,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         uint32 key = static_cast<uint32>(wparam);
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnCharEvent(key, isRepeated);
+        // Leave WM_SYSCHAR unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        isHandled = (message == WM_CHAR);
     }
     else if (message == WM_TRIGGER_EVENTS)
     {
