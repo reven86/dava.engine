@@ -2170,40 +2170,6 @@ String UIControl::GetBackgroundComponentName(int32 index) const
     return "Background";
 }
 
-int32 UIControl::GetInternalControlsCount() const
-{
-    return 0;
-}
-
-UIControl* UIControl::GetInternalControl(int32 index) const
-{
-    DVASSERT(false);
-    return NULL;
-}
-
-UIControl* UIControl::CreateInternalControl(int32 index) const
-{
-    DVASSERT(false);
-    return NULL;
-}
-
-void UIControl::SetInternalControl(int32 index, UIControl* control)
-{
-    DVASSERT(false);
-}
-
-String UIControl::GetInternalControlName(int32 index) const
-{
-    DVASSERT(false);
-    return "";
-}
-
-String UIControl::GetInternalControlDescriptions() const
-{
-    DVASSERT(false);
-    return "";
-}
-
 void UIControl::UpdateLayout()
 {
     UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(this);
