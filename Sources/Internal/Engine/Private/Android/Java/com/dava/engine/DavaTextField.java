@@ -120,6 +120,12 @@ final class DavaTextField implements TextWatcher,
     public static native void nativeOnTextChanged(long backendPointer, String newText, boolean programmaticTextChange);
     public static native void nativeOnTextureReady(long backendPointer, int[] pixels, int w, int h);
 
+    private static boolean pendingKeyboardClose = false;
+
+    // To use inside of DavaSurfaceView.onInputConnection
+    private static int lastSelectedImeMode = 0;
+    private static int lastSelectedInputType = 0;
+
     private class TextFieldProperties
     {
         TextFieldProperties() {}
@@ -288,6 +294,16 @@ final class DavaTextField implements TextWatcher,
 
         properties.createNew = true;
         properties.anyPropertyChanged = true;
+    }
+
+    public static int getLastSelectedImeMode()
+    {
+        return lastSelectedImeMode;
+    }
+
+    public static int getLastSelectedInputType()
+    {
+        return lastSelectedInputType;
     }
 
     void release()
@@ -618,23 +634,61 @@ final class DavaTextField implements TextWatcher,
     @Override
     public void onFocusChange(View v, boolean hasFocus)
     {
-        InputMethodManager imm = (InputMethodManager)DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (hasFocus)
         {
-            imm.showSoftInput(nativeTextField, InputMethodManager.SHOW_IMPLICIT);
+            CustomTextField textField = (CustomTextField)v;
+            lastSelectedImeMode = textField.getImeOptions();
+            lastSelectedInputType = textField.getInputType();
 
-            DavaKeyboardState keyboardState = DavaActivity.instance().keyboardState; 
-            if (keyboardState.isKeyboardOpen())
+            if (pendingKeyboardClose)
             {
-                Rect keyboardRect = keyboardState.keyboardRect();
-                nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                // If keyboard is still visible but not hidden yet - just cancel closing
+                pendingKeyboardClose = false;
+            }
+            else
+            {
+                // Otherwise open it
+
+                InputMethodManager imm = (InputMethodManager)DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(nativeTextField, InputMethodManager.SHOW_IMPLICIT);
+
+                DavaKeyboardState keyboardState = DavaActivity.instance().keyboardState;
+                if (keyboardState.isKeyboardOpen())
+                {
+                    Rect keyboardRect = keyboardState.keyboardRect();
+                    nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                }
             }
         }
         else
         {
-            IBinder windowToken = nativeTextField.getWindowToken();
-            imm.hideSoftInputFromWindow(windowToken, 0);
+            if (!pendingKeyboardClose)
+            {
+                // Close keyboard delayed (to avoid reopening it when switching between textfields)
+                // If other textfield gets focus until that happens, it will cancel this action
+
+                DavaActivity.commandHandler().post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (!pendingKeyboardClose)
+                        {
+                            return;
+                        }
+
+                        InputMethodManager imm = (InputMethodManager) DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        IBinder windowToken = nativeTextField.getWindowToken();
+                        imm.hideSoftInputFromWindow(windowToken, 0);
+
+                        pendingKeyboardClose = false;
+                    }
+                });
+
+                pendingKeyboardClose = true;
+            }
         }
+
         nativeOnFocusChange(textfieldBackendPointer, hasFocus);
 
         if (!multiline)

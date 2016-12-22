@@ -12,6 +12,8 @@ import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.util.Log;
 import android.util.DisplayMetrics;
@@ -121,10 +123,20 @@ final class DavaSurfaceView extends SurfaceView
     @Override public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 
     @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
+    {
+        // To fix keyboard blinking when a DavaTextField looses focus but keyboard isn't hidden yet
+        // (since we wait to close it in case some other field gets focused)
+        outAttrs.imeOptions = DavaTextField.getLastSelectedImeMode();
+        outAttrs.inputType = DavaTextField.getLastSelectedInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
+
+    @Override
     public void onResume()
     {
-        setFocusable(true);
         setFocusableInTouchMode(true);
+        setFocusable(true);
         requestFocus();
         setOnTouchListener(this);
 
