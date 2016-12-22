@@ -115,12 +115,6 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
 
 #if !defined(__DAVAENGINE_COREV2__)
     virtualSizeChanged.Emit(virtualScreenSize);
-
-    if (enabledReloadResourceOnResize)
-    {
-        Sprite::ValidateForSize();
-        TextBlock::ScreenResolutionChanged();
-    }
 #endif
 
     RenderSystem2D::Instance()->ScreenSizeChanged();

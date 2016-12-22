@@ -91,7 +91,7 @@ using namespace DAVA;
         Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
         Core::Instance()->SetNativeView(self);
 
-        Core::Instance()->SystemProcessFrame();
+        // Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];
