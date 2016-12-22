@@ -93,6 +93,7 @@ struct WindowNativeBridge final
     bool isMiniaturized = false;
     bool isFullscreen;
     uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
+    bool isVisible = false;
 
 private:
     void SetSystemCursorCapture(bool capture);

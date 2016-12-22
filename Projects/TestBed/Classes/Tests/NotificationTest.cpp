@@ -78,6 +78,13 @@ void NotificationScreen::LoadResources()
     hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
     AddControl(hideNotificationProgress);
 
+    activateFromNotification = new UIStaticText(Rect(10, 400, 450, 60));
+    activateFromNotification->SetTextColor(Color::White);
+    activateFromNotification->SetFont(font);
+    activateFromNotification->SetMultiline(true);
+    activateFromNotification->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    AddControl(activateFromNotification);
+
     SafeRelease(font);
 }
 
@@ -86,6 +93,7 @@ void NotificationScreen::UnloadResources()
     BaseScreen::UnloadResources();
 
     RemoveAllControls();
+    SafeRelease(activateFromNotification);
     SafeRelease(showNotificationText);
     SafeRelease(showNotificationProgress);
     SafeRelease(hideNotificationProgress);
@@ -168,6 +176,7 @@ void NotificationScreen::OnHideText(BaseObject* obj, void* data, void* callerDat
         notificationText->Hide();
         hideNotificationText->SetDebugDraw(false);
     }
+    activateFromNotification->SetText(L"");
 }
 
 void NotificationScreen::OnNotifyProgress(BaseObject* obj, void* data, void* callerData)
@@ -199,6 +208,7 @@ void NotificationScreen::OnHideProgress(BaseObject* obj, void* data, void* calle
 
 void NotificationScreen::OnNotificationTextPressed(BaseObject* obj, void* data, void* callerData)
 {
+    activateFromNotification->SetText(L"Application activate after NotificationTextPressed\n Press Hide text button");
 }
 
 void NotificationScreen::OnNotificationProgressPressed(BaseObject* obj, void* data, void* callerData)

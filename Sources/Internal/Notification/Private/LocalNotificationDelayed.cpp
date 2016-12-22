@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationDelayed.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {
@@ -16,4 +17,4 @@ void LocalNotificationDelayed::Post()
 {
     impl->PostDelayedNotification(title, text, delaySeconds, useSound);
 }
-}
+} // namespace DAVA
