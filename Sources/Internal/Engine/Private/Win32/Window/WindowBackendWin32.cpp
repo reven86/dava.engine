@@ -55,7 +55,7 @@ bool WindowBackend::Create(float32 width, float32 height)
 
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
-                                    L"DAVA_WINDOW",
+                                    L"",
                                     windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
