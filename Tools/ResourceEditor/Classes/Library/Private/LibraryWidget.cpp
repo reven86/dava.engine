@@ -1,5 +1,6 @@
-#include "LibraryWidget.h"
-#include "LibraryFileSystemModel.h"
+#include "Classes/Library/Private/LibraryWidget.h"
+#include "Classes/Library/Private/LibraryFileSystemModel.h"
+
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "GlobalOperations.h"
@@ -68,10 +69,6 @@ LibraryWidget::LibraryWidget(QWidget* parent /* = 0 */)
 
     ViewAsList();
     OnFilesTypeChanged(0);
-}
-
-LibraryWidget::~LibraryWidget()
-{
 }
 
 void LibraryWidget::SetupFileTypes()
@@ -151,8 +148,6 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
 void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
-    projectDataWrapper.SetListener(this);
 
     QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
 
@@ -268,27 +263,21 @@ void LibraryWidget::HideDetailedColumnsAtFilesView(bool hide)
 void LibraryWidget::SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
     if (0 == selected.count())
+    {
+        selectedPath = DAVA::FilePath();
         return;
+    }
 
     const QModelIndex index = selected.indexes().first();
-
     QFileInfo fileInfo = filesModel->fileInfo(index);
-
-    if (0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
-    {
-        ShowPreview(fileInfo.filePath());
-    }
-    else
-    {
-        HidePreview();
-    }
+    selectedPath = fileInfo.filePath().toStdString();
 }
 
 void LibraryWidget::fileDoubleClicked(const QModelIndex& index)
 {
     if (SettingsManager::GetValue(Settings::General_OpenByDBClick).AsBool())
     {
-        HidePreview();
+        selectedPath = DAVA::FilePath();
         QFileInfo fileInfo = filesModel->fileInfo(index);
         if (0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
         {
@@ -300,7 +289,7 @@ void LibraryWidget::fileDoubleClicked(const QModelIndex& index)
 
 void LibraryWidget::ShowContextMenu(const QPoint& point)
 {
-    HidePreview();
+    selectedPath = DAVA::FilePath();
 
     const QModelIndex index = filesView->indexAt(point);
 
@@ -386,39 +375,30 @@ void LibraryWidget::OnRevealAtFolder()
     QtHelpers::ShowInOSFileManager(fileInfo.absoluteFilePath());
 }
 
-void LibraryWidget::HidePreview() const
+void LibraryWidget::SetLibraryPath(const DAVA::FilePath& pathname)
 {
-    REGlobal::GetInvoker()->Invoke(REGlobal::HideScenePreviewOperation.ID);
-}
-
-void LibraryWidget::ShowPreview(const QString& pathname) const
-{
-    REGlobal::GetInvoker()->Invoke(REGlobal::ShowScenePreviewOperation.ID, DAVA::FilePath(pathname.toStdString()));
-}
-
-void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    DVASSERT(projectDataWrapper == wrapper);
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    if (data)
+    selectedPath = DAVA::FilePath();
+    if (pathname.IsEmpty())
     {
-        DAVA::FilePath projectPath = data->GetProjectPath();
-        if (!projectPath.IsEmpty())
-        {
-            rootPathname = QString::fromStdString((projectPath + "/DataSource/3d/").GetAbsolutePathname());
-
-            filesModel->Load(rootPathname);
-            filesView->setRootIndex(filesModel->index(rootPathname));
-            return;
-        }
+        rootPathname = QDir::rootPath();
+        filesView->setRootIndex(filesModel->index(rootPathname));
+        filesView->collapseAll();
     }
+    else
+    {
+        rootPathname = QString::fromStdString(pathname.GetAbsolutePathname());
 
-    rootPathname = QDir::rootPath();
-    filesView->setRootIndex(filesModel->index(rootPathname));
-    filesView->collapseAll();
+        filesModel->Load(rootPathname);
+        filesView->setRootIndex(filesModel->index(rootPathname));
+    }
 }
 
 void LibraryWidget::OnTreeDragStarted()
 {
-    HidePreview();
+    selectedPath = DAVA::FilePath();
+}
+
+const DAVA::FilePath& LibraryWidget::GetSelectedPath() const
+{
+    return selectedPath;
 }

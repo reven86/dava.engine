@@ -595,8 +595,6 @@ void SceneManagerModule::RegisterOperations()
     RegisterOperation(REGlobal::OpenSceneOperation.ID, this, &SceneManagerModule::OpenSceneByPath);
     RegisterOperation(REGlobal::SaveCurrentScene.ID, this, static_cast<void (SceneManagerModule::*)()>(&SceneManagerModule::SaveScene));
     RegisterOperation(REGlobal::ReloadTexturesOperation.ID, this, &SceneManagerModule::ReloadTextures);
-    RegisterOperation(REGlobal::ShowScenePreviewOperation.ID, this, &SceneManagerModule::ShowPreview);
-    RegisterOperation(REGlobal::HideScenePreviewOperation.ID, this, &SceneManagerModule::HidePreview);
 }
 
 void SceneManagerModule::CreateNewScene()
@@ -659,7 +657,6 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
         return;
     }
 
-    HidePreview();
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
     DAVA::FilePath projectPath(data->GetProjectPath());
@@ -952,22 +949,6 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
 
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticles();
-    }
-}
-
-void SceneManagerModule::ShowPreview(const DAVA::FilePath& scenePath)
-{
-    if (!renderWidget.isNull() && SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool() == true)
-    {
-        renderWidget->ShowPreview(scenePath);
-    }
-}
-
-void SceneManagerModule::HidePreview()
-{
-    if (!renderWidget.isNull())
-    {
-        renderWidget->HidePreview();
     }
 }
 

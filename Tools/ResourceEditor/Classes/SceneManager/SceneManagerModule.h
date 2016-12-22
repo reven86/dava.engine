@@ -51,9 +51,6 @@ private:
     void CloseAllScenes(bool needSavingReqiest);
     void ReloadTextures(DAVA::eGPUFamily gpu);
 
-    void ShowPreview(const DAVA::FilePath& scenePath);
-    void HidePreview();
-
     /// Fields value handlers
     void OnActiveTabChanged(const DAVA::Any& contextID);
     void OnScenePathChanged(const DAVA::Any& scenePath);

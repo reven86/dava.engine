@@ -468,6 +468,7 @@ protected:
 
     QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, UIManagerDetail::MainWindowInfo& mainWindowInfo, QMainWindow* mainWindow)
     {
+        DVASSERT_MSG(dockPanelInfo.title.isEmpty() == false, "Provide correct value of DockPanelInfo::title");
         const QString& text = dockPanelInfo.title;
 
         QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
