@@ -233,27 +233,29 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
 
 bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath, Vector<CollectedFile>& collectedFiles)
 {
-    sqlite::database db(metaDbPath.GetAbsolutePathname());
-
-    size_t numFiles = 0;
-
-    db << "SELECT count(*) FROM files"
-    >> [&](int64 countFiles)
-    {
-        DVASSERT(countFiles > 0);
-        numFiles = static_cast<size_t>(countFiles);
-    };
-
-    collectedFiles.clear();
-    collectedFiles.reserve(numFiles);
-
-    FileSystem* fs = FileSystem::Instance();
-
     try
     {
+        sqlite::database db(metaDbPath.GetAbsolutePathname());
+
+        size_t numFiles = 0;
+
+        db << "SELECT count(*) FROM files"
+        >> [&](int64 countFiles)
+        {
+            DVASSERT(countFiles > 0);
+            numFiles = static_cast<size_t>(countFiles);
+        };
+
+        collectedFiles.clear();
+        collectedFiles.reserve(numFiles);
+
+        FileSystem* fs = FileSystem::Instance();
+
         db << "SELECT path FROM files"
         >> [&](String path)
         {
+            std::transform(begin(path), end(path), begin(path), [](char c) { return c == '\\' ? '/' : c; });
+
             FilePath fullPath = baseDirPath + path;
             if (!fs->Exists(fullPath))
             {
@@ -490,7 +492,14 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
             fileEntry.type = useCompression;
             fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
             fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
-            fileEntry.customUserData = fileIndex; // do it or your crc32 randomly change on same files
+            if (!meta)
+            {
+                fileEntry.customUserData = 0; // do it or your crc32 randomly change on same files
+            }
+            else
+            {
+                fileEntry.customUserData = meta->GetPackIndexForFile(fileIndex); // do it or your crc32 randomly change on same files
+            }
 
             dataOffset += static_cast<uint32>(useBuffer.size());
 
@@ -515,6 +524,16 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     {
         Logger::Error("%s", ex.what());
         return false;
+    }
+
+    Vector<uint8> metaBytes;
+    if (meta)
+    {
+        metaBytes = meta->Serialize();
+        if (!WriteRawData(outputFile, metaBytes))
+        {
+            DAVA_THROW(Exception, "can't write metadata");
+        }
     }
 
     PackFormat::PackFile::FooterBlock& footerBlock = packFile.footer;
@@ -579,7 +598,14 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     footerBlock.info.namesSizeOriginal = static_cast<uint32>(namesOriginal.size());
 
     footerBlock.infoCrc32 = CRC32::ForBuffer(&footerBlock.info, sizeof(footerBlock.info));
-    footerBlock.sizeOfMetaData = 0; // TODO check it
+    if (meta)
+    {
+        footerBlock.sizeOfMetaData = metaBytes.size();
+    }
+    else
+    {
+        footerBlock.sizeOfMetaData = 0;
+    }
 
     if (!WriteHeaderBlock(outputFile, footerBlock))
     {

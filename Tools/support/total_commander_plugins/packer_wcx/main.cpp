@@ -1,6 +1,6 @@
-#include <sstream>
 #include <algorithm>
 #include <cstring>
+#include <sstream>
 
 #include "pack_archive.h"
 
@@ -19,8 +19,7 @@ const std::uint32_t MAX_PATH = 260;
 
 using HANDLE = void*;
 
-extern "C"
-{
+extern "C" {
 DLL_EXPORT HANDLE STDCALL
 OpenArchive(tOpenArchiveData* ArchiveData);
 DLL_EXPORT int STDCALL
@@ -70,6 +69,8 @@ int STDCALL CloseArchive(HANDLE hArcData)
     return 0;
 }
 
+// тут считаются все файлы, этот метод вызывается кучу раз
+// пока не вернут ноль
 int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
@@ -108,11 +109,30 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
     }
     else
     {
-        archive->fileIndex = 0;
-        std::memset(HeaderData, 0, sizeof(*HeaderData));
+        if (archive->fileIndex == files.size() && archive->HasMeta())
+        {
+            ++archive->fileIndex;
+            std::memset(HeaderData, 0, sizeof(*HeaderData));
 
-        l << "end header\n";
-        return E_END_ARCHIVE;
+            std::strncpy(HeaderData->FileName, "meta.meta", MAX_PATH);
+            std::strncpy(HeaderData->ArcName, archive->arcName.c_str(), MAX_PATH);
+            HeaderData->PackSize = 0;
+            auto& meta = archive->GetMeta();
+            HeaderData->UnpSize = meta.GetNumPacks();
+
+            archive->lastFileName = "meta.meta";
+
+            l << "add meta file\n";
+            return 0;
+        }
+        else
+        {
+            archive->fileIndex = 0;
+            std::memset(HeaderData, 0, sizeof(*HeaderData));
+
+            l << "end header\n";
+            return E_END_ARCHIVE;
+        }
     }
 
     return 0;
@@ -130,7 +150,15 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
     else if (PK_EXTRACT == Operation)
     {
         PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
-        if (archive->HasFile(archive->lastFileName))
+        if (archive->lastFileName == std::string("meta.meta"))
+        {
+            std::string data = archive->PringMeta();
+            std::string outputName = DestName ? DestName : DestPath;
+
+            std::ofstream out(outputName, std::ios_base::binary);
+            out.write(reinterpret_cast<const char*>(data.data()), data.size());
+        }
+        else if (archive->HasFile(archive->lastFileName))
         {
             std::vector<uint8_t> data;
             archive->LoadFile(archive->lastFileName, data);

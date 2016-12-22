@@ -100,9 +100,14 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
         }
     }
 
+    if (!metaDbPath.empty())
+    {
+        source = Source::UseMetaDB;
+    }
+
     if (source == Source::Unknown)
     {
-        Logger::Error("Source is not specified. Either -src or -listfile should be added");
+        Logger::Error("Source is not specified. Either -src or -listfile or -metadb should be added");
         return false;
     }
 
@@ -151,6 +156,9 @@ int ArchivePackTool::ProcessInternal()
         sources.swap(srcFiles);
         break;
     }
+    case Source::UseMetaDB:
+        // do nothing
+        break;
     default:
     {
         DVASSERT_MSG(false, Format("Incorrect source type: %d", source).c_str());

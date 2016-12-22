@@ -15,6 +15,7 @@ private:
     {
         UseListFiles,
         UseSrc,
+        UseMetaDB,
         Unknown
     };
 

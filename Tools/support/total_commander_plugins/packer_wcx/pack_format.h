@@ -1,9 +1,9 @@
 #pragma once
 
 #include <array>
-#include <vector>
-#include <string>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 #pragma once
 
@@ -30,7 +30,7 @@ struct PackFile
                 uint32_t originalSize;
                 uint32_t compressedCrc32;
                 uint32_t type;
-                std::array<char, 8> reserved; // null bytes, leave for future
+                uint32_t customUserData; // null bytes, leave for future
             };
             std::vector<Data> files;
         } data;
@@ -46,7 +46,7 @@ struct PackFile
 
     struct FooterBlock
     {
-        std::array<char, 4> reserved; // null bytes (space for future)
+        uint32_t sizeOfMetaData; // null bytes (space for future)
         uint32_t infoCrc32;
         struct Info
         {

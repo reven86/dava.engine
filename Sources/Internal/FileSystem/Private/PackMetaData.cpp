@@ -139,7 +139,7 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write compressedSize failed");
     }
 
-    if (4 != file->Write(&compBytes[0], compressedSize))
+    if (compressedSize != file->Write(&compBytes[0], compressedSize))
     {
         DAVA_THROW(Exception, "write compressedSize failed");
     }

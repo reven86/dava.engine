@@ -2,11 +2,13 @@
 
 #include <algorithm>
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 #include "lz4.h"
 
-bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
-                             std::vector<uint8_t>& out)
+static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
+                                    std::vector<uint8_t>& out)
 {
     int32_t decompressResult =
     LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()),
@@ -101,8 +103,7 @@ PackArchive::PackArchive(const std::string& archiveName)
             "crc32 not match in filesTable in file: " + fileName);
         }
 
-        std::vector<uint8_t>
-        & compressedNamesBuffer = packFile.filesTable.names.compressedNames;
+        std::vector<uint8_t>& compressedNamesBuffer = packFile.filesTable.names.compressedNames;
         compressedNamesBuffer
         .resize(packFile.footer.info.namesSizeCompressed, '\0');
 
@@ -131,18 +132,16 @@ PackArchive::PackArchive(const std::string& archiveName)
         std::vector<FileTableEntry>& fileTable = packFile.filesTable.data.files;
         fileTable.resize(footerBlock.info.numFiles);
 
-        FileTableEntry
-        * startFilesData = reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
+        FileTableEntry* startFilesData = reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
 
         std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
 
         filesInfo.reserve(footerBlock.info.numFiles);
 
         size_t numFiles =
-        std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
-                      {
-                          return '\0' == ch;
-                      });
+        std::count_if(begin(fileNames), end(fileNames), [](const char& ch) {
+            return '\0' == ch;
+        });
         if (numFiles != fileTable.size())
         {
             throw std::runtime_error("number of file names not match with table");
@@ -153,8 +152,7 @@ PackArchive::PackArchive(const std::string& archiveName)
 
         std::for_each(begin(fileTable),
                       end(fileTable),
-                      [&](FileTableEntry& fileEntry)
-                      {
+                      [&](FileTableEntry& fileEntry) {
                           const char* fileNameLoc = &fileNames[fileNameIndex];
                           mapFileData.emplace(fileNameLoc, &fileEntry);
 
@@ -171,6 +169,26 @@ PackArchive::PackArchive(const std::string& archiveName)
                           fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
                           ++fileNameIndex;
                       });
+    } // end if (footerBlock.info.numFiles > 0)
+
+    if (footerBlock.sizeOfMetaData > 0)
+    {
+        l << "parse metadata block\n";
+        uint64_t startMetaBlock = size - (sizeof(packFile.footer) +
+                                          packFile.footer.info.filesTableSize +
+                                          footerBlock.sizeOfMetaData);
+        file.seekg(startMetaBlock, std::fstream::beg);
+        std::vector<uint8_t> metaBlock(footerBlock.sizeOfMetaData);
+        if (!file)
+        {
+            throw std::runtime_error("can't seek meta");
+        }
+        file.read(reinterpret_cast<char*>(&metaBlock[0]), metaBlock.size());
+        if (!file)
+        {
+            throw std::runtime_error("can't read meta");
+        }
+        packMeta.reset(new PackMetaData(&metaBlock[0], metaBlock.size()));
     }
 
     l << "end constructor\n";
@@ -195,8 +213,7 @@ const FileInfo* PackArchive::GetFileInfo(const std::string& relativeFilePath) co
     {
         // find out index of FileInfo*
         const PackFormat::FileTableEntry* currentFile = it->second;
-        const PackFormat::FileTableEntry
-        * start = packFile.filesTable.data.files.data();
+        const PackFormat::FileTableEntry* start = packFile.filesTable.data.files.data();
         ptrdiff_t index = std::distance(start, currentFile);
         return &filesInfo.at(static_cast<uint32_t>(index));
     }
@@ -219,8 +236,7 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
         return false;
     }
 
-    const FileTableEntry
-    & fileEntry = *mapFileData.find(relativeFilePath)->second;
+    const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
 
     file.seekg(fileEntry.startPosition, std::ios_base::beg);
@@ -277,6 +293,53 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
     break;
     } // end switch
     return true;
+}
+
+bool PackArchive::HasMeta() const
+{
+    return packMeta.get() != nullptr;
+}
+
+const PackMetaData& PackArchive::GetMeta() const
+{
+    return *packMeta;
+}
+
+std::string PackArchive::PringMeta() const
+{
+    std::stringstream ss;
+    if (HasMeta())
+    {
+        const PackMetaData& meta = GetMeta();
+        size_t numFiles = meta.GetNumFiles();
+
+        // find out max filename
+        auto max_it = std::max_element(begin(filesInfo), end(filesInfo), [](const FileInfo& l, const FileInfo& r) {
+            return l.relativeFilePath.size() < r.relativeFilePath.size();
+        });
+
+        size_t max_filename = max_it->relativeFilePath.size();
+
+        ss << "-FILES---------------------------------------------------------";
+        ss << std::endl;
+        for (unsigned i = 0; i < numFiles; ++i)
+        {
+            ss << std::setw(max_filename) << filesInfo.at(i).relativeFilePath
+               << ' | ' << std::setw(10) << meta.GetPackIndexForFile(i) << std::endl;
+        }
+        ss << "-END-FILES-----------------------------------------------------";
+        ss << "-PACKS---------------------------------------------------------";
+        size_t numPacks = meta.GetNumPacks();
+        std::string packName;
+        std::string dependencies;
+        for (unsigned i = 0; i < numPacks; ++i)
+        {
+            meta.GetPackInfo(i, packName, dependencies);
+            ss << std::setw(128) << packName << ' | ' << dependencies << std::endl;
+        }
+        ss << "-END-PACKS-----------------------------------------------------";
+    }
+    return ss.str();
 }
 
 const std::uint32_t crc32_tab[256] =
