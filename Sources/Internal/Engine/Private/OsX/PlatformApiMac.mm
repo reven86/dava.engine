@@ -30,6 +30,14 @@ void RemoveNSView(Window* targetWindow, NSView* nsview)
     [nsview removeFromSuperview];
 }
 
+void PrimaryWindowDeminiaturize()
+{
+    using namespace DAVA::Private;
+    WindowBackend* wb = EngineBackend::GetWindowBackend(EngineBackend::Instance()->GetPrimaryWindow());
+    [wb->bridge->nswindow deminiaturize:wb->bridge->windowDelegate];
+    [wb->bridge->nswindow becomeKeyWindow];
+}
+
 void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
 {
     using namespace DAVA::Private;

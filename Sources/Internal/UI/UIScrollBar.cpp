@@ -27,18 +27,6 @@ void UIScrollBar::SetDelegate(UIScrollBarDelegate* newDelegate)
     delegate = newDelegate;
 }
 
-const String UIScrollBar::GetDelegatePath(const UIControl* rootControl) const
-{
-    if (delegate)
-    {
-        return delegate->GetDelegateControlPath(rootControl);
-    }
-    else
-    {
-        return "";
-    }
-}
-
 UIControl* UIScrollBar::GetSlider()
 {
     return slider;
