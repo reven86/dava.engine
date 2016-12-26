@@ -49,24 +49,21 @@ bool WindowBackend::Create(float32 width, float32 height)
         return false;
     }
 
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
-    AdjustWindowSize(&w, &h);
-
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"",
                                     windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
-                                    w,
-                                    h,
+                                    CW_USEDEFAULT,
+                                    CW_USEDEFAULT,
                                     nullptr,
                                     nullptr,
                                     PlatformCore::Win32AppInstance(),
                                     this);
     if (handle != nullptr)
     {
+        DoResizeWindow(width, height, true);
         ::ShowWindow(handle, SW_SHOWNORMAL);
         ::UpdateWindow(handle);
         return true;
@@ -201,14 +198,36 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
     }
 }
 
-void WindowBackend::DoResizeWindow(float32 width, float32 height)
+void WindowBackend::DoResizeWindow(float32 width, float32 height, bool placeInCenter)
 {
     int32 w = static_cast<int32>(width);
     int32 h = static_cast<int32>(height);
     AdjustWindowSize(&w, &h);
 
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    HMONITOR hmonitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+    ::GetMonitorInfoW(hmonitor, &mi);
+
+    int monitorWidth = mi.rcWork.right - mi.rcWork.left;
+    int monitorHeight = mi.rcWork.bottom - mi.rcWork.top;
+    w = std::min(w, monitorWidth);
+    h = std::min(h, monitorHeight);
+
+    int x = 0;
+    int y = 0;
     UINT flags = SWP_NOMOVE | SWP_NOZORDER;
-    ::SetWindowPos(hwnd, nullptr, 0, 0, w, h, flags);
+
+    if (placeInCenter)
+    {
+        RECT rc;
+        ::GetWindowRect(hwnd, &rc);
+        x = mi.rcWork.left + (monitorWidth - w) / 2;
+        y = mi.rcWork.top + (monitorHeight - h) / 2;
+        flags &= ~SWP_NOMOVE;
+    }
+
+    ::SetWindowPos(hwnd, nullptr, x, y, w, h, flags);
 }
 
 void WindowBackend::DoCloseWindow()
@@ -230,11 +249,6 @@ void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
-    if (hwnd == nullptr || ::IsWindow(hwnd) == FALSE)
-    {
-        return;
-    }
-
     // Changing of fullscreen mode leads to size changing, so set mode before it applying
     if (newMode == eFullscreen::On)
     {
@@ -378,7 +392,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height, true);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
@@ -469,13 +483,13 @@ LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 
 LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
 {
-    float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
-    float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
-    Resize(w, h);
-
     float32 curDpi = GetDpi();
     if (dpi != curDpi)
     {
+        float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
+        float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
+        DoResizeWindow(w, h, false);
+
         dpi = curDpi;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
     }

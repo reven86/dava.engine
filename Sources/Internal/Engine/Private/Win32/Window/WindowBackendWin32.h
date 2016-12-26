@@ -66,7 +66,7 @@ private:
     void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
-    void DoResizeWindow(float32 width, float32 height);
+    void DoResizeWindow(float32 width, float32 height, bool placeInCenter);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
     void DoSetMinimumSize(float32 width, float32 height);
