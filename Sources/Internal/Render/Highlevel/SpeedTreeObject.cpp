@@ -110,7 +110,7 @@ void SpeedTreeObject::Save(KeyedArchive* archive, SerializationContext* serializ
 {
     RenderObject::Save(archive, serializationContext);
 
-    archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(sphericalHarmonics.data()), HARMONICS_BUFFER_CAPACITY * sizeof(float32));
+    archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(sphericalHarmonics.data()), sphericalHarmonics.size() * sizeof(float32));
     archive->SetFloat("sto.lightSmoothing", lightSmoothing);
 }
 
@@ -120,10 +120,10 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
 
     const float32* sphericalArray = reinterpret_cast<const float32*>(archive->GetByteArray("sto.SHCoeff"));
     int32 shCount = archive->GetInt32("sto.SHBasisCount"); //old SpeedTreeObject format
-    if (shCount)
+    if (shCount && (shCount * 3) <= sphericalHarmonics.size())
         Memcpy(sphericalHarmonics.data(), sphericalArray, shCount * sizeof(Vector3));
     else
-        Memcpy(sphericalHarmonics.data(), sphericalArray, HARMONICS_BUFFER_CAPACITY * sizeof(float32));
+        Memcpy(sphericalHarmonics.data(), sphericalArray, sphericalHarmonics.size() * sizeof(float32));
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
 
