@@ -159,7 +159,7 @@ void UIScrollViewTest::ButtonPressed(BaseObject* obj, void* data, void* callerDa
     if (control)
     {
         String msg = Format("Tap on control - %s", control->GetName().c_str());
-        testMessageText->SetText(StringToWString(msg));
+        testMessageText->SetText(UTF8Utils::EncodeToWideString(msg));
     }
     else
     {

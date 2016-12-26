@@ -21,6 +21,7 @@
 
 - (void)applicationWillFinishLaunching:(NSNotification*)notification
 {
+    [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
     bridge->ApplicationWillFinishLaunching();
 }
 
@@ -69,6 +70,11 @@
 - (void)applicationWillTerminate:(NSNotification*)notification
 {
     bridge->ApplicationWillTerminate();
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification
+{
+    bridge->ApplicationDidActivateNotification(notification);
 }
 
 @end

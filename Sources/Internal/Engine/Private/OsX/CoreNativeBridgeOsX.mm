@@ -274,12 +274,19 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
             l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
             break;
+        case ON_DID_ACTIVATE_NOTIFICATION:
+            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            break;
         default:
             break;
         }
     }
 }
 
+void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
+{
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr, nullptr);
+}
 } // namespace Private
 } // namespace DAVA
 

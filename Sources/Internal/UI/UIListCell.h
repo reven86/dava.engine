@@ -1,17 +1,17 @@
 #ifndef __DAVAENGINE_UI_LIST_CELL_H__
 #define __DAVAENGINE_UI_LIST_CELL_H__
 
-#include "UI/UIButton.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
 /**
 	 \ingroup controlsystem
 	 \brief Cell unit for the UIList.
-		UIButton that can be managed by the UIList.
+		UIControl that can be managed by the UIList.
 	 */
 
-class UIListCell : public UIButton
+class UIListCell : public UIControl
 {
     friend class UIList;
 
@@ -58,7 +58,7 @@ private:
     void* cellStore;
 
 public:
-    INTROSPECTION_EXTEND(UIListCell, UIButton,
+    INTROSPECTION_EXTEND(UIListCell, UIControl,
                          PROPERTY("identifier", "Cell identifier", GetIdentifier, SetIdentifier, I_SAVE | I_VIEW | I_EDIT)
                          );
 };

@@ -4,6 +4,7 @@
         <copy todir="tmp-src" >
             <fileset dir="../../Sources/Internal/Platform/TemplateAndroid/Java/" includes="**" />
             <fileset dir="../../Sources/Internal/Engine/Private/Android/Java/" includes="**" />
+            <fileset dir="../../Sources/Internal/Notification/Private/Android/Java/" includes="**" />
         </copy>
     </target>
 
