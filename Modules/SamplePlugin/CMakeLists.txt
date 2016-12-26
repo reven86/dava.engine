@@ -16,5 +16,6 @@ set( CPP_FILES Private/*.cpp )                          # set where are sources
 
 set( PLUGIN_OUT_DIR "${PLUGIN_OUT_DIR_SamplePlugin}"  ) #plugin out dir
 #set( PLUGIN_RELATIVE_PATH_TO_FOLDER "folder1/folder2" ) #relative path to the folder with plug-ins
+#set( PLUGIN_COPY_ADD_FILES "folder1/folder2" "folder1/folder2/file1" )
 
 setup_main_module()                                     # induce macros of module formation
