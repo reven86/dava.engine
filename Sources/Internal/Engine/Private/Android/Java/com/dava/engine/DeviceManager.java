@@ -198,7 +198,9 @@ public final class DeviceManager
         
         final int id = display.getDisplayId();
         final String name = runningOnPostJellyBeanMR1() ? display.getName() : ("Unnamed-" + id);
-        
-        return new DisplayInfo(name, id, width, height, metrics.xdpi, metrics.ydpi);
+
+        // metrics.xdpi & metrics.ydpi are filled by OEM and can be incorrect (for example on ZTE Nubia Z5S)
+        // So we use densityDpi instead
+        return new DisplayInfo(name, id, width, height, metrics.densityDpi, metrics.densityDpi);
     }
 }
