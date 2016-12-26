@@ -252,7 +252,6 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
                                                           DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
     request->ReloadTexturesToGPU(GPU_ORIGIN);
-
     ScopedPtr<Scene> tempScene(new Scene());
 
     tempScene->SetMainRenderTarget(request->targetTexture->handle, request->depthTexture,
@@ -267,6 +266,9 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     if (globalMaterial)
     {
         ScopedPtr<NMaterial> global(globalMaterial->Clone());
+        if (global->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+            global->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
         tempScene->SetGlobalMaterial(global);
     }
 
@@ -276,7 +278,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     SpeedTreeObject* treeObejct = GetSpeedTreeObject(clonedEnity);
     if (treeObejct)
     {
-        DAVA::Array<DAVA::float32, SpeedTreeObject::HARMONICS_BUFFER_CAPACITY> harmonics;
+        DAVA::Array<DAVA::float32, SpeedTreeObject::HARMONICS_BUFFER_CAPACITY> harmonics = {};
         harmonics[0] = harmonics[1] = harmonics[2] = 1.f / 0.564188f; //fake SH value to make original object color
         treeObejct->SetSphericalHarmonics(harmonics);
     }
