@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 
 //
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
@@ -12,6 +13,9 @@ class Engine;
 
 struct PluginDescriptor;
 
+/**
+ \defgroup plugin manager system
+ */
 class PluginManager final
 {
 public:
@@ -22,10 +26,31 @@ public:
         EFT_Debug
     };
 
+    /**
+     \brief get list of plugins
+     \param[in] folder - folder where find plugins
+     \param[in] mode - plugins search mode, EFP_Auto - automatic, EFT_Release - only release version, EFT_Debug - only debug
+     \returns - returns a list of plugins
+     */
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
 
+    /**
+     \brief initializes and load plugin
+     \param[in] pluginPatch - path to plugin
+     \returns - pointer descriptor to plugin
+     */
     const PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
+
+    /**
+     \brief delete downloaded plugin
+     \param[in] desc - pointer to plugin descriptor
+     \returns - returns true - success, false - error
+     */
     bool ShutdownPlugin(const PluginDescriptor* desc);
+
+    /**
+     \brief removes all loaded plugin
+     */
     void ShutdownPlugins();
 
     PluginManager(Engine* engine);
@@ -36,3 +61,4 @@ private:
     Engine* rootEngine;
 };
 }
+#endif // __DAVAENGINE_COREV2__

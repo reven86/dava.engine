@@ -110,7 +110,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
 
     if (sc2FolderPath.IsEmpty())
     {
-        SetSC2FolderValue(REGlobal::GetDataNode<ProjectManagerData>()->GetDataSourcePath().GetAbsolutePathname().c_str());
+        SetSC2FolderValue(REGlobal::GetDataNode<ProjectManagerData>()->GetDataSource3DPath().GetAbsolutePathname().c_str());
     }
 
     ui->xmlListWidget->clear();

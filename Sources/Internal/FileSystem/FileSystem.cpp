@@ -237,7 +237,9 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     {
         const char* errorReason = strerror(errno);
         Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
-                      fromFile.c_str(), toFile.c_str(), errorReason);
+                      existingFile.GetStringValue().c_str(),
+                      newFile.GetStringValue().c_str(),
+                      errorReason);
     }
     return !error;
 }
@@ -469,6 +471,22 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     return currentExecuteDirectory.MakeDirectoryPathname();
 }
 
+FilePath FileSystem::GetCurrentPluginDirectory()
+{
+    FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
+
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    FilePath pluginDirectory = currentExecuteDirectory + "../PlugIns/";
+
+#else
+    FilePath pluginDirectory = currentExecuteDirectory + "PlugIns/";
+    
+#endif //PLATFORMS
+
+    return pluginDirectory;
+}
+
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
@@ -613,7 +631,7 @@ bool FileSystem::IsHidden(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_WINDOWS__)
     WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-    BOOL areAttributesGot = GetFileAttributesExW(StringToWString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
+    BOOL areAttributesGot = GetFileAttributesExW(UTF8Utils::EncodeToWideString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
     return (areAttributesGot == TRUE && (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0);
 #else
     String name = pathToCheck.IsDirectoryPathname() ? pathToCheck.GetLastDirectoryName() : pathToCheck.GetFilename();

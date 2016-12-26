@@ -15,11 +15,11 @@ DAVA_TESTCLASS (GenerateMipmapsTest)
         {
           PixelFormat::FORMAT_RGBA8888,
           PixelFormat::FORMAT_RGBA5551,
-          PixelFormat::FORMAT_RGBA4444,
+          //          PixelFormat::FORMAT_RGBA4444, //downscale not implemented
           PixelFormat::FORMAT_RGB888,
-          PixelFormat::FORMAT_RGB565,
+          //          PixelFormat::FORMAT_RGB565, //downscale not implemented
           PixelFormat::FORMAT_A8,
-          PixelFormat::FORMAT_A16,
+          //          PixelFormat::FORMAT_A16, //downscale not implemented
         };
 
         const uint32 width = 64;

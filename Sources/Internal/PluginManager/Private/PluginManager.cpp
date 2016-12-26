@@ -1,9 +1,11 @@
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
 #include "Utils/StringUtils.h"
-#include "PluginManager/PluginManager.h"
+
 #include "PluginManager/Plugin.h"
 #include "ModuleManager/IModule.h"
+#include "PluginManager/PluginManager.h"
 
 namespace DAVA
 {
@@ -117,12 +119,12 @@ const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
 
         if (nullptr == desc.plugin)
         {
-            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str() );
+            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str());
             success = false;
         }
     }
 
-    if (!success )
+    if (!success)
     {
         ClosePlugin(desc.handle);
         return nullptr;
@@ -146,8 +148,8 @@ bool PluginManager::ShutdownPlugin(const PluginDescriptor* desc)
         if (&(*it) == desc)
         {
             desc->plugin->Shutdown();
-            desc->destroyPluginFunc( desc->plugin );
-            ClosePlugin( desc->handle );
+            desc->destroyPluginFunc(desc->plugin);
+            ClosePlugin(desc->handle);
             pluginDescriptors.erase(it);
             return true;
         }
@@ -183,3 +185,5 @@ PluginManager::~PluginManager()
     DVASSERT(pluginDescriptors.empty());
 }
 }
+
+#endif // __DAVAENGINE_COREV2__

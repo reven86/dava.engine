@@ -113,7 +113,7 @@ void FunctionSpeedTestJob(FunctionSignalTest* fst)
     resStr += BenchTest("  dava  ", davaStatic, 10, 20);
 
     JobManager::Instance()->CreateMainJob([fst, resStr] {
-        fst->runResult->SetText(StringToWString(resStr));
+        fst->runResult->SetText(UTF8Utils::EncodeToWideString(resStr));
     });
 
     int cap1 = 10, cap2 = 20;
@@ -127,7 +127,7 @@ void FunctionSpeedTestJob(FunctionSignalTest* fst)
     resStr += BenchTest("  dava  ", davaLam);
 
     JobManager::Instance()->CreateMainJob([fst, resStr] {
-        fst->runResult->SetText(StringToWString(resStr));
+        fst->runResult->SetText(UTF8Utils::EncodeToWideString(resStr));
     });
 
     auto nativeCls = [](TestStruct* ts, int a, int b, int i) -> int { return ts->test(a, b, i); };
@@ -140,7 +140,7 @@ void FunctionSpeedTestJob(FunctionSignalTest* fst)
     resStr += BenchTest("  dava  ", davaCls, &ts, 10, 20);
 
     JobManager::Instance()->CreateMainJob([fst, resStr] {
-        fst->runResult->SetText(StringToWString(resStr));
+        fst->runResult->SetText(UTF8Utils::EncodeToWideString(resStr));
     });
 
     auto nativeObj = [&ts](int a, int b, int i) -> int { return ts.test(a, b, i); };
@@ -153,7 +153,7 @@ void FunctionSpeedTestJob(FunctionSignalTest* fst)
     resStr += BenchTest("  dava  ", davaObj, 10, 20);
 
     JobManager::Instance()->CreateMainJob([fst, resStr] {
-        fst->runResult->SetText(StringToWString(resStr));
+        fst->runResult->SetText(UTF8Utils::EncodeToWideString(resStr));
     });
 
     auto nativeBind = std::bind(&TestStruct::test, &ts, 10, 20, std::placeholders::_1);
@@ -168,7 +168,7 @@ void FunctionSpeedTestJob(FunctionSignalTest* fst)
     resStr += "\n\nDone!";
 
     JobManager::Instance()->CreateMainJob([fst, resStr] {
-        fst->runResult->SetText(StringToWString(resStr));
+        fst->runResult->SetText(UTF8Utils::EncodeToWideString(resStr));
         fst->runButton->SetDisabled(false);
     });
 }

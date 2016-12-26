@@ -28,7 +28,7 @@ void ClosePlugin(PluginHandle handle)
     dlclose(handle);
 }
 
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__)
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
@@ -59,7 +59,6 @@ void* LoadFunction(PluginHandle handle, const char* funcName)
 
 void ClosePlugin(PluginHandle handle)
 {
-    dlclose(handle);
 }
  
 #endif

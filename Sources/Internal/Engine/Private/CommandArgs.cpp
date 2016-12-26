@@ -97,7 +97,7 @@ Vector<String> GetCommandArgs()
 Vector<String> GetCommandArgs()
 {
     LPWSTR cmdline = ::GetCommandLineW();
-    return GetCommandArgs(WStringToString(cmdline));
+    return GetCommandArgs(UTF8Utils::EncodeToUTF8(cmdline));
 }
 
 #endif
