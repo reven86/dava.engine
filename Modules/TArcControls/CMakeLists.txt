@@ -16,7 +16,7 @@ set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)
 
 set( PLUGIN_DEBUG_POSTFIX "d")
-set( PLUGIN_OUT_DIR "d:/dev/dava.framework/Tools/ResourceEditor/_build/Debug/plugins/" )
+set(PLUGIN_RELATIVE_PATH_TO_FOLDER "TArcControls")
 
 set( PLUGIN_PRE_BUILD_COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Sources/BuildScripts/pre-build.py")
 set( PLUGIN_PRE_BUILD_PARAMS "${CMAKE_CURRENT_LIST_DIR}/Sources")
