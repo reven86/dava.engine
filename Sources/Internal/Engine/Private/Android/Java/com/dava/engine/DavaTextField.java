@@ -578,7 +578,7 @@ final class DavaTextField implements TextWatcher,
                     return null;
                 }
 
-                if (source instanceof Spanned || source instanceof Spannable)
+                if (source instanceof Spanned)
                 {
                     Spanned spanned = (Spanned)source;
                     SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(source);
@@ -815,7 +815,14 @@ final class DavaTextField implements TextWatcher,
         {
             inputType &= ~EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
         }
+
+        int previousCursorPos = getCursorPos();
+        programmaticTextChange = true; // setInputType might toggle filter to execute due to password transformation method
         nativeTextField.setInputType(inputType);
+        programmaticTextChange = false; // In case filter didn't execute (i.e. when text is empty)
+
+        // After transformation (if password is true) move cursor back
+        setNativeCursorPos(previousCursorPos);
     }
 
     void setNativeMultiline(boolean multiline)
