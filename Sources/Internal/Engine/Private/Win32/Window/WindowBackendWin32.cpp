@@ -63,7 +63,7 @@ bool WindowBackend::Create(float32 width, float32 height)
                                     this);
     if (handle != nullptr)
     {
-        DoResizeWindow(width, height, true);
+        DoResizeWindow(width, height, CENTER_ON_DISPLAY);
         ::ShowWindow(handle, SW_SHOWNORMAL);
         ::UpdateWindow(handle);
         return true;
@@ -198,11 +198,14 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
     }
 }
 
-void WindowBackend::DoResizeWindow(float32 width, float32 height, bool placeInCenter)
+void WindowBackend::DoResizeWindow(float32 width, float32 height, int resizeFlags)
 {
     int32 w = static_cast<int32>(width);
     int32 h = static_cast<int32>(height);
-    AdjustWindowSize(&w, &h);
+    if ((resizeFlags & RESIZE_WHOLE_WINDOW) == 0)
+    {
+        AdjustWindowSize(&w, &h);
+    }
 
     MONITORINFO mi;
     mi.cbSize = sizeof(mi);
@@ -218,7 +221,7 @@ void WindowBackend::DoResizeWindow(float32 width, float32 height, bool placeInCe
     int y = 0;
     UINT flags = SWP_NOMOVE | SWP_NOZORDER;
 
-    if (placeInCenter)
+    if (resizeFlags & CENTER_ON_DISPLAY)
     {
         RECT rc;
         ::GetWindowRect(hwnd, &rc);
@@ -392,7 +395,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height, true);
+        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height, CENTER_ON_DISPLAY);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
@@ -488,7 +491,7 @@ LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
     {
         float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
         float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
-        DoResizeWindow(w, h, false);
+        DoResizeWindow(w, h, RESIZE_WHOLE_WINDOW);
 
         dpi = curDpi;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));

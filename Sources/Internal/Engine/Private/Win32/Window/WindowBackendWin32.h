@@ -63,10 +63,17 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    // Flags used with DoResizeWindow
+    enum eResizeFlags
+    {
+        CENTER_ON_DISPLAY = 0x01, //!< Resize and place window on the center of display
+        RESIZE_WHOLE_WINDOW = 0x02, //!< Size given for whole window including border and caption
+    };
+
     void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
-    void DoResizeWindow(float32 width, float32 height, bool placeInCenter);
+    void DoResizeWindow(float32 width, float32 height, int resizeFlags);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
     void DoSetMinimumSize(float32 width, float32 height);
