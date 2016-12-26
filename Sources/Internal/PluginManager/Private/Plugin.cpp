@@ -32,7 +32,9 @@ void ClosePlugin(PluginHandle handle)
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
-    return LoadLibraryA(pluginPath);
+    wchar_t pluginWcharPath[MAX_PATH];
+    ::MultiByteToWideChar(CP_ACP, 0, (const char*)(pluginPath), -1, pluginWcharPath, sizeof(pluginWcharPath) / sizeof(pluginWcharPath[0]));
+    return LoadLibraryW(pluginWcharPath);
 }
 
 void* LoadFunction(PluginHandle handle, const char* funcName)

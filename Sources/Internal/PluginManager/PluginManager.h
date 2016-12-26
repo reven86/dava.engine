@@ -22,7 +22,7 @@ public:
     enum eFindPluginMode
     {
         Auto, //!< auto mode
-        Release, //!<  only release plugins
+        Release, //!< only release plugins
         Debug //!< only plugins
     };
 
