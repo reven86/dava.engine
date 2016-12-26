@@ -21,6 +21,7 @@ using ABGR16161616 = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32323232 = RGBA_PIXEL(uint32, r, g, b, a);
 using ABGR32323232 = RGBA_PIXEL(uint32, a, b, g, r);
 using RGBA16F = RGBA_PIXEL(uint16, r, g, b, a);
+using ABGR16F = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32F = RGBA_PIXEL(float32, r, g, b, a);
 using ABGR32F = RGBA_PIXEL(float32, a, b, g, r);
 
@@ -157,6 +158,18 @@ struct ConvertABGR16161616toRGBA16161616
     inline void operator()(const ABGR16161616* input, RGBA16161616* output)
     {
         ABGR16161616 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
+struct ConvertABGR16FtoRGBA16F
+{
+    inline void operator()(const ABGR16F* input, RGBA16F* output)
+    {
+        ABGR16F inp = *input;
         output->r = inp.r;
         output->g = inp.g;
         output->b = inp.b;

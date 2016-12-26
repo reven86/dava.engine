@@ -86,12 +86,12 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 #else
     FilePath sourcePathname = descriptor.GetSourceTexturePathname();
 
-    bool shouldHackRGBA32FImage = false;
+    bool shouldHackRGBAFloatImage = false;
     FilePath inputPathname = sourcePathname;
 
     SCOPE_EXIT
     {
-        if (shouldHackRGBA32FImage)
+        if (shouldHackRGBAFloatImage)
         {
             FileSystem::Instance()->DeleteFile(inputPathname);
         }
@@ -100,23 +100,34 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
     if (sourcePathname.IsEqualToExtension(".dds"))
     {
         ImageInfo sourceInfo = ImageSystem::GetImageInfo(sourcePathname);
-        shouldHackRGBA32FImage = (sourceInfo.format == PixelFormat::FORMAT_RGBA32F);
-        if (shouldHackRGBA32FImage)
+        shouldHackRGBAFloatImage = (sourceInfo.format == PixelFormat::FORMAT_RGBA32F || sourceInfo.format == PixelFormat::FORMAT_RGBA16F);
+        if (shouldHackRGBAFloatImage)
         {
             inputPathname.ReplaceBasename(sourcePathname.GetBasename() + "_hack");
 
-            Vector<Image*> abgr32fImages;
-            ImageSystem::Load(sourcePathname, abgr32fImages);
+            Vector<Image*> abgrfImages;
+            ImageSystem::Load(sourcePathname, abgrfImages);
 
-            for (Image* img : abgr32fImages)
+            if (sourceInfo.format == PixelFormat::FORMAT_RGBA32F)
             {
-                ConvertDirect<ABGR32F, RGBA32F, ConvertABGR32FtoRGBA32F> convert;
-                convert(img->data, img->width, img->height, img->width * sizeof(ABGR32F), img->data);
+                for (Image* img : abgrfImages)
+                {
+                    ConvertDirect<ABGR32F, RGBA32F, ConvertABGR32FtoRGBA32F> convert;
+                    convert(img->data, img->width, img->height, img->width * sizeof(ABGR32F), img->data);
+                }
+            }
+            else if (sourceInfo.format == PixelFormat::FORMAT_RGBA16F)
+            {
+                for (Image* img : abgrfImages)
+                {
+                    ConvertDirect<ABGR16F, RGBA16F, ConvertABGR16FtoRGBA16F> convert;
+                    convert(img->data, img->width, img->height, img->width * sizeof(ABGR16F), img->data);
+                }
             }
 
-            ImageSystem::Save(inputPathname, abgr32fImages, PixelFormat::FORMAT_RGBA32F);
+            ImageSystem::Save(inputPathname, abgrfImages, sourceInfo.format);
 
-            for (Image* img : abgr32fImages)
+            for (Image* img : abgrfImages)
             {
                 SafeRelease(img);
             }
