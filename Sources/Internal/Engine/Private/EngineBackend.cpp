@@ -328,18 +328,14 @@ int32 EngineBackend::OnFrame()
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
-#if defined(__DAVAENGINE_QT__)
-    if (Renderer::IsInitialized())
-    {
-        rhi::InvalidateCache();
-    }
-#endif
-
     DoEvents();
     if (!appIsSuspended)
     {
         if (Renderer::IsInitialized())
         {
+#if defined(__DAVAENGINE_QT__)
+            rhi::InvalidateCache();
+#endif
             Update(frameDelta);
             UpdateWindows(frameDelta);
         }
@@ -378,21 +374,18 @@ void EngineBackend::UpdateWindows(float32 frameDelta)
 {
     for (Window* w : aliveWindows)
     {
-        if (w->IsVisible())
+        BeginFrame();
         {
-            BeginFrame();
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
-                w->Update(frameDelta);
-            }
-
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
-                Renderer::GetRenderStats().Reset();
-                w->Draw();
-            }
-            EndFrame();
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
+            w->Update(frameDelta);
         }
+
+        {
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
+            Renderer::GetRenderStats().Reset();
+            w->Draw();
+        }
+        EndFrame();
     }
 }
 
