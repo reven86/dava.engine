@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Icons/3d.png</file>
+        <file>Icons/accept_button.png</file>
+    </qresource>
+</RCC>

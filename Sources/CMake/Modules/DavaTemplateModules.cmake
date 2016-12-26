@@ -80,6 +80,7 @@ FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 QT_UI_FILES
 QT_RES_FILES
+QT_QML_FILES
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -94,6 +95,9 @@ EXCLUDE_FROM_ALL
 #
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
+PLUGIN_DEBUG_POSTFIX
+PLUGIN_PRE_BUILD_COMMAND
+PLUGIN_PRE_BUILD_PARAMS
 #
 )
 #
@@ -463,18 +467,21 @@ macro( setup_main_module )
 
         endif()
 
-        if (QT_UI_FILES OR QT_RES_FILES)
+        if (QT_UI_FILES OR QT_RES_FILES OR QT_QML_FILES)
             file              ( GLOB_RECURSE UI_LIST  ${QT_UI_FILES})
             qt5_wrap_ui ( QT_UI_HEADERS ${UI_LIST} )
 
             file              ( GLOB_RECURSE RCC_LIST  ${QT_RES_FILES})
             qt5_add_resources ( QT_RCC  ${RCC_LIST} )
 
-            list(APPEND HPP_FILES ${QT_UI_HEADERS})
+            file              ( GLOB_RECURSE QML_LIST ${QT_QML_FILES})
+
+            list(APPEND HPP_FILES ${QT_UI_HEADERS} ${QML_LIST})
             list(APPEND CPP_FILES ${QT_RCC})
 
-            set(QtGenerated ${QT_UI_HEADERS} ${QT_RCC})
-            list(APPEND GROUP_SOURCE QtGenerated)
+            set(QtGenerated ${QT_UI_HEADERS} ${QT_RCC} ${QML_LIST})
+            set(Qml ${QML_LIST})
+            list(APPEND GROUP_SOURCE QtGenerated Qml)
         endif()
 
         define_source( SOURCE         ${CPP_FILES} ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
@@ -565,17 +572,25 @@ macro( setup_main_module )
 
             elseif( ${MODULE_TYPE} STREQUAL "PLUGIN" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
+
+                if (PLUGIN_PRE_BUILD_COMMAND AND PLUGIN_PRE_BUILD_PARAMS)
+                    add_custom_command(TARGET ${NAME_MODULE} PRE_BUILD COMMAND ${PLUGIN_PRE_BUILD_COMMAND} ${PLUGIN_PRE_BUILD_PARAMS})
+                endif()
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST ) 
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
                 add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
 
                 if( WIN32 )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
-                endif()            
+                endif()
+
+                if (NOT PLUGIN_DEBUG_POSTFIX)
+                    set(PLUGIN_DEBUG_POSTFIX "Debug")
+                endif()
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX Debug   )
+                                                                 DEBUG_POSTFIX ${PLUGIN_DEBUG_POSTFIX})
                 if( APPLE AND PLUGIN_OUT_DIR )
                     get_filename_component( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR} ABSOLUTE )
                     set_target_properties( ${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${PLUGIN_OUT_DIR} )

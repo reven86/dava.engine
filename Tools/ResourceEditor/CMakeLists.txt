@@ -49,6 +49,8 @@ find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
 find_package( GMock REQUIRED )
 
+add_plugin( TArcControls "${DAVA_MODULES_DIR}/TArcControls" )
+
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
 include_directories   ( "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
@@ -99,6 +101,8 @@ file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 file              ( GLOB QML_LIST "DataQt/*.qml")
+
+set (QML_SCAN_DIR ${FRAMEWORK_PATH})
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)
