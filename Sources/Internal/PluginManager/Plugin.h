@@ -44,11 +44,11 @@ PluginHandle OpenPlugin(const char* pluginPath);
 
 /**
 Return a pointer to function of the the plugin
- */
+*/
 void* LoadFunction(PluginHandle handle, const char* funcName);
 
 /**
-Unloads plug on handles
+Unloads plugin on handles
 */
 void ClosePlugin(PluginHandle handle);
 

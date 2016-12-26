@@ -14,8 +14,8 @@ class Engine;
 struct PluginDescriptor;
 
 /**
- \defgroup plugin manager system
- */
+plugin manager system
+*/
 class PluginManager final
 {
 public:
@@ -28,22 +28,22 @@ public:
 
     /**
      Returns a list of plugins in the specified mode.
-     */
+    */
     Vector<FilePath> GetPlugins(const FilePath& folder, eFindPluginMode mode) const;
 
     /**
      Load plugin located on the path pluginPath and returns descriptor to it
-     */
+    */
     const PluginDescriptor* LoadPlugin(const FilePath& pluginPath);
 
     /**
     Unload plugin on a descriptor and returns the operation result
-     */
+    */
     bool UnloadPlugin(const PluginDescriptor* desc);
 
     /**
      Unload all loaded plugins
-     */
+    */
     void UnloadPlugins();
 
     PluginManager(Engine* engine);
