@@ -471,7 +471,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     return currentExecuteDirectory.MakeDirectoryPathname();
 }
 
-FilePath FileSystem::GetCurrentPluginDirectory()
+FilePath FileSystem::GetPluginDirectory()
 {
     FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
 

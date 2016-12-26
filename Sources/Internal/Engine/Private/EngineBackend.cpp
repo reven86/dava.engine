@@ -797,7 +797,7 @@ void EngineBackend::DestroySubsystems()
     }
     if (context->pluginManager != nullptr)
     {
-        context->pluginManager->ShutdownPlugins();
+        context->pluginManager->UnloadPlugins();
         delete context->pluginManager;
     }
     if (context->jobManager != nullptr)

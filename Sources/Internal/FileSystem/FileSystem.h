@@ -96,7 +96,7 @@ public:
      \brief Function to retrieve directory, which contain plugins files
      \returns plugin directory
      */
-    virtual FilePath GetCurrentPluginDirectory();
+    virtual FilePath GetPluginDirectory();
 
     /**
 		\brief Function to set current working directory

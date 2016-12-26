@@ -12,7 +12,6 @@
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
 #include "ModuleManager/ModuleManager.h"
-#include "PluginManager/PluginManager.h"
 /**
 	\defgroup core Core
 	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and

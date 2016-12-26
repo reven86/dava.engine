@@ -19,39 +19,32 @@ struct PluginDescriptor;
 class PluginManager final
 {
 public:
-    enum eFindPlugunMode
+    enum eFindPluginMode
     {
-        EFP_Auto,
-        EFT_Release,
-        EFT_Debug
+        Auto, //!< auto mode
+        Release, //!<  only release plugins
+        Debug //!< only plugins
     };
 
     /**
-     \brief get list of plugins
-     \param[in] folder - folder where find plugins
-     \param[in] mode - plugins search mode, EFP_Auto - automatic, EFT_Release - only release version, EFT_Debug - only debug
-     \returns - returns a list of plugins
+     Returns a list of plugins in the specified mode.
      */
-    Vector<FilePath> GetPlugins(const FilePath& folder, eFindPlugunMode mode) const;
+    Vector<FilePath> GetPlugins(const FilePath& folder, eFindPluginMode mode) const;
 
     /**
-     \brief initializes and load plugin
-     \param[in] pluginPatch - path to plugin
-     \returns - pointer descriptor to plugin
+     Load plugin located on the path pluginPath and returns descriptor to it
      */
-    const PluginDescriptor* InitPlugin(const FilePath& pluginPatch);
+    const PluginDescriptor* LoadPlugin(const FilePath& pluginPath);
 
     /**
-     \brief delete downloaded plugin
-     \param[in] desc - pointer to plugin descriptor
-     \returns - returns true - success, false - error
+    Unload plugin on a descriptor and returns the operation result
      */
-    bool ShutdownPlugin(const PluginDescriptor* desc);
+    bool UnloadPlugin(const PluginDescriptor* desc);
 
     /**
-     \brief removes all loaded plugin
+     Unload all loaded plugins
      */
-    void ShutdownPlugins();
+    void UnloadPlugins();
 
     PluginManager(Engine* engine);
     ~PluginManager();

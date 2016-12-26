@@ -22,7 +22,7 @@ struct PluginDescriptor
     PluginHandle handle;
 };
 
-Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMode mode) const
+Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPluginMode mode) const
 {
 #ifdef __DAVAENGINE_DEBUG__
     bool debugMode = true;
@@ -58,16 +58,16 @@ Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMo
 
             switch (mode)
             {
-            case EFP_Auto:
+            case Auto:
                 isModeMatched = debugMode == debugLib;
                 break;
 
-            case EFT_Release:
+            case Release:
                 isModeMatched = !debugLib;
 
                 break;
 
-            case EFT_Debug:
+            case Debug:
                 isModeMatched = debugLib;
                 break;
             }
@@ -82,34 +82,34 @@ Vector<FilePath> PluginManager::GetPlugins(const FilePath& folder, eFindPlugunMo
     return pluginsList;
 }
 
-const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
+const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
 {
     PluginDescriptor desc;
 
     bool success = true;
 
     // Open the library.
-    String pluginPath = pluginPatch.GetAbsolutePathname();
-    desc.handle = OpenPlugin(pluginPath.c_str());
+    String pluginAbsPath = pluginPath.GetAbsolutePathname();
+    desc.handle = OpenPlugin(pluginAbsPath.c_str());
     if (nullptr == desc.handle)
     {
-        Logger::Warning("[%s] Unable to open library: %s\n", __FILE__, pluginPath.c_str());
+        Logger::Debug("[%s] Unable to open library: %s\n", __FILE__, pluginAbsPath.c_str());
         return nullptr;
     }
 
-    desc.pluginName = pluginPatch.GetFilename();
+    desc.pluginName = pluginPath.GetFilename();
     desc.createPluginFunc = LoadFunction<CreatePluginFuncPtr>(desc.handle, "CreatePlugin");
     desc.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>(desc.handle, "DestroyPlugin");
 
     if (nullptr == desc.createPluginFunc)
     {
-        Logger::Warning("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
+        Logger::Debug("[%s] Unable to get symbol: %s\n", __FILE__, "CreatePlugin");
         success = false;
     }
 
     if (nullptr == desc.destroyPluginFunc)
     {
-        Logger::Warning("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
+        Logger::Debug("[%s] Unable to get symbol: %s\n", __FILE__, "DestroyPlugin");
         success = false;
     }
 
@@ -119,7 +119,7 @@ const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
 
         if (nullptr == desc.plugin)
         {
-            Logger::Warning("[%s] Can not create plugin: %s\n", __FILE__, pluginPath.c_str());
+            Logger::Debug("[%s] Can not create plugin: %s\n", __FILE__, pluginAbsPath.c_str());
             success = false;
         }
     }
@@ -139,37 +139,40 @@ const PluginDescriptor* PluginManager::InitPlugin(const FilePath& pluginPatch)
     return &pluginDescriptors.back();
 }
 
-bool PluginManager::ShutdownPlugin(const PluginDescriptor* desc)
+bool PluginManager::UnloadPlugin(const PluginDescriptor* desc)
 {
     DVASSERT(desc != nullptr);
 
-    for (auto it = begin(pluginDescriptors); it != end(pluginDescriptors); ++it)
+    auto FindDesc = [desc](PluginDescriptor& d)
     {
-        if (&(*it) == desc)
-        {
-            desc->plugin->Shutdown();
-            desc->destroyPluginFunc(desc->plugin);
-            ClosePlugin(desc->handle);
-            pluginDescriptors.erase(it);
-            return true;
-        }
+        return &d == desc;
+    };
+
+    auto it = std::find_if(begin(pluginDescriptors), end(pluginDescriptors), FindDesc);
+    if (it != pluginDescriptors.end())
+    {
+        desc->plugin->Shutdown();
+        desc->destroyPluginFunc(desc->plugin);
+        ClosePlugin(desc->handle);
+        pluginDescriptors.erase(it);
+        return true;
     }
 
     return false;
 }
 
-void PluginManager::ShutdownPlugins()
+void PluginManager::UnloadPlugins()
 {
-    for (auto& desc : pluginDescriptors)
+    for (auto it = rbegin(pluginDescriptors); it != rend(pluginDescriptors); ++it)
     {
-        desc.plugin->Shutdown();
+        it->plugin->Shutdown();
     }
 
-    for (auto& desc : pluginDescriptors)
+    for (auto it = rbegin(pluginDescriptors); it != rend(pluginDescriptors); ++it)
     {
-        desc.destroyPluginFunc(desc.plugin);
-        ClosePlugin(desc.handle);
-        Logger::Debug("Plugin unloaded - %s", desc.pluginName.c_str());
+        it->destroyPluginFunc(it->plugin);
+        ClosePlugin(it->handle);
+        Logger::Debug("Plugin unloaded - %s", it->pluginName.c_str());
     }
 
     pluginDescriptors.clear();
