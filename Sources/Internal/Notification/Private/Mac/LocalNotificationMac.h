@@ -1,23 +1,22 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_IOS_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_IOS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_MACOS__)
 
-#include "LocalNotificationImpl.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 #include "Base/Message.h"
 
 namespace DAVA
 {
-struct UILocalNotificationWrapper;
+struct NSUserNotificationWrapper;
 
-class LocalNotificationIOS : public LocalNotificationImpl
+class LocalNotificationMac : public LocalNotificationImpl
 {
 public:
-    LocalNotificationIOS(const String& _id);
-    ~LocalNotificationIOS() override;
+    LocalNotificationMac(const String& _id);
+    ~LocalNotificationMac() override;
 
     void SetAction(const WideString& action) override;
     void Hide() override;
@@ -27,10 +26,8 @@ public:
     void RemoveAllDelayedNotifications() override;
 
 public:
-    UILocalNotificationWrapper* notification;
+    NSUserNotificationWrapper* notification;
 };
 }
 
-#endif
-
-#endif /* defined __DAVAENGINE_NOTIFICATION_MACOS_H__ */
+#endif // defined(__DAVAENGINE_MACOS__)
