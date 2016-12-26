@@ -1,0 +1,31 @@
+module TArcControls.Styles
+
+GradientSliderStyle 1.0 1.0GradientSliderStyle.qml
+GridViewStyle 1.0 1.0GridViewStyle.qml
+ItemViewStyle 1.0 1.0ItemViewStyle.qml
+ListViewStyle 1.0 1.0ListViewStyle.qml
+ScrollViewStyle 1.0 1.0ScrollViewStyle.qml
+TableViewStyle 1.0 1.0TableViewStyle.qml
+TimelineBarSliderStyle 1.0 1.0TimelineBarSliderStyle.qml
+TimelineFrameSliderStyle 1.0 1.0TimelineFrameSliderStyle.qml
+TreeViewStyle 1.0 1.0TreeViewStyle.qml
+
+ColorSliderStyle 1.0 1.0ColorSliderStyle.qml
+SliderStyle 1.0 1.0SliderStyle.qml
+
+ButtonStyle 1.0 1.0ButtonStyle.qml
+CheckBoxStyle 1.0 1.0CheckBoxStyle.qml
+CheckStyle 1.0 1.0CheckStyle.qml
+TextBoxStyle 1.0 1.0TextBoxStyle.qml
+InvisTextBoxStyle 1.0 1.0InvisTextBoxStyle.qml
+MenuStyle 1.0 1.0MenuStyle.qml
+RadioStyle 1.0 1.0RadioStyle.qml
+ScrollBarStyle 1.0 1.0ScrollBarStyle.qml
+TabViewStyle 1.0 1.0TabViewStyle.qml
+TagButtonStyle 1.0 1.0TagButtonStyle.qml
+ToolButtonStyle 1.0 1.0ToolButtonStyle.qml
+ButtonFrame 1.0 ButtonFrame.qml
+
+OverlayButtonStyle 1.0 Overlay/OverlayButtonStyle.qml
+OverlaySliderStyle 1.0 Overlay/OverlaySliderStyle.qml
+OverlayTextBoxStyle 1.0 Overlay/OverlayTextBoxStyle.qml
