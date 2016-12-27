@@ -4,6 +4,6 @@ endif ()
 set ( DAVA_TOOLS_FOUND 1 )
 
 get_filename_component( CURRENT_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH CACHE )
-add_subdirectory ( "${CURRENT_DIR}/../../Programs" ${CMAKE_CURRENT_BINARY_DIR}/DavaTools )
-include_directories( "${CURRENT_DIR}/../../Programs" )
+add_subdirectory ( "${CURRENT_DIR}/../../../Programs" ${CMAKE_CURRENT_BINARY_DIR}/DavaTools )
+include_directories( "${CURRENT_DIR}/../../../Programs" )
 set( DAVA_TOOLS_LIBRARY    DavaTools )
