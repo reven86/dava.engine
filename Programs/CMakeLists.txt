@@ -14,7 +14,7 @@ macro ( add_tool TARGET_NAME )
     if( ARG_ROOT_DIR )
         add_subdirectory      ( "${ARG_ROOT_DIR}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     else()
-        add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+        add_subdirectory      ( "${DAVA_ROOT_DIR}/Programs/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     endif() 
 
     get_property( DEPLOY_DIR_PRJ GLOBAL PROPERTY DEPLOY_DIR_${TARGET_NAME} )

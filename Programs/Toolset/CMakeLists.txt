@@ -17,7 +17,7 @@ macro ( add_tool TARGET_NAME )
     if( ARG_ROOT_DIR )
         add_subdirectory      ( "${ARG_ROOT_DIR}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     else()
-        add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+        add_subdirectory      ( "${DAVA_ROOT_DIR}/Programs/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     endif() 
 
     set( DEPLOY_DIR ${OLD_DEPLOY_DIR} )

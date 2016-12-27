@@ -16,7 +16,7 @@ include ( CMake-common )
 if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
     set( DEPLOY_ROOT ${DEPLOY_DIR} )
     set( DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME} )
-    set( DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME} )
+    set( DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Programs/${PROJECT_NAME} )
     set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
 endif()
 

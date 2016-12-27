@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="./../Collada15/FCollada;./../Collada15/FCollada/libXML/include;./../../../Sources/External;./../../../Sources/Internal;&quot;./../../../Tools/ColladaConverter/DevIL-SDK-x86-1.7.7/include&quot;;./../../../Tools/ColladaConverter/glew/include"
+				AdditionalIncludeDirectories="./../Collada15/FCollada;./../Collada15/FCollada/libXML/include;./../../../Sources/External;./../../../Sources/Internal;&quot;./../../../Programs/ColladaConverter/DevIL-SDK-x86-1.7.7/include&quot;;./../../../Programs/ColladaConverter/glew/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="FCollada.lib DevIL.lib ILU.lib glew32.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;./../../../Tools/ColladaConverter/DevIL-SDK-x86-1.7.7/lib&quot;;./../../../Tools/ColladaConverter/glew/lib"
+				AdditionalLibraryDirectories="&quot;./../../../Programs/ColladaConverter/DevIL-SDK-x86-1.7.7/lib&quot;;./../../../Programs/ColladaConverter/glew/lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="./../Collada15/FCollada;./../Collada15/FCollada/libXML/include;./../../../Sources/External;./../../../Sources/Internal;&quot;./../../../Tools/ColladaConverter/DevIL-SDK-x86-1.7.7/include&quot;;./../../../Tools/ColladaConverter/glew/include"
+				AdditionalIncludeDirectories="./../Collada15/FCollada;./../Collada15/FCollada/libXML/include;./../../../Sources/External;./../../../Sources/Internal;&quot;./../../../Programs/ColladaConverter/DevIL-SDK-x86-1.7.7/include&quot;;./../../../Programs/ColladaConverter/glew/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -139,7 +139,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="FColladaU.lib DevIL.lib ILU.lib glew32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;./../../../Tools/ColladaConverter/DevIL-SDK-x86-1.7.7/lib&quot;;./../../../Tools/ColladaConverter/glew/lib"
+				AdditionalLibraryDirectories="&quot;./../../../Programs/ColladaConverter/DevIL-SDK-x86-1.7.7/lib&quot;;./../../../Programs/ColladaConverter/glew/lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"

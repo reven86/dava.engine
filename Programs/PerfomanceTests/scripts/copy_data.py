@@ -68,8 +68,8 @@ def copy_data():
 	os.system("mkdir ../Data/Shaders")
 
 	copy_recursively("../../../../performance.test/Data", "../Data")
-	copy_recursively("../../../Tools/ResourceEditor/Data/Materials", "../Data/Materials")
-	copy_recursively("../../../Tools/ResourceEditor/Data/Shaders", "../Data/Shaders")
+	copy_recursively("../../../Programs/ResourceEditor/Data/Materials", "../Data/Materials")
+	copy_recursively("../../../Programs/ResourceEditor/Data/Shaders", "../Data/Shaders")
 	copy_recursively("../../../../performance.test/Data", "../Data")
 
 	copy_recursively("../../../../performance.test/DataSource", "../DataSource")

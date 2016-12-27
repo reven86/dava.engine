@@ -78,7 +78,7 @@ if( NOT DAVA_MEGASOLUTION )
         set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
     endif()
 
-    set (TOOLS_DATA ${DAVA_ROOT_DIR}/Tools/Data)
+    set (TOOLS_DATA ${DAVA_ROOT_DIR}/Programs/Data)
 
     message( "--Performance test data folder: " ${PERFORMANCE_TEST_DATA_SVN} )
 
