@@ -85,8 +85,6 @@ protected slots:
     void OnConvertDae();
     void OnRevealAtFolder();
 
-    void OnTreeDragStarted();
-
 private:
     void OnProjectChanged(const DAVA::Any& projectFieldValue);
 

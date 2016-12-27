@@ -1,5 +1,6 @@
 #include "Classes/Library/Private/LibraryWidget.h"
 #include "Classes/Library/Private/LibraryFileSystemModel.h"
+#include "Classes/Library/Private/LIbraryData.h"
 
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
@@ -208,7 +209,7 @@ void LibraryWidget::SetupView()
 
     filesView->setModel(filesModel);
 
-    QObject::connect(filesView, SIGNAL(DragStarted()), this, SLOT(OnTreeDragStarted()));
+    QObject::connect(static_cast<LibraryTreeView*>(filesView), &LibraryTreeView::DragStarted, this, &LibraryWidget::DragStarted);
 }
 
 void LibraryWidget::SetupLayout()
@@ -386,9 +387,4 @@ void LibraryWidget::OnProjectChanged(const DAVA::Any& projectFieldValue)
         filesModel->Load(rootPathname);
         filesView->setRootIndex(filesModel->index(rootPathname));
     }
-}
-
-void LibraryWidget::OnTreeDragStarted()
-{
-    emit DragStarted();
 }

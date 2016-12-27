@@ -2,12 +2,12 @@
 #include "Classes/Library/Private/ControlsFactory.h"
 #include "Classes/Library/Private/LibraryData.h"
 #include "Classes/Library/Private/LibraryWidget.h"
+#include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Qt/Actions/DAEConverter.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 
 #include "TArc/Core/FieldBinder.h"
-#include "TArc/Utils/QtConnections.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"

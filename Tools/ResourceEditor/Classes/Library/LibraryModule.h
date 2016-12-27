@@ -3,13 +3,13 @@
 #include "Classes/Library/Private/ScenePreviewDialog.h"
 
 #include "TArc/Core/ClientModule.h"
+#include "TArc/Utils/QtConnections.h"
 
 namespace DAVA
 {
 namespace TArc
 {
 class FieldBinder;
-class QtConnections;
 }
 }
 
