@@ -3,7 +3,15 @@
 #include "Classes/Library/Private/ScenePreviewDialog.h"
 
 #include "TArc/Core/ClientModule.h"
-#include "TArc/Core/FieldBinder.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+class QtConnections;
+}
+}
 
 class LibraryWidget;
 class LibraryModule : public DAVA::TArc::ClientModule
@@ -14,13 +22,19 @@ public:
 protected:
     void PostInit() override;
 
-    void OnProjectChanged(const DAVA::Any& projectFieldValue);
-    void OnSelectedPathChanged(const DAVA::Any& selectedPathValue);
-
 private:
     void ShowPreview(const DAVA::FilePath& path);
     void HidePreview();
 
+    void OnSelectedPathChanged(const DAVA::Any& selectedPathValue);
+
+    void OnAddSceneRequested(const DAVA::FilePath& scenePathname);
+    void OnEditSceneRequested(const DAVA::FilePath& scenePathname);
+    void OnDAEConvertionRequested(const DAVA::FilePath& daePathname);
+    void OnDoubleClicked(const DAVA::FilePath& scenePathname);
+    void OnDragStarted();
+
     DAVA::RefPtr<ScenePreviewDialog> previewDialog;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    DAVA::TArc::QtConnections connections;
 };
