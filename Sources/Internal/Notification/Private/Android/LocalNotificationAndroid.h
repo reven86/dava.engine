@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Android/JNIBridge.h"
-#include "Notification/LocalNotificationImpl.h"
 #include "Notification/Private/LocalNotificationImpl.h"
 #include "Base/Message.h"
 #include "Concurrency/Mutex.h"

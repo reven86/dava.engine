@@ -205,15 +205,6 @@ public final class DavaActivity extends Activity
     }
 
     @Override
-    public void onNewIntent(Intent intent)
-    {
-        Log.d(LOG_TAG, "DavaActivity.onNewIntent");
-		super.onNewIntent(intent);
-
-        notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");
