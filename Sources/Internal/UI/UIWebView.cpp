@@ -29,7 +29,7 @@ DAVA_REFLECTION_IMPL(UIWebView)
     .DestructorByPointer([](UIWebView* o) { o->Release(); })
     .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes) // TODO: make enum
     [
-    EnumMeta::Create<eDataDetectorType>(false)
+    EnumMeta::Create<eDataDetectorType>(EnumMeta::EM_NOCAST)
     ]
     .End();
 }

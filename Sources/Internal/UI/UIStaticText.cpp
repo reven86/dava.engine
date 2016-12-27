@@ -39,25 +39,25 @@ DAVA_REFLECTION_IMPL(UIStaticText)
     .Field("textColor", &UIStaticText::GetTextColor, &UIStaticText::SetTextColor)
     .Field("textcolorInheritType", &UIStaticText::GetTextColorInheritType, &UIStaticText::SetTextColorInheritType) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<UIControlBackground::eColorInheritType>(false)
+    EnumMeta::Create<UIControlBackground::eColorInheritType>(EnumMeta::EM_NOCAST)
     ]
     .Field("textperPixelAccuracyType", &UIStaticText::GetTextPerPixelAccuracyType, &UIStaticText::SetTextPerPixelAccuracyType) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<UIControlBackground::ePerPixelAccuracyType>(false)
+    EnumMeta::Create<UIControlBackground::ePerPixelAccuracyType>(EnumMeta::EM_NOCAST)
     ]
     .Field("shadowoffset", &UIStaticText::GetShadowOffset, &UIStaticText::SetShadowOffset) // TODO: camel style
     .Field("shadowcolor", &UIStaticText::GetShadowColor, &UIStaticText::SetShadowColor) // TODO: camel style
     .Field("multiline", &UIStaticText::GetMultilineType, &UIStaticText::SetMultilineType) // TODO: make enum
     [
-    EnumMeta::Create<eMultiline>(false)
+    EnumMeta::Create<eMultiline>(EnumMeta::EM_NOCAST)
     ]
     .Field("fitting", &UIStaticText::GetFittingOption, &UIStaticText::SetFittingOption) // TODO: make enum
     [
-    EnumMeta::Create<TextBlock::eFitType>(false)
+    EnumMeta::Create<TextBlock::eFitType>(EnumMeta::EM_NOCAST)
     ]
     .Field("textalign", &UIStaticText::GetTextAlign, &UIStaticText::SetTextAlign) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<eAlign>(false)
+    EnumMeta::Create<eAlign>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
     ]
     .Field("textUseRtlAlign", &UIStaticText::GetTextUseRtlAlign, &UIStaticText::SetTextUseRtlAlign) // TODO: make enum
     [

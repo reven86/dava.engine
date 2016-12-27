@@ -534,9 +534,9 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         const EnumMeta* emeta = field->meta->GetMeta<EnumMeta>();
         if (GetType() == TYPE_STRING)
         {
-            if (emeta->value->ToValue(AsString().c_str(), val))
+            if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
             {
-                return emeta->cast(val);
+                return emeta->Cast(val);
             }
         }
         else
@@ -546,7 +546,7 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
             {
                 const YamlNode* flagNode = Get(i);
                 int32 flag = 0;
-                if (emeta->value->ToValue(flagNode->AsString().c_str(), flag))
+                if (emeta->GetEnumMap()->ToValue(flagNode->AsString().c_str(), flag))
                 {
                     val |= flag;
                 }
@@ -555,7 +555,7 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
                     DVASSERT(false);
                 }
             }
-            return emeta->cast(val);
+            return emeta->Cast(val);
         }
         DVASSERT(false);
     }
@@ -594,9 +594,9 @@ Any YamlNode::AsAny(const Reflection& ref) const
         const EnumMeta* emeta = ref.GetMeta<EnumMeta>();
         if (GetType() == TYPE_STRING)
         {
-            if (emeta->value->ToValue(AsString().c_str(), val))
+            if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
             {
-                return emeta->cast(val);
+                return emeta->Cast(val);
             }
         }
         else
@@ -606,7 +606,7 @@ Any YamlNode::AsAny(const Reflection& ref) const
             {
                 const YamlNode* flagNode = Get(i);
                 int32 flag = 0;
-                if (emeta->value->ToValue(flagNode->AsString().c_str(), flag))
+                if (emeta->GetEnumMap()->ToValue(flagNode->AsString().c_str(), flag))
                 {
                     val |= flag;
                 }
@@ -615,7 +615,7 @@ Any YamlNode::AsAny(const Reflection& ref) const
                     DVASSERT(false);
                 }
             }
-            return emeta->cast(val);
+            return emeta->Cast(val);
         }
         DVASSERT(false);
     }

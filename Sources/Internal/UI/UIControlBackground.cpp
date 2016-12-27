@@ -20,7 +20,7 @@ DAVA_REFLECTION_IMPL(UIControlBackground)
     .DestructorByPointer([](UIControlBackground* o) { o->Release(); })
     .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType) // TODO: make enum
     [
-    EnumMeta::Create<eDrawType>(false)
+    EnumMeta::Create<eDrawType>(EnumMeta::EM_NOCAST)
     ]
     .Field<FilePath (UIControlBackground::*)() const, void (UIControlBackground::*)(const FilePath&)>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
     .Field<int32 (UIControlBackground::*)() const, void (UIControlBackground::*)(int32)>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
@@ -30,24 +30,24 @@ DAVA_REFLECTION_IMPL(UIControlBackground)
     .Field("contour", &UIControlBackground::GetContourSpritePath, &UIControlBackground::SetContourSpriteFromPath)
     .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification) // TODO: make enum
     [
-    EnumMeta::Create<eSpriteModification>(false)
+    EnumMeta::Create<eSpriteModification>(EnumMeta::EM_NOCAST)
     ]
     .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode) // TODO: make enum
     [
-    EnumMeta::Create<eGradientBlendMode>(false)
+    EnumMeta::Create<eGradientBlendMode>(EnumMeta::EM_NOCAST)
     ]
     .Field("color", &UIControlBackground::GetColor, &UIControlBackground::SetColor)
     .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit) // TODO: make enum
     [
-    EnumMeta::Create<eColorInheritType>(false)
+    EnumMeta::Create<eColorInheritType>(EnumMeta::EM_NOCAST)
     ]
     .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy) // TODO: make enum
     [
-    EnumMeta::Create<ePerPixelAccuracyType>(false)
+    EnumMeta::Create<ePerPixelAccuracyType>(EnumMeta::EM_NOCAST)
     ]
     .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign) // TODO: make enum
     [
-    EnumMeta::Create<eAlign>(false)
+    EnumMeta::Create<eAlign>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
     ]
     .Field("leftRightStretchCap", &UIControlBackground::GetLeftRightStretchCap, &UIControlBackground::SetLeftRightStretchCap)
     .Field("topBottomStretchCap", &UIControlBackground::GetTopBottomStretchCap, &UIControlBackground::SetTopBottomStretchCap)

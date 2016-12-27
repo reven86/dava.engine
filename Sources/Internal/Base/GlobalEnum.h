@@ -40,41 +40,54 @@ void GlobalEnumMap<T>::Register(const int e, const char* s)
     Instance()->Register(e, s);
 }
 
-/** Struct for store meta information about enum in reflection */
+/** Structure for store meta information about enum in reflection */
 // TODO: Wait mechanism implementation to work with enums in reflection
 struct EnumMeta
 {
-    template <typename T>
-    static DAVA::Meta<EnumMeta> Create(bool autocast = true)
+    enum Modes
     {
-        if (autocast)
+        EM_FLAGS = 1 << 1,
+        EM_NOCAST = 1 << 2
+    };
+
+    template <typename T>
+    inline static DAVA::Meta<EnumMeta> Create(DAVA::int32 mode = 0)
+    {
+        auto castFn = [](DAVA::int32 value) -> Any
         {
-            auto cast = [](DAVA::int32 value) -> Any
-            {
-                return DAVA::Any(static_cast<T>(value));
-            };
-            return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), cast));
-        }
-        else
-        {
-            auto nocast = [](DAVA::int32 value) -> Any
-            {
-                return DAVA::Any(value);
-            };
-            return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), nocast));
-        }
+            return DAVA::Any(static_cast<T>(value));
+        };
+        return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), castFn, mode));
     }
 
+    inline const EnumMap* GetEnumMap() const
+    {
+        return map;
+    }
+
+    inline DAVA::Any Cast(DAVA::int32 value) const
+    {
+        return ((mode & EM_NOCAST) != 0) ? DAVA::Any(value) : cast(value);
+    }
+
+    inline bool IsFlags() const
+    {
+        return (mode & EM_FLAGS) != 0;
+    }
+
+private:
     typedef DAVA::Any (*CastFn)(DAVA::int32);
 
-    EnumMeta(const EnumMap* v, CastFn c)
-        : value(v)
+    EnumMeta(const EnumMap* v, CastFn c, DAVA::int32 mode)
+        : map(v)
         , cast(c)
+        , mode(mode)
     {
     }
 
-    const EnumMap* const value;
+    const EnumMap* const map;
     CastFn const cast;
+    const DAVA::int32 mode;
 };
 
 #define ENUM_DECLARE(eType) template <> void GlobalEnumMap<eType>::RegisterAll()
