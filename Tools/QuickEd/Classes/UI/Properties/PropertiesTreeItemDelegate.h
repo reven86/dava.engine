@@ -41,9 +41,30 @@ protected:
 
     PropertiesContext context;
 
+    struct PropertyPath
+    {
+        QString sectionName;
+        QString propertyName;
+
+        PropertyPath(const QString& sectionName_, const QString& propertyName_)
+            : sectionName(sectionName_)
+            , propertyName(propertyName_)
+        {
+        }
+
+        bool operator<(const PropertyPath& other) const
+        {
+            if (sectionName == other.sectionName)
+            {
+                return propertyName < other.propertyName;
+            }
+            return sectionName < other.sectionName;
+        }
+    };
+
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
     QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;
-    QMap<QString, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
+    QMap<PropertyPath, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
 };
 class PropertyWidget : public QWidget
 {

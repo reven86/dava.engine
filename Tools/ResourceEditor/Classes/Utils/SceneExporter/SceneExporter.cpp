@@ -5,6 +5,8 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
+#include "Particles/ParticleLayer.h"
+#include "Particles/ParticleEmitter.h"
 #include "Platform/Process.h"
 #include "Platform/SystemTimer.h"
 #include "Render/GPUFamilyDescriptor.h"
@@ -13,6 +15,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/StringUtils.h"
 #include "Utils/MD5.h"
@@ -49,6 +52,10 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
         params += Format("ExporterVersion: %u", EXPORTER_VERSION);
         params += Format("LinksParserVersion: %u", LINKS_PARSER_VERSION);
         params += Format("Optimized: %u", optimize);
+        for (int32 linkType = 0; linkType < SceneExporter::OBJECT_COUNT; ++linkType)
+        {
+            params += Format("LinkType: %d", linkType);
+        }
 
         MD5::ForData(reinterpret_cast<const uint8*>(params.data()), static_cast<uint32>(params.size()), sceneParamsDigest);
         key.SetSecondaryKey(sceneParamsDigest);
@@ -226,6 +233,43 @@ void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, S
         DVASSERT(path.IsEmpty() == false);
 
         exportedObjects.emplace_back(SceneExporter::OBJECT_TEXTURE, path.GetRelativePathname(dataSourceFolder));
+    }
+}
+
+void CollectParticleConfigs(Scene* scene, const FilePath& dataSourceFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
+{
+    Function<void(ParticleEmitter*)> collectSuperEmitters = [&collectSuperEmitters, &exportedObjects, &dataSourceFolder](ParticleEmitter* emitter)
+    {
+        if (emitter->configPath.IsEmpty() == false)
+        {
+            exportedObjects.emplace_back(SceneExporter::OBJECT_EMITTER_CONFIG, emitter->configPath.GetRelativePathname(dataSourceFolder));
+        }
+
+        for (ParticleLayer* layer : emitter->layers)
+        {
+            if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+            {
+                collectSuperEmitters(layer->innerEmitter);
+            }
+        }
+    };
+
+    Vector<Entity*> effects;
+    scene->GetChildEntitiesWithComponent(effects, Component::PARTICLE_EFFECT_COMPONENT);
+    for (Entity* e : effects)
+    {
+        uint32 count = e->GetComponentCount(Component::PARTICLE_EFFECT_COMPONENT);
+        for (uint32 ic = 0; ic < count; ++ic)
+        {
+            ParticleEffectComponent* effectComponent = static_cast<ParticleEffectComponent*>(e->GetComponent(Component::PARTICLE_EFFECT_COMPONENT, ic));
+            uint32 emittersCount = effectComponent->GetEmittersCount();
+            for (uint32 id = 0; id < emittersCount; ++id)
+            {
+                ParticleEmitterInstance* emitterInstance = effectComponent->GetEmitterInstance(id);
+                ParticleEmitter* emitter = emitterInstance->GetEmitter();
+                collectSuperEmitters(emitter);
+            }
+        }
     }
 }
 
@@ -537,6 +581,11 @@ bool SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const
     return CopyFile(heightmapPathname, heightmapLink);
 }
 
+bool SceneExporter::ExportEmitterConfigFile(const DAVA::FilePath& configPathname, const DAVA::String& configLink)
+{
+    return CopyFile(configPathname, configLink);
+}
+
 bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu) const
 {
     DAVA::Vector<DAVA::Image*> loadedImages;
@@ -690,6 +739,7 @@ bool SceneExporter::ExportScene(Scene* scene, const FilePath& scenePathname, Exp
 
     SceneExporterInternal::CollectHeightmapPathname(scene, exportingParams.dataSourceFolder, exportedObjects); //must be first
     SceneExporterInternal::CollectTextureDescriptors(scene, exportingParams.dataSourceFolder, exportedObjects);
+    SceneExporterInternal::CollectParticleConfigs(scene, exportingParams.dataSourceFolder, exportedObjects);
 
     // save scene to new place
     FilePath tempSceneName = FilePath::CreateWithNewExtension(scenePathname, ".exported.sc2");
@@ -737,7 +787,8 @@ bool SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObject
     Array<ExporterFunction, OBJECT_COUNT> exporters =
     { { MakeFunction(this, &SceneExporter::ExportSceneFile),
         MakeFunction(this, &SceneExporter::ExportTextureFile),
-        MakeFunction(this, &SceneExporter::ExportHeightmapFile) } };
+        MakeFunction(this, &SceneExporter::ExportHeightmapFile),
+        MakeFunction(this, &SceneExporter::ExportEmitterConfigFile) } };
 
     bool exportIsOk = true;
     for (const auto& object : exportedObjects)

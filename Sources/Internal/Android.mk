@@ -416,6 +416,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/ModuleManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
@@ -446,6 +447,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Scroll/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
@@ -461,6 +463,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Notification/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
 
