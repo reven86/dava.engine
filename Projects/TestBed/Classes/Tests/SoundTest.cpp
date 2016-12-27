@@ -1,4 +1,6 @@
 #include "Tests/SoundTest.h"
+
+#include "Engine/Engine.h"
 #include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
@@ -12,7 +14,7 @@ void SoundTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-1"));
+    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-1"), SoundEvent::SOUND_EVENT_CREATE_LOOP);
     eventGroup2 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-2"));
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -92,6 +94,33 @@ void SoundTest::LoadResources()
     speedTextFieldGroup2->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     speedTextFieldGroup2->SetText(L"1.0");
     AddControl(speedTextFieldGroup2);
+
+    Window* primaryWindow = GetPrimaryWindow();
+    tokenFocusChanged = primaryWindow->focusChanged.Connect(this, &SoundTest::OnWindowFocusChanged);
+}
+
+void SoundTest::UnloadResources()
+{
+    RemoveAllControls();
+
+    eventGroup1->Stop(true);
+    eventGroup2->Stop(true);
+    eventGroup1->Release();
+    eventGroup2->Release();
+
+    BaseScreen::UnloadResources();
+
+    Window* primaryWindow = GetPrimaryWindow();
+    if (primaryWindow != nullptr)
+    {
+        primaryWindow->focusChanged.Disconnect(tokenFocusChanged);
+    }
+}
+
+void SoundTest::OnWindowFocusChanged(DAVA::Window* w, bool hasFocus)
+{
+    eventGroup1->SetPaused(!hasFocus);
+    eventGroup2->SetPaused(!hasFocus);
 }
 
 void SoundTest::OnPlaySoundGroup1(BaseObject* sender, void* data, void* callerData)
