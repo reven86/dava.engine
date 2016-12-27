@@ -33,7 +33,7 @@ void ClosePlugin(PluginHandle handle)
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
-    DAVA::WideString pluginWcharPath = UTF8Utils::EncodeToWideString(pluginPath);
+    DAVA::WideString pluginWcharPath = DAVA::UTF8Utils::EncodeToWideString(pluginPath);
     return LoadLibraryW(pluginWcharPath.c_str());
 }
 
