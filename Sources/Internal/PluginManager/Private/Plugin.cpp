@@ -2,6 +2,7 @@
 ///
 #include "Base/Platform.h"
 #include "PluginManager/Plugin.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) 
 
@@ -32,9 +33,8 @@ void ClosePlugin(PluginHandle handle)
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
-    wchar_t pluginWcharPath[MAX_PATH];
-    ::MultiByteToWideChar(CP_ACP, 0, (const char*)(pluginPath), -1, pluginWcharPath, sizeof(pluginWcharPath) / sizeof(pluginWcharPath[0]));
-    return LoadLibraryW(pluginWcharPath);
+    DAVA::WideString pluginWcharPath = UTF8Utils::EncodeToWideString(pluginPath);
+    return LoadLibraryW(pluginWcharPath.c_str());
 }
 
 void* LoadFunction(PluginHandle handle, const char* funcName)

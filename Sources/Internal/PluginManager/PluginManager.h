@@ -8,6 +8,18 @@
 
 namespace DAVA
 {
+
+/**
+Plugin should implement and export two functions:
+1. -   DAVA::IModule* CreatePlugin(DAVA::Engine* engine)
+which does or used for create a plugin object
+2. -   void DestroyPlugin(DAVA::IModule* plugin)
+which does or used for destruction plugin object
+
+For convenience, you can use EXPORT_PLUGIN macro(module name)
+that automatically generates code create and load a module.
+*/
+
 class IModule;
 class Engine;
 
