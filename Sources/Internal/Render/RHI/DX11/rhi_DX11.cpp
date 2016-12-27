@@ -639,7 +639,10 @@ static void dx11_InitContext()
 
     dx11_InitCaps();
 
-    ConstBufferDX11::InitializeRingBuffer(dx11.initParameters.shaderConstRingBufferSize);
+    // explicitly make const buffer larger for software command buffers
+    // hopefully, this is a temporary solution
+    uint32 constBufferSize = dx11.initParameters.shaderConstRingBufferSize * (dx11.useHardwareCommandBuffers ? 1 : 2);
+    ConstBufferDX11::InitializeRingBuffer(constBufferSize);
 }
 
 static bool dx11_CheckSurface()
