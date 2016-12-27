@@ -41,6 +41,10 @@ def convert_graphics_args( args ):
     print 'Path to Dava tools ->', pathTools
     print 'Clear data ->', args.clearData
 
+    if not os.path.exists(pathDataSource):
+        print pathDataSource, 'is not existing. Skipping graphics converting'
+        return
+
     paramPacker = ''
     if args.paramPacker :
         paramPacker = ''.join(args.paramPacker)
@@ -56,11 +60,10 @@ def convert_graphics_args( args ):
     gfxDirs = filter(lambda x: x[0:3] == "Gfx", os.listdir(pathDataSource));
     
     startTime = time.time()  
-    os.chdir( pathTools );    
-    xxx_trash_bin_path = os.path.relpath( pathTools, pathDataSource )
+    os.chdir( pathTools );
     for dir in gfxDirs:
         pathGfx = os.path.join(pathDataSource, dir)
-        params = ["./ResourcePacker", pathGfx, xxx_trash_bin_path, paramPacker ]
+        params = ["./ResourcePacker", pathGfx, "-pvrTexToolPath", pathTools, paramPacker ]
         print 'Call ->', params, '\n'
         rc = os.spawnv(os.P_WAIT, "./ResourcePacker", params);
              

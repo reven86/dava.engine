@@ -334,6 +334,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
+    ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
     ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
     ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
 };

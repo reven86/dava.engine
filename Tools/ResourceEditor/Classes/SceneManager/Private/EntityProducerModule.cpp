@@ -1,10 +1,19 @@
 #include "Classes/SceneManager/EntityProducerModule.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/Application/REGlobal.h"
 #include "Classes/Commands2/EntityAddCommand.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
+
 #include "Functional/Function.h"
+#include "Render/Highlevel/Camera.h"
+#include "Scene3D/Components/CameraComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Entity.h"
 
 void EntityProducerModule::PostInit()
 {

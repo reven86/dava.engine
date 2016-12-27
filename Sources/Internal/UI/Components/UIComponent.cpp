@@ -14,6 +14,7 @@
 #include "UI/Focus/UITabOrderComponent.h"
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
 
@@ -80,6 +81,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case ACTION_BINDING_COMPONENT:
         return new UIActionBindingComponent();
+
+    case SCROLL_BAR_DELEGATE_COMPONENT:
+        return new UIScrollBarDelegateComponent();
 
     case UPDATE_COMPONENT:
         return new UIUpdateComponent();

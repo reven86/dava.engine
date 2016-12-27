@@ -245,7 +245,6 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCaptureLostEvent(Window* wi
     MainDispatcherEvent e(WINDOW_CAPTURE_LOST, window);
     return e;
 }
-
 } // namespace Private
 } // namespace DAVA
 

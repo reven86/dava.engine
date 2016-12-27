@@ -41,12 +41,8 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     engine.PrimaryWindow()->draw.Connect(this, &GameCore::Draw);
 
     w->SetTitleAsync("Scene Viewer");
-#if defined(__DAVAENGINE_WIN_UAP__)
-    ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
-    w->SetSizeAsync({ screenInfo.width, screenInfo.height });
-#else
     w->SetSizeAsync({ 1024, 768 });
-#endif
+    w->SetVirtualSize(1024, 768);
 
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
