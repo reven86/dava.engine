@@ -103,10 +103,16 @@ void SoundTest::UnloadResources()
 {
     RemoveAllControls();
 
-    eventGroup1->Stop(true);
-    eventGroup2->Stop(true);
-    eventGroup1->Release();
-    eventGroup2->Release();
+    if (eventGroup1 != nullptr)
+    {
+        eventGroup1->Stop(true);
+        eventGroup1->Release();
+    }
+    if (eventGroup2 != nullptr)
+    {
+        eventGroup2->Stop(true);
+        eventGroup2->Release();
+    }
 
     BaseScreen::UnloadResources();
 
