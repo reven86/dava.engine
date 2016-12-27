@@ -24,7 +24,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
     setAttribute(Qt::WA_DeleteOnClose, true);
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
-    DAVA::FilePath defaultPath(data->GetDataSourcePath());
+    DAVA::FilePath defaultPath(data->GetDataSource3DPath());
 
     SceneEditor2* scene = sceneHolder.GetScene();
     if (scene)

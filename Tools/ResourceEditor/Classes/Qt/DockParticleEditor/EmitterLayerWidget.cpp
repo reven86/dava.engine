@@ -16,6 +16,19 @@
 #include <QFile>
 #include <QMessageBox>
 
+namespace EmitterLayerWidgetDetails
+{
+QString ConvertSpritePathToPSD(QString& pathToSprite)
+{
+    return pathToSprite.replace("/Data/", "/DataSource/");
+}
+
+QString ConvertPSDPathToSprite(QString& pathToSprite)
+{
+    return pathToSprite.replace("/DataSource/", "/Data/");
+}
+}
+
 static const DAVA::uint32 SPRITE_SIZE = 60;
 
 static const DAVA::float32 ANGLE_MIN_LIMIT_DEGREES = -360.0f;
@@ -460,7 +473,7 @@ void EmitterLayerWidget::StoreVisualState(DAVA::KeyedArchive* visualStateProps)
     if (!visualStateProps)
         return;
 
-    DAVA::KeyedArchive* props = new DAVA::KeyedArchive();
+    DAVA::ScopedPtr<DAVA::KeyedArchive> props(new DAVA::KeyedArchive());
 
     lifeTimeLine->GetVisualState(props);
     visualStateProps->SetArchive("LAYER_LIFE_PROPS", props);
@@ -508,8 +521,6 @@ void EmitterLayerWidget::StoreVisualState(DAVA::KeyedArchive* visualStateProps)
     props->DeleteAllKeys();
     angleTimeLine->GetVisualState(props);
     visualStateProps->SetArchive("LAYER_ANGLE", props);
-
-    SafeRelease(props);
 }
 
 void EmitterLayerWidget::OnSpriteBtn()
@@ -519,14 +530,15 @@ void EmitterLayerWidget::OnSpriteBtn()
     {
         ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
         DVASSERT(data != nullptr);
-        startPath = QString::fromStdString(data->GetParticlesDataPath().GetAbsolutePathname());
+        startPath = QString::fromStdString(data->GetParticlesGfxPath().GetAbsolutePathname());
     }
     else
     {
         startPath = QString::fromStdString(layer->spritePath.GetDirectory().GetStringValue());
+        startPath = EmitterLayerWidgetDetails::ConvertSpritePathToPSD(startPath);
     }
 
-    QString selectedPath = FileDialog::getOpenFileName(nullptr, QString("Open particle sprite"), startPath, QString("Effect File (*.txt)"));
+    QString selectedPath = FileDialog::getOpenFileName(nullptr, QString("Open particle sprite"), startPath, QString("Sprite File (*.psd)"));
     if (selectedPath.isEmpty())
     {
         return;
@@ -551,6 +563,8 @@ void EmitterLayerWidget::OnSpriteFolderBtn()
     }
 
     QString startPath = QString::fromStdString(layer->spritePath.GetDirectory().GetStringValue());
+    startPath = EmitterLayerWidgetDetails::ConvertSpritePathToPSD(startPath);
+
     QString spriteName = QString::fromStdString(layer->spritePath.GetBasename());
 
     QString selectedPath = FileDialog::getExistingDirectory(nullptr, QString("Select particle sprites directory"), startPath);
@@ -706,7 +720,10 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
         return;
 
     const DAVA::eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
-    const DAVA::FilePath spritePath(spritePathLabel->text().toStdString());
+
+    QString path = spritePathLabel->text();
+    path = EmitterLayerWidgetDetails::ConvertPSDPathToSprite(path);
+    const DAVA::FilePath spritePath(path.toStdString());
 
     DVASSERT(GetActiveScene() != nullptr);
     GetActiveScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked())));
@@ -961,7 +978,10 @@ void EmitterLayerWidget::UpdateLayerSprite()
         DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
         spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), dstTex });
         spriteUpdateTimer->start(0);
-        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
+
+        QString path = QString::fromStdString(layer->spritePath.GetAbsolutePathname());
+        path = EmitterLayerWidgetDetails::ConvertSpritePathToPSD(path);
+        spritePathLabel->setText(path);
     }
     else
     {
@@ -1010,13 +1030,13 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 {
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
-    const DAVA::FilePath& particlesDataPath = data->GetParticlesDataPath();
+    const DAVA::FilePath& particlesGfxPath = data->GetParticlesGfxPath();
     const DAVA::FilePath spritePath = text.toStdString();
-    const DAVA::String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
+    const DAVA::String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesGfxPath);
 
     if (relativePathForParticlesPath.find("../") != DAVA::String::npos)
     {
-        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
+        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).arg(QString::fromStdString(particlesGfxPath.GetAbsolutePathname()));
 
         QMessageBox msgBox(QMessageBox::Warning, "Warning", message);
         msgBox.exec();

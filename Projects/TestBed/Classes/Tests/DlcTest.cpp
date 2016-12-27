@@ -109,7 +109,7 @@ void DlcTest::LoadResources()
     gameVersionIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W + SPACE, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
     gameVersionIn->SetDebugDraw(true);
     String gameVer = options->GetString(gameVersion, defaultGameVersion);
-    gameVersionIn->SetText(StringToWString(gameVer));
+    gameVersionIn->SetText(UTF8Utils::EncodeToWideString(gameVer));
     gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
     gameVersionIn->SetDelegate(this);
     gameVersionIn->SetFont(font);
@@ -117,7 +117,7 @@ void DlcTest::LoadResources()
 
     gpuIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W * 2 + SPACE * 2, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
     gpuIn->SetDebugDraw(true);
-    gpuIn->SetText(StringToWString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
+    gpuIn->SetText(UTF8Utils::EncodeToWideString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
     gpuIn->GetOrCreateComponent<UIFocusComponent>();
     gpuIn->SetDelegate(this);
     gpuIn->SetFont(font);
@@ -159,7 +159,7 @@ void DlcTest::LoadResources()
 
     uint64 spd = options->GetUInt64(downloadSpeed, 0);
     String spdStr(Format("%lld", spd));
-    dlSpeedIn->SetText(StringToWString(spdStr));
+    dlSpeedIn->SetText(UTF8Utils::EncodeToWideString(spdStr));
     dlSpeedIn->GetOrCreateComponent<UIFocusComponent>();
     dlSpeedIn->SetDelegate(this);
     AddControl(dlSpeedIn);
@@ -254,18 +254,19 @@ void DlcTest::LoadResources()
 void DlcTest::UpdateInfoStr()
 {
     infoStr = L"DLCWorkingDir: ";
-    infoStr += StringToWString(workingDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(workingDir.GetAbsolutePathname());
     infoStr += L"\nResourcesDir: ";
-    infoStr += StringToWString(destinationDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(destinationDir.GetAbsolutePathname());
     infoStr += L"\nURL: ";
     DAVA::String url = options->GetString(currentDownloadUrl, localServerUrl);
-    infoStr += StringToWString(url);
+    infoStr += UTF8Utils::EncodeToWideString(url);
     infoStr += L"\nDownloading threads count: ";
     uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
-    infoStr += StringToWString(Format("%d", currentThreadsCount));
+    infoStr += UTF8Utils::EncodeToWideString(Format("%d", currentThreadsCount));
+    infoStr += UTF8Utils::EncodeToWideString(Format("\nSpeedLimit %d", 0));
 
     infoStr += L"\nGPU: ";
-    infoStr += StringToWString(Format("%s", GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily()).c_str()));
+    infoStr += UTF8Utils::EncodeToWideString(Format("%s", GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily()).c_str()));
 
     if (nullptr != infoText)
     {
@@ -313,6 +314,10 @@ void DlcTest::Update(float32 timeElapsed)
 
         uint64 cur = 0;
         uint64 total = 0;
+        dlc->GetProgress(cur, total);
+        DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
+        String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
+        progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
 
         if (nullptr != dlc)
         {
@@ -322,12 +327,12 @@ void DlcTest::Update(float32 timeElapsed)
             {
                 DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
                 String statText = Format("%lld(%lld) Kb, %lld Kb/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
-                progressStatistics->SetText(StringToWString(statText));
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
             }
             else
             {
                 String statText = Format("%lld(%lld)", cur, total);
-                progressStatistics->SetText(StringToWString(statText));
+                progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
             }
         }
 
@@ -453,12 +458,12 @@ void DlcTest::TextFieldOnTextChanged(UITextField* textField, const WideString& n
 {
     if (gameVersionIn == textField)
     {
-        options->SetString(gameVersion, WStringToString(newText));
+        options->SetString(gameVersion, UTF8Utils::EncodeToUTF8(newText));
     }
 
     if (dlSpeedIn == textField)
     {
-        uint64 speedLimit = std::atoi(WStringToString(newText).c_str());
+        uint64 speedLimit = std::atoi(UTF8Utils::EncodeToUTF8(newText).c_str());
         options->SetUInt64(downloadSpeed, speedLimit);
     }
 }
@@ -518,7 +523,7 @@ void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
 
     lastDLCState = dlc->GetState();
 
-    DeviceInfo::SetOverridenGPU(GPUFamilyDescriptor::GetGPUByName(WStringToString(gpuIn->GetText())));
+    DeviceInfo::SetOverridenGPU(GPUFamilyDescriptor::GetGPUByName(UTF8Utils::EncodeToUTF8(gpuIn->GetText())));
 
     staticText->SetText(L"Starting DLC...");
     dlc->Start();

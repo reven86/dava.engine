@@ -185,13 +185,25 @@ bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if (inFormat == FORMAT_RGBA16F && outFormat == FORMAT_RGBA8888)
     {
-        ConvertDirect<RGBA16161616F, uint32, ConvertRGBA16161616FtoRGBA8888> convert;
+        ConvertDirect<RGBA16F, uint32, ConvertRGBA16FtoRGBA8888> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
     else if (inFormat == FORMAT_RGBA32F && outFormat == FORMAT_RGBA8888)
     {
-        ConvertDirect<RGBA32323232F, uint32, ConvertRGBA32323232FtoRGBA8888> convert;
+        ConvertDirect<RGBA32F, uint32, ConvertRGBA32FtoRGBA8888> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA16F)
+    {
+        ConvertDirect<uint32, RGBA16F, ConvertRGBA8888toRGBA16F> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA32F)
+    {
+        ConvertDirect<uint32, RGBA32F, ConvertRGBA8888toRGBA32F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
@@ -357,12 +369,12 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if ((inFormat == FORMAT_RGBA16F) && (outFormat == FORMAT_RGBA16F))
     {
-        ConvertDownscaleTwiceBillinear<RGBA16161616F, RGBA16161616F, float32, UnpackRGBA16161616F, PackRGBA16161616F> convert;
+        ConvertDownscaleTwiceBillinear<RGBA16F, RGBA16F, float32, UnpackRGBA16F, PackRGBA16F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA32F) && (outFormat == FORMAT_RGBA32F))
     {
-        ConvertDownscaleTwiceBillinear<RGBA32323232F, RGBA32323232F, float32, UnpackRGBA32323232F, PackRGBA32323232F> convert;
+        ConvertDownscaleTwiceBillinear<RGBA32F, RGBA32F, float32, UnpackRGBA32F, PackRGBA32F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else

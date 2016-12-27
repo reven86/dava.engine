@@ -54,15 +54,17 @@ DAVA_TESTCLASS (FormatsTest)
         suportedFormats.push_back(FORMAT_PVR2);
         suportedFormats.push_back(FORMAT_PVR4);
         suportedFormats.push_back(FORMAT_ETC1);
+        suportedFormats.push_back(FORMAT_RGBA16F);
+        suportedFormats.push_back(FORMAT_RGBA32F);
 
         for (PixelFormat requestedFormat : suportedFormats)
         {
             const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
             const DAVA::FilePath pngPathname(DAVA::Format("~res:/TestData/FormatsTest/pvr/%s.png", formatName.c_str()));
-            const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
+            const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".pvr");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
                 continue;
@@ -83,7 +85,7 @@ DAVA_TESTCLASS (FormatsTest)
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
-#endif
+#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
         }
     }
     
@@ -99,16 +101,17 @@ DAVA_TESTCLASS (FormatsTest)
         suportedFormats.push_back(FORMAT_ATC_RGB);
         suportedFormats.push_back(FORMAT_ATC_RGBA_EXPLICIT_ALPHA);
         suportedFormats.push_back(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA);
+        suportedFormats.push_back(FORMAT_RGBA16F);
+        suportedFormats.push_back(FORMAT_RGBA32F);
 
         for (PixelFormat requestedFormat : suportedFormats)
         {
             const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
             const DAVA::FilePath pngPathname(DAVA::Format("~res:/TestData/FormatsTest/dds/%s.png", formatName.c_str()));
-            const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
+            const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dds");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if defined(__DAVAENGINE_MACOS__)
-
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             if (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
             {
                 continue;
@@ -134,10 +137,10 @@ DAVA_TESTCLASS (FormatsTest)
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
-#endif
+#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
         }
     }
-#endif
+#endif //#if !defined(__DAVAENGINE_IPHONE__)
 
     DAVA_TEST (TestWebP)
     {
