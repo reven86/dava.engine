@@ -8,7 +8,6 @@
 
 namespace DAVA
 {
-
 /**
 Plugin should implement and export two functions:
 1. -   DAVA::IModule* CreatePlugin(DAVA::Engine* engine)
