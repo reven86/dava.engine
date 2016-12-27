@@ -227,8 +227,10 @@ void ConstBufferDX11::InvalidateAllInstances()
 
 void ConstBufferDX11::InitializeRingBuffer(uint32 size)
 {
+    DVASSERT(size > 0);
+
     if (!dx11.useHardwareCommandBuffers)
-        ConstBufDX11_t::defaultRingBuffer.Initialize((size) ? size : 4 * 1024 * 1024);
+        ConstBufDX11_t::defaultRingBuffer.Initialize(size);
 }
 
 } // namespace rhi

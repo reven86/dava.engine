@@ -639,10 +639,13 @@ static void dx11_InitContext()
 
     dx11_InitCaps();
 
-    // explicitly make const buffer larger for software command buffers
-    // hopefully, this is a temporary solution
-    uint32 constBufferSize = dx11.initParameters.shaderConstRingBufferSize * (dx11.useHardwareCommandBuffers ? 1 : 2);
-    ConstBufferDX11::InitializeRingBuffer(constBufferSize);
+    uint32 constBufferSize = 4 * 1024 * 1024;
+    if (dx11.initParameters.shaderConstRingBufferSize)
+        constBufferSize = dx11.initParameters.shaderConstRingBufferSize;
+
+    // increasing const buffer size according to the number of frames
+    // this is important on DX11, beause all shader constants for all frames are stored directly in shared ring buffer
+    ConstBufferDX11::InitializeRingBuffer(constBufferSize * (1 + dx11.initParameters.threadedRenderFrameCount));
 }
 
 static bool dx11_CheckSurface()
