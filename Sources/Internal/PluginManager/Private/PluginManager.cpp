@@ -89,7 +89,7 @@ const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
     bool success = true;
     String pluginAbsPath = pluginPath.GetAbsolutePathname();
 
-    //Сheck for exist the plugin
+    //Check if plugin library has been loaded
     auto FindPlugin = [pluginAbsPath](PluginDescriptor& d)
     {
         return pluginAbsPath == d.pluginAbsPath;

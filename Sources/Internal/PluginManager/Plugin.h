@@ -29,7 +29,8 @@ extern "C" { \
         delete plugin;\
     }\
 }
-
+namespace DAVA
+{
 /**
 Handle plugin
 */
@@ -59,4 +60,5 @@ template <class T>
 T LoadFunction(PluginHandle handle, const char* funcName)
 {
     return reinterpret_cast<T>(LoadFunction(handle, funcName));
+}
 }
