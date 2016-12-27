@@ -68,6 +68,7 @@ private:
     {
         CENTER_ON_DISPLAY = 0x01, //!< Resize and place window on the center of display
         RESIZE_WHOLE_WINDOW = 0x02, //!< Size given for whole window including border and caption
+        NO_TRANSLATE_TO_DIPS = 0x04, //!< Do not translate size to DIPs
     };
 
     void DoSetSurfaceScale(const float32 scale);
@@ -86,7 +87,6 @@ private:
     void UpdateClipCursor();
     void HandleWindowFocusChanging(bool hasFocus);
 
-    void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
 
     void UIEventHandler(const UIDispatcherEvent& e);
@@ -124,7 +124,6 @@ private:
 private:
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
-    HCURSOR defaultCursor = nullptr;
     POINT lastCursorPosition;
 
     EngineBackend* engineBackend = nullptr;
@@ -153,9 +152,20 @@ private:
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;
+    bool dpiChangedEventPending = false;
+
+    // DIP is device independent pixel.
+    // dipSize is number of physical pixels contained in one DIP.
+    // Here DIPs are used to emulate Win10 behaviour on Win32:
+    //  - window size is always in DIPS
+    //  - surface rendering size in physical pixels
+    //
+    // More info here: https://msdn.microsoft.com/en-us/library/windows/desktop/ff684173(v=vs.85).aspx
+    float32 dipSize = 1.f;
     Vector<TOUCHINPUT> touchInput;
     WINDOWPLACEMENT windowPlacement;
 
+    static HCURSOR defaultCursor;
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;

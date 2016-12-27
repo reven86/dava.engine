@@ -96,7 +96,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, float32 dpi, eFullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -105,7 +105,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* wi
     e.sizeEvent.surfaceWidth = surfaceW;
     e.sizeEvent.surfaceHeight = surfaceH;
     e.sizeEvent.surfaceScale = surfaceScale;
-    e.sizeEvent.dpi = 0.0f;
+    e.sizeEvent.dpi = dpi;
     e.sizeEvent.fullscreen = fullscreen;
     return e;
 }

@@ -22,6 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
+HCURSOR WindowBackend::defaultCursor = nullptr;
 bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
@@ -33,7 +34,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);
-    defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
@@ -190,21 +190,27 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
     if (Renderer::GetAPI() == rhi::RHI_DX9)
     {
         surfaceScale = scale;
-
-        const float32 surfaceWidth = lastWidth * surfaceScale;
-        const float32 surfaceHeight = lastHeight * surfaceScale;
-        const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, static_cast<float32>(lastWidth), static_cast<float32>(lastHeight), surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+        HandleSizeChanged(lastWidth, lastHeight);
     }
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height, int resizeFlags)
 {
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
+    if ((resizeFlags & NO_TRANSLATE_TO_DIPS) == 0)
+    {
+        width *= dipSize;
+        height *= dipSize;
+    }
+
+    int32 w = static_cast<int32>(std::ceil(width));
+    int32 h = static_cast<int32>(std::ceil(height));
     if ((resizeFlags & RESIZE_WHOLE_WINDOW) == 0)
     {
-        AdjustWindowSize(&w, &h);
+        RECT rc = { 0, 0, w, h };
+        ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
+
+        w = rc.right - rc.left;
+        h = rc.bottom - rc.top;
     }
 
     MONITORINFO mi;
@@ -361,32 +367,24 @@ void WindowBackend::DoSetCursorVisibility(bool visible)
     mouseVisible = visible;
 }
 
-void WindowBackend::AdjustWindowSize(int32* w, int32* h)
-{
-    RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
-
-    *w = rc.right - rc.left;
-    *h = rc.bottom - rc.top;
-}
-
 void WindowBackend::HandleSizeChanged(int32 w, int32 h)
 {
-    // Do not send excessive size changed events
-    if (lastWidth != w || lastHeight != h)
+    lastWidth = w;
+    lastHeight = h;
+
+    float32 width = std::ceil(static_cast<float32>(w) / dipSize);
+    float32 height = std::ceil(static_cast<float32>(h) / dipSize);
+
+    float32 surfaceWidth = static_cast<float32>(w) * surfaceScale;
+    float32 surfaceHeight = static_cast<float32>(h) * surfaceScale;
+
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, dpi, fullscreen));
+    if (dpiChangedEventPending)
     {
-        lastWidth = w;
-        lastHeight = h;
-
-        float32 width = static_cast<float32>(lastWidth);
-        float32 height = static_cast<float32>(lastHeight);
-
-        float32 surfaceWidth = width * surfaceScale;
-        float32 surfaceHeight = height * surfaceScale;
-
-        eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+        dpiChangedEventPending = false;
     }
 }
 
@@ -471,7 +469,10 @@ LRESULT WindowBackend::OnExitSizeMove()
 
     int32 w = rc.right - rc.left;
     int32 h = rc.bottom - rc.top;
-    HandleSizeChanged(w, h);
+    if (w != lastWidth || h != lastHeight)
+    {
+        HandleSizeChanged(w, h);
+    }
 
     isEnteredSizingModalLoop = false;
     return 0;
@@ -489,14 +490,19 @@ LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
     float32 curDpi = GetDpi();
     if (dpi != curDpi)
     {
-        float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
-        float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
-        DoResizeWindow(w, h, RESIZE_WHOLE_WINDOW);
+        // Ignore suggested size in fullscreen mode
+        if (!isFullscreen)
+        {
+            float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
+            float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
+            DoResizeWindow(w, h, RESIZE_WHOLE_WINDOW | NO_TRANSLATE_TO_DIPS);
+        }
 
         dpi = curDpi;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+        dipSize = dpi / defaultDpi;
+        dpiChangedEventPending = true;
+        HandleSizeChanged(lastWidth, lastHeight);
     }
-
     return 0;
 }
 
@@ -528,9 +534,9 @@ LRESULT WindowBackend::OnMouseMoveRelativeEvent(int x, int y)
     if (deltaX != 0 || deltaY != 0)
     {
         SetCursorInCenter();
-        x = deltaX;
-        y = deltaY;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(deltaX), static_cast<float32>(deltaY), modifierKeys, true));
+        float32 vdeltaX = static_cast<float32>(deltaX) / dipSize;
+        float32 vdeltaY = static_cast<float32>(deltaY) / dipSize;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vdeltaX, vdeltaY, modifierKeys, true));
     }
     else
     {
@@ -552,8 +558,8 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
     if (source == eInputDevices::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
     {
         eModifierKeys modifierKeys = GetModifierKeys();
-        float32 vx = static_cast<float32>(x);
-        float32 vy = static_cast<float32>(y);
+        float32 vx = static_cast<float32>(x) / dipSize;
+        float32 vy = static_cast<float32>(y) / dipSize;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
 
         lastMouseMoveX = x;
@@ -565,8 +571,8 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
 LRESULT WindowBackend::OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    float32 vx = static_cast<float32>(x);
-    float32 vy = static_cast<float32>(y);
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
     float32 vdeltaX = static_cast<float32>(deltaX);
     float32 vdeltaY = static_cast<float32>(deltaY);
     bool isRelative = (captureMode == eCursorCapture::PINNING);
@@ -617,8 +623,8 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
         if (button != eMouseButtons::NONE)
         {
             eModifierKeys modifierKeys = GetModifierKeys();
-            float32 vx = static_cast<float32>(x);
-            float32 vy = static_cast<float32>(y);
+            float32 vx = static_cast<float32>(x) / dipSize;
+            float32 vy = static_cast<float32>(y) / dipSize;
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
             bool isRelative = (captureMode == eCursorCapture::PINNING);
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
@@ -711,8 +717,8 @@ LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
             else
                 continue;
             e.touchEvent.touchId = static_cast<uint32>(touch.dwID);
-            e.touchEvent.x = static_cast<float32>(pt.x);
-            e.touchEvent.y = static_cast<float32>(pt.y);
+            e.touchEvent.x = static_cast<float32>(pt.x) / dipSize;
+            e.touchEvent.y = static_cast<float32>(pt.y) / dipSize;
             mainDispatcher->PostEvent(e);
         }
         ::CloseTouchInputHandle(htouch);
@@ -726,8 +732,8 @@ LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
     DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
 
     bool isPressed = false;
-    float32 vx = static_cast<float32>(x);
-    float32 vy = static_cast<float32>(y);
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
     eModifierKeys modifierKeys = GetModifierKeys();
     if (pointerInfo.pointerType == PT_MOUSE)
     {
@@ -750,8 +756,8 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
     POINTER_INFO pointerInfo;
     DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
 
-    float32 vx = static_cast<float32>(x);
-    float32 vy = static_cast<float32>(y);
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
     eModifierKeys modifierKeys = GetModifierKeys();
     if (pointerInfo.pointerType == PT_MOUSE)
     {
@@ -819,11 +825,13 @@ LRESULT WindowBackend::OnCreate()
     lastWidth = rc.right - rc.left;
     lastHeight = rc.bottom - rc.top;
 
-    float32 width = static_cast<float32>(lastWidth);
-    float32 height = static_cast<float32>(lastHeight);
-    float32 surfaceWidth = width * surfaceScale;
-    float32 surfaceHeight = height * surfaceScale;
-    float32 dpi = GetDpi();
+    dpi = GetDpi();
+    dipSize = dpi / defaultDpi;
+
+    float32 width =  std::ceil(static_cast<float32>(lastWidth) / dipSize);
+    float32 height = std::ceil(static_cast<float32>(lastHeight) / dipSize);
+    float32 surfaceWidth = static_cast<float32>(lastWidth) * surfaceScale;
+    float32 surfaceHeight = static_cast<float32>(lastHeight) * surfaceScale;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
@@ -1073,6 +1081,8 @@ bool WindowBackend::RegisterWindowClass()
         wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
+
+        defaultCursor = ::LoadCursor(nullptr, IDC_ARROW);
     }
     return windowClassRegistered;
 }
@@ -1084,7 +1094,7 @@ float32 WindowBackend::GetDpi() const
     {
         UINT x = 0;
         UINT y = 0;
-        HMONITOR hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        HMONITOR hmonitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
         DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &x, &y);
         result = static_cast<float32>(x);
     }
@@ -1093,7 +1103,7 @@ float32 WindowBackend::GetDpi() const
         // default behavior for Windows with version < 8.1
         HDC hdcScreen = ::GetDC(nullptr);
         result = static_cast<float32>(::GetDeviceCaps(hdcScreen, LOGPIXELSX));
-        ::ReleaseDC(NULL, hdcScreen);
+        ::ReleaseDC(nullptr, hdcScreen);
     }
     return result;
 }
