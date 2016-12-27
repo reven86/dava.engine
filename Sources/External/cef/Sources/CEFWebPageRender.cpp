@@ -27,9 +27,10 @@ struct CEFColor
 };
 
 #if defined(__DAVAENGINE_COREV2__)
-CEFWebPageRender::CEFWebPageRender(Window* w)
+CEFWebPageRender::CEFWebPageRender(Window* w, float32 k)
     : contentBackground(new UIControlBackground)
     , window(w)
+    , scale(k)
 {
     ConnectToSignals();
 
@@ -166,6 +167,13 @@ void CEFWebPageRender::ShutDown()
     imageData.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void CEFWebPageRender::SetScale(float32 k)
+{
+    scale = k;
+}
+#endif
+
 void CEFWebPageRender::ResetCursor()
 {
     if (currentCursorType != CursorType::CT_POINTER)
@@ -177,7 +185,15 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
+    phrect.dx /= scale;
+    phrect.dy /= scale;
+    rect = CefRect(0, 0, static_cast<int>(phrect.dx), static_cast<int>(phrect.dy));
+#else
     rect = CefRect(0, 0, static_cast<int>(logicalViewRect.dx), static_cast<int>(logicalViewRect.dy));
+#endif
     return true;
 }
 
@@ -186,7 +202,11 @@ bool CEFWebPageRender::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInf
     VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
     Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
 
+#if defined(__DAVAENGINE_COREV2__)
+    screen_info.device_scale_factor = scale;
+#else
     screen_info.device_scale_factor = phrect.dx / logicalViewRect.dx;
+#endif
     screen_info.depth = 32;
     screen_info.depth_per_component = 8;
     screen_info.is_monochrome = 0;

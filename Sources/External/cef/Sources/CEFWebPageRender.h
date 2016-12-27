@@ -16,7 +16,7 @@ class CEFWebPageRender : public CefRenderHandler
 
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    CEFWebPageRender(Window* w);
+    CEFWebPageRender(Window* w, float32 k);
 #else
     CEFWebPageRender();
 #endif
@@ -30,6 +30,10 @@ public:
     void SetBackgroundTransparency(bool value);
     void SetViewRect(const Rect& rect);
     void ShutDown();
+
+#if defined(__DAVAENGINE_COREV2__)
+    void SetScale(float32 k);
+#endif
 
 private:
     void ConnectToSignals();
@@ -67,6 +71,7 @@ private:
     SigConnectionID focusConnection = SigConnectionID();
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
+    float32 scale = 1.f;
     SigConnectionID windowDestroyedConnection = SigConnectionID();
 #endif
     unsigned webViewID = 0;

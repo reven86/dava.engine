@@ -101,6 +101,7 @@ private:
 
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
+    float32 scale = 1.f;
 #endif
     UIWebView& webView;
     Vector2 webViewPos;
