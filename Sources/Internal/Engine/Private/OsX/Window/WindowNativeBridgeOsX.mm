@@ -490,18 +490,19 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 
 void WindowNativeBridge::UpdateSystemCursorVisible()
 {
-    bool visible = !cursorInside || mouseVisible;
     static bool mouseVisibleState = true;
+
+    bool visible = !cursorInside || mouseVisible;
     if (mouseVisibleState != visible)
     {
         mouseVisibleState = visible;
         if (visible)
         {
-            [NSCursor unhide];
+            CGDisplayShowCursor(kCGDirectMainDisplay);
         }
         else
         {
-            [NSCursor hide];
+            CGDisplayHideCursor(kCGDirectMainDisplay);
         }
     }
 }
