@@ -17,7 +17,7 @@ struct PluginDescriptor
     CreatePluginFuncPtr createPluginFunc;
     DestroyPluginFuncPtr destroyPluginFunc;
     IModule* plugin;
-    String pluginName;
+    String pluginAbsPath;
 
     PluginHandle handle;
 };
@@ -87,9 +87,21 @@ const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
     PluginDescriptor desc;
 
     bool success = true;
+    String pluginAbsPath = pluginPath.GetAbsolutePathname();
+
+    auto FindPlugin = [pluginAbsPath](PluginDescriptor& d)
+    {
+        return pluginAbsPath == d.pluginAbsPath;
+    };
+
+    auto it = std::find_if(begin(pluginDescriptors), end(pluginDescriptors), FindPlugin);
+    if (it != pluginDescriptors.end())
+    {
+        DVASSERT_MSG(false, Format("On this path [ %s ] of the plugin is loaded", pluginAbsPath.c_str()).c_str());
+        return nullptr;
+    }
 
     // Open the library.
-    String pluginAbsPath = pluginPath.GetAbsolutePathname();
     desc.handle = OpenPlugin(pluginAbsPath.c_str());
     if (nullptr == desc.handle)
     {
@@ -97,7 +109,7 @@ const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
         return nullptr;
     }
 
-    desc.pluginName = pluginPath.GetFilename();
+    desc.pluginAbsPath = pluginPath.GetAbsolutePathname();
     desc.createPluginFunc = LoadFunction<CreatePluginFuncPtr>(desc.handle, "CreatePlugin");
     desc.destroyPluginFunc = LoadFunction<DestroyPluginFuncPtr>(desc.handle, "DestroyPlugin");
 
@@ -134,7 +146,7 @@ const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
 
     pluginDescriptors.push_back(desc);
 
-    Logger::Debug("Plugin loaded - %s", desc.pluginName.c_str());
+    Logger::Debug("Plugin loaded - %s", desc.pluginAbsPath.c_str());
 
     return &pluginDescriptors.back();
 }
@@ -172,7 +184,7 @@ void PluginManager::UnloadPlugins()
     {
         it->destroyPluginFunc(it->plugin);
         ClosePlugin(it->handle);
-        Logger::Debug("Plugin unloaded - %s", it->pluginName.c_str());
+        Logger::Debug("Plugin unloaded - %s", it->pluginAbsPath.c_str());
     }
 
     pluginDescriptors.clear();
