@@ -1,8 +1,8 @@
-#include "Notification/LocalNotificationIOS.h"
+#include "Notification/Private/Ios/LocalNotificationIos.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#import "Notification/LocalNotificationImpl.h"
+#import "Notification/Private/LocalNotificationImpl.h"
 #import <UIKit/UIApplication.h>
 #import <UIKit/UILocalNotification.h>
 #import "Utils/NSStringUtils.h"
@@ -115,4 +115,4 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationIOS(_id);
 }
 }
-#endif
+#endif // defined(__DAVAENGINE_IPHONE__)

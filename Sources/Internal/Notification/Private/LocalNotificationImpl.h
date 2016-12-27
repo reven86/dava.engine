@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_IMPL_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_IMPL_H__
+#pragma once
 
 namespace DAVA
 {
@@ -28,5 +27,4 @@ public:
 protected:
     DAVA::String notificationId;
 };
-}
-#endif
+} // namespace DAVA

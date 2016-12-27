@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -201,6 +202,15 @@ public final class DavaActivity extends Activity
     static DavaGamepadManager gamepadManager()
     {
         return activitySingleton.gamepadManager;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent)
+    {
+        Log.d(LOG_TAG, "DavaActivity.onNewIntent");
+		super.onNewIntent(intent);
+
+        notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
     }
 
     @Override

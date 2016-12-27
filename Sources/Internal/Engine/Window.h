@@ -348,7 +348,6 @@ private:
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
     bool waitInputActivation = false;
-    bool skipFirstMouseUpEventBeforeCursorCapture = false;
     float32 dpi = 0.0f; //!< Window DPI
     float32 width = 0.0f; //!< Window client area width.
     float32 height = 0.0f; //!< Window client area height.

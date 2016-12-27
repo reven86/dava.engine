@@ -5,6 +5,8 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
+#include "Particles/ParticleLayer.h"
+#include "Particles/ParticleEmitter.h"
 #include "Platform/Process.h"
 #include "Platform/SystemTimer.h"
 #include "Render/GPUFamilyDescriptor.h"
@@ -13,6 +15,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/StringUtils.h"
 #include "Utils/MD5.h"
@@ -244,7 +247,7 @@ void CollectParticleConfigs(Scene* scene, const FilePath& dataSourceFolder, Scen
 
         for (ParticleLayer* layer : emitter->layers)
         {
-            if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+            if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
             {
                 collectSuperEmitters(layer->innerEmitter);
             }
