@@ -1,0 +1,118 @@
+cmake_minimum_required (VERSION 3.0)
+
+macro ( add_tool TARGET_NAME )
+    cmake_parse_arguments ( ARG ""  "ROOT_DIR" "" ${ARGN} )
+
+    if( MACOS )
+        set( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app )
+
+    else()
+        set( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app/${TARGET_NAME} )
+
+    endif()  
+
+    if( ARG_ROOT_DIR )
+        add_subdirectory      ( "${ARG_ROOT_DIR}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+    else()
+        add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+    endif() 
+
+    get_property( DEPLOY_DIR_PRJ GLOBAL PROPERTY DEPLOY_DIR_${TARGET_NAME} )
+
+endmacro ()
+
+macro ( init_project )
+
+    message("Creating " ${PROJECT_NAME} )
+
+    set     ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
+    set     ( DAVA_USE_RENDERSTATS true )
+    set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+    set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    set     ( JOIN_PROJECT_NAME 1 )
+    set     ( DAVA_COREV2 1 )
+
+    add_definitions (-D__DAVAENGINE_COREV2__)
+
+    include ( CMake-common )
+
+    if (DEPLOY)
+        set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+        if ( WIN32 )
+            set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+        endif()
+
+        set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
+
+    endif()
+
+    set          ( DAVA_DISABLE_AUTOTESTS true )
+
+    find_package ( DavaTools     REQUIRED )
+
+    set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
+
+    set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+    set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+    set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+
+endmacro()
+
+set( TARGETS "all" CACHE STRING "" )
+
+if(TARGETS STREQUAL "all")
+
+    project      ( Megasolution )
+
+    init_project ()
+    set          ( DAVA_MEGASOLUTION      1 )
+
+## tools
+    add_tool     ( ResourceEditor   )
+    add_tool     ( QuickEd          )
+    add_tool     ( ResourcePacker   )
+    add_tool     ( ResourcePatcher  )
+    add_tool     ( ImageUnpacker    )
+    add_tool     ( AssetCacheClient )
+    add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceArchiver )
+
+## other
+    add_tool     ( Launcher )
+
+    add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"   )
+    add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"     )
+    add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer" )
+    add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" )
+
+    if ( WIN32 )
+        add_tool ( UWPRunner )
+    endif ()
+
+elseif(TARGETS STREQUAL "tools")	
+
+    project      ( Tools )
+
+    init_project ()
+
+    add_tool     ( ResourceEditor   )
+    add_tool     ( QuickEd          )
+    add_tool     ( ResourcePacker   )
+    add_tool     ( ResourcePatcher  )
+    add_tool     ( ImageUnpacker    )
+    add_tool     ( AssetCacheClient )
+    add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceArchiver )
+
+else()
+
+    message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
+
+endif()
+
+processing_mix_data()
+
+
+
+
