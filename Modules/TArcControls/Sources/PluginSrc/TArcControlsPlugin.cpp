@@ -1,3 +1,5 @@
+#include "ValueSetHelper.h"
+
 #include <QQmlExtensionPlugin>
 #include <QtQml>
 
@@ -10,6 +12,7 @@ public:
     void registerTypes(const char *uri)
     {
         Q_ASSERT(uri == QLatin1String("TArcControls"));
+        qmlRegisterSingletonType<TArcControls::ValueSetHelper>(uri, 1, 0, "ValueSetHelper", &TArcControls::ValueSetHelperSingletonProvider);
     }
 };
 

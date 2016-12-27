@@ -36,7 +36,7 @@ public:
     bool IsActive() const;
 
 private:
-    friend class Core;
+    friend class DataWrappersProcessor;
     friend class QtReflected;
     friend class DataListener;
     template <typename T>

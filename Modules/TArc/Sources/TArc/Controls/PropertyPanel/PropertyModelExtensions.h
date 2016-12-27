@@ -12,43 +12,49 @@ namespace DAVA
 namespace TArc
 {
 class ReflectedPropertyItem;
+class BaseComponentValue;
 
 struct PropertyNode
 {
-    enum PropertyType: int32
+public:
+    enum PropertyType : int32
     {
         Invalid = -1,
         SelfRoot = 0,
         RealProperty,
         GroupProperty,
         VirtualProperty, // reserve some range for generic types. I don't know now what types it will be,
-                         // but reserve some values is good idea in my opinion
+        // but reserve some values is good idea in my opinion
         DomainSpecificProperty = 255
-                             // use can use values DomainSpecificProperty, DomainSpecificProperty + 1, ... , DomainSpecificProperty + n
-                             // on you own purpose. It's only way to transfer some information between iterations
+        // use can use values DomainSpecificProperty, DomainSpecificProperty + 1, ... , DomainSpecificProperty + n
+        // on you own purpose. It's only way to transfer some information between iterations
     };
 
     PropertyNode() = default;
 
-    bool operator== (const PropertyNode& other) const;
-    bool operator!= (const PropertyNode& other) const;
-    //bool operator< (const PropertyNode& other) const;
+    bool operator==(const PropertyNode& other) const;
+    bool operator!=(const PropertyNode& other) const;
 
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection reflectedObject;
     Any fieldName;
     Any cachedValue;
+
+    void SetValue(const Any& value);
+    void SetValue(Any&& value);
 };
 
 class IChildAllocator
 {
 public:
-    virtual ~IChildAllocator() {}
+    virtual ~IChildAllocator()
+    {
+    }
 
-    virtual std::shared_ptr<const PropertyNode> CreatePropertyNode(Any&& fieldName, Reflection&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Any&& fieldName, Reflection&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
 };
 
-std::shared_ptr<const PropertyNode> MakeRootNode(IChildAllocator* allocator);
+std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator);
 
 class ExtensionChain
 {
@@ -101,7 +107,7 @@ public:
     }
 
 protected:
-    template<typename T>
+    template <typename T>
     T* GetNext()
     {
         DVASSERT(nextExtension != nullptr);
@@ -109,7 +115,7 @@ protected:
         return static_cast<T*>(nextExtension.get());
     }
 
-    template<typename T>
+    template <typename T>
     const T* GetNext() const
     {
         DVASSERT(nextExtension != nullptr);
@@ -122,16 +128,15 @@ private:
     std::shared_ptr<ExtensionChain> nextExtension;
 };
 
-
 // The main goal of this extension is create children of some property.
 // parent - is property node, that you should create children for.
 // children - return value
 // use allocator to create children
-class ChildCreatorExtension: public ExtensionChain
+class ChildCreatorExtension : public ExtensionChain
 {
 public:
     ChildCreatorExtension();
-    virtual void ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, std::vector<std::shared_ptr<const PropertyNode>>& children) const;
+    virtual void ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
     static std::shared_ptr<ChildCreatorExtension> CreateDummy();
 
     void SetAllocator(std::shared_ptr<IChildAllocator> allocator);
@@ -141,16 +146,24 @@ protected:
 };
 
 // This extension should implements custom rules of search ReflectedPropertyItem for some value.
-// As ReflectedPropertyItem is real item that user will see, in multi selection case we should make decision in which 
+// As ReflectedPropertyItem is real item that user will see, in multi selection case we should make decision in which
 // ReflectedPropertyItem add current property.
 // Limitation - node.propertyInstance should be equal of item.property()
 // If your extension return nullptr, ReflectedPropertyModel will create new ReflectedPropertyItem for that.
-class MergeValuesExtension: public ExtensionChain
+class MergeValuesExtension : public ExtensionChain
 {
 public:
     MergeValuesExtension();
-    virtual ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<ReflectedPropertyItem>>& items) const;
+    virtual ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const;
     static std::shared_ptr<MergeValuesExtension> CreateDummy();
+};
+
+class EditorComponentExtension : public ExtensionChain
+{
+public:
+    EditorComponentExtension();
+    virtual std::unique_ptr<BaseComponentValue> GetEditor(const std::shared_ptr<const PropertyNode>& node) const;
+    static std::shared_ptr<EditorComponentExtension> CreateDummy();
 };
 } // namespace TArc
 } // namespace DAVA

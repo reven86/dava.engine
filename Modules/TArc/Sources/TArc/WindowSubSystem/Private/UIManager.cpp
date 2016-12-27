@@ -6,11 +6,12 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
-#include "TArc/DataProcessing/Private/QtReflectionBridge.h"
+#include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include "Utils/StringFormat.h"
 
+#include <QPointer>
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QQmlEngine>
@@ -609,6 +610,16 @@ void UIManager::RemoveAction(const WindowKey& windowKey, const ActionPlacementIn
     UIManagerDetail::RemoveAction(windowInfo, placement);
 }
 
+QPointer<QQmlEngine> UIManager::GetQmlEngine() const
+{
+    return QPointer<QQmlEngine>(impl->qmlEngine.get());
+}
+
+QPointer<QtReflectionBridge> UIManager::GetReflectionBridge() const
+{
+    return QPointer<QtReflectionBridge>(&impl->reflectionBridge);
+}
+
 QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper&& data)
 {
     QPointer<QQuickWidget> view = new QQuickWidget(impl->qmlEngine.get(), nullptr);
@@ -748,6 +759,5 @@ void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)
     impl->InitNewWindow(windowKey, window);
     impl->windows.emplace(windowKey, windowInfo);
 }
-
 } // namespace TArc
 } // namespace DAVA

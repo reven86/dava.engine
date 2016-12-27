@@ -2,7 +2,7 @@ set(NAME_MODULE TArc)
 
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
-set(HPP_FILES_RECURSE Sources/TArc/*.h Sources/TArc/*.hpp)
+set(HPP_FILES_RECURSE Sources/TArc/*.h Sources/TArc/*.hpp Sources/TArc/Controls/*.qml)
 set(CPP_FILES_RECURSE Sources/TArc/*.cpp)
 set(CPP_FILES_RECURSE_MACOS Sources/TArc/*.mm)
 set(CUSTOM_PACK_1 "Selftests")
@@ -22,6 +22,8 @@ set(STATIC_LIBRARIES_WIN32_DEBUG "${libsPath}/win/x86/Debug/gmock.lib")
 
 set(STATIC_LIBRARIES_WIN64_RELEASE "${libsPath}/win/x64/Release/gmock.lib")
 set(STATIC_LIBRARIES_WIN64_DEBUG "${libsPath}/win/x64/Debug/gmock.lib")
+
+set(QT_RES_FILES "Sources/TArc/Controls/*.qrc")
 
 set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)

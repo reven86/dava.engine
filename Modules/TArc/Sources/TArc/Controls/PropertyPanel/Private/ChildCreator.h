@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.hpp"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
 #include "Functional/Signal.h"
 #include "Reflection/Reflection.h"
@@ -15,20 +15,20 @@ public:
     ChildCreator();
     ~ChildCreator();
 
-    std::shared_ptr<const PropertyNode> CreateRoot(const Reflection& reflectedRoot);
+    std::shared_ptr<PropertyNode> CreateRoot(const Reflection& reflectedRoot);
     void UpdateSubTree(const std::shared_ptr<const PropertyNode>& parent);
-    void RemoveNode(const std::shared_ptr<const PropertyNode>& parent);
+    void RemoveNode(const std::shared_ptr<PropertyNode>& parent);
     void Clear();
 
     void RegisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
     void UnregisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
 
-    Signal<std::shared_ptr<const PropertyNode> /*parent*/, std::shared_ptr<const PropertyNode> /*child*/, size_t /*childPosition*/> nodeCreated;
-    Signal<std::shared_ptr<const PropertyNode> /*child*/> nodeRemoved;
+    Signal<std::shared_ptr<const PropertyNode> /*parent*/, std::shared_ptr<PropertyNode> /*child*/, size_t /*childPosition*/> nodeCreated;
+    Signal<std::shared_ptr<PropertyNode> /*child*/> nodeRemoved;
 
 private:
     std::shared_ptr<ChildCreatorExtension> extensions;
-    std::unordered_map<std::shared_ptr<const PropertyNode>, std::vector<std::shared_ptr<const PropertyNode>>> propertiesIndex;
+    UnorderedMap<std::shared_ptr<const PropertyNode>, Vector<std::shared_ptr<PropertyNode>>> propertiesIndex;
     std::shared_ptr<IChildAllocator> allocator;
 };
 

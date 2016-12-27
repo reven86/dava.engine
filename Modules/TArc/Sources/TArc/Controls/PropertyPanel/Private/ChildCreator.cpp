@@ -1,5 +1,5 @@
-#include "TArc/Controls/PropertyPanel/Private/ChildCreator.hpp"
-#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.hpp"
+#include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
+#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.h"
 
 namespace DAVA
 {
@@ -16,24 +16,25 @@ ChildCreator::~ChildCreator()
     DVASSERT(propertiesIndex.empty());
 }
 
-std::shared_ptr<const PropertyNode> ChildCreator::CreateRoot(const Reflection& reflectedRoot)
+std::shared_ptr<PropertyNode> ChildCreator::CreateRoot(const Reflection& reflectedRoot)
 {
-    auto result = propertiesIndex.emplace(MakeRootNode(allocator.get()), std::vector<std::shared_ptr<const PropertyNode>>());
+    std::shared_ptr<PropertyNode> rootNode = MakeRootNode(allocator.get());
+    auto result = propertiesIndex.emplace(rootNode, Vector<std::shared_ptr<PropertyNode>>());
     DVASSERT(result.second == true);
-    return result.first->first;
+    return rootNode;
 }
 
 void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& parent)
 {
     DVASSERT(parent != nullptr);
-    std::vector<std::shared_ptr<const PropertyNode>> children;
+    Vector<std::shared_ptr<PropertyNode>> children;
     extensions->ExposeChildren(parent, children);
 
     auto iter = propertiesIndex.find(parent);
     if (iter == propertiesIndex.end())
     {
         // insert new parent into index and store it's children
-        std::vector<std::shared_ptr<const PropertyNode>>& newItems = propertiesIndex[parent];
+        Vector<std::shared_ptr<PropertyNode>>& newItems = propertiesIndex[parent];
         newItems = std::move(children);
         for (size_t i = 0; i < newItems.size(); ++i)
         {
@@ -43,7 +44,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
     else
     {
         bool childrenVectorsEqual = true;
-        std::vector<std::shared_ptr<const PropertyNode>>& currentChildren = iter->second;
+        Vector<std::shared_ptr<PropertyNode>>& currentChildren = iter->second;
         if (children.size() != currentChildren.size())
         {
             // if size isn't equal, current parent is a collection, this collection was modified and we should rebuild whole subtree
@@ -73,12 +74,12 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
     }
 }
 
-void ChildCreator::RemoveNode(const std::shared_ptr<const PropertyNode>& parent)
+void ChildCreator::RemoveNode(const std::shared_ptr<PropertyNode>& parent)
 {
     auto iter = propertiesIndex.find(parent);
     DVASSERT(iter != propertiesIndex.end());
-    const std::vector<std::shared_ptr<const PropertyNode>>& children = iter->second;
-    for (const std::shared_ptr<const PropertyNode>& node : children)
+    const Vector<std::shared_ptr<PropertyNode>>& children = iter->second;
+    for (const std::shared_ptr<PropertyNode>& node : children)
     {
         RemoveNode(node);
     }

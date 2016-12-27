@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 namespace DAVA
 {
@@ -47,7 +48,6 @@ public:
     ~Impl()
     {
         DVASSERT(contexts.empty());
-        DVASSERT(wrappers.empty());
     }
 
     virtual void AddModule(ConsoleModule* module)
@@ -79,8 +79,8 @@ public:
 
     virtual void OnLoopStopped()
     {
+        wrappersProcessor.Shoutdown();
         contexts.clear();
-        wrappers.clear();
         globalContext.reset();
     }
 
@@ -96,7 +96,7 @@ public:
         {
             isInFrame = false;
         };
-        delayedExecutor.DelayedExecute(DAVA::Function<void(void)>(this, &Core::Impl::SyncWrappers));
+        delayedExecutor.DelayedExecute(MakeFunction(&wrappersProcessor, &DataWrappersProcessor::Sync));
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -143,18 +143,12 @@ public:
 
     DataWrapper CreateWrapper(const ReflectedType* type) override
     {
-        DataWrapper wrapper(type);
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        wrappers.push_back(wrapper);
-        return wrapper;
+        return wrappersProcessor.CreateWrapper(type, activeContext != nullptr ? activeContext : globalContext.get());
     }
 
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override
     {
-        DataWrapper wrapper(accessor);
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        wrappers.push_back(wrapper);
-        return wrapper;
+        return wrappersProcessor.CreateWrapper(accessor, activeContext != nullptr ? activeContext : globalContext.get());
     }
 
     PropertiesItem CreatePropertiesNode(const String& nodeName) override
@@ -188,48 +182,23 @@ protected:
         BeforeContextSwitch(activeContext, context);
         DataContext* oldContext = activeContext;
         activeContext = context;
-        for (DataWrapper& wrapper : wrappers)
-        {
-            wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        }
+        wrappersProcessor.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         AfterContextSwitch(activeContext, oldContext);
     }
 
     void SyncWrappers()
     {
-        if (recursiveSyncGuard == true)
-        {
-            return;
-        }
-        recursiveSyncGuard = true;
-        size_t index = 0;
-        while (index < wrappers.size())
-        {
-            if (!wrappers[index].IsActive())
-            {
-                DAVA::RemoveExchangingWithLast(wrappers, index);
-            }
-            else
-            {
-                ++index;
-            }
-        }
-        for (DataWrapper& wrapper : wrappers)
-        {
-            wrapper.Sync(true);
-        }
-        recursiveSyncGuard = false;
+        wrappersProcessor.Sync();
     }
 
 protected:
     Engine& engine;
     Core* core;
-    bool recursiveSyncGuard = false;
 
     std::unique_ptr<DataContext> globalContext;
     Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
-    Vector<DataWrapper> wrappers;
+    DataWrappersProcessor wrappersProcessor;
     bool isInFrame = false;
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
@@ -778,6 +747,8 @@ Core::Core(Engine& engine, bool connectSignals)
         engine.gameLoopStopped.Connect(this, &Core::OnLoopStopped);
         engine.windowCreated.Connect(this, &Core::OnWindowCreated);
     }
+
+    Q_INIT_RESOURCE(TArcResources);
 }
 
 Core::~Core() = default;

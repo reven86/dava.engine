@@ -7,10 +7,9 @@ set( MODULE_TYPE PLUGIN )                        # set module type [INLINE, STAT
 
 set(TArcControlsRootDir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(HPP_FILES_RECURSE Sources/TArcControls/*.h Sources/TArcControls/*.hpp)
-set(CPP_FILES_RECURSE Sources/TArcControls/*.cpp)
+set(HPP_FILES_RECURSE Sources/PluginSrc/*.h Sources/PluginSrc/*.hpp Sources/TArcControls/*.qml)
+set(CPP_FILES_RECURSE Sources/PluginSrc/*.cpp)
 set(QT_RES_FILES "Sources/Resources/Resources.qrc")
-set(QT_QML_FILES "Sources/Qml/*.qml")
 
 set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)

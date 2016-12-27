@@ -87,6 +87,9 @@ public:
     Reflection(const Reflection&) = default;
     Reflection(const ReflectedObject& object, const ValueWrapper* vw, const StructureWrapper* sw, const ReflectedMeta* meta);
 
+    bool operator==(const Reflection& other) const;
+    bool operator!=(const Reflection& other) const;
+
     bool IsValid() const;
     bool IsReadonly() const;
 

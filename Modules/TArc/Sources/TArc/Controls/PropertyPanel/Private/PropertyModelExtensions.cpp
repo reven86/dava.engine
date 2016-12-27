@@ -1,4 +1,5 @@
-#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.hpp"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 
 namespace DAVA
 {
@@ -9,7 +10,7 @@ namespace PMEDetails
 class DummyChildCreator : public ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const PropertyNode>&, std::vector<std::shared_ptr<const PropertyNode>>&) const override
+    void ExposeChildren(const std::shared_ptr<const PropertyNode>&, Vector<std::shared_ptr<PropertyNode>>&) const override
     {
     }
 };
@@ -17,16 +18,25 @@ public:
 class DummyMerger : public MergeValuesExtension
 {
 public:
-    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<ReflectedPropertyItem>>& items) const override
+    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const override
     {
         return nullptr;
     }
 };
+
+class DummyEditorComponent : public EditorComponentExtension
+{
+public:
+    std::unique_ptr<BaseComponentValue> GetEditor(const std::shared_ptr<const PropertyNode>& node) const override
+    {
+        return std::make_unique<EmptyComponentValue>();
+    }
+};
 }
 
-std::shared_ptr<const PropertyNode> MakeRootNode(IChildAllocator* allocator)
+std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator)
 {
-    return allocator->CreatePropertyNode(DAVA::Reflection(), PropertyNode::SelfRoot);
+    return allocator->CreatePropertyNode(Any("SelfRoot"), DAVA::Reflection(), PropertyNode::SelfRoot);
 }
 
 bool PropertyNode::operator==(const PropertyNode& other) const
@@ -43,12 +53,28 @@ bool PropertyNode::operator!=(const PropertyNode& other) const
     cachedValue != other.cachedValue;
 }
 
+void PropertyNode::SetValue(const Any& value)
+{
+    if (reflectedObject.SetValue(cachedValue))
+    {
+        cachedValue = value;
+    }
+}
+
+void PropertyNode::SetValue(Any&& value)
+{
+    if (reflectedObject.SetValue(value))
+    {
+        cachedValue = std::move(value);
+    }
+}
+
 ChildCreatorExtension::ChildCreatorExtension()
     : ExtensionChain(Type::Instance<ChildCreatorExtension>())
 {
 }
 
-void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, std::vector<std::shared_ptr<const PropertyNode>>& children) const
+void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     GetNext<ChildCreatorExtension>()->ExposeChildren(node, children);
 }
@@ -68,7 +94,7 @@ MergeValuesExtension::MergeValuesExtension()
 {
 }
 
-ReflectedPropertyItem* MergeValuesExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
+ReflectedPropertyItem* MergeValuesExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
 {
     return GetNext<MergeValuesExtension>()->LookUpItem(node, items);
 }
@@ -76,6 +102,21 @@ ReflectedPropertyItem* MergeValuesExtension::LookUpItem(const std::shared_ptr<co
 std::shared_ptr<MergeValuesExtension> MergeValuesExtension::CreateDummy()
 {
     return std::make_shared<PMEDetails::DummyMerger>();
+}
+
+EditorComponentExtension::EditorComponentExtension()
+    : ExtensionChain(Type::Instance<EditorComponentExtension>())
+{
+}
+
+std::unique_ptr<BaseComponentValue> EditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
+{
+    return GetNext<EditorComponentExtension>()->GetEditor(node);
+}
+
+std::shared_ptr<EditorComponentExtension> EditorComponentExtension::CreateDummy()
+{
+    return std::make_shared<PMEDetails::DummyEditorComponent>();
 }
 
 } // namespace TArc

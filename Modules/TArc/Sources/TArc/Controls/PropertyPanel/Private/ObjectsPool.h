@@ -84,9 +84,9 @@ private:
     };
 
     void ReleaseObject(T* object);
-    bool IsOurMemory(T * object); 
+    bool IsOurMemory(T* object);
     PoolNode* AllocateNewBatch();
-    
+
     const size_t batchSize;
     Vector<PoolNode> objectBatches;
     TLockStrategy lockStrategy;
@@ -156,7 +156,7 @@ std::shared_ptr<T> ObjectsPool<T, TLockStrategy>::RequestObject()
     }
     poolNode->batchHead = nextObject;
 
-    return std::shared_ptr<T>(&result->object, Bind(&ObjectsPool<T, TLockStrategy>::ReleaseObject, this));
+    return std::shared_ptr<T>(&result->object, MakeFunction(this, &ObjectsPool<T, TLockStrategy>::ReleaseObject));
 }
 
 template <typename T, typename TLockStrategy>
@@ -201,7 +201,7 @@ typename ObjectsPool<T, TLockStrategy>::PoolNode* ObjectsPool<T, TLockStrategy>:
 }
 
 template <typename T, typename TLockStrategy>
-bool ObjectsPool<T, TLockStrategy>::IsOurMemory(T * object)
+bool ObjectsPool<T, TLockStrategy>::IsOurMemory(T* object)
 {
     uint8_t* rawObjectPointer = reinterpret_cast<uint8_t*>(object);
     for (const PoolNode& node : objectBatches)
