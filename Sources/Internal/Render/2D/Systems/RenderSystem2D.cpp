@@ -1116,6 +1116,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         }
         else
         {
+            needGenerateData |= sprite->textures[0] != stretchData->texture;
             needGenerateData |= sprite != stretchData->sprite;
             needGenerateData |= frame != stretchData->frame;
             needGenerateData |= gd.size != stretchData->size;
@@ -1134,6 +1135,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     if (needGenerateData)
     {
         sd.sprite = sprite;
+        sd.texture = sprite->textures[0];
         sd.frame = frame;
         sd.size = gd.size;
         sd.type = type;
@@ -1232,6 +1234,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
             needGenerateData |= stretchCap != tiledData->stretchCap;
             needGenerateData |= frame != tiledData->frame;
             needGenerateData |= sprite != tiledData->sprite;
+            needGenerateData |= sprite->textures[0] != tiledData->texture;
             needGenerateData |= size != tiledData->size;
         }
     }
@@ -1249,6 +1252,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.size = size;
         td.frame = frame;
         td.sprite = sprite;
+        td.texture = sprite->textures[0];
         td.GenerateTileData();
     }
 
