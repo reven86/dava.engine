@@ -7,6 +7,7 @@
 #include "Classes/DevFuncs/CrashProduceModule.h"
 #include "Classes/SceneManager/EntityProducerModule.h"
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
+#include "Classes/Selection/SelectionModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -182,6 +183,7 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<LaunchModule>();
     tarcCore->CreateModule<CrashProduceModule>();
     tarcCore->CreateModule<MitsubaExporter>();
+    tarcCore->CreateModule<SelectionModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

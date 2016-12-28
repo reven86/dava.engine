@@ -1,5 +1,4 @@
-#ifndef __SCENE_INFO_H__
-#define __SCENE_INFO_H__
+#pragma once
 
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
@@ -7,6 +6,14 @@
 #include "QtTools/Updaters/LazyUpdater.h"
 
 #include <QShowEvent>
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class RECommandNotificationObject;
 class SceneEditor2;
@@ -31,11 +38,12 @@ protected slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void OnThemeChanged();
 
 private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+
     void showEvent(QShowEvent* event) override;
 
     EditorStatisticsSystem* GetCurrentEditorStatisticsSystem() const;
@@ -110,6 +118,6 @@ protected:
     LazyUpdater infoUpdated;
 
     bool isUpToDate = false;
-};
 
-#endif // __SCENE_INFO_H__
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};

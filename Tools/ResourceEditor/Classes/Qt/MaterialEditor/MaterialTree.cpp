@@ -1,13 +1,21 @@
-#include "MaterialTree.h"
-#include "MaterialFilterModel.h"
-#include "Main/mainwindow.h"
-#include "Scene/SceneSignals.h"
-#include "MaterialEditor/MaterialAssignSystem.h"
+#include "Classes/Qt/MaterialEditor/MaterialTree.h"
+#include "Classes/Qt/MaterialEditor/MaterialFilterModel.h"
+#include "Classes/Qt/MaterialEditor/MaterialAssignSystem.h"
+#include "Classes/Qt/Main/mainwindow.h"
+#include "Classes/Qt/Scene/SceneSignals.h"
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Selection/Selection.h"
+#include "Classes/Selection/SelectionData.h"
+
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/Base/RECommandBatch.h"
+#include "Classes/Commands2/Base/RECommandNotificationObject.h"
+
+#include "TArc/Core/FieldBinder.h"
+
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-#include "Commands2/RemoveComponentCommand.h"
-#include "Commands2/Base/RECommandBatch.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Entity/Component.h"
 
 #include <QDragMoveEvent>
@@ -27,7 +35,14 @@ MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
 
     QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &MaterialTree::OnCommandExecuted);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &MaterialTree::OnStructureChanged);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &MaterialTree::OnSelectionChanged);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &MaterialTree::OnSelectionChanged));
+    }
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
@@ -46,15 +61,6 @@ void MaterialTree::SetScene(SceneEditor2* sceneEditor)
 {
     setSortingEnabled(false);
     treeModel->SetScene(sceneEditor);
-
-    if (nullptr != sceneEditor)
-    {
-        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), nullptr);
-    }
-    else
-    {
-        treeModel->SetSelection(nullptr);
-    }
 
     sortByColumn(0);
     setSortingEnabled(true);
@@ -83,26 +89,29 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
 
     if (nullptr != curScene && materials.size() > 0)
     {
-        std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene](DAVA::NMaterial* material) {
+        SelectableGroup newSelection;
+        std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene, &newSelection](DAVA::NMaterial* material)
+        {
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
-            if (nullptr != entity)
+            if ((nullptr != entity) && (newSelection.ContainsObject(entity) == false && Selection::IsEntitySelectable(entity)))
             {
-                curScene->selectionSystem->AddObjectToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                newSelection.Add(entity, curScene->collisionSystem->GetUntransformedBoundingBox(entity));
             }
+
             const DAVA::Vector<DAVA::NMaterial*>& children = material->GetChildren();
-            for (auto child : children)
+            for (DAVA::NMaterial* child : children)
             {
                 fn(child);
             }
         };
 
-        curScene->selectionSystem->Clear();
         for (int i = 0; i < materials.size(); i++)
         {
             DAVA::NMaterial* material = materials.at(i);
             fn(material);
         }
 
+        Selection::SetSelection(newSelection);
         LookAtSelection(curScene);
     }
 }
@@ -236,11 +245,12 @@ void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     treeModel->Sync();
 }
 
-void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void MaterialTree::OnSelectionChanged(const DAVA::Any& selectionAny)
 {
-    if (treeModel->GetScene() == scene)
+    if (selectionAny.CanGet<SelectableGroup>())
     {
-        treeModel->SetSelection(selected);
+        const SelectableGroup& selection = selectionAny.Get<SelectableGroup>();
+        treeModel->SetSelection(&selection);
         treeModel->invalidate();
     }
 }

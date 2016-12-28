@@ -1,12 +1,10 @@
-#ifndef __ResourceEditorQt__ParticleTimeLineWidget__
-#define __ResourceEditorQt__ParticleTimeLineWidget__
+#pragma once
 
 #include <QWidget>
 #include <QDialog>
 #include <QLabel>
 #include <QTimer>
 
-#include "DAVAEngine.h"
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 #include "Scene/SceneEditor2.h"
@@ -22,6 +20,14 @@
 #define PARTICLES_INFO_CONTROL_OFFSET 8
 
 #define UPDATE_LAYERS_EXTRA_INFO_PERIOD 250 // in milliseconds
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class ParticlesExtraInfoColumn;
 class ParticleTimeLineWidget : public ScrollZoomWidget
@@ -53,9 +59,6 @@ signals:
     void ChangeVisible(bool visible);
 
 protected slots:
-
-    void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-
     // Scene Tree signals - values are changed for Particles.
     void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
     void OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
@@ -113,6 +116,9 @@ private:
     QRect GetDecreaseRect() const override;
 
 private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+    void ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection);
+
     // Get the width/height for particle counter label.
     void GetParticlesCountWidthHeight(const LINE& line, DAVA::int32& width, DAVA::int32& height);
 
@@ -152,6 +158,6 @@ private:
     private:
         EventFilterDoubleSpinBox* valueSpin = nullptr;
     };
-};
 
-#endif /* defined(__ResourceEditorQt__ParticleTimeLineWidget__) */
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};
