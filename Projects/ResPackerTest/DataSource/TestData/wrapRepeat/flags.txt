@@ -1,1 +1,0 @@
---wrapRepeat --PowerVR_iOS PVR2 --adreno A8 --mali ETC1 --tegra DXT1A --PowerVR_Android PVR2
