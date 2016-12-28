@@ -3,6 +3,11 @@
 
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
+#include "TArc/Utils/ModuleCollection.h"
+
+#include "Reflection/ReflectionRegistrator.h"
+
+#include <QAction>
 
 void CrashProduceModule::PostInit()
 {
@@ -38,3 +43,12 @@ void CrashProduceModule::PostInit()
 
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, dumpAction);
 }
+
+DAVA_REFLECTION_IMPL(CrashProduceModule)
+{
+    DAVA::ReflectionRegistrator<CrashProduceModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(CrashProduceModule);
