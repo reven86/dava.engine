@@ -29,6 +29,6 @@ private:
     std::unique_ptr<FindFilter> filter;
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes;
     FindItem currentItem;
-    bool canceling = false;
+    bool cancelling = false;
     QMutex mutex;
 };

@@ -27,7 +27,7 @@ void Finder::Process()
     for (const QString& pathStr : files)
     {
         QMutexLocker locker(&mutex);
-        if (canceling)
+        if (cancelling)
         {
             break;
         }
@@ -67,7 +67,7 @@ void Finder::Process()
 void Finder::Stop()
 {
     QMutexLocker locker(&mutex);
-    canceling = true;
+    cancelling = true;
 }
 
 void Finder::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection)
