@@ -44,6 +44,7 @@ ref struct WindowNativeBridge sealed
 
 private:
     void OnTriggerPlatformEvents();
+    void HandleSizeChanged(float32 w, float32 h);
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
     void OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg);
@@ -101,6 +102,7 @@ private:
     ::Windows::UI::Core::CoreCursor ^ defaultCursor = ref new ::Windows::UI::Core::CoreCursor(::Windows::UI::Core::CoreCursorType::Arrow, 0);
     bool hasFocus = false;
     bool mouseVisible = true;
+    bool dpiChangedEventPending = false;
     eCursorCapture captureMode = eCursorCapture::OFF;
     uint32 mouseMoveSkipCount = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
