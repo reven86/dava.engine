@@ -7,6 +7,8 @@
 
 #include "MaterialEditor/MaterialAssignSystem.h"
 
+#include "Classes/Selection/Selection.h"
+
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
 
@@ -740,9 +742,9 @@ Qt::ItemFlags SceneTreeModel::flags(const QModelIndex& index) const
 {
     const Qt::ItemFlags f = QStandardItemModel::flags(index);
     DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
-    if (NULL != entity)
+    if (nullptr != entity)
     {
-        if (!curScene->selectionSystem->IsEntitySelectable(entity))
+        if (Selection::IsEntitySelectable(entity) == false)
         {
             return (f & ~Qt::ItemIsSelectable);
         }

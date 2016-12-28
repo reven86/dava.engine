@@ -1,5 +1,3 @@
-#include "DAVAEngine.h"
-
 #include "mainwindow.h"
 #include "version.h"
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
@@ -42,6 +40,8 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Application/REGlobalOperationsData.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/Selection/Selection.h"
+#include "Classes/Selection/SelectionData.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -211,13 +211,13 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , addSwitchEntityDialog(nullptr)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
-    , tarcUI(tarcUI_)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
 #if defined(__DAVAENGINE_MACOS__)
     , shortcutChecker(this)
 #endif
+    , tarcUI(tarcUI_)
 {
     projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
     projectDataWrapper.SetListener(this);
@@ -247,7 +247,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     SetupMainMenu();
     SetupThemeActions();
     SetupToolBars();
-    SetupStatusBar();
     SetupActions();
 
     // create tool windows
@@ -260,8 +259,10 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &QtMainWindow::SceneCommandExecuted);
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &QtMainWindow::SceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &QtMainWindow::SceneDeactivated);
-    connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &QtMainWindow::SceneSelectionChanged);
     connect(SceneSignals::Instance(), &SceneSignals::EditorLightEnabled, this, &QtMainWindow::EditorLightEnabled);
+
+    selectionWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<SelectionData>());
+    selectionWrapper.SetListener(this);
 
     LoadMaterialLightViewMode();
 
@@ -278,7 +279,8 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     DVASSERT(uiApplication != nullptr);
     DVASSERT(uiFramework != nullptr);
     propertyPanel->Initialize(*uiFramework, *uiApplication);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
+    DVASSERT(false); //TODO: should rewrite work with selection
+//QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
 #endif
 }
 
@@ -316,6 +318,11 @@ void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
     QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+}
+
+void QtMainWindow::AfterInjectInit()
+{
+    SetupStatusBar();
 }
 
 QString GetSaveFolderForEmitters()
@@ -521,26 +528,18 @@ void QtMainWindow::SetupStatusBar()
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, ui->statusBar, &StatusBar::SceneActivated);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, ui->statusBar, &StatusBar::SceneDeactivated);
 
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, ui->statusBar, &StatusBar::SceneSelectionChanged);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, ui->statusBar, &StatusBar::StructureChanged);
     QObject::connect(this, &QtMainWindow::GlobalInvalidateTimeout, ui->statusBar, &StatusBar::UpdateByTimer);
 
-    auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
-    {
-        QToolButton* statusBtn = new QToolButton();
-        statusBtn->setDefaultAction(action);
-        statusBtn->setAutoRaise(true);
-        statusBtn->setMaximumSize(QSize(16, 16));
-        statusBar->insertPermanentWidget(0, statusBtn);
-    };
+    DAVA::TArc::InsertionParams insertParams;
+    insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
+    DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
-    CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
-    CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
-    CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
-    CreateStatusBarButton(ui->actionEnableSounds, ui->statusBar);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()
@@ -596,7 +595,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
 
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
-    QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
     QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(triggered(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
@@ -715,10 +713,6 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
-    connect(ui->actionGenerate_Assert, &QAction::triggered, []()
-            {
-                DVASSERT_MSG(false, "Debug assert call");
-            });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
     ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -772,8 +766,6 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
 
         if (scene->cameraSystem)
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
-
-        SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
     }
     ui->actionUndo->setEnabled(scene->CanUndo());
     ui->actionRedo->setEnabled(scene->CanRedo());
@@ -786,11 +778,6 @@ void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
 {
     // block some actions, when there is no scene
     EnableSceneActions(false);
-}
-
-void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)
-{
-    UpdateModificationActionsState();
 }
 
 void QtMainWindow::EnableProjectActions(bool enable)
@@ -849,9 +836,9 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionHangingObjects->setEnabled(enable);
 
-    ui->menuEdit->setEnabled(enable);
+    ui->Edit->setEnabled(enable);
     ui->menuCreateNode->setEnabled(enable);
-    ui->menuScene->setEnabled(enable);
+    ui->Scene->setEnabled(enable);
     ui->menuLightView->setEnabled(enable);
 
     ui->sceneToolBar->setEnabled(enable);
@@ -997,15 +984,6 @@ void QtMainWindow::OnViewLightmapCanvas(bool show)
     }
 }
 
-void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
-{
-    DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
-    if (scene.Get() != nullptr)
-    {
-        scene->selectionSystem->SetSelectionAllowed(allow);
-    }
-}
-
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 {
     DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
@@ -1093,7 +1071,7 @@ void QtMainWindow::OnPivotCenterMode()
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
     if (scene.Get() != nullptr)
     {
-        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::ObjectCenter);
+        scene->modifSystem->SetPivotPoint(Selectable::TransformPivot::ObjectCenter);
         LoadModificationState(scene.Get());
     }
 }
@@ -1103,7 +1081,7 @@ void QtMainWindow::OnPivotCommonMode()
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
     if (scene.Get() != nullptr)
     {
-        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::CommonCenter);
+        scene->modifSystem->SetPivotPoint(Selectable::TransformPivot::CommonCenter);
         LoadModificationState(scene.Get());
     }
 }
@@ -1132,7 +1110,8 @@ void QtMainWindow::OnPlaceOnLandscape()
             return;
         }
 
-        scene->modifSystem->PlaceOnLandscape(scene->selectionSystem->GetSelection());
+        const SelectableGroup& selection = Selection::GetSelection();
+        scene->modifSystem->PlaceOnLandscape(selection);
     }
 }
 
@@ -1159,7 +1138,8 @@ void QtMainWindow::OnResetTransform()
     DAVA::RefPtr<SceneEditor2> scene = MainWindowDetails::GetCurrentScene();
     if (scene.Get() != nullptr)
     {
-        scene->modifSystem->ResetTransform(scene->selectionSystem->GetSelection());
+        const SelectableGroup& selection = Selection::GetSelection();
+        scene->modifSystem->ResetTransform(selection);
     }
 }
 
@@ -1180,7 +1160,8 @@ void QtMainWindow::OnCenterPivotPoint()
     DAVA::RefPtr<SceneEditor2> curScene = MainWindowDetails::GetCurrentScene();
     if (curScene.Get() != nullptr)
     {
-        curScene->modifSystem->MovePivotCenter(curScene->selectionSystem->GetSelection());
+        const SelectableGroup& selection = Selection::GetSelection();
+        curScene->modifSystem->MovePivotCenter(selection);
     }
 }
 
@@ -1189,7 +1170,8 @@ void QtMainWindow::OnZeroPivotPoint()
     DAVA::RefPtr<SceneEditor2> curScene = MainWindowDetails::GetCurrentScene();
     if (curScene.Get() != nullptr)
     {
-        curScene->modifSystem->MovePivotZero(curScene->selectionSystem->GetSelection());
+        const SelectableGroup& selection = Selection::GetSelection();
+        curScene->modifSystem->MovePivotZero(selection);
     }
 }
 
@@ -1205,17 +1187,10 @@ void QtMainWindow::OnMaterialEditor(DAVA::NMaterial* material)
 
 void QtMainWindow::OnTextureBrowser()
 {
-    DAVA::RefPtr<SceneEditor2> sceneEditor = MainWindowDetails::GetCurrentScene();
-
-    SelectableGroup selectedEntities;
-    if (sceneEditor.Get() != nullptr)
-    {
-        selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
-    }
-
     TextureBrowser::Instance()->show();
+
+    DAVA::RefPtr<SceneEditor2> sceneEditor = MainWindowDetails::GetCurrentScene();
     TextureBrowser::Instance()->sceneActivated(sceneEditor.Get());
-    TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor.Get(), &selectedEntities, nullptr);
 }
 
 void QtMainWindow::OnSceneLightMode()
@@ -1463,8 +1438,6 @@ void QtMainWindow::LoadViewState(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
-        ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
-
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
 
@@ -1504,7 +1477,7 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         }
 
         // pivot point
-        if (scene->selectionSystem->GetPivotPoint() == Selectable::TransformPivot::ObjectCenter)
+        if (scene->modifSystem->GetPivotPoint() == Selectable::TransformPivot::ObjectCenter)
         {
             ui->actionPivotCenter->setChecked(true);
             ui->actionPivotCommon->setChecked(false);
@@ -2035,10 +2008,12 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
-    auto isLocked = sceneEditor->selectionSystem->IsLocked();
-    sceneEditor->selectionSystem->SetLocked(true);
+    bool wasLocked = Selection::Lock();
     sceneEditor->pathSystem->EnablePathEdit(toEnable);
-    sceneEditor->selectionSystem->SetLocked(isLocked);
+    if (wasLocked == false)
+    {
+        Selection::Unlock();
+    }
 }
 
 void QtMainWindow::OnBuildStaticOcclusion()
@@ -2093,26 +2068,32 @@ void QtMainWindow::OnInavalidateStaticOcclusion()
 
 void QtMainWindow::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    DVASSERT(projectDataWrapper == wrapper);
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
+    if (projectDataWrapper == wrapper)
+    {
+        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
 
-    // empty fields mean that ProjectManagerData was just added
-    // this means that there is a first call
-    if (data != nullptr && fields.empty())
-    {
-        const SpritesPackerModule* spritesPacker = data->GetSpritesModules();
-        QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
-    }
+        // empty fields mean that ProjectManagerData was just added
+        // this means that there is a first call
+        if (data != nullptr && fields.empty())
+        {
+            const SpritesPackerModule* spritesPacker = data->GetSpritesModules();
+            QObject::connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
+        }
 
-    if (data != nullptr && !data->GetProjectPath().IsEmpty())
-    {
-        EnableProjectActions(true);
-        SetupTitle(data->GetProjectPath().GetAbsolutePathname());
+        if (data != nullptr && !data->GetProjectPath().IsEmpty())
+        {
+            EnableProjectActions(true);
+            SetupTitle(data->GetProjectPath().GetAbsolutePathname());
+        }
+        else
+        {
+            EnableProjectActions(false);
+            SetupTitle(DAVA::String());
+        }
     }
-    else
+    else if (selectionWrapper == wrapper)
     {
-        EnableProjectActions(false);
-        SetupTitle(DAVA::String());
+        UpdateModificationActionsState();
     }
 }
 
@@ -2410,13 +2391,13 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        objects.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
+                        objects.Add(entity, currentScene->collisionSystem->GetUntransformedBoundingBox(entity));
                     }
                 }
 
                 if (!objects.IsEmpty())
                 {
-                    currentScene->selectionSystem->SetSelection(objects);
+                    Selection::SetSelection(objects);
                     currentScene->cameraSystem->LookAt(objects.GetIntegralBoundingBox());
                 }
             }

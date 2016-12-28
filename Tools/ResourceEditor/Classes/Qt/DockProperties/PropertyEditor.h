@@ -11,6 +11,14 @@ namespace Ui
 class MainWindow;
 }
 
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class GlobalOperations;
 class LazyUpdater;
 class RECommandNotificationObject;
@@ -71,7 +79,6 @@ public:
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void ActionEditComponent();
@@ -147,8 +154,10 @@ private:
     SelectableGroup curNodes;
     PropertyEditorStateHelper treeStateHelper;
     DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
-    eViewMode viewMode;
+    eViewMode viewMode = VIEW_NORMAL;
     bool favoritesEditMode;
     ActiveSceneHolder sceneHolder;
     std::shared_ptr<GlobalOperations> globalOperations;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
 };
