@@ -560,8 +560,8 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 
                 if (resultImages.size() < DAVA::Texture::CUBE_FACE_COUNT)
                 {
-                    int imagesToAdd = DAVA::Texture::CUBE_FACE_COUNT - resultImages.size();
-                    for (int i = 0; i < imagesToAdd; ++i)
+                    DAVA::uint32 imagesToAdd = DAVA::Texture::CUBE_FACE_COUNT - static_cast<DAVA::uint32>(resultImages.size());
+                    for (DAVA::uint32 i = 0; i < imagesToAdd; ++i)
                     {
                         resultImages.push_back(NULL);
                     }

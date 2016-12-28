@@ -1,6 +1,5 @@
 #include "HeightmapEditorSystem.h"
 #include "CollisionSystem.h"
-#include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
@@ -9,6 +8,8 @@
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Main/QtUtils.h"
 #include "HoodSystem.h"
+
+#include "Classes/Selection/Selection.h"
 
 #include "Render/Image/ImageConvert.h"
 
@@ -47,7 +48,7 @@ LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEdit
         return enableCustomDrawError;
     }
 
-    selectionSystem->SetLocked(true);
+    Selection::Lock();
     modifSystem->SetLocked(true);
 
     landscapeSize = drawSystem->GetHeightmapProxy()->Size();
@@ -72,7 +73,7 @@ bool HeightmapEditorSystem::DisableLandscapeEdititing()
 
     FinishEditing(false);
 
-    selectionSystem->SetLocked(false);
+    Selection::Unlock();
     modifSystem->SetLocked(false);
 
     drawSystem->DisableCursor();

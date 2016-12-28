@@ -13,7 +13,7 @@ void CrashProduceModule::PostInit()
 {
     using namespace DAVA::TArc;
     UI* ui = GetUI();
-    ActionPlacementInfo placementInfo(CreateMenuPoint(QList<QString>() << "menuDebug_Functions"
+    ActionPlacementInfo placementInfo(CreateMenuPoint(QList<QString>() << "DebugFunctions"
                                                                        << "Crash Produce"));
 
     QAction* assertAction = new QAction("Generate Assert", nullptr);

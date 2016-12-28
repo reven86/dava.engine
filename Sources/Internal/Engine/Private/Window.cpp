@@ -328,6 +328,21 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         {
             UpdateVirtualCoordinatesSystem();
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            // TODO:
+            // Resources must be separated from VirtualCoordinateSystem
+            // Each resource consumer have to care for his resources by itself,
+            // e.g. sprites reloading mechanism should be implemented in Sprite.cpp
+            // by handling Window::sizeChanged signal and making sprites reload
+            // inside that particular handler...
+            //
+            // Unfortunately we have only temporary solution:
+            // call reloadig sprites/fonts from this point ((
+            if (uiControlSystem->vcs->GetReloadResourceOnResize())
+            {
+                Sprite::ValidateForSize();
+                TextBlock::ScreenResolutionChanged();
+            }
         }
     }
 }

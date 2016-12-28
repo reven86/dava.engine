@@ -107,7 +107,7 @@ void MitsubaExporter::PostInit()
                                                return value.CanCast<SceneData::TSceneType>();
                                            });
 
-    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("menuDebug_Functions"), exportAction);
+    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
     connections.AddConnection(exportAction, &QAction::triggered, DAVA::MakeFunction(this, &MitsubaExporter::Export));
 }
 

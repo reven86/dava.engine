@@ -1,15 +1,15 @@
-#ifndef __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
-#define __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
+#pragma once
 
 #include "LandscapeEditorSystem.h"
 
 
 #include "Commands2/MetaObjModifyCommand.h"
 #include "LandscapeEditorDrawSystem.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 #include "Render/UniqueStateSet.h"
 
-class TilemaskEditorSystem : public LandscapeEditorSystem
+class TilemaskEditorSystem : public LandscapeEditorSystem, public EditorSceneSystem
 {
 public:
     enum eTilemaskDrawType
@@ -28,7 +28,6 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
-    void Draw();
 
     void SetBrushSize(DAVA::int32 brushSize);
     DAVA::int32 GetBrushSize();
@@ -48,6 +47,8 @@ public:
     eTilemaskDrawType GetDrawingType();
 
 protected:
+    void Draw() override;
+
     DAVA::uint32 curToolSize;
 
     DAVA::Texture* toolImageTexture;
@@ -97,5 +98,3 @@ protected:
 
     void FinishEditing();
 };
-
-#endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

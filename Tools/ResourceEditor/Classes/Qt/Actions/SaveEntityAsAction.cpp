@@ -1,6 +1,6 @@
 #include "SaveEntityAsAction.h"
 
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Material/NMaterial.h"

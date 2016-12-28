@@ -1,11 +1,18 @@
-#ifndef __MATERIAL_TREE_H__
-#define __MATERIAL_TREE_H__
+#pragma once
 
 #include <QWidget>
 #include <QTreeView>
 #include <QMap>
 
 #include "MaterialModel.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class RECommandNotificationObject;
 class SelectableGroup;
@@ -38,18 +45,19 @@ public slots:
     void ShowContextMenu(const QPoint& pos);
     void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSelectEntities();
 
 protected:
     MaterialFilteringModel* treeModel;
 
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dropEvent(QDropEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
     void dragTryAccepted(QDragMoveEvent* event);
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
-};
 
-#endif // __MATERIALS_TREE_H__
+private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};

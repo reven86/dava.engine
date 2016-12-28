@@ -1,7 +1,6 @@
-#ifndef __BASE_TRANSFORM_PROXIES_H
-#define __BASE_TRANSFORM_PROXIES_H
+#pragma once
 
-#include "Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 class EntityTransformProxy : public Selectable::TransformProxy
 {
@@ -22,5 +21,3 @@ public:
     bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
     bool TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const override;
 };
-
-#endif // __BASE_TRANSFORM_PROXIES_H
