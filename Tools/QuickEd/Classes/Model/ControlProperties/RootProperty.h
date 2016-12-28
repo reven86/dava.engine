@@ -92,6 +92,8 @@ public:
     const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
 
+    ControlNode* GetControlNode() const;
+
 private:
     void AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);

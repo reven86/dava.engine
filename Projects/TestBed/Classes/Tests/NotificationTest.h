@@ -43,6 +43,7 @@ private:
     UIButton* hideNotificationText;
     UIButton* showNotificationProgress;
     UIButton* hideNotificationProgress;
+    UIStaticText* activateFromNotification;
 
     LocalNotificationProgress* notificationProgress;
     LocalNotificationText* notificationText;

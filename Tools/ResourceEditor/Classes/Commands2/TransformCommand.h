@@ -1,7 +1,6 @@
-#ifndef __TRANSFORM_COMMAND_H__
-#define __TRANSFORM_COMMAND_H__
+#pragma once
 
-#include "Qt/Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 #include "Commands2/Base/RECommand.h"
 
 class TransformCommand : public RECommand
@@ -20,5 +19,3 @@ protected:
     DAVA::Matrix4 undoTransform;
     DAVA::Matrix4 redoTransform;
 };
-
-#endif // __COMMAND_BATCH_H__

@@ -122,20 +122,28 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 
 void Window::SetCursorCapture(eCursorCapture mode)
 {
+    // For now FRAME is not supported, introduce somehow later
+    if (mode == eCursorCapture::FRAME)
+        return;
+
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
-        //for now, eCursorCapture::FRAME not supported
-        if (eCursorCapture::FRAME != mode)
+        if (cursorCapture != mode)
         {
-            if (cursorCapture != mode)
+            cursorCapture = mode;
+            if (cursorCapture == eCursorCapture::PINNING)
             {
-                cursorCapture = mode;
-                waitInputActivation = !hasFocus && cursorCapture != eCursorCapture::OFF;
+                waitInputActivation |= !hasFocus;
                 if (!waitInputActivation)
                 {
-                    windowBackend->SetCursorCapture(mode);
-                    windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
+                    windowBackend->SetCursorCapture(cursorCapture);
+                    windowBackend->SetCursorVisibility(false);
                 }
+            }
+            else if (hasFocus)
+            {
+                windowBackend->SetCursorCapture(cursorCapture);
+                windowBackend->SetCursorVisibility(cursorVisible);
             }
         }
     }
@@ -152,12 +160,10 @@ void Window::SetCursorVisibility(bool visible)
     {
         if (cursorVisible != visible)
         {
-            // Remember visibility state but prevent cursor showing in pinning
             cursorVisible = visible;
-            waitInputActivation = !hasFocus && !cursorVisible;
-            if (!waitInputActivation)
+            if (hasFocus && cursorCapture != eCursorCapture::PINNING)
             {
-                windowBackend->SetCursorVisibility(visible && cursorCapture != eCursorCapture::PINNING);
+                windowBackend->SetCursorVisibility(cursorVisible);
             }
         }
     }
@@ -204,11 +210,8 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     using Private::MainDispatcherEvent;
     if (MainDispatcherEvent::IsInputEvent(e.type))
     {
-        if (!hasFocus)
-        {
-            return; // if no focus - skip all input events
-        }
-        if (HandleInputActivation(e))
+        // Skip input events if window does not have focus or pinning switching logic tells to ignore input event
+        if (!hasFocus || HandleInputActivation(e))
         {
             return;
         }
@@ -325,6 +328,21 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         {
             UpdateVirtualCoordinatesSystem();
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            // TODO:
+            // Resources must be separated from VirtualCoordinateSystem
+            // Each resource consumer have to care for his resources by itself,
+            // e.g. sprites reloading mechanism should be implemented in Sprite.cpp
+            // by handling Window::sizeChanged signal and making sprites reload
+            // inside that particular handler...
+            //
+            // Unfortunately we have only temporary solution:
+            // call reloadig sprites/fonts from this point ((
+            if (uiControlSystem->vcs->GetReloadResourceOnResize())
+            {
+                Sprite::ValidateForSize();
+                TextBlock::ScreenResolutionChanged();
+            }
         }
     }
 }
@@ -383,28 +401,40 @@ void Window::UpdateVirtualCoordinatesSystem()
 bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
-    // If the pinning mode was activated from mouse button(MOUSE_BUTTON_DOWN), skip the first mouse button event(MOUSE_BUTTON_UP).
-    if (skipFirstMouseUpEventBeforeCursorCapture)
+    if (waitInputActivation && cursorCapture == eCursorCapture::PINNING)
     {
-        skipFirstMouseUpEventBeforeCursorCapture = false;
-        return true;
-    }
-    // Restore the cursor capture and cursor visibility.
-    if (waitInputActivation)
-    {
-        if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
+        bool skipEvent = true;
+        bool enablePinning = true;
+        switch (e.type)
         {
-            skipFirstMouseUpEventBeforeCursorCapture = true;
+        case MainDispatcherEvent::MOUSE_BUTTON_DOWN:
+            skipEvent = true;
+            enablePinning = true;
+            break;
+        case MainDispatcherEvent::MOUSE_BUTTON_UP:
+            skipEvent = true;
+            enablePinning = true;
+            waitInputActivation = false;
+            break;
+        case MainDispatcherEvent::MOUSE_MOVE:
+            skipEvent = true;
+            enablePinning = false;
+            break;
+        default:
+            skipEvent = false;
+            enablePinning = true;
+            waitInputActivation = false;
+            break;
         }
-        else if (MainDispatcherEvent::MOUSE_MOVE == e.type)
+
+        if (enablePinning)
         {
-            return true;
+            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+            windowBackend->SetCursorVisibility(false);
         }
-        waitInputActivation = false;
-        windowBackend->SetCursorCapture(cursorCapture);
-        windowBackend->SetCursorVisibility(cursorVisible && cursorCapture != eCursorCapture::PINNING);
-        return true;
+        return skipEvent;
     }
+    waitInputActivation = false;
     return false;
 }
 
@@ -420,9 +450,10 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
         // When the native window loses focus, it restores the original cursor capture and visibility.
         // After the window gives the focus back, set the current visibility state, if not set pinning mode.
         // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
-        if (hasFocus && !waitInputActivation)
+        if (hasFocus && cursorCapture != eCursorCapture::PINNING)
         {
             windowBackend->SetCursorVisibility(cursorVisible);
+            windowBackend->SetCursorCapture(cursorCapture);
         }
     }
     focusChanged.Emit(this, hasFocus);
@@ -434,6 +465,8 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);
+
+    waitInputActivation = isVisible;
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
