@@ -1,12 +1,12 @@
 #pragma once
 
-#ifndef __Dava_RtType__
+#ifndef __Dava_Type__
 #include "Base/Type.h"
 #endif
 
 namespace DAVA
 {
-namespace RttiTypeDetail
+namespace TypeDetail
 {
 template <typename T>
 struct TypeSize
@@ -27,25 +27,36 @@ struct TypeSize<const void>
 };
 
 template <typename T>
-const Type* GetTypeIfTrue(std::false_type)
-{
-    return nullptr;
-}
-
-template <typename T>
-const Type* GetTypeIfTrue(std::true_type)
-{
-    return Type::Instance<T>();
-}
-
-template <typename T>
 struct TypeHolder
 {
-    static const Type* type;
+    static Type* t;
+    static Type* Instance()
+    {
+        return t;
+    }
+    static Type** InstancePointer()
+    {
+        return &t;
+    }
 };
 
 template <typename T>
-const Type* TypeHolder<T>::type = nullptr;
+Type* TypeHolder<T>::t = Type::Init<T>();
+
+static Type* nullType = nullptr;
+
+template <typename T>
+Type* const* GetTypeIfTrue(std::false_type)
+{
+    return &nullType;
+}
+
+template <typename T>
+Type* const* GetTypeIfTrue(std::true_type)
+{
+    return TypeHolder<T>::InstancePointer();
+}
+
 } // namespace TypeDetails
 
 inline size_t Type::GetSize() const
@@ -66,6 +77,11 @@ inline std::type_index Type::GetTypeIndex() const
 inline const TypeInheritance* Type::GetInheritance() const
 {
     return static_cast<const TypeInheritance*>(inheritance.get());
+}
+
+inline unsigned long Type::GetTypeFlags() const
+{
+    return flags.to_ulong();
 }
 
 inline bool Type::IsConst() const
@@ -110,28 +126,28 @@ inline bool Type::IsEnum() const
 
 inline const Type* Type::Decay() const
 {
-    if (nullptr != decayType)
-        return decayType;
+    const Type* decayedType = *decayType;
+
+    if (nullptr != decayedType)
+        return decayedType;
 
     return this;
 }
 
 inline const Type* Type::Deref() const
 {
-    return derefType;
+    return *derefType;
 }
 
 inline const Type* Type::Pointer() const
 {
-    return pointerType;
+    return *pointerType;
 }
 
 template <typename T>
-void Type::Init(Type** ptype)
+Type* Type::Init()
 {
     static Type type;
-
-    *ptype = &type;
 
     using DerefU = DerefT<T>;
     using DecayU = DecayT<T>;
@@ -141,13 +157,15 @@ void Type::Init(Type** ptype)
     static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
 
-    type.size = RttiTypeDetail::TypeSize<T>::size;
+    type.size = TypeDetail::TypeSize<T>::size;
     type.name = typeid(T).name();
     type.stdTypeInfo = &typeid(T);
 
     type.flags.set(isConst, std::is_const<T>::value);
     type.flags.set(isPointer, std::is_pointer<T>::value);
+    type.flags.set(isPointerOnConst, std::is_pointer<T>::value && std::is_const<typename std::remove_pointer<T>::type>::value);
     type.flags.set(isReference, std::is_reference<T>::value);
+    type.flags.set(isReferenceOnConst, std::is_reference<T>::value && std::is_const<typename std::remove_reference<T>::type>::value);
     type.flags.set(isFundamental, std::is_fundamental<T>::value);
     type.flags.set(isTrivial, std::is_trivial<T>::value);
     type.flags.set(isIntegral, std::is_integral<T>::value);
@@ -155,28 +173,21 @@ void Type::Init(Type** ptype)
     type.flags.set(isEnum, std::is_enum<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
-    type.derefType = RttiTypeDetail::GetTypeIfTrue<DerefU>(condDeref);
+    type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);
 
     auto condDecay = std::integral_constant<bool, needDecay>();
-    type.decayType = RttiTypeDetail::GetTypeIfTrue<DecayU>(condDecay);
+    type.decayType = TypeDetail::GetTypeIfTrue<DecayU>(condDecay);
 
     auto condPointer = std::integral_constant<bool, needPointer>();
-    type.pointerType = RttiTypeDetail::GetTypeIfTrue<PointerU>(condPointer);
+    type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
-    RttiTypeDetail::TypeHolder<T>::type = &type;
+    return &type;
 }
 
 template <typename T>
 const Type* Type::Instance()
 {
-    static Type* type = nullptr;
-
-    if (nullptr == type)
-    {
-        Type::Init<T>(&type);
-    }
-
-    return type;
+    return TypeDetail::TypeHolder<T>::Instance();
 }
 
 } // namespace DAVA

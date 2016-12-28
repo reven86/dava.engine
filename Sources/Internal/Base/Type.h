@@ -9,10 +9,19 @@
 
 namespace DAVA
 {
+namespace TypeDetail
+{
+template <typename T>
+struct TypeHolder;
+}
+
 class TypeInheritance;
 class Type final
 {
     friend class TypeInheritance;
+
+    template <typename T>
+    friend struct TypeDetail::TypeHolder;
 
 public:
     template <typename T>
@@ -32,6 +41,7 @@ public:
     const char* GetName() const;
     std::type_index GetTypeIndex() const;
     const TypeInheritance* GetInheritance() const;
+    unsigned long GetTypeFlags() const;
 
     bool IsConst() const;
     bool IsPointer() const;
@@ -54,7 +64,9 @@ private:
     {
         isConst,
         isPointer,
+        isPointerOnConst,
         isReference,
+        isReferenceOnConst,
         isFundamental,
         isTrivial,
         isIntegral,
@@ -66,15 +78,15 @@ private:
     const char* name = nullptr;
     const std::type_info* stdTypeInfo = &typeid(void);
 
-    const Type* derefType = nullptr;
-    const Type* decayType = nullptr;
-    const Type* pointerType = nullptr;
+    Type* const* derefType = nullptr;
+    Type* const* decayType = nullptr;
+    Type* const* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
     mutable std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
 
     template <typename T>
-    static void Init(Type** ptype);
+    static Type* Init();
 
     Type();
 };

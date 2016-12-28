@@ -5,6 +5,37 @@
 
 namespace DAVA
 {
+namespace AnyDetail
+{
+using CanGetDefault = std::integral_constant<int, 0>;
+using CanGetPointer = std::integral_constant<int, 1>;
+using CanGetVoidPointer = std::integral_constant<int, 2>;
+//using CanGetEnumOrIntegral = std::integral_constant<int, 2>;
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetDefault)
+{
+    return (t == Type::Instance<T>());
+}
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetPointer)
+{
+    // We should allow cast from "T*" into "const T*".
+    // For any type, that is "const T*" type->Decay() will return "T*".
+    const Type* rt = Type::Instance<T>();
+    return (t == rt || t == rt->Decay());
+}
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetVoidPointer)
+{
+    // any pointer can be get as "void *"
+    return t->IsPointer();
+}
+
+} // AnyDetail
+
 inline Any::Any(Any&& any)
 {
     Set(std::move(any));
@@ -51,11 +82,17 @@ template <typename T>
 bool Any::CanGet() const
 {
     using U = AnyStorage::StorableType<T>;
+    using CanGetPolicy = typename std::conditional<!std::is_pointer<U>::value, AnyDetail::CanGetDefault,
+                                                   typename std::conditional<std::is_void<std::remove_pointer_t<T>>::value, AnyDetail::CanGetVoidPointer, AnyDetail::CanGetPointer>::type>::type;
 
     if (nullptr == type)
     {
         return false;
     }
+
+    return AnyDetail::CanGetImpl<U>(type, CanGetPolicy());
+
+    /*
     else if (type == Type::Instance<U>())
     {
         return true;
@@ -83,6 +120,7 @@ bool Any::CanGet() const
     }
 
     return false;
+    */
 }
 
 template <typename T>
@@ -159,14 +197,12 @@ T Any::Cast(const T& defaultValue) const
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    try
+    if (Any::CanCast<T>())
     {
         return AnyCast<T>::Cast(*this);
     }
-    catch (const Exception&)
-    {
-        return defaultValue;
-    }
+
+    return defaultValue;
 }
 
 } // namespace DAVA

@@ -94,7 +94,7 @@ public:
     template <typename T>
     const T& Get(const T& defaultValue) const;
 
-    /** Returns pointer on internal data. Is Any is empty internal data is unspecified. */
+    /** Returns pointer on internal data. If Any is empty internal data is unspecified. */
     const void* GetData() const;
 
     /// \brief Sets the value. It will be copied|moved into Any depending on lvalue|rvalue.
