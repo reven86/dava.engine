@@ -152,6 +152,7 @@ if( DAVA_FOUND )
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Notification/Private/Android/Java )
 
 endif()
 
@@ -907,6 +908,7 @@ if( PLUGIN_LIST )
     foreach( PLUGIN ${PLUGIN_LIST} )
 
         get_property( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+        get_property( ${PLUGIN}_PLUGIN_COPY_ADD_FILES GLOBAL PROPERTY ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
 
         if( APPLE )
             set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/../PlugIns" )
@@ -930,6 +932,29 @@ if( PLUGIN_LIST )
             endif()
 
         endforeach( )
+
+        if(  ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
+
+            foreach( ITEM ${${PLUGIN}_PLUGIN_COPY_ADD_FILES} )
+
+                if( IS_DIRECTORY ${ITEM} )
+                    get_filename_component( FOLDER_NAME ${ITEM}  NAME    )
+
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR}/${FOLDER_NAME} ) 
+
+                else()
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR} )                    
+                endif()
+
+            endforeach( )
+
+        endif()
                     
     endforeach( )
 

@@ -100,6 +100,7 @@ PLUGIN_PRE_BUILD_COMMAND
 PLUGIN_PRE_BUILD_PARAMS
 #
 PLUGIN_RELATIVE_PATH_TO_FOLDER
+PLUGIN_COPY_ADD_FILES 
 #
 )
 
@@ -628,6 +629,10 @@ macro( setup_main_module )
                  
                 if( PLUGIN_RELATIVE_PATH_TO_FOLDER )
                     set_property( GLOBAL PROPERTY ${NAME_MODULE}_RELATIVE_PATH_TO_FOLDER ${PLUGIN_RELATIVE_PATH_TO_FOLDER} )
+                endif()
+
+                if( PLUGIN_COPY_ADD_FILES )
+                    set_property( GLOBAL PROPERTY ${NAME_MODULE}_PLUGIN_COPY_ADD_FILES ${PLUGIN_COPY_ADD_FILES} )                    
                 endif()
 
             endif()

@@ -31,13 +31,13 @@
 #include "Job/JobManager.h"
 #include "Logger/Logger.h"
 #include "ModuleManager/ModuleManager.h"
-#include "PluginManager/PluginManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
 #include "PackManager/Private/PackManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -797,7 +797,7 @@ void EngineBackend::DestroySubsystems()
     }
     if (context->pluginManager != nullptr)
     {
-        context->pluginManager->ShutdownPlugins();
+        context->pluginManager->UnloadPlugins();
         delete context->pluginManager;
     }
     if (context->jobManager != nullptr)

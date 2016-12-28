@@ -1,4 +1,4 @@
-#include "Notification/LocalNotificationAndroid.h"
+#include "Notification/Private/Android/LocalNotificationAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -6,11 +6,17 @@
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/Engine.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {
 LocalNotificationAndroid::LocalNotificationAndroid(const String& _id)
+#if defined(__DAVAENGINE_COREV2__)
+    : notificationProvider("com/dava/engine/notification/DavaNotificationProvider")
+#else
     : notificationProvider("com/dava/framework/JNINotificationProvider")
+#endif
 {
     notificationId = _id;
 
@@ -100,8 +106,9 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationAndroid(_id);
 }
-}
+} // namespace DAVA
 
+#if !defined(__DAVAENGINE_COREV2__)
 extern "C"
 {
 JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
@@ -111,5 +118,6 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotific
     env->ReleaseStringUTFChars(uid, str);
 }
 }
+#endif // !defined(__DAVAENGINE_COREV2__)
 
-#endif
+#endif // defined(__DAVAENGINE_ANDROID__)

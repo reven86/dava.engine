@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -62,7 +64,7 @@ struct scope
         : name(name_)
     {
         (*currentOutput) << ident << kBeginTag << name;
-        Vector<String> properties = { ToString(args)... };
+        DAVA::Vector<DAVA::String> properties = { ToString(args)... };
         if (properties.size() > 0)
         {
             DVASSERT(properties.size() % 2 == 0);
@@ -86,7 +88,7 @@ template <class... T>
 void tag(const DAVA::String& name, T&&... args)
 {
     (*currentOutput) << ident << kBeginTag << name;
-    Vector<String> properties = { ToString(args)... };
+    DAVA::Vector<DAVA::String> properties = { ToString(args)... };
     if (properties.size() > 0)
     {
         DVASSERT(properties.size() % 2 == 0);

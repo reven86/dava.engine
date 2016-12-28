@@ -29,41 +29,36 @@ extern "C" { \
         delete plugin;\
     }\
 }
-
+namespace DAVA
+{
 /**
- \brief handle plugin
- */
+Handle plugin
+*/
 using PluginHandle = void*;
 
 ///
 
 /**
- \brief plugin download function
- \param[in] pluginPath - path to plugin file
- \returns - returns handle descriptor to plugin
- */
+Return the loaded plugin handle on pluginPath path
+*/
 PluginHandle OpenPlugin(const char* pluginPath);
 
 /**
- \brief loading function of plugin
- \param[in] handle - handle plugin, funcName - function name
- \returns - returns pointer to function of plugin
- */
+Return a pointer to function of the the plugin
+*/
 void* LoadFunction(PluginHandle handle, const char* funcName);
 
 /**
- \brief close plugin function
- \param[in] handle - handle plugin
- */
+Unloads plugin on handles
+*/
 void ClosePlugin(PluginHandle handle);
 
 /**
- \brief loading function of plugin
- \param[in] handle - handle plugin, funcName - function name
- \returns - returns pointer to function of plugin
- */
+ Return a pointer to function of the the plugin
+*/
 template <class T>
 T LoadFunction(PluginHandle handle, const char* funcName)
 {
     return reinterpret_cast<T>(LoadFunction(handle, funcName));
+}
 }

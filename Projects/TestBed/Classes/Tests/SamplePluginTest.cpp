@@ -18,14 +18,14 @@ void SamplePluginTest::LoadResources()
     PluginManager& mm = *engine.GetContext()->pluginManager;
     FileSystem& ff = *engine.GetContext()->fileSystem;
 
-    FilePath pluginDir = ff.GetCurrentPluginDirectory();
+    FilePath pluginDir = ff.GetPluginDirectory();
 
     Vector<FilePath> pluginsList;
-    pluginsList = mm.GetPlugins(pluginDir, PluginManager::EFP_Auto);
+    pluginsList = mm.GetPlugins(pluginDir, PluginManager::Auto);
 
     for (auto& path : pluginsList)
     {
-        pluginDescriptor = mm.InitPlugin(path);
+        pluginDescriptor = mm.LoadPlugin(path);
         DVASSERT(pluginDescriptor != nullptr);
     }
 }
@@ -35,5 +35,5 @@ void SamplePluginTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     PluginManager& mm = *engine.GetContext()->pluginManager;
-    mm.ShutdownPlugin(pluginDescriptor);
+    mm.UnloadPlugin(pluginDescriptor);
 }

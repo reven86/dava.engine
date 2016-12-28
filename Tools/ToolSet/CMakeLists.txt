@@ -6,8 +6,13 @@ set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../.
 include ( CMake-common )
 
 macro ( add_tool TARGET_NAME )
-    cmake_parse_arguments ( ARG ""  "ROOT_DIR" "" ${ARGN} )
-    cmake_parse_arguments ( ARG ""  "CUSTOM_DEPLOY_DIR" "" ${ARGN} )
+    cmake_parse_arguments ( ARG ""  "ROOT_DIR;CUSTOM_DEPLOY_DIR;DEPLOY_DEFINE" "" ${ARGN} )
+
+
+    if( ARG_DEPLOY_DEFINE AND DEPLOY ) 
+        get_property( DEFINITIONS_OLD GLOBAL PROPERTY DEFINITIONS )
+        append_property( DEFINITIONS ${ARG_DEPLOY_DEFINE} )
+    endif()
 
     set( OLD_DEPLOY_DIR ${DEPLOY_DIR} )
     if( ARG_CUSTOM_DEPLOY_DIR AND WIN32 )
@@ -19,6 +24,10 @@ macro ( add_tool TARGET_NAME )
     else()
         add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     endif() 
+
+    if( ARG_DEPLOY_DEFINE AND DEPLOY ) 
+        set_property( GLOBAL PROPERTY DEFINITIONS "${DEFINITIONS_OLD}" )
+    endif()
 
     set( DEPLOY_DIR ${OLD_DEPLOY_DIR} )
 endmacro ()
@@ -83,12 +92,9 @@ set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
 
 
 reset_property ( MIX_APP_DATA )
-    if( DEPLOY )
-        set( DEFINITIONS -DDAVA_MACOS_DATA_PATH="/../Data/" )
-    endif()
-    add_tool     ( ResourceEditor   )
-    add_tool     ( QuickEd          )
-    set( DEFINITIONS  )
+
+    add_tool     ( ResourceEditor  DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
+    add_tool     ( QuickEd         DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
 
 ##
     add_tool     ( ResourceArchiver )

@@ -2,6 +2,7 @@
 ///
 #include "Base/Platform.h"
 #include "PluginManager/Plugin.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) 
 
@@ -9,6 +10,8 @@
 
 #endif
 
+namespace DAVA
+{
 ///
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -32,7 +35,8 @@ void ClosePlugin(PluginHandle handle)
 
 PluginHandle OpenPlugin(const char* pluginPath)
 {
-    return LoadLibraryA(pluginPath);
+    WideString pluginWcharPath = DAVA::UTF8Utils::EncodeToWideString(pluginPath);
+    return LoadLibraryW(pluginWcharPath.c_str());
 }
 
 void* LoadFunction(PluginHandle handle, const char* funcName)
@@ -62,3 +66,4 @@ void ClosePlugin(PluginHandle handle)
 }
  
 #endif
+}
