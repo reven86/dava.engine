@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <AppKit/NSCursor.h>
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
@@ -141,25 +142,29 @@ void WindowNativeBridge::WindowDidResignKey()
     }
 }
 
-void WindowNativeBridge::WindowDidResize()
+void WindowNativeBridge::HandleSizeChanging(bool dpiChanged)
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 surfaceScale = [renderView backbufferScale];
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, dpi, fullscreen));
+    if (dpiChanged)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    }
+}
+
+void WindowNativeBridge::WindowDidResize()
+{
+    HandleSizeChanging(false);
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
-    CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
-    float32 surfaceScale = [renderView backbufferScale];
-    float32 dpi = GetDpi();
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    HandleSizeChanging(true);
 }
 
 bool WindowNativeBridge::WindowShouldClose()
