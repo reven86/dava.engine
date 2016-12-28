@@ -99,11 +99,9 @@ ScriptingTest::ScriptingTest(TestBed& app)
 
 void ScriptingTest::LoadResources()
 {
-    BaseScreen::LoadResources();
-
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/ScriptingTest.yaml", &pkgBuilder);
-    UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
+    UIControl* dialog = pkgBuilder.GetPackage()->GetControl("MainFrame");
     AddControl(dialog);
 
     scriptText = static_cast<UITextField*>(dialog->FindByName("ScriptText"));
@@ -172,6 +170,8 @@ void ScriptingTest::LoadResources()
     demoObj.c = Color::White;
     objRef = Reflection::Create(&demoObj);
     CreateScript();
+
+    BaseScreen::LoadResources();
 }
 
 void ScriptingTest::UnloadResources()

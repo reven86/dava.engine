@@ -397,6 +397,11 @@ AbstractProperty::ePropertyType RootProperty::GetType() const
     return TYPE_HEADER;
 }
 
+ControlNode* RootProperty::GetControlNode() const
+{
+    return node;
+}
+
 void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType)
 {
     NameProperty* sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();

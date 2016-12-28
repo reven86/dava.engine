@@ -23,6 +23,7 @@
 #include "EnumPropertyDelegate.h"
 #include "PropertiesModel.h"
 #include "StringPropertyDelegate.h"
+#include "ComboPropertyDelegate.h"
 #include "FilePathPropertyDelegate.h"
 #include "ColorPropertyDelegate.h"
 #include "IntegerPropertyDelegate.h"
@@ -32,6 +33,7 @@
 #include "Vector4PropertyDelegate.h"
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
+#include "CompletionsProviderForScrollBar.h"
 #include "Project/Project.h"
 
 using namespace DAVA;
@@ -60,21 +62,22 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();
 
-    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
-    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
-    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Effect path")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "Font")] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("ScrollBarDelegate", "Delegate")] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
 
-    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-detail"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-gradient"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-contour"] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "bg-sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "bg-mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "bg-detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "bg-gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "bg-contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -203,13 +206,30 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
         if (prop_iter != propertyItemDelegates.end())
             return prop_iter.value();
 
-        auto propName_iter = propertyNameTypeItemDelegates.find(StringToQString(property->GetName()));
-        if (propName_iter != propertyNameTypeItemDelegates.end())
-            return propName_iter.value();
+        QString parentName;
+        AbstractProperty* parentProperty = property->GetParent();
+        if (parentProperty)
+        {
+            parentName = QString::fromStdString(parentProperty->GetName());
+        }
 
-        auto var_iter = variantTypeItemDelegates.find(property->GetValueType());
-        if (var_iter != variantTypeItemDelegates.end())
-            return var_iter.value();
+        QMap<PropertyPath, AbstractPropertyDelegate*>::const_iterator propNameIt;
+        propNameIt = propertyNameTypeItemDelegates.find(PropertyPath(parentName, QString::fromStdString(property->GetName())));
+        if (propNameIt == propertyNameTypeItemDelegates.end())
+        {
+            propNameIt = propertyNameTypeItemDelegates.find(PropertyPath("*", QString::fromStdString(property->GetName())));
+        }
+
+        if (propNameIt != propertyNameTypeItemDelegates.end())
+        {
+            return propNameIt.value();
+        }
+
+        auto varIt = variantTypeItemDelegates.find(property->GetValueType());
+        if (varIt != variantTypeItemDelegates.end())
+        {
+            return varIt.value();
+        }
     }
 
     return nullptr;

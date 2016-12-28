@@ -1,8 +1,8 @@
-#include "Notification/LocalNotificationMac.h"
+#include "Notification/Private/Mac/LocalNotificationMac.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#import "Notification/LocalNotificationImpl.h"
+#import "Notification/Private/LocalNotificationImpl.h"
 
 #import <Foundation/Foundation.h>
 
@@ -120,4 +120,4 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationMac(_id);
 }
 }
-#endif
+#endif // defined(__DAVAENGINE_MACOS__)
