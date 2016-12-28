@@ -1,22 +1,16 @@
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 #include "Base/Introspection.h"
 
-class SceneGridSystem : public DAVA::SceneSystem
-{
-    friend class SceneEditor2;
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
+class SceneGridSystem : public DAVA::SceneSystem, public EditorSceneSystem
+{
 public:
     SceneGridSystem(DAVA::Scene* scene);
-    ~SceneGridSystem();
-
-    void Process(DAVA::float32 timeElapsed) override;
 
 protected:
-    void Draw();
+    void Draw() override;
 };
-
-#endif

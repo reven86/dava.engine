@@ -1,8 +1,7 @@
-#ifndef __SCENE_COLLISION_BASE_OBJECT_H__
-#define __SCENE_COLLISION_BASE_OBJECT_H__
+#pragma once
 
 #include "bullet/btBulletCollisionCommon.h"
-#include "Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 class CollisionBaseObject
 {
@@ -76,5 +75,3 @@ inline DAVA::Plane CollisionBaseObject::TransformPlaneToLocalSpace(const DAVA::P
     transform.Transpose();
     return DAVA::Plane(DAVA::Vector4(plane.n.x, plane.n.y, plane.n.z, plane.d) * transform);
 }
-
-#endif // __SCENE_COLLISION_BASE_OBJECT_H__

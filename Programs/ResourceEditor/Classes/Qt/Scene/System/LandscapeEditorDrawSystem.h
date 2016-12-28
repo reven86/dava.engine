@@ -1,10 +1,11 @@
-#ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
-#define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/UniqueStateSet.h"
+
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 class LandscapeProxy;
 class HeightmapProxy;
@@ -13,7 +14,7 @@ class CustomColorsProxy;
 class RulerToolProxy;
 
 class RECommandNotificationObject;
-class LandscapeEditorDrawSystem : public DAVA::SceneSystem
+class LandscapeEditorDrawSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
 public:
     enum eErrorType
@@ -52,10 +53,6 @@ public:
     void SetCursorSize(DAVA::float32 cursorSize);
     void SetCursorPosition(const DAVA::Vector2& cursorPos);
 
-    void Process(DAVA::float32 timeElapsed) override;
-
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
-
     DAVA::float32 GetTextureSize(const DAVA::FastName& level);
     DAVA::Vector3 GetLandscapeSize();
     DAVA::float32 GetLandscapeMaxHeight();
@@ -93,8 +90,11 @@ public:
     bool UpdateTilemaskPathname();
     bool InitTilemaskImageCopy();
 
-    void EnableSystem();
     void DisableSystem();
+
+protected:
+    void Process(DAVA::float32 timeElapsed) override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void UpdateBaseLandscapeHeightmap();
@@ -114,8 +114,4 @@ private:
     RulerToolProxy* rulerToolProxy = nullptr;
     DAVA::uint32 customDrawRequestCount = 0;
     DAVA::FilePath sourceTilemaskPath;
-
-    bool systemEnabled = false;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

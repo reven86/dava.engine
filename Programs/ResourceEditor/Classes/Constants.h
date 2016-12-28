@@ -1,5 +1,6 @@
-#ifndef __CONSTANTS_H__
-#define __CONSTANTS_H__
+#pragma once
+
+#include "Base/BaseTypes.h"
 
 namespace ResourceEditor
 {
@@ -103,8 +104,3 @@ const DAVA::int32 BRUSH_MAX_BOUNDARY = 999;
 const DAVA::int32 DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT = 150;
 const DAVA::int32 DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_ICON = 40;
 };
-
-
-
-
-#endif //#ifndef __CONSTANTS_H__

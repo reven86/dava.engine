@@ -1,13 +1,14 @@
-#ifndef __ENTITY_MODIFICATION_SYSTEM_HOOD_H__
-#define __ENTITY_MODIFICATION_SYSTEM_HOOD_H__
+#pragma once
 
 #include "Scene/SceneTypes.h"
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Scene/System/HoodSystem/NormalHood.h"
 #include "Scene/System/HoodSystem/MoveHood.h"
 #include "Scene/System/HoodSystem/ScaleHood.h"
 #include "Scene/System/HoodSystem/RotateHood.h"
 #include "SystemDelegates.h"
+
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -18,10 +19,8 @@
 
 class SceneCameraSystem;
 
-class HoodSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
+class HoodSystem : public DAVA::SceneSystem, public SelectionSystemDelegate, public EditorSceneSystem
 {
-    friend class SceneEditor2;
-
 public:
     HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys);
     ~HoodSystem();
@@ -53,9 +52,10 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
-private:
-    void Draw();
+protected:
+    void Draw() override;
 
+private:
     void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void ResetModifValues();
@@ -63,7 +63,6 @@ private:
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
-private:
     btCollisionWorld* collWorld = nullptr;
     btAxisSweep3* collBroadphase = nullptr;
     btDefaultCollisionConfiguration* collConfiguration = nullptr;
@@ -86,5 +85,3 @@ private:
     bool lockedAxis = false;
     bool isVisible = true;
 };
-
-#endif // __ENTITY_MODIFICATION_SYSTEM_HOOD_H__
