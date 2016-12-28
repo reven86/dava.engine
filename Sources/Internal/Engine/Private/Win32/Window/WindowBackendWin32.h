@@ -87,7 +87,7 @@ private:
     void UpdateClipCursor();
     void HandleWindowFocusChanging(bool hasFocus);
 
-    void HandleSizeChanged(int32 w, int32 h);
+    void HandleSizeChanged(int32 w, int32 h, bool dpiChanged);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
@@ -152,7 +152,6 @@ private:
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;
-    bool dpiChangedEventPending = false;
 
     // DIP is device independent pixel.
     // dipSize is number of physical pixels contained in one DIP.

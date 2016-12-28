@@ -159,7 +159,7 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 
     const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    HandleSizeChanged(width, height);
+    HandleSizeChanged(width, height, false);
 }
 
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
@@ -319,7 +319,7 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     }
 }
 
-void WindowNativeBridge::HandleSizeChanged(float32 w, float32 h)
+void WindowNativeBridge::HandleSizeChanged(float32 w, float32 h, bool dpiChanged)
 {
     using ::Windows::Graphics::Display::DisplayInformation;
     using ::Windows::UI::ViewManagement::ApplicationView;
@@ -330,10 +330,9 @@ void WindowNativeBridge::HandleSizeChanged(float32 w, float32 h)
     eFullscreen fullscreen = ApplicationView::GetForCurrentView()->IsFullScreen ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, dpi, fullscreen));
 
-    if (dpiChangedEventPending)
+    if (dpiChanged)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
-        dpiChangedEventPending = false;
     }
 }
 
@@ -341,15 +340,14 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
 {
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
-    HandleSizeChanged(w, h);
+    HandleSizeChanged(w, h, false);
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
-    dpiChangedEventPending = true;
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    HandleSizeChanged(w, h);
+    HandleSizeChanged(w, h, true);
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)

@@ -190,7 +190,7 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
     if (Renderer::GetAPI() == rhi::RHI_DX9)
     {
         surfaceScale = scale;
-        HandleSizeChanged(lastWidth, lastHeight);
+        HandleSizeChanged(lastWidth, lastHeight, false);
     }
 }
 
@@ -367,7 +367,7 @@ void WindowBackend::DoSetCursorVisibility(bool visible)
     mouseVisible = visible;
 }
 
-void WindowBackend::HandleSizeChanged(int32 w, int32 h)
+void WindowBackend::HandleSizeChanged(int32 w, int32 h, bool dpiChanged)
 {
     lastWidth = w;
     lastHeight = h;
@@ -381,10 +381,9 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, dpi, fullscreen));
-    if (dpiChangedEventPending)
+    if (dpiChanged)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
-        dpiChangedEventPending = false;
     }
 }
 
@@ -451,7 +450,7 @@ LRESULT WindowBackend::OnSize(int32 resizingType, int32 width, int32 height)
     }
     if (!isEnteredSizingModalLoop)
     {
-        HandleSizeChanged(width, height);
+        HandleSizeChanged(width, height, false);
     }
     return 0;
 }
@@ -471,7 +470,7 @@ LRESULT WindowBackend::OnExitSizeMove()
     int32 h = rc.bottom - rc.top;
     if (w != lastWidth || h != lastHeight)
     {
-        HandleSizeChanged(w, h);
+        HandleSizeChanged(w, h, false);
     }
 
     isEnteredSizingModalLoop = false;
@@ -500,8 +499,7 @@ LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
 
         dpi = curDpi;
         dipSize = dpi / defaultDpi;
-        dpiChangedEventPending = true;
-        HandleSizeChanged(lastWidth, lastHeight);
+        HandleSizeChanged(lastWidth, lastHeight, true);
     }
     return 0;
 }
