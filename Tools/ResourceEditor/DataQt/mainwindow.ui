@@ -419,12 +419,6 @@
      <addaction name="actionDumpTextures"/>
      <addaction name="actionDumpSprites"/>
     </widget>
-    <widget class="QMenu" name="menuCrash_Produce">
-     <property name="title">
-      <string>Crash Produce</string>
-     </property>
-     <addaction name="actionGenerate_Assert"/>
-    </widget>
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
@@ -433,7 +427,6 @@
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
     <addaction name="actionToggleUseInstancing"/>
-    <addaction name="menuCrash_Produce"/>
    </widget>
    <addaction name="File"/>
    <addaction name="menuEdit"/>

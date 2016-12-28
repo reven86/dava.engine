@@ -116,7 +116,7 @@ QAction* FindAction(QWidget* w, const QString& actionName)
             return action;
     }
 
-    QMenu* menu = w->findChild<QMenu*>(actionName);
+    QMenu* menu = w->findChild<QMenu*>(actionName, Qt::FindDirectChildrenOnly);
     if (menu != nullptr)
     {
         return menu->menuAction();
@@ -216,9 +216,9 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
         QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
         if (menu == nullptr)
         {
+            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             menu = new QMenu(currentLevelTittle, currentLevelMenu);
             menu->setObjectName(currentLevelTittle);
-            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             if (action != nullptr)
             {
                 action->setMenu(menu);
