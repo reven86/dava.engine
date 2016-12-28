@@ -6,10 +6,10 @@
 namespace ProjectManagerDataDetails
 {
 const char* DATA_PATH = "Data/";
-const char* DATA_SOURCE_PATH = "DataSource/3d/";
-const char* PARTICLE_CONFIG_PATH = "Data/Configs/Particles/";
-const char* PARTICLE_DATA_PATH = "Data/Gfx/Particles/";
-const char* WORKSPACE_PATH = "~doc:/ResourceEditor/";
+const char* DATASOURCE_PATH = "DataSource/";
+const char* DATASOURCE_3D_PATH = "DataSource/3d/";
+const char* PARTICLE_CONFIG_PATH = "DataSource/Configs/Particles/";
+const char* PARTICLE_GFX_PATH = "DataSource/Gfx/Particles/";
 }
 
 const DAVA::String ProjectManagerData::ProjectPathProperty = DAVA::String("ProjectPath");
@@ -37,7 +37,12 @@ DAVA::FilePath ProjectManagerData::GetDataPath() const
 
 DAVA::FilePath ProjectManagerData::GetDataSourcePath() const
 {
-    return projectPath + ProjectManagerDataDetails::DATA_SOURCE_PATH;
+    return projectPath + ProjectManagerDataDetails::DATASOURCE_PATH;
+}
+
+DAVA::FilePath ProjectManagerData::GetDataSource3DPath() const
+{
+    return projectPath + ProjectManagerDataDetails::DATASOURCE_3D_PATH;
 }
 
 DAVA::FilePath ProjectManagerData::GetParticlesConfigPath() const
@@ -45,14 +50,9 @@ DAVA::FilePath ProjectManagerData::GetParticlesConfigPath() const
     return projectPath + ProjectManagerDataDetails::PARTICLE_CONFIG_PATH;
 }
 
-DAVA::FilePath ProjectManagerData::GetParticlesDataPath() const
+DAVA::FilePath ProjectManagerData::GetParticlesGfxPath() const
 {
-    return projectPath + ProjectManagerDataDetails::PARTICLE_DATA_PATH;
-}
-
-DAVA::FilePath ProjectManagerData::GetWorkspacePath() const
-{
-    return DAVA::FilePath(ProjectManagerDataDetails::WORKSPACE_PATH + projectPath.GetLastDirectoryName() + "/");
+    return projectPath + ProjectManagerDataDetails::PARTICLE_GFX_PATH;
 }
 
 const QVector<ProjectManagerData::AvailableMaterialTemplate>& ProjectManagerData::GetAvailableMaterialTemplates() const

@@ -13,6 +13,14 @@ namespace Ui
 class LODEditor;
 }
 
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class GlobalOperations;
 class SceneEditor2;
 class SelectableGroup;
@@ -41,7 +49,6 @@ private slots:
     //scene signals
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     //distance signals
     void LODDistanceChangedByDistanceWidget();
@@ -59,6 +66,8 @@ private slots:
     void DeleteLOD();
 
 private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+
     void SetupSceneSignals();
     void SetupInternalUI();
 
@@ -94,4 +103,6 @@ private:
     LazyUpdater* panelsUpdater = nullptr;
     SceneEditor2* activeScene = nullptr;
     std::shared_ptr<GlobalOperations> globalOperations;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
 };

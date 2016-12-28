@@ -1,9 +1,8 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -17,7 +16,7 @@ namespace Private
 ref class UWPApplication sealed : public ::Windows::UI::Xaml::Application
 {
 internal:
-    UWPApplication(const Vector<String>& cmdargs);
+    UWPApplication(Vector<String> cmdargs);
 
 protected:
     // ::Windows::UI::Xaml::Application overriden methods
@@ -26,6 +25,8 @@ protected:
     void OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args) override;
 
 private:
+    void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
+
     void OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg);
     void OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg);
@@ -36,11 +37,14 @@ private:
     void OnGamepadAdded(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
     void OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
 
+    void OnDpiChanged(::Windows::Graphics::Display::DisplayInformation^ sender, ::Platform::Object^ args);
+
     void InstallEventHandlers();
 
 private:
     std::unique_ptr<EngineBackend> engineBackend;
     PlatformCore* core = nullptr;
+    Vector<String> commandArgs;
 };
 
 // clang-format on

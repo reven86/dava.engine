@@ -35,9 +35,9 @@ public:
     const DAVA::FilePath& GetProjectPath() const;
     DAVA::FilePath GetDataPath() const;
     DAVA::FilePath GetDataSourcePath() const;
+    DAVA::FilePath GetDataSource3DPath() const;
     DAVA::FilePath GetParticlesConfigPath() const;
-    DAVA::FilePath GetParticlesDataPath() const;
-    DAVA::FilePath GetWorkspacePath() const;
+    DAVA::FilePath GetParticlesGfxPath() const;
 
     const QVector<AvailableMaterialTemplate>& GetAvailableMaterialTemplates() const;
     const QVector<AvailableMaterialQuality>& GetAvailableMaterialQualities() const;

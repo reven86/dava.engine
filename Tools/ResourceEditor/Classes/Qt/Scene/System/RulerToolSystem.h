@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITORQT__RULERTOOLSYSTEM__
-#define __RESOURCEEDITORQT__RULERTOOLSYSTEM__
+#pragma once
 
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
@@ -15,7 +14,7 @@ public:
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
     bool DisableLandscapeEdititing();
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
     DAVA::float32 GetLength();
@@ -44,5 +43,3 @@ protected:
 
     void Clear();
 };
-
-#endif /* defined(__RESOURCEEDITORQT__RULERTOOLSYSTEM__) */

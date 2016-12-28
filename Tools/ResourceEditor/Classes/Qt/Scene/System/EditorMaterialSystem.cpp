@@ -304,7 +304,7 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
         case CMDID_LOD_COPY_LAST_LOD:
         {
             const CopyLastLODToLod0Command* copyCommand = static_cast<const CopyLastLODToLod0Command*>(command);
-            DAVA::uint32 batchCount = copyCommand->newBatches.size();
+            DAVA::uint32 batchCount = static_cast<DAVA::uint32>(copyCommand->newBatches.size());
             for (DAVA::uint32 i = 0; i < batchCount; ++i)
             {
                 DAVA::RenderBatch* batch = copyCommand->newBatches[i];

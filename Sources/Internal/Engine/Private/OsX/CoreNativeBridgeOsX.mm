@@ -1,10 +1,11 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
+
+#import <Foundation/Foundation.h>
 
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
@@ -12,8 +13,9 @@
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
-#include "Engine/Private/OsX/AppDelegateOsX.h"
+#import "Engine/Private/OsX/AppDelegateOsX.h"
 
+#include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
@@ -134,15 +136,17 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 {
 }
 
-void CoreNativeBridge::ApplicationDidFinishLaunching()
+void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
 {
     core->engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1.0 / 60.0];
+
+    NotifyListeners(ON_DID_FINISH_LAUNCHING, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidChangeScreenParameters()
@@ -152,10 +156,12 @@ void CoreNativeBridge::ApplicationDidChangeScreenParameters()
 
 void CoreNativeBridge::ApplicationDidBecomeActive()
 {
+    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidResignActive()
 {
+    NotifyListeners(ON_DID_RESIGN_ACTIVE, nullptr, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidHide()
@@ -191,6 +197,8 @@ bool CoreNativeBridge::ApplicationShouldTerminateAfterLastWindowClosed()
 
 void CoreNativeBridge::ApplicationWillTerminate()
 {
+    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr, nullptr);
+
     [frameTimer cancel];
 
     core->engineBackend->OnGameLoopStopped();
@@ -204,6 +212,81 @@ void CoreNativeBridge::ApplicationWillTerminate()
     std::exit(exitCode);
 }
 
+void CoreNativeBridge::RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
+{
+    DVASSERT(listener != nullptr);
+
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it == end(appDelegateListeners))
+    {
+        appDelegateListeners.push_back(listener);
+    }
+}
+
+void CoreNativeBridge::UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
+{
+    using std::begin;
+    using std::end;
+
+    LockGuard<Mutex> lock(listenersMutex);
+    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
+    if (it != end(appDelegateListeners))
+    {
+        appDelegateListeners.erase(it);
+    }
+}
+
+void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3)
+{
+    Vector<PlatformApi::Mac::NSApplicationDelegateListener*> listenersCopy;
+    {
+        // Make copy to allow listeners unregistering inside a callback
+        LockGuard<Mutex> lock(listenersMutex);
+        listenersCopy.resize(appDelegateListeners.size());
+        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+    }
+    for (PlatformApi::Mac::NSApplicationDelegateListener* l : listenersCopy)
+    {
+        switch (type)
+        {
+        case ON_DID_FINISH_LAUNCHING:
+            l->applicationDidFinishLaunching(static_cast<NSNotification*>(arg1));
+            break;
+        case ON_DID_BECOME_ACTIVE:
+            l->applicationDidBecomeActive();
+            break;
+        case ON_DID_RESIGN_ACTIVE:
+            l->applicationDidResignActive();
+            break;
+        case ON_WILL_TERMINATE:
+            l->applicationWillTerminate();
+            break;
+        case ON_DID_RECEIVE_REMOTE_NOTIFICATION:
+            l->didReceiveRemoteNotification(static_cast<NSApplication*>(arg1), static_cast<NSDictionary<NSString*, id>*>(arg2));
+            break;
+        case ON_DID_REGISTER_REMOTE_NOTIFICATION:
+            l->didRegisterForRemoteNotificationsWithDeviceToken(static_cast<NSApplication*>(arg1), static_cast<NSData*>(arg2));
+            break;
+        case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
+            l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
+            break;
+        case ON_DID_ACTIVATE_NOTIFICATION:
+            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
+{
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr, nullptr);
+}
 } // namespace Private
 } // namespace DAVA
 

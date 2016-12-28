@@ -2,7 +2,7 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Scene/BaseTransformProxies.h"
 #include "Classes/Qt/Scene/BaseTransformProxies.h"
-#include "Classes/Qt/Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
@@ -70,7 +70,7 @@ void LaunchModule::PostInit()
 
 void LaunchModule::UnpackHelpDoc()
 {
-    DAVA::EngineContext* engineContext = GetAccessor()->GetEngineContext();
+    const DAVA::EngineContext* engineContext = GetAccessor()->GetEngineContext();
     DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
     DAVA::FilePath docsPath = DAVA::FilePath(ResourceEditor::DOCUMENTATION_PATH);
     if (editorVer != APPLICATION_BUILD_VERSION || !engineContext->fileSystem->Exists(docsPath))

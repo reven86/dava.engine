@@ -885,6 +885,12 @@ void Core::ApplyWindowSize()
         virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
         virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
         virtSystem->ScreenSizeChanged();
+
+        if (virtSystem->GetReloadResourceOnResize())
+        {
+            Sprite::ValidateForSize();
+            TextBlock::ScreenResolutionChanged();
+        }
     }
 }
 

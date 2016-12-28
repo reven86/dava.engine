@@ -1,18 +1,16 @@
-#ifndef __LANDSCAPE_EDITOR_SYSTEM__
-#define __LANDSCAPE_EDITOR_SYSTEM__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
-class SceneSelectionSystem;
 class EntityModificationSystem;
 
 class LandscapeEditorSystem : public DAVA::SceneSystem
 {
 public:
     LandscapeEditorSystem(DAVA::Scene* scene, const DAVA::FilePath& cursorPathname);
-    virtual ~LandscapeEditorSystem();
+    ~LandscapeEditorSystem() override;
 
     bool IsLandscapeEditingEnabled() const;
 
@@ -23,7 +21,6 @@ protected:
 
 protected:
     SceneCollisionSystem* collisionSystem;
-    SceneSelectionSystem* selectionSystem;
     EntityModificationSystem* modifSystem;
     LandscapeEditorDrawSystem* drawSystem;
     DAVA::Vector2 cursorPosition;
@@ -34,5 +31,3 @@ protected:
     bool isIntersectsLandscape = false;
     bool enabled = false;
 };
-
-#endif //__LANDSCAPE_EDITOR_SYSTEM__

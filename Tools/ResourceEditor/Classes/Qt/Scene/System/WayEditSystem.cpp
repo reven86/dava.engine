@@ -1,10 +1,5 @@
 #include <QApplication>
 #include "WayEditSystem.h"
-#include "Math/AABBox3.h"
-#include "Engine/Engine.h"
-#include "Engine/EngineContext.h"
-#include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
 #include "Scene/System/PathSystem.h"
 #include "Scene/SceneEditor2.h"
@@ -13,11 +8,17 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
-#include "Math/AABBox3.h"
-#include "Utils/Utils.h"
 
-#include "Debug/DVAssert.h"
+#include "Classes/Selection/Selection.h"
+
 #include "Base/Singleton.h"
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "Math/AABBox3.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Utils/Utils.h"
 
 namespace WayEditSystemDetail
 {
@@ -30,11 +31,10 @@ void RemoveEntityFromSelection(SelectableGroup& group, DAVA::Entity* entity)
 }
 }
 
-WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* _selectionSystem, SceneCollisionSystem* _collisionSystem)
+WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneCollisionSystem* collisionSystem_)
     : DAVA::SceneSystem(scene)
     , sceneEditor(static_cast<SceneEditor2*>(scene))
-    , selectionSystem(_selectionSystem)
-    , collisionSystem(_collisionSystem)
+    , collisionSystem(collisionSystem_)
 {
 }
 
@@ -269,7 +269,7 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
                 cloneJustDone = true;
             }
 
-            ProcessSelection(selectionSystem->GetSelection());
+            ProcessSelection(Selection::GetSelection());
 
             const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
             bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
@@ -308,7 +308,7 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
 
                     DAVA::Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
 
-                    sceneEditor->selectionSystem->SetLocked(true);
+                    Selection::Lock();
                     sceneEditor->BeginBatch("Add Waypoint", 1 + validPrevPoints.GetSize());
                     sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(newWaypoint, currentWayParent)));
                     if (!validPrevPoints.IsEmpty())
@@ -319,7 +319,8 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
 
                     selectedWaypoints.Clear();
                     selectedWaypoints.Add(newWaypoint);
-                    sceneEditor->selectionSystem->SetLocked(false);
+                    Selection::Unlock();
+
                     newWaypoint->Release();
                 }
             }
@@ -332,7 +333,7 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
                 size_t totalOperations = entitiesToAddEdge.GetSize() + entitiesToRemoveEdge.GetSize();
                 if (totalOperations > 0)
                 {
-                    sceneEditor->BeginBatch(DAVA::Format("Add/remove edges pointed on entity %s", nextWaypoint->GetName().c_str()), totalOperations);
+                    sceneEditor->BeginBatch(DAVA::Format("Add/remove edges pointed on entity %s", nextWaypoint->GetName().c_str()), static_cast<DAVA::uint32>(totalOperations));
                     AddEdges(entitiesToAddEdge, nextWaypoint);
                     RemoveEdges(entitiesToRemoveEdge, nextWaypoint);
                     sceneEditor->EndBatch();
@@ -442,9 +443,11 @@ void WayEditSystem::ProcessCommand(const RECommandNotificationObject& commandNot
 
 void WayEditSystem::Draw()
 {
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+
     const SelectableGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
 
-    const DAVA::uint32 count = waypointEntities.size();
+    const DAVA::uint32 count = static_cast<DAVA::uint32>(waypointEntities.size());
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
         DAVA::Entity* e = waypointEntities[i];
@@ -477,10 +480,10 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
 
-        DAVA::AABBox3 localBox = selectionSystem->GetUntransformedBoundingBox(e);
+        DAVA::AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(e);
         DVASSERT(!localBox.IsEmpty());
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
+        editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 
@@ -501,11 +504,11 @@ void WayEditSystem::UpdateSelectionMask()
 {
     if (isEnabled)
     {
-        selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
+        Selection::SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
     }
     else
     {
-        selectionSystem->ResetSelectionComponentMask();
+        Selection::ResetSelectionComponentMask();
     }
 }
 
@@ -546,7 +549,7 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& 
 {
     DAVA::Engine* engine = DAVA::Engine::Instance();
     DVASSERT(engine != nullptr);
-    DAVA::EngineContext* engineContext = engine->GetContext();
+    const DAVA::EngineContext* engineContext = engine->GetContext();
     if (engineContext->inputSystem == nullptr)
     {
         return true;
