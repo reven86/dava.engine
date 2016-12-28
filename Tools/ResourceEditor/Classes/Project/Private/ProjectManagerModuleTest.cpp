@@ -151,7 +151,6 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         QMenuBar* menu = mainWnd->menuBar();
         QMenu* fileMenu = menu->findChild<QMenu*>("File");
-        QRect fileMenuRect = fileMenu->rect();
 
         QAction* closeProjectAction = nullptr;
         QList<QAction*> actions = fileMenu->actions();
