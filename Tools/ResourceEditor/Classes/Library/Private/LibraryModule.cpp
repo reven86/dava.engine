@@ -3,9 +3,7 @@
 #include "Classes/Library/Private/LibraryData.h"
 #include "Classes/Library/Private/LibraryWidget.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/SceneManager/SceneData.h"
 #include "Classes/Qt/Actions/DAEConverter.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
 
 #include "TArc/Core/FieldBinder.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
@@ -85,19 +83,7 @@ void LibraryModule::OnAddSceneRequested(const DAVA::FilePath& scenePathname)
 {
     HidePreview();
 
-    SceneData* sceneData = GetAccessor()->GetActiveContext()->GetData<SceneData>();
-    if (sceneData)
-    {
-        DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
-
-        DAVA::TArc::UI* ui = GetUI();
-        DAVA::TArc::WaitDialogParams waitDlgParams;
-        waitDlgParams.message = QString("Add object to scene\n%1").arg(scenePathname.GetAbsolutePathname().c_str());
-        waitDlgParams.needProgressBar = false;
-        std::unique_ptr<DAVA::TArc::WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
-
-        sceneEditor->structureSystem->Add(scenePathname);
-    }
+    InvokeOperation(REGlobal::AddSceneOperation.ID, scenePathname);
 }
 
 void LibraryModule::OnEditSceneRequested(const DAVA::FilePath& scenePathname)

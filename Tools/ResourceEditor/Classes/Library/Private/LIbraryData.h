@@ -3,19 +3,22 @@
 #include "TArc/DataProcessing/DataNode.h"
 #include "FileSystem/FilePath.h"
 
-class LibraryWidget;
 class LibraryData : public DAVA::TArc::DataNode
 {
 public:
     static const char* selectedPathProperty;
 
-    DAVA::FilePath selectedPath;
+    const DAVA::FilePath& GetSelectedPath() const;
 
 private:
+    friend class LibraryWidget;
+
+    DAVA::FilePath selectedPath;
+
     DAVA_VIRTUAL_REFLECTION(LibraryData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<LibraryData>::Begin()
-        .Field(selectedPathProperty, &LibraryData::selectedPath)
+        .Field(selectedPathProperty, &LibraryData::GetSelectedPath, nullptr)
         .End();
     }
 };

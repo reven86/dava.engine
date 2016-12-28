@@ -74,6 +74,7 @@ void InitTArcCore(DAVA::TArc::Core* core)
 IMPL_OPERATION_ID(OpenLastProjectOperation);
 IMPL_OPERATION_ID(CreateNewSceneOperation);
 IMPL_OPERATION_ID(OpenSceneOperation);
+IMPL_OPERATION_ID(AddSceneOperation);
 IMPL_OPERATION_ID(SaveCurrentScene);
 IMPL_OPERATION_ID(CloseAllScenesOperation);
 IMPL_OPERATION_ID(ReloadTexturesOperation);

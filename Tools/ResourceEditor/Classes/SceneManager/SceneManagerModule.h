@@ -44,6 +44,7 @@ private:
     void OpenScene();
     void OpenSceneQuckly();
     void OpenSceneByPath(const DAVA::FilePath& scenePath);
+    void AddSceneByPath(const DAVA::FilePath& scenePath);
     void SaveScene();
     void SaveScene(bool saveAs);
     void SaveSceneToFolder(bool compressedTextures);

@@ -593,6 +593,7 @@ void SceneManagerModule::RegisterOperations()
 {
     RegisterOperation(REGlobal::CloseAllScenesOperation.ID, this, &SceneManagerModule::CloseAllScenes);
     RegisterOperation(REGlobal::OpenSceneOperation.ID, this, &SceneManagerModule::OpenSceneByPath);
+    RegisterOperation(REGlobal::AddSceneOperation.ID, this, &SceneManagerModule::AddSceneByPath);
     RegisterOperation(REGlobal::SaveCurrentScene.ID, this, static_cast<void (SceneManagerModule::*)()>(&SceneManagerModule::SaveScene));
     RegisterOperation(REGlobal::ReloadTexturesOperation.ID, this, &SceneManagerModule::ReloadTextures);
 }
@@ -666,10 +667,9 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
         ModalMessageParams params;
         params.buttons = ModalMessageParams::Ok;
         params.title = QStringLiteral("Open scene error");
-        params.message = QString("Can't open scene file outside project path.\n\nScene:\n%1\n\nProject:\n%2").
-                         arg(scenePath.GetAbsolutePathname().c_str())
-                         .
-                         arg(projectPath.GetAbsolutePathname().c_str());
+        params.message = QString("Can't open scene file outside project path.\n\nScene:\n%1\n\nProject:\n%2")
+                         .arg(scenePath.GetAbsolutePathname().c_str())
+                         .arg(projectPath.GetAbsolutePathname().c_str());
 
         GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
         return;
@@ -736,6 +736,25 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
     initialData.emplace_back(std::move(sceneData));
     DataContext::ContextID newContext = contextManager->CreateContext(std::move(initialData));
     contextManager->ActivateContext(newContext);
+}
+
+void SceneManagerModule::AddSceneByPath(const DAVA::FilePath& scenePath)
+{
+    using namespace DAVA::TArc;
+
+    SceneData* sceneData = GetAccessor()->GetActiveContext()->GetData<SceneData>();
+    if ((sceneData != nullptr) && (scenePath.IsEmpty() == false))
+    {
+        DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
+
+        UI* ui = GetUI();
+        WaitDialogParams waitDlgParams;
+        waitDlgParams.message = QString("Add object to scene\n%1").arg(scenePath.GetAbsolutePathname().c_str());
+        waitDlgParams.needProgressBar = false;
+        std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+
+        sceneEditor->structureSystem->Add(scenePath);
+    }
 }
 
 void SceneManagerModule::SaveScene(bool saveAs)
