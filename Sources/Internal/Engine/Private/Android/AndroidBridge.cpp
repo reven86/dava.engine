@@ -105,6 +105,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         methodDavaActivity_postFinish = env->GetMethodID(jclassDavaActivity, "postQuit", "()V");
         JNI::CheckJavaException(env, true);
 
+        methodDavaActivity_hideSplashView = env->GetMethodID(jclassDavaActivity, "hideSplashView", "()V");
+        JNI::CheckJavaException(env, true);
+
         // Get java.lang.Class<com.dava.engine.DavaActivity>
         jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
         JNI::CheckJavaException(env, true);
@@ -134,6 +137,20 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
     {
         ANDROID_LOG_FATAL("InitializeJNI: failed to cache ClassLoader instance: %s", e.what());
         env->FatalError("InitializeJNI: failed to cache ClassLoader instance");
+    }
+}
+
+void AndroidBridge::HideSplashView()
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_hideSplashView);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("hideSplashView call failed: %s", e.what());
     }
 }
 

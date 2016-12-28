@@ -7,6 +7,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -228,9 +230,29 @@ public final class DavaActivity extends Activity
         window.requestFeature(Window.FEATURE_NO_TITLE);
         window.getDecorView().setOnSystemUiVisibilityChangeListener(this);
         hideNavigationBar();
-        
-        splashView = new DavaSplashView(this);
-        
+
+        // Load & show splash view
+        ApplicationInfo appMetaDataInfo = null;
+        Bitmap splashViewBitmap = null;
+        try
+        {
+            appMetaDataInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            if (appMetaDataInfo != null)
+            {
+                int splashViewImageId = appMetaDataInfo.metaData.getInt("com.dava.engine.SplashViewImageId", 0);
+                if (splashViewImageId != 0)
+                {
+                    splashViewBitmap = BitmapFactory.decodeResource(getResources(), splashViewImageId);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Log.e(LOG_TAG, String.format("DavaActivity: loading splash image failed: %s. Splash view will be empty", e.toString()));
+        }
+
+        splashView = new DavaSplashView(this, splashViewBitmap);
+
         layout = new FrameLayout(this);
         layout.addView(splashView);
         setContentView(layout);
@@ -273,8 +295,6 @@ public final class DavaActivity extends Activity
             public void run() {
                 startNativeThreadIfNotRunning();
                 handleResume();
-                layout.removeView(splashView);
-                splashView = null;
             }
         });
     }
@@ -487,6 +507,25 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
+    // Will be invoked when DAVA::Engine finishes initialization
+    public void hideSplashView()
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (splashView != null)
+                {
+                    layout.removeView(splashView);
+                    splashView.cleanup();
+                    splashView = null;
+                }
+            }
+        });
+
+    }
+
     public boolean isPaused()
     {
         return isPaused;
@@ -558,6 +597,8 @@ public final class DavaActivity extends Activity
 
     private void bootstrap()
     {
+        // TODO: rename boot_module & boot_classes
+
         // Read and load bootstrap library modules
         int nloaded = 0;
         String[] modules = getBootMetadata("boot_modules");
