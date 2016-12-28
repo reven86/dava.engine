@@ -224,8 +224,8 @@ inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enume
  */
 template <typename T>
 inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c)
-    : collection(c)
-    , endIndex(c.size())
+    : endIndex(c.size())
+    , collection(c)
 {
     while ((index < endIndex) && (collection[index].template CanBeCastedTo<T>() == false))
     {
@@ -235,9 +235,9 @@ inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::Colle
 
 template <typename T>
 inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c, DAVA::size_type end)
-    : collection(c)
-    , index(end)
+    : index(end)
     , endIndex(c.size())
+    , collection(c)
 {
 }
 
@@ -298,8 +298,8 @@ inline const typename SelectableGroup::ConstEnumerator<T>::Iterator& SelectableG
  */
 template <typename T>
 inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c)
-    : collection(c)
-    , endIndex(c.size())
+    : endIndex(c.size())
+    , collection(c)
 {
     while ((index < endIndex) && (collection[index].template CanBeCastedTo<T>() == false))
     {
@@ -309,9 +309,9 @@ inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableG
 
 template <typename T>
 inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c, DAVA::size_type end)
-    : collection(c)
-    , index(end)
+    : index(end)
     , endIndex(c.size())
+    , collection(c)
 {
 }
 

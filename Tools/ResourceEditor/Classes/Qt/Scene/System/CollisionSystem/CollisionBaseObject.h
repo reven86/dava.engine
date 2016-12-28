@@ -27,8 +27,8 @@ public:
 
 public:
     CollisionBaseObject(Selectable::Object* object_, btCollisionWorld* word)
-        : object(object_)
-        , btWord(word)
+        : btWord(word)
+        , object(object_)
     {
     }
 
