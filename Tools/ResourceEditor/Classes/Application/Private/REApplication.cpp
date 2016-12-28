@@ -105,7 +105,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::EngineContext* engineContext)
+void REApplication::Init(const DAVA::EngineContext* engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -119,7 +119,11 @@ void REApplication::Init(DAVA::EngineContext* engineContext)
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-    engineContext->logger->SetLogFilename("ResEditor.txt");
+    DAVA::FilePath documentsFolder = engineContext->fileSystem->GetCurrentDocumentsDirectory() + "ResourceEditor/";
+    engineContext->fileSystem->CreateDirectory(documentsFolder, true);
+    engineContext->fileSystem->SetCurrentDocumentsDirectory(documentsFolder);
+    engineContext->logger->SetLogFilename("ResourceEditor.txt");
+
     settingsManager = new SettingsManager();
     beastProxy = new BEAST_PROXY_TYPE();
 

@@ -111,6 +111,10 @@ private: // WebView event handlers
     void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args);
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args);
 
+    // Signal handlers
+    void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
+    void OnWindowDestroyed(Window* w);
+
 private:
 // clang-format off
 #if defined(__DAVAENGINE_COREV2__)
@@ -131,6 +135,9 @@ private:
     Windows::Foundation::EventRegistrationToken tokenNavigationCompleted;
 
     WebViewProperties properties;
+
+    size_t windowSizeChangedConnection = 0;
+    size_t windowDestroyedConnection = 0;
     // clang-format on
 };
 

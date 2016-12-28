@@ -3,7 +3,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/WindowNativeService.h"
 
 RenderContextGuard::RenderContextGuard()
 {
@@ -12,7 +11,7 @@ RenderContextGuard::RenderContextGuard()
     if (!engine->IsConsoleMode())
     {
         DAVA::Window* window = engine->PrimaryWindow();
-        window->GetNativeService()->AcqureContext();
+        DAVA::PlatformApi::Qt::AcquireWindowContext(window);
     }
 }
 
@@ -23,7 +22,7 @@ RenderContextGuard::~RenderContextGuard()
     if (!engine->IsConsoleMode())
     {
         DAVA::Window* window = engine->PrimaryWindow();
-        window->GetNativeService()->ReleaseContext();
+        DAVA::PlatformApi::Qt::ReleaseWindowContext(window);
     }
 }
 

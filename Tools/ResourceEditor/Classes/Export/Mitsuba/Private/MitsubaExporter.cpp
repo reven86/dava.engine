@@ -16,6 +16,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Material/NMaterial.h"
 #include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Light.h"
 #include "Render/Texture.h"

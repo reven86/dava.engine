@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_PROGRESS_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_PROGRESS_H__
+#pragma once
 
 #include "Notification/LocalNotification.h"
 
@@ -24,6 +23,4 @@ private:
     uint32 total;
     uint32 progress;
 };
-}
-
-#endif
+} // namespace DAVA

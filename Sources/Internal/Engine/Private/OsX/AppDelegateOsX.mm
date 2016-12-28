@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/OsX/AppDelegateOsX.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
@@ -22,12 +21,13 @@
 
 - (void)applicationWillFinishLaunching:(NSNotification*)notification
 {
+    [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
     bridge->ApplicationWillFinishLaunching();
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
-    bridge->ApplicationDidFinishLaunching();
+    bridge->ApplicationDidFinishLaunching(notification);
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification*)notification
@@ -70,6 +70,11 @@
 - (void)applicationWillTerminate:(NSNotification*)notification
 {
     bridge->ApplicationWillTerminate();
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification
+{
+    bridge->ApplicationDidActivateNotification(notification);
 }
 
 @end

@@ -11,6 +11,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
+#include "Utils/UTF8Utils.h"
 
 #include "AssetCache/AssetCache.h"
 
@@ -260,9 +261,9 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
         DAVA::AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
         if (connected == DAVA::AssetCache::Error::NO_ERRORS)
         {
-            DAVA::String machineName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
+            DAVA::String machineName = DAVA::UTF8Utils::EncodeToUTF8(DAVA::DeviceInfo::GetName());
             DAVA::DateTime timeNow = DAVA::DateTime::Now();
-            DAVA::String timeString = DAVA::WStringToString(timeNow.GetLocalizedDate()) + "_" + DAVA::WStringToString(timeNow.GetLocalizedTime());
+            DAVA::String timeString = DAVA::UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + DAVA::UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
 
             exporter.SetCacheClient(&cacheClient, machineName, timeString, "Resource Editor. Export scene");
         }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>

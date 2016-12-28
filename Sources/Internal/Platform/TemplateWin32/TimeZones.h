@@ -143,7 +143,7 @@ Map<FastName, FastName> winStdToCommonNamesMap =
 
 String GetGeneralNameByStdName(const WideString& name)
 {
-    FastName stdName(WStringToString(name));
+    FastName stdName(UTF8Utils::EncodeToUTF8(name));
 
     auto stdIter = TimeZoneHelper::winStdToCommonNamesMap.find(stdName);
     if (stdIter != TimeZoneHelper::winStdToCommonNamesMap.end())

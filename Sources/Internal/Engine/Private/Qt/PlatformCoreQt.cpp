@@ -1,3 +1,4 @@
+
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/Qt/PlatformCoreQt.h"
@@ -5,7 +6,6 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Window.h"
-#include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
@@ -20,7 +20,6 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
-    , nativeService(new NativeService(this))
 {
 }
 
