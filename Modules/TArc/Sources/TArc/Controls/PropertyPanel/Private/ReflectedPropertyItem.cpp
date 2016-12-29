@@ -11,6 +11,8 @@ namespace DAVA
 {
 namespace TArc
 {
+ReflectedPropertyItem::~ReflectedPropertyItem() = default;
+
 ReflectedPropertyItem::ReflectedPropertyItem(ReflectedPropertyModel* model_, std::unique_ptr<BaseComponentValue>&& value_)
     : model(model_)
     , value(std::move(value_))

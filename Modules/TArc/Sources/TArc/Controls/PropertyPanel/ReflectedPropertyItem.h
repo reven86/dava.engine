@@ -22,6 +22,8 @@ public:
     Q_PROPERTY(QQmlComponent* component READ GetComponent)
     Q_PROPERTY(QtReflected model READ GetModel)
 
+    ~ReflectedPropertyItem();
+
     ReflectedPropertyItem(const ReflectedPropertyItem& other) = delete;
     ReflectedPropertyItem(ReflectedPropertyItem&& other) = delete;
     ReflectedPropertyItem& operator=(const ReflectedPropertyItem& other) = delete;
