@@ -233,45 +233,41 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
     windowBackend->ProcessPlatformEvents();
 }
 
-void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
+void WindowNativeBridge::HandleFocusChanging(bool gotFocus)
 {
-    using namespace ::Windows::UI::Core;
-
-    // System does not send Activated event in these cases:
-    //  - resume after suspend
-    //  - lock (Win+L) and unlock screen
-    // So consider that window gains focus if window becomes visible and here add check to prevent sending multiple
-    // WINDOW_FOCUS_CHANGED events to main dispatcher.
-    bool gotFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     if (hasFocus != gotFocus)
     {
         hasFocus = gotFocus;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
 
         PlatformCore::EnableHighResolutionTimer(hasFocus);
-    }
 
-    if (!hasFocus)
-    {
-        if (captureMode != eCursorCapture::OFF)
+        if (!hasFocus)
         {
-            SetCursorCapture(eCursorCapture::OFF);
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+            if (captureMode != eCursorCapture::OFF)
+            {
+                SetCursorCapture(eCursorCapture::OFF);
+                mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+            }
+            SetCursorVisibility(true);
         }
-        SetCursorVisibility(true);
     }
+}
+
+void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
+{
+    // System does not send Activated event for window when user locks (Win+L) and unlocks screen even if
+    // user clicks on window after unlocking screen.
+    // To ensure proper events delivering to dava.engine force window focus in mouse click and key press event
+    // handlers (if hasFocus member variable is false).
+
+    using ::Windows::UI::Core::CoreWindowActivationState;
+    HandleFocusChanging(arg->WindowActivationState != CoreWindowActivationState::Deactivated);
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, arg->Visible));
-    if (arg->Visible)
-    {
-        hasFocus = true;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
-
-        PlatformCore::EnableHighResolutionTimer(true);
-    }
 }
 
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
@@ -290,6 +286,11 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
 {
     using ::Windows::System::VirtualKey;
     using namespace ::Windows::UI::Core;
+
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
 
     // Process only KeyDown/KeyUp and SystemKeyDown/SystemKeyUp event types to skip unwanted messages, such as
     // Character (handled in OnCharacterReceived), DeadCharacter, SystemCharacter, etc.
@@ -355,6 +356,11 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
 {
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
+
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
 
     lastPressedPointer = arg->Pointer;
 

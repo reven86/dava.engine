@@ -43,6 +43,10 @@ QuickEdPackageBuilder::~QuickEdPackageBuilder()
         control->Release();
     rootControls.clear();
 
+    for (ControlNode* control : prototypes)
+        control->Release();
+    prototypes.clear();
+
     for (StyleSheetNode* styleSheet : styleSheets)
         styleSheet->Release();
     styleSheets.clear();

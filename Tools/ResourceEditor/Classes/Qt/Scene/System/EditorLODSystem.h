@@ -4,6 +4,7 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Commands2/CreatePlaneLODCommandHelper.h"
 #include "Scene/SceneTypes.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 namespace DAVA
 {
@@ -78,7 +79,7 @@ protected:
 };
 
 class EditorLODSystemUIDelegate;
-class EditorLODSystem : public DAVA::SceneSystem
+class EditorLODSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
 
@@ -106,6 +107,7 @@ public:
     void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component) override;
 
     void Process(DAVA::float32 timeElapsed) override;
+
     void SceneDidLoaded() override;
 
     eEditorMode GetMode() const;
@@ -132,7 +134,7 @@ public:
     void SetLODDistances(const DAVA::Vector<DAVA::float32>& distances);
 
     //scene signals
-    void SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected);
+    void SelectionChanged(const SelectableGroup& selection);
 
     void AddDelegate(EditorLODSystemUIDelegate* uiDelegate);
     void RemoveDelegate(EditorLODSystemUIDelegate* uiDelegate);
@@ -142,7 +144,7 @@ public:
     static bool IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances);
 
 protected:
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
 private:
     void RecalculateData();
@@ -154,6 +156,7 @@ private:
     void DispatchSignals();
     //signals
 
+    void ProcessAddedEntities();
     void ProcessPlaneLODs();
 
     LODComponentHolder lodData[eEditorMode::MODE_COUNT];
@@ -167,6 +170,8 @@ private:
 
     DAVA::Vector<EditorLODSystemUIDelegate*> uiDelegates;
     DAVA::uint32 invalidateUIFlag = FLAG_NONE;
+
+    DAVA::Vector<std::pair<DAVA::Entity*, DAVA::LodComponent*>> componentsToAdd;
 
     bool recursive = false;
 };

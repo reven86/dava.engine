@@ -305,8 +305,6 @@ void ApplyMaterialPresetCommand::StoreMaterialPresetImpl(DAVA::KeyedArchive* arc
     using namespace ApplyMaterialPresetDetail;
 
     DAVA::ScopedPtr<DAVA::KeyedArchive> content(new DAVA::KeyedArchive());
-    const DAVA::InspInfo* info = material->GetTypeInfo();
-
     DAVA::ScopedPtr<DAVA::KeyedArchive> texturesArchive(new DAVA::KeyedArchive());
     DAVA::ScopedPtr<DAVA::KeyedArchive> flagsArchive(new DAVA::KeyedArchive());
     DAVA::ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());

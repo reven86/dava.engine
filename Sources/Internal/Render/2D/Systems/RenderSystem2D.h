@@ -32,6 +32,7 @@ struct TiledDrawData
     void GenerateTransformData();
 
     Sprite* sprite;
+    Texture* texture;
     int32 frame;
     Vector2 size;
     Vector2 stretchCap;
@@ -50,6 +51,7 @@ struct StretchDrawData
     uint32 GetVertexInTrianglesCount() const;
 
     Sprite* sprite;
+    Texture* texture;
     int32 frame;
     Vector2 size;
     int32 type;
