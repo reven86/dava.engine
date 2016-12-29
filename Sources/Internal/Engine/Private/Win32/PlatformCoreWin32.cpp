@@ -45,7 +45,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    // Ops, steam knows nothing about new pointer input
+// Ops, steam knows nothing about new pointer input, burn it with fire
 #if !defined(__DAVAENGINE_STEAM__)
     // Check whether new pointer input is enabled and enable it if so
     if (DllImport::fnEnableMouseInPointer != nullptr)

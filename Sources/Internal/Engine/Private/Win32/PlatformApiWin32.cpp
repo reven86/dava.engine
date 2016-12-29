@@ -13,7 +13,6 @@ namespace PlatformApi
 {
 namespace Win32
 {
-
 void SetWindowIcon(Window* targetWindow, int32 iconResourceId)
 {
     using namespace DAVA::Private;

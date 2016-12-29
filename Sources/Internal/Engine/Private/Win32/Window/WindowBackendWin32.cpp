@@ -826,7 +826,7 @@ LRESULT WindowBackend::OnCreate()
     dpi = GetDpi();
     dipSize = dpi / defaultDpi;
 
-    float32 width =  std::ceil(static_cast<float32>(lastWidth) / dipSize);
+    float32 width = std::ceil(static_cast<float32>(lastWidth) / dipSize);
     float32 height = std::ceil(static_cast<float32>(lastHeight) / dipSize);
     float32 surfaceWidth = static_cast<float32>(lastWidth) * surfaceScale;
     float32 surfaceHeight = static_cast<float32>(lastHeight) * surfaceScale;

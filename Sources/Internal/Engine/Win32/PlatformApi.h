@@ -17,7 +17,6 @@ namespace PlatformApi
 {
 namespace Win32
 {
-
 /**
     \ingroup engine_win32
     Set window icon stored in resources by its id
