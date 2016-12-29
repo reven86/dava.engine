@@ -196,6 +196,7 @@ protected:
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
         AfterContextSwitch(activeContext, oldContext);
+        SyncWrappers();
     }
 
     void SyncWrappers()

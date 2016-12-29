@@ -1,6 +1,5 @@
 #include "TilemaskEditorSystem.h"
 #include "CollisionSystem.h"
-#include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "../SceneEditor2.h"
@@ -8,8 +7,9 @@
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "Commands2/TilemaskEditorCommands.h"
 
-#include "Render/Image/ImageConvert.h"
+#include "Classes/Selection/Selection.h"
 
+#include "Render/Image/ImageConvert.h"
 #include "UI/UIEvent.h"
 
 #include <QApplication>
@@ -117,7 +117,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
         return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT;
     }
 
-    selectionSystem->SetLocked(true);
+    Selection::Lock();
     modifSystem->SetLocked(true);
 
     landscapeSize = drawSystem->GetTextureSize(textureLevel);
@@ -154,7 +154,7 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     FinishEditing();
     needCreateUndo = false;
 
-    selectionSystem->SetLocked(false);
+    Selection::Unlock();
     modifSystem->SetLocked(false);
 
     drawSystem->DisableCursor();

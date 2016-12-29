@@ -1,7 +1,6 @@
-#ifndef __SELECTABLE_OBJECT_GROUP_H__
-#define __SELECTABLE_OBJECT_GROUP_H__
+#pragma once
 
-#include "Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 class SelectableGroup
 {
@@ -49,6 +48,8 @@ public:
     bool IsLocked() const;
 
     void RemoveObjectsWithDependantTransform();
+
+    DAVA::AABBox3 GetTransformedBoundingBox() const;
 
 public:
     template <typename T>
@@ -337,5 +338,3 @@ inline T* SelectableGroup::ConstEnumerator<T>::Iterator::operator*() const
     DVASSERT(collection[index].template CanBeCastedTo<T>());
     return collection[index].template Cast<T>();
 }
-
-#endif // __SELECTABLE_OBJECT_GROUP_H__

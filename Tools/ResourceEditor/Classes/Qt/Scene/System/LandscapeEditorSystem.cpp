@@ -16,7 +16,6 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath&
     cursorTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 
     collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-    selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
     modifSystem = ((SceneEditor2*)GetScene())->modifSystem;
     drawSystem = ((SceneEditor2*)GetScene())->landscapeEditorDrawSystem;
 }
@@ -26,7 +25,6 @@ LandscapeEditorSystem::~LandscapeEditorSystem()
     SafeRelease(cursorTexture);
 
     collisionSystem = nullptr;
-    selectionSystem = nullptr;
     modifSystem = nullptr;
     drawSystem = nullptr;
 }

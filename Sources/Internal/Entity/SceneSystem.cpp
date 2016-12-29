@@ -3,11 +3,9 @@
 
 namespace DAVA
 {
-SceneSystem::SceneSystem(Scene* _scene)
-    : requiredComponents(0)
-    , scene(_scene)
-    , locked(false)
+SceneSystem::SceneSystem(Scene* scene_)
 {
+    SetScene(scene_);
 }
 
 void SceneSystem::RegisterEntity(Entity* entity)
@@ -106,5 +104,10 @@ void SceneSystem::SetLocked(bool locked_)
 bool SceneSystem::IsLocked() const
 {
     return locked;
+}
+
+void SceneSystem::SetScene(Scene* scene_)
+{
+    scene = scene_;
 }
 };

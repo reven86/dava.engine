@@ -1,5 +1,4 @@
-#ifndef __QT_SCENE_TREE_H__
-#define __QT_SCENE_TREE_H__
+#pragma once
 
 #include <QWidget>
 #include <QTreeView>
@@ -10,6 +9,14 @@
 #include "Scene/SceneSignals.h"
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class RECommandNotificationObject;
 class GlobalOperations;
@@ -39,7 +46,6 @@ private slots:
 
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
@@ -56,13 +62,11 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
-    void EmitParticleSignals();
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
     void UpdateTree();
     void UpdateModel();
-    void UpdateSelection();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
@@ -78,9 +82,8 @@ private:
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
     SceneTreeDelegate* treeDelegate = nullptr;
     LazyUpdater* treeUpdater;
-    LazyUpdater* selectionUpdater;
     bool isInSelectionSync = false;
     std::shared_ptr<GlobalOperations> globalOperations;
-};
 
-#endif // __QT_SCENE_TREE_H__
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};
