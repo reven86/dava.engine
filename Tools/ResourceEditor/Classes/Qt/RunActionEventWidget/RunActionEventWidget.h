@@ -1,6 +1,6 @@
-#ifndef __RUNACTIONWIDGET_H__
-#define __RUNACTIONWIDGET_H__
+#pragma once
 
+#include <memory>
 
 #include <QWidget>
 #include <QScopedPointer>
@@ -14,32 +14,40 @@ namespace Ui
 class RunActionEventWidget;
 }
 
+namespace DAVA
+{
+class Any;
+
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class SceneEditor2;
 class SelectableGroup;
 
-class RunActionEventWidget
-: public QWidget
+class RunActionEventWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit RunActionEventWidget(QWidget* parent = NULL);
-    ~RunActionEventWidget();
+    ~RunActionEventWidget() override;
 
 private:
     QScopedPointer<Ui::RunActionEventWidget> ui;
     QMap<int, int> editorIdMap;
     QPointer<QStringListModel> autocompleteModel;
-    SceneEditor2* scene;
+    SceneEditor2* scene = nullptr;
 
 private slots:
     void OnTypeChanged();
     void OnInvoke();
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
+
+private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
 };
-
-
-
-#endif // __RUNACTIONWIDGET_H__

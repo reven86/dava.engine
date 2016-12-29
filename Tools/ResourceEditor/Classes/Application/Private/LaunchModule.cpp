@@ -2,7 +2,7 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Scene/BaseTransformProxies.h"
 #include "Classes/Qt/Scene/BaseTransformProxies.h"
-#include "Classes/Qt/Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Qt/Settings/SettingsManager.h"

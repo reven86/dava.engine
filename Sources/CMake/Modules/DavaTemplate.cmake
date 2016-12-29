@@ -150,6 +150,7 @@ if( DAVA_FOUND )
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Notification/Private/Android/Java )
 
 endif()
 
@@ -616,6 +617,7 @@ elseif ( WIN32 )
 
     # Generate debug info also in release builds
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/DEBUG /SUBSYSTEM:WINDOWS" )
 
     if( NOT DAVA_DEBUGGER_WORKING_DIRECTORY )
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} )
