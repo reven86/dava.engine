@@ -1246,8 +1246,6 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 
 bool MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32& userChoise, const QString& inputFile)
 {
-    DAVA::uint32 ret = 0;
-
     QDialog dlg;
     QVBoxLayout* dlgLayout = new QVBoxLayout();
     dlgLayout->setMargin(10);

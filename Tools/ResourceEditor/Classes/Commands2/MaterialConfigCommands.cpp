@@ -32,8 +32,8 @@ void MaterialChangeCurrentConfig::Redo()
 
 MaterialRemoveConfig::MaterialRemoveConfig(DAVA::NMaterial* material, DAVA::uint32 configIndex_)
     : MaterialConfigModify(material, CMDID_MATERIAL_REMOVE_CONFIG, "Remove material config")
-    , configIndex(configIndex_)
     , config(material->GetConfig(configIndex_))
+    , configIndex(configIndex_)
 {
     DAVA::uint32 configCount = material->GetConfigCount();
     DAVA::uint32 newCurrConfig = material->GetCurrentConfigIndex();

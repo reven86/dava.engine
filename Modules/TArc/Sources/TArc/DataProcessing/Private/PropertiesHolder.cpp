@@ -137,7 +137,7 @@ void PropertiesItem::Impl::Set(const QString& key, T value)
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 void PropertiesItem::Impl::Set(const QString& key, const T& value)
 {
-    static_assert("unsupported type: pointer");
+    DVASSERT_MSG(false, "unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
@@ -189,7 +189,7 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    static_assert("unsupported type: pointer");
+    DVASSERT_MSG(false, "unsupported type: pointer");
 }
 
 QString PropertiesItem::Impl::FromValue(const QJsonValue& value, const QString& defaultValue)
