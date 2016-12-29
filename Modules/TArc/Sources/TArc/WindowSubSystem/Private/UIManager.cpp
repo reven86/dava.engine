@@ -537,35 +537,38 @@ protected:
         DVASSERT(mainWindow != nullptr);
         QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
         newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+
+        newDockWidget->setVisible(true);
         newDockWidget->setWidget(widget);
-
-        if (info.tabbed == true)
+        if (!mainWindow->restoreDockWidget(newDockWidget))
         {
-            QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
-            QDockWidget* dockToTabbify = nullptr;
-            foreach (QDockWidget* dock, dockWidgets)
+            if (info.tabbed == true)
             {
-                if (mainWindow->dockWidgetArea(dock) == info.area)
+                QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
+                QDockWidget* dockToTabbify = nullptr;
+                foreach (QDockWidget* dock, dockWidgets)
                 {
-                    dockToTabbify = dock;
-                    break;
+                    if (mainWindow->dockWidgetArea(dock) == info.area)
+                    {
+                        dockToTabbify = dock;
+                        break;
+                    }
                 }
-            }
 
-            if (dockToTabbify != nullptr)
-            {
-                mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
+                if (dockToTabbify != nullptr)
+                {
+                    mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
+                }
+                else
+                {
+                    mainWindow->addDockWidget(info.area, newDockWidget);
+                }
             }
             else
             {
                 mainWindow->addDockWidget(info.area, newDockWidget);
             }
         }
-        else
-        {
-            mainWindow->addDockWidget(info.area, newDockWidget);
-        }
-        mainWindow->restoreDockWidget(newDockWidget);
     }
 
     void AddCentralPanel(const PanelKey& key, const WindowKey& windowKey, QWidget* widget)
