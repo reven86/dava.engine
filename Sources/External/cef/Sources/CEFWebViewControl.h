@@ -101,6 +101,8 @@ private:
 
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
+    const float defaultDpi = 96.f;
+    // scale is ratio between current display DPI and default DPI (96 on Windows)
     float32 scale = 1.f;
 #endif
     UIWebView& webView;

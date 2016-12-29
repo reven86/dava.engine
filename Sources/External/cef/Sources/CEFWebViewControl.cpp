@@ -73,7 +73,7 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 {
 #if defined(__DAVAENGINE_COREV2__)
     onWindowSizeChangedId = Engine::Instance()->PrimaryWindow()->sizeChanged.Connect(this, &CEFWebViewControl::OnWindowSizeChanged);
-    scale = window->GetDPI() / 96.f;
+    scale = window->GetDPI() / defaultDpi;
     webPageRender = new CEFWebPageRender(window, scale);
 #else
     webPageRender = new CEFWebPageRender;
@@ -528,7 +528,7 @@ void CEFWebViewControl::OnWindowSizeChanged(Window* window, Size2f, Size2f)
     // <--- WORKAROUND PART 1 END
 
 #if defined(__DAVAENGINE_COREV2__)
-    scale = window->GetDPI() / 96.f;
+    scale = window->GetDPI() / defaultDpi;
     webPageRender->SetScale(scale);
     cefBrowser->GetHost()->WasResized();
 #endif
