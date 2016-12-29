@@ -3,6 +3,12 @@
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Math/MathHelpers.h"
 
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Selection/SelectionData.h"
+
+#include "TArc/Core/FieldBinder.h"
+
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QStylePainter>
@@ -47,11 +53,20 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     connect(yAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnYChanged);
     connect(zAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnZChanged);
 
-    connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &ModificationWidget::OnSceneSelectionChanged);
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &ModificationWidget::OnSceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &ModificationWidget::OnSceneDeactivated);
     connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, [this](const DAVA::Any&) { ReloadValues(); });
+    }
 }
+
+ModificationWidget::~ModificationWidget() = default;
 
 void ModificationWidget::SetPivotMode(PivotMode mode)
 {
@@ -284,14 +299,6 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2* scene)
 {
     curScene = NULL;
     ReloadValues();
-}
-
-void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
-{
-    if (curScene == scene)
-    {
-        ReloadValues();
-    }
 }
 
 // =======================================================================================================

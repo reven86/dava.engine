@@ -90,6 +90,8 @@ using namespace DAVA;
         float32 scale = DeviceInfo::GetScreenInfo().scale;
         Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
         Core::Instance()->SetNativeView(self);
+
+        Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];

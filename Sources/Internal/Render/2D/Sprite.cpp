@@ -671,7 +671,7 @@ void Sprite::PrepareForNewSize()
         return;
 
     // Check if sprite exists by trying to open it.
-    // If file not exists preparation can't be continued
+    // If file doesn't exists preparation can't be continued
     {
         int resIndex = 0;
 

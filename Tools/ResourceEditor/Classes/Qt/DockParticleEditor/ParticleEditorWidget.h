@@ -1,13 +1,19 @@
-#ifndef __ResourceEditorQt__ParticleEditorWidget__
-#define __ResourceEditorQt__ParticleEditorWidget__
+#pragma once
 
 #include <QScrollArea>
 
-#include <DAVAEngine.h>
 #include "ParticleEffectPropertiesWidget.h"
 #include "ParticleEmitterPropertiesWidget.h"
 
 #include "Scene/SceneEditor2.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class EmitterLayerWidget;
 class LayerForceWidget;
@@ -21,8 +27,6 @@ public:
     ~ParticleEditorWidget();
 
 protected slots:
-    // SceneTree-specific slots.
-    void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnUpdate();
     void OnValueChanged();
@@ -36,6 +40,9 @@ signals:
     void ChangeVisible(bool bVisible);
 
 private:
+    void OnSelectionChanged(const DAVA::Any& selection);
+    void ProcessSelection(SceneEditor2* scene, const SelectableGroup& selection);
+
     enum ParticleEditorWidgetMode
     {
         MODE_NONE = 0,
@@ -81,6 +88,6 @@ private:
     ParticleEmitterPropertiesWidget* emitterPropertiesWidget;
     EmitterLayerWidget* emitterLayerWidget;
     LayerForceWidget* layerForceWidget;
-};
 
-#endif /* defined(__ResourceEditorQt__ParticleEditorWidget__) */
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};

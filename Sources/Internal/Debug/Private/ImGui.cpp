@@ -49,7 +49,7 @@ static const char* vprogPC =
 "vertex_out vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-"    output.position = mul( XForm, float4(input.pos.x,-input.pos.y,0.0,1.0) );\n"
+"    output.position = mul( float4(input.pos.x,-input.pos.y,0.0,1.0), XForm );\n"
 "    output.color = input.color;\n"
 "    return output;\n"
 "}\n";
@@ -90,7 +90,7 @@ static const char* vprogPTC =
 "vertex_out vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-"    output.position = mul( XForm, float4(input.pos.x,-input.pos.y,0.0,1.0) );\n"
+"    output.position = mul(float4(input.pos.x,-input.pos.y,0.0,1.0), XForm);\n"
 "    output.uv = input.uv;\n"
 "    output.color = input.color;\n"
 "    return output;\n"
@@ -146,6 +146,8 @@ void ImGuiDrawFn(ImDrawData* data)
         ortho._03 -= 1.0f / framebufferSize.dx;
         ortho._13 -= 1.0f / framebufferSize.dy;
     }
+
+    ortho.Transpose();
 
     rhi::UpdateConstBuffer4fv(constBufferPC, 0, ortho.data, 4);
     rhi::UpdateConstBuffer4fv(constBufferPTC, 0, ortho.data, 4);

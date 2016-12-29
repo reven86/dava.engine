@@ -45,7 +45,10 @@ public:
             DVASSERT(changedFields.empty());
             for (auto& listener : listeners)
             {
-                listener.second(Any());
+                for (auto& fn : listener.second)
+                {
+                    fn(Any());
+                }
             }
             return;
         }
@@ -86,11 +89,18 @@ public:
                 auto iter = intermidiateFieldMap.find(listener.first);
                 if (iter == intermidiateFieldMap.end())
                 {
-                    listener.second(Any());
+                    for (auto& fn : listener.second)
+                    {
+                        fn(Any());
+                    }
                 }
                 else
                 {
-                    listener.second(dataFields[iter->second].ref.GetValue());
+                    Any value = dataFields[iter->second].ref.GetValue();
+                    for (auto& fn : listener.second)
+                    {
+                        fn(value);
+                    }
                 }
             }
         }
@@ -116,7 +126,11 @@ public:
                 if (iter != listeners.end())
                 {
                     Reflection field = reflection.GetField(fieldAnyName);
-                    iter->second(field.GetValue());
+                    Any value = field.GetValue();
+                    for (auto& fn : iter->second)
+                    {
+                        fn(value);
+                    }
                 }
             }
         }
@@ -124,8 +138,7 @@ public:
 
     void BindField(FastName fieldName, const Function<void(const Any&)>& fn)
     {
-        DVASSERT(listeners.count(fieldName) == 0);
-        listeners[fieldName] = fn;
+        listeners[fieldName].push_back(fn);
     }
 
     const ReflectedType* GetType() const
@@ -135,7 +148,7 @@ public:
 
 private:
     const ReflectedType* type = nullptr;
-    UnorderedMap<FastName, Function<void(const Any&)>> listeners;
+    UnorderedMap<FastName, Vector<Function<void(const Any&)>>> listeners;
     ContextAccessor* accessor = nullptr;
     DataWrapper wrapper;
 };

@@ -1,5 +1,4 @@
-#ifndef __TEXTURE_CACHE_H__
-#define __TEXTURE_CACHE_H__
+#pragma once
 
 #include "Base/Singleton.h"
 #include "Render/TextureDescriptor.h"
@@ -99,5 +98,3 @@ private:
     CacheMap cacheOriginal;
     CacheMap cacheConverted[DAVA::GPU_DEVICE_COUNT];
 };
-
-#endif // __TEXTURE_CACHE_H__

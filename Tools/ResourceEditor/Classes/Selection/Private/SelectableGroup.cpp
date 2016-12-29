@@ -1,4 +1,4 @@
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 
 bool SelectableGroup::operator==(const SelectableGroup& other) const
 {
@@ -166,4 +166,16 @@ void SelectableGroup::RemoveObjectsWithDependantTransform()
     {
         objects.erase(objects.begin() + (*i));
     }
+}
+
+DAVA::AABBox3 SelectableGroup::GetTransformedBoundingBox() const
+{
+    DAVA::AABBox3 result;
+    for (const auto& object : GetContent())
+    {
+        DAVA::AABBox3 transformed;
+        object.GetBoundingBox().GetTransformedBox(object.GetWorldTransform(), transformed);
+        result.AddAABBox(transformed);
+    }
+    return result;
 }

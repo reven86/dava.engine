@@ -12,6 +12,7 @@
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
@@ -330,13 +331,13 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
 
             // TODO:
-            // Resources should be divided from VirtualCoordinateSystem
-            // Each resource consumer have to care for his resources by it self,
+            // Resources must be separated from VirtualCoordinateSystem
+            // Each resource consumer have to care for his resources by itself,
             // e.g. sprites reloading mechanism should be implemented in Sprite.cpp
-            // by handling Window::onResize signal and making sprites reload
+            // by handling Window::sizeChanged signal and making sprites reload
             // inside that particular handler...
             //
-            // Unfortunately we have only temlolary solution:
+            // Unfortunately we have only temporary solution:
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {

@@ -1,5 +1,4 @@
-#ifndef __ENTITY_MODIFICATION_SYSTEM_H__
-#define __ENTITY_MODIFICATION_SYSTEM_H__
+#pragma once
 
 #include "SystemDelegates.h"
 
@@ -8,7 +7,7 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Render/Highlevel/RenderObject.h"
 
 #include "Commands2/Base/RECommand.h"
@@ -17,7 +16,7 @@ class SceneCollisionSystem;
 class SceneCameraSystem;
 class HoodSystem;
 
-class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
+class EntityModificationSystem : public DAVA::SceneSystem, public SelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -59,6 +58,9 @@ public:
     void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
     const SelectableGroup& GetTransformableSelection() const;
+
+    void SetPivotPoint(Selectable::TransformPivot pp);
+    Selectable::TransformPivot GetPivotPoint() const;
 
 private:
     struct EntityToModify
@@ -140,10 +142,10 @@ private:
     Selectable::TransformType transformType = Selectable::TransformType::Disabled;
     ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
 
+    Selectable::TransformPivot curPivotPoint = Selectable::TransformPivot::CommonCenter;
+
     bool inModifState = false;
     bool isOrthoModif = false;
     bool modified = false;
     bool snapToLandscape = false;
 };
-
-#endif //__ENTITY_MODIFICATION_SYSTEM_H__
