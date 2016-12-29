@@ -458,13 +458,12 @@ void CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
 {
     ClearTestFolder(projectPathname); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
 
-    DAVA::FilePath dataPath = projectPathname + "Data/";
     DAVA::FilePath datasourcePath = projectPathname + "DataSource/3d/";
 
-    DAVA::FileSystem::Instance()->CreateDirectory(dataPath, true);
     DAVA::FileSystem::Instance()->CreateDirectory(datasourcePath, true);
 
-    DAVA::FileSystem::Instance()->CopyFile("~res:/ResourceEditor/quality.template.yaml", dataPath + "quality.yaml", true);
+    DAVA::FilePath qulityPath = projectPathname + "DataSource/quality.yaml";
+    DAVA::FileSystem::Instance()->CopyFile("~res:/ResourceEditor/quality.template.yaml", qulityPath, true);
 }
 
 void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)

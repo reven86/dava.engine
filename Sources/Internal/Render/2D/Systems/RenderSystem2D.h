@@ -32,6 +32,7 @@ struct TiledDrawData
     void GenerateTransformData();
 
     Sprite* sprite;
+    Texture* texture;
     int32 frame;
     Vector2 size;
     Vector2 stretchCap;
@@ -50,6 +51,7 @@ struct StretchDrawData
     uint32 GetVertexInTrianglesCount() const;
 
     Sprite* sprite;
+    Texture* texture;
     int32 frame;
     Vector2 size;
     int32 type;
@@ -374,8 +376,8 @@ private:
 
     bool spriteClipping = true;
 
-    uint8* currentVertexBuffer = nullptr;
-    uint16* currentIndexBuffer = nullptr;
+    Vector<uint8> currentVertexBuffer;
+    Vector<uint16> currentIndexBuffer;
     rhi::Packet currentPacket;
     uint32 currentTexcoordStreamCount = 1; //1 is for default draw
     uint32 currentIndexBase = 0;

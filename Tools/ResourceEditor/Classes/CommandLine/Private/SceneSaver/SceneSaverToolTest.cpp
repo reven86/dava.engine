@@ -149,13 +149,13 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
           "-resave",
           "-yaml",
           "-indir",
-          FilePath(SSTestDetail::projectStr).GetAbsolutePathname() + "Data/",
+          FilePath(SSTestDetail::projectStr).GetAbsolutePathname() + "DataSource/",
         };
 
         std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneSaverTool>(cmdLine);
         DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
-        TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "Data/quality.yaml"));
+        TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "DataSource/quality.yaml"));
 
         CommandLineModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
     }

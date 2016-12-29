@@ -8,6 +8,8 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
+#include "TArc/Utils/Private/CrashDumpHandler.h"
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
@@ -42,6 +44,7 @@ public:
         , core(core_)
         , globalContext(new DataContext())
     {
+        InitCrashDumpHandler();
     }
 
     ~Impl()
@@ -193,6 +196,7 @@ protected:
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
         AfterContextSwitch(activeContext, oldContext);
+        SyncWrappers();
     }
 
     void SyncWrappers()
@@ -460,9 +464,8 @@ public:
 
     void OnLoopStarted() override
     {
+        ToolsAssertGuard::Instance()->Init();
         Impl::OnLoopStarted();
-
-        ToolsAssetGuard::Instance()->Init();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
@@ -666,22 +669,27 @@ public:
         DVASSERT(controllerModule != nullptr);
         bool result = true;
         QCloseEvent closeEvent;
+        String requestWindowText;
         if (controllerModule->ControlWindowClosing(key, &closeEvent))
         {
             result = closeEvent.isAccepted();
         }
-        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        else if (controllerModule->CanWindowBeClosedSilently(key, requestWindowText) == false)
         {
+            if (requestWindowText.empty())
+            {
+                requestWindowText = "Some files have been modified\nDo you want to save changes?";
+            }
             ModalMessageParams params;
-            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
-            params.message = "Some files have been modified\nDo you want to save changes?";
+            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::SaveAll | ModalMessageParams::NoToAll | ModalMessageParams::Cancel);
+            params.message = QString::fromStdString(requestWindowText);
             params.title = "Save Changes?";
             ModalMessageParams::Button resultButton = uiManager->ShowModalMessage(key, params);
-            if (resultButton == ModalMessageParams::Yes)
+            if (resultButton == ModalMessageParams::SaveAll)
             {
                 controllerModule->SaveOnWindowClose(key);
             }
-            else if (resultButton == ModalMessageParams::No)
+            else if (resultButton == ModalMessageParams::NoToAll)
             {
                 controllerModule->RestoreOnWindowClose(key);
             }

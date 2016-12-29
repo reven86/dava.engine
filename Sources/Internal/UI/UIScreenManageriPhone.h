@@ -38,6 +38,9 @@ public:
     // It blocks drawing of the RenderView, introduced for displaying assert messages.
     void BlockDrawing();
     void UnblockDrawing();
+#if defined(__DAVAENGINE_COREV2__)
+    bool IsDrawBlocked();
+#endif // __DAVAENGINE_COREV2__
 
 private:
     void ActivateGLController();
@@ -63,6 +66,9 @@ private:
     int glControllerId;
     int activeControllerId;
     int activeScreenId;
+#if defined(__DAVAENGINE_COREV2__)
+    bool drawBlocked;
+#endif // __DAVAENGINE_COREV2__
 };
 };
 

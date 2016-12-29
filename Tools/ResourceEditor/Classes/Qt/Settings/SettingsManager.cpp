@@ -3,8 +3,9 @@
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"
 
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
+
+#include "Classes/Selection/SelectionSystem.h"
 
 #include <QColor>
 #include <QDebug>

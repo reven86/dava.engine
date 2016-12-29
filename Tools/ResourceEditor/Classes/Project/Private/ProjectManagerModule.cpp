@@ -179,15 +179,24 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     ProjectManagerData* data = GetData();
     connections.RemoveConnection(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded);
 
+    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
+
     projectResources->LoadProject(incomePath);
     DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
 
-    data->editorConfig->ParseConfig(data->GetProjectPath() + "EditorConfig.yaml");
+    DAVA::FilePath editorConfigPath = data->GetProjectPath() + "EditorConfig.yaml";
+    if (fileSystem->Exists(editorConfigPath))
+    {
+        data->editorConfig->ParseConfig(editorConfigPath);
+    }
+    else
+    {
+        DAVA::Logger::Warning("Selected project doesn't contain EditorConfig.yaml");
+    }
 
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
 
-    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
-    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
     fileSystem->CreateDirectory(data->GetWorkspacePath(), true);
 
     recentProject->Add(incomePath.GetAbsolutePathname());
@@ -195,8 +204,6 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
 void ProjectManagerModule::OpenLastProject()
 {
-    ProjectManagerData* data = GetData();
-
     DAVA::FilePath projectPath;
     {
         DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);

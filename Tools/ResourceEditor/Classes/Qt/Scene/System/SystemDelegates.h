@@ -6,8 +6,6 @@ class Entity;
 class AABBox3;
 }
 
-class SelectableGroup;
-
 class EntityModificationSystemDelegate
 {
 public:
@@ -15,6 +13,7 @@ public:
     virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
 };
 
+class SelectableGroup;
 class StructureSystemDelegate
 {
 public:
@@ -22,7 +21,7 @@ public:
     virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
 };
 
-class SceneSelectionSystemDelegate
+class SelectionSystemDelegate
 {
 public:
     virtual bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
@@ -32,8 +31,5 @@ public:
     virtual bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
     {
         return true;
-    }
-    virtual void OnSelectionBoxChanged(const DAVA::AABBox3& newBox)
-    {
     }
 };

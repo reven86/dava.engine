@@ -21,25 +21,97 @@ struct GPUData
     Map<PixelFormat, ImageFormat> availableFormats;
 };
 
-UnorderedMap<eGPUFamily, GPUData, std::hash<uint8>> gpuData = {
-    { GPU_POWERVR_IOS, { "PowerVR_iOS", ".PowerVR_iOS", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_PVR4, IMAGE_FORMAT_PVR }, { FORMAT_PVR2, IMAGE_FORMAT_PVR } } } },
-    { GPU_POWERVR_ANDROID, { "PowerVR_Android", ".PowerVR_Android", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_PVR4, IMAGE_FORMAT_PVR }, { FORMAT_PVR2, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
-    { GPU_TEGRA, { "tegra", ".tegra", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_DXT1, IMAGE_FORMAT_DDS }, { FORMAT_DXT1A, IMAGE_FORMAT_DDS }, { FORMAT_DXT3, IMAGE_FORMAT_DDS }, { FORMAT_DXT5, IMAGE_FORMAT_DDS }, { FORMAT_DXT5NM, IMAGE_FORMAT_DDS }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
-    { GPU_MALI, { "mali", ".mali", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
-    { GPU_ADRENO, { "adreno", ".adreno", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR }, { FORMAT_ATC_RGB, IMAGE_FORMAT_DDS }, { FORMAT_ATC_RGBA_EXPLICIT_ALPHA, IMAGE_FORMAT_DDS }, { FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, IMAGE_FORMAT_DDS } } } },
-    { GPU_DX11, { "dx11", ".dx11", {
-                                   { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
-                                   { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
-                                   { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
-                                   { FORMAT_RGB565, IMAGE_FORMAT_PVR },
-                                   { FORMAT_A8, IMAGE_FORMAT_PVR },
-                                   { FORMAT_DXT1, IMAGE_FORMAT_DDS },
-                                   { FORMAT_DXT1A, IMAGE_FORMAT_DDS },
-                                   { FORMAT_DXT3, IMAGE_FORMAT_DDS },
-                                   { FORMAT_DXT5, IMAGE_FORMAT_DDS },
-                                   { FORMAT_DXT5NM, IMAGE_FORMAT_DDS },
-                                   } } },
-    { GPU_ORIGIN, { "origin", "", { { FORMAT_RGBA8888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGBA5551, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGB888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A8, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A16, IMAGE_FORMAT_UNKNOWN } } } }
+UnorderedMap<eGPUFamily, GPUData, std::hash<uint8>> gpuData =
+{
+  { GPU_POWERVR_IOS, { "PowerVR_iOS", ".PowerVR_iOS", {
+                                                      { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGB888, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_PVR4, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_PVR2, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGBA16F, IMAGE_FORMAT_PVR },
+                                                      { FORMAT_RGBA32F, IMAGE_FORMAT_PVR }
+                                                      } } },
+  { GPU_POWERVR_ANDROID, { "PowerVR_Android", ".PowerVR_Android", {
+                                                                  { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGB888, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_PVR4, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_PVR2, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_ETC1, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGBA16F, IMAGE_FORMAT_PVR },
+                                                                  { FORMAT_RGBA32F, IMAGE_FORMAT_PVR }
+                                                                  } } },
+  { GPU_TEGRA, { "tegra", ".tegra", {
+                                    { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                    { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                    { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                    { FORMAT_RGB888, IMAGE_FORMAT_PVR },
+                                    { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                    { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                    { FORMAT_DXT1, IMAGE_FORMAT_DDS },
+                                    { FORMAT_DXT1A, IMAGE_FORMAT_DDS },
+                                    { FORMAT_DXT3, IMAGE_FORMAT_DDS },
+                                    { FORMAT_DXT5, IMAGE_FORMAT_DDS },
+                                    { FORMAT_DXT5NM, IMAGE_FORMAT_DDS },
+                                    { FORMAT_ETC1, IMAGE_FORMAT_PVR },
+                                    { FORMAT_RGBA16F, IMAGE_FORMAT_DDS },
+                                    { FORMAT_RGBA32F, IMAGE_FORMAT_DDS }
+                                    } } },
+  { GPU_MALI, { "mali", ".mali", {
+                                 { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGB888, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                 { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                 { FORMAT_ETC1, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA16F, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA32F, IMAGE_FORMAT_PVR }
+                                 } } },
+  { GPU_ADRENO, { "adreno", ".adreno", {
+                                       { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                       { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                       { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                       { FORMAT_RGB888, IMAGE_FORMAT_PVR },
+                                       { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                       { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                       { FORMAT_ETC1, IMAGE_FORMAT_PVR },
+                                       { FORMAT_ATC_RGB, IMAGE_FORMAT_DDS },
+                                       { FORMAT_ATC_RGBA_EXPLICIT_ALPHA, IMAGE_FORMAT_DDS },
+                                       { FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, IMAGE_FORMAT_DDS },
+                                       { FORMAT_RGBA16F, IMAGE_FORMAT_DDS },
+                                       { FORMAT_RGBA32F, IMAGE_FORMAT_DDS }
+                                       } } },
+  { GPU_DX11, { "dx11", ".dx11", {
+                                 { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                 { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                 { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                 { FORMAT_DXT1, IMAGE_FORMAT_DDS },
+                                 { FORMAT_DXT1A, IMAGE_FORMAT_DDS },
+                                 { FORMAT_DXT3, IMAGE_FORMAT_DDS },
+                                 { FORMAT_DXT5, IMAGE_FORMAT_DDS },
+                                 { FORMAT_DXT5NM, IMAGE_FORMAT_DDS },
+                                 { FORMAT_RGBA16F, IMAGE_FORMAT_DDS },
+                                 { FORMAT_RGBA32F, IMAGE_FORMAT_DDS }
+                                 } } },
+  { GPU_ORIGIN, { "origin", "", {
+                                { FORMAT_RGBA8888, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_RGBA5551, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_RGB888, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_A8, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_A16, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_RGBA16F, IMAGE_FORMAT_UNKNOWN },
+                                { FORMAT_RGBA32F, IMAGE_FORMAT_UNKNOWN }
+                                } } }
 };
 
 const Map<PixelFormat, ImageFormat>& GetAvailableFormatsForGpu(eGPUFamily gpuFamily)

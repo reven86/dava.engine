@@ -6,9 +6,10 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/Image/Image.h"
 #include "Render/Image/LibTgaHelper.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 
 #include "Base/GlobalEnum.h"
 
@@ -46,8 +47,6 @@ static DAVA::String ETC_QUALITY_SETTING[] =
 
 PVRConverter::PVRConverter()
 {
-    //	PVRTC1_2, PVRTC1_4, PVRTC1_2_RGB, PVRTC1_4_RGB, PVRTC2_2, PVRTC2_4, ETC1, BC1, BC2, BC3,UYVY, YUY2, 1BPP, RGBE9995, RGBG8888, GRGB8888, ETC2_RGB, ETC2_RGBA, ETC2_RGB_A1, EAC_R11, EAC_RG11
-
     // pvr map
     pixelFormatToPVRFormat[FORMAT_RGBA8888] = "r8g8b8a8"; //"OGL8888";
     pixelFormatToPVRFormat[FORMAT_RGBA4444] = "r4g4b4a4"; //"OGL4444";
@@ -68,6 +67,9 @@ PVRConverter::PVRConverter()
     pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
     pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
     pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
+
+    pixelFormatToPVRFormat[FORMAT_RGBA16F] = "r16g16b16a16,SF";
+    pixelFormatToPVRFormat[FORMAT_RGBA32F] = "r32g32b32a32,SF";
 }
 
 PVRConverter::~PVRConverter()
@@ -82,10 +84,63 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
     return FilePath();
 
 #else
-    FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
+    FilePath sourcePathname = descriptor.GetSourceTexturePathname();
 
+    bool shouldHackRGBAFloatImage = false;
+    FilePath inputPathname = sourcePathname;
+
+    SCOPE_EXIT
+    {
+        if (shouldHackRGBAFloatImage)
+        {
+            FileSystem::Instance()->DeleteFile(inputPathname);
+        }
+    };
+
+    if (sourcePathname.IsEqualToExtension(".dds"))
+    {
+        ImageInfo sourceInfo = ImageSystem::GetImageInfo(sourcePathname);
+        shouldHackRGBAFloatImage = (sourceInfo.format == PixelFormat::FORMAT_RGBA32F || sourceInfo.format == PixelFormat::FORMAT_RGBA16F);
+        if (shouldHackRGBAFloatImage)
+        {
+            inputPathname.ReplaceBasename(sourcePathname.GetBasename() + "_hack");
+
+            Vector<Image*> abgrfImages;
+            ImageSystem::Load(sourcePathname, abgrfImages);
+
+            if (sourceInfo.format == PixelFormat::FORMAT_RGBA32F)
+            {
+                for (Image* img : abgrfImages)
+                {
+                    ConvertDirect<ABGR32F, RGBA32F, ConvertABGR32FtoRGBA32F> convert;
+                    convert(img->data, img->width, img->height, img->width * sizeof(ABGR32F), img->data);
+                }
+            }
+            else if (sourceInfo.format == PixelFormat::FORMAT_RGBA16F)
+            {
+                for (Image* img : abgrfImages)
+                {
+                    ConvertDirect<ABGR16F, RGBA16F, ConvertABGR16FtoRGBA16F> convert;
+                    convert(img->data, img->width, img->height, img->width * sizeof(ABGR16F), img->data);
+                }
+            }
+
+            ImageSystem::Save(inputPathname, abgrfImages, sourceInfo.format);
+
+            for (Image* img : abgrfImages)
+            {
+                SafeRelease(img);
+            }
+        }
+    }
+    else if (descriptor.IsCubeMap())
+    {
+        inputPathname = PrepareCubeMapForPvrConvert(descriptor);
+    }
+
+    FilePath outputName;
     Vector<String> args;
-    GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
+    GetToolCommandLine(descriptor, inputPathname, gpuFamily, quality, args);
     Process process(pvrTexToolPathname, args);
     if (process.Run(false))
     {
@@ -108,7 +163,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
     else
     {
         Logger::Error("Failed to run PVR tool! %s", pvrTexToolPathname.GetAbsolutePathname().c_str());
-        DVASSERT(false);
+        return FilePath();
     }
 
     if (descriptor.IsCubeMap())

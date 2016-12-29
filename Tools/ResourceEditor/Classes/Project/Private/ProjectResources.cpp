@@ -120,19 +120,20 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
         UnloadProject();
 
         data->projectPath = incomePath;
+        DAVA::FilePath::AddResourcesFolder(data->GetDataSourcePath());
         DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
 
         ProjectResourcesDetails::LoadMaterialTemplatesInfo(data->materialTemplatesInfo);
 
-        DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+        DAVA::QualitySettingsSystem::Instance()->Load(data->projectPath + "DataSource / quality.yaml");
 
         const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
         engineCtx->soundSystem->InitFromQualitySettings();
 
         DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
-        if (fileSystem->Exists(data->GetDataSourcePath()))
+        if (fileSystem->Exists(data->GetDataSource3DPath()))
         {
-            data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+            data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
         }
     }
 }
@@ -144,11 +145,12 @@ void ProjectResources::UnloadProject()
     if (!data->projectPath.IsEmpty())
     {
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
+        DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
 
         DAVA::FileSystem* fileSystem = accessor->GetEngineContext()->fileSystem;
-        if (fileSystem->Exists(data->GetDataSourcePath()))
+        if (fileSystem->Exists(data->GetDataSource3DPath()))
         {
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSourcePath().GetStringValue()));
+            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
         }
         data->projectPath = "";
     }

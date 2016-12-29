@@ -323,15 +323,9 @@ void WindowBackend::OnCreated()
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
-}
 
-void WindowBackend::OnInitialized()
-{
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        OnVisibilityChanged(true);
-        OnApplicationFocusChanged(true);
-    }
+    OnVisibilityChanged(true);
+    OnApplicationFocusChanged(true);
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -366,11 +360,14 @@ void WindowBackend::OnFrame()
 
 void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
 {
-    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
-    eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, fullscreen));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
+        float32 w = static_cast<float32>(width);
+        float32 h = static_cast<float32>(height);
+        eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, fullscreen));
+    }
 }
 
 void WindowBackend::OnDpiChanged(float32 dpi)
@@ -380,7 +377,10 @@ void WindowBackend::OnDpiChanged(float32 dpi)
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+    }
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)

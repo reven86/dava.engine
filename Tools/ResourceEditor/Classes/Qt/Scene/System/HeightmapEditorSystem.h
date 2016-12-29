@@ -29,7 +29,7 @@ public:
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
     bool DisableLandscapeEdititing();
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
 
     void SetBrushSize(DAVA::int32 brushSize);
