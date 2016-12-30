@@ -1,4 +1,6 @@
 #include "Tests/SoundTest.h"
+
+#include "Engine/Engine.h"
 #include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
@@ -12,7 +14,7 @@ void SoundTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-1"));
+    eventGroup1 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-1"), SoundEvent::SOUND_EVENT_CREATE_LOOP);
     eventGroup2 = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("group-2"));
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -92,6 +94,39 @@ void SoundTest::LoadResources()
     speedTextFieldGroup2->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     speedTextFieldGroup2->SetText(L"1.0");
     AddControl(speedTextFieldGroup2);
+
+    Window* primaryWindow = GetPrimaryWindow();
+    tokenFocusChanged = primaryWindow->focusChanged.Connect(this, &SoundTest::OnWindowFocusChanged);
+}
+
+void SoundTest::UnloadResources()
+{
+    RemoveAllControls();
+
+    if (eventGroup1 != nullptr)
+    {
+        eventGroup1->Stop(true);
+        eventGroup1->Release();
+    }
+    if (eventGroup2 != nullptr)
+    {
+        eventGroup2->Stop(true);
+        eventGroup2->Release();
+    }
+
+    BaseScreen::UnloadResources();
+
+    Window* primaryWindow = GetPrimaryWindow();
+    if (primaryWindow != nullptr)
+    {
+        primaryWindow->focusChanged.Disconnect(tokenFocusChanged);
+    }
+}
+
+void SoundTest::OnWindowFocusChanged(DAVA::Window* w, bool hasFocus)
+{
+    eventGroup1->SetPaused(!hasFocus);
+    eventGroup2->SetPaused(!hasFocus);
 }
 
 void SoundTest::OnPlaySoundGroup1(BaseObject* sender, void* data, void* callerData)
@@ -101,7 +136,7 @@ void SoundTest::OnPlaySoundGroup1(BaseObject* sender, void* data, void* callerDa
 
 void SoundTest::OnApplySpeedGroup1(BaseObject* sender, void* data, void* callerData)
 {
-    float speed = static_cast<float>(std::atof(WStringToString(speedTextFieldGroup1->GetText()).c_str()));
+    float speed = static_cast<float>(std::atof(UTF8Utils::EncodeToUTF8(speedTextFieldGroup1->GetText()).c_str()));
     SoundSystem::Instance()->SetGroupSpeed(FastName("group-1"), speed);
 }
 
@@ -112,6 +147,6 @@ void SoundTest::OnPlaySoundGroup2(BaseObject* sender, void* data, void* callerDa
 
 void SoundTest::OnApplySpeedGroup2(BaseObject* sender, void* data, void* callerData)
 {
-    float speed = static_cast<float>(std::atof(WStringToString(speedTextFieldGroup2->GetText()).c_str()));
+    float speed = static_cast<float>(std::atof(UTF8Utils::EncodeToUTF8(speedTextFieldGroup2->GetText()).c_str()));
     SoundSystem::Instance()->SetGroupSpeed(FastName("group-2"), speed);
 }

@@ -307,7 +307,6 @@ void PropertiesModel::UpdateAllChangedProperties()
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    property->Retain();
     changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
     continuousUpdater->Update();
 }

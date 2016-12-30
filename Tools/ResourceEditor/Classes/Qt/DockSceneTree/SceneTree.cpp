@@ -16,7 +16,6 @@
 #include "Main/QTUtils.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Qt/GlobalOperations.h"
 #include "Qt/Tools/PathDescriptor/PathDescriptor.h"
 
@@ -34,6 +33,9 @@
 #include "Classes/Qt/Actions/SaveEntityAsAction.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
+#include "Classes/SceneManager/SceneData.h"
+#include "Classes/Selection/Selection.h"
+#include "Classes/Selection/SelectionData.h"
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/Updaters/LazyUpdater.h"
@@ -41,6 +43,7 @@
 
 #include "TArc/DataProcessing/DataContext.h"
 #include "TArc/Utils/ScopedValueGuard.h"
+#include "TArc/Core/FieldBinder.h"
 
 #include "FileSystem/VariantType.h"
 
@@ -63,7 +66,7 @@ DAVA::FilePath GetDataSourcePath()
     if (data == nullptr)
         return DAVA::FilePath();
 
-    return data->GetDataSourcePath();
+    return data->GetDataSource3DPath();
 }
 
 void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, DAVA::ParticleEmitter* emitter,
@@ -187,8 +190,7 @@ protected:
 
     void RemoveCommandsHelper(const DAVA::String& text, SceneTreeItem::eItemType type, const DAVA::Function<RemoveInfo(SceneTreeItem*)>& callback)
     {
-        SceneEditor2* sceneEditor = GetScene();
-        SelectableGroup currentGroup = sceneEditor->selectionSystem->GetSelection();
+        SelectableGroup currentGroup = Selection::GetSelection();
         DAVA::Vector<std::unique_ptr<DAVA::Command>> commands;
         commands.reserve(GetSelectedItemsCount());
         ForEachSelectedByType(type, [&commands, &currentGroup, callback](SceneTreeItem* item)
@@ -200,8 +202,11 @@ protected:
 
         if (!commands.empty())
         {
+            SceneEditor2* sceneEditor = GetScene();
             sceneEditor->BeginBatch(text, static_cast<DAVA::uint32>(commands.size()));
-            sceneEditor->selectionSystem->SetSelection(currentGroup);
+
+            Selection::SetSelection(currentGroup);
+
             static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
             for (std::unique_ptr<DAVA::Command>& command : commands)
             {
@@ -262,7 +267,9 @@ protected:
     void FillActions(QMenu& menu) override
     {
         SceneEditor2* scene = GetScene();
-        size_t selectionSize = scene->selectionSystem->GetSelectionCount();
+
+        const SelectableGroup& selection = Selection::GetSelection();
+        DAVA::uint32 selectionSize = selection.GetSize();
 
         DAVA::Entity* entity = entityItem->GetEntity();
         DAVA::Camera* camera = GetCamera(entityItem->GetEntity());
@@ -362,11 +369,11 @@ private:
 
     void SaveEntityAs()
     {
-        SceneEditor2* scene = GetScene();
-        const SelectableGroup& selection = scene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = Selection::GetSelection();
         if (selection.IsEmpty())
             return;
 
+        SceneEditor2* scene = GetScene();
         DAVA::FilePath scenePath = scene->GetScenePath().GetDirectory();
         if (!DAVA::FileSystem::Instance()->Exists(scenePath) || !scene->IsLoaded())
         {
@@ -384,8 +391,8 @@ private:
 
     void EditModel()
     {
-        SceneSelectionSystem* ss = GetScene()->selectionSystem;
-        for (auto entity : ss->GetSelection().ObjectsOfType<DAVA::Entity>())
+        const SelectableGroup& selection = Selection::GetSelection();
+        for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
         {
             DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
             if (archive)
@@ -428,8 +435,8 @@ private:
 
         if (QDialog::Accepted == dlg.exec())
         {
-            const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
             DAVA::String wrongPathes;
+            const SelectableGroup& selection = Selection::GetSelection();
             for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
             {
                 DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
@@ -448,14 +455,16 @@ private:
                 DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes).c_str());
             }
             SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-            sceneEditor->selectionSystem->SetSelection(newSelection);
+            Selection::SetSelection(newSelection);
         }
     }
 
     void ReloadModelAs()
     {
         SceneEditor2* sceneEditor = GetScene();
-        DAVA::Entity* entity = sceneEditor->selectionSystem->GetFirstSelectionEntity();
+
+        const SelectableGroup& selection = Selection::GetSelection();
+        DAVA::Entity* entity = selection.GetContent().front().AsEntity();
         DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
         if (archive != nullptr)
         {
@@ -476,8 +485,8 @@ private:
             QString filePath = FileDialog::getOpenFileName(GetParentWidget(), QStringLiteral("Open scene file"), ownerPath.c_str(), QStringLiteral("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
-                sceneEditor->selectionSystem->SetSelection(newSelection);
+                SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(selection, filePath.toStdString());
+                Selection::SetSelection(newSelection);
             }
         }
     }
@@ -545,7 +554,7 @@ private:
     void ExecuteCommandForEffect(Arg&&... args)
     {
         SceneEditor2* sceneEditor = GetScene();
-        const auto& selection = sceneEditor->selectionSystem->GetSelection();
+        const SelectableGroup& selection = Selection::GetSelection();
         for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
         {
             DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
@@ -573,7 +582,7 @@ private:
 
     void SetEntityNameAsFilter()
     {
-        const SelectableGroup& selection = GetScene()->selectionSystem->GetSelection();
+        const SelectableGroup& selection = Selection::GetSelection();
         DVASSERT(selection.GetSize() == 1);
         DVASSERT(selection.GetFirst().CanBeCastedTo<DAVA::Entity>());
 
@@ -824,7 +833,6 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
-    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::UpdateSelection), this);
 
     setModel(filteringProxyModel);
 
@@ -841,8 +849,15 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &SceneTree::SceneActivated);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &SceneTree::SceneDeactivated);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &SceneTree::SceneStructureChanged);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &SceneTree::SceneSelectionChanged);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &SceneTree::CommandExecuted);
+
+    selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+        fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+        selectionFieldBinder->BindField(fieldDescr, [this](const DAVA::Any&) { SyncSelectionToTree(); });
+    }
 
     // particles signals
     QObject::connect(SceneSignals::Instance(), &SceneSignals::ParticleLayerValueChanged, this, &SceneTree::ParticleLayerValueChanged);
@@ -1010,14 +1025,6 @@ void SceneTree::SceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void SceneTree::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
-{
-    if (scene == treeModel->GetScene())
-    {
-        SyncSelectionToTree();
-    }
-}
-
 void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 {
     if (scene == treeModel->GetScene())
@@ -1063,7 +1070,6 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
         return;
 
     SyncSelectionFromTree();
-    EmitParticleSignals();
 }
 
 void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)
@@ -1112,8 +1118,8 @@ void SceneTree::TreeItemDoubleClicked(const QModelIndex& index)
 
 void SceneTree::ShowContextMenu(const QPoint& pos)
 {
-    SceneEditor2* curScene = treeModel->GetScene();
-    if (curScene == nullptr || curScene->selectionSystem->GetSelection().IsEmpty())
+    const SelectableGroup& selection = Selection::GetSelection();
+    if (selection.IsEmpty())
     {
         return;
     }
@@ -1261,7 +1267,7 @@ void SceneTree::SyncSelectionToTree()
     TSelectionMap toSelect;
 
     QModelIndex lastValidIndex;
-    const auto& selection = curScene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = Selection::GetSelection();
     for (const auto& item : selection.GetContent())
     {
         QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.GetContainedObject()));
@@ -1335,44 +1341,9 @@ void SceneTree::SyncSelectionFromTree()
         for (int i = 0; i < indexList.size(); ++i)
         {
             auto item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i]));
-            group.Add(item->GetItemObject(), curScene->selectionSystem->GetUntransformedBoundingBox(item->GetItemObject()));
+            group.Add(item->GetItemObject(), curScene->collisionSystem->GetUntransformedBoundingBox(item->GetItemObject()));
         }
-        curScene->selectionSystem->SetSelection(group);
-        // force selection system emit signals about new selection
-        // this should be done until we are inSync mode, to prevent unnecessary updates
-        // when signals from selection system will be emitted on next frame
-        curScene->selectionSystem->ForceEmitSignals();
-    }
-}
-void SceneTree::EmitParticleSignals()
-{
-    QModelIndexList indexList = selectionModel()->selection().indexes();
-    if (indexList.size() != 1)
-        return;
-
-    SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
-    if (item != nullptr)
-    {
-        if (item->ItemType() == SceneTreeItem::eItemType::EIT_Layer)
-        {
-            // hack for widgets: select emitter instance first and then select layer
-            // emitter instance will be in "deselected" -> can handle in widgets
-            SelectableGroup selection;
-            selection.Add(static_cast<SceneTreeItemParticleLayer*>(item)->emitterInstance);
-            treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        }
-        else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Force)
-        {
-            // same hack here, but selecting layer
-            SelectableGroup selection;
-            selection.Add(static_cast<SceneTreeItemParticleForce*>(item)->layer);
-            treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        }
-
-        SelectableGroup selection;
-        selection.Add(item->GetItemObject());
-        treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        treeModel->GetScene()->selectionSystem->ForceEmitSignals();
+        Selection::SetSelection(group);
     }
 }
 
@@ -1414,18 +1385,12 @@ void SceneTree::UpdateModel()
     treeModel->ReloadFilter();
     filteringProxyModel->invalidate();
 
-    selectionUpdater->Update();
+    SyncSelectionToTree();
 
     if (treeModel->IsFilterSet())
     {
         ExpandFilteredItems();
     }
-}
-
-void SceneTree::UpdateSelection()
-{
-    SyncSelectionToTree();
-    EmitParticleSignals();
 }
 
 void SceneTree::PropagateSolidFlag()

@@ -34,6 +34,10 @@ if (DAVA_PLATFORM_QT)
     set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 endif()
 
+if( MACOS OR WIN32 )
+    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" )
+endif()
+
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
 include_directories   ( "Classes" )
@@ -88,9 +92,9 @@ endif()
 setup_main_executable()
 convert_graphics()
 
+
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled
     # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager
-    set_xcode_property( ${PROJECT_NAME} GCC_GENERATE_DEBUGGING_SYMBOLS YES )
     set_xcode_property( ${PROJECT_NAME} STRIP_INSTALLED_PRODUCT NO )
 endif()

@@ -16,7 +16,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif
@@ -223,7 +223,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         fullscreenMode = FindBestMode(fullscreenMode);
         shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
         String title = options->GetString("title", "[set application title using core options property 'title']");
-        WideString titleW = StringToWString(title);
+        WideString titleW = UTF8Utils::EncodeToWideString(title);
         SetWindowText(hWindow, titleW.c_str());
 
         LoadWindowMinimumSizeSettings();

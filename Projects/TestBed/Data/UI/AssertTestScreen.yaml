@@ -2,7 +2,7 @@ Header:
     version: "4"
 Controls:
 -   class: "UIControl"
-    name: ""
+    name: "MainFrame"
     size: [479.000000, 457.000000]
     noInput: true
     components:

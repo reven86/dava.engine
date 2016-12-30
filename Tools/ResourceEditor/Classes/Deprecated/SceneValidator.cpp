@@ -366,7 +366,7 @@ void SceneValidator::ValidateLandscape(DAVA::Landscape* landscape)
         DAVA::String path = landscape->GetHeightmapPathname().GetAbsolutePathname();
         if (data != nullptr)
         {
-            path = landscape->GetHeightmapPathname().GetRelativePathname(data->GetDataSourcePath());
+            path = landscape->GetHeightmapPathname().GetRelativePathname(data->GetDataSource3DPath());
         }
         PushLogMessage(nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }

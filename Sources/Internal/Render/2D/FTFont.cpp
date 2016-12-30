@@ -2,7 +2,7 @@
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Logger/Logger.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/File.h"
 #include "Core/Core.h"
@@ -643,7 +643,7 @@ int32 FTInternalFont::LoadString(float32 size, const WideString& str)
         {
 #if defined(__DAVAENGINE_DEBUG__)
             // DVASSERT(false); //This situation can be unnormal. Check it
-            Logger::Warning("[FTInternalFont::LoadString] LookupGlyph error %d, str = %s", error, WStringToString(str).c_str());
+            Logger::Warning("[FTInternalFont::LoadString] LookupGlyph error %d, str = %s", error, UTF8Utils::EncodeToUTF8(str).c_str());
 #endif //__DAVAENGINE_DEBUG__
         }
 

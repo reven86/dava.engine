@@ -1,5 +1,4 @@
-#ifndef __SCENE_TREE_ITEM_H__
-#define __SCENE_TREE_ITEM_H__
+#pragma once
 
 #include <QStandardItem>
 
@@ -10,7 +9,7 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleForce.h"
 
-#include "Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 Q_DECLARE_METATYPE(DAVA::Entity*);
 Q_DECLARE_METATYPE(DAVA::ParticleLayer*);
@@ -148,6 +147,3 @@ public:
 private:
     DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> localInstance;
 };
-
-
-#endif // __QT_PROPERTY_ITEM_H__

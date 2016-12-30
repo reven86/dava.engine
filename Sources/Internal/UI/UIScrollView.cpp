@@ -461,11 +461,6 @@ void UIScrollView::ScrollToPosition(const Vector2& pos, float32 timeSec)
     scrollVertical->ScrollToPosition(pos.y, timeSec);
 }
 
-const String UIScrollView::GetDelegateControlPath(const UIControl* rootControl) const
-{
-    return UIControlHelpers::GetControlPath(this, rootControl);
-}
-
 bool UIScrollView::IsAutoUpdate() const
 {
     return autoUpdate;

@@ -1,11 +1,26 @@
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
 #include "Classes/Export/Mitsuba/Private/MitsubaExporterTools.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/Application/REGlobal.h"
 #include "Scene/LandscapeThumbnails.h"
+
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
+
+
+#include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/Highlevel/Light.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Scene.h"
 
 namespace MitsubaExporterDetail
 {
@@ -305,7 +320,7 @@ void MitsubaExporterDetail::Exporter::ExportLight(DAVA::LightComponent* light)
         return;
     }
 
-    DAVA::Light::eType lightType = static_cast<Light::eType>(light->GetLightType());
+    DAVA::Light::eType lightType = static_cast<DAVA::Light::eType>(light->GetLightType());
     if (lightType == DAVA::Light::TYPE_POINT)
     {
         mitsuba::scope emitter("emitter", mitsuba::kType, DAVA::String("point"));
@@ -477,13 +492,13 @@ bool MitsubaExporterDetail::Exporter::MaterialIsValidForExport(DAVA::NMaterial* 
     if (material == nullptr)
         return false;
 
-    if (material->GetEffectiveFXName().find("Sky") != String::npos)
+    if (material->GetEffectiveFXName().find("Sky") != DAVA::String::npos)
         return false;
 
-    if (material->GetEffectiveFXName().find("Leaf") != String::npos)
+    if (material->GetEffectiveFXName().find("Leaf") != DAVA::String::npos)
         return false;
 
-    if (material->GetEffectiveFXName().find("Shadow") != String::npos)
+    if (material->GetEffectiveFXName().find("Shadow") != DAVA::String::npos)
         return false;
 
     return true;

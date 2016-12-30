@@ -16,6 +16,9 @@ void PrintUsage()
 {
     printf("Usage:\n");
 
+    printf("ResourcePacker {src_dir} -pvrTexToolFolder {path_to_PVRTexToolCLI} [options]\n\n");
+
+    printf("Options:\n");
     printf("\t-usage or --help to display this help\n");
     printf("\t-exo - extended output\n");
     printf("\t-v or --verbose - detailed output\n");
@@ -24,13 +27,12 @@ void PrintUsage()
     printf("\t-md5mode - only process md5 for output resources\n");
     printf("\t-useCache - use asset cache\n");
     printf("\t-ip - asset cache ip\n");
-    printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
     printf("\t-postifx - trailing part of texture name\n");
     printf("\t-output - output folder for .../Project/Data/Gfx/\n");
 
     printf("\n");
-    printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
+    printf("ResourcePacker [src_dir] - will pack resources from src_dir\n");
 }
 
 void DumpCommandLine(Engine& e)
@@ -74,23 +76,17 @@ void ProcessRecourcePacker(Engine& e)
         return;
     }
 
-    if (resourcePacker.rootDirectory.GetLastDirectoryName() != "DataSource")
+    FilePath pvrTexToolFolder = CommandLineParser::GetCommandParam("-pvrTexToolPath");
+    if (pvrTexToolFolder.IsEmpty())
     {
-        Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
+        Logger::Error("[FATAL ERROR: '-pvrTexToolPath' param should be specified]");
         return;
     }
 
-    if (commandLine.size() < 3)
-    {
-        Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");
-        return;
-    }
+    pvrTexToolFolder.MakeDirectoryPathname();
+    const String pvrTexToolName = "PVRTexToolCLI";
 
-    auto toolFolderPath = resourcePacker.rootDirectory + (commandLine[2] + "/");
-    String pvrTexToolName = "PVRTexToolCLI";
-    String cacheToolName = "AssetCacheClient";
-
-    PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
+    PVRConverter::Instance()->SetPVRTexTool(pvrTexToolFolder + pvrTexToolName);
 
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");

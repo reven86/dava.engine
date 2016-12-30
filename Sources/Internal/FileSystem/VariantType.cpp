@@ -10,6 +10,7 @@
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Base/Meta.h"
 #include "Math/Color.h"
 #include "Base/FastName.h"
@@ -148,7 +149,7 @@ VariantType::VariantType(const String& value)
 VariantType::VariantType(const WideString& value)
     : pointerValue(nullptr)
 {
-    SetWideString(value);
+    SetString(UTF8Utils::EncodeToUTF8(value));
 }
 
 VariantType::VariantType(const uint8* _array, int32 arraySizeInBytes)
@@ -317,8 +318,8 @@ void VariantType::SetString(const String& value)
 void VariantType::SetWideString(const WideString& value)
 {
     ReleasePointer();
-    type = TYPE_WIDE_STRING;
-    wideStringValue = new WideString(value);
+    type = TYPE_STRING;
+    stringValue = new String(UTF8Utils::EncodeToUTF8(value));
 }
 
 void VariantType::SetByteArray(const uint8* array, int32 arraySizeInBytes)
@@ -634,10 +635,14 @@ const String& VariantType::AsString() const
     return *stringValue;
 }
 
-const WideString& VariantType::AsWideString() const
+WideString VariantType::AsWideString() const
 {
-    DVASSERT(type == TYPE_WIDE_STRING);
-    return *wideStringValue;
+    DVASSERT(type == TYPE_STRING);
+    if (type == TYPE_STRING)
+    {
+        return UTF8Utils::EncodeToWideString(*stringValue);
+    }
+    return L""; // no warning
 }
 
 const uint8* VariantType::AsByteArray() const
@@ -1161,6 +1166,11 @@ bool VariantType::Read(File* fp)
             }
             (*wideStringValue)[k] = c;
         }
+        // convert into utf8 string
+        String* str = new String(UTF8Utils::EncodeToUTF8(*wideStringValue));
+        delete wideStringValue;
+        stringValue = str;
+        type = TYPE_STRING;
     }
     break;
     case TYPE_BYTE_ARRAY:

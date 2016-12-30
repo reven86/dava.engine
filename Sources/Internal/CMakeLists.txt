@@ -100,8 +100,6 @@ set( UNITY_IGNORE_LIST              "Internal/Autotesting"
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                    "Notification/LocalNotificationIOS.cpp"
-                                    "Notification/LocalNotificationMac.cpp"
                                     "Concurrency/ThreadPosix.cpp"
                                     "Render/Texture.cpp" 
                                     "Render/RHI/GLES2"

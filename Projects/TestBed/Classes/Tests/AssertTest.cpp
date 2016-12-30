@@ -14,7 +14,7 @@ void AssertTest::LoadResources()
 
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/AssertTestScreen.yaml", &pkgBuilder);
-    DAVA::UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
+    DAVA::UIControl* dialog = pkgBuilder.GetPackage()->GetControl("MainFrame");
     dialog->SetSize(DAVA::Vector2(500, 500));
     AddControl(dialog);
 

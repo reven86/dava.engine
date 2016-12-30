@@ -120,6 +120,7 @@ Item {
                                 if(checked && localConfiguration) {
                                     localConfiguration["currentPlatform"] = index;
                                     listModel_localOptions.clear();
+                                    localConfiguration["currentOptions"] = [];
                                     var localObject = localConfiguration["platforms"][index];
                                     var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
                                     if(options && Array.isArray(options)) {

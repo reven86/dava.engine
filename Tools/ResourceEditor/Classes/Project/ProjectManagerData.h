@@ -8,7 +8,6 @@
 #include <QString>
 #include <QVector>
 
-class FileSystemCache;
 class SpritesPackerModule;
 class EditorConfig;
 class ProjectManagerData : public DAVA::TArc::DataNode
@@ -36,15 +35,14 @@ public:
     const DAVA::FilePath& GetProjectPath() const;
     DAVA::FilePath GetDataPath() const;
     DAVA::FilePath GetDataSourcePath() const;
+    DAVA::FilePath GetDataSource3DPath() const;
     DAVA::FilePath GetParticlesConfigPath() const;
-    DAVA::FilePath GetParticlesDataPath() const;
-    DAVA::FilePath GetWorkspacePath() const;
+    DAVA::FilePath GetParticlesGfxPath() const;
 
     const QVector<AvailableMaterialTemplate>& GetAvailableMaterialTemplates() const;
     const QVector<AvailableMaterialQuality>& GetAvailableMaterialQualities() const;
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
-    const FileSystemCache* GetDataSourceSceneFiles() const;
     const EditorConfig* GetEditorConfig() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
@@ -53,7 +51,6 @@ public:
 
 private:
     friend class ProjectManagerModule;
-    std::unique_ptr<FileSystemCache> dataSourceSceneFiles;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::unique_ptr<EditorConfig> editorConfig;
 

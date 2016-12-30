@@ -14,14 +14,6 @@ SceneGridSystem::SceneGridSystem(DAVA::Scene* scene)
 {
 }
 
-SceneGridSystem::~SceneGridSystem()
-{
-}
-
-void SceneGridSystem::Process(float timeElapsed)
-{
-}
-
 void SceneGridSystem::Draw()
 {
     const DAVA::float32 gridStep = SettingsManager::GetValue(Settings::Scene_GridStep).AsFloat();

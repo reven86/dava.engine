@@ -21,6 +21,7 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 
 #include "QtTools/FileDialogs/FindFileDialog.h"
+#include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "Engine/EngineContext.h"
 #include "Reflection/ReflectedType.h"
@@ -38,6 +39,7 @@
 #include <QtGlobal>
 #include <QUrl>
 #include <QMimeData>
+#include <QActionGroup>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -60,6 +62,10 @@ public:
 };
 }
 
+//to use std::unique_ptr<FileSystemCache> sceneFilesCache with forward declaration
+SceneManagerModule::SceneManagerModule() = default;
+SceneManagerModule::~SceneManagerModule() = default;
+
 void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
     DAVA::Renderer::SetDesiredFPS(60);
@@ -77,7 +83,7 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     }
 }
 
-bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+bool SceneManagerModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     return false;
 }
@@ -189,6 +195,9 @@ void SceneManagerModule::PostInit()
 {
     using namespace DAVA::TArc;
 
+    QStringList extensions = { "sc2" };
+    sceneFilesCache.reset(new FileSystemCache(extensions));
+
     ContextAccessor* accessor = GetAccessor();
     accessor->GetGlobalContext()->CreateData(std::make_unique<SceneManagerModuleDetail::TexturesGPUData>());
 
@@ -220,6 +229,12 @@ void SceneManagerModule::PostInit()
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePathPropertyName);
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnScenePathChanged));
     }
+    {
+        DAVA::TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
+        fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
+        fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
+    }
 
     RecentMenuItems::Params params;
     params.accessor = accessor;
@@ -248,7 +263,6 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     using namespace DAVA::TArc;
 
     ContextAccessor* accessor = GetAccessor();
-    DataContext* context = accessor->GetGlobalContext();
 
     DAVA::RenderWidget* engineRenderWidget = GetContextManager()->GetRenderWidget();
     renderWidget = new SceneRenderWidget(accessor, engineRenderWidget, this);
@@ -333,10 +347,22 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
+
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
-            return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
-        });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [this](const DAVA::Any& value) -> DAVA::Any
+                                         {
+                                             bool projectIsOpened = value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
+                                             if (projectIsOpened)
+                                             {
+                                                 ProjectManagerData* projectData = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
+                                                 DVASSERT(projectData != nullptr);
+
+                                                 DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
+                                                 return fileSystem->Exists(projectData->GetDataSourcePath());
+                                             }
+
+                                             return false;
+                                         });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::OpenSceneQuckly, this));
 
@@ -475,19 +501,20 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
     // GPU
 
     // View/GPU action
-    {
-        QtAction* action = new QtAction(accessor, "GPU");
+    QtAction* actionGPU = new QtAction(accessor, "GPU");
 
-        FieldDescriptor descriptor;
-        descriptor.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        descriptor.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, descriptor, [](const DAVA::Any& v) {
-            return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
-        });
+    FieldDescriptor descriptorGPU;
+    descriptorGPU.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+    descriptorGPU.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+    actionGPU->SetStateUpdationFunction(QtAction::Enabled, descriptorGPU, [](const DAVA::Any& v) {
+        return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
+    });
 
-        ActionPlacementInfo placement(CreateMenuPoint("View", InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
-        ui->AddAction(REGlobal::MainWindowKey, placement, action);
-    }
+    ActionPlacementInfo placementGPU(CreateMenuPoint("View", InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+    ui->AddAction(REGlobal::MainWindowKey, placementGPU, actionGPU);
+
+    QActionGroup* actionGroup = new QActionGroup(actionGPU);
+    actionGroup->setExclusive(true);
 
     DAVA::Vector<QAction*> gpuFormatActions;
     ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << "View"
@@ -496,6 +523,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
     auto createGpuAction = [&](DAVA::eGPUFamily gpu)
     {
         QtAction* action = new QtAction(accessor, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu), nullptr);
+        actionGroup->addAction(action);
 
         FieldDescriptor enabledFieldDescr;
         enabledFieldDescr.fieldName = DAVA::FastName(SceneData::sceneLandscapeToolsPropertyName);
@@ -628,7 +656,7 @@ void SceneManagerModule::OpenScene()
     DVASSERT(data != nullptr);
 
     FileDialogParams params;
-    params.dir = QString::fromStdString(data->GetDataSourcePath().GetAbsolutePathname());
+    params.dir = QString::fromStdString(data->GetDataSource3DPath().GetAbsolutePathname());
     params.filters = QStringLiteral("DAVA Scene V2 (*.sc2)");
     params.title = QStringLiteral("Open scene file");
 
@@ -638,13 +666,17 @@ void SceneManagerModule::OpenScene()
 
 void SceneManagerModule::OpenSceneQuckly()
 {
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    DVASSERT(data != nullptr);
     /// TODO GetFilePath should take UI interface and create widget through it
-    QString path = FindFileDialog::GetFilePath(data->GetDataSourceSceneFiles(), "sc2", GetUI()->GetWindow(REGlobal::MainWindowKey));
-    if (!path.isEmpty())
+    DVASSERT(sceneFilesCache);
+
+    DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
+    if (fileSystem->Exists(cachedPath))
     {
-        OpenSceneByPath(DAVA::FilePath(path.toStdString()));
+        QString path = FindFileDialog::GetFilePath(sceneFilesCache.get(), "sc2", GetUI()->GetWindow(REGlobal::MainWindowKey));
+        if (!path.isEmpty())
+        {
+            OpenSceneByPath(DAVA::FilePath(path.toStdString()));
+        }
     }
 }
 
@@ -995,6 +1027,38 @@ void SceneManagerModule::OnScenePathChanged(const DAVA::Any& scenePath)
     UpdateTabTitle(ctx->GetID());
 }
 
+void SceneManagerModule::OnProjectPathChanged(const DAVA::Any& projectPath)
+{
+    DVASSERT(sceneFilesCache);
+
+    DAVA::TArc::ContextAccessor* accessor = GetAccessor();
+
+    DAVA::FileSystem* fileSystem = accessor->GetEngineContext()->fileSystem;
+    if (fileSystem->Exists(cachedPath))
+    {
+        sceneFilesCache->UntrackDirectory(QString::fromStdString(cachedPath.GetAbsolutePathname()));
+    }
+
+    cachedPath = "";
+
+    if (projectPath.CanCast<DAVA::FilePath>())
+    {
+        DAVA::FilePath path = projectPath.Cast<DAVA::FilePath>();
+        if (path.IsEmpty() == false)
+        {
+            ProjectManagerData* projectData = accessor->GetGlobalContext()->GetData<ProjectManagerData>();
+            DVASSERT(projectData != nullptr);
+
+            cachedPath = projectData->GetDataSource3DPath();
+        }
+    }
+
+    if (fileSystem->Exists(cachedPath))
+    {
+        sceneFilesCache->TrackDirectory(QString::fromStdString(cachedPath.GetAbsolutePathname()));
+    }
+}
+
 bool SceneManagerModule::OnCloseSceneRequest(DAVA::uint64 id)
 {
     return CloseSceneImpl(id, true);
@@ -1243,7 +1307,7 @@ DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<SceneEdit
     {
         ProjectManagerData* data = accessor->GetGlobalContext()->GetData<ProjectManagerData>();
         DVASSERT(data != nullptr);
-        DAVA::FilePath dataSourcePath = data->GetDataSourcePath();
+        DAVA::FilePath dataSourcePath = data->GetDataSource3DPath();
         initialPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
     }
 

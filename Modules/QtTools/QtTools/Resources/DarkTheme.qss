@@ -16,6 +16,29 @@ QTabBar::close-button::pressed
     image: url(:/QtTools/Icons/close-16.png);
 }
 
+QTabBar::scroller
+{
+    width: 20px;
+}
+
+QTabBar QToolButton:disabled[accessibleName="Scroll Right"]
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #404040, stop: 1 #2c2c2c);
+}
+
+QTabBar QToolButton:disabled[accessibleName="Scroll Left"]
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #404040, stop: 1 #2c2c2c);
+}
+
 QDockWidget::title { background: #454545; }
 QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }
 QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }
@@ -24,3 +47,42 @@ QCheckBox::indicator:checked{ image: url(:/QtTools/Icons/checked-checkbox.png); 
 QCheckBox::indicator:unchecked{ image: url(:/QtTools/Icons/unchecked-checkbox.png); }
 QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }
 QAbstractItemView::indicator::unchecked { image: url(:/QtTools/Icons/unchecked-checkbox.png); }
+
+QToolButton[popupMode="1"]
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #505050, stop: 1 #3c3c3c);
+}
+QToolButton[popupMode="1"]
+{ 
+    padding-right: 20px;
+}
+QToolButton[popupMode="1"]:pressed 
+{
+    background-color: #353535;
+}
+QToolButton[popupMode="1"]::menu-button
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #505050, stop: 1 #3c3c3c);
+    width: 16px;
+}
+QToolButton[popupMode="1"]::menu-arrow
+{
+    image: url(:/QtTools/Icons/dark-downarrow.png);
+}
+QToolButton[popupMode="1"]::menu-arrow:disabled
+{
+    image: url(:/QtTools/Icons/dark-downarrow-disabled.png);
+}
+QToolButton[popupMode="1"]::menu-arrow:open
+{
+    top: 1px; left: 1px;
+}

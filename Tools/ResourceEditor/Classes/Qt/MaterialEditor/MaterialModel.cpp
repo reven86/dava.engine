@@ -2,7 +2,8 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
+#include "Classes/Selection/Selection.h"
 
 #include "Main/QtUtils.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -197,7 +198,7 @@ bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableGroup* 
     DAVA::NMaterial* material = item->GetMaterial();
     DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
-    entity = curScene->selectionSystem->GetSelectableEntity(entity);
+    entity = Selection::GetSelectableEntity(entity);
     bool shouldSelect = group->ContainsObject(entity);
     item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
 
@@ -268,7 +269,7 @@ void MaterialModel::Sync()
             }
         }
 
-        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = Selection::GetSelection();
         SetSelection(&selection);
     }
 }

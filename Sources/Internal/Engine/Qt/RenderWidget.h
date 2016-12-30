@@ -20,7 +20,6 @@ public:
     {
     public:
         virtual void OnCreated() = 0;
-        virtual void OnInitialized() = 0;
         virtual bool OnUserCloseRequest() = 0;
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
@@ -114,14 +113,13 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnCreated();
-    Q_SLOT void OnInitialize();
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void OnSceneGraphInvalidated();
     Q_SLOT void OnClientDelegateDestroyed();
 
     void ActivateRendering();
-    bool IsInitialized();
+    bool IsInitialized() const;
 
 private:
     IWindowDelegate* widgetDelegate = nullptr;

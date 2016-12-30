@@ -4,8 +4,7 @@
 #include "Platform/DateTime.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
-#include "Utils/Utils.h"
-#include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
@@ -46,7 +45,7 @@ DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
             data.get()->resize(dataSize);
 
             auto read = file->Read(data.get()->data(), dataSize);
-            DVASSERT(read == dataSize);
+            DVVERIFY(read == dataSize);
 
             value.Add(path.GetFilename(), data);
         }
@@ -58,10 +57,10 @@ DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
     }
 
     AssetCache::CachedItemValue::Description description;
-    description.machineName = WStringToString(DeviceInfo::GetName());
+    description.machineName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
 
     DateTime timeNow = DateTime::Now();
-    description.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    description.creationDate = UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
     description.comment = "Asset Cache Client";
 
     value.SetDescription(description);

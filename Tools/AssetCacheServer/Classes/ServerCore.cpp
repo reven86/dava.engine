@@ -2,6 +2,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 #include <QTimer>
 
@@ -18,7 +19,7 @@ ServerCore::ServerCore()
     clientProxy.AddListener(this);
     httpServer.SetListener(this);
 
-    DAVA::String serverName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
+    DAVA::String serverName = DAVA::UTF8Utils::EncodeToUTF8(DAVA::DeviceInfo::GetName());
     serverLogics.Init(&serverProxy, serverName, &clientProxy, &dataBase);
 
     updateTimer = new QTimer(this);

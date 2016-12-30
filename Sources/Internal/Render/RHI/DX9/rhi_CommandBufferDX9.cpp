@@ -508,6 +508,8 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
+                _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
                 if ((color0.texture != rhi::InvalidHandle) || passCfg.UsingMSAA())
                 {

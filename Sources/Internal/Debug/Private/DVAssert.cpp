@@ -4,6 +4,8 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 
+#include "Logger/Logger.h"
+
 #include <csignal>
 
 namespace DAVA
@@ -61,6 +63,7 @@ void RaiseSigTrap()
 
 static int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
 {
+    using namespace DAVA;
     using namespace DAVA::Assert;
 
     switch (behaviour)
@@ -75,6 +78,7 @@ static int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
         return 2;
 
     default:
+        Logger::Error("Unknown behaviour for DVASSERT, fallback to -1");
         return -1;
     }
 }

@@ -20,6 +20,27 @@
 #include <gmock/gmock.h>
 #include "Base/Any.h"
 
+namespace PMT
+{
+class SceneManagerMockModule : public DAVA::TArc::ClientModule
+{
+protected:
+    void PostInit() override
+    {
+        RegisterOperation(REGlobal::CreateNewSceneOperation.ID, this, &SceneManagerMockModule::CreateNewSceneMock);
+        RegisterOperation(REGlobal::CloseAllScenesOperation.ID, this, &SceneManagerMockModule::CloseAllScenesMock);
+    }
+
+    void CreateNewSceneMock()
+    {
+    }
+
+    void CloseAllScenesMock(bool)
+    {
+    }
+};
+}
+
 DAVA_TARC_TESTCLASS(ProjectManagerTests)
 {
     const DAVA::String PROPS_KEY = "ProjectManagerProperties";
@@ -130,7 +151,6 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         QMenuBar* menu = mainWnd->menuBar();
         QMenu* fileMenu = menu->findChild<QMenu*>("File");
-        QRect fileMenuRect = fileMenu->rect();
 
         QAction* closeProjectAction = nullptr;
         QList<QAction*> actions = fileMenu->actions();
@@ -150,5 +170,6 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
     BEGIN_TESTED_MODULES()
     DECLARE_TESTED_MODULE(ProjectManagerModule)
     DECLARE_TESTED_MODULE(LaunchModule)
+    DECLARE_TESTED_MODULE(PMT::SceneManagerMockModule)
     END_TESTED_MODULES()
 };

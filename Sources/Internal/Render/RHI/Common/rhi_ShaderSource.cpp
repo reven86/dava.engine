@@ -2005,7 +2005,6 @@ void ShaderSourceCache::Load(const char* fileName)
             for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
             {
                 std::string str;
-                uint32 hash = 0;
                 READ_CHECK(ReadS0(file, &str));
                 e->uid = FastName(str.c_str());
                 READ_CHECK(ReadUI4(file, &e->api));

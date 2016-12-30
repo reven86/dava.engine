@@ -33,7 +33,6 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , orientation(requiredOrientation)
     , scrollContainer(NULL)
     , scroll(NULL)
-    , aggregatorPath(FilePath())
 {
     InitAfterYaml();
 }
@@ -713,18 +712,7 @@ void UIList::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
-    aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
-}
-
-const FilePath& UIList::GetAggregatorPath()
-{
-    return aggregatorPath;
-}
-
-void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
-{
-    this->aggregatorPath = aggregatorPath;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)
@@ -750,10 +738,5 @@ void UIList::OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition
 void UIList::ScrollToPosition(float32 position, float32 timeSec /*= 0.3f*/)
 {
     scroll->ScrollToPosition(-position);
-}
-
-const String UIList::GetDelegateControlPath(const UIControl* rootControl) const
-{
-    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 };
