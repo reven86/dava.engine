@@ -19,7 +19,9 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void(size_
     , dataCallback(dataReadyCallback)
     , tcpSocket(ioLoop)
 {
-    DVASSERT(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
+    const bool toStringResult = endpoint.Address().ToString(endpAsString.data(), endpAsString.size());
+    DVASSERT(toStringResult);
+
     DVASSERT(true == endpoint.Address().IsMulticast());
     DVASSERT(loop != nullptr && dataCallback != nullptr);
 }
