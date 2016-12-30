@@ -1,9 +1,8 @@
-#ifndef __SCENE_MANAGER_H__
-#define __SCENE_MANAGER_H__
+#pragma once
 
 #include <QObject>
 
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
@@ -39,8 +38,6 @@ signals:
     // Quality
     void QualityChanged();
 
-    // entities
-    void SelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     // mouse
     void MouseOver(SceneEditor2* scene, const SelectableGroup* objects);
     void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
@@ -109,11 +106,6 @@ public:
     void EmitStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     {
         emit StructureChanged(scene, parent);
-    }
-
-    void EmitSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
-    {
-        emit SelectionChanged(scene, selected, deselected);
     }
 
     void EmitModifyStatusChanged(SceneEditor2* scene, bool modified)
@@ -196,5 +188,3 @@ public:
         emit SnapToLandscapeChanged(scene, isSpanToLandscape);
     }
 };
-
-#endif // __SCENE_MANAGER_H__

@@ -24,10 +24,9 @@ TextureConvertor::TextureConvertor()
     : jobIdCounter(1)
     , convertJobQueueSize(0)
     , waitingComletion(0)
-    , waitDialog(NULL)
-    , watcherConverted(DAVA::JobManager::Instance())
-    , watcherOriginal(DAVA::JobManager::Instance())
     , watcherThumbnail(DAVA::JobManager::Instance())
+    , watcherOriginal(DAVA::JobManager::Instance())
+    , watcherConverted(DAVA::JobManager::Instance())
 {
     // slots will be called in connector(this) thread
     watcherConverted.Init(DAVA::MakeFunction(this, &TextureConvertor::GetConvertedThread), DAVA::MakeFunction(this, &TextureConvertor::ThreadConvertedFinished));
@@ -560,8 +559,8 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 
                 if (resultImages.size() < DAVA::Texture::CUBE_FACE_COUNT)
                 {
-                    int imagesToAdd = DAVA::Texture::CUBE_FACE_COUNT - resultImages.size();
-                    for (int i = 0; i < imagesToAdd; ++i)
+                    DAVA::uint32 imagesToAdd = DAVA::Texture::CUBE_FACE_COUNT - static_cast<DAVA::uint32>(resultImages.size());
+                    for (DAVA::uint32 i = 0; i < imagesToAdd; ++i)
                     {
                         resultImages.push_back(NULL);
                     }

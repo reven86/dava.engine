@@ -37,6 +37,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -261,13 +262,18 @@ void EngineBackend::RunConsole()
 
 void EngineBackend::OnGameLoopStarted()
 {
+    Logger::Info("EngineBackend::OnGameLoopStarted: enter");
     SystemTimer::Init();
 
     engine->gameLoopStarted.Emit();
+
+    Logger::Info("EngineBackend::OnGameLoopStarted: leave");
 }
 
 void EngineBackend::OnGameLoopStopped()
 {
+    Logger::Info("EngineBackend::OnGameLoopStopped: enter");
+
     DVASSERT(justCreatedWindows.empty());
 
     for (Window* w : dyingWindows)
@@ -278,10 +284,14 @@ void EngineBackend::OnGameLoopStopped()
 
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+
+    Logger::Info("EngineBackend::OnGameLoopStopped: leave");
 }
 
 void EngineBackend::OnEngineCleanup()
 {
+    Logger::Info("EngineBackend::OnEngineCleanup: enter");
+
     engine->cleanup.Emit();
 
     if (ImGui::IsInitialized())
@@ -298,6 +308,8 @@ void EngineBackend::OnEngineCleanup()
     context = nullptr;
     dispatcher = nullptr;
     platformCore = nullptr;
+
+    Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
 
 void EngineBackend::DoEvents()
@@ -424,6 +436,8 @@ void EngineBackend::OnWindowCreated(Window* window)
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
+    Logger::Info("EngineBackend::OnWindowDestroyed: enter");
+
     engine->windowDestroyed.Emit(window);
 
     // Remove window from alive window list and place it into dying window list to delete later
@@ -444,6 +458,8 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     { // Initiate app termination if primary window is destroyed, except embedded mode
         PostAppTerminate(false);
     }
+
+    Logger::Info("EngineBackend::OnWindowDestroyed: leave");
 }
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
@@ -511,6 +527,8 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     // usually means simply to exit game loop.
     // This sequence is invented for unification purpose.
 
+    Logger::Info("EngineBackend::HandleAppTerminate: triggeredBySystem=%u", e.terminateEvent.triggeredBySystem);
+
     if (e.terminateEvent.triggeredBySystem != 0)
     {
         appIsTerminating = true;
@@ -538,11 +556,15 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
 {
     if (!appIsSuspended)
     {
+        Logger::Info("EngineBackend::HandleAppSuspended: enter");
+
         appIsSuspended = true;
         if (Renderer::IsInitialized())
             rhi::SuspendRendering();
         rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
+
+        Logger::Info("EngineBackend::HandleAppSuspended: leave");
     }
 }
 
@@ -550,10 +572,14 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
 {
     if (appIsSuspended)
     {
+        Logger::Info("EngineBackend::HandleAppResumed: enter");
+
         appIsSuspended = false;
         if (Renderer::IsInitialized())
             rhi::ResumeRendering();
         engine->resumed.Emit();
+
+        Logger::Info("EngineBackend::HandleAppResumed: leave");
     }
 }
 
@@ -764,6 +790,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
+    context->pluginManager = new PluginManager(GetEngine());
     context->analyticsCore = new Analytics::Core;
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -796,6 +823,11 @@ void EngineBackend::DestroySubsystems()
         context->moduleManager->ShutdownModules();
         delete context->moduleManager;
         context->moduleManager = nullptr;
+    }
+    if (context->pluginManager != nullptr)
+    {
+        context->pluginManager->UnloadPlugins();
+        delete context->pluginManager;
     }
     if (context->jobManager != nullptr)
     {

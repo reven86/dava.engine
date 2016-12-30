@@ -100,7 +100,7 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
 
     // actually delete bastards
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    sceneEditor->BeginBatch("Remove entities", objects.size());
+    sceneEditor->BeginBatch("Remove entities", static_cast<DAVA::uint32>(objects.size()));
     while (!queue.empty())
     {
         StructSystemDetails::SortEntity sortEntity = queue.top();
@@ -145,7 +145,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle emitter", emitters.size());
+    sceneEditor->BeginBatch("Move particle emitter", static_cast<DAVA::uint32>(emitters.size()));
     for (size_t i = 0; i < emitters.size(); ++i)
     {
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++)));
@@ -160,7 +160,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle layers", layers.size());
+    sceneEditor->BeginBatch("Move particle layers", static_cast<DAVA::uint32>(layers.size()));
     for (size_t i = 0; i < layers.size(); ++i)
     {
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore)));
@@ -175,7 +175,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle force", forces.size());
+    sceneEditor->BeginBatch("Move particle force", static_cast<DAVA::uint32>(forces.size()));
     for (size_t i = 0; i < forces.size(); ++i)
     {
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer)));
@@ -271,7 +271,7 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
                 InternalMapping::iterator it = mapping.begin();
                 InternalMapping::iterator end = mapping.end();
 
-                sceneEditor->BeginBatch("Reload model", mapping.size());
+                sceneEditor->BeginBatch("Reload model", static_cast<DAVA::uint32>(mapping.size()));
 
                 for (; it != end; ++it)
                 {

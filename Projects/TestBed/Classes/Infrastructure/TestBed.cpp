@@ -28,6 +28,7 @@
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
 #include "Tests/ScriptingTest.h"
+#include "Tests/SamplePluginTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
@@ -290,6 +291,13 @@ void TestBed::RegisterTests()
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+    new SamplePluginTest(*this);
+
+#endif
+
     //$UNITTEST_CTOR
 }
 

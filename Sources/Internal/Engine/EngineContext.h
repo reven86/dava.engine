@@ -30,6 +30,7 @@ class LocalNotificationController;
 class IPackManager;
 class AssetsManagerAndroid;
 class ModuleManager;
+class PluginManager;
 class EngineSettings;
 
 class DeviceManager;
@@ -75,6 +76,8 @@ public:
     LocalNotificationController* localNotificationController = nullptr;
 
     ModuleManager* moduleManager = nullptr;
+    PluginManager* pluginManager = nullptr;
+
     IPackManager* packManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 

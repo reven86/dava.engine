@@ -4,7 +4,6 @@
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CameraSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/AlignedAllocator.h"
 

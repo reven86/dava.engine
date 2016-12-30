@@ -3,11 +3,13 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/Engine.h"
 #include "Engine/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "UI/UIScreenManager.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -143,6 +145,14 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::OnFrameTimer()
 {
+    // Yuri Coder, 2013/02/06. This flag can be used to block drawView() call
+    // in case if ASSERTion happened. This is introduced to do not stuck on the RenderManager::Lock()
+    // mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
+    // mutex might be already locked so we'll got a deadlock.
+    // Return to this code after RenderManager mutex will be removed.
+    if (GetEngineContext()->uiScreenManager->IsDrawBlocked())
+        return;
+
     int32 fps = core->OnFrame();
     if (fps <= 0)
     {
@@ -310,12 +320,19 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_WILL_TERMINATE:
             l->applicationWillTerminate();
             break;
+        case ON_DID_RECEIVE_LOCAL_NOTIFICATION:
+            l->didReceiveLocalNotification(static_cast<UILocalNotification*>(arg1));
+            break;
         default:
             break;
         }
     }
 }
 
+void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UILocalNotification* notification)
+{
+    NotifyListeners(ON_DID_RECEIVE_LOCAL_NOTIFICATION, notification, nullptr);
+}
 } // namespace Private
 } // namespace DAVA
 

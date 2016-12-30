@@ -8,9 +8,6 @@
 #include "Settings/SettingsManager.h"
 #include "Command/Command.h"
 
-//TODO: move all includes to .cpp file
-#include "Scene/System/GridSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
 #include "Scene/System/HeightmapEditorSystem.h"
@@ -23,14 +20,12 @@
 #include "Scene/System/TextDrawSystem.h"
 #include "Scene/System/DebugDrawSystem.h"
 #include "Scene/System/BeastSystem.h"
-#include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
 #include "Scene/System/WayEditSystem.h"
 #include "Scene/System/PathSystem.h"
 
 #include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
-#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
 #include "Utils/SceneExporter/SceneExporter.h"
@@ -48,6 +43,7 @@ class EditorVegetationSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 class RECommandStack;
+class EditorSceneSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -71,9 +67,7 @@ public:
     // editor systems
     SceneCameraSystem* cameraSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;
-    SceneGridSystem* gridSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
-    SceneSelectionSystem* selectionSystem = nullptr;
     EntityModificationSystem* modifSystem = nullptr;
     LandscapeEditorDrawSystem* landscapeEditorDrawSystem = nullptr;
     HeightmapEditorSystem* heightmapEditorSystem = nullptr;
@@ -86,20 +80,20 @@ public:
     TextDrawSystem* textDrawSystem = nullptr;
     DebugDrawSystem* debugDrawSystem = nullptr;
     BeastSystem* beastSystem = nullptr;
-    OwnersSignatureSystem* ownersSignatureSystem = nullptr;
     DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem = nullptr;
     EditorMaterialSystem* materialSystem = nullptr;
     EditorLODSystem* editorLODSystem = nullptr;
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
     EditorVegetationSystem* editorVegetationSystem = nullptr;
-
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
     DAVA::RotationControllerSystem* rotationSystem = nullptr;
-    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
-
     WayEditSystem* wayEditSystem = nullptr;
     PathSystem* pathSystem = nullptr;
+
+    //to manage editor systems adding/deleting
+    void AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 componentFlags, DAVA::uint32 processFlags = 0, DAVA::SceneSystem* insertBeforeSceneForProcess = nullptr, DAVA::SceneSystem* insertBeforeSceneForInput = nullptr) override;
+    void RemoveSystem(DAVA::SceneSystem* sceneSystem) override;
 
     // save/load
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
@@ -172,14 +166,6 @@ public:
 
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
-    INTROSPECTION(SceneEditor2,
-                  MEMBER(cameraSystem, "CameraSystem", DAVA::I_VIEW | DAVA::I_EDIT)
-                  MEMBER(collisionSystem, "Collision System", DAVA::I_VIEW | DAVA::I_EDIT)
-                  MEMBER(selectionSystem, "Selection System", DAVA::I_VIEW | DAVA::I_EDIT)
-                  MEMBER(gridSystem, "GridSystem", DAVA::I_VIEW | DAVA::I_EDIT)
-                  MEMBER(materialSystem, "Material System", DAVA::I_VIEW | DAVA::I_EDIT)
-                  )
-
 protected:
     bool isLoaded = false;
     bool isHUDVisible = true;
@@ -188,6 +174,7 @@ protected:
     std::unique_ptr<RECommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
+    DAVA::Vector<EditorSceneSystem*> editorSystems;
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
     void EditorCommandProcess(const RECommandNotificationObject& commandNotification);

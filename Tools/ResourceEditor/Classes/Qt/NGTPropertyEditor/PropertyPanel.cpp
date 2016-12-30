@@ -159,4 +159,4 @@ void PropertyPanel::EndBatch()
 void PropertyPanel::onLoaded(wgt::IView* view)
 {
 }
-#endif 0
+#endif //0

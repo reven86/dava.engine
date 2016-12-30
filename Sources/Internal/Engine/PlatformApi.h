@@ -107,6 +107,7 @@ DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSData);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSError);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSView);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(NSUserNotification);
 
 namespace DAVA
 {
@@ -137,11 +138,13 @@ struct NSApplicationDelegateListener
     virtual void didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo) {}
     virtual void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken) {}
     virtual void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error) {}
+    virtual void didActivateNotification(NSUserNotification* notification) {}
     // clang-format on
 };
 
 void AddNSView(Window* targetWindow, NSView* nsview);
 void RemoveNSView(Window* targetWindow, NSView* nsview);
+void PrimaryWindowDeminiaturize();
 
 /**
     \ingroup engine_mac
@@ -180,6 +183,7 @@ DAVA_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIView);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIImage);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(UILocalNotification);
 
 namespace DAVA
 {
@@ -210,6 +214,7 @@ struct UIApplicationDelegateListener
     virtual void applicationWillEnterForeground() {}
     virtual void applicationDidEnterBackground() {}
     virtual void applicationWillTerminate() {}
+    virtual void didReceiveLocalNotification(UILocalNotification* notification) {}
     // clang-format on
 };
 
