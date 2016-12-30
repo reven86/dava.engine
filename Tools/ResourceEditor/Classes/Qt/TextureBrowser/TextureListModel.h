@@ -27,7 +27,7 @@ public:
     ~TextureListModel();
 
     void setScene(SceneEditor2* scene);
-    void setHighlight(const SelectableGroup* nodes);
+    void setHighlight(const SelectableGroup& selection);
     void setFilter(QString filter);
     void setFilterBySelectedNode(bool enabled);
     void setSortMode(TextureListModel::TextureListSortMode sortMode);

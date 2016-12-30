@@ -1,6 +1,6 @@
-#ifndef __WAYEDIT_COMMANDS_H__
-#define __WAYEDIT_COMMANDS_H__
+#pragma once
 
+#include "Commands2/RECommandIDs.h"
 #include "Commands2/Base/RECommand.h"
 
 class EnableWayEditCommand : public RECommand
@@ -32,5 +32,3 @@ public:
     {
     }
 };
-
-#endif // __WAYEDIT_COMMANDS_H__

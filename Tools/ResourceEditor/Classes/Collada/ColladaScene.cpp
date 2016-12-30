@@ -271,7 +271,7 @@ ColladaMeshInstance* ColladaScene::CreateMeshInstance(ColladaMesh* mesh, FCDGeom
                 }
                 else
                 {
-                    printf("\n[ERROR] no material for %ls in polygon group %s inside mesh %s\n",
+                    printf("\n[ERROR] no material for %ls in polygon group %ls inside mesh %s\n",
                            materialSemantic.c_str(), polygonMaterialSemantic.c_str(), mesh->name.c_str());
                 }
             }

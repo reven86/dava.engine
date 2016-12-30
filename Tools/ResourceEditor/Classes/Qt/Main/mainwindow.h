@@ -52,6 +52,7 @@ public:
     ~QtMainWindow();
 
     void OnRenderingInitialized();
+    void AfterInjectInit();
 
     void WaitStart(const QString& title, const QString& message, int min, int max);
     void WaitSetMessage(const QString& messsage);
@@ -80,7 +81,6 @@ public slots:
 
     void OnEditorGizmoToggle(bool show);
     void OnViewLightmapCanvas(bool show);
-    void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
     void OnEnableVisibilitySystemToggle(bool enabled);
     void OnRefreshVisibilitySystem();
@@ -196,7 +196,6 @@ private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);
@@ -266,5 +265,6 @@ private:
     DAVA::TArc::UI* tarcUI = nullptr;
     std::unique_ptr<DAVA::TArc::WaitHandle> waitDialog;
     DAVA::TArc::DataWrapper projectDataWrapper;
+    DAVA::TArc::DataWrapper selectionWrapper;
     QtDelayedExecutor delayedExecutor;
 };

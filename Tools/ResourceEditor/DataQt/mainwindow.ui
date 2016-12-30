@@ -222,7 +222,7 @@
     <addaction name="actionRemoveEntity"/>
     <addaction name="separator"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
+   <widget class="QMenu" name="Tools">
     <property name="title">
      <string>Tools</string>
     </property>
@@ -274,7 +274,7 @@
     <addaction name="actionEnableVisibilitySystem"/>
     <addaction name="separator"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="Edit">
     <property name="title">
      <string>Edit</string>
     </property>
@@ -295,15 +295,14 @@
     <addaction name="actionModifyPlaceOnLandscape"/>
     <addaction name="actionModifySnapToLandscape"/>
     <addaction name="separator"/>
-    <addaction name="actionOnSceneSelection"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="Help">
     <property name="title">
      <string>Help</string>
     </property>
     <addaction name="actionHelp"/>
    </widget>
-   <widget class="QMenu" name="menuScene">
+   <widget class="QMenu" name="Scene">
     <property name="title">
      <string>Scene</string>
     </property>
@@ -364,14 +363,14 @@
     <addaction name="separator"/>
     <addaction name="actionSnapCameraToLandscape"/>
    </widget>
-   <widget class="QMenu" name="menuQuality">
+   <widget class="QMenu" name="Quality">
     <property name="title">
      <string>Quality</string>
     </property>
     <addaction name="separator"/>
     <addaction name="actionCustomQuality"/>
    </widget>
-   <widget class="QMenu" name="menuDebug_Functions">
+   <widget class="QMenu" name="DebugFunctions">
     <property name="title">
      <string>Debug Functions</string>
     </property>
@@ -382,12 +381,6 @@
      <addaction name="actionDumpTextures"/>
      <addaction name="actionDumpSprites"/>
     </widget>
-    <widget class="QMenu" name="menuCrash_Produce">
-     <property name="title">
-      <string>Crash Produce</string>
-     </property>
-     <addaction name="actionGenerate_Assert"/>
-    </widget>
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
@@ -396,17 +389,16 @@
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
     <addaction name="actionToggleUseInstancing"/>
-    <addaction name="menuCrash_Produce"/>
    </widget>
    <addaction name="File"/>
-   <addaction name="menuEdit"/>
+   <addaction name="Edit"/>
    <addaction name="View"/>
-   <addaction name="menuQuality"/>
+   <addaction name="Quality"/>
    <addaction name="menuCreateNode"/>
-   <addaction name="menuScene"/>
-   <addaction name="menuTools"/>
-   <addaction name="menuHelp"/>
-   <addaction name="menuDebug_Functions"/>
+   <addaction name="Scene"/>
+   <addaction name="Tools"/>
+   <addaction name="Help"/>
+   <addaction name="DebugFunctions"/>
   </widget>
   <widget class="QDockWidget" name="dockParticleEditor">
    <property name="maximumSize">
@@ -1421,21 +1413,6 @@
    </property>
    <property name="shortcut">
     <string>F12</string>
-   </property>
-  </action>
-  <action name="actionOnSceneSelection">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/object_select.png</normaloff>:/QtIcons/object_select.png</iconset>
-   </property>
-   <property name="text">
-    <string>On Scene Selection</string>
    </property>
   </action>
   <action name="actionExpandSceneTree">

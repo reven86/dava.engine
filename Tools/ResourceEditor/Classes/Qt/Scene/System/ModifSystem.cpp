@@ -1,12 +1,11 @@
-#include "Qt/Scene/System/ModifSystem.h"
-#include "Qt/Scene/System/HoodSystem.h"
-#include "Qt/Scene/System/CameraSystem.h"
-#include "Qt/Scene/System/CollisionSystem.h"
-#include "Qt/Scene/System/SelectionSystem.h"
-#include "Qt/Scene/System/TextDrawSystem.h"
-#include "Qt/Scene/SceneSignals.h"
-
-#include "Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/System/ModifSystem.h"
+#include "Classes/Qt/Scene/System/HoodSystem.h"
+#include "Classes/Qt/Scene/System/CameraSystem.h"
+#include "Classes/Qt/Scene/System/CollisionSystem.h"
+#include "Classes/Qt/Scene/System/TextDrawSystem.h"
+#include "Classes/Qt/Scene/SceneSignals.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Selection/Selection.h"
 
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 
@@ -122,8 +121,7 @@ bool EntityModificationSystem::Input(DAVA::UIEvent* event)
     }
 
     // current selected entities
-    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
-    const SelectableGroup& selectedEntities = selectionSystem->GetSelection();
+    const SelectableGroup& selection = Selection::GetSelection();
 
     DAVA::Camera* camera = cameraSystem->GetCurCamera();
 
@@ -134,7 +132,7 @@ bool EntityModificationSystem::Input(DAVA::UIEvent* event)
         // can we start modification???
         if (ModifCanStartByMouse(transformableSelection))
         {
-            SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
+            SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selection);
 
             if (DAVA::UIEvent::Phase::BEGAN == event->phase)
             {
@@ -214,7 +212,7 @@ bool EntityModificationSystem::Input(DAVA::UIEvent* event)
                 }
 
                 // say to selection system, that selected items were modified
-                selectionSystem->CancelSelection();
+                Selection::CancelSelection();
 
                 // lock hood, so it wont process ui events, wont calc. scale depending on it current position
                 hoodSystem->LockScale(true);
@@ -605,28 +603,32 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3& newPos3d)
 
 DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
 {
-    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
-    Selectable::TransformPivot pivotPoint = selectionSystem->GetPivotPoint();
-
     DAVA::Vector2 rotateLength = newPos2d - modifStartPos2d;
     DAVA::float32 rotateForce = -(rotateNormal.DotProduct(rotateLength)) / 70.0f;
 
     for (EntityToModify& etm : modifEntities)
     {
         DAVA::Matrix4 rotateModification = DAVA::Matrix4::MakeRotation(rotateAround, rotateForce);
-        DAVA::Matrix4& toZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
-        DAVA::Matrix4& fromZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
+        DAVA::Matrix4& toZero = (curPivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
+        DAVA::Matrix4& fromZero = (curPivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
         etm.object.SetLocalTransform(etm.originalTransform * toZero * rotateModification * fromZero);
     }
 
     return rotateForce;
 }
 
+void EntityModificationSystem::SetPivotPoint(Selectable::TransformPivot pp)
+{
+    curPivotPoint = pp;
+}
+
+Selectable::TransformPivot EntityModificationSystem::GetPivotPoint() const
+{
+    return curPivotPoint;
+}
+
 DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
 {
-    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
-    Selectable::TransformPivot pivotPoint = selectionSystem->GetPivotPoint();
-
     DAVA::Vector2 scaleDir = (newPos2d - modifStartPos2d);
     DAVA::float32 scaleForce = 1.0f - (scaleDir.y / 70.0f);
 
@@ -636,8 +638,8 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
         {
             DAVA::Vector3 scaleVector(scaleForce, scaleForce, scaleForce);
             DAVA::Matrix4 scaleModification = DAVA::Matrix4::MakeScale(scaleVector);
-            DAVA::Matrix4& toZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
-            DAVA::Matrix4& fromZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
+            DAVA::Matrix4& toZero = (curPivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
+            DAVA::Matrix4& fromZero = (curPivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
             etm.object.SetLocalTransform(etm.originalTransform * toZero * scaleModification * fromZero);
         }
     }
@@ -875,7 +877,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                 break;
             }
 
-            sceneEditor->BeginBatch(commandMessage, entityList.size());
+            sceneEditor->BeginBatch(commandMessage, static_cast<DAVA::uint32>(entityList.size()));
 
             // bake render object
             sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new BakeGeometryCommand(ro, bakeTransform)));
@@ -914,11 +916,11 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
     else if (entity->GetChildrenCount() > 0) // just modify child entities
     {
         DAVA::Vector3 newPivotPos = DAVA::Vector3(0, 0, 0);
-        SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
 
         if (mode == BAKE_CENTER_PIVOT)
         {
-            DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+            SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
+            DAVA::AABBox3 bbox = collisionSystem->GetUntransformedBoundingBox(entity);
             DVASSERT(!bbox.IsEmpty());
             newPivotPos = bbox.GetCenter();
         }
@@ -964,7 +966,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
                     bool found = false;
                     DAVA::PolygonGroup* pg = enRenderObject->GetRenderBatch(j)->GetPolygonGroup();
 
-                    for (size_t k = 0; k < ro->GetRenderBatchCount(); ++k)
+                    for (DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
                     {
                         if (ro->GetRenderBatch(k)->GetPolygonGroup() == pg)
                         {
@@ -1147,14 +1149,13 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 void EntityModificationSystem::UpdateTransformableSelection() const
 {
     SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
-    SceneSelectionSystem* selectionSystem = sc->selectionSystem;
-    if (selectionSystem == nullptr)
+    SceneCollisionSystem* collisionSystem = sc->collisionSystem;
+    if (collisionSystem == nullptr)
     {
         return;
     }
 
-    const SelectableGroup& selection = selectionSystem->GetSelection();
-
+    const SelectableGroup& selection = Selection::GetSelection();
     if (selection != currentSelection)
     {
         currentSelection = selection;
@@ -1164,7 +1165,7 @@ void EntityModificationSystem::UpdateTransformableSelection() const
         {
             if (item.SupportsTransformType(transformType))
             {
-                transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
+                transformableSelection.Add(item.GetContainedObject(), collisionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
             }
         }
 
