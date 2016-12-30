@@ -1621,7 +1621,7 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                     };
                     if (timestamp)
                     {
-                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::GetAbsoluteMicros();
 
                         while (S_FALSE == disjointQuery->GetData(&disjoint, sizeof(bool), D3DGETDATA_FLUSH))
                         {

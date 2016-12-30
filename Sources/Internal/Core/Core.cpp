@@ -659,7 +659,7 @@ void Core::SystemProcessFrame()
             frameDelta = Replay::Instance()->PlayFrameTime();
             if (Replay::IsPlayback()) //can be unset in previous string
             {
-                SystemTimer::Instance()->SetFrameDelta(frameDelta);
+                SystemTimer::SetFrameDelta(frameDelta);
             }
         }
 

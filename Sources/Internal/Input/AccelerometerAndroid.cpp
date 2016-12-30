@@ -35,7 +35,7 @@ void AccelerometerAndroidImpl::SetAccelerationData(float x, float y, float z)
     if (enabled)
     {
         //			Logger::Debug("[AccelerometerAndroidImpl::SetAccelerationData] x=%f; y=%f; z=%f", x, y, z);
-        uint64 curTime = SystemTimer::Instance()->GetTickCount();
+        uint64 curTime = SystemTimer::GetAbsoluteMillis();
         float32 delta = (curTime - lastUpdate) / 1000.0f;
         if (updRate < delta)
         {

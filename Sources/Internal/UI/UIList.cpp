@@ -296,11 +296,11 @@ void UIList::Update(float32 timeElapsed)
         // this code works for scroll through touch screen.
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.x = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
         else
         {
-            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.y = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
     }
 

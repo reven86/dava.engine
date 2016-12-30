@@ -31,7 +31,7 @@ void GamepadDeviceImpl::Update()
         ReadGamepadElements(gamepad, readBuf);
     }
 
-    uint64 timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    uint64 timestamp = SystemTimer::GetFrameTimestamp();
     for (size_t i = 0; i < GamepadDevice::ELEMENT_COUNT; ++i)
     {
         if (gamepadDevice->elementValues[i] != readBuf[i])

@@ -43,7 +43,7 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
     yBlockCount = currentData->sizeY;
     zBlockCount = currentData->sizeZ;
 
-    stats.buildStartTime = SystemTimer::Instance()->GetAbsoluteNano();
+    stats.buildStartTime = SystemTimer::GetAbsoluteNanos();
     stats.blockProcessingTime = stats.buildStartTime;
     stats.buildDuration = 0.0;
     stats.totalRenderPasses = 0;
@@ -103,7 +103,7 @@ bool StaticOcclusion::ProccessBlock()
     {
         AdvanceToNextBlock();
 
-        auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
+        auto currentTime = SystemTimer::GetAbsoluteNanos();
         stats.buildDuration += static_cast<double>(currentTime - stats.blockProcessingTime) / 1e+9;
         stats.blockProcessingTime = currentTime;
 

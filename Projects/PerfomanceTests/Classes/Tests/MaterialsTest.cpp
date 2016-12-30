@@ -97,7 +97,7 @@ void MaterialsTest::BeginFrame()
     // material test finished
     if (GetTestFrameNumber() - currentTestStartFrame == FRAMES_PER_MATERIAL_TEST)
     {
-        float32 testTime = (SystemTimer::Instance()->FrameStampTimeMS() - currentTestStartTime) / 1000.0f;
+        float32 testTime = (SystemTimer::GetFrameTimestamp() - currentTestStartTime) / 1000.0f;
         materialTestsElapsedTime.push_back(testTime);
 
         NMaterial* material = materials[currentMaterialIndex]->GetParent();
@@ -146,7 +146,7 @@ void MaterialsTest::BeginFrame()
             }
         }
 
-        currentTestStartTime = SystemTimer::Instance()->FrameStampTimeMS();
+        currentTestStartTime = SystemTimer::GetFrameTimestamp();
         currentTestStartFrame = GetTestFrameNumber();
     }
 }

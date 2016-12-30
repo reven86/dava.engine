@@ -98,7 +98,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
 void UIScreen::LoadGroup()
 {
     //Logger::FrameworkDebug("load group started");
-    //uint64 loadGroupStart = SystemTimer::Instance()->AbsoluteMS();
+    //uint64 loadGroupStart = SystemTimer::GetAbsoluteMillis();
     ShaderPreprocessScope preprocessScope;
 
     if (groupId < 0)
@@ -122,7 +122,7 @@ void UIScreen::LoadGroup()
             }
         }
     }
-    //uint64 loadGroupEnd = SystemTimer::Instance()->AbsoluteMS();
+    //uint64 loadGroupEnd = SystemTimer::GetAbsoluteMillis();
     //Logger::FrameworkDebug("load group finished: %lld", loadGroupEnd - loadGroupStart);
 }
 

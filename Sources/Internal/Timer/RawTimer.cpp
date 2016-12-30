@@ -5,7 +5,7 @@ namespace DAVA
 {
 void RawTimer::Start()
 {
-    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
+    timerStartTime = SystemTimer::GetAbsoluteMillis();
     isStarted = true;
 }
 
@@ -24,11 +24,11 @@ bool RawTimer::IsStarted()
     return isStarted;
 }
 
-uint64 RawTimer::GetElapsed()
+int64 RawTimer::GetElapsed()
 {
     if (isStarted)
     {
-        return SystemTimer::Instance()->AbsoluteMS() - timerStartTime;
+        return SystemTimer::GetAbsoluteMillis() - timerStartTime;
     }
     else
     {

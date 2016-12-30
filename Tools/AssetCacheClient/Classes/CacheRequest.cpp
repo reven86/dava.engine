@@ -1,7 +1,6 @@
 #include "CacheRequest.h"
 
 #include "AssetCache/AssetCacheConstants.h"
-#include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 
 using namespace DAVA;

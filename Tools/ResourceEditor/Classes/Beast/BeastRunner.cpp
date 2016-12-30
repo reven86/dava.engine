@@ -77,7 +77,7 @@ void BeastRunner::RunUIMode()
 
 void BeastRunner::Start()
 {
-    startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+    startTime = DAVA::SystemTimer::GetAbsoluteMillis();
 
     DAVA::FilePath path = GetLightmapDirectoryPath();
     if (beastMode == BeastProxy::MODE_LIGHTMAPS)

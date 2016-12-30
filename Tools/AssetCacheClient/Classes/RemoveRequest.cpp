@@ -3,7 +3,6 @@
 #include "FileSystem/File.h"
 #include "Platform/DateTime.h"
 #include "Platform/DeviceInfo.h"
-#include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
 #include "AssetCache/AssetCacheClient.h"

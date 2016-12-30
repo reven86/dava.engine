@@ -59,12 +59,12 @@ void PlatformCore::Run()
 
     while (!quitGameThread)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetAbsoluteMillis();
 
         int32 fps = engineBackend->OnFrame();
 
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int64 frameEndTime = SystemTimer::GetAbsoluteMillis();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
         if (fps > 0)
@@ -73,7 +73,7 @@ void PlatformCore::Run()
             if (sleep < 1)
                 sleep = 1;
         }
-        Sleep(sleep);
+        ::Sleep(sleep);
     }
 
     engineBackend->OnGameLoopStopped();

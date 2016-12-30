@@ -36,7 +36,7 @@ void ApplicationCore::Update(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE)
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-    float32 realFrameDelta = SystemTimer::RealFrameDelta();
+    float32 realFrameDelta = SystemTimer::GetRealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
 

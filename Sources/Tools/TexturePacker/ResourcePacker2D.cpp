@@ -290,7 +290,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return;
     }
 
-    uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 packTime = SystemTimer::GetAbsoluteMillis();
 
     String inputRelativePath = inputPath.GetRelativePathname(rootDirectory);
     FilePath processDir = rootDirectory + GetProcessFolderName() + inputRelativePath;
@@ -493,7 +493,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     }
                 }
 
-                packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
+                packTime = SystemTimer::GetAbsoluteMillis() - packTime;
 
 #if defined(__DAVAENGINE_COREV2__)
                 if (Engine::Instance()->IsConsoleMode())

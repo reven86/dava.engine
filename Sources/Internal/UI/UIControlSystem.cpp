@@ -327,7 +327,7 @@ void UIControlSystem::Update()
     updateCounter = 0;
     ProcessScreenLogic();
 
-    float32 timeElapsed = SystemTimer::FrameDelta();
+    float32 timeElapsed = SystemTimer::GetFrameDelta();
 
     for (auto& system : systems)
     {

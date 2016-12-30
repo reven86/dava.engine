@@ -253,7 +253,7 @@ void BaseTest::BeginFrame()
 {
     if (0 == startTime && frameNumber >= FRAME_OFFSET)
     {
-        startTime = SystemTimer::Instance()->FrameStampTimeMS();
+        startTime = SystemTimer::GetFrameTimestamp();
     }
 }
 
@@ -261,7 +261,7 @@ void BaseTest::EndFrame()
 {
     frameNumber++;
 
-    elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
+    elapsedTime = SystemTimer::GetFrameTimestamp() - startTime;
 }
 
 bool BaseTest::IsFinished() const

@@ -369,7 +369,7 @@ void OnFrameBegin()
     if (!ImGuiImplDetails::initialized)
         return;
 
-    ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
+    ImGui::GetIO().DeltaTime = DAVA::SystemTimer::GetFrameDelta();
 
     ImGuiImplDetails::framebufferSize.dx = int32(DAVA::Renderer::GetFramebufferWidth());
     ImGuiImplDetails::framebufferSize.dy = int32(DAVA::Renderer::GetFramebufferHeight());

@@ -187,20 +187,20 @@ void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, voi
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 {
-    uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
+    uint64 startTime = SystemTimer::GetAbsoluteNanos();
 
     BaseScreen::Draw(geometricData);
 
-    drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+    drawTime += (SystemTimer::GetAbsoluteNanos() - startTime);
 }
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
-    uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
+    uint64 startTime = SystemTimer::GetAbsoluteNanos();
 
     BaseScreen::Update(timeElapsed);
 
-    updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+    updateTime += (SystemTimer::GetAbsoluteNanos() - startTime);
 
     UpdateInfo(timeElapsed);
 

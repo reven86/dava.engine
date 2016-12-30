@@ -963,7 +963,7 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
                     if (timestamp)
                     {
-                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::GetAbsoluteMicros();
 
                         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
                         while (S_FALSE == _D3D11_ImmediateContext->GetData(fqQuery, &data, sizeof(data), 0))

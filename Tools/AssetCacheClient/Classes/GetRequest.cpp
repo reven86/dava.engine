@@ -1,7 +1,6 @@
 #include "GetRequest.h"
 
 #include "FileSystem/FileSystem.h"
-#include "Platform/SystemTimer.h"
 
 #include "AssetCache/AssetCacheClient.h"
 

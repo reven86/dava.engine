@@ -21,12 +21,12 @@ void LoadingTest::LoadJob::Excecute()
 {
     excecuted = true;
 
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();
+    uint64 time = SystemTimer::GetAbsoluteMillis();
 
     ScopedPtr<Scene> scene(new Scene());
     scene->LoadScene(scenePath);
 
-    loadingTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    loadingTime = SystemTimer::GetAbsoluteMillis() - time;
 }
 
 bool LoadingTest::LoadJob::IsFinished()

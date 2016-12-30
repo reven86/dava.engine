@@ -26,7 +26,7 @@ namespace Net
 MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
-    , baseTimePoint(SystemTimer::Instance()->AbsoluteMS())
+    , baseTimePoint(SystemTimer::GetAbsoluteMillis())
     , transferService(new MMBigDataTransferService(SERVER_ROLE))
 {
     MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
@@ -39,7 +39,7 @@ void MMNetServer::OnUpdate()
 {
     if (tokenRequested)
     {
-        uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+        uint64 curTimestamp = SystemTimer::GetAbsoluteMillis();
         if (curTimestamp - lastGatheredStatTimestamp >= statGatherFreq)
         {
             AutoReplyStat(curTimestamp - baseTimePoint);
@@ -112,7 +112,7 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
 void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     DVASSERT(tokenRequested == true);
-    uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+    uint64 curTimestamp = SystemTimer::GetAbsoluteMillis();
     uint16 status = GetAndSaveSnapshot(curTimestamp - baseTimePoint) ? MMNetProto::STATUS_SUCCESS
                                                                        :
                                                                        MMNetProto::STATUS_ERROR;

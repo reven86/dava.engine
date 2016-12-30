@@ -61,7 +61,7 @@ protected:
 
 uint64 TimeStampUs()
 {
-    return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+    return DAVA::SystemTimer::GetAbsoluteMicros();
 }
 
 bool NameEquals(const char* name1, const char* name2)

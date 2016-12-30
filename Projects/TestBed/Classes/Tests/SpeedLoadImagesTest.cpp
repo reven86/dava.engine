@@ -195,9 +195,9 @@ uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath& path)
     uint64 allTime = 0;
     for (auto i = 0; i < number; ++i)
     {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 startTime = SystemTimer::GetAbsoluteMillis();
         ImageSystem::Load(infile, imageSet);
-        uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 finishTime = SystemTimer::GetAbsoluteMillis();
         allTime += finishTime - startTime;
 
         for (auto image : imageSet)

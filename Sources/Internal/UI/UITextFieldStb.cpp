@@ -141,7 +141,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
-        float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+        float32 timeElapsed = SystemTimer::GetFrameDelta();
         cursorTime += timeElapsed;
         if (cursorTime >= 0.5f)
         {
