@@ -133,14 +133,14 @@ void SystemTimer::ResumeGlobalTime()
     globalTimePaused = false;
 }
 
-void SystemTimer::Init()
-{
-    frameTimestamp = GetAbsoluteMillis();
-    frameTimestampForRealDelta = frameTimestamp;
-}
-
 void SystemTimer::StartFrame()
 {
+    if (frameTimestamp == 0)
+    {
+        frameTimestamp = GetAbsoluteMillis();
+        frameTimestampForRealDelta = frameTimestamp;
+    }
+
     int64 timestamp = GetAbsoluteMillis();
     frameDelta = static_cast<float32>((timestamp - frameTimestamp) / 1000.0);
     realFrameDelta = frameDelta;

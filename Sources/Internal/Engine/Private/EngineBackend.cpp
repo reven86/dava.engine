@@ -263,7 +263,6 @@ void EngineBackend::RunConsole()
 void EngineBackend::OnGameLoopStarted()
 {
     Logger::Info("EngineBackend::OnGameLoopStarted: enter");
-    SystemTimer::Init();
 
     engine->gameLoopStarted.Emit();
 

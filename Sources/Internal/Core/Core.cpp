@@ -231,7 +231,6 @@ void Core::CreateSingletons()
 
     new EngineSettings();
     new LocalizationSystem();
-    SystemTimer::Init();
     new Random();
     new AnimationManager();
     new FontManager();

@@ -39,7 +39,7 @@ public:
     /** Get monotonic clock value in nanoseconds, including time spent in deep sleep. */
     static int64 GetAbsoluteNanos();
 
-    /** Get current calendar time in seconds from epoch 1970-01-01 00:00 UTC. */
+    /** Get current calendar time in seconds from epoch beginning 1970-01-01 00:00 UTC. */
     static int64 GetSystemTime();
 
     /** Get number of microseconds elapsed from system boot, including time spent in deep sleep. */
@@ -80,7 +80,6 @@ public:
     static void ResumeGlobalTime();
 
 private:
-    static void Init();
     static void StartFrame();
     static void ComputeRealFrameDelta();
     static void Adjust(int64 micros);
