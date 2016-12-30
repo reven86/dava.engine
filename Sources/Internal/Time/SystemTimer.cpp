@@ -1,6 +1,6 @@
 #if 1
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 #include "Base/Platform.h"
 #include "Debug/DVAssert.h"
@@ -193,7 +193,7 @@ void SystemTimer::Adjust(int64 micros)
 #include <chrono>
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Logger/Logger.h"
 #include "DAVAConfig.h"
 #include "Debug/Replay.h"

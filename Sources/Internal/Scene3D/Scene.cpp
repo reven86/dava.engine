@@ -7,7 +7,7 @@
 #include "Render/RenderOptions.h"
 #include "Render/MipmapReplacer.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Scene3D/SceneFileV2.h"

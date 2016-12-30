@@ -10,7 +10,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIScreenManager.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"

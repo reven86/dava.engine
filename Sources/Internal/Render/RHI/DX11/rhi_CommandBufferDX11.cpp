@@ -13,7 +13,7 @@
 #include "Core/Core.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"

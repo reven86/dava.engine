@@ -14,7 +14,7 @@ using DAVA::Logger;
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"

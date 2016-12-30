@@ -1,7 +1,7 @@
 #include "SpeedLoadImagesTest.h"
 
-#include "Platform/SystemTimer.h"
 #include "Render/Image/ImageSystem.h"
+#include "Time/SystemTimer.h"
 #include "Utils/UTF8Utils.h"
 
 using namespace DAVA;

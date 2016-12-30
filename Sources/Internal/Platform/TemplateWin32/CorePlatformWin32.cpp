@@ -13,7 +13,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/UTF8Utils.h"

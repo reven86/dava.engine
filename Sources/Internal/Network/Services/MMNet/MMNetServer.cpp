@@ -6,7 +6,7 @@
 #include "Functional/Function.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Random.h"
 
 #include "FileSystem/FileSystem.h"

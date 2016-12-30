@@ -4,7 +4,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Input/GamepadDevice.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {

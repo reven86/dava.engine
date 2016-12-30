@@ -3,7 +3,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
 

@@ -12,7 +12,7 @@
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern "C"
 {

@@ -5,7 +5,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"

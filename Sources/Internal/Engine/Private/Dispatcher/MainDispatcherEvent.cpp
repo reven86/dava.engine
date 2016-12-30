@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {

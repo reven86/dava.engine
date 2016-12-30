@@ -22,7 +22,7 @@ using DAVA::Logger;
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/ManualResetEvent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 

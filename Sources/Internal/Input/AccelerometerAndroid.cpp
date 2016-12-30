@@ -1,7 +1,7 @@
 #include "Input/AccelerometerAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
