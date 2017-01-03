@@ -2,6 +2,9 @@
 
 #include "Concurrency/Thread.h"
 #include "Time/SystemTimer.h"
+#include "Utils/StringFormat.h"
+
+#include <ctime>
 
 DAVA_TESTCLASS (TimerTest)
 {
@@ -25,9 +28,23 @@ DAVA_TESTCLASS (TimerTest)
             int64 deltaUs = SystemTimer::GetAbsoluteMicros() - beginUs;
             int64 deltaNs = SystemTimer::GetAbsoluteNanos() - beginNs;
 
-            TEST_VERIFY(deltaMs >= sleepTime);
-            TEST_VERIFY(deltaUs >= sleepTime * 1000ll);
-            TEST_VERIFY(deltaNs >= sleepTime * 1000000ll);
+            TEST_VERIFY_WITH_MESSAGE(deltaMs >= sleepTime, Format("deltaMs=%lld, sleepTime=%lld", deltaMs, sleepTime));
+            TEST_VERIFY_WITH_MESSAGE(deltaUs >= sleepTime * 1000ll, Format("deltaUs=%lld, sleepTime=%lld", deltaUs, sleepTime * 1000ll));
+            TEST_VERIFY_WITH_MESSAGE(deltaNs >= sleepTime * 1000000ll, Format("deltaNs=%lld, sleepTime=%lld", deltaNs, sleepTime * 1000000ll));
+        }
+
+        {
+            int64 systime1 = SystemTimer::GetSystemTime();
+            int64 systime2 = static_cast<int64>(std::time(nullptr));
+            TEST_VERIFY(0 <= (systime2 - systime1) && (systime2 - systime1) <= 1); // Include case when time has updated during second measure
+        }
+
+        {
+            int64 begin = SystemTimer::GetSystemUptimeMicros();
+            Thread::Sleep(2000);
+            int64 delta = SystemTimer::GetSystemUptimeMicros() - begin;
+            // I do not know period system updates its uptime so choose value less than sleep time by 500ms
+            TEST_VERIFY_WITH_MESSAGE(delta >= 1500000ll, Format("delta=%lld", delta));
         }
     }
 
