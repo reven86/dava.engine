@@ -28,7 +28,6 @@ public:
     virtual void VisitControlSection(ControlPropertiesSection* property) = 0;
     virtual void VisitComponentSection(ComponentPropertiesSection* property) = 0;
     virtual void VisitBackgroundSection(BackgroundPropertiesSection* property) = 0;
-    virtual void VisitInternalControlSection(InternalControlPropertiesSection* property) = 0;
 
     virtual void VisitNameProperty(NameProperty* property) = 0;
     virtual void VisitPrototypeNameProperty(PrototypeNameProperty* property) = 0;

@@ -39,9 +39,6 @@ public:
     virtual DAVA::UIControlBackground* BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
 
-    virtual DAVA::UIControl* BeginInternalControlSection(int index, bool sectionHasProperties) override;
-    virtual void EndInternalControlSection() override;
-
     virtual void ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value) override;
 
     DAVA::RefPtr<PackageNode> BuildPackage() const;
