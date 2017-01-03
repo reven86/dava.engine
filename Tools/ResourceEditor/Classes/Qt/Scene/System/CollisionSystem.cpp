@@ -6,7 +6,6 @@
 #include "Scene/System/CollisionSystem/CollisionLandscape.h"
 #include "Scene/System/CollisionSystem/CollisionBox.h"
 #include "Scene/System/CameraSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
 #include "Commands2/Base/RECommandNotificationObject.h"
@@ -19,6 +18,8 @@
 #include "Commands2/ConvertToBillboardCommand.h"
 
 #include "Settings/SettingsManager.h"
+
+#include "Classes/Selection/Selection.h"
 
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -75,6 +76,7 @@ SceneCollisionSystem::~SceneCollisionSystem()
     {
         delete etc.second;
     }
+    objectToCollision.clear();
 
     DAVA::SafeDelete(objectsCollWorld);
     DAVA::SafeDelete(objectsBroadphase);
@@ -245,12 +247,14 @@ void SceneCollisionSystem::UpdateCollisionObject(const Selectable& object)
     }
 }
 
-DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
+DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object) const
 {
+    DVASSERT(object != nullptr);
+
     DAVA::AABBox3 aabox;
-    if (object != nullptr)
+    if (objectToCollision.count(object) != 0)
     {
-        CollisionBaseObject* collObj = objectToCollision[object];
+        CollisionBaseObject* collObj = objectToCollision.at(object);
         if (collObj != nullptr)
         {
             aabox = collObj->object.GetBoundingBox();
@@ -275,6 +279,7 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
     if (collision == nullptr)
         return;
 
+    DVASSERT(obj != nullptr);
     if (objectToCollision.count(obj) > 0)
     {
         DestroyFromObject(obj);
@@ -285,7 +290,7 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
-    if (!enabled)
+    if (!systemIsEnabled)
     {
         return;
     }
@@ -368,25 +373,15 @@ void SceneCollisionSystem::Draw()
     if (drawMode & CS_DRAW_OBJECTS_SELECTED)
     {
         // current selected entities
-        SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-        if (NULL != selectionSystem)
+        const SelectableGroup& selection = Selection::GetSelection();
+        for (const auto& item : selection.GetContent())
         {
-            for (const auto& item : selectionSystem->GetSelection().GetContent())
+            // get collision object for solid selected entity
+            DVASSERT(item.GetContainedObject() != nullptr);
+            CollisionBaseObject* cObj = objectToCollision[item.GetContainedObject()];
+            if (NULL != cObj && NULL != cObj->btObject)
             {
-                // get collision object for solid selected entity
-                CollisionBaseObject* cObj = objectToCollision[item.GetContainedObject()];
-
-                // if no collision object for solid selected entity,
-                // try to get collision object for real selected entity
-                if (NULL == cObj)
-                {
-                    cObj = objectToCollision[item.GetContainedObject()];
-                }
-
-                if (NULL != cObj && NULL != cObj->btObject)
-                {
-                    objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
-                }
+                objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
             }
         }
     }
@@ -454,7 +449,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if (!enabled)
+    if (!systemIsEnabled)
     {
         return;
     }
@@ -475,7 +470,7 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 {
-    if (!enabled || entity == nullptr)
+    if (!systemIsEnabled || entity == nullptr)
         return;
 
     if (DAVA::GetLandscape(entity) != nullptr)
@@ -495,7 +490,7 @@ void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (!enabled || entity == nullptr)
+    if (!systemIsEnabled || entity == nullptr)
         return;
 
     if (curLandscapeEntity == entity)
@@ -541,7 +536,7 @@ const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vec
 
 void SceneCollisionSystem::EnableSystem()
 {
-    enabled = true;
+    EditorSceneSystem::EnableSystem();
     AddEntity(GetScene());
 }
 
@@ -648,6 +643,44 @@ void SceneCollisionSystem::EnumerateObjectHierarchy(const Selectable& object, bo
         CollisionDetails::CollisionObj result = CollisionDetails::InitCollision<CollisionBox>(createCollision, containedObject, objectsCollWorld, object.GetWorldTransform().GetTranslationVector(), scale);
         callback(containedObject, result.collisionObject);
     }
+}
+
+DAVA::AABBox3 SceneCollisionSystem::GetUntransformedBoundingBox(Selectable::Object* entity) const
+{
+    return GetTransformedBoundingBox(Selectable(entity), DAVA::Matrix4::IDENTITY);
+}
+
+DAVA::AABBox3 SceneCollisionSystem::GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const
+{
+    DAVA::AABBox3 entityBox = GetBoundingBox(object.GetContainedObject());
+    if (object.CanBeCastedTo<DAVA::Entity>())
+    {
+        // add childs boxes into entity box
+        auto entity = object.AsEntity();
+        for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
+        {
+            Selectable childEntity(entity->GetChild(i));
+            DAVA::AABBox3 childBox = GetTransformedBoundingBox(childEntity, childEntity.GetLocalTransform());
+            if (childBox.IsEmpty() == false)
+            {
+                if (entityBox.IsEmpty())
+                {
+                    entityBox = childBox;
+                }
+                else
+                {
+                    entityBox.AddAABBox(childBox);
+                }
+            }
+        }
+    }
+
+    DAVA::AABBox3 ret;
+    if (entityBox.IsEmpty() == false)
+    {
+        entityBox.GetTransformedBox(transform, ret);
+    }
+    return ret;
 }
 
 // -----------------------------------------------------------------------------------------------

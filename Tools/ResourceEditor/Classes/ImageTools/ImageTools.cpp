@@ -52,8 +52,6 @@ DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, c
             DAVA::ImageInfo info = DAVA::ImageSystem::GetImageInfo(imagePathname);
             if (!info.IsEmpty())
             {
-                const auto formatSizeBits = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
-
                 DAVA::uint32 m = DAVA::Min(baseMipMaps, info.mipmapsCount - 1);
                 for (; m < info.mipmapsCount; ++m)
                 {

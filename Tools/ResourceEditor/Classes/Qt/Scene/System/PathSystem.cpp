@@ -1,21 +1,20 @@
 #include "PathSystem.h"
 
+#include "Commands2/ConvertPathCommands.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/WayEditCommands.h"
+#include "Scene/SceneEditor2.h"
+
+#include "Classes/Selection/Selection.h"
+
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-
-#include "Commands2/ConvertPathCommands.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
-
-#include "FileSystem/KeyedArchive.h"
 #include "Scene3D/Entity.h"
-
+#include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
-
-#include "Scene/SceneEditor2.h"
-#include "Commands2/InspMemberModifyCommand.h"
-#include "Commands2/WayEditCommands.h"
 
 namespace PathSystemInternal
 {
@@ -48,7 +47,6 @@ PathSystem::PathSystem(DAVA::Scene* scene)
     , currentPath(NULL)
     , isEditingEnabled(false)
 {
-    sceneEditor = static_cast<SceneEditor2*>(GetScene());
 }
 
 PathSystem::~PathSystem()
@@ -61,6 +59,8 @@ PathSystem::~PathSystem()
 
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+
     sceneEditor->BeginBatch("Add path at scene", 1);
     sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(entity, sceneEditor)));
 
@@ -135,7 +135,7 @@ void PathSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity
 
 void PathSystem::Draw()
 {
-    const DAVA::uint32 count = pathes.size();
+    const DAVA::uint32 count = static_cast<DAVA::uint32>(pathes.size());
     if (!count)
         return;
 
@@ -189,8 +189,7 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
-
+    const SelectableGroup& selection = Selection::GetSelection();
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
         DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(entity);
@@ -232,7 +231,7 @@ void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& fini
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = Selection::GetSelection();
     if (currentSelection != selection)
     {
         currentSelection.Clear();
@@ -277,7 +276,7 @@ void PathSystem::ProcessCommand(const RECommandNotificationObject& commandNotifi
             const InspMemberModifyCommand* inspCommand = static_cast<const InspMemberModifyCommand*>(command);
             if (NAME == inspCommand->member->Name())
             {
-                const DAVA::uint32 count = pathes.size();
+                const DAVA::uint32 count = static_cast<DAVA::uint32>(pathes.size());
                 for (DAVA::uint32 p = 0; p < count; ++p)
                 {
                     const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
@@ -308,8 +307,7 @@ void PathSystem::ProcessCommand(const RECommandNotificationObject& commandNotifi
 
 DAVA::FastName PathSystem::GeneratePathName() const
 {
-    const DAVA::uint32 count = pathes.size();
-
+    const DAVA::uint32 count = static_cast<DAVA::uint32>(pathes.size());
     for (DAVA::uint32 i = 0; i <= count; ++i)
     {
         DAVA::FastName generatedName(DAVA::Format("path_%02d", i));
@@ -335,17 +333,18 @@ DAVA::FastName PathSystem::GeneratePathName() const
 
 const DAVA::Color& PathSystem::GetNextPathColor() const
 {
-    const DAVA::uint32 count = pathes.size();
-    const DAVA::uint32 index = count % PathSystemInternal::PathColorPallete.size();
+    const DAVA::uint32 count = static_cast<DAVA::uint32>(pathes.size());
+    const DAVA::uint32 index = count % static_cast<DAVA::uint32>(PathSystemInternal::PathColorPallete.size());
 
     return PathSystemInternal::PathColorPallete[index];
 }
 
 void PathSystem::EnablePathEdit(bool enable)
 {
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
     if (enable)
     {
-        sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
+        sceneEditor->BeginBatch("Enable waypoints edit", static_cast<DAVA::uint32>(pathes.size() + 1));
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableWayEditCommand()));
 
         for (auto path : pathes)
@@ -357,7 +356,7 @@ void PathSystem::EnablePathEdit(bool enable)
     }
     else
     {
-        sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
+        sceneEditor->BeginBatch("Disable waypoints edit", static_cast<DAVA::uint32>(pathes.size() + 1));
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableWayEditCommand()));
 
         for (auto path : pathes)
@@ -371,6 +370,8 @@ void PathSystem::EnablePathEdit(bool enable)
 
 void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
 {
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
 
     sceneEditor->BeginBatch("Expand path components", pathComponentCount);
@@ -386,6 +387,8 @@ void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
 
 void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
 {
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
     sceneEditor->BeginBatch("Collapse path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)

@@ -1,6 +1,5 @@
 #include "RulerToolSystem.h"
 #include "CollisionSystem.h"
-#include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "../SceneEditor2.h"
@@ -9,6 +8,8 @@
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "../Qt/Main/QtUtils.h"
 #include "../SceneSignals.h"
+
+#include "Classes/Selection/Selection.h"
 
 RulerToolSystem::RulerToolSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
@@ -40,7 +41,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
         return enableCustomDrawError;
     }
 
-    selectionSystem->SetLocked(true);
+    Selection::Lock();
     modifSystem->SetLocked(true);
 
     DAVA::Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
@@ -66,7 +67,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
         return true;
     }
 
-    selectionSystem->SetLocked(false);
+    Selection::Unlock();
     modifSystem->SetLocked(false);
 
     drawSystem->DisableCustomDraw();
@@ -265,7 +266,7 @@ void RulerToolSystem::DrawPoints()
         points.push_back(previewPoint);
     }
 
-    const DAVA::uint32 pointsCount = points.size();
+    const DAVA::uint32 pointsCount = static_cast<DAVA::uint32>(points.size());
     if (pointsCount > 1)
     {
         for (DAVA::uint32 i = 0; i < pointsCount; ++i)

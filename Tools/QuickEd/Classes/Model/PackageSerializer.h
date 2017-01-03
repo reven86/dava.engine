@@ -55,7 +55,6 @@ private: // PropertyVisitor
     void VisitControlSection(ControlPropertiesSection* property) override;
     void VisitComponentSection(ComponentPropertiesSection* property) override;
     void VisitBackgroundSection(BackgroundPropertiesSection* property) override;
-    void VisitInternalControlSection(InternalControlPropertiesSection* property) override;
 
     void VisitNameProperty(NameProperty* property) override;
     void VisitPrototypeNameProperty(PrototypeNameProperty* property) override;

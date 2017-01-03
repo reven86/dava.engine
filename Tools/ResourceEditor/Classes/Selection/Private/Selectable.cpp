@@ -1,4 +1,4 @@
-#include "Scene/Selectable.h"
+#include "Classes/Selection/Selectable.h"
 
 Selectable::Selectable(Object* baseObject)
     : object(baseObject)

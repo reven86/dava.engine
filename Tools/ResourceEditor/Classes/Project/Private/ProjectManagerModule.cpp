@@ -11,8 +11,6 @@
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
 
-#include "QtTools/ProjectInformation/FileSystemCache.h"
-
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Engine/EngineContext.h"
 #include "FileSystem/YamlParser.h"
@@ -38,8 +36,6 @@ void ProjectManagerModule::PostInit()
     DataContext* globalContext = accessor->GetGlobalContext();
     std::unique_ptr<ProjectManagerData> data = std::make_unique<ProjectManagerData>();
 
-    QStringList extensions = { "sc2" };
-    data->dataSourceSceneFiles.reset(new FileSystemCache(extensions));
     data->spritesPacker.reset(new SpritesPackerModule(GetUI()));
     data->editorConfig.reset(new EditorConfig());
     globalContext->CreateData(std::move(data));
@@ -193,14 +189,8 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
     engineCtx->soundSystem->InitFromQualitySettings();
 
-    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
-    fileSystem->CreateDirectory(data->GetWorkspacePath(), true);
-    if (fileSystem->Exists(data->GetDataSource3DPath()))
-    {
-        data->dataSourceSceneFiles->TrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
-    }
-
     DAVA::FilePath editorConfigPath = data->GetProjectPath() + "EditorConfig.yaml";
+    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
     if (fileSystem->Exists(editorConfigPath))
     {
         data->editorConfig->ParseConfig(editorConfigPath);
@@ -238,7 +228,6 @@ void ProjectManagerModule::OpenLastProject()
 bool ProjectManagerModule::CloseProject()
 {
     ProjectManagerData* data = GetData();
-
     if (!data->projectPath.IsEmpty())
     {
         InvokeOperation(REGlobal::CloseAllScenesOperation.ID, true);
@@ -249,12 +238,6 @@ bool ProjectManagerModule::CloseProject()
 
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
-
-        DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
-        if (fileSystem->Exists(data->GetDataSource3DPath()))
-        {
-            data->dataSourceSceneFiles->UntrackDirectory(QString::fromStdString(data->GetDataSource3DPath().GetStringValue()));
-        }
 
         data->projectPath = "";
 

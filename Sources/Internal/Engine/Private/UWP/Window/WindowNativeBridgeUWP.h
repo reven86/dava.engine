@@ -44,6 +44,7 @@ ref struct WindowNativeBridge sealed
 
 private:
     void OnTriggerPlatformEvents();
+    void HandleFocusChanging(bool gotFocus);
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
     void OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg);

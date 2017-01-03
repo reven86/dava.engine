@@ -2,7 +2,7 @@
 set(  MAIN_MODULE_VALUES 
 NAME_MODULE                            #
 NAME_MODULE_STUB                       #
-MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
+MODULE_TYPE                            #"[ INLINE STATIC PLUGIN  ]"
 #
 IMPL_MODULE
 EXTERNAL_MODULES
@@ -92,7 +92,21 @@ BINARY_WIN64_DIR_RELWITHDEB
 #
 EXCLUDE_FROM_ALL
 #
+PLUGIN_OUT_DIR
+PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
+#
+PLUGIN_RELATIVE_PATH_TO_FOLDER
+PLUGIN_COPY_ADD_FILES 
+#
 )
+
+#
+set(  GLOBAL_PROPERTY_VALUES ${MAIN_MODULE_VALUES}  TARGET_MODULES_LIST 
+                                                    QT_DEPLOY_LIST_VALUE 
+                                                    QT_LINKAGE_LIST 
+                                                    QT_LINKAGE_LIST_VALUE 
+                                                    DEPENDENT_LIST
+                                                    GROUP_SOURCE )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
     foreach( FOLDER_MODULE ${EXTERNAL_MODULES} )
@@ -119,6 +133,7 @@ macro( modules_tree_info_execute )
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${TMP_CMAKE_MODULE_INFO_BUILD}/" )
 
     set( FOLDER_MODULE ${CMAKE_CURRENT_LIST_DIR} )
+    get_property(  ARG_MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfoCmake.in
                     ${TMP_CMAKE_MODULE_INFO}/CMakeLists.txt  @ONLY )
@@ -221,7 +236,7 @@ macro( generated_initialization_module_code )
 				list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
 				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
 				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
-            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
+            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "PLUGIN" )
             endif()
               
         endforeach()
@@ -249,14 +264,7 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${MAIN_MODULE_VALUES}
-                                         TARGET_MODULES_LIST 
-                                         QT_DEPLOY_LIST_VALUE 
-                                         QT_LINKAGE_LIST 
-                                         QT_LINKAGE_LIST_VALUE 
-                                         DEPENDENT_LIST
-                                         DAVA_COMPONENTS 
-                                         GROUP_SOURCE )
+    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -285,34 +293,41 @@ macro( setup_main_module )
     set( INIT )
 
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-    get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
-    list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
-        set( INIT true )
-    else()
-        if( ORIGINAL_NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
-            if ( ${_index} GREATER -1)
+
+
+    if( MODULE_COMPONENTS_VALUE_NAME )
+        get_property(  MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
+        list (FIND MODULE_COMPONENTS "ALL" _index)
+        if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
+            set( INIT true )
+        else()
+            if( ORIGINAL_NAME_MODULE )
+                list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
+                if ( ${_index} GREATER -1)
+                    set( INIT true )
+                endif()
+            else()
                 set( INIT true )
             endif()
-        else()
-            set( INIT true )
-        endif()
-    endif()  
+        endif() 
+    else()
+        set( INIT true )
+    endif()
 
     if( MODULES_TREE_INFO AND INIT )
         modules_tree_info()
     elseif ( INIT )
         #"hack - find first call"
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
-        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
+
+        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )            
             modules_tree_info_execute()
             generated_initialization_module_code()
 			set( ROOT_NAME_MODULE ${NAME_MODULE} )
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
-        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
+        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} ) 
     endif()
 
     if ( INIT AND NOT MODULES_TREE_INFO )
@@ -386,6 +401,8 @@ macro( setup_main_module )
                     include_directories(${${PACKAGE_INCLUDE}})
                 endforeach()
             endif()
+            list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${PACKAGE_${NAME}_STATIC_LIBRARIES} )
+
         endforeach()
 
         #"ERASE FILES"
@@ -532,6 +549,11 @@ macro( setup_main_module )
             include_directories( "${INCLUDES}" )  
         endif()
 
+        #"PLUGIN_OUT_DIR"
+        if( PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT} )
+            set( PLUGIN_OUT_DIR PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}  )
+        endif()
+
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
             set (${DIR_NAME}_PROJECT_SOURCE_FILES_CPP ${PROJECT_SOURCE_FILES_CPP} PARENT_SCOPE)
             set (${DIR_NAME}_PROJECT_SOURCE_FILES_HPP ${PROJECT_SOURCE_FILES_HPP} PARENT_SCOPE)
@@ -545,11 +567,22 @@ macro( setup_main_module )
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
-            elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
+
+            elseif( ${MODULE_TYPE} STREQUAL "PLUGIN" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-				list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${ROOT_NAME_MODULE} )  
-                load_property( PROPERTY_LIST TARGET_MODULES_LIST )    
-                add_definitions( -DDAVA_IMPLEMENT_DYNAMIC_MODULE )                
+                append_property( PLUGIN_LIST ${NAME_MODULE} )
+
+                load_property( PROPERTY_LIST TARGET_MODULES_LIST ) 
+                list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
+                add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
+
+                if( WIN32 )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
+                endif()            
+
+                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
+                                                                 DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
+                                                                 DEBUG_POSTFIX Debug   )             
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
@@ -564,6 +597,27 @@ macro( setup_main_module )
                                                  BINARY_WIN64_DIR_RELEASE 
                                                  BINARY_WIN64_DIR_DEBUG
                                                  BINARY_WIN64_DIR_RELWITHDEB )
+                endif()
+
+                if( PLUGIN_OUT_DIR )
+                    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+                        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                        
+                        if( APPLE )
+                            set_target_properties( ${NAME_MODULE} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )                
+                        else()
+                            set_target_properties( ${NAME_MODULE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )
+                        endif()
+
+                    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+                endif()
+                 
+                if( PLUGIN_RELATIVE_PATH_TO_FOLDER )
+                    set_property( GLOBAL PROPERTY ${NAME_MODULE}_RELATIVE_PATH_TO_FOLDER ${PLUGIN_RELATIVE_PATH_TO_FOLDER} )
+                endif()
+
+                if( PLUGIN_COPY_ADD_FILES )
+                    set_property( GLOBAL PROPERTY ${NAME_MODULE}_PLUGIN_COPY_ADD_FILES ${PLUGIN_COPY_ADD_FILES} )                    
                 endif()
 
             endif()

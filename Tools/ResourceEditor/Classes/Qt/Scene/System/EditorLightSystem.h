@@ -1,9 +1,9 @@
-#ifndef __EDITOR_LIGHT_SYSTEM_H__
-#define __EDITOR_LIGHT_SYSTEM_H__
-
+#pragma once
 #include "DAVAEngine.h"
 
-class EditorLightSystem final : public DAVA::SceneSystem
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
+
+class EditorLightSystem final : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
     friend class EditorScene;
@@ -39,6 +39,3 @@ inline bool EditorLightSystem::GetCameraLightEnabled() const
 {
     return isEnabled;
 }
-
-
-#endif // __EDITOR_LIGHT_SYSTEM_H__

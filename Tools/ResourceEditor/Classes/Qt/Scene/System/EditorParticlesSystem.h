@@ -1,11 +1,12 @@
-#ifndef __EDITOR_PARTICLES_SYSTEM_H__
-#define __EDITOR_PARTICLES_SYSTEM_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
+
 class RECommandNotificationObject;
-class EditorParticlesSystem : public DAVA::SceneSystem
+class EditorParticlesSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
 
@@ -14,13 +15,16 @@ public:
 
     void RestartParticleEffects();
 
-private:
-    void Draw();
+    DAVA::ParticleLayer* GetForceOwner(DAVA::ParticleForce* force) const;
+    DAVA::ParticleEmitterInstance* GetLayerOwner(DAVA::ParticleLayer* layer) const;
 
+protected:
+    void Draw() override;
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
+
+private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
-
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
     void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected);
@@ -33,6 +37,3 @@ private:
 private:
     DAVA::Vector<DAVA::Entity*> entities;
 };
-
-
-#endif /* defined(__EDITOR_PARTICLES_SYSTEM_H__) */

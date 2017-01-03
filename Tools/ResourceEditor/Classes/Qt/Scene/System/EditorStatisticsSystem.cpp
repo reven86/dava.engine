@@ -6,8 +6,9 @@
 #include "Scene3D/Lod/LodComponent.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
+
+#include "Classes/Selection/Selection.h"
 
 using namespace DAVA;
 
@@ -201,7 +202,8 @@ void EditorStatisticsSystem::CalculateTriangles()
 
     //Selection
     triangles[eEditorMode::MODE_SELECTION].renderObjects.clear();
-    EditorStatisticsSystemInternal::EnumerateRenderObjects(editorScene->selectionSystem->GetSelection(), triangles[eEditorMode::MODE_SELECTION].renderObjects);
+    const SelectableGroup& selection = Selection::GetSelection();
+    EditorStatisticsSystemInternal::EnumerateRenderObjects(selection, triangles[eEditorMode::MODE_SELECTION].renderObjects);
     CalculateTrianglesForMode(eEditorMode::MODE_SELECTION);
 }
 
