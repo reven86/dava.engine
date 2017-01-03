@@ -82,8 +82,8 @@ template <typename T>
 bool Any::CanGet() const
 {
     using U = AnyStorage::StorableType<T>;
-    using CanGetPolicy = typename std::conditional<!std::is_pointer<U>::value, AnyDetail::CanGetDefault,
-                                                   typename std::conditional<std::is_void<std::remove_pointer_t<T>>::value, AnyDetail::CanGetVoidPointer, AnyDetail::CanGetPointer>::type>::type;
+    using CanGetPointerPolicy = typename std::conditional<std::is_void<std::remove_pointer_t<T>>::value, AnyDetail::CanGetVoidPointer, AnyDetail::CanGetPointer>::type;
+    using CanGetPolicy = typename std::conditional<!std::is_pointer<U>::value, AnyDetail::CanGetDefault, CanGetPointerPolicy>::type;
 
     if (nullptr == type)
     {
