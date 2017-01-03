@@ -58,6 +58,18 @@ DAVA_TESTCLASS (TimerTest)
         // All logic in Update method for this test
     }
 
+    DAVA_TEST (TestDeprecatedForCoverage)
+    {
+        // TODO: remove this test after removing deprecated SystemTimer methods
+        using namespace DAVA;
+        float32 globalTime = SystemTimer::GetGlobalTime();
+        SystemTimer::ResetGlobalTime();
+        SystemTimer::PauseGlobalTime();
+        SystemTimer::ResumeGlobalTime();
+        SystemTimer::SetFrameDelta(SystemTimer::GetFrameDelta());
+        TEST_VERIFY(globalTime >= 0.f);
+    }
+
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
     {
         using namespace DAVA;
