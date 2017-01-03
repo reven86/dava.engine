@@ -1,7 +1,6 @@
 #include "FileSystem/FileSystem.h"
 
 #include "Platform/DeviceInfo.h"
-#include "Platform/DateTime.h"
 
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
