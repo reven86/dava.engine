@@ -171,6 +171,18 @@ void WindowNativeBridge::WindowDidResize()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
 }
 
+void WindowNativeBridge::WindowWillStartLiveResize()
+{
+}
+
+void WindowNativeBridge::WindowDidEndLiveResize()
+{
+    if (!isFullscreenToggling)
+    {
+        ForceBackbufferSizeUpdate();
+    }
+}
+
 void WindowNativeBridge::WindowDidChangeScreen()
 {
     CGSize size = [renderView frame].size;
@@ -208,11 +220,23 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidEnterFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidExitFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -541,12 +565,16 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setBackbufferScale:scale];
 
+    ForceBackbufferSizeUpdate();
+    WindowDidResize();
+}
+
+void WindowNativeBridge::ForceBackbufferSizeUpdate()
+{
     // Workaround to force change backbuffer size
     [nswindow setContentView:nil];
     [nswindow setContentView:renderView];
     [nswindow makeFirstResponder:renderView];
-
-    WindowDidResize();
 }
 
 } // namespace Private
