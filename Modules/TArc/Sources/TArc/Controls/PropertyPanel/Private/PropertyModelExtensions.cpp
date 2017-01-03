@@ -32,41 +32,35 @@ public:
         return std::make_unique<EmptyComponentValue>();
     }
 };
+
+class DummyModifyExtension : public ModifyExtension
+{
+public:
+    void ProduceCommand(const Vector<Reflection::Field>&, const Any&) override
+    {
+    }
+};
 }
 
-std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator)
+std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field)
 {
-    return allocator->CreatePropertyNode(Any("SelfRoot"), DAVA::Reflection(), PropertyNode::SelfRoot);
+    return allocator->CreatePropertyNode(std::move(field), PropertyNode::SelfRoot);
 }
 
 bool PropertyNode::operator==(const PropertyNode& other) const
 {
     return propertyType == other.propertyType &&
-    reflectedObject == other.reflectedObject &&
-    cachedValue == other.cachedValue;
+    field.ref == other.field.ref &&
+    cachedValue == other.cachedValue &&
+    field.key == other.field.key;
 }
 
 bool PropertyNode::operator!=(const PropertyNode& other) const
 {
     return propertyType != other.propertyType ||
-    reflectedObject != other.reflectedObject ||
-    cachedValue != other.cachedValue;
-}
-
-void PropertyNode::SetValue(const Any& value)
-{
-    if (reflectedObject.SetValue(cachedValue))
-    {
-        cachedValue = value;
-    }
-}
-
-void PropertyNode::SetValue(Any&& value)
-{
-    if (reflectedObject.SetValue(value))
-    {
-        cachedValue = std::move(value);
-    }
+    field.ref != other.field.ref ||
+    cachedValue != other.cachedValue ||
+    field.key != field.key;
 }
 
 ChildCreatorExtension::ChildCreatorExtension()
@@ -117,6 +111,44 @@ std::unique_ptr<BaseComponentValue> EditorComponentExtension::GetEditor(const st
 std::shared_ptr<EditorComponentExtension> EditorComponentExtension::CreateDummy()
 {
     return std::make_shared<PMEDetails::DummyEditorComponent>();
+}
+
+ModifyExtension::ModifyExtension()
+    : ExtensionChain(Type::Instance<ModifyExtension>())
+{
+}
+
+void ModifyExtension::ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue)
+{
+    Vector<Reflection::Field> reflections;
+    for (std::shared_ptr<PropertyNode>& node : nodes)
+    {
+        reflections.push_back(node->field);
+    }
+
+    ProduceCommand(reflections, newValue);
+
+    for (std::shared_ptr<PropertyNode>& node : nodes)
+    {
+        if (node->field.ref.IsValid())
+        {
+            node->cachedValue = node->field.ref.GetValue();
+        }
+        else
+        {
+            node->cachedValue = Any();
+        }
+    }
+}
+
+void ModifyExtension::ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue)
+{
+    GetNext<ModifyExtension>()->ProduceCommand(objects, newValue);
+}
+
+std::shared_ptr<ModifyExtension> ModifyExtension::CreateDummy()
+{
+    return std::make_shared<PMEDetails::DummyModifyExtension>();
 }
 
 } // namespace TArc

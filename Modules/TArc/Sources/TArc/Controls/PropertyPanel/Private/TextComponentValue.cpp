@@ -1,5 +1,6 @@
 #include "TextComponentValue.h"
 #include "SimpleComponentLoader.h"
+#include "Base/FastName.h"
 
 #include "Reflection/ReflectionRegistrator.h"
 #include <QQmlComponent>
@@ -8,7 +9,7 @@ namespace DAVA
 {
 namespace TArc
 {
-const QString multipleValuesValue = QStringLiteral("<multiple values>");
+const String multipleValuesValue("<multiple values>");
 
 QQmlComponent* DAVA::TArc::TextComponentValue::GetComponent(QQmlEngine* engine) const
 {
@@ -18,10 +19,10 @@ QQmlComponent* DAVA::TArc::TextComponentValue::GetComponent(QQmlEngine* engine) 
 
 QString TextComponentValue::GetObjectName() const
 {
-    return QString::fromStdString(nodes.front()->fieldName.Cast<String>());
+    return QString::fromStdString(nodes.front()->field.key.Cast<String>());
 }
 
-QString TextComponentValue::GetText() const
+DAVA::String TextComponentValue::GetText() const
 {
     Any value = nodes.front()->cachedValue;
     for (const std::shared_ptr<const PropertyNode>& node : nodes)
@@ -32,26 +33,32 @@ QString TextComponentValue::GetText() const
         }
     }
 
-    return QString::fromStdString(value.Cast<String>());
+    if (value.GetType() == Type::Instance<DAVA::FastName>())
+    {
+        return DAVA::String(value.Cast<DAVA::FastName>().c_str());
+    }
+
+    return value.Cast<String>();
 }
 
-void TextComponentValue::SetText(const QString& text)
+void TextComponentValue::SetText(const DAVA::String& text)
 {
     if (text == multipleValuesValue)
     {
         return;
     }
 
-    Any newValue = Any(text.toStdString());
-    for (std::shared_ptr<PropertyNode>& node : nodes)
-    {
-        node->SetValue(newValue);
-    }
+    GetModifyInterface()->ModifyPropertyValue(nodes, Convert(text));
+}
+
+Any TextComponentValue::Convert(const DAVA::String& text) const
+{
+    return Any(text);
 }
 
 bool TextComponentValue::IsReadOnly() const
 {
-    return nodes.front()->reflectedObject.IsReadonly();
+    return nodes.front()->field.ref.IsReadonly();
 }
 
 bool TextComponentValue::IsEnabled() const
@@ -62,10 +69,20 @@ bool TextComponentValue::IsEnabled() const
 DAVA_REFLECTION_IMPL(TextComponentValue)
 {
     ReflectionRegistrator<TextComponentValue>::Begin()
-    .Field("objectName", &TextComponentValue::GetObjectName, nullptr)
     .Field("text", &TextComponentValue::GetText, &TextComponentValue::SetText)
     .Field("readOnly", &TextComponentValue::IsReadOnly, nullptr)
     .Field("enabled", &TextComponentValue::IsEnabled, nullptr)
+    .End();
+}
+
+Any FastNameComponentValue::Convert(const DAVA::String& text) const
+{
+    return Any(FastName(text));
+}
+
+DAVA_REFLECTION_IMPL(FastNameComponentValue)
+{
+    ReflectionRegistrator<FastNameComponentValue>::Begin()
     .End();
 }
 }

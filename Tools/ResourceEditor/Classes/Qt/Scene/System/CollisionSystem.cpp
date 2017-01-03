@@ -404,6 +404,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
       CMDID_INSP_MEMBER_MODIFY,
+      CMDID_REFLECTED_FIELD_MODIFY,
       CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
       CMDID_TRANSFORM,
       CMDID_CONVERT_TO_BILLBOARD
@@ -421,6 +422,10 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
             {
                 UpdateCollisionObject(Selectable(curLandscapeEntity));
             }
+        }
+        else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+        {
+            // TODO UVR
         }
         else if (command->MatchCommandID(CMDID_LOD_CREATE_PLANE))
         {

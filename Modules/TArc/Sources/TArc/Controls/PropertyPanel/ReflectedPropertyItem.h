@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "Base/BaseTypes.h"
 
 #include <QObject>
@@ -18,9 +19,9 @@ class ReflectedPropertyItem : public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(QString name READ GetPropertyName)
-    Q_PROPERTY(QQmlComponent* component READ GetComponent)
-    Q_PROPERTY(QtReflected model READ GetModel)
+    Q_PROPERTY(QString name READ GetPropertyName NOTIFY PropertyNameChanged)
+    Q_PROPERTY(QQmlComponent* component READ GetComponent NOTIFY ComponentChanged)
+    Q_PROPERTY(QObject* model READ GetModel NOTIFY ModelChanged)
 
     ~ReflectedPropertyItem();
 
@@ -34,7 +35,12 @@ public:
 
     QString GetPropertyName() const;
     QQmlComponent* GetComponent() const;
-    QtReflected* GetModel() const;
+    QObject* GetModel() const;
+
+private:
+    Q_SIGNAL void PropertyNameChanged(const QString& name);
+    Q_SIGNAL void ModelChanged(QtReflected* model);
+    Q_SIGNAL void ComponentChanged(QQmlComponent* component);
 
 private:
     friend class ReflectedPropertyModel;

@@ -12,8 +12,8 @@ namespace DAVA
 {
 namespace TArc
 {
+class ReflectedPropertyModel;
 class QtReflected;
-class QtReflectionBridge;
 class DataContext;
 class DataWrappersProcessor;
 struct PropertyNode;
@@ -24,9 +24,12 @@ public:
     BaseComponentValue();
     virtual ~BaseComponentValue();
 
-    virtual QQmlComponent* GetComponent(QQmlEngine* engine) const = 0;
+    virtual QQmlComponent* GetComponent(QQmlEngine* engine) const
+    {
+        return nullptr;
+    }
 
-    void Init(DataWrappersProcessor* wrappersProcessor, QtReflectionBridge* reflectionBridge);
+    void Init(ReflectedPropertyModel* model);
     QtReflected* GetValueObject();
 
     int32 GetPropertiesNodeCount() const;
@@ -40,11 +43,13 @@ protected:
     void RemovePropertyNodes();
 
     Vector<std::shared_ptr<PropertyNode>> nodes;
+    std::shared_ptr<ModifyExtension> GetModifyInterface();
 
 private:
     Reflection GetData(const DataContext* ctx);
     BaseComponentValue* thisValue = nullptr;
     QtReflected* qtReflected = nullptr;
+    ReflectedPropertyModel* model = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);
 };

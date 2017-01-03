@@ -1,4 +1,5 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
+#include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
 
 #include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
@@ -19,9 +20,14 @@ BaseComponentValue::~BaseComponentValue()
     delete qtReflected;
 }
 
-void BaseComponentValue::Init(DataWrappersProcessor* wrappersProcessor, QtReflectionBridge* reflectionBridge)
+void BaseComponentValue::Init(ReflectedPropertyModel* model_)
 {
-    qtReflected = reflectionBridge->CreateQtReflected(wrappersProcessor->CreateWrapper(DAVA::MakeFunction(this, &BaseComponentValue::GetData), nullptr), nullptr);
+    model = model_;
+    QtReflectionBridge* bridge = model->reflectionBridge;
+    DVASSERT(bridge != nullptr);
+
+    qtReflected = bridge->CreateQtReflected(model->wrappersProcessor.CreateWrapper(DAVA::MakeFunction(this, &BaseComponentValue::GetData), nullptr), nullptr);
+    qtReflected->Init();
 }
 
 DAVA::TArc::QtReflected* BaseComponentValue::GetValueObject()
@@ -61,9 +67,14 @@ void BaseComponentValue::RemovePropertyNodes()
     nodes.clear();
 }
 
+std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
+{
+    return model->GetExtensionChain<ModifyExtension>();
+}
+
 DAVA::Reflection BaseComponentValue::GetData(const DataContext* /*ctx*/)
 {
-    return Reflection::Create(&thisValue);
+    return Reflection::Create(this);
 }
 
 DAVA_REFLECTION_IMPL(BaseComponentValue)

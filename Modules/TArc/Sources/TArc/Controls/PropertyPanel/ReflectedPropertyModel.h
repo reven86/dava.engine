@@ -19,6 +19,7 @@ class ReflectedPropertyItem;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     ReflectedPropertyModel(QPointer<QQmlEngine> engine, QPointer<QtReflectionBridge> reflectionBridge);
     ~ReflectedPropertyModel();
@@ -40,7 +41,7 @@ public:
     //////////////////////////////////////
 
     void Update();
-    void SetObjects(const std::vector<Reflection>& objects);
+    void SetObjects(Vector<Reflection> objects);
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
     void UnregisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -48,6 +49,7 @@ public:
     QPointer<QQmlEngine> GetQmlEngine() const;
 
 private:
+    friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, size_t childPosition);
     void ChildRemoved(std::shared_ptr<PropertyNode> node);
 

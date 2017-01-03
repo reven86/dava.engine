@@ -5,16 +5,15 @@ TextBox
 {
     id: textField
     property var dataContext
-    objectName: typeof dataContext.objectName == "undefined" ? "TextComponent" : dataContext.objectName
-    anchors.left: parent.left
-    anchors.right: parent.right
-    text: dataContext.text
-    readOnly: dataContext.readOnly
-    enabled: dataContext.enabled
+    anchors.fill: parent
+    text: dataContext != null ? dataContext.text : ""
+    readOnly: dataContext != null ? dataContext.readOnly : true
+    enabled: dataContext != null ? dataContext.enabled : false
+    selectTextOnAccepted: false
 
     onEditAccepted:
     {
-        dataContext.text = text;
+        ValueSetHelper.SetValue(dataContext, "text", text);
     }
 }
 

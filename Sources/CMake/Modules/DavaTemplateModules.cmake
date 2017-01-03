@@ -95,7 +95,10 @@ EXCLUDE_FROM_ALL
 #
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
+PLUGIN_PREFIX
+PLUGIN_PREFIX_${DAVA_PLATFORM}
 PLUGIN_DEBUG_POSTFIX
+PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM}
 PLUGIN_PRE_BUILD_COMMAND
 PLUGIN_PRE_BUILD_PARAMS
 #
@@ -591,13 +594,25 @@ macro( setup_main_module )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
                 endif()
 
+                if (PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM_CURENT})
+                    set(PLUGIN_DEBUG_POSTFIX ${PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM_CURENT}})
+                endif()
+
                 if (NOT PLUGIN_DEBUG_POSTFIX)
                     set(PLUGIN_DEBUG_POSTFIX "Debug")
                 endif()
 
-                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
+                if (PLUGIN_PREFIX_${DAVA_PLATFORM_CURENT})
+                    set(PLUGIN_PREFIX ${PLUGIN_PREFIX_${DAVA_PLATFORM_CURENT}})
+                endif()
+
+                if (NOT PLUGIN_PREFIX)
+                    set(PLUGIN_PREFIX "")
+                endif()
+
+                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX "${PLUGIN_PREFIX}"
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX ${PLUGIN_DEBUG_POSTFIX})
+                                                                 DEBUG_POSTFIX "${PLUGIN_DEBUG_POSTFIX}")
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

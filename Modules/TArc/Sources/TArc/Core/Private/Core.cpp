@@ -9,6 +9,7 @@
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
 #include "QtTools/Utils/QtDelayedExecutor.h"
+#include "QtTools/Utils/MessageHandler.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
@@ -425,6 +426,7 @@ public:
     {
         Impl::OnLoopStarted();
 
+        qInstallMessageHandler(&DAVAMessageHandler);
         ToolsAssertGuard::Instance()->Init();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
@@ -748,7 +750,7 @@ Core::Core(Engine& engine, bool connectSignals)
         engine.windowCreated.Connect(this, &Core::OnWindowCreated);
     }
 
-    Q_INIT_RESOURCE(TArcResources);
+    //Q_INIT_RESOURCE(TArcResources);
 }
 
 Core::~Core() = default;

@@ -5,14 +5,16 @@ CheckBox
 {
     id: checkbox
     property var dataContext
-    objectName: typeof dataContext.objectName == "undefined" ? "BooleanComponent" : dataContext.objectName
-    anchors.left: parent.left
-    checked: dataContext.value
-    enabled: dataContext.enabled && !dataContext.readOnly
-    multipleValues: dataContext.multipleValues
+    anchors.fill: parent
+    partiallyCheckedEnabled: dataContext != null ? dataContext.value == Qt.PartiallyChecked : false
+    checkedState: dataContext != null ? dataContext.value : Qt.UnChecked
+    enabled: dataContext!= null ? !dataContext.readOnly : false
 
-    onCheckedChanged:
+    onCheckedStateChanged:
     {
-        dataContext.value = checked;
+        if (dataContext != null)
+        {
+            dataContext.value = checkedState;
+        }
     }
 }

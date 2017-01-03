@@ -301,6 +301,10 @@ void PathSystem::ProcessCommand(const RECommandNotificationObject& commandNotifi
                 }
             }
         }
+        else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+        {
+            // TODO UVR
+        }
     };
 
     commandNotification.ExecuteForAllCommands(processInspCommand);

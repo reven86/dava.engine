@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QMetaType>
 
 namespace DAVA
 {
@@ -16,6 +17,10 @@ class QtReflectionBridge;
 class QtReflected final : public QObject, private DataListener
 {
 public:
+    QtReflected() = default;
+    QtReflected(const QtReflected& other);
+    QtReflected& operator=(const QtReflected& other);
+
     const QMetaObject* metaObject() const override;
     int qt_metacall(QMetaObject::Call c, int id, void** argv) override;
     void Init();

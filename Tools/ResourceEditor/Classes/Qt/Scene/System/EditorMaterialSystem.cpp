@@ -322,6 +322,11 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
         }
         case CMDID_INSP_MEMBER_MODIFY:
         {
+            // TODO UVR
+        }
+        break;
+        case CMDID_REFLECTED_FIELD_MODIFY:
+        {
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
 
             const DAVA::Vector<DAVA::Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
@@ -335,6 +340,7 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
                 }
             }
         }
+        break;
 
         default:
             break;
@@ -343,7 +349,8 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
 
     static const DAVA::Vector<DAVA::uint32> commandIDs =
     {
-      CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY
+      CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW,
+      CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY, CMDID_REFLECTED_FIELD_MODIFY
     };
 
     if (commandNotification.MatchCommandIDs(commandIDs))

@@ -1,6 +1,7 @@
 #include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/ReflectedPropertyItem.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
+#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.h"
 
 #include "Debug/DVAssert.h"
 
@@ -17,6 +18,11 @@ ReflectedPropertyModel::ReflectedPropertyModel(QPointer<QQmlEngine> engine_, QPo
     RegisterExtension(ChildCreatorExtension::CreateDummy());
     RegisterExtension(MergeValuesExtension::CreateDummy());
     RegisterExtension(EditorComponentExtension::CreateDummy());
+    RegisterExtension(ModifyExtension::CreateDummy());
+
+    RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
+    RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
+    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
 
     using namespace std::placeholders;
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
@@ -25,6 +31,7 @@ ReflectedPropertyModel::ReflectedPropertyModel(QPointer<QQmlEngine> engine_, QPo
 
 ReflectedPropertyModel::~ReflectedPropertyModel()
 {
+    SetObjects(Vector<DAVA::Reflection>());
     rootItem.reset();
 }
 
@@ -62,7 +69,7 @@ bool ReflectedPropertyModel::setData(const QModelIndex& index, const QVariant& v
 QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex& parent) const
 {
     ReflectedPropertyItem* item = MapItem(parent);
-    return createIndex(row, column, item);
+    return createIndex(row, column, item->GetChild(row));
 }
 
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
@@ -81,6 +88,7 @@ void ReflectedPropertyModel::Update()
     Update(rootItem.get());
     //double duration = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
     //NGT_TRACE_MSG("update duration : %f seconds\n", duration);
+    wrappersProcessor.Sync();
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -95,11 +103,9 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
     {
         Update(child.get());
     }
-
-    wrappersProcessor.Sync();
 }
 
-void ReflectedPropertyModel::SetObjects(const std::vector<Reflection>& objects)
+void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 {
     int childCount = static_cast<int>(rootItem->GetChildCount());
     if (childCount != 0)
@@ -108,13 +114,17 @@ void ReflectedPropertyModel::SetObjects(const std::vector<Reflection>& objects)
         beginRemoveRows(QModelIndex(), 0, childCount - 1);
         rootItem->RemoveChildren();
         endRemoveRows();
-        rootItem->RemovePropertyNodes();
+
         childCreator.Clear();
     }
+    rootItem->RemovePropertyNodes();
 
-    for (const Reflection& obj : objects)
+    for (Reflection& obj : objects)
     {
-        std::shared_ptr<PropertyNode> rootNode = childCreator.CreateRoot(obj);
+        Reflection::Field field;
+        field.ref = std::move(obj);
+        field.key = Any(String("SelfRoot"));
+        std::shared_ptr<PropertyNode> rootNode = childCreator.CreateRoot(std::move(field));
         nodeToItem.emplace(rootNode, rootItem.get());
         rootItem->AddPropertyNode(rootNode);
     }
@@ -137,13 +147,13 @@ void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> pare
     else
     {
         std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
-        valueComponent->Init(&wrappersProcessor, reflectionBridge.data());
+        valueComponent->Init(this);
 
         int32 childCount = parentItem->GetChildCount();
         QModelIndex parentIndex = MapItem(parentItem);
 
         beginInsertRows(parentIndex, childCount, childCount);
-        ReflectedPropertyItem* childItem = parentItem->CreateChild(std::move(valueComponent));
+        childItem = parentItem->CreateChild(std::move(valueComponent));
         childItem->AddPropertyNode(node);
         endInsertRows();
     }
@@ -183,6 +193,7 @@ ReflectedPropertyItem* ReflectedPropertyModel::MapItem(const QModelIndex& item) 
 
 QModelIndex ReflectedPropertyModel::MapItem(ReflectedPropertyItem* item) const
 {
+    DVASSERT(item != nullptr);
     if (item == rootItem.get())
     {
         return QModelIndex();

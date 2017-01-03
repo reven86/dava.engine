@@ -1,5 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 1.4
+import TArcControls 1.0
 import TArcControls.Styles 1.0
 
 TextField
@@ -38,12 +39,6 @@ TextField
     activeFocusOnTab: readOnly ? false : true
     verticalAlignment: TextInput.AlignVCenter
 
-    // provide default heights
-    implicitHeight: defaultSpacing.minimumRowHeight
-    implicitWidth: contentLengthHelper.contentWidth + defaultSpacing.doubleMargin
-
-    text: currentText
-
     /*! This function recalculates the width of the text box based on its contents */
     function recalculateWidth()
     {
@@ -56,11 +51,16 @@ TextField
         {
             if(event.key == Qt.Key_Enter || event.key == Qt.Key_Return)
             {
-                textBox.focus = true;
                 if (selectTextOnAccepted)
                 {
+                    textBox.focus = true;
                     selectAll();
                 }
+                else
+                {
+                    textBox.focus = false;
+                }
+                ValueSetHelper.SetValue(textBox, "prevText", text);
                 editAccepted()
             }
             else if (event.key == Qt.Key_Escape)
@@ -83,7 +83,7 @@ TextField
         else
         {
             deselect()
-            if (acceptableInput && (currentText !== prevText))
+            if (acceptableInput && (text !== prevText))
             {
                 editAccepted();
             }
@@ -110,10 +110,6 @@ TextField
         }
     }
 
-    style: TextBoxStyle
-    {
-    }
-
     MouseArea
     {
         id: mouseAreaContextMenu
@@ -130,12 +126,12 @@ TextField
             if (textBox.useContextMenu)
             {
                 var highlightedText = selectedText
-                contextMenu.popup()
+                //contextMenu.popup()
             }
         }
     }
 
-    Menu
+    /*Menu
     {
         id: contextMenu
         objectName: "Menu"
@@ -187,5 +183,5 @@ TextField
                 selectAll()
             }
         }
-    }
+    }*/
 }

@@ -99,7 +99,7 @@ void DataWrapper::ClearListener(DataListener* listenerForCheck)
 
 bool DataWrapper::HasData() const
 {
-    if (impl == nullptr || impl->activeContext == nullptr)
+    if (impl == nullptr)
     {
         return false;
     }
@@ -131,6 +131,12 @@ void DataWrapper::SetListener(DataListener* listener)
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();
+}
+
+void DataWrapper::UpdateCachedValue(int32 id, const Any& value)
+{
+    DVASSERT(id < impl->cachedValues.size());
+    impl->cachedValues[id] = value;
 }
 
 void DataWrapper::Sync(bool notifyListener)

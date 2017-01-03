@@ -39,7 +39,18 @@ std::shared_ptr<const PropertyNode> ReflectedPropertyItem::GetPropertyNode(int32
 
 QString ReflectedPropertyItem::GetPropertyName() const
 {
-    return QString::fromStdString(value->GetPropertyNode(0)->fieldName.Cast<String>());
+    Any fieldName = value->GetPropertyNode(0)->field.key;
+    const Type* nameType = fieldName.GetType();
+    if (nameType == Type::Instance<int>())
+    {
+        return QString::number(fieldName.Cast<int>());
+    }
+    else if (nameType == Type::Instance<const char*>())
+    {
+        return QString(fieldName.Cast<const char*>());
+    }
+
+    return QString::fromStdString(fieldName.Cast<String>());
 }
 
 QQmlComponent* ReflectedPropertyItem::GetComponent() const
@@ -52,7 +63,7 @@ QQmlComponent* ReflectedPropertyItem::GetComponent() const
     return value->GetComponent(engine.data());
 }
 
-QtReflected* ReflectedPropertyItem::GetModel() const
+QObject* ReflectedPropertyItem::GetModel() const
 {
     return value->GetValueObject();
 }

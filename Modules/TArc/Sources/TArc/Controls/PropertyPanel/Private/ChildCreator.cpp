@@ -16,9 +16,9 @@ ChildCreator::~ChildCreator()
     DVASSERT(propertiesIndex.empty());
 }
 
-std::shared_ptr<PropertyNode> ChildCreator::CreateRoot(const Reflection& reflectedRoot)
+std::shared_ptr<PropertyNode> ChildCreator::CreateRoot(Reflection::Field&& reflectedRoot)
 {
-    std::shared_ptr<PropertyNode> rootNode = MakeRootNode(allocator.get());
+    std::shared_ptr<PropertyNode> rootNode = MakeRootNode(allocator.get(), std::move(reflectedRoot));
     auto result = propertiesIndex.emplace(rootNode, Vector<std::shared_ptr<PropertyNode>>());
     DVASSERT(result.second == true);
     return rootNode;
@@ -63,7 +63,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
         {
             for (size_t i = 0; i < children.size(); ++i)
             {
-                if (children[i] != currentChildren[i])
+                if (*children[i] != *currentChildren[i])
                 {
                     RemoveNode(currentChildren[i]);
                     std::swap(currentChildren[i], children[i]);
@@ -83,8 +83,8 @@ void ChildCreator::RemoveNode(const std::shared_ptr<PropertyNode>& parent)
     {
         RemoveNode(node);
     }
-    propertiesIndex.erase(iter);
     nodeRemoved.Emit(parent);
+    propertiesIndex.erase(iter);
     DVASSERT(parent.unique());
 }
 

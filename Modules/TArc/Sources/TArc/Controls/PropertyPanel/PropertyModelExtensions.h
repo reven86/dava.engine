@@ -36,12 +36,8 @@ public:
     bool operator!=(const PropertyNode& other) const;
 
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
-    Reflection reflectedObject;
-    Any fieldName;
+    Reflection::Field field;
     Any cachedValue;
-
-    void SetValue(const Any& value);
-    void SetValue(Any&& value);
 };
 
 class IChildAllocator
@@ -51,10 +47,10 @@ public:
     {
     }
 
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Any&& fieldName, Reflection&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
 };
 
-std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator);
+std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field);
 
 class ExtensionChain
 {
@@ -164,6 +160,15 @@ public:
     EditorComponentExtension();
     virtual std::unique_ptr<BaseComponentValue> GetEditor(const std::shared_ptr<const PropertyNode>& node) const;
     static std::shared_ptr<EditorComponentExtension> CreateDummy();
+};
+
+class ModifyExtension : public ExtensionChain
+{
+public:
+    ModifyExtension();
+    void ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
+    virtual void ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue);
+    static std::shared_ptr<ModifyExtension> CreateDummy();
 };
 } // namespace TArc
 } // namespace DAVA

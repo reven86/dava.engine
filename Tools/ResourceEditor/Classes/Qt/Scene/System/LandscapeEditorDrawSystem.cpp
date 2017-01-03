@@ -637,7 +637,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const RECommandNotificationObject
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
-    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY, CMDID_REFLECTED_FIELD_MODIFY }))
     {
         auto processSingleCommand = [this](const RECommand* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
@@ -656,6 +656,10 @@ void LandscapeEditorDrawSystem::ProcessCommand(const RECommandNotificationObject
                         heightmapProxy->UpdateRect(DAVA::Rect(0.f, 0.f, size, size));
                     }
                 }
+            }
+            else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+            {
+                // TODO UVR
             }
             else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
             {

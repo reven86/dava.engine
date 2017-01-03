@@ -9,6 +9,8 @@
 #include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
+#include "Engine/Engine.h"
+#include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
 
 #include <QPointer>
@@ -217,9 +219,9 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
         QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
         if (menu == nullptr)
         {
+            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             menu = new QMenu(currentLevelTittle, currentLevelMenu);
             menu->setObjectName(currentLevelTittle);
-            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             if (action != nullptr)
             {
                 action->setMenu(menu);
@@ -491,8 +493,10 @@ protected:
         QMainWindow* mainWindow = mainWindowInfo.window;
         DVASSERT(mainWindow != nullptr);
         QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
+        newDockWidget->layout()->setContentsMargins(0, 0, 0, 0);
         newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
         newDockWidget->setWidget(widget);
+        newDockWidget->show();
 
         if (info.tabbed == true)
         {
@@ -561,6 +565,12 @@ UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
     impl->qmlEngine.reset(new QQmlEngine());
     impl->qmlEngine->addImportPath("qrc:/");
     impl->qmlEngine->addImportPath(":/");
+
+    const EngineContext* engine = GetEngineContext();
+    FileSystem* fileSystem = engine->fileSystem;
+    QString pluginPath = QString::fromStdString(fileSystem->GetPluginDirectory().GetAbsolutePathname());
+    impl->qmlEngine->addImportPath(pluginPath);
+    impl->qmlEngine->addPluginPath(pluginPath);
 }
 
 UIManager::~UIManager() = default;

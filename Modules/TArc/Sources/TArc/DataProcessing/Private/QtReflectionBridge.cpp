@@ -1,4 +1,5 @@
 #include "TArc/DataProcessing/QtReflectionBridge.h"
+#include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
 #include "Base/TemplateHelpers.h"
@@ -67,7 +68,9 @@ void FillConverter(UnorderedMap<const Type*, QVariant (*)(const Any&)>& anyToVar
 
 #define FOR_ALL_QT_SPECIFIC_TYPES(F, ATV, VTA) \
     F(QFileSystemModel*, ATV, VTA) \
-    F(QModelIndex, ATV, VTA)
+    F(QModelIndex, ATV, VTA) \
+    F(ReflectedPropertyModel*, ATV, VTA) \
+    F(Qt::CheckState, ATV, VTA)
 
 #define FOR_ALL_STATIC_TYPES(F, ATV, VTA) \
     FOR_ALL_BUILTIN_TYPES(F, ATV, VTA) \
@@ -85,7 +88,30 @@ QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wr
     , reflectionBridge(reflectionBridge_)
     , wrapper(std::move(wrapper_))
 {
-    DVASSERT(parent != nullptr);
+    //DVASSERT(parent != nullptr);
+}
+
+QtReflected::QtReflected(const QtReflected& other)
+    : QObject(other.parent())
+    , reflectionBridge(other.reflectionBridge)
+    , wrapper(other.wrapper)
+    , qtMetaObject(other.qtMetaObject)
+{
+}
+
+QtReflected& QtReflected::operator=(const QtReflected& other)
+{
+    if (this == &other)
+    {
+        return *this;
+    }
+
+    setParent(other.parent());
+    reflectionBridge = other.reflectionBridge;
+    qtMetaObject = other.qtMetaObject;
+    wrapper = other.wrapper;
+
+    return *this;
 }
 
 const QMetaObject* QtReflected::metaObject() const
@@ -135,7 +161,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void** argv)
                 if (newValue != davaValue)
                 {
                     field.ref.SetValue(newValue);
-                    wrapper.Sync(false);
+                    wrapper.UpdateCachedValue(id, newValue);
                 }
             }
         }
@@ -199,6 +225,7 @@ void QtReflected::CreateMetaObject()
     DVASSERT(wrapper.HasData());
     Reflection reflectionData = wrapper.GetData();
 
+    // TODO BaseComponentValue
     const ReflectedType* type = reflectionData.GetValueObject().GetReflectedType();
 
     SCOPE_EXIT
@@ -215,18 +242,18 @@ void QtReflected::CreateMetaObject()
 
     QMetaObjectBuilder builder;
 
-    builder.setClassName(type->GetPermanentName().c_str());
+    // TODO Empty permanent name
+    builder.setClassName(type->GetType()->GetName());
     builder.setSuperClass(&QObject::staticMetaObject);
 
     Vector<Reflection::Field> fields = reflectionData.GetFields();
     for (const Reflection::Field& f : fields)
     {
         QByteArray propertyName = QByteArray(f.key.Cast<String>().c_str());
-        QMetaPropertyBuilder propertybuilder = builder.addProperty(propertyName, "QVariant");
+        QByteArray notifySignal = propertyName + "Changed()";
+        QMetaMethodBuilder signalBuilder = builder.addSignal(notifySignal);
+        QMetaPropertyBuilder propertybuilder = builder.addProperty(propertyName, "QVariant", signalBuilder.index());
         propertybuilder.setWritable(!f.ref.IsReadonly());
-
-        QByteArray notifySignal = propertyName + "Changed";
-        propertybuilder.setNotifySignal(builder.addSignal(notifySignal));
     }
 
     Vector<Reflection::Method> methods = reflectionData.GetMethods();
@@ -264,8 +291,8 @@ void QtReflected::CreateMetaObject()
 
 void QtReflected::FirePropertySignal(const String& propertyName)
 {
-    String signalName = propertyName + "Changed";
-    int id = qtMetaObject->indexOfSignal(signalName.c_str());
+    String signalName = propertyName + "Changed()";
+    int id = qtMetaObject->indexOfSignal(qtMetaObject->normalizedSignature(signalName.c_str()));
     FirePropertySignal(id);
 }
 

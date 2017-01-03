@@ -10,7 +10,7 @@ namespace TArc
 {
 QQmlComponent* DAVA::TArc::EmptyComponentValue::GetComponent(QQmlEngine* engine) const
 {
-    static QQmlComponent component;
+    static QQmlComponent component(engine);
     return &component;
 }
 

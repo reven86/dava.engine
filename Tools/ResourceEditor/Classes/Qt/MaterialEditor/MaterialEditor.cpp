@@ -777,7 +777,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommandNotific
         RefreshMaterialProperties();
     }
 
-    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY, CMDID_REFLECTED_FIELD_MODIFY }))
     {
         auto processSingleCommand = [this](const RECommand* command, bool redo)
         {
@@ -797,6 +797,10 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommandNotific
                 {
                     materialPropertiesUpdater->Update();
                 }
+            }
+            else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+            {
+                // TODO UVR
             }
             else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
             {

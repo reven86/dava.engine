@@ -202,7 +202,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const RECommandNotific
 {
     if (treeModel->GetScene() == scene)
     {
-        if (commandNotification.MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+        if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_REFLECTED_FIELD_MODIFY }))
         {
             treeModel->invalidate();
         }

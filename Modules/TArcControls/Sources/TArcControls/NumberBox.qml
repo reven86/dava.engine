@@ -1,5 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 1.4 as QtControls
+import TArcControls 1.0
 
 QtControls.SpinBox
 {
@@ -11,11 +12,10 @@ QtControls.SpinBox
          The default value is \c 0
     */
     property real number: 0
-    property bool multipleValues: false
     property bool readOnly: false
 
     value: number
-    activeFocusOnPress: readOnly
+    activeFocusOnPress: !readOnly
 
     onEditingFinished:
     {

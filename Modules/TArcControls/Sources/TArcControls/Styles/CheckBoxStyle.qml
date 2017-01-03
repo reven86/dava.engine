@@ -6,11 +6,10 @@ import QtQuick.Controls.Private 1.0
 
 Style {
     id: checkboxStyle
-    objectName: "WGCheckBoxStyle"
-    WGComponent { type: "WGCheckBoxStyle" }
+    objectName: "CheckBoxStyle"
 
     /*! The \l CheckBox this style is attached to. */
-    readonly property WGCheckBase control: __control
+    readonly property CheckBox control: __control
 
     /*! This defines the text label. */
     property Component label: Item {

@@ -171,6 +171,7 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    Q_INIT_RESOURCE(TArcResources);
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();

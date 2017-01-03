@@ -1,16 +1,15 @@
 import QtQuick 2.5
 import QtQuick.Controls.Styles 1.4
-import WGControls 1.0
 
 /*! 
     \ingroup wgcontrols
     \brief Provides custom styling for WGTextBox.
 */
 
-TextFieldStyle {
+TextFieldStyle
+{
     id: baseStyle
-    objectName: "WGTexBoxStyle"
-    WGComponent { type: "WGTextBoxStyle" }
+    objectName: "TexBoxStyle"
 
     textColor: palette.textColor
 

@@ -14,7 +14,6 @@ Image 1.0 Image.qml
 ImageDropDown 1.0 ImageDropDown.qml
 InternalPane 1.0 InternalPanel.qml
 Labe 1.0 Label.qml
-Loader 1.0 Loader.qml
 LodSlider 1.0 LodSlider.qml
 Menu 1.0 Menu.qml
 MultiLineText 1.0 MultiLineText.qml
