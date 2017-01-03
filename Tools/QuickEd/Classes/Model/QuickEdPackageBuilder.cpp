@@ -6,7 +6,6 @@
 #include "Model/ControlProperties/ControlPropertiesSection.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
-#include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -42,6 +41,10 @@ QuickEdPackageBuilder::~QuickEdPackageBuilder()
     for (ControlNode* control : rootControls)
         control->Release();
     rootControls.clear();
+
+    for (ControlNode* control : prototypes)
+        control->Release();
+    prototypes.clear();
 
     for (StyleSheetNode* styleSheet : styleSheets)
         styleSheet->Release();
@@ -273,32 +276,6 @@ UIControlBackground* QuickEdPackageBuilder::BeginBgPropertiesSection(int index, 
 }
 
 void QuickEdPackageBuilder::EndBgPropertiesSection()
-{
-    currentSection = nullptr;
-    currentObject = nullptr;
-}
-
-UIControl* QuickEdPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
-{
-    ControlNode* node = controlsStack.back().node;
-    InternalControlPropertiesSection* section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
-    if (section && sectionHasProperties)
-    {
-        if (section->GetInternalControl() == nullptr)
-            section->CreateInternalControl();
-
-        if (section->GetInternalControl())
-        {
-            currentObject = section->GetInternalControl();
-            currentSection = section;
-            return section->GetInternalControl();
-        }
-    }
-
-    return nullptr;
-}
-
-void QuickEdPackageBuilder::EndInternalControlSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;

@@ -15,6 +15,14 @@ extern CoreNativeBridge* coreNativeBridge;
 
 @implementation AppDelegate
 
+- (void)application:(UIApplication*)application didReceiveLocalNotification:(UILocalNotification*)notification
+{
+    if ([application applicationState] != UIApplicationStateActive)
+    {
+        bridge->ApplicationDidReceiveLocalNotification(notification);
+    }
+}
+
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     bridge = DAVA::Private::coreNativeBridge;

@@ -3,23 +3,19 @@
 #include "ui_soundcomponenteditor.h"
 #include "Commands2/SoundComponentEditCommands.h"
 
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 #include <QTreeWidget>
 #include <QMessageBox>
 #include <QLabel>
 #include <QSlider>
 #include <QToolTip>
 
-#include "QtTools/WidgetHelpers/SharedIcon.h"
-
 SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    component(0)
-    ,
-    scene(_scene)
-    ,
-    ui(new Ui::SoundComponentEditor)
+    : QDialog(parent)
+    , component(0)
+    , scene(_scene)
+    , ui(new Ui::SoundComponentEditor)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
@@ -137,7 +133,7 @@ void SoundComponentEditor::FillEventParamsFrame()
 
     DAVA::Vector<DAVA::SoundEvent::SoundEventParameterInfo> params;
     soundEvent->GetEventParametersInfo(params);
-    DAVA::int32 paramsCount = params.size();
+    DAVA::int32 paramsCount = static_cast<DAVA::int32>(params.size());
     for (DAVA::int32 i = 0; i < paramsCount; i++)
     {
         DAVA::SoundEvent::SoundEventParameterInfo& param = params[i];

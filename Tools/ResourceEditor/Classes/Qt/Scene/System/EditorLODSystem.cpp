@@ -17,7 +17,6 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystem.h"
-#include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Lod/LodSystem.h"
 
 #include "Commands2/Base/RECommand.h"
@@ -26,6 +25,7 @@
 #include "Settings/SettingsManager.h"
 
 #include "TArc/Utils/ScopedValueGuard.h"
+#include "Classes/Selection/Selection.h"
 
 using namespace DAVA;
 
@@ -215,8 +215,44 @@ EditorLODSystem::~EditorLODSystem()
 
 void EditorLODSystem::Process(float32 timeElapsed)
 {
+    ProcessAddedEntities();
     DispatchSignals();
     ProcessPlaneLODs();
+}
+
+void EditorLODSystem::ProcessAddedEntities()
+{
+    if (componentsToAdd.empty())
+    {
+        return;
+    }
+
+    bool invalidateUI = mode == eEditorMode::MODE_ALL_SCENE;
+
+    const SelectableGroup& selection = Selection::GetSelection();
+    for (const std::pair<DAVA::Entity*, DAVA::LodComponent*>& pair : componentsToAdd)
+    {
+        if (selection.ContainsObject(pair.first))
+        {
+            ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
+
+            resetForceValues.flag = ForceValues::APPLY_ALL;
+            resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
+            resetForceValues.distance = LodComponent::INVALID_DISTANCE;
+            lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
+            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(pair.second);
+            lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
+            lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
+            invalidateUI = true;
+        }
+    }
+
+    if (invalidateUI == true)
+    {
+        EmitInvalidateUI(FLAG_ALL);
+    }
+
+    componentsToAdd.clear();
 }
 
 void EditorLODSystem::AddEntity(Entity* entity)
@@ -243,25 +279,7 @@ void EditorLODSystem::AddComponent(Entity* entity, Component* component)
     lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(lodComponent);
     lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
 
-    bool invalidateUI = mode == eEditorMode::MODE_ALL_SCENE;
-    if (static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection().ContainsObject(entity))
-    {
-        ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
-
-        resetForceValues.flag = ForceValues::APPLY_ALL;
-        resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
-        resetForceValues.distance = LodComponent::INVALID_DISTANCE;
-        lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
-        lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(lodComponent);
-        lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
-        lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
-        invalidateUI = true;
-    }
-
-    if (invalidateUI == true)
-    {
-        EmitInvalidateUI(FLAG_ALL);
-    }
+    componentsToAdd.emplace_back(entity, lodComponent);
 }
 
 void EditorLODSystem::RemoveComponent(Entity* entity, Component* component)
@@ -280,6 +298,16 @@ void EditorLODSystem::RemoveComponent(Entity* entity, Component* component)
                 EmitInvalidateUI(FLAG_ALL);
             }
         }
+    }
+
+    if (componentsToAdd.empty() == false)
+    {
+        componentsToAdd.erase(std::remove_if(componentsToAdd.begin(), componentsToAdd.end(),
+                                             [removedComponent](const std::pair<DAVA::Entity*, DAVA::LodComponent*>& pair) {
+                                                 return pair.second == removedComponent;
+                                             }
+                                             ),
+                              componentsToAdd.end());
     }
 }
 
@@ -318,9 +346,8 @@ void EditorLODSystem::SetRecursive(bool recursive_)
 {
     recursive = recursive_;
 
-    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
-    SelectionChanged(&selection, nullptr);
+    const SelectableGroup& selection = Selection::GetSelection();
+    SelectionChanged(selection);
 }
 
 const ForceValues& EditorLODSystem::GetForceValues() const
@@ -498,7 +525,7 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
     EmitInvalidateUI(FLAG_DISTANCE);
 }
 
-void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected)
+void EditorLODSystem::SelectionChanged(const SelectableGroup& selection)
 {
     { //reset force values
         ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
@@ -511,13 +538,11 @@ void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const Se
         lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
     }
 
-    bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
-
-    uint32 count = selected->GetSize();
+    uint32 count = selection.GetSize();
     Vector<Entity*> lodEntities;
     lodEntities.reserve(count); //mostly we have less than 5 lods in hierarchy
 
-    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
         if (recursive)
         {
