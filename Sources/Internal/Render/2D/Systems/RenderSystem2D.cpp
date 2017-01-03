@@ -1333,6 +1333,10 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
             needGenerateData |= gradient != tiledData->gradient;
             needGenerateData |= contour != tiledData->contour;
             needGenerateData |= size != tiledData->size;
+            needGenerateData |= mask->textures[0] != tiledData->mask_texture;
+            needGenerateData |= detail->textures[0] != tiledData->detail_texture;
+            needGenerateData |= gradient->textures[0] != tiledData->gradient_texture;
+            needGenerateData |= contour->textures[0] != tiledData->contour_texture;
         }
     }
     else
@@ -1351,6 +1355,11 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.detail = detail;
         td.gradient = gradient;
         td.contour = contour;
+
+        td.mask_texture = mask->textures[0];
+        td.detail_texture = detail->textures[0];
+        td.gradient_texture = gradient->textures[0];
+        td.contour_texture = contour->textures[0];
 
         rhi::TextureSetDescriptor textureSetDescriptor;
         textureSetDescriptor.fragmentTextureCount = 4;
