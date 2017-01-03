@@ -321,6 +321,9 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     rhi::VertexLayout vertexLayout;
     vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vertexLayoutId = rhi::VertexLayout::UniqueId(vertexLayout);
+
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
