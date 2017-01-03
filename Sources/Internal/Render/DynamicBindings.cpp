@@ -153,7 +153,8 @@ inline void DynamicBindings::UpdateGlobalTimeIfRequired()
 #endif
     if (dynamicParameters[PARAM_GLOBAL_TIME].updateSemantic != globalFrameIndex)
     {
-        frameGlobalTime = SystemTimer::GetGlobalTime();
+        // SystemTimer::GetGlobalTime is deprecated so use frame timestamp translated to seconds
+        frameGlobalTime = static_cast<float32>(SystemTimer::GetFrameTimestamp() / 1000.0);
         SetDynamicParam(PARAM_GLOBAL_TIME, &frameGlobalTime, globalFrameIndex);
     }
 }

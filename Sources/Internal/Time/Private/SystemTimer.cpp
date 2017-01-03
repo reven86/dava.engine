@@ -103,12 +103,12 @@ void SystemTimer::SetFrameDelta(float32 delta)
     frameDelta = delta;
 }
 
-float32 SystemTimer::GetGlobalTime()
+DAVA_DEPRECATED(float32 SystemTimer::GetGlobalTime())
 {
     return globalTime;
 }
 
-void SystemTimer::UpdateGlobalTime(float32 timeElapsed)
+DAVA_DEPRECATED(void SystemTimer::UpdateGlobalTime(float32 timeElapsed))
 {
     if (!globalTimePaused)
     {
@@ -116,17 +116,17 @@ void SystemTimer::UpdateGlobalTime(float32 timeElapsed)
     }
 }
 
-void SystemTimer::ResetGlobalTime()
+DAVA_DEPRECATED(void SystemTimer::ResetGlobalTime())
 {
     globalTime = 0.f;
 }
 
-void SystemTimer::PauseGlobalTime()
+DAVA_DEPRECATED(void SystemTimer::PauseGlobalTime())
 {
     globalTimePaused = true;
 }
 
-void SystemTimer::ResumeGlobalTime()
+DAVA_DEPRECATED(void SystemTimer::ResumeGlobalTime())
 {
     globalTimePaused = false;
 }

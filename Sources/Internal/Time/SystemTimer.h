@@ -71,11 +71,11 @@ public:
     /** Modify frame delta for current frame: used mainly in replays. */
     static void SetFrameDelta(float32 delta);
 
-    static float32 GetGlobalTime();
-    static void UpdateGlobalTime(float32 timeElapsed);
-    static void ResetGlobalTime();
-    static void PauseGlobalTime();
-    static void ResumeGlobalTime();
+    DAVA_DEPRECATED(static float32 GetGlobalTime());
+    DAVA_DEPRECATED(static void UpdateGlobalTime(float32 timeElapsed));
+    DAVA_DEPRECATED(static void ResetGlobalTime());
+    DAVA_DEPRECATED(static void PauseGlobalTime());
+    DAVA_DEPRECATED(static void ResumeGlobalTime());
 
 private:
     static void StartFrame();

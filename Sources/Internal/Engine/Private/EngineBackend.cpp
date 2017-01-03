@@ -326,6 +326,7 @@ void EngineBackend::OnFrameConsole()
     SystemTimer::StartFrame();
     float32 frameDelta = SystemTimer::GetFrameDelta();
     SystemTimer::ComputeRealFrameDelta();
+    // TODO: UpdateGlobalTime is deprecated, remove later
     SystemTimer::UpdateGlobalTime(frameDelta);
 
     DoEvents();
@@ -352,6 +353,7 @@ int32 EngineBackend::OnFrame()
     if (!appIsSuspended)
     {
         SystemTimer::ComputeRealFrameDelta();
+        // TODO: UpdateGlobalTime is deprecated, remove later
         SystemTimer::UpdateGlobalTime(frameDelta);
 
         if (Renderer::IsInitialized())
