@@ -149,7 +149,7 @@ public:
 
     /**
     Remove backend with specified name from Core.
-    Method does nothing if Core doesn't contain the backend with specified.
+    Method does nothing if Core doesn't contain the backend with specified name.
     */
     void RemoveBackend(const String& name);
 
