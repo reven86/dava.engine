@@ -11,6 +11,8 @@ class SpeedTreeUpdateSystem;
 class SpeedTreeObject : public RenderObject
 {
 public:
+    static const size_t HARMONICS_BUFFER_CAPACITY = 4 * 7; //7 registers (float4)
+
     SpeedTreeObject();
     virtual ~SpeedTreeObject();
 
@@ -23,8 +25,8 @@ public:
 
     void BindDynamicParameters(Camera* camera) override;
 
-    void SetSphericalHarmonics(const Vector<Vector3>& coeffs);
-    const Vector<Vector3>& GetSphericalHarmonics() const;
+    void SetSphericalHarmonics(const DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY>& coeffs);
+    const DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY>& GetSphericalHarmonics() const;
 
     //Interpolate between globally smoothed (0.0) and locally smoothed (1.0) leafs lighting
     void SetLightSmoothing(const float32& smooth);
@@ -41,7 +43,7 @@ protected:
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
-    Vector<Vector3> sphericalHarmonics;
+    DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY> sphericalHarmonics;
     float32 lightSmoothing;
 
 public:
