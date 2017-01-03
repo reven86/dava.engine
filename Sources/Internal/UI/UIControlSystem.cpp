@@ -11,6 +11,7 @@
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
+#include "UI/Scroll/UIScrollBarLinkSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -40,6 +41,7 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UIScrollBarLinkSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();

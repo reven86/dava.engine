@@ -158,10 +158,6 @@ public:
 
     void ScrollToElement(int32 index);
 
-    // Get and set aggregator path
-    const FilePath& GetAggregatorPath();
-    void SetAggregatorPath(const FilePath& aggregatorPath);
-
     float32 GetScrollPosition();
     void SetScrollPosition(float32 newScrollPos);
     void ResetScrollPosition();
@@ -200,8 +196,6 @@ public:
 
     UIList* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
-
-    const String GetDelegateControlPath(const UIControl* rootControl) const override;
 
     bool GetNeedRefresh();
 
@@ -245,14 +239,11 @@ protected:
     bool lockTouch : 1;
     bool needRefresh : 1;
 
-    FilePath aggregatorPath;
-
     Map<String, Vector<UIListCell*>*> cellStore;
 
 public:
     INTROSPECTION_EXTEND(UIList, UIControl,
                          PROPERTY("orientation", InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("aggregatorPath", "Aggregator Path", GetAggregatorPath, SetAggregatorPath, I_SAVE | I_VIEW | I_EDIT)
                          );
 };
 

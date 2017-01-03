@@ -16,6 +16,29 @@ QTabBar::close-button::pressed
     image: url(:/QtTools/Icons/close-16.png);
 }
 
+QTabBar::scroller
+{
+    width: 20px;
+}
+
+QTabBar QToolButton:disabled[accessibleName="Scroll Right"]
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #404040, stop: 1 #2c2c2c);
+}
+
+QTabBar QToolButton:disabled[accessibleName="Scroll Left"]
+{
+    border-width: 1px;
+    border-style: solid;
+    border-color: #262626;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 #404040, stop: 1 #2c2c2c);
+}
+
 QDockWidget::title { background: #454545; }
 QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }
 QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }

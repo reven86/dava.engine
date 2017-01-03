@@ -207,7 +207,7 @@ void VisibilityCheckSystem::Draw()
         dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
-    DAVA::uint32 previousPointIndex = currentPointIndex;
+    DAVA::uint32 previousPointIndex = static_cast<DAVA::uint32>(currentPointIndex);
     for (DAVA::uint32 cm = 0; (cm < VCSInternal::CUBEMAPS_POOL_SIZE) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
@@ -465,7 +465,7 @@ void VisibilityCheckSystem::BuildIndexSet()
     controlPointIndices.resize(totalPoints);
     for (size_t i = 0; i < totalPoints; ++i)
     {
-        controlPointIndices[i] = i;
+        controlPointIndices[i] = static_cast<DAVA::uint32>(i);
     }
 
     if (totalPoints > 0)

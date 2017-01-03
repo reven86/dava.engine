@@ -1,9 +1,9 @@
-#ifndef __SCENE_STRUCTURE_SYSTEM_H__
-#define __SCENE_STRUCTURE_SYSTEM_H__
+#pragma once
 
-#include "Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectableGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -16,7 +16,7 @@
 #include "Functional/Function.h"
 
 class RECommandNotificationObject;
-class StructureSystem : public DAVA::SceneSystem
+class StructureSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
 public:
     using InternalMapping = DAVA::Map<DAVA::Entity*, DAVA::Entity*>;
@@ -24,6 +24,8 @@ public:
 public:
     StructureSystem(DAVA::Scene* scene);
     ~StructureSystem();
+
+    void Process(DAVA::float32 timeElapsed) override;
 
     void Move(const SelectableGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore);
     void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstance*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
@@ -46,13 +48,12 @@ public:
     void AddDelegate(StructureSystemDelegate* delegate);
     void RemoveDelegate(StructureSystemDelegate* delegate);
 
+    void CheckAndMarkSolid(DAVA::Entity* entity);
+
+protected:
+    void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
+
 private:
-    friend class SceneEditor2;
-
-    void Process(DAVA::float32 timeElapsed) override;
-
-    void ProcessCommand(const RECommandNotificationObject& commandNotification);
-
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
@@ -63,15 +64,10 @@ private:
     void CopyLightmapSettings(DAVA::NMaterial* fromEntity, DAVA::NMaterial* toEntity) const;
     void FindMeshesRecursive(DAVA::Entity* entity, DAVA::Vector<DAVA::RenderObject*>& objects) const;
 
-    void CheckAndMarkSolid(DAVA::Entity* entity);
-
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
 
     void RemoveEntities(DAVA::Vector<DAVA::Entity*>& entitiesToRemove);
 
-private:
     DAVA::List<StructureSystemDelegate*> delegates;
     bool structureChanged = false;
 };
-
-#endif // __SCENE_STRUCTURE_SYSTEM_H__

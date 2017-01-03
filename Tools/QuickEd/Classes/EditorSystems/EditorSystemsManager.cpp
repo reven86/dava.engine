@@ -50,6 +50,7 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
+    inputLayerControl->SetName("inputLayerControl");
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 

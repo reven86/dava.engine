@@ -1,7 +1,6 @@
 #include "Classes/Project/ProjectManagerData.h"
 
 #include "Classes/Deprecated/EditorConfig.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
 #include "SpritesPacker/SpritesPackerModule.h"
 
 namespace ProjectManagerDataDetails
@@ -11,7 +10,6 @@ const char* DATASOURCE_PATH = "DataSource/";
 const char* DATASOURCE_3D_PATH = "DataSource/3d/";
 const char* PARTICLE_CONFIG_PATH = "DataSource/Configs/Particles/";
 const char* PARTICLE_GFX_PATH = "DataSource/Gfx/Particles/";
-const char* WORKSPACE_PATH = "~doc:/ResourceEditor/";
 }
 
 const DAVA::String ProjectManagerData::ProjectPathProperty = DAVA::String("ProjectPath");
@@ -57,11 +55,6 @@ DAVA::FilePath ProjectManagerData::GetParticlesGfxPath() const
     return projectPath + ProjectManagerDataDetails::PARTICLE_GFX_PATH;
 }
 
-DAVA::FilePath ProjectManagerData::GetWorkspacePath() const
-{
-    return DAVA::FilePath(ProjectManagerDataDetails::WORKSPACE_PATH + projectPath.GetLastDirectoryName() + "/");
-}
-
 const QVector<ProjectManagerData::AvailableMaterialTemplate>& ProjectManagerData::GetAvailableMaterialTemplates() const
 {
     return templates;
@@ -82,11 +75,6 @@ DAVA::FilePath ProjectManagerData::CreateProjectPathFromPath(const DAVA::FilePat
     }
 
     return DAVA::FilePath();
-}
-
-const FileSystemCache* ProjectManagerData::GetDataSourceSceneFiles() const
-{
-    return dataSourceSceneFiles.get();
 }
 
 const EditorConfig* ProjectManagerData::GetEditorConfig() const
