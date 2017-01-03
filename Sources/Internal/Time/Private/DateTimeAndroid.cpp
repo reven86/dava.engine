@@ -1,15 +1,28 @@
 #include "Time/DateTime.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
 #include "FileSystem/LocalizationSystem.h"
 
-
-#if defined(__DAVAENGINE_ANDROID__)
-#include "DateTimeAndroid.h"
-#include "ExternC/AndroidLayer.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {
+class JniDateTime
+{
+public:
+    JniDateTime();
+    WideString AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset);
+    int GetLocalTimeZoneOffset();
+
+private:
+    JNI::JavaClass jniDateTime;
+    Function<jstring(jstring, jstring, jlong, jint)> getTimeAsString;
+    Function<jint()> getLocalTimeZoneOffset;
+};
+
 JniDateTime::JniDateTime()
     : jniDateTime("com/dava/framework/JNIDateTime")
 {
@@ -64,4 +77,4 @@ int32 DateTime::GetLocalTimeZoneOffset()
 }
 }
 
-#endif
+#endif // __DAVAENGINE_ANDROID__

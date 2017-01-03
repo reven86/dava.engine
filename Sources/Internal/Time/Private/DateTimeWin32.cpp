@@ -1,4 +1,7 @@
 #include "Time/DateTime.h"
+
+#if defined(__DAVAENGINE_WINDOWS__)
+
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -46,3 +49,5 @@ WideString DateTime::GetLocalizedTime() const
     return AsWString(L"%X");
 }
 }
+
+#endif // __DAVAENGINE_WINDOWS__

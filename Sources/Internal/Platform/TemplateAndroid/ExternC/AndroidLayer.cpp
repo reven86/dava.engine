@@ -30,7 +30,6 @@ JavaVM* GetJVM()
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #include "Debug/DVAssertMessage.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
-#include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
 #include "UI/Private/Android/MovieViewControlAndroid.h"

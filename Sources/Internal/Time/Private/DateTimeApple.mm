@@ -1,4 +1,7 @@
 #include "Time/DateTime.h"
+
+#if defined(__DAVAENGINE_APPLE__)
+
 #include "FileSystem/LocalizationSystem.h"
 
 #include <time.h>
@@ -88,3 +91,5 @@ int32 DateTime::GetLocalTimeZoneOffset()
     return static_cast<int32>(resultStruct.tm_gmtoff);
 }
 }
+
+#endif // __DAVAENGINE_APPLE__

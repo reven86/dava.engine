@@ -21,17 +21,14 @@ static const char* months[] = { "jan", "feb", "mar", "apr", "may", "jun", "jul",
 namespace DAVA
 {
 DateTime::DateTime(Timestamp timeStamp, int32 _timeZoneOffset)
-    :
-    innerTime(timeStamp)
-    ,
-    timeZoneOffset(_timeZoneOffset)
+    : innerTime(timeStamp)
+    , timeZoneOffset(_timeZoneOffset)
 {
     UpdateLocalTimeStructure();
 }
 
 DateTime::DateTime(int32 year, int32 month, int32 day, int32 _timeZoneOffset)
-    :
-    timeZoneOffset(_timeZoneOffset)
+    : timeZoneOffset(_timeZoneOffset)
 {
     DVASSERT(year >= 0 && month >= 0 && day >= 0 &&
              timeZoneOffset <= (MAX_OFFSET_IN_HOURS * SECONDS_IN_HOUR) && timeZoneOffset >= (-1 * MAX_OFFSET_IN_HOURS * SECONDS_IN_HOUR));
@@ -48,8 +45,7 @@ DateTime::DateTime(int32 year, int32 month, int32 day, int32 _timeZoneOffset)
 }
 
 DateTime::DateTime(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 _timeZoneOffset)
-    :
-    timeZoneOffset(_timeZoneOffset)
+    : timeZoneOffset(_timeZoneOffset)
 {
     DVASSERT(year >= 0 && month >= 0 && day >= 0 && hour >= 0 && minute >= 0 && second >= 0 &&
              timeZoneOffset <= (MAX_OFFSET_IN_HOURS * SECONDS_IN_HOUR) && timeZoneOffset >= (-1 * MAX_OFFSET_IN_HOURS * SECONDS_IN_HOUR));
