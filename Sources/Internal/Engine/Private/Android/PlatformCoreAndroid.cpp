@@ -103,7 +103,7 @@ void PlatformCore::ActivityOnResume()
     int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeMicros() - goBackgroundTimeRelativeToBoot;
     int64 timeSpentInBackground2 = SystemTimer::GetAbsoluteMicros() - goBackgroundTime;
     // Do adjustment only if SystemTimer has stopped ticking
-    if (timeSpentInBackground1 - timeSpentInBackground2 > 3000000l)
+    if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
     {
         EngineBackend::AdjustSystemTimer(timeSpentInBackground1);
     }
