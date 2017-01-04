@@ -11,6 +11,7 @@
 
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/DataProcessing/DataWrapper.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Particles/ParticleEmitterInstance.h"
 #include "Engine/EngineContext.h"
@@ -91,3 +92,5 @@ void LaunchModule::UnpackHelpDoc()
     }
     SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
+
+DECL_GUI_MODULE(LaunchModule);

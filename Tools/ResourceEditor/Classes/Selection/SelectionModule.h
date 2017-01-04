@@ -3,6 +3,8 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include "Reflection/Reflection.h"
+
 class SelectionModule : public DAVA::TArc::ClientModule
 {
 protected:
@@ -16,4 +18,6 @@ private:
     void SelectionByMouseChanged();
 
     DAVA::TArc::QtConnections connections;
+
+    DAVA_VIRTUAL_REFLECTION(SelectionModule, DAVA::TArc::ClientModule);
 };

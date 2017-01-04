@@ -6,6 +6,7 @@
 #include "Utils/SceneExporter/SceneExporter.h"
 
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class SceneExporterTool : public REConsoleModuleCommon
 {
@@ -47,4 +48,11 @@ private:
     bool useAssetCache = false;
     bool useHDTextures = false;
     bool forceCompressTextures = false;
+
+    DAVA_VIRTUAL_REFLECTION(SceneExporterTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<SceneExporterTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };

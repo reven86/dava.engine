@@ -5,6 +5,8 @@
 #include "FileSystem/FilePath.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
 class Scene;
@@ -27,6 +29,13 @@ private:
 
     BeastRunner* beastRunner = false;
     DAVA::Scene* scene = nullptr;
+
+    DAVA_VIRTUAL_REFLECTION(BeastCommandLineTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<BeastCommandLineTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

@@ -1,9 +1,17 @@
 #include "CommandLine/ConsoleHelpTool.h"
 #include "Logger/Logger.h"
 
+#include "TArc/Utils/ModuleCollection.h"
+
 ConsoleHelpTool::ConsoleHelpTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-help")
 {
+}
+
+DAVA::TArc::ConsoleModule::eFrameResult ConsoleHelpTool::OnFrameInternal()
+{
+    ShowHelpInternal();
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
 void ConsoleHelpTool::ShowHelpInternal()
@@ -33,3 +41,5 @@ void ConsoleHelpTool::ShowHelpInternal()
 
     REConsoleModuleCommon::ShowHelpInternal();
 }
+
+DECL_CONSOLE_MODULE(ConsoleHelpTool, "-help");
