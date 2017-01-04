@@ -11,7 +11,9 @@
 #include "TArc/WindowSubSystem/QtAction.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
+#include "TArc/Utils/ModuleCollection.h"
 
+#include "Reflection/ReflectionRegistrator.h"
 #include "Logger/Logger.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -101,3 +103,12 @@ void SelectionModule::SelectionByMouseChanged()
     bool allowed = selectionData->IsSelectionAllowed();
     selectionData->SetSelectionAllowed(!allowed);
 }
+
+DAVA_REFLECTION_IMPL(SelectionModule)
+{
+    DAVA::ReflectionRegistrator<SelectionModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(SelectionModule);

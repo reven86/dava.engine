@@ -2,12 +2,14 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
+#include "Utils/Utils.h"
+#include "Utils/Dump/SceneDumper.h"
+
+#include "TArc/Utils/ModuleCollection.h"
+
+#include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/GPUFamilyDescriptor.h"
-#include "Utils/Utils.h"
-
-#include "Utils/Dump/SceneDumper.h"
 
 DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-dump")
@@ -150,3 +152,5 @@ void DumpTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-dump -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/11-grass/test_scene.sc2 -outfile /Users/Test/dump.txt -links -mode e -gpu all");
     DAVA::Logger::Info("\t-dump -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/11-grass/test_scene.sc2 -outfile /Users/Test/dump.txt -links -mode r -gpu mali,adreno");
 }
+
+DECL_CONSOLE_MODULE(DumpTool, "-dump");

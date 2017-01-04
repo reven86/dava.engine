@@ -7,6 +7,7 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Functional/Function.h"
 #include "Render/Highlevel/Camera.h"
@@ -55,3 +56,12 @@ void EntityProducerModule::InstantiateCurrentCamera()
 
     sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor.Get())));
 }
+
+DAVA_REFLECTION_IMPL(EntityProducerModule)
+{
+    DAVA::ReflectionRegistrator<EntityProducerModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(EntityProducerModule);

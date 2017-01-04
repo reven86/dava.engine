@@ -3,12 +3,17 @@
 
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
+#include "TArc/Utils/ModuleCollection.h"
+
+#include "Reflection/ReflectionRegistrator.h"
+
+#include <QAction>
 
 void CrashProduceModule::PostInit()
 {
     using namespace DAVA::TArc;
     UI* ui = GetUI();
-    ActionPlacementInfo placementInfo(CreateMenuPoint(QList<QString>() << "menuDebug_Functions"
+    ActionPlacementInfo placementInfo(CreateMenuPoint(QList<QString>() << "DebugFunctions"
                                                                        << "Crash Produce"));
 
     QAction* assertAction = new QAction("Generate Assert", nullptr);
@@ -38,3 +43,12 @@ void CrashProduceModule::PostInit()
 
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, dumpAction);
 }
+
+DAVA_REFLECTION_IMPL(CrashProduceModule)
+{
+    DAVA::ReflectionRegistrator<CrashProduceModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(CrashProduceModule);

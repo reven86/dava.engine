@@ -34,4 +34,11 @@ private:
     std::unique_ptr<RecentMenuItems> recentProject;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
+
+    DAVA_VIRTUAL_REFLECTION(ProjectManagerModule, DAVA::TArc::ClientModule)
+    {
+        DAVA::ReflectionRegistrator<ProjectManagerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
