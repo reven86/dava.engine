@@ -1,11 +1,11 @@
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/EngineModule.h"
-#include "Engine/EngineSettings.h"
+#include <Engine/Engine.h>
+#include <Engine/EngineSettings.h>
 
-#include "Platform/DateTime.h"
-#include "CommandLine/CommandLineParser.h"
-#include "Utils/Utils.h"
+#include <Platform/DateTime.h>
+#include <CommandLine/CommandLineParser.h>
+#include <Utils/Utils.h>
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
@@ -34,11 +34,17 @@
 #include "Tests/UILoggingTest.h"
 #include "Tests/ProfilerTest.h"
 #include "Tests/ImGuiTest.h"
+#include "Tests/DeviceManagerTest.h"
+#include "Tests/SoundTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "MemoryManager/MemoryProfiler.h"
+#include <MemoryManager/MemoryProfiler.h>
 #endif
+
+#include "Infrastructure/NativeDelegateMac.h"
+#include "Infrastructure/NativeDelegateIos.h"
+#include "Infrastructure/NativeDelegateWin10.h"
 
 void CheckDeviceInfoValid();
 
@@ -95,6 +101,21 @@ TestBed::TestBed(Engine& engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
+    using namespace DAVA;
+
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
+    nativeDelegate.reset(new NativeDelegateMac());
+    PlatformApi::Mac::RegisterNSApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_IPHONE__)
+    nativeDelegate.reset(new NativeDelegateIos());
+    PlatformApi::Ios::RegisterUIApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    nativeDelegate.reset(new NativeDelegateWin10());
+    PlatformApi::Win10::RegisterXamlApplicationListener(nativeDelegate.get());
+#endif
+
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
     engine.gameLoopStopped.Connect(this, &TestBed::OnGameLoopStopped);
     engine.cleanup.Connect(this, &TestBed::OnEngineCleanup);
@@ -110,13 +131,12 @@ TestBed::TestBed(Engine& engine)
     {
         engine.windowCreated.Connect(this, &TestBed::OnWindowCreated);
         engine.windowDestroyed.Connect(this, &TestBed::OnWindowDestroyed);
+        engine.backgroundUpdate.Connect(this, &TestBed::OnBackgroundUpdate);
 
         Window* w = engine.PrimaryWindow();
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
-        w->SetTitle("[Testbed] The one who owns a minigun fears not");
-        w->SetSize({ 1024.f, 768.f });
-
-        engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+        w->SetTitleAsync("[Testbed] The one who owns a minigun fears not");
+        w->SetSizeAsync({ 1024.f, 768.f });
     }
 
     engine.GetContext()->settings->Load("~res:/EngineSettings.yaml");
@@ -133,7 +153,7 @@ void TestBed::OnGameLoopStarted()
 
     if (engine.IsConsoleMode())
     {
-        engine.RunAsyncOnMainThread([]() {
+        RunOnMainThreadAsync([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
@@ -141,6 +161,8 @@ void TestBed::OnGameLoopStarted()
 
 void TestBed::OnGameLoopStopped()
 {
+    using namespace DAVA;
+
     Logger::Debug("****** TestBed::OnGameLoopStopped");
 
     for (auto testScreen : screens)
@@ -149,17 +171,32 @@ void TestBed::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
+    
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
+    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_IPHONE__)
+    PlatformApi::Ios::UnregisterUIApplicationDelegateListener(nativeDelegate.get());
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    PlatformApi::Win10::UnregisterXamlApplicationListener(nativeDelegate.get());
+#endif
 }
 
 void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
+    nativeDelegate.reset();
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
+
+    w->SetVirtualSize(1024, 768);
+    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    w->GetUIControlSystem()->SetClearColor(Color::Black);
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
@@ -195,7 +232,18 @@ void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
     if (frameCount >= 100)
     {
         Logger::Debug("****** quit");
-        engine.Quit();
+        engine.QuitAsync(0);
+    }
+}
+
+void TestBed::OnBackgroundUpdate(DAVA::float32 frameDelta)
+{
+    static float32 t = 0.f;
+    t += frameDelta;
+    if (t >= 2.f)
+    {
+        Logger::Debug("****** TestBed::OnBackgroundUpdate");
+        t = 0.f;
     }
 }
 
@@ -212,6 +260,9 @@ void TestBed::OnError()
 void TestBed::RegisterTests()
 {
     new CoreV2Test(*this);
+#if defined(__DAVAENGINE_WINDOWS__)
+    new DeviceManagerTest(*this);
+#endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
     new UIScrollViewTest(*this);
@@ -238,6 +289,7 @@ void TestBed::RegisterTests()
     new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
+    new SoundTest(*this);
     //$UNITTEST_CTOR
 }
 

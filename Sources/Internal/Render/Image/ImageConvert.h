@@ -453,6 +453,23 @@ struct ConvertRGBA32323232FtoRGBA8888
     }
 };
 
+struct ConvertRGBA8888toRGBA32F
+{
+    inline void operator()(const uint32* input, RGBA32323232F* output)
+    {
+        uint32 pixel = *input;
+        uint32 a = (pixel >> 24) & 0xFF;
+        uint32 b = (pixel >> 16) & 0xFF;
+        uint32 g = (pixel >> 8) & 0xFF;
+        uint32 r = (pixel & 0xFF);
+
+        output->r = ChannelIntToFloat(r);
+        output->g = ChannelIntToFloat(g);
+        output->b = ChannelIntToFloat(b);
+        output->a = ChannelIntToFloat(a);
+    }
+};
+
 struct ConvertRGBA16161616FtoRGBA8888
 {
     inline void operator()(const RGBA16161616F* input, uint32* output)
@@ -464,6 +481,23 @@ struct ConvertRGBA16161616FtoRGBA8888
         input32.a = Float16Compressor::Decompress(input->a);
         ConvertRGBA32323232FtoRGBA8888 convert32;
         convert32(&input32, output);
+    }
+};
+
+struct ConvertRGBA8888toRGBA16F
+{
+    inline void operator()(const uint32* input, RGBA16161616F* output)
+    {
+        uint32 pixel = *input;
+        uint32 a = (pixel >> 24) & 0xFF;
+        uint32 b = (pixel >> 16) & 0xFF;
+        uint32 g = (pixel >> 8) & 0xFF;
+        uint32 r = (pixel & 0xFF);
+
+        output->r = Float16Compressor::Compress(ChannelIntToFloat(r));
+        output->g = Float16Compressor::Compress(ChannelIntToFloat(g));
+        output->b = Float16Compressor::Compress(ChannelIntToFloat(b));
+        output->a = Float16Compressor::Compress(ChannelIntToFloat(a));
     }
 };
 

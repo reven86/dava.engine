@@ -195,6 +195,18 @@ bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA16F)
+    {
+        ConvertDirect<uint32, RGBA16161616F, ConvertRGBA8888toRGBA16F> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA32F)
+    {
+        ConvertDirect<uint32, RGBA32323232F, ConvertRGBA8888toRGBA32F> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
     else
     {
         Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);

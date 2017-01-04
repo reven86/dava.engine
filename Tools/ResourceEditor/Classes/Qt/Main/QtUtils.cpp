@@ -20,17 +20,12 @@
 
 using namespace DAVA;
 
-FilePath PathnameToDAVAStyle(const QString& convertedPathname)
-{
-    return FilePath(convertedPathname.toStdString());
-}
-
 FilePath GetOpenFileName(const String& title, const FilePath& pathname, const String& filter)
 {
     QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                    QString(filter.c_str()));
 
-    FilePath openedPathname = PathnameToDAVAStyle(filePath);
+    FilePath openedPathname(filePath.toStdString());
     if (!openedPathname.IsEmpty())
     {
         SceneValidator validator;
@@ -73,7 +68,7 @@ String SizeInBytesToString(float32 size)
 
 WideString SizeInBytesToWideString(float32 size)
 {
-    return StringToWString(SizeInBytesToString(size));
+    return UTF8Utils::EncodeToWideString(SizeInBytesToString(size));
 }
 
 bool IsKeyModificatorPressed(Key key)

@@ -1,11 +1,11 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #include "Logger/Logger.h"
@@ -26,15 +26,34 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
 void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_)
 {
     using ::Windows::Foundation::Size;
-    using ::Windows::UI::ViewManagement::ApplicationView;
+    using namespace ::Windows::UI::ViewManagement;
 
     DVASSERT(xamlWindow == nullptr);
     DVASSERT(xamlWindow_ != nullptr);
 
     xamlWindow = xamlWindow_;
 
+    // By default window has dimension 1024x768
+    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Size(1024, 768);
+    ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+
     // Limit minimum window size to some reasonable value
     ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
+    ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
+
+    {
+        using ::Windows::Graphics::Display::DisplayInformation;
+        using ::Windows::Graphics::Display::DisplayOrientations;
+
+        // TODO: temporal hardcode, separate task for setting rotation
+        DisplayInformation::GetForCurrentView()->AutoRotationPreferences = DisplayOrientations::Landscape | DisplayOrientations::LandscapeFlipped;
+    }
+
+    if (PlatformCore::IsPhoneContractPresent())
+    {
+        using ::Windows::UI::ViewManagement::StatusBar;
+        StatusBar::GetForCurrentView()->HideAsync();
+    }
 
     CreateBaseXamlUI();
     InstallEventHandlers();
@@ -50,12 +69,12 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
     xamlWindow->Activate();
 }
 
-void WindowNativeBridge::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::AddXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     xamlCanvas->Children->Append(xamlControl);
 }
 
-void WindowNativeBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::RemoveXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     unsigned int index = 0;
     for (auto x = xamlCanvas->Children->First(); x->HasCurrent; x->MoveNext(), ++index)
@@ -68,7 +87,7 @@ void WindowNativeBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlCo
     }
 }
 
-void WindowNativeBridge::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
+void WindowNativeBridge::PositionXamlControl(::Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
 {
     xamlCanvas->SetLeft(xamlControl, x);
     xamlCanvas->SetTop(xamlControl, y);
@@ -79,6 +98,11 @@ void WindowNativeBridge::UnfocusXamlControl()
     // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
     // So use dummy offscreen control that steals focus
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
+}
+
+::Windows::UI::Xaml::Input::Pointer ^ WindowNativeBridge::GetLastPressedPointer() const
+{
+    return lastPressedPointer;
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
@@ -121,6 +145,14 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
+void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
+{
+    using ::Windows::Foundation::Size;
+    using ::Windows::UI::ViewManagement::ApplicationView;
+
+    ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(width, height));
+}
+
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
@@ -160,38 +192,35 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
-        using ::Windows::UI::Core::CoreCursor;
-        using ::Windows::UI::Core::CoreCursorType;
-        using ::Windows::UI::Core::CoreWindow;
         mouseVisible = visible;
-        if (visible)
-        {
-            CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
-        }
-        else
-        {
-            CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
-        }
+        xamlWindow->CoreWindow->PointerCursor = visible ? defaultCursor : nullptr;
     }
 }
 
 void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::Devices::Input::MouseDevice;
+    using ::Windows::Devices::Input::MouseEventArgs;
+    using ::Windows::UI::Xaml::Input::PointerEventHandler;
+
     if (captureMode != mode)
     {
-        using namespace ::Windows::Devices::Input;
-        using namespace ::Windows::Foundation;
         captureMode = mode;
+
+        MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
         switch (captureMode)
         {
         case DAVA::eCursorCapture::OFF:
-            MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+            tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
+            mouseDevice->MouseMoved -= tokenMouseMoved;
             break;
         case DAVA::eCursorCapture::FRAME:
             // now, not implemented
             break;
         case DAVA::eCursorCapture::PINNING:
-            tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+            xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
+            tokenMouseMoved = mouseDevice->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
             // after enabled Pinning mode, skip move events, large x, y delta
             mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
             break;
@@ -204,20 +233,36 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
     windowBackend->ProcessPlatformEvents();
 }
 
+void WindowNativeBridge::HandleFocusChanging(bool gotFocus)
+{
+    if (hasFocus != gotFocus)
+    {
+        hasFocus = gotFocus;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+
+        PlatformCore::EnableHighResolutionTimer(hasFocus);
+
+        if (!hasFocus)
+        {
+            if (captureMode != eCursorCapture::OFF)
+            {
+                SetCursorCapture(eCursorCapture::OFF);
+                mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+            }
+            SetCursorVisibility(true);
+        }
+    }
+}
+
 void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
-    using namespace ::Windows::UI::Core;
-    bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
-    if (!hasFocus)
-    {
-        if (captureMode == eCursorCapture::PINNING)
-        {
-            SetCursorCapture(eCursorCapture::OFF);
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
-        }
-        SetCursorVisibility(true);
-    }
+    // System does not send Activated event for window when user locks (Win+L) and unlocks screen even if
+    // user clicks on window after unlocking screen.
+    // To ensure proper events delivering to dava.engine force window focus in mouse click and key press event
+    // handlers (if hasFocus member variable is false).
+
+    using ::Windows::UI::Core::CoreWindowActivationState;
+    HandleFocusChanging(arg->WindowActivationState != CoreWindowActivationState::Deactivated);
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
@@ -241,6 +286,11 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
 {
     using ::Windows::System::VirtualKey;
     using namespace ::Windows::UI::Core;
+
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
 
     // Process only KeyDown/KeyUp and SystemKeyDown/SystemKeyUp event types to skip unwanted messages, such as
     // Character (handled in OnCharacterReceived), DeadCharacter, SystemCharacter, etc.
@@ -307,6 +357,13 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
 
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
+
+    lastPressedPointer = arg->Pointer;
+
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
@@ -333,6 +390,8 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
 
+    lastPressedPointer = nullptr;
+
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
@@ -352,6 +411,11 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         uint32 touchId = pointerPoint->PointerId;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, touchId, x, y, modifierKeys));
     }
+}
+
+void WindowNativeBridge::OnPointerCaptureLost(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+{
+    OnPointerReleased(sender, arg);
 }
 
 void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
@@ -399,16 +463,16 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     if (prop->IsHorizontalMouseWheel)
     {
         using std::swap;
-        std::swap(deltaX, deltaY);
+        swap(deltaX, deltaY);
     }
     eModifierKeys modifierKeys = GetModifierKeys();
     bool isRelative = (captureMode == eCursorCapture::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
 }
 
-void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
+void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (mouseMoveSkipCount)
+    if (mouseMoveSkipCount > 0)
     {
         mouseMoveSkipCount--;
         return;
@@ -542,15 +606,18 @@ void WindowNativeBridge::InstallEventHandlers()
 
     tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerPressed);
     tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
+    tokenPointerCaptureLost = xamlSwapChainPanel->PointerCaptureLost += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
 }
 
 void WindowNativeBridge::UninstallEventHandlers()
 {
-    using namespace ::Windows::UI::Core;
-    using namespace ::Windows::Devices::Input;
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::Devices::Input::MouseDevice;
+
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
+    MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
 
     coreWindow->Activated -= tokenActivated;
     coreWindow->VisibilityChanged -= tokenVisibilityChanged;
@@ -563,10 +630,11 @@ void WindowNativeBridge::UninstallEventHandlers()
 
     xamlSwapChainPanel->PointerPressed -= tokenPointerPressed;
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
+    xamlSwapChainPanel->PointerCaptureLost -= tokenPointerCaptureLost;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
-    SetCursorCapture(eCursorCapture::OFF);
-    SetCursorVisibility(true);
+
+    mouseDevice->MouseMoved -= tokenMouseMoved;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(

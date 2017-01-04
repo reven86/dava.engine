@@ -5,7 +5,6 @@
 #endif
 #include "ui_treeimportdialog.h"
 #include "Qt/Main/mainwindow.h"
-#include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
@@ -111,7 +110,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
 
     if (sc2FolderPath.IsEmpty())
     {
-        SetSC2FolderValue(REGlobal::GetDataNode<ProjectManagerData>()->GetDataSourcePath().GetAbsolutePathname().c_str());
+        SetSC2FolderValue(REGlobal::GetDataNode<ProjectManagerData>()->GetDataSource3DPath().GetAbsolutePathname().c_str());
     }
 
     ui->xmlListWidget->clear();

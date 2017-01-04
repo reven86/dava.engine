@@ -1,6 +1,6 @@
 #include "Tests/ScriptingTest.h"
 #include "Base/Type.h"
-#include "Reflection/Registrator.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Scripting/LuaScript.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Input/UIActionMap.h"
@@ -8,7 +8,7 @@
 
 using namespace DAVA;
 
-class SubObj : public ReflectedBase
+class SubObj : public ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(SubObj)
     {
@@ -25,14 +25,28 @@ public:
     Color c = Color::Black;
 };
 
-class DemoObj : public ReflectedBase
+class DemoBase : public ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION(DemoObj)
+public:
+    int32 a = 99;
+    String b = "String";
+    Color c = Color::White;
+
+    DAVA_VIRTUAL_REFLECTION(DemoBase)
+    {
+        ReflectionRegistrator<DemoBase>::Begin()
+        .Field("a", &DemoBase::a)
+        .Field("b", &DemoBase::b)
+        .Field("c", &DemoBase::c)
+        .End();
+    }
+};
+
+class DemoObj : public DemoBase
+{
+    DAVA_VIRTUAL_REFLECTION(DemoObj, DemoBase)
     {
         ReflectionRegistrator<DemoObj>::Begin()
-        .Field("a", &DemoObj::a)
-        .Field("b", &DemoObj::b)
-        .Field("c", &DemoObj::c)
         .Field("d", &DemoObj::d)
         .Field("v", &DemoObj::v)
         .Method("foo", &DemoObj::foo)
@@ -43,9 +57,6 @@ class DemoObj : public ReflectedBase
     }
 
 public:
-    int32 a = 99;
-    String b = "String";
-    Color c = Color::White;
     SubObj d;
     Vector<int32> v;
     void foo()
@@ -73,12 +84,12 @@ DemoObj demoObj;
 Reflection objRef;
 LuaScript* script = nullptr;
 
-static const String demo_script = R"script(DV.Debug("LUA: Script loaded")
+static const String demo_script = R"script(
 function main(int, str, ref)
-    DV.Debug("LUA: Main function")
-    return int, str, ref
+    ref.a = int
+    ref.b = str
+    return ref.a, ref.b, ref.c
 end
-return true -- Return in global body works fine
 )script";
 
 ScriptingTest::ScriptingTest(TestBed& app)
@@ -88,11 +99,9 @@ ScriptingTest::ScriptingTest(TestBed& app)
 
 void ScriptingTest::LoadResources()
 {
-    BaseScreen::LoadResources();
-
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/ScriptingTest.yaml", &pkgBuilder);
-    UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
+    UIControl* dialog = pkgBuilder.GetPackage()->GetControl("MainFrame");
     AddControl(dialog);
 
     scriptText = static_cast<UITextField*>(dialog->FindByName("ScriptText"));
@@ -161,6 +170,8 @@ void ScriptingTest::LoadResources()
     demoObj.c = Color::White;
     objRef = Reflection::Create(&demoObj);
     CreateScript();
+
+    BaseScreen::LoadResources();
 }
 
 void ScriptingTest::UnloadResources()

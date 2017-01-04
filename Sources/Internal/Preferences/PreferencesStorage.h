@@ -2,8 +2,8 @@
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
-#include "Base/StaticSingleton.h"
 #include "Functional/Signal.h"
+#include "Base/StaticSingleton.h"
 
 namespace DAVA
 {

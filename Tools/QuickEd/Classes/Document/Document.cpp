@@ -5,19 +5,21 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "Project/Project.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include <QFileSystemWatcher>
 #include <QFile>
+#include <QFileInfo>
 
 using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
+Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
-    , commandExecutor(new QtModelPackageCommandExecutor(this))
+    , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
 {
@@ -160,4 +162,10 @@ void Document::SetCanClose(bool canClose_)
         canClose = canClose_;
         emit CanCloseChanged(canClose);
     }
+}
+
+QString Document::GetName() const
+{
+    QFileInfo fileInfo(GetPackageAbsolutePath());
+    return fileInfo.fileName();
 }

@@ -13,6 +13,7 @@ class Document;
 class PackageNode;
 class QAction;
 class QTabBar;
+class Project;
 
 class DocumentGroup : public QObject
 {
@@ -51,6 +52,7 @@ public:
 
     bool TryCloseAllDocuments();
     bool HasUnsavedDocuments() const;
+    QStringList GetUnsavedDocumentsNames() const;
     void CloseAllDocuments();
 
 signals:

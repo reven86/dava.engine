@@ -363,15 +363,15 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
     {
-        event.device = DAVA::UIEvent::Device::GAMEPAD;
+        event.device = DAVA::eInputDevices::GAMEPAD;
     }
     else if (event.phase >= DAVA::UIEvent::Phase::CHAR && event.phase <= DAVA::UIEvent::Phase::KEY_UP)
     {
-        event.device = DAVA::UIEvent::Device::KEYBOARD;
+        event.device = DAVA::eInputDevices::KEYBOARD;
     }
     else
     {
-        event.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
+        event.device = DAVA::eInputDevices::TOUCH_SURFACE;
     }
 
     return event;

@@ -36,8 +36,9 @@ public:
     const DAVA::FilePath& GetProjectPath() const;
     DAVA::FilePath GetDataPath() const;
     DAVA::FilePath GetDataSourcePath() const;
+    DAVA::FilePath GetDataSource3DPath() const;
     DAVA::FilePath GetParticlesConfigPath() const;
-    DAVA::FilePath GetParticlesDataPath() const;
+    DAVA::FilePath GetParticlesGfxPath() const;
     DAVA::FilePath GetWorkspacePath() const;
 
     const QVector<AvailableMaterialTemplate>& GetAvailableMaterialTemplates() const;
@@ -47,8 +48,6 @@ public:
     const FileSystemCache* GetDataSourceSceneFiles() const;
     const EditorConfig* GetEditorConfig() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
-
-    void SetCloseProjectPredicateFunction(const DAVA::Function<bool()>& fn);
 
 public:
     static const DAVA::String ProjectPathProperty;
@@ -62,7 +61,6 @@ private:
     DAVA::FilePath projectPath;
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
-    DAVA::Function<bool()> closeProjectPredicate;
 
     DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
     {
