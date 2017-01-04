@@ -417,7 +417,7 @@ void dx9_InitContext()
     }
     else if (_DX9_InitParam.renderingErrorCallback)
     {
-        _DX9_InitParam.renderingErrorCallback(RenderingError::InitializeError, _DX9_InitParam.renderingErrorCallbackContext);
+        _DX9_InitParam.renderingErrorCallback(RenderingError::FailedToCreateDevice, _DX9_InitParam.renderingErrorCallbackContext);
     }
 }
 
