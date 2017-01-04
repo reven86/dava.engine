@@ -293,7 +293,13 @@ String GetBacktraceString(void* const* frames, size_t framesSize)
     for (size_t i = 0; i < framesSize; ++i)
     {
         void *frame = frames[i];
-        result << Format("    #%2u: [%p] %s\n", static_cast<uint32>(i), frame, GetFrameSymbol(frame).c_str());
+        String frameString = GetFrameSymbol(frame);
+        size_t pos = frameString.find_last_of("/");
+        if (pos != String::npos)
+        {
+            frameString = frameString.substr(pos + 1);
+        }
+        result << Format("    #%2u: [%p] %s\n", static_cast<uint32>(i), frame, frameString.c_str());
     }
 
     return result.str();
