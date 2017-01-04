@@ -208,15 +208,6 @@ void PackageInformationBuilder::EndBgPropertiesSection()
     // do nothing
 }
 
-DAVA::UIControl* PackageInformationBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
-{
-    return nullptr; // do nothing
-}
-
-void PackageInformationBuilder::EndInternalControlSection()
-{
-}
-
 void PackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
 }

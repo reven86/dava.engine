@@ -42,9 +42,6 @@ public:
     DAVA::UIControlBackground* BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     void EndBgPropertiesSection() override;
 
-    DAVA::UIControl* BeginInternalControlSection(int index, bool sectionHasProperties) override;
-    void EndInternalControlSection() override;
-
     void ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value) override;
 
     std::shared_ptr<PackageInformation> GetPackage() const;
