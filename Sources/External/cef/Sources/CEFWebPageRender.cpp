@@ -6,6 +6,7 @@
 #include "UI/UIControlSystem.h"
 
 #include "Engine/Engine.h"
+#include "Engine/Win32/PlatformApi.h"
 
 namespace DAVA
 {
@@ -179,7 +180,11 @@ void CEFWebPageRender::ResetCursor()
     if (currentCursorType != CursorType::CT_POINTER)
     {
         currentCursorType = CursorType::CT_POINTER;
+#if defined(__DAVAENGINE_COREV2__)
+        SetCursor(nullptr);
+#else
         SetCursor(GetDefaultCursor());
+#endif
     }
 }
 
@@ -305,14 +310,17 @@ void CEFWebPageRender::OnCursorChange(CefRefPtr<CefBrowser> browser,
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#if !defined(__DAVAENGINE_COREV2__)
 CefCursorHandle CEFWebPageRender::GetDefaultCursor()
 {
     return LoadCursor(NULL, IDC_ARROW);
 }
+#endif
 
 void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 {
 #if defined(__DAVAENGINE_COREV2__)
+    PlatformApi::Win32::SetWindowCursor(window, cursor);
 #else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     SetClassLongPtr(wnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));

@@ -55,7 +55,9 @@ private:
     void AppyTexture();
     void RestoreTexture();
 
+#if !defined(__DAVAENGINE_COREV2__)
     CefCursorHandle GetDefaultCursor();
+#endif
     void SetCursor(CefCursorHandle cursor);
     void ResetCursor();
 
