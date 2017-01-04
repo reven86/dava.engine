@@ -33,9 +33,10 @@ DAVA_TESTCLASS (TimerTest)
             int64 deltaUs = SystemTimer::GetAbsoluteMicros() - beginUs;
             int64 deltaNs = SystemTimer::GetAbsoluteNanos() - beginNs;
 
-            TEST_VERIFY_WITH_MESSAGE(deltaMs >= sleepTime, Format("deltaMs=%lld, sleepTime=%lld", deltaMs, sleepTime));
-            TEST_VERIFY_WITH_MESSAGE(deltaUs >= sleepTime * 1000ll, Format("deltaUs=%lld, sleepTime=%lld", deltaUs, sleepTime * 1000ll));
-            TEST_VERIFY_WITH_MESSAGE(deltaNs >= sleepTime * 1000000ll, Format("deltaNs=%lld, sleepTime=%lld", deltaNs, sleepTime * 1000000ll));
+            // Some platforms may sleep less than specified (e.g. Windows), so descrease sleep time by 1 ms
+            TEST_VERIFY_WITH_MESSAGE(deltaMs >= (sleepTime - 1), Format("deltaMs=%lld, sleepTime=%lld", deltaMs, sleepTime));
+            TEST_VERIFY_WITH_MESSAGE(deltaUs >= (sleepTime - 1) * 1000ll, Format("deltaUs=%lld, sleepTime=%lld", deltaUs, sleepTime * 1000ll));
+            TEST_VERIFY_WITH_MESSAGE(deltaNs >= (sleepTime - 1) * 1000000ll, Format("deltaNs=%lld, sleepTime=%lld", deltaNs, sleepTime * 1000000ll));
         }
 
         {
@@ -66,7 +67,6 @@ DAVA_TESTCLASS (TimerTest)
         SystemTimer::ResetGlobalTime();
         SystemTimer::PauseGlobalTime();
         SystemTimer::ResumeGlobalTime();
-        SystemTimer::SetFrameDelta(SystemTimer::GetFrameDelta());
         TEST_VERIFY(globalTime >= 0.f);
     }
 
