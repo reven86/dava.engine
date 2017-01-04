@@ -113,11 +113,24 @@ void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
 
 void WindowBackend::SetIcon(const wchar_t* iconResourceName)
 {
+    DVASSERT(hwnd != nullptr);
+
     HICON hicon = reinterpret_cast<HICON>(::LoadImageW(PlatformCore::Win32AppInstance(), iconResourceName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
     if (hicon != nullptr)
     {
         ::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hicon));
         ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hicon));
+    }
+}
+
+void WindowBackend::SetCursor(HCURSOR hcursor)
+{
+    DVASSERT(hwnd != nullptr);
+
+    hcurCursor = hcursor;
+    if (hcurCursor == nullptr)
+    {
+        hcurCursor = defaultCursor;
     }
 }
 
@@ -151,7 +164,7 @@ LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
     {
         if (mouseVisible)
         {
-            ::SetCursor(defaultCursor);
+            ::SetCursor(hcurCursor);
         }
         else
         {
@@ -825,6 +838,8 @@ LRESULT WindowBackend::OnCreate()
 {
     RECT rc;
     ::GetClientRect(hwnd, &rc);
+
+    hcurCursor = defaultCursor;
 
     // If new pointer input is available then do not handle legacy WM_TOUCH message
     if (DllImport::fnIsMouseInPointerEnabled == nullptr || !DllImport::fnIsMouseInPointerEnabled())

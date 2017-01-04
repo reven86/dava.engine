@@ -20,6 +20,13 @@ void SetWindowIcon(Window* targetWindow, int32 iconResourceId)
     wb->SetIcon(MAKEINTRESOURCEW(iconResourceId));
 }
 
+void SetWindowCursor(Window* targetWindow, HCURSOR hcursor)
+{
+    using namespace DAVA::Private;
+    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    wb->SetCursor(hcursor);
+}
+
 } // namespace Win32
 } // namespace PlatformApi
 } // namespace DAVA

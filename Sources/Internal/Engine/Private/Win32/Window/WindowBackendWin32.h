@@ -47,6 +47,7 @@ public:
     HWND GetHWND() const;
 
     void SetIcon(const wchar_t* iconResourceName);
+    void SetCursor(HCURSOR hcursor);
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -134,6 +135,7 @@ private:
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     HWND hwnd = nullptr;
+    HCURSOR hcurCursor = nullptr;
 
     bool isMinimized = false;
     bool hasFocus = false;
