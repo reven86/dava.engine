@@ -391,4 +391,12 @@ void Uninitialize()
     RenderLoop::UninitializeRenderLoop();
 }
 
+void ReportError(const InitParam& params, RenderingError error)
+{
+    if (params.renderingErrorCallback)
+    {
+        params.renderingErrorCallback(error, params.renderingErrorCallbackContext);
+    }
+}
+
 } //namespace rhi
