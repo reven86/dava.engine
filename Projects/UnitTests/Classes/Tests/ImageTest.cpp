@@ -41,8 +41,8 @@ DAVA_TESTCLASS (ImageTest)
           //          { PixelFormat::FORMAT_ATC_RGB, 8, 8, false }, //downscale not implemented
           //          { PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA, 8, 8, false }, //downscale not implemented
           //          { PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, 8, 8, false }, //downscale not implemented
-          { PixelFormat::FORMAT_RGBA16F, 8, 8, true },
-          { PixelFormat::FORMAT_RGBA32F, 8, 8, true }
+          //{ PixelFormat::FORMAT_RGBA16F, 8, 8, true },
+          //{ PixelFormat::FORMAT_RGBA32F, 8, 8, true }
         };
 
         for (const TestData& td : tests)
