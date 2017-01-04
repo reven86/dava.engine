@@ -58,6 +58,7 @@ enum Api
 
 enum class RenderingError : uint32_t
 {
+    InitializeError,
     DriverError,
     UnsupportedShaderModel,
 };
