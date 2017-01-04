@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArc/Core/Private/CoreInterface.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -11,7 +12,7 @@ class DataContext;
 class ContextAccessor;
 class WindowKey;
 
-class ClientModule
+class ClientModule : public ReflectionBase
 {
 public:
     virtual ~ClientModule()
@@ -57,6 +58,10 @@ private:
 
     CoreInterface* coreInterface = nullptr;
     UI* ui = nullptr;
+
+    DAVA_VIRTUAL_REFLECTION(ClientModule)
+    {
+    }
 };
 
 template <typename Ret, typename Cls, typename... Args>

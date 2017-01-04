@@ -14,4 +14,11 @@ public:
 
 protected:
     void PostInit() override;
+
+    DAVA_VIRTUAL_REFLECTION(REModule, DAVA::TArc::ClientModule)
+    {
+        DAVA::ReflectionRegistrator<REModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };

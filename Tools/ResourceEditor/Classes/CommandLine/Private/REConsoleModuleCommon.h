@@ -29,4 +29,8 @@ protected:
     DAVA::ProgramOptions options;
 
     bool isInitialized = false;
+
+    DAVA_VIRTUAL_REFLECTION(REConsoleModuleCommon, DAVA::TArc::ConsoleModule)
+    {
+    }
 };

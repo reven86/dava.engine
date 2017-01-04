@@ -350,7 +350,6 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
-        LoadInternalControlPropertiesFromYamlNode(control, node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
@@ -557,34 +556,6 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
             }
         }
         builder->EndBgPropertiesSection();
-    }
-}
-
-void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-{
-    const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-    for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
-    {
-        const YamlNode* componentNode = nullptr;
-        if (componentsNode)
-            componentNode = componentsNode->Get(control->GetInternalControlName(i) + control->GetInternalControlDescriptions());
-
-        UIControl* internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
-        if (internalControl)
-        {
-            const InspInfo* insp = internalControl->GetTypeInfo();
-
-            for (int32 j = 0; j < insp->MembersCount(); j++)
-            {
-                const InspMember* member = insp->Member(j);
-
-                VariantType value;
-                if (componentNode)
-                    value = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-                builder->ProcessProperty(member, value);
-            }
-        }
-        builder->EndInternalControlSection();
     }
 }
 

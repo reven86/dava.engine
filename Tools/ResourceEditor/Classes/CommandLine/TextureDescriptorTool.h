@@ -3,6 +3,7 @@
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class TextureDescriptorTool : public REConsoleModuleCommon
 {
@@ -42,4 +43,11 @@ private:
 
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
+
+    DAVA_VIRTUAL_REFLECTION(TextureDescriptorTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<TextureDescriptorTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };

@@ -3,6 +3,7 @@
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FilePath.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -31,4 +32,11 @@ protected:
         ACTION_BUILD,
     };
     eAction commandAction = ACTION_NONE;
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<StaticOcclusionTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };

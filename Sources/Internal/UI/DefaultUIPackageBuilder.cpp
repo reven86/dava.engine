@@ -368,29 +368,6 @@ void DefaultUIPackageBuilder::EndBgPropertiesSection()
     currentObject = nullptr;
 }
 
-UIControl* DefaultUIPackageBuilder::BeginInternalControlSection(int32 index, bool sectionHasProperties)
-{
-    if (sectionHasProperties)
-    {
-        UIControl* control = controlsStack.back()->control.Get();
-        if (!control->GetInternalControl(index))
-        {
-            UIControl* internal = control->CreateInternalControl(index);
-            control->SetInternalControl(index, internal);
-            SafeRelease(internal);
-        }
-        UIControl* res = control->GetInternalControl(index);
-        currentObject = res;
-        return res;
-    }
-    return nullptr;
-}
-
-void DefaultUIPackageBuilder::EndInternalControlSection()
-{
-    currentObject = nullptr;
-}
-
 void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
 {
     DVASSERT(currentObject);
