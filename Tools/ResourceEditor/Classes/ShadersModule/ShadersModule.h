@@ -5,6 +5,7 @@
 #include "TArc/Utils/QtConnections.h"
 
 #include "Base/Any.h"
+#include "Reflection/Reflection.h"
 
 #include <memory>
 
@@ -19,4 +20,6 @@ private:
 
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
     DAVA::TArc::QtConnections connections;
+
+    DAVA_VIRTUAL_REFLECTION(ShadersModule, DAVA::TArc::ClientModule);
 };

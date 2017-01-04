@@ -1,6 +1,9 @@
 #pragma once
 
 #include "TArc/Core/Private/CoreInterface.h"
+#include "TArc/Core/ControllerModule.h"
+#include "TArc/Core/ClientModule.h"
+#include "TArc/Core/ConsoleModule.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
@@ -15,10 +18,6 @@ class Engine;
 
 namespace TArc
 {
-class ClientModule;
-class ControllerModule;
-class ConsoleModule;
-
 // back compatibility
 class CoreInterface;
 
@@ -31,13 +30,20 @@ public:
     template <typename T, typename... Args>
     void CreateModule(Args&&... args)
     {
-        static_assert(std::is_base_of<ConsoleModule, T>::value ||
-                      std::is_base_of<ClientModule, T>::value ||
-                      std::is_base_of<ControllerModule, T>::value,
-                      "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+        CreateModule(ReflectedTypeDB::Get<T>(), std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    void CreateModule(const ReflectedType* reflectedType, Args&&... args)
+    {
+        const Type* type = reflectedType->GetType()->Pointer();
+        bool isClientModule = TypeInheritance::CanCast(type, Type::Instance<ClientModule*>());
+        bool isControllerModule = TypeInheritance::CanCast(type, Type::Instance<ControllerModule*>());
+        bool isConsoleModule = TypeInheritance::CanCast(type, Type::Instance<ConsoleModule*>());
+
+        DVASSERT_MSG(isClientModule == true || isConsoleModule == true || isConsoleModule, "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
 
         bool isConsoleMode = IsConsoleMode();
-        bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
         if (isConsoleMode == true && isConsoleModule == false)
         {
             DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
@@ -50,7 +56,19 @@ public:
             return;
         }
 
-        AddModule(new T(std::forward<Args>(args)...));
+        Any object = reflectedType->CreateObject(ReflectedType::CreatePolicy::ByPointer, std::forward<Args>(args)...);
+        if (isControllerModule)
+        {
+            AddModule(object.Cast<ControllerModule*>());
+        }
+        else if (isClientModule)
+        {
+            AddModule(object.Cast<ClientModule*>());
+        }
+        else
+        {
+            AddModule(object.Cast<ConsoleModule*>());
+        }
     }
 
     DAVA_DEPRECATED(const EngineContext* GetEngineContext());

@@ -15,6 +15,7 @@
 #include "Functional/Function.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Material/NMaterial.h"
@@ -134,3 +135,12 @@ void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
         DAVA::FilePath::AddResourcesFolder(shadersDebugPathname);
     }
 }
+
+DAVA_REFLECTION_IMPL(ShadersModule)
+{
+    DAVA::ReflectionRegistrator<ShadersModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(ShadersModule);
