@@ -528,7 +528,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
 
 void CheckDefaultDepthStencilBuffer()
 {
-    _Metal_ResetSync.Lock();
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_ResetSync);
 
     if (_Metal_ResetPending)
     {
@@ -555,8 +555,6 @@ void CheckDefaultDepthStencilBuffer()
 
         _Metal_ResetPending = false;
     }
-
-    _Metal_ResetSync.Unlock();
 }
     
 #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
@@ -1715,10 +1713,10 @@ static void Metal_Suspend()
 
 static void metal_Reset(const ResetParam& param)
 {
-    _Metal_ResetSync.Lock();
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_ResetSync);
+
     _Metal_ResetParam = param;
     _Metal_ResetPending = true;
-    _Metal_ResetSync.Unlock();
 }
 
 namespace CommandBufferMetal
