@@ -41,6 +41,8 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
+set( DAVA_BIN_DIR         "${DAVA_ROOT_DIR}/Bin" )
+
 if (WIN32)
 	string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
 
