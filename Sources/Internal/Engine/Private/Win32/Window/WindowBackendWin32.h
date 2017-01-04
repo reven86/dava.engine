@@ -94,6 +94,8 @@ private:
     LRESULT OnSize(int32 resizingType, int32 width, int32 height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
+    LRESULT OnEnterMenuLoop();
+    LRESULT OnExitMenuLoop();
     LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
     LRESULT OnDpiChanged(RECT* suggestedRect);
     LRESULT OnActivate(WPARAM wparam);

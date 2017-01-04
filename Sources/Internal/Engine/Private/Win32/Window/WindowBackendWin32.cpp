@@ -477,6 +477,18 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
+LRESULT WindowBackend::OnEnterMenuLoop()
+{
+    ::ClipCursor(nullptr);
+    return 0;
+}
+
+LRESULT WindowBackend::OnExitMenuLoop()
+{
+    UpdateClipCursor();
+    return 0;
+}
+
 LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 {
     minMaxInfo->ptMinTrackSize.x = minWidth;
@@ -1016,6 +1028,14 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_DISPLAYCHANGE)
     {
         engineBackend->UpdateDisplayConfig();
+    }
+    else if (message == WM_ENTERMENULOOP)
+    {
+        lresult = OnEnterMenuLoop();
+    }
+    else if (message == WM_EXITMENULOOP)
+    {
+        lresult = OnExitMenuLoop();
     }
     else
     {
