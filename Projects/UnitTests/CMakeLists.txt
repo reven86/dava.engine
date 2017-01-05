@@ -14,9 +14,10 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-if (DAVA_COREV2)
-    add_definitions(-D__DAVAENGINE_COREV2__)
-endif()
+# Now testbed is core v2 only
+set (DAVA_COREV2 1)
+add_definitions(-D__DAVAENGINE_COREV2__)
+
 
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 add_definitions(-DLOCALIZATION_DEBUG)
