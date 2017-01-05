@@ -1,4 +1,3 @@
-#include "DAVAEngine.h"
 #include "Entity/Component.h"
 #include "Main/mainwindow.h"
 
@@ -36,29 +35,29 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
+#include "TArc/DataProcessing/DataContext.h"
+#include "Classes/Selection/Selection.h"
+#include "Classes/Selection/SelectionData.h"
+
 #include "Qt/Settings/SettingsManager.h"
 #include "PropertyEditorStateHelper.h"
 
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
-
-#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
-
-#include "Scene/System/PathSystem.h"
-#include "Render/Highlevel/RenderObject.h"
-
 #include "Deprecated/SceneValidator.h"
-
 #include "Tools/PathDescriptor/PathDescriptor.h"
-
-#include "TArc/DataProcessing/DataContext.h"
+#include "Scene/System/PathSystem.h"
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
+#include "TArc/Core/FieldBinder.h"
+
+#include "Render/Highlevel/RenderObject.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+
 PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSignals /*= true*/)
     : QtPropertyEditor(parent)
-    , viewMode(VIEW_NORMAL)
     , treeStateHelper(this, curModel)
 {
     DAVA::Function<void()> fn(this, &PropertyEditor::ResetProperties);
@@ -70,9 +69,17 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
         QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &PropertyEditor::sceneActivated);
         QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &PropertyEditor::sceneDeactivated);
         QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &PropertyEditor::CommandExecuted);
-        QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &PropertyEditor::sceneSelectionChanged);
         QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &PropertyEditor::ResetProperties);
+
+        selectionFieldBinder.reset(new DAVA::TArc::FieldBinder(REGlobal::GetAccessor()));
+        {
+            DAVA::TArc::FieldDescriptor fieldDescr;
+            fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
+            fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+            selectionFieldBinder->BindField(fieldDescr, [this](const DAVA::Any&) { selectionUpdater->Update(); });
+        }
     }
+
     posSaver.Attach(this, "DocPropetyEditor");
 
     DAVA::VariantType v = posSaver.LoadValue("splitPos");
@@ -210,15 +217,8 @@ void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtP
 
 void PropertyEditor::UpdateSelectionLazy()
 {
-    SceneEditor2* activeScene = sceneHolder.GetScene();
-    if (activeScene)
-    {
-        SetEntities(&activeScene->selectionSystem->GetSelection());
-    }
-    else
-    {
-        SetEntities(nullptr);
-    }
+    const SelectableGroup& selection = Selection::GetSelection();
+    SetEntities(&selection);
 }
 
 SelectableGroup PropertyEditor::ExtractEntities(const SelectableGroup* selection)
@@ -747,20 +747,13 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData* original)
 
 void PropertyEditor::sceneActivated(SceneEditor2* scene)
 {
-    if (NULL != scene)
-    {
-        SetEntities(&scene->selectionSystem->GetSelection());
-    }
+    const SelectableGroup& selection = Selection::GetSelection();
+    SetEntities(&selection);
 }
 
 void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
 {
     SetEntities(NULL);
-}
-
-void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
-{
-    selectionUpdater->Update();
 }
 
 template <typename T>
@@ -969,11 +962,12 @@ void PropertyEditor::ActionEditComponent()
         editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
         editor.exec();
 
-        SceneEditor2* curScene = sceneHolder.GetScene();
-        SetEntities(&curScene->selectionSystem->GetSelection());
+        const SelectableGroup& selection = Selection::GetSelection();
+        SetEntities(&selection);
 
         if (editor.IsModified())
         {
+            SceneEditor2* curScene = sceneHolder.GetScene();
             curScene->SetChanged();
         }
     }

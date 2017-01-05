@@ -1,11 +1,29 @@
 #include "Classes/Export/Mitsuba/MitsubaExporter.h"
 #include "Classes/Export/Mitsuba/Private/MitsubaExporterTools.h"
+#include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"
-#include "Scene/LandscapeThumbnails.h"
+#include "Classes/Qt/Scene/LandscapeThumbnails.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
+#include "TArc/Utils/ModuleCollection.h"
+
+#include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/Light.h"
+#include "Render/Texture.h"
+#include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
+#include "Base/String.h"
+#include "Base/RefPtr.h"
 
 namespace MitsubaExporterDetail
 {
@@ -89,7 +107,7 @@ void MitsubaExporter::PostInit()
                                                return value.CanCast<SceneData::TSceneType>();
                                            });
 
-    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("menuDebug_Functions"), exportAction);
+    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
     connections.AddConnection(exportAction, &QAction::triggered, DAVA::MakeFunction(this, &MitsubaExporter::Export));
 }
 
@@ -305,7 +323,7 @@ void MitsubaExporterDetail::Exporter::ExportLight(DAVA::LightComponent* light)
         return;
     }
 
-    DAVA::Light::eType lightType = static_cast<Light::eType>(light->GetLightType());
+    DAVA::Light::eType lightType = static_cast<DAVA::Light::eType>(light->GetLightType());
     if (lightType == DAVA::Light::TYPE_POINT)
     {
         mitsuba::scope emitter("emitter", mitsuba::kType, DAVA::String("point"));
@@ -477,13 +495,13 @@ bool MitsubaExporterDetail::Exporter::MaterialIsValidForExport(DAVA::NMaterial* 
     if (material == nullptr)
         return false;
 
-    if (material->GetEffectiveFXName().find("Sky") != String::npos)
+    if (material->GetEffectiveFXName().find("Sky") != DAVA::String::npos)
         return false;
 
-    if (material->GetEffectiveFXName().find("Leaf") != String::npos)
+    if (material->GetEffectiveFXName().find("Leaf") != DAVA::String::npos)
         return false;
 
-    if (material->GetEffectiveFXName().find("Shadow") != String::npos)
+    if (material->GetEffectiveFXName().find("Shadow") != DAVA::String::npos)
         return false;
 
     return true;
@@ -617,3 +635,5 @@ void MitsubaExporterDetail::LandscapeThumbnailCallback(DAVA::String fileName, DA
     DAVA::ScopedPtr<DAVA::Image> image(landscapeTexture->CreateImageFromMemory());
     DAVA::ImageSystem::Save(fileName, image);
 }
+
+DECL_GUI_MODULE(MitsubaExporter);

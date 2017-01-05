@@ -471,6 +471,22 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     return currentExecuteDirectory.MakeDirectoryPathname();
 }
 
+FilePath FileSystem::GetPluginDirectory()
+{
+    FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
+
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    FilePath pluginDirectory = currentExecuteDirectory + "../PlugIns/";
+
+#else
+    FilePath pluginDirectory = currentExecuteDirectory + "PlugIns/";
+    
+#endif //PLATFORMS
+
+    return pluginDirectory;
+}
+
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());

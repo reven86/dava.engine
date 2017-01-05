@@ -129,7 +129,7 @@ void RenderWidget::ActivateRendering()
     w->setClearBeforeRendering(false);
 }
 
-bool RenderWidget::IsInitialized()
+bool RenderWidget::IsInitialized() const
 {
     return property(initializedPropertyName).isValid();
 }

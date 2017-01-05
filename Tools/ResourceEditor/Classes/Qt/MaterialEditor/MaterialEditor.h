@@ -1,11 +1,8 @@
-#ifndef __MATERIAL_EDITOR_H__
-#define __MATERIAL_EDITOR_H__
+#pragma once
 
 #include <QDialog>
 #include <QPointer>
 #include <QStandardItemModel>
-
-#include "DAVAEngine.h"
 
 #include "MaterialTemplateModel.h"
 #include "Scene/SceneSignals.h"
@@ -15,6 +12,14 @@
 namespace Ui
 {
 class MaterialEditor;
+}
+
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
 }
 
 class QtPropertyDataInspDynamic;
@@ -34,6 +39,8 @@ public:
 
     void SelectMaterial(DAVA::NMaterial* material);
     void SelectEntities(DAVA::NMaterial* material);
+
+    void RefreshMaterialProperties();
 
 public slots:
     void sceneActivated(SceneEditor2* scene);
@@ -62,7 +69,6 @@ protected:
     void SetCurMaterial(const QList<DAVA::NMaterial*>& materials);
 
     void FillTemplates(const QList<DAVA::NMaterial*>& materials);
-    void RefreshMaterialProperties();
 
 private slots:
     void onFilterChanged();
@@ -114,6 +120,6 @@ private:
     LazyUpdater* materialPropertiesUpdater;
     class ConfigNameValidator;
     ConfigNameValidator* validator;
-};
 
-#endif
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+};

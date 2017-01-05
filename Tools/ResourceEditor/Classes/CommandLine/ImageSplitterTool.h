@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class ImageSplitterTool : public REConsoleModuleCommon
 {
@@ -24,4 +25,11 @@ protected:
     };
 
     eAction commandAction = ACTION_NONE;
+
+    DAVA_VIRTUAL_REFLECTION(ImageSplitterTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<ImageSplitterTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };

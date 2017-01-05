@@ -1,15 +1,13 @@
-#ifndef __DEBUG_DRAW_SYSTEM_H__
-#define __DEBUG_DRAW_SYSTEM_H__
+#pragma once
 
-#include "DAVAEngine.h"
 #include "Classes/Constants.h"
 
 #include "Scene/System/CollisionSystem.h"
-#include "Scene/System/SelectionSystem.h"
+#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
 #include "Render/UniqueStateSet.h"
 
-class DebugDrawSystem : public DAVA::SceneSystem
+class DebugDrawSystem : public DAVA::SceneSystem, public EditorSceneSystem
 {
     friend class SceneEditor2;
     friend class EditorScene;
@@ -31,8 +29,10 @@ public:
     DAVA_DEPRECATED(inline void EnableSwithcesWithDifferentLODsMode(bool enabled));
     DAVA_DEPRECATED(inline bool SwithcesWithDifferentLODsModeEnabled() const);
 
+protected:
+    void Draw() override;
+
 private:
-    void Draw();
     void Draw(DAVA::Entity* entity);
 
     void DrawObjectBoxesByType(DAVA::Entity* entity);
@@ -55,9 +55,7 @@ private:
     DAVA::Vector3 GetLandscapePointAtCoordinates(const DAVA::Vector2& centerXY) const;
     bool IsObjectHanging(DAVA::Entity* entity) const;
 
-private:
     SceneCollisionSystem* collSystem = nullptr;
-    SceneSelectionSystem* selSystem = nullptr;
     DAVA::Color objectTypeColor = DAVA::Color::White;
     ResourceEditor::eSceneObjectType objectType = ResourceEditor::ESOT_NONE;
     bool hangingObjectsModeEnabled = false;
@@ -83,6 +81,3 @@ inline bool DebugDrawSystem::SwithcesWithDifferentLODsModeEnabled() const
 {
     return switchesWithDifferentLodsEnabled;
 }
-
-
-#endif // __DEBUG_DRAW_SYSTEM_H__

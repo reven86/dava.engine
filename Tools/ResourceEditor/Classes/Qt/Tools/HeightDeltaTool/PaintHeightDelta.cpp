@@ -122,9 +122,6 @@ void Execute(const DAVA::FilePath& targetImagePath, DAVA::float32 refDelta, DAVA
              const DAVA::Vector<DAVA::Color>& pixelColors)
 {
     DAVA::Image* croppedHeightmap = CropHeightmapToPow2(srcHeightmap);
-    auto imageWidth = DAVA::Max(croppedHeightmap->width, targetImageWidth);
-    auto imageHeight = DAVA::Max(croppedHeightmap->height, targetImageHeight);
-
     DAVA::Image* imageDelta = CreateHeightDeltaImage(targetImageWidth, targetImageHeight);
     PrepareDeltaImage(croppedHeightmap, imageDelta, targetTerrainHeight, refDelta, pixelColors);
     DAVA::ImageSystem::Save(targetImagePath, imageDelta);

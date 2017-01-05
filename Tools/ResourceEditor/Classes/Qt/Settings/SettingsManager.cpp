@@ -3,8 +3,9 @@
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"
 
-#include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
+
+#include "Classes/Selection/SelectionSystem.h"
 
 #include <QColor>
 #include <QDebug>
@@ -136,6 +137,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType(reinterpret_cast<DAVA::uint8*>(colors), nColors * sizeof(*colors)));
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType(static_cast<DAVA::float32>(2.0)));
     CreateValue(Settings::Internal_LogWidget, DAVA::VariantType(nullptr, 0));
+
+    CreateValue(Settings::Debug_DataWithMaterialsPathname, DAVA::VariantType(DAVA::String())); //use string because we cannot right now set filter for file dialog
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

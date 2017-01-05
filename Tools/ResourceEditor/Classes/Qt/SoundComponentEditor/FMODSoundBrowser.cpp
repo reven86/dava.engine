@@ -121,7 +121,7 @@ void FMODSoundBrowser::SelectItemAndExpandTreeByEventName(const DAVA::String& ev
 {
     DAVA::Vector<DAVA::String> tokens;
     DAVA::Split(eventName, "/", tokens);
-    DAVA::int32 tokensCount = tokens.size();
+    DAVA::int32 tokensCount = static_cast<DAVA::int32>(tokens.size());
     QTreeWidgetItem* currentItem = ui->treeWidget->invisibleRootItem();
     for (DAVA::int32 i = 0; i < tokensCount; i++)
     {
@@ -150,7 +150,7 @@ void FMODSoundBrowser::FillEventsTree(const DAVA::Vector<DAVA::String>& names)
 {
     ui->treeWidget->clear();
 
-    DAVA::int32 eventsCount = names.size();
+    DAVA::int32 eventsCount = static_cast<DAVA::int32>(names.size());
     for (DAVA::int32 i = 0; i < eventsCount; i++)
     {
         const DAVA::String& eventPath = names[i];
@@ -158,7 +158,7 @@ void FMODSoundBrowser::FillEventsTree(const DAVA::Vector<DAVA::String>& names)
         DAVA::Vector<DAVA::String> tokens;
         DAVA::Split(eventPath, "/", tokens);
 
-        DAVA::int32 tokensCount = tokens.size();
+        DAVA::int32 tokensCount = static_cast<DAVA::int32>(tokens.size());
         QTreeWidgetItem* currentItem = ui->treeWidget->invisibleRootItem();
         for (DAVA::int32 j = 0; j < tokensCount; j++)
         {

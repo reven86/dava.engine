@@ -1,11 +1,19 @@
 #pragma once
 
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneSignals.h"
+
 #include <QWidget>
 #include <QAbstractSpinBox>
 #include <QLabel>
 
-#include "Scene/SceneEditor2.h"
-#include "Scene/SceneSignals.h"
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
 
 class RECommandNotificationObject;
 class DAVAFloat32SpinBox;
@@ -21,6 +29,7 @@ public:
     };
 
     explicit ModificationWidget(QWidget* parent = nullptr);
+    ~ModificationWidget() override;
 
     void SetPivotMode(PivotMode pivotMode);
     void SetTransformType(Selectable::TransformType modifMode);
@@ -33,7 +42,6 @@ public slots:
 private slots:
     void OnSceneActivated(SceneEditor2* scene);
     void OnSceneDeactivated(SceneEditor2* scene);
-    void OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSceneCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void OnXChanged();
@@ -43,7 +51,8 @@ private slots:
 private:
     void ApplyValues(ST_Axis axis);
 
-private:
+    std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+
     QLabel* xLabel = nullptr;
     QLabel* yLabel = nullptr;
     QLabel* zLabel = nullptr;

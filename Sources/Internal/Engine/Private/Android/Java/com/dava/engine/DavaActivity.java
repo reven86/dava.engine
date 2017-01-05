@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -61,6 +62,7 @@ public final class DavaActivity extends Activity
         public void onRestart();
         public void onStop();
         public void onDestroy();
+        public void onNewIntent(Intent intent);
     }
 
     /**
@@ -76,6 +78,7 @@ public final class DavaActivity extends Activity
         public void onRestart() {}
         public void onStop() {}
         public void onDestroy() {}
+        public void onNewIntent(Intent intent) {}
     }
 
     public static final String LOG_TAG = "DAVA"; //!< Tag used by dava.engine java classes for internal log outputs
@@ -112,6 +115,7 @@ public final class DavaActivity extends Activity
     private static final int ON_ACTIVITY_RESTART = 4;
     private static final int ON_ACTIVITY_STOP = 5;
     private static final int ON_ACTIVITY_DESTROY = 6;
+    private static final int ON_ACTIVITY_NEW_INTENT = 7;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -171,6 +175,15 @@ public final class DavaActivity extends Activity
     static DavaGamepadManager gamepadManager()
     {
         return activitySingleton.gamepadManager;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent)
+    {
+        Log.d(LOG_TAG, "DavaActivity.onNewIntent");
+		super.onNewIntent(intent);
+
+        notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
     }
 
     @Override
@@ -574,6 +587,9 @@ public final class DavaActivity extends Activity
                 break;
             case ON_ACTIVITY_DESTROY:
                 l.onDestroy();
+                break;
+            case ON_ACTIVITY_NEW_INTENT:
+                l.onNewIntent((Intent)arg);
                 break;
             }
         }

@@ -97,7 +97,6 @@ void QEModule::PostInit()
     Themes::InitFromQApplication();
 
     DAVA::TArc::ContextAccessor* accessor = GetAccessor();
-    const DAVA::EngineContext* engineContext = accessor->GetEngineContext();
 
     using TData = QEModuleDetail::QEGlobalData;
     DAVA::TArc::DataContext* globalContext = accessor->GetGlobalContext();

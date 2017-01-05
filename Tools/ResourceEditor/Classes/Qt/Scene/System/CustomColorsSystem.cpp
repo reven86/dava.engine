@@ -1,6 +1,5 @@
 #include "CustomColorsSystem.h"
 #include "CollisionSystem.h"
-#include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
@@ -16,6 +15,7 @@
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Selection/Selection.h"
 
 #include "TArc/DataProcessing/DataContext.h"
 
@@ -56,7 +56,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
         return enableCustomDrawError;
     }
 
-    selectionSystem->SetLocked(true);
+    Selection::Lock();
     modifSystem->SetLocked(true);
     landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
@@ -110,7 +110,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing(bool saveNeeded)
     }
     FinishEditing(false);
 
-    selectionSystem->SetLocked(false);
+    Selection::Unlock();
     modifSystem->SetLocked(false);
 
     drawSystem->DisableCursor();

@@ -508,6 +508,7 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
+                _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
                 _D3D9_TargetCount = 0;
                 for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
                 {

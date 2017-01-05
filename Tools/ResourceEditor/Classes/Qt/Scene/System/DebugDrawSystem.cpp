@@ -7,6 +7,8 @@
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Classes/Selection/Selection.h"
+
 using namespace DAVA;
 
 DAVA::float32 DebugDrawSystem::HANGING_OBJECTS_HEIGHT = 0.001f;
@@ -17,10 +19,8 @@ DebugDrawSystem::DebugDrawSystem(DAVA::Scene* scene)
     SceneEditor2* sc = (SceneEditor2*)GetScene();
 
     collSystem = sc->collisionSystem;
-    selSystem = sc->selectionSystem;
 
     DVASSERT(NULL != collSystem);
-    DVASSERT(NULL != selSystem);
 }
 
 DebugDrawSystem::~DebugDrawSystem()
@@ -59,9 +59,10 @@ void DebugDrawSystem::Draw()
 
 void DebugDrawSystem::Draw(DAVA::Entity* entity)
 {
-    if (NULL != entity)
+    if (nullptr != entity)
     {
-        bool isSelected = selSystem->GetSelection().ContainsObject(entity);
+        const SelectableGroup& selection = Selection::GetSelection();
+        bool isSelected = selection.ContainsObject(entity);
 
         DrawObjectBoxesByType(entity);
         DrawUserNode(entity);
@@ -116,9 +117,10 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity* entity)
 {
     if (NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
     {
-        RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+        SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+        RenderHelper* drawer = editorScene->GetRenderSystem()->GetDebugDrawer();
 
-        AABBox3 worldBox = selSystem->GetUntransformedBoundingBox(entity);
+        AABBox3 worldBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
         DVASSERT(!worldBox.IsEmpty());
         DAVA::float32 delta = worldBox.GetSize().Length() / 4;
 
@@ -142,10 +144,11 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity* entity)
     DAVA::Light* light = GetLight(entity);
     if (NULL != light)
     {
-        RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+        SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+        RenderHelper* drawer = editorScene->GetRenderSystem()->GetDebugDrawer();
 
         AABBox3 worldBox;
-        AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
         DVASSERT(!localBox.IsEmpty());
         localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
 
@@ -184,8 +187,10 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity* entity)
     DAVA::SoundComponent* sc = GetSoundComponent(entity);
     if (sc)
     {
+        SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+
         AABBox3 worldBox;
-        AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
         if (!localBox.IsEmpty())
         {
             localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
@@ -251,11 +256,14 @@ void DebugDrawSystem::DrawWindNode(DAVA::Entity* entity)
 
 void DebugDrawSystem::DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& color)
 {
-    AABBox3 worldBox;
-    AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
-    DVASSERT(!localBox.IsEmpty());
-    localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+    AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
+    if (localBox.IsEmpty() == false)
+    {
+        AABBox3 worldBox;
+        localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
+    }
 }
 
 void DebugDrawSystem::DrawHangingObjects(DAVA::Entity* entity)
@@ -367,8 +375,10 @@ void DebugDrawSystem::DrawSwitchesWithDifferentLods(DAVA::Entity* entity)
 {
     if (switchesWithDifferentLodsEnabled && SceneValidator::IsEntityHasDifferentLODsCount(entity))
     {
+        SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+
         AABBox3 worldBox;
-        AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(entity);
         DVASSERT(!localBox.IsEmpty());
         localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, Color(1.0f, 0.f, 0.f, 1.f), RenderHelper::DRAW_WIRE_DEPTH);
