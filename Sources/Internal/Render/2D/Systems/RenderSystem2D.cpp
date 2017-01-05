@@ -1116,6 +1116,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         }
         else
         {
+            needGenerateData |= sprite->textures[0] != stretchData->texture;
             needGenerateData |= sprite != stretchData->sprite;
             needGenerateData |= frame != stretchData->frame;
             needGenerateData |= gd.size != stretchData->size;
@@ -1134,6 +1135,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     if (needGenerateData)
     {
         sd.sprite = sprite;
+        sd.texture = sprite->textures[0];
         sd.frame = frame;
         sd.size = gd.size;
         sd.type = type;
@@ -1232,6 +1234,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
             needGenerateData |= stretchCap != tiledData->stretchCap;
             needGenerateData |= frame != tiledData->frame;
             needGenerateData |= sprite != tiledData->sprite;
+            needGenerateData |= sprite->textures[0] != tiledData->texture;
             needGenerateData |= size != tiledData->size;
         }
     }
@@ -1249,6 +1252,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.size = size;
         td.frame = frame;
         td.sprite = sprite;
+        td.texture = sprite->textures[0];
         td.GenerateTileData();
     }
 
@@ -1329,6 +1333,10 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
             needGenerateData |= gradient != tiledData->gradient;
             needGenerateData |= contour != tiledData->contour;
             needGenerateData |= size != tiledData->size;
+            needGenerateData |= mask->textures[0] != tiledData->mask_texture;
+            needGenerateData |= detail->textures[0] != tiledData->detail_texture;
+            needGenerateData |= gradient->textures[0] != tiledData->gradient_texture;
+            needGenerateData |= contour->textures[0] != tiledData->contour_texture;
         }
     }
     else
@@ -1347,6 +1355,11 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.detail = detail;
         td.gradient = gradient;
         td.contour = contour;
+
+        td.mask_texture = mask->textures[0];
+        td.detail_texture = detail->textures[0];
+        td.gradient_texture = gradient->textures[0];
+        td.contour_texture = contour->textures[0];
 
         rhi::TextureSetDescriptor textureSetDescriptor;
         textureSetDescriptor.fragmentTextureCount = 4;
