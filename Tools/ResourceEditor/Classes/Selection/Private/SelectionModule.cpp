@@ -8,6 +8,8 @@
 #include "Classes/Qt/Scene/System/HoodSystem.h"
 #include "Classes/Qt/Scene/System/WayEditSystem.h"
 
+#include "Classes/Application/REGlobal.h"
+
 #include "TArc/WindowSubSystem/QtAction.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
