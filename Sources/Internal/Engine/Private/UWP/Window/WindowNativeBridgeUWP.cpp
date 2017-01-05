@@ -327,7 +327,7 @@ void WindowNativeBridge::HandleSizeChanged(float32 w, float32 h, bool dpiChanged
     float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
     float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
     float32 dpi = DisplayInformation::GetForCurrentView()->LogicalDpi;
-    eFullscreen fullscreen = ApplicationView::GetForCurrentView()->IsFullScreen ? eFullscreen::On : eFullscreen::Off;
+    eFullscreen fullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode ? eFullscreen::On : eFullscreen::Off;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, dpi, fullscreen));
 
     if (dpiChanged)
