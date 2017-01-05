@@ -256,20 +256,41 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
             if (isCubeMap)
             {
-                GLCommand cmd3[] =
+                DVASSERT(desc.levelCount < 16);
+                unsigned cmd3Count = 3;
+                GLCommand cmd3[4 + 6 * 16] =
                 {
                   { GLCommand::BIND_TEXTURE, { GL_TEXTURE_CUBE_MAP, uint64(&(this->uid)) } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-                  { GLCommand::RESTORE_TEXTURE0, {} }
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST } }
                 };
-                ExecGL(cmd3, countof(cmd3), force_immediate);
+
+                for (unsigned m = 0; m != desc.levelCount; ++m)
+                {
+                    GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+
+                    for (unsigned f = 0; f != countof(face); ++f)
+                    {
+                        cmd3[cmd3Count].func = GLCommand::TEX_IMAGE2D;
+                        cmd3[cmd3Count].arg[0] = face[f];
+                        cmd3[cmd3Count].arg[1] = m;
+                        cmd3[cmd3Count].arg[2] = uint64(int_fmt);
+                        cmd3[cmd3Count].arg[3] = uint64(desc.width);
+                        cmd3[cmd3Count].arg[4] = uint64(desc.height);
+                        cmd3[cmd3Count].arg[5] = 0;
+                        cmd3[cmd3Count].arg[6] = uint64(fmt);
+                        cmd3[cmd3Count].arg[7] = type;
+                        cmd3[cmd3Count].arg[8] = 0;
+                        cmd3[cmd3Count].arg[9] = 0;
+                        cmd3[cmd3Count].arg[10] = 0;
+                        ++cmd3Count;
+                    }
+                }
+
+                cmd3[cmd3Count].func = GLCommand::RESTORE_TEXTURE0;
+                ++cmd3Count;
+
+                ExecGL(cmd3, cmd3Count, force_immediate);
             }
             else
             {
