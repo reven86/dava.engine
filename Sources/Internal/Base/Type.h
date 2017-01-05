@@ -64,9 +64,9 @@ private:
     {
         isConst,
         isPointer,
-        isPointerOnConst,
+        isPointerToConst,
         isReference,
-        isReferenceOnConst,
+        isReferenceToConst,
         isFundamental,
         isTrivial,
         isIntegral,

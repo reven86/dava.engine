@@ -26,6 +26,8 @@ struct TypeSize<const void>
     static const size_t size = 0;
 };
 
+static std::list<Type**> allTypes;
+
 template <typename T>
 struct TypeHolder
 {
@@ -163,9 +165,9 @@ Type* Type::Init()
 
     type.flags.set(isConst, std::is_const<T>::value);
     type.flags.set(isPointer, std::is_pointer<T>::value);
-    type.flags.set(isPointerOnConst, std::is_pointer<T>::value && std::is_const<typename std::remove_pointer<T>::type>::value);
+    type.flags.set(isPointerToConst, std::is_pointer<T>::value && std::is_const<typename std::remove_pointer<T>::type>::value);
     type.flags.set(isReference, std::is_reference<T>::value);
-    type.flags.set(isReferenceOnConst, std::is_reference<T>::value && std::is_const<typename std::remove_reference<T>::type>::value);
+    type.flags.set(isReferenceToConst, std::is_reference<T>::value && std::is_const<typename std::remove_reference<T>::type>::value);
     type.flags.set(isFundamental, std::is_fundamental<T>::value);
     type.flags.set(isTrivial, std::is_trivial<T>::value);
     type.flags.set(isIntegral, std::is_integral<T>::value);
@@ -180,6 +182,8 @@ Type* Type::Init()
 
     auto condPointer = std::integral_constant<bool, needPointer>();
     type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
+
+    TypeDetail::allTypes.push_back(TypeDetail::TypeHolder<T>::InstancePointer());
 
     return &type;
 }
