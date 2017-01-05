@@ -723,7 +723,6 @@ void QtMainWindow::SetupActions()
 
     QObject::connect(ui->menuObjectTypes, SIGNAL(triggered(QAction*)), this, SLOT(OnObjectsTypeChanged(QAction*)));
     QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
-    QObject::connect(ui->actionReloadShader, SIGNAL(triggered()), this, SLOT(OnReloadShaders()));
     QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
 
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
@@ -841,7 +840,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->sceneToolBar->setEnabled(enable);
     ui->actionConvertModifiedTextures->setEnabled(enable);
 
-    ui->actionReloadShader->setEnabled(enable);
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
 
     ui->actionSnapCameraToLandscape->setEnabled(enable);
@@ -2259,58 +2257,6 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
     }
 
     return Settings::GetGPUFormat() == DAVA::GPU_ORIGIN;
-}
-
-void QtMainWindow::OnReloadShaders()
-{
-    DAVA::ShaderDescriptorCache::ReloadShaders();
-
-    REGlobal::GetAccessor()->ForEachContext([](DAVA::TArc::DataContext& ctx) {
-        SceneData* sceneData = ctx.GetData<SceneData>();
-        DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
-
-        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
-
-        for (auto material : topParents)
-        {
-            material->InvalidateRenderVariants();
-        }
-        const DAVA::Map<DAVA::uint64, DAVA::NMaterial*>& particleInstances = sceneEditor->particleEffectSystem->GetMaterialInstances();
-        for (auto material : particleInstances)
-        {
-            material.second->InvalidateRenderVariants();
-        }
-
-        DAVA::Set<DAVA::NMaterial*> materialList;
-        sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);
-        for (auto material : materialList)
-        {
-            if (material)
-                material->InvalidateRenderVariants();
-        }
-
-        sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
-        sceneEditor->renderSystem->SetForceUpdateLights();
-
-        sceneEditor->visibilityCheckSystem->InvalidateMaterials();
-    });
-
-#define INVALIDATE_2D_MATERIAL(material) \
-    if (DAVA::RenderSystem2D::material) \
-    { \
-        DAVA::RenderSystem2D::material->InvalidateRenderVariants(); \
-        DAVA::RenderSystem2D::material->PreBuildMaterial(DAVA::RenderSystem2D::RENDER_PASS_NAME); \
-    }
-
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
-
-#undef INVALIDATE_2D_MATERIAL
 }
 
 void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)

@@ -659,38 +659,4 @@ String UIButton::GetBackgroundComponentName(int32 index) const
 {
     return statePostfix[index];
 }
-
-int32 UIButton::GetInternalControlsCount() const
-{
-    return DRAW_STATE_COUNT;
-}
-
-UIControl* UIButton::GetInternalControl(int32 index) const
-{
-    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    return stateTexts[index];
-}
-
-UIControl* UIButton::CreateInternalControl(int32 index) const
-{
-    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    UIStaticText* targetTextBlock = GetActualTextBlock(static_cast<eButtonDrawState>(index));
-    return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
-}
-
-void UIButton::SetInternalControl(int32 index, UIControl* control)
-{
-    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    SetTextBlock(static_cast<eButtonDrawState>(index), DynamicTypeCheck<UIStaticText*>(control));
-}
-
-String UIButton::GetInternalControlName(int32 index) const
-{
-    return statePostfix[index];
-}
-
-String UIButton::GetInternalControlDescriptions() const
-{
-    return "Text";
-}
 };

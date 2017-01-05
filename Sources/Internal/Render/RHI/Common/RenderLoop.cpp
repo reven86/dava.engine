@@ -281,7 +281,11 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (!executed)
             {
                 framePreparedEvent.Signal();
+#ifdef __DAVAENGINE_WIN32__
+                DAVA::Thread::Sleep(1);
+#else
                 DAVA::Thread::Yield();
+#endif
             }
         }
     }

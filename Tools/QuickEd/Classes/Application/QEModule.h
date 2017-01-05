@@ -15,4 +15,11 @@ protected:
     void RestoreOnWindowClose(const DAVA::TArc::WindowKey& key) override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void PostInit() override;
+
+    DAVA_VIRTUAL_REFLECTION(QEModule, DAVA::TArc::ControllerModule)
+    {
+        DAVA::ReflectionRegistrator<QEModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };

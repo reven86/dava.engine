@@ -5,6 +5,8 @@
 #include "Logger/Logger.h"
 #include "Utils/SceneUtils/SceneUtils.h"
 
+#include "TArc/Utils/ModuleCollection.h"
+
 #include "Math/Color.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/Renderer.h"
@@ -125,3 +127,5 @@ void StaticOcclusionTool::ShowHelpInternal()
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-staticocclusion -build -processfile /Users/Test/DataSource/3d/Maps/scene.sc2");
 }
+
+DECL_CONSOLE_MODULE(StaticOcclusionTool, "-staticocclusion");

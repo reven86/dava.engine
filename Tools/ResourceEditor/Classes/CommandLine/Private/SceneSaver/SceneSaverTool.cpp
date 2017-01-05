@@ -3,6 +3,7 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "Utils/SceneSaver/SceneSaver.h"
 #include "Logger/Logger.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 SceneSaverTool::SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-scenesaver")
@@ -137,3 +138,5 @@ void SceneSaverTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-scenesaver -resave -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/scene.sc2 -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
     DAVA::Logger::Info("\t-scenesaver -resave -yaml -indir /Users/SmokeTest/Data/Configs/");
 }
+
+DECL_CONSOLE_MODULE(SceneSaverTool, "-scenesaver");

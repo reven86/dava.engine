@@ -3,6 +3,8 @@
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Utils/StringFormat.h"
 
+#include "TArc/Utils/ModuleCollection.h"
+
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/File.h"
@@ -294,3 +296,5 @@ void TextureDescriptorTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-texdescriptor -savepreset -processfilelist /Users/textures.txt -presetslist /Users/presets.txt");
     DAVA::Logger::Info("\t-texdescriptor -savepreset -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.tex");
 }
+
+DECL_CONSOLE_MODULE(TextureDescriptorTool, "-texdescriptor");

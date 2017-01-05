@@ -13,6 +13,7 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 #include <QFileInfo>
+#include <QSignalBlocker>
 
 using namespace DAVA;
 using namespace std;
@@ -81,16 +82,13 @@ WidgetContext* Document::GetContext(void* requester) const
 
 void Document::Save()
 {
+    //we dont need to receive signal "fileChanged" while changing the file in this function
+    QSignalBlocker block(fileSystemWatcher);
     QString path = GetPackageAbsolutePath();
-    fileSystemWatcher->removePath(path);
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package.Get());
     serializer.WriteToFile(package->GetPath());
     commandStack->SetClean();
-    if (!fileSystemWatcher->addPath(path))
-    {
-        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
-    }
 }
 
 void Document::SetContext(void* requester, WidgetContext* widgetContext)

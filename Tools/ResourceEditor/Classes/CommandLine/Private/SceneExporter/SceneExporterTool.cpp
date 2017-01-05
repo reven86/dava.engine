@@ -3,6 +3,7 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
 #include "Utils/SceneExporter/SceneExporter.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
@@ -329,3 +330,5 @@ void SceneExporterTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno");
     DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno,PowerVR_iOS -useCache -ip 127.0.0.1");
 }
+
+DECL_CONSOLE_MODULE(SceneExporterTool, "-sceneexporter");

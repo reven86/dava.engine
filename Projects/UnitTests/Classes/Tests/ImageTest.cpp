@@ -1,6 +1,7 @@
 #include "UnitTests/UnitTests.h"
 
 #include "Base/BaseTypes.h"
+#include "Math/HalfFloat.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Utils/StringFormat.h"
@@ -64,7 +65,41 @@ DAVA_TESTCLASS (ImageTest)
                 TEST_VERIFY(destination->GetWidth() == (td.width / 2));
                 TEST_VERIFY(destination->GetHeight() == (td.height / 2));
 
-                TEST_VERIFY_WITH_MESSAGE(Memcmp(source->GetData(), destination->GetData(), destination->GetDataSize()) == 0, Format("PixelFormat: %d", td.format));
+                if (PixelFormat::FORMAT_RGBA16F == td.format)
+                {
+                    uint16* sourcePtr = reinterpret_cast<uint16*>(source->data);
+                    uint16* dstPtr = reinterpret_cast<uint16*>(destination->data);
+                    uint32 size = destination->GetDataSize() / 2;
+                    for (uint32 i = 0; i < size; ++i)
+                    {
+                        float32 sourcePixel = Float16Compressor::Decompress(sourcePtr[i]);
+                        float32 dstPixel = Float16Compressor::Decompress(dstPtr[i]);
+
+                        if (fabsf(sourcePixel - dstPixel) > EPSILON)
+                        {
+                            TEST_VERIFY_WITH_MESSAGE(false, "PixelFormat: RGBA16F");
+                            break;
+                        }
+                    }
+                }
+                else if (PixelFormat::FORMAT_RGBA32F == td.format)
+                {
+                    float32* sourcePtr = reinterpret_cast<float32*>(source->data);
+                    float32* dstPtr = reinterpret_cast<float32*>(destination->data);
+                    uint32 size = destination->GetDataSize() / sizeof(float32);
+                    for (uint32 i = 0; i < size; ++i)
+                    {
+                        if (fabsf(sourcePtr[i] - dstPtr[i]) > EPSILON)
+                        {
+                            TEST_VERIFY_WITH_MESSAGE(false, "PixelFormat: RGBA32F");
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    TEST_VERIFY_WITH_MESSAGE(Memcmp(source->GetData(), destination->GetData(), destination->GetDataSize()) == 0, Format("PixelFormat: %d", td.format));
+                }
             }
             else
             {

@@ -14,7 +14,6 @@
 #include "ControlProperties/ControlPropertiesSection.h"
 #include "ControlProperties/CustomClassProperty.h"
 #include "ControlProperties/FontValueProperty.h"
-#include "ControlProperties/InternalControlPropertiesSection.h"
 #include "ControlProperties/IntrospectionProperty.h"
 #include "ControlProperties/LocalizedTextValueProperty.h"
 #include "ControlProperties/NameProperty.h"
@@ -311,18 +310,6 @@ void PackageSerializer::VisitRootProperty(RootProperty* property)
         }
     }
 
-    if (!hasChanges)
-    {
-        for (const auto section : property->GetInternalControlProperties())
-        {
-            if (section->HasChanges())
-            {
-                hasChanges = true;
-                break;
-            }
-        }
-    }
-
     if (hasChanges)
     {
         BeginMap("components");
@@ -331,9 +318,6 @@ void PackageSerializer::VisitRootProperty(RootProperty* property)
             section->Accept(this);
 
         for (const auto section : property->GetBackgroundProperties())
-            section->Accept(this);
-
-        for (const auto section : property->GetInternalControlProperties())
             section->Accept(this);
 
         EndMap();
@@ -360,16 +344,6 @@ void PackageSerializer::VisitComponentSection(ComponentPropertiesSection* proper
 }
 
 void PackageSerializer::VisitBackgroundSection(BackgroundPropertiesSection* property)
-{
-    if (property->HasChanges())
-    {
-        BeginMap(property->GetName());
-        AcceptChildren(property);
-        EndMap();
-    }
-}
-
-void PackageSerializer::VisitInternalControlSection(InternalControlPropertiesSection* property)
 {
     if (property->HasChanges())
     {
