@@ -103,7 +103,7 @@ reset_property ( MIX_APP_DATA )
     add_tool     ( ImageUnpacker    )
     add_tool     ( AssetCacheClient )
     add_tool     ( AssetCacheServer )
-    add_tool     ( Dep )
+##    add_tool     ( Dep )
 
     processing_mix_data()
 
