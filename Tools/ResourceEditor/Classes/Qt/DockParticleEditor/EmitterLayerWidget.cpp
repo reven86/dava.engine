@@ -920,8 +920,8 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     //LAYER_START_TIME, LAYER_END_TIME
     startTimeSpin->setMinimum(0);
-    startTimeSpin->setValue(layer->startTime);
     startTimeSpin->setMaximum(layer->endTime);
+    startTimeSpin->setValue(layer->startTime);
     endTimeSpin->setMinimum(0);
     endTimeSpin->setValue(layer->endTime);
 
