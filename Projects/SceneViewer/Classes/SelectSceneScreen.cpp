@@ -101,8 +101,6 @@ void SelectSceneScreen::OnSelectExternalStoragePath(BaseObject* caller, void* pa
             return;
         }
     }
-
-    DVASSERT_MSG(false, "No external storages found");
 }
 
 void SelectSceneScreen::OnClearPath(BaseObject* caller, void* param, void* callerData)

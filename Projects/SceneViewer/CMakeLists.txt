@@ -9,6 +9,7 @@ set ( DAVA_COREV2 1 )
 add_definitions ( -D__DAVAENGINE_COREV2__ )
 
 find_package( DavaFramework REQUIRED )
+find_package( PerformanceTests REQUIRED )
 
 include_directories   ( "Classes" )
 

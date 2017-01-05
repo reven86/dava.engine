@@ -44,6 +44,9 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     w->SetSizeAsync({ 1024, 768 });
     w->SetVirtualSize(1024, 768);
 
+    VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
+    vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
     //flags[FastName("VERTEX_LIT")] = 1;
@@ -66,13 +69,14 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     //flags[FastName("SKINNING")] = 1;
     //const FXDescriptor& res = FXCache::GetFXDescriptor(FastName("~res:/Materials/Silhouette.material"), flags);
 
-    selectSceneScreen = new SelectSceneScreen();
+    //selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
+    SetScenePath("~res:/Scene-15-effect/test_scene.sc2");
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
     //    SetScenePath("~doc:/karelia/karelia.sc2");
-    SetScenePath("~res:/3d/Maps/05_amigosville_am/05_amigosville_am.sc2");
+    //SetScenePath("~res:/3d/Maps/05_amigosville_am/05_amigosville_am.sc2");
     //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
     //SetScenePath("~res:/amigosville/amigosville.sc2");
     //      SetScenePath("~doc:/fort/fort.sc2");
@@ -182,6 +186,20 @@ KeyedArchive* CreateOptions()
 {
     KeyedArchive* appOptions = new KeyedArchive();
 
+    appOptions->SetInt32("shader_const_buffer_size", 4 * 1024 * 1024);
+
+    appOptions->SetInt32("max_index_buffer_count", 3 * 1024);
+    appOptions->SetInt32("max_vertex_buffer_count", 3 * 1024);
+    appOptions->SetInt32("max_const_buffer_count", 16 * 1024);
+    appOptions->SetInt32("max_texture_count", 2048);
+    appOptions->SetInt32("max_texture_set_count", 2048);
+    appOptions->SetInt32("max_sampler_state_count", 128);
+    appOptions->SetInt32("max_pipeline_state_count", 1024);
+    appOptions->SetInt32("max_depthstencil_state_count", 256);
+    appOptions->SetInt32("max_render_pass_count", 64);
+    appOptions->SetInt32("max_command_buffer_count", 64);
+    appOptions->SetInt32("max_packet_list_count", 64);
+
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     //appOptions->SetInt32("renderer", rhi::RHI_METAL);
@@ -195,9 +213,9 @@ KeyedArchive* CreateOptions()
 
 #else
 #if defined(__DAVAENGINE_WIN32__)
-    appOptions->SetInt32("renderer", rhi::RHI_DX11);
     //appOptions->SetInt32("renderer", rhi::RHI_DX9);
-    //appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    //appOptions->SetInt32("renderer", rhi::RHI_DX9);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);

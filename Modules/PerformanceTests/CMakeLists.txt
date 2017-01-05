@@ -1,0 +1,13 @@
+set(NAME_MODULE PerformanceTests)
+
+set(MODULE_TYPE STATIC)
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp *.mm)
+
+set(INCLUDES "${CMAKE_CURRENT_LIST_DIR}")
+set(EXCLUDE_FROM_ALL 1)
+
+set(INCLUDES_PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR})
+
+setup_main_module()
