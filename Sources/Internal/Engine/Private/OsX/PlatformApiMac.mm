@@ -49,7 +49,7 @@ void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->RegisterDVEApplicationListener(listener);
+    core->bridge->UnregisterDVEApplicationListener(listener);
 }
 
 } // namespace Mac

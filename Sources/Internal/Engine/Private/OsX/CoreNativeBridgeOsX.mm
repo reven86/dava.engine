@@ -80,6 +80,9 @@
 
 //////////////////////////////////////////////////////////////////
 
+// Defined in EntryApple.mm
+extern NSAutoreleasePool* preMainLoopReleasePool;
+
 namespace DAVA
 {
 namespace Private
@@ -100,16 +103,15 @@ CoreNativeBridge::~CoreNativeBridge()
 
 void CoreNativeBridge::Run()
 {
-    @autoreleasepool
-    {
-        appDelegate = [[AppDelegate alloc] initWithBridge:this];
-        [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+    appDelegate = [[AppDelegate alloc] initWithBridge:this];
+    [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
-        // NSApplicationMain never returns
-        // NSApplicationMain itself ignores the argc and argv arguments. Instead, Cocoa gets its arguments indirectly via _NSGetArgv, _NSGetArgc, and _NSGetEnviron.
-        // See https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Miscellaneous/AppKit_Functions/#//apple_ref/c/func/NSApplicationMain
-        ::NSApplicationMain(0, nullptr);
-    }
+    [preMainLoopReleasePool drain];
+
+    // NSApplicationMain never returns
+    // NSApplicationMain itself ignores the argc and argv arguments. Instead, Cocoa gets its arguments indirectly via _NSGetArgv, _NSGetArgc, and _NSGetEnviron.
+    // See https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Miscellaneous/AppKit_Functions/#//apple_ref/c/func/NSApplicationMain
+    ::NSApplicationMain(0, nullptr);
 }
 
 void CoreNativeBridge::Quit()
@@ -223,9 +225,6 @@ void CoreNativeBridge::RegisterDVEApplicationListener(id<DVEApplicationListener>
 {
     DVASSERT(listener != nullptr);
 
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
     if ([appDelegateListeners indexOfObject:listener] == NSNotFound)
     {
@@ -235,9 +234,6 @@ void CoreNativeBridge::RegisterDVEApplicationListener(id<DVEApplicationListener>
 
 void CoreNativeBridge::UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
     [appDelegateListeners removeObject:listener];
 }
@@ -248,7 +244,7 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
     {
         // Make copy to allow listeners unregistering inside a callback
         LockGuard<Mutex> lock(listenersMutex);
-        listenersCopy = [[appDelegateListeners copy] autorelease];
+        listenersCopy = [appDelegateListeners copy];
     }
 
     for (id<DVEApplicationListener> listener in listenersCopy)
@@ -304,17 +300,22 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             }
             break;
         case ON_DID_ACTIVATE_NOTIFICATION:
-            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            if ([listener respondsToSelector:@selector(userNotificationCenter:didActivateNotification:)])
+            {
+                [listener userNotificationCenter:static_cast<NSUserNotificationCenter*>(arg1) didActivateNotification:static_cast<NSUserNotification*>(arg1)];
+            }
             break;
         default:
             break;
         }
     }
+
+    [listenersCopy release];
 }
 
-void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
+void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotificationCenter* notificationCenter, NSUserNotification* notification)
 {
-    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr, nullptr);
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notificationCenter, notification, nullptr);
 }
 } // namespace Private
 } // namespace DAVA

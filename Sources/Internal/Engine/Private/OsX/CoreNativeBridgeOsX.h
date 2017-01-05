@@ -14,6 +14,7 @@
 @class NSMutableArray;
 @class NSNotification;
 @class NSUserNotification;
+@class NSUserNotificationCenter;
 @class FrameTimer;
 @class AppDelegate;
 
@@ -50,7 +51,7 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminate();
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate(NSNotification* notification);
-    void ApplicationDidActivateNotification(NSUserNotification* notification);
+    void ApplicationDidActivateNotification(NSUserNotificationCenter* notificationCenter, NSUserNotification* notification);
 
     void RegisterDVEApplicationListener(id<DVEApplicationListener> listener);
     void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener);

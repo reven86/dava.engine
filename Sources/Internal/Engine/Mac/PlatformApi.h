@@ -9,6 +9,8 @@
 
 @protocol NSObject;
 @class NSNotification;
+@class NSUserNotification;
+@class NSUserNotificationCenter;
 @class NSApplication;
 @class NSDictionary;
 @class NSString;
@@ -37,6 +39,7 @@
 - (void)application:(NSApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo;
 - (void)application:(NSApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken;
 - (void)application:(NSApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error;
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification;
 @end
 
 namespace DAVA
@@ -48,6 +51,7 @@ namespace Mac
 {
 void AddNSView(Window* targetWindow, NSView* nsview);
 void RemoveNSView(Window* targetWindow, NSView* nsview);
+void PrimaryWindowDeminiaturize();
 
 /**
     \ingroup engine_mac
