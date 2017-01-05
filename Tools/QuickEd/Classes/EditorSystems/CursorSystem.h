@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QPixmap>
 #include <QString>
+#include <QCursor>
 
 class CursorSystem final : public BaseEditorSystem
 {
@@ -15,11 +16,13 @@ public:
 
 private:
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+    void OnDragStateChanged(EditorSystemsManager::eDragState dragState);
 
     QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
     QPixmap CreatePixmap(const QString& address) const;
 
     static QMap<QString, QPixmap> cursorpixes;
+    QCursor lastCursor;
 };
 
 #endif // __QUICKED_TREE_SYSTEM_H__

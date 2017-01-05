@@ -15,6 +15,7 @@ CursorSystem::CursorSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
+    systemsManager->dragStateChanged.Connect(this, &CursorSystem::OnDragStateChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
@@ -30,6 +31,21 @@ void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
         renderWidget->setCursor(QCursor(pixmap));
+    }
+}
+
+void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState)
+{
+    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
+    if (dragState == EditorSystemsManager::DragScreen)
+    {
+        lastMousePos = mapFromGlobal(QCursor::pos());
+        lastCursor = renderWidget->cursor();
+        renderWidget->setCursor(Qt::OpenHandCursor);
+    }
+    else
+    {
+        renderWidget->setCursor(lastCursor);
     }
 }
 

@@ -7,11 +7,12 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 
 #include "EditorSystems/SelectionSystem.h"
-#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/EditorControlView.h"
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/KeyboardProxy.h"
+#include "EditorSystems/ScrollCanvasSystem.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -60,8 +61,8 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     packageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
-    canvasSystemPtr = new CanvasSystem(this);
-    systems.emplace_back(canvasSystemPtr);
+    controlViewPtr = new EditorControlView(this);
+    systems.emplace_back(controlViewPtr);
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
@@ -69,6 +70,8 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
+    ScrollCanvasSystem* scrollCanvasSystem = new ScrollCanvasSystem(this);
+    systems.emplace_back(scrollCanvasSystem);
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
@@ -147,7 +150,7 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     {
         return 0;
     }
-    uint32 index = canvasSystemPtr->GetIndexByPos(point);
+    uint32 index = controlViewPtr->GetIndexByPos(point);
     bool insertToEnd = (index == editingRootControls.size());
 
     auto iter = editingRootControls.begin();
@@ -173,11 +176,6 @@ void EditorSystemsManager::SetDragState(eDragState dragState_)
     }
     dragState = dragState_;
     dragStateChanged.Emit(dragState);
-}
-
-EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const
-{
-    return dragState;
 }
 
 void EditorSystemsManager::SelectAll()

@@ -10,14 +10,14 @@ class EditorSystemsManager;
 class PackageBaseNode;
 class BackgroundController;
 
-class CanvasSystem final : public BaseEditorSystem, PackageListener
+class EditorControlView final : public BaseEditorSystem, PackageListener
 {
 public:
-    CanvasSystem(EditorSystemsManager* parent);
-    ~CanvasSystem() override;
+    EditorControlView(EditorSystemsManager* parent);
+    ~EditorControlView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
-    void LayoutCanvas();
+    void Layout();
 
 private:
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);

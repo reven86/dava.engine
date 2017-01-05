@@ -123,20 +123,6 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
-void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragState)
-{
-    if (dragState == EditorSystemsManager::DragScreen)
-    {
-        lastMousePos = mapFromGlobal(QCursor::pos());
-        lastCursor = renderWidget->cursor();
-        renderWidget->setCursor(Qt::OpenHandCursor);
-    }
-    else
-    {
-        renderWidget->setCursor(lastCursor);
-    }
-}
-
 void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
     DVASSERT(renderWidget_ != nullptr);

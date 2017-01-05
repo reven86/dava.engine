@@ -12,16 +12,12 @@ class BaseEditorSystem
 {
 public:
     explicit BaseEditorSystem(EditorSystemsManager* parent);
-    virtual ~BaseEditorSystem() = 0;
+    virtual ~BaseEditorSystem() = delete;
 
     virtual bool OnInput(DAVA::UIEvent* currentInput);
 
 protected:
     EditorSystemsManager* systemsManager = nullptr;
 };
-
-inline BaseEditorSystem::~BaseEditorSystem()
-{
-}
 
 #endif // __QUICKED_BASE_SYSTEM_H__

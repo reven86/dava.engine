@@ -16,7 +16,6 @@ class EditorSystemsManager;
 
 class Document;
 class ControlNode;
-class ScrollAreaController;
 class PackageBaseNode;
 class RulerController;
 class AbstractProperty;
@@ -34,8 +33,6 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::Re
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
-    ScrollAreaController* GetScrollAreaController();
-    RulerController* GetRulerController();
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnWindowCreated();
@@ -113,7 +110,6 @@ private:
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState);
 
     QPoint lastMousePos;
-    QCursor lastCursor;
     QPointer<Document> document;
     DAVA::RenderWidget* renderWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;

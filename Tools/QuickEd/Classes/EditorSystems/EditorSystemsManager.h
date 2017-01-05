@@ -1,6 +1,4 @@
-#ifndef __QUICKED_SYSTEMS_MANAGER_H__
-#define __QUICKED_SYSTEMS_MANAGER_H__
-
+#pragma once
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Functional/Signal.h"
@@ -67,9 +65,10 @@ struct MagnetLineInfo
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
-class CanvasSystem;
+class EditorControlView;
 class SelectionSystem;
 class HUDSystem;
+class ScrollCanvasSystem;
 
 class EditorSystemsManager : PackageListener
 {
@@ -91,6 +90,10 @@ public:
     DAVA::UIControl* GetInputLayerControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
+    //
+
+    ScrollCanvasSystem* GetScrollCanvasSystem() const;
+
     bool OnInput(DAVA::UIEvent* currentInput);
 
     void SetEmulationMode(bool emulationMode);
@@ -102,9 +105,6 @@ public:
     void ClearHighlight();
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
-
-    void SetDragState(eDragState dragState);
-    eDragState GetDragState() const;
 
     void SelectAll();
     void FocusNextChild();
@@ -138,6 +138,7 @@ private:
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);
+    void SetDragState(eDragState dragState);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<InputLayerControl> inputLayerControl;
@@ -150,12 +151,12 @@ private:
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
-    CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
+    EditorControlView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
-    DAVA::RenderWidget* renderWidget = nullptr;
     HUDSystem* hudSystemPtr = nullptr;
+    ScrollCanvasSystem = nullptr;
 
-    eDragState dragState = DragControls;
+    DAVA::RenderWidget* renderWidget = nullptr;
 };
 
 template <class OutIt, class Predicate>
@@ -185,5 +186,3 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         }
     }
 }
-
-#endif // __QUICKED_SYSTEMS_MANAGER_H__

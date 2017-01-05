@@ -1,11 +1,9 @@
-#include "ScrollAreaController.h"
-#include "UI/UIScreenManager.h"
 
 using namespace DAVA;
 
 ScrollAreaController::ScrollAreaController(QObject* parent)
-    : QObject(parent)
-    , backgroundControl(new UIControl)
+,
+backgroundControl(new UIControl)
 {
     backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
