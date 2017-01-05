@@ -626,10 +626,13 @@ void CommandBufferGLES2_t::Execute()
                     #endif
 
                     #if defined(__DAVAENGINE_MACOS__)
-                    // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
-                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
-                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
-                    GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                    if (passCfg.colorBuffer[i].loadAction == LOADACTION_CLEAR)
+                    {
+                        // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
+                        GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                        GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
+                        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                    }
                     #endif
                 }
                 else
