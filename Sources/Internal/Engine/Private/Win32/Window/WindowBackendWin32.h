@@ -85,6 +85,7 @@ private:
     void SetWindowedMode();
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
+    void SwitchToPinning();
     void UpdateClipCursor();
     void HandleWindowFocusChanging(bool hasFocus);
 
@@ -125,10 +126,6 @@ private:
     float32 GetDpi() const;
 
 private:
-    eCursorCapture captureMode = eCursorCapture::OFF;
-    bool mouseVisible = true;
-    POINT lastCursorPosition;
-
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
@@ -153,6 +150,13 @@ private:
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
+    int32 mouseMoveSkipCount = 0;
+    const int32 SKIP_N_MOUSE_MOVE_EVENTS = 2;
+
+    bool pendingPinning = false;
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    bool mouseVisible = true;
+    POINT lastCursorPosition;
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;

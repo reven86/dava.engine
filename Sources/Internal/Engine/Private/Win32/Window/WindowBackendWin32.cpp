@@ -162,14 +162,13 @@ LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
     uint16 hittest = LOWORD(lparam);
     if (hittest == HTCLIENT)
     {
-        if (mouseVisible)
+        if (pendingPinning)
         {
-            ::SetCursor(hcurCursor);
+            pendingPinning = false;
+            SwitchToPinning();
         }
-        else
-        {
-            ::SetCursor(nullptr);
-        }
+
+        ::SetCursor(mouseVisible ? hcurCursor : nullptr);
         return TRUE;
     }
     return FALSE;
@@ -321,29 +320,54 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 {
     if (captureMode != mode)
     {
-        captureMode = mode;
+        pendingPinning = false;
         switch (mode)
         {
         case eCursorCapture::FRAME:
             //not implemented
+            captureMode = mode;
             break;
         case eCursorCapture::PINNING:
         {
-            POINT p;
-            ::GetCursorPos(&p);
-            lastCursorPosition.x = p.x;
-            lastCursorPosition.y = p.y;
-            SetCursorInCenter();
+            // Windows 7 does not send WM_SETCURSOR message (which controls cursor visibility) while any mouse button is pressed.
+            // As a result cursor is visible but pinning is on. So delay switching to pinning to WM_SETCURSOR handler if any mouse button is pressed.
+            // Windows 8 and later send WM_SETCURSOR in any case.
+
+            // clang-format off
+            pendingPinning = 
+                (::GetKeyState(VK_LBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_RBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_MBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_XBUTTON1) & 0x80) != 0 ||
+                (::GetKeyState(VK_XBUTTON2) & 0x80) != 0;
+            // clang-format on
+            if (!pendingPinning)
+            {
+                SwitchToPinning();
+            }
             break;
         }
         case eCursorCapture::OFF:
         {
+            captureMode = mode;
             ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
             break;
         }
         }
         UpdateClipCursor();
     }
+}
+
+void WindowBackend::SwitchToPinning()
+{
+    captureMode = eCursorCapture::PINNING;
+    mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+
+    POINT pt;
+    ::GetCursorPos(&pt);
+    lastCursorPosition.x = pt.x;
+    lastCursorPosition.y = pt.y;
+    SetCursorInCenter();
 }
 
 void WindowBackend::UpdateClipCursor()
@@ -547,6 +571,12 @@ LRESULT WindowBackend::OnActivate(WPARAM wparam)
 
 LRESULT WindowBackend::OnMouseMoveRelativeEvent(int x, int y)
 {
+    if (mouseMoveSkipCount > 0)
+    {
+        mouseMoveSkipCount -= 1;
+        return 0;
+    }
+
     RECT clientRect;
     ::GetClientRect(hwnd, &clientRect);
     int clientCenterX((clientRect.left + clientRect.right) / 2);
