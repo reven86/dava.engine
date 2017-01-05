@@ -74,7 +74,7 @@
 
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification
 {
-    bridge->ApplicationDidActivateNotification(notification);
+    bridge->ApplicationDidActivateNotification(center, notification);
 }
 
 @end
