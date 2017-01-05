@@ -1,5 +1,7 @@
 #include "Tests/UIScrollViewTest.h"
 
+#include "Render/2D/SpriteUtils.h"
+
 using namespace DAVA;
 
 UIScrollViewTest::UIScrollViewTest(TestBed& app)
@@ -29,7 +31,8 @@ void UIScrollViewTest::LoadResources()
     if (control)
     {
         UIScrollBar* horizontalScrollbar = DynamicTypeCheck<UIScrollBar*>(control);
-        horizontalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/HorizontalScroll", 0);
+        ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath("~res:/TestData/UI/HorizontalScroll.png"));
+        horizontalScrollbar->GetSlider()->SetSprite(sprite, 0);
         horizontalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_HORIZONTAL);
         horizontalScrollbar->GetSlider()->GetBackground()->SetLeftRightStretchCap(10);
         horizontalScrollbar->SetOrientation(UIScrollBar::ORIENTATION_HORIZONTAL);
@@ -39,7 +42,8 @@ void UIScrollViewTest::LoadResources()
     if (control)
     {
         UIScrollBar* verticalScrollbar = DynamicTypeCheck<UIScrollBar*>(control);
-        verticalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/VerticalScroll", 0);
+        ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath("~res:/TestData/UI/VerticalScroll.png"));
+        verticalScrollbar->GetSlider()->SetSprite(sprite, 0);
         verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
         verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
         verticalScrollbar->SetOrientation(UIScrollBar::ORIENTATION_VERTICAL);

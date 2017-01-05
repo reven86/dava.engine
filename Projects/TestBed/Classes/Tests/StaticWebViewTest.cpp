@@ -1,5 +1,6 @@
 #include "Tests/StaticWebViewTest.h"
 
+#include "Render/2D/SpriteUtils.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "Utils/Utils.h"
@@ -104,8 +105,9 @@ void StaticWebViewTest::LoadResources()
     const float32 w = 40;
 
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
-    FilePath imgPath("~res:/Gfx/UI/Rotation");
-    overlapedImage->SetSprite(imgPath, 0);
+    FilePath imgPath("~res:/TestData/UI/Rotation.png");
+    ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath(imgPath));
+    overlapedImage->SetSprite(sprite, 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 
