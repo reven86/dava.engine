@@ -3,6 +3,7 @@
 
 #include "DAVAVersion.h"
 #include "Version.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include <QtGlobal>
 
@@ -22,3 +23,5 @@ DAVA::TArc::ConsoleModule::eFrameResult VersionTool::OnFrameInternal()
 
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
+
+DECL_CONSOLE_MODULE(VersionTool, "-version");

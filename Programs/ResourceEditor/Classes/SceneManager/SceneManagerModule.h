@@ -110,4 +110,11 @@ private:
     DAVA::FilePath cachedPath;
 
     QPointer<SceneRenderWidget> renderWidget;
+
+    DAVA_VIRTUAL_REFLECTION(SceneManagerModule, DAVA::TArc::ControllerModule)
+    {
+        DAVA::ReflectionRegistrator<SceneManagerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
