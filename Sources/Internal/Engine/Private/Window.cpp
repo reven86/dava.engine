@@ -49,8 +49,8 @@ void Window::SetMinimumSize(Size2f size)
 
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        size.dx = std::max(size.dx, 128.f);
-        size.dy = std::max(size.dy, 128.f);
+        size.dx = std::max(size.dx, static_cast<float32>(smallestWidth));
+        size.dy = std::max(size.dy, static_cast<float32>(smallestHeight));
 
         windowBackend->SetMinimumSize(size);
     }
