@@ -1,6 +1,7 @@
 #include "Classes/Selection/SelectionModule.h"
 #include "Classes/Selection/SelectionData.h"
 
+#include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
