@@ -3,6 +3,7 @@ package com.dava.engine;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -53,6 +54,7 @@ final class DavaSurfaceView extends SurfaceView
     {
         super(context);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
         
         windowBackendPointer = windowBackendPtr;
 
