@@ -2,6 +2,7 @@
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "Utils/SceneSaver/SceneSaver.h"
+#include "Logger/Logger.h"
 #include "TArc/Utils/ModuleCollection.h"
 
 SceneSaverTool::SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine)

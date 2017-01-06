@@ -5,6 +5,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Engine/Window.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
@@ -135,10 +136,10 @@ void GameCore::RegisterTests()
 void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>>& mapsVector)
 {
     YamlParser* testsParser = YamlParser::Create("~res:/tests.yaml");
-    DVASSERT_MSG(testsParser, "can't open ~res:/tests.yaml");
+    DVASSERT(testsParser, "can't open ~res:/tests.yaml");
 
     YamlParser* mapsParser = YamlParser::Create("~res:/maps.yaml");
-    DVASSERT_MSG(mapsParser, "can't open ~res:/maps.yaml");
+    DVASSERT(mapsParser, "can't open ~res:/maps.yaml");
 
     YamlNode* testsRootNode = testsParser->GetRootNode();
     YamlNode* mapsRootNode = mapsParser->GetRootNode();
@@ -379,6 +380,8 @@ KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    Assert::AddHandler(Assert::DefaultLoggerHandler);
+
     Vector<String> modules =
     {
       "JobManager",

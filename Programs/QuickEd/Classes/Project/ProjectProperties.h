@@ -1,10 +1,10 @@
 #pragma once
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
-class FilePath;
 class YamlNode;
 class ResultList;
 }

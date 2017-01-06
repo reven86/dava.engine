@@ -1,4 +1,5 @@
 #include "PackageBaseNode.h"
+#include "Logger/Logger.h"
 
 using namespace DAVA;
 

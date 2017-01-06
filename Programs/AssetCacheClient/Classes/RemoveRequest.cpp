@@ -5,6 +5,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 #include "AssetCache/AssetCacheClient.h"
 

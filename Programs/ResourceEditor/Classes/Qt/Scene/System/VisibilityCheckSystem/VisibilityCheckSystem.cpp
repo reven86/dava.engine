@@ -312,7 +312,7 @@ bool VisibilityCheckSystem::CacheIsValid()
 void VisibilityCheckSystem::BuildCache()
 {
     stateCache.camera = GetFinalGatherCamera();
-    DVASSERT(stateCache.camera != nullptr)
+    DVASSERT(stateCache.camera != nullptr);
 
     stateCache.viewportSize = DAVA::Size2i(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
     stateCache.viewprojMatrix = stateCache.camera->GetViewProjMatrix();

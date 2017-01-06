@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "Base/GlobalEnum.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"

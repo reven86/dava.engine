@@ -2,6 +2,7 @@
 #include <FileSystem/Private/PackArchive.h>
 #include <FileSystem/Private/ZipArchive.h>
 #include <FileSystem/FileSystem.h>
+#include <Logger/Logger.h>
 
 #include <cstring>
 

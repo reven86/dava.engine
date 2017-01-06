@@ -5,6 +5,7 @@
 #include "Render/Texture.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Image/ImageSystem.h"
+#include "Logger/Logger.h"
 
 #include <memory>
 

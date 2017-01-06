@@ -5,6 +5,7 @@
 #include "Utils/SceneExporter/SceneExporter.h"
 #include "TArc/Utils/ModuleCollection.h"
 
+#include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DateTime.h"
@@ -21,7 +22,7 @@ void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const DAVA::
 {
     using namespace DAVA;
 
-    DVASSERT(folderPathname.IsDirectoryPathname())
+    DVASSERT(folderPathname.IsDirectoryPathname());
 
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 i = 0, count = fileList->GetCount(); i < count; ++i)

@@ -412,7 +412,8 @@ void ValueProperty::GenerateBuiltInSubProperties()
         for (size_type i = 0; i < map->GetCount(); ++i)
         {
             int val = 0;
-            DVVERIFY(map->GetValue(i, val));
+            const bool getSucceeded = map->GetValue(i, val);
+            DVASSERT(getSucceeded);
             subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
         }
     }

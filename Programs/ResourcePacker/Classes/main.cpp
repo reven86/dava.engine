@@ -6,7 +6,7 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
-#include "Debug/DVAssert.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
@@ -206,6 +206,8 @@ void Process(Engine& e)
 
 int DAVAMain(Vector<String> cmdLine)
 {
+    Assert::SetupDefaultHandlers();
+
     Engine e;
     DAVA::Vector<DAVA::String> modules =
     {

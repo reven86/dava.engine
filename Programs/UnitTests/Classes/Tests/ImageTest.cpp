@@ -4,6 +4,7 @@
 #include "Math/HalfFloat.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Utils/StringFormat.h"
 #include "Utils/Random.h"
 
 using namespace DAVA;

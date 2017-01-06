@@ -5,6 +5,8 @@
 
 #include "ArchivePackTool.h"
 #include "ResultCodes.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "Utils/StringUtils.h"
 
 using namespace DAVA;
@@ -150,7 +152,7 @@ int ArchivePackTool::ProcessInternal()
     }
     default:
     {
-        DVASSERT_MSG(false, Format("Incorrect source type: %d", source).c_str());
+        DVASSERT(false, Format("Incorrect source type: %d", source).c_str());
         return ResourceArchiverResult::ERROR_INTERNAL;
     }
     }
