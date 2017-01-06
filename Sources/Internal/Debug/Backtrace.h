@@ -10,6 +10,7 @@ DAVA_NOINLINE size_t GetBacktrace(void** frames, size_t framesSize);
 
 String GetBacktraceString(size_t depth = -1);
 String GetBacktraceString(const Vector<void*>& backtrace);
+String GetBacktraceString(const Vector<void*>& backtrace, size_t framesSize);
 String GetBacktraceString(void* const* frames, size_t framesSize);
 
 String GetFrameSymbol(void* frame, bool demangle = true);

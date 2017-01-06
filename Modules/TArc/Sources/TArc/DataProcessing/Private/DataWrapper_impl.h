@@ -31,9 +31,8 @@ DataEditor<T>::DataEditor(DataEditor<T>&& other)
     : reflection(std::move(other.reflection))
     , dataPtr(std::move(other.dataPtr))
     , copyValue(std::move(other.copyValue))
-    , holder(other.holder)
+    , holder(std::move(other.holder))
 {
-    other.holder = nullptr;
 }
 
 template <typename T>
@@ -43,10 +42,9 @@ DataEditor<T>& DataEditor<T>::operator=(DataEditor<T>&& other)
         return *this;
 
     reflection = std::move(other.reflection);
-    dataPtr = std::move(other.dataCopy);
+    dataPtr = std::move(other.dataPtr);
     copyValue = std::move(other.copyValue);
-    holder = other.holder;
-    other.holder = nullptr;
+    holder = std::move(other.holder);
 
     return *this;
 }
@@ -55,6 +53,39 @@ template <typename T>
 T* DataEditor<T>::operator->()
 {
     return dataPtr;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+DataReader<T>::DataReader(const DataWrapper& holder_)
+    : holder(holder_)
+{
+}
+
+template <typename T>
+DataReader<T>::DataReader(DataReader<T>&& other)
+    : holder(std::move(other.holder))
+{
+}
+
+template <typename T>
+DataReader<T>& DataReader<T>::operator=(DataReader<T>&& other)
+{
+    if (&other == this)
+        return *this;
+
+    holder = std::move(other.holder);
+
+    return *this;
+}
+
+template <typename T>
+T const* DataReader<T>::operator->() const
+{
+    DVASSERT(holder.HasData());
+    ReflectedObject refObject = holder.GetData().GetValueObject();
+    return refObject.GetPtr<T>();
 }
 
 template <typename T>
@@ -67,14 +98,33 @@ DataEditor<T> DataWrapper::CreateEditor()
         {
             return DataEditor<T>(*this, reflection);
         }
-        catch (std::runtime_error& e)
+        catch (Exception& e)
         {
             Logger::Error(e.what());
             throw e;
         }
     }
 
-    throw std::runtime_error(Format("Somebody tried to create editor for data that doesn't exist. T = %s", Type::Instance<T>()->GetName()));
+    DAVA_THROW(Exception, Format("Somebody tried to create editor for data that doesn't exist. T = %s", Type::Instance<T>()->GetName()));
+}
+
+template <typename T>
+DataReader<T> DataWrapper::CreateReader() const
+{
+    if (HasData())
+    {
+        try
+        {
+            return DataReader<T>(*this);
+        }
+        catch (Exception& e)
+        {
+            Logger::Error(e.what());
+            throw e;
+        }
+    }
+
+    DAVA_THROW(Exception, Format("Somebody tried to create reader for data that doesn't exist. T = %s", Type::Instance<T>()->GetName()));
 }
 } // namespace TArc
 } // namespace DAVA

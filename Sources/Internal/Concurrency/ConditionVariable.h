@@ -85,7 +85,7 @@ inline ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT
 
 inline void ConditionVariable::Wait(UniqueLock<Mutex>& guard)
 {
-    DVASSERT_MSG(guard.OwnsLock(), "Mutex must be locked and UniqueLock must own it");
+    DVASSERT(guard.OwnsLock(), "Mutex must be locked and UniqueLock must own it");
 
     std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex, std::adopt_lock_t());
     cv.wait(lock);

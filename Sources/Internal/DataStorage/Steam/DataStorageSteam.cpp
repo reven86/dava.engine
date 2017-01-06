@@ -3,6 +3,7 @@
 #include "Platform/Steam.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_STEAM__)
 
@@ -53,7 +54,7 @@ ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
 
     dataArchive = new KeyedArchive();
     bool isLoaded = dataArchive->Load(dataFile);
-    DVASSERT_MSG(isLoaded, "Wrong SteamArchive Format.");
+    DVASSERT(isLoaded, "Wrong SteamArchive Format.");
 
     return dataArchive;
 }
