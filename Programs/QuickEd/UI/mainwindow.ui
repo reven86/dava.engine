@@ -613,15 +613,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-<<<<<<< HEAD
    <class>StyleSheetInspectorWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/StyleSheetInspector/StyleSheetInspectorWidget.h</header>
-=======
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>FindWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/Find/FindWidget.h</header>
->>>>>>> development
    <container>1</container>
   </customwidget>
  </customwidgets>
