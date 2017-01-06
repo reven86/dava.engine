@@ -59,6 +59,21 @@ void PlatformCore::Init()
     }
 #endif
 
+    // TODO: temporal hardcode, separate task for setting rotation
+
+    // Auto-rotation preferences are supported starting from Windows 8.
+    // Also system sets auto-rotation preferences only for calling process and these preferences are applied only
+    // when application's window has focus.
+    if (DllImport::fnGetAutoRotationState != nullptr)
+    {
+        AR_STATE arstate{};
+        BOOL result = DllImport::fnGetAutoRotationState(&arstate);
+        if (result && (arstate & (AR_NOSENSOR | AR_NOT_SUPPORTED)) == 0)
+        {
+            DllImport::fnSetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+        }
+    }
+
     engineBackend.InitializePrimaryWindow();
 }
 
