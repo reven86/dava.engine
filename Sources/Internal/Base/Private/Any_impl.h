@@ -179,7 +179,7 @@ void Any::Set(T&& value, NotAny<T>)
 template <typename T>
 bool Any::CanCast() const
 {
-    return CanGet<T>() || AnyCast<T>::CanCast(*this);
+    return CanGet<T>() || AnyDetail::AnyCastImpl<T>::CanCast(*this);
 }
 
 template <typename T>
@@ -188,7 +188,7 @@ T Any::Cast() const
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    return AnyCast<T>::Cast(*this);
+    return AnyDetail::AnyCastImpl<T>::Cast(*this);
 }
 
 template <typename T>
@@ -197,12 +197,7 @@ T Any::Cast(const T& defaultValue) const
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    if (Any::CanCast<T>())
-    {
-        return AnyCast<T>::Cast(*this);
-    }
-
-    return defaultValue;
+    return AnyDetail::AnyCastImpl<T>::template Cast<T>(*this, defaultValue);
 }
 
 } // namespace DAVA

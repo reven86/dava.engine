@@ -164,6 +164,7 @@ struct AnyCompare
     static bool IsEqual(const Any&, const Any&);
 };
 
+/*
 /// \brief any cast.
 template <typename T>
 struct AnyCast
@@ -171,13 +172,14 @@ struct AnyCast
     static bool CanCast(const Any&);
     static T Cast(const Any&);
 };
+*/
 
 /// \brief any cast.
-template <typename From>
-struct AnyCastProto
+template <typename From, typename To>
+struct AnyCast
 {
-    template <typename T>
-    static void Register(T (*)(const Any&));
+    static void Register(To (*)(const Any&));
+    static void RegisterDefault();
 };
 
 } // namespace DAVA

@@ -8,51 +8,66 @@
 
 namespace DAVA
 {
-#if 0
 namespace AnyDetail
 {
-template<typename F>
-struct AnyCastProtoImpl
+template <typename T>
+struct AnyCastHolder
 {
-    static UnorderedMap<const Type*, void*> castFns;
+    using CastFn = T (*)(const Any&);
 
-    template <typename T>
-    static T(*)(const Any&) GetCastFn()
+    static UnorderedMap<const Type*, CastFn> castFns;
+
+    static CastFn GetCastFn(const Type* fromType)
     {
-        void *f = nullptr;
+        auto it = castFns.find(fromType);
+        if (it != castFns.end())
+        {
+            return (*it).second;
+        }
 
-        return static_cast<T(*)(const Any&)>(f);
+        return nullptr;
     }
 };
-} // AnyDetail
-#endif
 
 template <typename T>
-bool AnyCast<T>::CanCast(const Any& any)
+UnorderedMap<const Type*, typename AnyCastHolder<T>::CastFn> AnyCastHolder<T>::castFns;
+
+template <typename T>
+struct AnyCastImpl
 {
-    if (std::is_fundamental<T>::value)
+    static bool CanCast(const Any& any)
     {
-        const Type* t = any.GetType();
-        return (nullptr != t && t->IsFundamental());
+        return (nullptr != AnyCastHolder<T>::GetCastFn(any.GetType()));
     }
 
-    return false;
-}
-
-template <typename T>
-T AnyCast<T>::Cast(const Any& any)
-{
-    if (CanCast(any))
+    static T Cast(const Any& any)
     {
-        const void* data = any.GetData();
-        size_t sz = any.GetType()->GetSize();
+        AnyCastHolder<T>::CastFn fn = AnyCastHolder<T>::GetCastFn(any.GetType());
+
+        if (nullptr != fn)
+        {
+            return (*fn)(any);
+        }
+
+        DAVA_THROW(Exception, "Any:: can't be casted into specified T");
     }
 
-    DAVA_THROW(Exception, "Any:: can't be casted into specified T");
-}
+    template <typename U>
+    static T Cast(const Any& any, const U& def)
+    {
+        AnyCastHolder<T>::CastFn fn = AnyCastHolder<T>::GetCastFn(any.GetType());
+
+        if (nullptr != fn)
+        {
+            return (*fn)(any);
+        }
+
+        return static_cast<T>(def);
+    }
+};
 
 template <typename T>
-struct AnyCast<T*>
+struct AnyCastImpl<T*>
 {
     static bool CanCast(const Any& any)
     {
@@ -74,6 +89,37 @@ struct AnyCast<T*>
 
         DAVA_THROW(Exception, "Any:: can't be casted into specified T*");
     }
+
+    template <typename U>
+    static T* Cast(const Any& any, const U& def)
+    {
+        using P = Type::DecayT<T*>;
+
+        void* inPtr = any.Get<void*>();
+        void* outPtr = nullptr;
+
+        if (TypeInheritance::Cast(any.GetType(), Type::Instance<P>(), inPtr, &outPtr))
+        {
+            return static_cast<T*>(outPtr);
+        }
+
+        return static_cast<T*>(def);
+    }
 };
+} // AnyDetail
+
+template <typename From, typename To>
+void AnyCast<From, To>::Register(To (*fn)(const Any&))
+{
+    AnyDetail::AnyCastHolder<To>::castFns[Type::Instance<From>()] = fn;
+}
+
+template <typename From, typename To>
+void AnyCast<From, To>::RegisterDefault()
+{
+    AnyDetail::AnyCastHolder<To>::castFns[Type::Instance<From>()] = [](const Any& any) {
+        return static_cast<To>(any.Get<From>());
+    };
+}
 
 } // namespace DAVA
