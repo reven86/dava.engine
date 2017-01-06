@@ -68,6 +68,11 @@ void Core::AddBackend(const String& name, std::unique_ptr<IBackend> backend)
     backends[name] = std::move(backend);
 }
 
+void Core::RemoveBackend(const String& name)
+{
+    backends.erase(name);
+}
+
 bool CheckEventPass(const KeyedArchive& config, const AnalyticsEvent& event)
 {
     // check all-passing option
