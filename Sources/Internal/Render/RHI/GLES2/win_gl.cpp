@@ -4,6 +4,9 @@
 
 #include "_gl.h"
 #include "../rhi_Public.h"
+
+#include "Logger/Logger.h"
+
 using DAVA::Logger;
 
 HDC _GLES2_WindowDC = 0;

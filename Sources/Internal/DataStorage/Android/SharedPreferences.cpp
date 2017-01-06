@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "SharedPreferences.h"
 
 namespace DAVA

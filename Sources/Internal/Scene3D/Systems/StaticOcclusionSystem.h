@@ -74,6 +74,9 @@ public:
 
     ~StaticOcclusionDebugDrawSystem();
 
+protected:
+    void SetScene(Scene* scene) override;
+
 private:
     void UpdateGeometry(StaticOcclusionDebugDrawComponent* component);
 
