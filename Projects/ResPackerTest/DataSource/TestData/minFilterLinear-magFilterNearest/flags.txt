@@ -1,1 +1,0 @@
---minFilterLinear --magFilterNearest --PowerVR_iOS PVR4 --adreno ATC_RGB --mali ETC1 --tegra DXT1A --PowerVR_Android PVR4
