@@ -4,6 +4,7 @@
 #include "Base/IntrospectionBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
 #include "FileSystem/VariantType.h"
 #include "Animation/Interpolation.h"
 
