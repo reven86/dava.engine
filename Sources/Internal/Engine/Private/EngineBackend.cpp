@@ -964,7 +964,7 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
 
     // abort if signal was ignored
     String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x", static_cast<DAVA::uint32>(err));
-    DVASSERT_MSG(0, info.c_str());
+    DVASSERT(0, info.c_str());
     Logger::Error("%s", info.c_str());
     abort();
 }

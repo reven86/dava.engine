@@ -4,6 +4,8 @@
 #include "sl_Common.h"
 #include "sl_Tokenizer.h"
 
+#include "Logger/Logger.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,6 @@
 #include "Analytics/LoggingBackend.h"
 #include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

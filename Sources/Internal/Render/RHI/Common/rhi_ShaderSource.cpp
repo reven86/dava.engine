@@ -9,6 +9,7 @@ using DAVA::Logger;
 #include "FileSystem/FileSystem.h"
 using DAVA::DynamicMemoryFile;
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include "Debug/ProfilerCPU.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"

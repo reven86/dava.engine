@@ -198,6 +198,7 @@ void ResetBlock();
 
 void InitializeImplementation(Api api, const InitParam& param);
 void UninitializeImplementation();
+void ReportError(const InitParam&, RenderingError);
 
 struct RenderDeviceCaps;
 namespace MutableDeviceCaps

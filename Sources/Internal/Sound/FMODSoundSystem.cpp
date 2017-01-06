@@ -334,7 +334,7 @@ SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
     }
 #endif //__DAVAENGINE_IPHONE__
 
-    DVASSERT(clonedSound)
+    DVASSERT(clonedSound);
     return clonedSound;
 }
 

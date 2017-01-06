@@ -9,11 +9,13 @@ namespace Net
 {
 struct ProtoHeader
 {
-    uint16 frameSize; // Frame length: header + data
-    uint16 frameType; // Frame type
-    uint32 channelId; // Channel identifier
-    uint32 packetId; // Packet Id for acknoledgements
-    uint32 totalSize; // Total size of user data
+    ProtoHeader() = default;
+
+    uint16 frameSize = 0; // Frame length: header + data
+    uint16 frameType = 0; // Frame type
+    uint32 channelId = 0; // Channel identifier
+    uint32 packetId = 0; // Packet Id for acknoledgements
+    uint32 totalSize = 0; // Total size of user data
 };
 
 const size_t PROTO_MAX_FRAME_SIZE = 1024 * 64 - 1;

@@ -4,8 +4,8 @@
 namespace DAVA
 {
 SceneSystem::SceneSystem(Scene* scene_)
+    : scene(scene_)
 {
-    SetScene(scene_);
 }
 
 void SceneSystem::RegisterEntity(Entity* entity)
