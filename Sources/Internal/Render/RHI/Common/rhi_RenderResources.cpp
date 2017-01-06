@@ -2,7 +2,7 @@
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
 #include "rhi_Pool.h"
-#include "RenderLoop.h"
+#include "FrameLoop.h"
 
 #include "Core/Core.h"
 
