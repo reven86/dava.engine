@@ -1294,6 +1294,11 @@
     <string>Add Action Component</string>
    </property>
   </action>
+  <action name="actionAddLodComponent">
+   <property name="text">
+    <string>Add Lod Component</string>
+   </property>
+  </action>
   <action name="actionNoObject">
    <property name="checkable">
     <bool>true</bool>

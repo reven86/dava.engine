@@ -106,17 +106,18 @@ PropertyEditor::~PropertyEditor()
 void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
-    connect(mainWindowUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
-    connect(mainWindowUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
-    connect(mainWindowUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
-    connect(mainWindowUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
-    connect(mainWindowUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
-    connect(mainWindowUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
-    connect(mainWindowUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
-    connect(mainWindowUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
-    connect(mainWindowUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
-    connect(mainWindowUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
-    connect(mainWindowUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
+    connect(mainWindowUi->actionAddActionComponent, &QAction::triggered, this, &PropertyEditor::OnAddActionComponent);
+    connect(mainWindowUi->actionAddQualitySettingsComponent, &QAction::triggered, this, &PropertyEditor::OnAddModelTypeComponent);
+    connect(mainWindowUi->actionAddStaticOcclusionComponent, &QAction::triggered, this, &PropertyEditor::OnAddStaticOcclusionComponent);
+    connect(mainWindowUi->actionAddSoundComponent, &QAction::triggered, this, &PropertyEditor::OnAddSoundComponent);
+    connect(mainWindowUi->actionAddWaveComponent, &QAction::triggered, this, &PropertyEditor::OnAddWaveComponent);
+    connect(mainWindowUi->actionAddSkeletonComponent, &QAction::triggered, this, &PropertyEditor::OnAddSkeletonComponent);
+    connect(mainWindowUi->actionAddPathComponent, &QAction::triggered, this, &PropertyEditor::OnAddPathComponent);
+    connect(mainWindowUi->actionAddRotationComponent, &QAction::triggered, this, &PropertyEditor::OnAddRotationControllerComponent);
+    connect(mainWindowUi->actionAddSnapToLandscapeComponent, &QAction::triggered, this, &PropertyEditor::OnAddSnapToLandscapeControllerComponent);
+    connect(mainWindowUi->actionAddWASDComponent, &QAction::triggered, this, &PropertyEditor::OnAddWASDControllerComponent);
+    connect(mainWindowUi->actionAddVisibilityComponent, &QAction::triggered, this, &PropertyEditor::OnAddVisibilityComponent);
+    connect(mainWindowUi->actionAddLodComponent, &QAction::triggered, this, &PropertyEditor::OnAddLodComponent);
 }
 
 void PropertyEditor::SetEntities(const SelectableGroup* selected)
@@ -1450,6 +1451,11 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
 void PropertyEditor::OnAddActionComponent()
 {
     OnAddComponent(DAVA::Component::ACTION_COMPONENT);
+}
+
+void PropertyEditor::OnAddLodComponent()
+{
+    OnAddComponent(DAVA::Component::LOD_COMPONENT);
 }
 
 void PropertyEditor::OnAddStaticOcclusionComponent()
