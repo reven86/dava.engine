@@ -5,6 +5,8 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include "Reflection/Reflection.h"
+
 namespace DAVA
 {
 namespace TArc
@@ -37,4 +39,6 @@ private:
     DAVA::RefPtr<ScenePreviewDialog> previewDialog;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
     DAVA::TArc::QtConnections connections;
+
+    DAVA_VIRTUAL_REFLECTION(LibraryModule, DAVA::TArc::ClientModule);
 };

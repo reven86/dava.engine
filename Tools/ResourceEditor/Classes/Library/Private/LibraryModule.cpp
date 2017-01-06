@@ -12,6 +12,7 @@
 
 #include "FileSystem/FilePath.h"
 #include "Functional/Function.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 LibraryModule::~LibraryModule()
 {
@@ -120,3 +121,12 @@ void LibraryModule::OnDragStarted()
 {
     HidePreview();
 }
+
+DAVA_REFLECTION_IMPL(LibraryModule)
+{
+    DAVA::ReflectionRegistrator<LibraryModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DECL_GUI_MODULE(LibraryModule);

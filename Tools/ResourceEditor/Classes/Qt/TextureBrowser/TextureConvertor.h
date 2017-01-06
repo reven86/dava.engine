@@ -64,7 +64,7 @@ private:
     JobWatcher watcherOriginal;
     JobWatcher watcherConverted;
 
-    QtWaitDialog* waitDialog;
+    QtWaitDialog* waitDialog = nullptr;
 
     void jobRunNextConvert();
     void jobRunNextOriginal();

@@ -1,14 +1,8 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Application/LaunchModule.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
-#include "Classes/DevFuncs/CrashProduceModule.h"
-#include "Classes/SceneManager/EntityProducerModule.h"
-#include "Classes/Export/Mitsuba/MitsubaExporter.h"
-#include "Classes/Library/LibraryModule.h"
-#include "Classes/Selection/SelectionModule.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Settings/SettingsManager.h"
@@ -36,6 +30,7 @@
 
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestClass.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
@@ -180,64 +175,37 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
-    tarcCore->CreateModule<EntityProducerModule>();
-    tarcCore->CreateModule<LaunchModule>();
-    tarcCore->CreateModule<CrashProduceModule>();
-    tarcCore->CreateModule<MitsubaExporter>();
-    tarcCore->CreateModule<LibraryModule>();
-    tarcCore->CreateModule<SelectionModule>();
+
+    for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
+    {
+        tarcCore->CreateModule(type);
+    }
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
     DVASSERT(cmdLine.size() > 1);
 
+    DAVA::Vector<std::pair<const DAVA::ReflectedType*, DAVA::String>> modules = DAVA::TArc::ModuleCollection::Instance()->GetConsoleModules();
+
+    auto createModuleFn = [&](const DAVA::String& command) -> bool
+    {
+        for (const auto& module : modules)
+        {
+            if (module.second == command)
+            {
+                tarcCore->CreateModule(module.first, cmdLine);
+                return true;
+            }
+        }
+
+        return false;
+    };
+
     DAVA::String command = cmdLine[1];
-    if (command == "-help")
-    {
-        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
-    }
-    else if (command == "-version")
-    {
-        tarcCore->CreateModule<VersionTool>(cmdLine);
-    }
-#if defined(__DAVAENGINE_BEAST__)
-    else if (command == "-beast")
-    {
-        tarcCore->CreateModule<BeastCommandLineTool>(cmdLine);
-    }
-#endif //#if defined (__DAVAENGINE_BEAST__)
-    else if (command == "-dump")
-    {
-        tarcCore->CreateModule<DumpTool>(cmdLine);
-    }
-    else if (command == "-sceneimagedump")
-    {
-        tarcCore->CreateModule<SceneImageDump>(cmdLine);
-    }
-    else if (command == "-staticocclusion")
-    {
-        tarcCore->CreateModule<StaticOcclusionTool>(cmdLine);
-    }
-    else if (command == "-imagesplitter")
-    {
-        tarcCore->CreateModule<ImageSplitterTool>(cmdLine);
-    }
-    else if (command == "-texdescriptor")
-    {
-        tarcCore->CreateModule<TextureDescriptorTool>(cmdLine);
-    }
-    else if (command == "-sceneexporter")
-    {
-        tarcCore->CreateModule<SceneExporterTool>(cmdLine);
-    }
-    else if (command == "-scenesaver")
-    {
-        tarcCore->CreateModule<SceneSaverTool>(cmdLine);
-    }
-    else
+    if (createModuleFn(command) == false)
     {
         DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
-        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
+        createModuleFn("-help");
     }
 }

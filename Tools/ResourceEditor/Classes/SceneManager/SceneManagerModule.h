@@ -16,9 +16,14 @@ class FilePath;
 
 class SceneEditor2;
 class SceneData;
+class FileSystemCache;
 
 class SceneManagerModule : public DAVA::TArc::ControllerModule, private SceneRenderWidget::IWidgetDelegate
 {
+public:
+    SceneManagerModule();
+    ~SceneManagerModule() override;
+
 protected:
     void OnRenderSystemInitialized(DAVA::Window* w) override;
     bool CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText) override;
@@ -55,6 +60,7 @@ private:
     /// Fields value handlers
     void OnActiveTabChanged(const DAVA::Any& contextID);
     void OnScenePathChanged(const DAVA::Any& scenePath);
+    void OnProjectPathChanged(const DAVA::Any& projectPath);
 
     /// IWidgetDelegate
     bool OnCloseSceneRequest(DAVA::uint64 id) override;
@@ -98,5 +104,15 @@ private:
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
     std::unique_ptr<RecentMenuItems> recentItems;
 
+    std::unique_ptr<FileSystemCache> sceneFilesCache;
+    DAVA::FilePath cachedPath;
+
     QPointer<SceneRenderWidget> renderWidget;
+
+    DAVA_VIRTUAL_REFLECTION(SceneManagerModule, DAVA::TArc::ControllerModule)
+    {
+        DAVA::ReflectionRegistrator<SceneManagerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };

@@ -38,6 +38,13 @@ protected:
     void CloseAllScenesMock(bool)
     {
     }
+
+    DAVA_VIRTUAL_REFLECTION(SceneManagerMockModule, DAVA::TArc::ClientModule)
+    {
+        DAVA::ReflectionRegistrator<SceneManagerMockModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
 }
 
@@ -151,7 +158,6 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         QMenuBar* menu = mainWnd->menuBar();
         QMenu* fileMenu = menu->findChild<QMenu*>("File");
-        QRect fileMenuRect = fileMenu->rect();
 
         QAction* closeProjectAction = nullptr;
         QList<QAction*> actions = fileMenu->actions();

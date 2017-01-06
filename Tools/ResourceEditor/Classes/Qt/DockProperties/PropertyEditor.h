@@ -31,10 +31,10 @@ struct PropEditorUserData : public QtPropertyData::UserData
     };
 
     PropEditorUserData(PropertyType _type, QtPropertyData* _associatedData = NULL, bool _isFavorite = false, DAVA::Entity* _entity = NULL)
-        : type(_type)
-        , associatedData(_associatedData)
-        , isFavorite(_isFavorite)
+        : associatedData(_associatedData)
         , entity(_entity)
+        , type(_type)
+        , isFavorite(_isFavorite)
     {
     }
 
@@ -85,6 +85,7 @@ public slots:
     void ActionEditMaterial();
     void ActionEditSoundComponent();
     void OnAddActionComponent();
+    void OnAddLodComponent();
     void OnAddStaticOcclusionComponent();
     void OnAddSoundComponent();
     void OnAddWaveComponent();

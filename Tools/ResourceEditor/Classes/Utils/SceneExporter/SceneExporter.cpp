@@ -719,14 +719,17 @@ bool SceneExporter::CopyFile(const FilePath& filePath) const
 
 bool SceneExporter::CopyFile(const FilePath& filePath, const String& fileLink) const
 {
+    bool retCopy = true;
     FilePath newFilePath = exportingParams.dataFolder + fileLink;
 
-    bool retCopy = FileSystem::Instance()->CopyFile(filePath, newFilePath, true);
-    if (!retCopy)
+    if (newFilePath != filePath)
     {
-        Logger::Error("Can't copy %s to %s", fileLink.c_str(), newFilePath.GetAbsolutePathname().c_str());
+        retCopy = FileSystem::Instance()->CopyFile(filePath, newFilePath, true);
+        if (!retCopy)
+        {
+            Logger::Error("Can't copy %s to %s", fileLink.c_str(), newFilePath.GetAbsolutePathname().c_str());
+        }
     }
-
     return retCopy;
 }
 

@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 #include "Utils/Dump/SceneDumper.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class DumpTool : public REConsoleModuleCommon
 {
@@ -27,4 +28,11 @@ private:
 
     DAVA::Vector<DAVA::eGPUFamily> compressedGPUs;
     SceneDumper::eMode mode = SceneDumper::eMode::REQUIRED;
+
+    DAVA_VIRTUAL_REFLECTION(DumpTool, REConsoleModuleCommon)
+    {
+        DAVA::ReflectionRegistrator<DumpTool>::Begin()
+        .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
+        .End();
+    }
 };

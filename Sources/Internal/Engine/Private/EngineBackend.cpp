@@ -37,6 +37,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -786,6 +787,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
+    context->pluginManager = new PluginManager(GetEngine());
     context->analyticsCore = new Analytics::Core;
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -818,6 +820,11 @@ void EngineBackend::DestroySubsystems()
         context->moduleManager->ShutdownModules();
         delete context->moduleManager;
         context->moduleManager = nullptr;
+    }
+    if (context->pluginManager != nullptr)
+    {
+        context->pluginManager->UnloadPlugins();
+        delete context->pluginManager;
     }
     if (context->jobManager != nullptr)
     {
