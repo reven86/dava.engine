@@ -87,11 +87,11 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
 {
 #if STYLESHEET_STATS
-    uint64 startTime = SystemTimer::GetAbsoluteMicros();
+    uint64 startTime = SystemTimer::GetUs();
 #endif
     ProcessControl(control, 0, styleSheetListChanged);
 #if STYLESHEET_STATS
-    statsTime += SystemTimer::GetAbsoluteMicros() - startTime;
+    statsTime += SystemTimer::GetUs() - startTime;
 #endif
 }
 

@@ -20,7 +20,7 @@ void GamepadDeviceImpl::Update()
     float32 readBuf[GamepadDevice::ELEMENT_COUNT];
     ReadElements(readBuf, GamepadDevice::ELEMENT_COUNT);
 
-    uint64 timestamp = SystemTimer::GetFrameTimestamp();
+    int64 timestamp = SystemTimer::GetMs();
     for (size_t i = 0; i < GamepadDevice::ELEMENT_COUNT; ++i)
     {
         if (gamepadDevice->elementValues[i] != readBuf[i])

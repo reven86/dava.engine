@@ -60,11 +60,11 @@ void PlatformCore::Run()
 
     while (!quitGameThread)
     {
-        int64 frameBeginTime = SystemTimer::GetAbsoluteMillis();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         int32 fps = engineBackend->OnFrame();
 
-        int64 frameEndTime = SystemTimer::GetAbsoluteMillis();
+        int64 frameEndTime = SystemTimer::GetMs();
         int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
@@ -100,8 +100,8 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
-    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeMicros() - goBackgroundTimeRelativeToBoot;
-    int64 timeSpentInBackground2 = SystemTimer::GetAbsoluteMicros() - goBackgroundTime;
+    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+    int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
     // Do adjustment only if SystemTimer has stopped ticking
     if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
     {
@@ -116,8 +116,8 @@ void PlatformCore::ActivityOnPause()
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 
-    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeMicros();
-    goBackgroundTime = SystemTimer::GetAbsoluteMicros();
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void PlatformCore::ActivityOnDestroy()

@@ -1842,7 +1842,7 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                     if (glGetQueryObjectui64v)
                         GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
 
-                    cpuTimestamp = DAVA::SystemTimer::GetAbsoluteMicros();
+                    cpuTimestamp = DAVA::SystemTimer::GetUs();
 
                     if (glDeleteQueries)
                         GL_CALL(glDeleteQueries(1, &query));
@@ -1856,7 +1856,7 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                 {
                     GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
                     GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
-                    cpuTimestamp = DAVA::SystemTimer::GetAbsoluteMicros();
+                    cpuTimestamp = DAVA::SystemTimer::GetUs();
                     GL_CALL(glDeleteQueries(1, &query));
                 }
 

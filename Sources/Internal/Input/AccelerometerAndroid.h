@@ -24,7 +24,7 @@ public:
 private:
     bool enabled;
     float32 updRate;
-    uint64 lastUpdate;
+    int64 lastUpdate;
 };
 };
 #endif // __DAVAENGINE_ANDROID__

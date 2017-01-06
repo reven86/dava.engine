@@ -23,15 +23,15 @@ DAVA_TESTCLASS (TimerTest)
 
         for (int64 sleepTime : sleepTimeMs)
         {
-            int64 beginMs = SystemTimer::GetAbsoluteMillis();
-            int64 beginUs = SystemTimer::GetAbsoluteMicros();
-            int64 beginNs = SystemTimer::GetAbsoluteNanos();
+            int64 beginMs = SystemTimer::GetMs();
+            int64 beginUs = SystemTimer::GetUs();
+            int64 beginNs = SystemTimer::GetNs();
 
             Thread::Sleep(static_cast<uint32>(sleepTime));
 
-            int64 deltaMs = SystemTimer::GetAbsoluteMillis() - beginMs;
-            int64 deltaUs = SystemTimer::GetAbsoluteMicros() - beginUs;
-            int64 deltaNs = SystemTimer::GetAbsoluteNanos() - beginNs;
+            int64 deltaMs = SystemTimer::GetMs() - beginMs;
+            int64 deltaUs = SystemTimer::GetUs() - beginUs;
+            int64 deltaNs = SystemTimer::GetNs() - beginNs;
 
             // Some platforms may sleep less than specified (e.g. Windows), so descrease sleep time by 1 ms
             TEST_VERIFY_WITH_MESSAGE(deltaMs >= (sleepTime - 1), Format("deltaMs=%lld, sleepTime=%lld", deltaMs, sleepTime));
@@ -40,15 +40,9 @@ DAVA_TESTCLASS (TimerTest)
         }
 
         {
-            int64 systime1 = SystemTimer::GetSystemTime();
-            int64 systime2 = static_cast<int64>(std::time(nullptr));
-            TEST_VERIFY(0 <= (systime2 - systime1) && (systime2 - systime1) <= 1); // Include case when time has updated during second measure
-        }
-
-        {
-            int64 begin = SystemTimer::GetSystemUptimeMicros();
+            int64 begin = SystemTimer::GetSystemUptimeUs();
             Thread::Sleep(2000);
-            int64 delta = SystemTimer::GetSystemUptimeMicros() - begin;
+            int64 delta = SystemTimer::GetSystemUptimeUs() - begin;
             // I do not know period system updates its uptime so choose value less than sleep time by 500ms
             TEST_VERIFY_WITH_MESSAGE(delta >= 1500000ll, Format("delta=%lld", delta));
         }
@@ -68,6 +62,10 @@ DAVA_TESTCLASS (TimerTest)
         SystemTimer::PauseGlobalTime();
         SystemTimer::ResumeGlobalTime();
         TEST_VERIFY(globalTime >= 0.f);
+
+        int64 systime1 = SystemTimer::GetSystemTime();
+        int64 systime2 = static_cast<int64>(std::time(nullptr));
+        TEST_VERIFY(0 <= (systime2 - systime1) && (systime2 - systime1) <= 1); // Include case when time has updated during second measure
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override

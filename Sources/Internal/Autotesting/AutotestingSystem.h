@@ -109,7 +109,7 @@ private:
     bool isScreenShotSaving = false;
 
 public:
-    uint64 startTimeMS;
+    float32 startTime = 0.f;
 
     bool isInit;
     bool isRunning;

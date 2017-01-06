@@ -59,11 +59,11 @@ void PlatformCore::Run()
 
     while (!quitGameThread)
     {
-        int64 frameBeginTime = SystemTimer::GetAbsoluteMillis();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         int32 fps = engineBackend->OnFrame();
 
-        int64 frameEndTime = SystemTimer::GetAbsoluteMillis();
+        int64 frameEndTime = SystemTimer::GetMs();
         int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;

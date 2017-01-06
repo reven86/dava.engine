@@ -152,7 +152,7 @@ void StatusBar::UpdateFPS()
         activeScene->ResetFramesCount();
     }
 
-    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::GetAbsoluteMillis();
+    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::GetMs();
 
     if (frames > 0 && lastTimeMS != 0 && lastTimeMS != currentTimeMS)
     {

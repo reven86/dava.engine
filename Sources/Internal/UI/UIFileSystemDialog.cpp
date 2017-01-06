@@ -498,7 +498,7 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
     {
         lastSelected->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
-    uint64 curTime = SystemTimer::GetAbsoluteMillis();
+    uint64 curTime = SystemTimer::GetMs();
     if (curTime - lastSelectionTime < 330 && lastSelected == selectedCell)
     {
         lastSelected = selectedCell;

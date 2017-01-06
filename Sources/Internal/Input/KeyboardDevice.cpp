@@ -709,7 +709,7 @@ void KeyboardDevice::ClearAllKeys()
         UIEvent e;
         e.phase = UIEvent::Phase::KEY_UP;
         e.device = eInputDevices::KEYBOARD;
-        e.timestamp = (SystemTimer::GetFrameTimestamp() / 1000.0);
+        e.timestamp = SystemTimer::GetMs() / 1000.0;
         for (uint32 key = static_cast<uint32>(Key::ESCAPE); key < static_cast<uint32>(Key::TOTAL_KEYS_COUNT); key += 1)
         {
             if (realKeyStatus[key])

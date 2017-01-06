@@ -652,7 +652,7 @@ void Scene::Update(float timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_UPDATE)
 
-    uint64 time = SystemTimer::GetAbsoluteMillis();
+    uint64 time = SystemTimer::GetMs();
 
     size_t size = systemsToProcess.size();
     for (size_t k = 0; k < size; ++k)
@@ -677,7 +677,7 @@ void Scene::Update(float timeElapsed)
         }
     }
 
-    updateTime = SystemTimer::GetAbsoluteMillis() - time;
+    updateTime = SystemTimer::GetMs() - time;
 }
 
 void Scene::Draw()
@@ -698,13 +698,13 @@ void Scene::Draw()
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, shadowDataPtr, reinterpret_cast<pointer_size>(shadowDataPtr));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR, waterDataPtr, reinterpret_cast<pointer_size>(waterDataPtr));
 
-    uint64 time = SystemTimer::GetAbsoluteMillis();
+    uint64 time = SystemTimer::GetMs();
 
     renderSystem->Render();
 
     //foliageSystem->DebugDrawVegetation();
 
-    drawTime = SystemTimer::GetAbsoluteMillis() - time;
+    drawTime = SystemTimer::GetMs() - time;
 }
 
 void Scene::SceneDidLoaded()

@@ -179,7 +179,7 @@ void CacheDB::Save()
     cache->Save(file);
 
     dbStateChanged = false;
-    lastSaveTime = DAVA::SystemTimer::GetAbsoluteMillis();
+    lastSaveTime = DAVA::SystemTimer::GetMs();
 }
 
 void CacheDB::ReduceFullCacheToSize(DAVA::uint64 toSize)
@@ -435,7 +435,7 @@ void CacheDB::Update()
 {
     if (dbStateChanged && (autoSaveTimeout != 0))
     {
-        auto curTime = DAVA::SystemTimer::GetAbsoluteMillis();
+        auto curTime = DAVA::SystemTimer::GetMs();
         if (curTime - lastSaveTime > autoSaveTimeout)
         {
             Save();

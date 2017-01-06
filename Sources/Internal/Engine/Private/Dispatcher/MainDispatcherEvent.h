@@ -202,7 +202,7 @@ struct MainDispatcherEvent final
     }
 
     eType type = DUMMY;
-    uint64 timestamp = 0;
+    int64 timestamp = 0;
     Window* window = nullptr;
     Function<void()> functor;
     union

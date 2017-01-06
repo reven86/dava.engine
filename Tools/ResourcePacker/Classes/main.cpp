@@ -88,7 +88,7 @@ void ProcessRecourcePacker(Engine& e)
 
     PVRConverter::Instance()->SetPVRTexTool(pvrTexToolFolder + pvrTexToolName);
 
-    uint64 elapsedTime = SystemTimer::GetAbsoluteMillis();
+    uint64 elapsedTime = SystemTimer::GetMs();
     Logger::FrameworkDebug("[Resource Packer Started]");
     Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
@@ -155,7 +155,7 @@ void ProcessRecourcePacker(Engine& e)
         cacheClient.Disconnect();
     }
 
-    elapsedTime = SystemTimer::GetAbsoluteMillis() - elapsedTime;
+    elapsedTime = SystemTimer::GetMs() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", static_cast<float64>(elapsedTime) / 1000.0);
 }
 

@@ -80,7 +80,7 @@ void SceneSaver::ResaveFile(const String& fileName)
 
 void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 {
-    uint64 startTime = SystemTimer::GetAbsoluteMillis();
+    uint64 startTime = SystemTimer::GetMs();
 
     DVASSERT(0 == texturesForSave.size())
 
@@ -137,7 +137,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
         Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
     }
 
-    uint64 saveTime = SystemTimer::GetAbsoluteMillis() - startTime;
+    uint64 saveTime = SystemTimer::GetMs() - startTime;
     Logger::FrameworkDebug("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);
 }
 

@@ -63,14 +63,14 @@ void Downloader::CalcStatistics(uint32 dataCame)
 {
     dataToDownloadLeft -= dataCame;
 
-    static uint64 curTime = SystemTimer::GetAbsoluteMillis();
+    static uint64 curTime = SystemTimer::GetMs();
     static uint64 prevTime = curTime;
     static uint64 timeDelta = 0;
 
     static uint64 dataSizeCame = 0;
     dataSizeCame += dataCame;
 
-    curTime = SystemTimer::GetAbsoluteMillis();
+    curTime = SystemTimer::GetMs();
     timeDelta += curTime - prevTime;
     prevTime = curTime;
 

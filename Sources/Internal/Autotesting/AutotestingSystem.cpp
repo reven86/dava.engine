@@ -19,7 +19,6 @@ namespace DAVA
 {
 AutotestingSystem::AutotestingSystem()
     : luaSystem(nullptr)
-    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -400,7 +399,7 @@ void AutotestingSystem::DrawTouches()
 void AutotestingSystem::OnTestStarted()
 {
     Logger::Info("AutotestingSystem::OnTestsStarted");
-    startTimeMS = SystemTimer::GetFrameTimestamp();
+    startTime = SystemTimer::GetFrameTimestamp();
     luaSystem->StartTest();
 }
 
@@ -455,14 +454,14 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     DVASSERT(texture);
 
     Logger::Info("AutotestingSystem::OnScreenShot %s", screenshotName.c_str());
-    int64 startTime = SystemTimer::GetAbsoluteMillis();
+    int64 startTime = SystemTimer::GetMs();
 
     DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
 
-    int64 finishTime = SystemTimer::GetAbsoluteMillis();
+    int64 finishTime = SystemTimer::GetMs();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %lld", finishTime - startTime);
     isScreenShotSaving = false;
 }
@@ -473,7 +472,7 @@ void AutotestingSystem::ClickSystemBack()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
-    keyEvent.timestamp = (SystemTimer::GetFrameTimestamp() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 
@@ -483,7 +482,7 @@ void AutotestingSystem::PressEscape()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::ESCAPE;
-    keyEvent.timestamp = (SystemTimer::GetFrameTimestamp() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 

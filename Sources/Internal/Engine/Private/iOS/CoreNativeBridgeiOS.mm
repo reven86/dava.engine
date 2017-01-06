@@ -212,8 +212,8 @@ void CoreNativeBridge::ApplicationDidEnterBackground()
 
     [objcInterop pauseDisplayLink];
 
-    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeMicros();
-    goBackgroundTime = SystemTimer::GetAbsoluteMicros();
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void CoreNativeBridge::ApplicationWillEnterForeground()
@@ -224,8 +224,8 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
 
     [objcInterop resumeDisplayLink];
 
-    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeMicros() - goBackgroundTimeRelativeToBoot;
-    int64 timeSpentInBackground2 = SystemTimer::GetAbsoluteMicros() - goBackgroundTime;
+    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+    int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
     // Do adjustment only if SystemTimer has stopped ticking
     if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
     {
