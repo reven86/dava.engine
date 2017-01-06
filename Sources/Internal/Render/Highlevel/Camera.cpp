@@ -481,7 +481,7 @@ BaseObject* Camera::Clone(BaseObject* dstNode)
 {
     if (!dstNode)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Camera>(this), "Can clone only Camera");
+        DVASSERT(IsPointerToExactClass<Camera>(this), "Can clone only Camera");
         dstNode = new Camera();
     }
     // SceneNode::Clone(dstNode);

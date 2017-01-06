@@ -3,6 +3,7 @@
 
 #include "Commands2/Base/RECommand.h"
 #include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {

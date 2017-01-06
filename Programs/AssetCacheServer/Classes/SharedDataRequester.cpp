@@ -1,5 +1,6 @@
 #include "SharedDataRequester.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 #include <QProcess>
 #include <QNetworkAccessManager>

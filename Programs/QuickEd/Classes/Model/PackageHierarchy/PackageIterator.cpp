@@ -162,7 +162,7 @@ PackageBaseNode* PackageIterator::IteratorData::Next()
     {
         // walk the sibling
         PackageBaseNode* parent = currentNode->GetParent();
-        DVASSERT(nullptr != parent) //orphan without parent and childs
+        DVASSERT(nullptr != parent); //orphan without parent and childs
         DAVA::uint32 count = parent->GetCount();
         next = currentIndex < (count - 1) ? parent->Get(currentIndex + 1) : nullptr;
         while (next == nullptr)

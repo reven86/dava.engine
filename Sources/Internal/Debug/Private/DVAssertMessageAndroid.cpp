@@ -1,4 +1,4 @@
-#include "DVAssertMessage.h"
+#include "Debug/DVAssertMessage.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 

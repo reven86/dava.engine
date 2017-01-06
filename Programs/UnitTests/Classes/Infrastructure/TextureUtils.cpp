@@ -26,7 +26,7 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, cons
     if (first->GetWidth() != second->GetWidth() ||
         first->GetHeight() != second->GetHeight())
     {
-        DVASSERT_MSG(false, "Can't compare images of different dimensions.");
+        DVASSERT(false, "Can't compare images of different dimensions.");
 
         compareResult.difference = 100;
         return compareResult;

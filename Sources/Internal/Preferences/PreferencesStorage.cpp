@@ -1,4 +1,5 @@
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 #include "Preferences/PreferencesStorage.h"
 
 #include "Base/BaseTypes.h"
@@ -29,7 +30,7 @@ void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const Defa
     {
         DAVA::StringStream ss;
         ss << "introspection " << inspInfo->Name().c_str() << "already registered!";
-        DVASSERT_MSG(false, ss.str().c_str());
+        DVASSERT(false, ss.str().c_str());
     }
 }
 
@@ -100,7 +101,7 @@ void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& localStorage_)
                     {
                         DAVA::StringStream ss;
                         ss << "no default variant for member: " << inspInfo->Name().c_str() << " : " << memberName.c_str();
-                        DVASSERT_MSG(false, ss.str().c_str());
+                        DVASSERT(false, ss.str().c_str());
                     }
                 }
             }
@@ -134,7 +135,7 @@ void PreferencesStorage::RegisterPreferences(void* realObj, DAVA::InspBase* insp
         DAVA::String name(member->Name().c_str());
         if (!archive->IsKeyExists(name))
         {
-            DVASSERT(false && "Preference not exist in archive!")
+            DVASSERT(false && "Preference not exist in archive!");
             continue;
         }
         DAVA::VariantType* value = archive->GetVariant(name);
@@ -149,7 +150,9 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
-    DVVERIFY(registeredObjects[info].erase(realObj) > 0);
+
+    const size_t erasedCount = registeredObjects[info].erase(realObj);
+    DVASSERT(erasedCount > 0);
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive);
 
     for (int i = 0, count = info->MembersCount(); i < count; ++i)

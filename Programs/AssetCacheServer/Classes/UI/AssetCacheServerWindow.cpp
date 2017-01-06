@@ -14,6 +14,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "Job/JobManager.h"
 
 #include <QFileDialog>
@@ -512,7 +513,7 @@ void AssetCacheServerWindow::DisplayCurrentRemoteServer()
     }
     default:
     {
-        DVASSERT_MSG(false, DAVA::Format("Unexpected remote type: %u", enabledRemote.type).c_str());
+        DVASSERT(false, DAVA::Format("Unexpected remote type: %u", enabledRemote.type).c_str());
     }
     }
 }
@@ -649,7 +650,7 @@ void AssetCacheServerWindow::UpdateSharedPoolsList()
 AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolContainer(const SharedPool& pool)
 {
     auto insertResult = poolContainers.insert(std::make_pair(pool.poolID, SharedPoolContainer()));
-    DVASSERT_MSG(insertResult.second == true, DAVA::Format("Container with pool ID %u is already inserted", pool.poolID).c_str());
+    DVASSERT(insertResult.second == true, DAVA::Format("Container with pool ID %u is already inserted", pool.poolID).c_str());
     SharedPoolContainer& poolContainer = insertResult.first->second;
 
     poolContainer.poolLayout = new QVBoxLayout();
@@ -684,7 +685,7 @@ AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolCont
 AssetCacheServerWindow::SharedServerContainer& AssetCacheServerWindow::AddServerContainer(SharedPoolContainer& poolContainer, const SharedServer& server)
 {
     auto insertResult = poolContainer.serverContainers.insert(std::make_pair(server.serverID, SharedServerContainer()));
-    DVASSERT_MSG(insertResult.second == true, DAVA::Format("Container with server ID %u is already inserted", server.serverID).c_str());
+    DVASSERT(insertResult.second == true, DAVA::Format("Container with server ID %u is already inserted", server.serverID).c_str());
     SharedServerContainer& serverContainer = insertResult.first->second;
 
     serverContainer.serverWidget = new SharedServerWidget(server);

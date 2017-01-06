@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/dbg_StatSet.h"

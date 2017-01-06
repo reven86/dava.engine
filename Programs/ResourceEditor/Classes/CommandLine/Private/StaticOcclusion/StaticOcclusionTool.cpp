@@ -2,6 +2,7 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "CommandLine/Private/OptionName.h"
 
+#include "Logger/Logger.h"
 #include "Utils/SceneUtils/SceneUtils.h"
 
 #include "TArc/Utils/ModuleCollection.h"

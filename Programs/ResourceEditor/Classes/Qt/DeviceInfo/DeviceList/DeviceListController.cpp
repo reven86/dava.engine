@@ -13,6 +13,7 @@
 #include "Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
 #include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
 
+#include <Logger/Logger.h>
 #include <Network/NetworkCommon.h>
 #include <Network/PeerDesription.h>
 

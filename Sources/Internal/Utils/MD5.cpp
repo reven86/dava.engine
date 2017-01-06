@@ -2,6 +2,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 
 /*
 	This file is based on original MD5 implementation from RSA Data Security.

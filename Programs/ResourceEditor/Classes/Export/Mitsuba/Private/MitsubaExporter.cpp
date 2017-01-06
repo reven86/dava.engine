@@ -379,7 +379,7 @@ void MitsubaExporterDetail::Exporter::ExportLandscape(DAVA::Landscape* landscape
             const DAVA::Vector3& p2 = vertices[i1].position;
             const DAVA::Vector3& p3 = vertices[i2].position;
             DAVA::Vector3 normal = (p2 - p1).CrossProduct(p3 - p1);
-            DVASSERT_MSG(normal.Length() > std::numeric_limits<float>::epsilon(), "Landscape contains degenerate triangles");
+            DVASSERT(normal.Length() > std::numeric_limits<float>::epsilon(), "Landscape contains degenerate triangles");
             normals[i0] += normal;
             normals[i1] += normal;
             normals[i2] += normal;

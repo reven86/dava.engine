@@ -1,7 +1,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
+#include "Logger/Logger.h"
 #include "Utils/StringUtils.h"
+#include "Utils/StringFormat.h"
 
 #include "PluginManager/Plugin.h"
 #include "ModuleManager/IModule.h"
@@ -98,7 +100,7 @@ const PluginDescriptor* PluginManager::LoadPlugin(const FilePath& pluginPath)
     auto it = std::find_if(begin(pluginDescriptors), end(pluginDescriptors), FindPlugin);
     if (it != pluginDescriptors.end())
     {
-        DVASSERT_MSG(false, Format("On this path [ %s ] of the plugin is loaded", pluginAbsPath.c_str()).c_str());
+        DVASSERT(false, Format("On this path [ %s ] of the plugin is loaded", pluginAbsPath.c_str()).c_str());
         return nullptr;
     }
 

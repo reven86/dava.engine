@@ -4,6 +4,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

@@ -1,4 +1,5 @@
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 #include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
 
