@@ -71,6 +71,7 @@ void ProfilerGPU::Frame::Reset()
 
 ProfilerGPU::ProfilerGPU(uint32 framesInfoCount)
     : framesInfo(RingArray<FrameInfo>(framesInfoCount))
+    , currentFrame(Frame()) //shut up static code analysis
 {
     DVASSERT(framesInfoCount && "Should be > 0");
 }
