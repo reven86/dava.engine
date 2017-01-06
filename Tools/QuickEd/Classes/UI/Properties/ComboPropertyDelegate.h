@@ -6,6 +6,7 @@
 #include <QPointer>
 
 #include "CompletionsProvider.h"
+#include <memory>
 
 class ComboPropertyDelegate : public BasePropertyDelegate
 {

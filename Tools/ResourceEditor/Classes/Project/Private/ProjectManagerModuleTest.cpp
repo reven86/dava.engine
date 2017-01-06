@@ -38,6 +38,13 @@ protected:
     void CloseAllScenesMock(bool)
     {
     }
+
+    DAVA_VIRTUAL_REFLECTION(SceneManagerMockModule, DAVA::TArc::ClientModule)
+    {
+        DAVA::ReflectionRegistrator<SceneManagerMockModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
 }
 
