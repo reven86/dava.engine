@@ -95,6 +95,11 @@ protected:
 
     struct PerfQueryPair
     {
+        PerfQueryPair()
+        {
+            query[0] = query[1] = rhi::HPerfQuery();
+        }
+
         bool IsReady();
         void GetTimestamps(uint64& t0, uint64& t1);
 
@@ -109,6 +114,8 @@ protected:
 
     struct Frame
     {
+        Frame() = default;
+
         PerfQueryPair perfQuery;
 
         Vector<Marker> readyMarkers;

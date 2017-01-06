@@ -9,6 +9,8 @@ namespace Net
 {
 struct ProtoHeader
 {
+    ProtoHeader() = default;
+
     uint16 frameSize = 0; // Frame length: header + data
     uint16 frameType = 0; // Frame type
     uint32 channelId = 0; // Channel identifier
