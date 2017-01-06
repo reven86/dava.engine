@@ -247,6 +247,7 @@ void PackageWidget::PlaceActions()
     treeView->addAction(moveDownAction);
     treeView->addAction(moveLeftAction);
     treeView->addAction(moveRightAction);
+    AddSeparatorAction(treeView);
 }
 
 void PackageWidget::LoadContext()

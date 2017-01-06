@@ -98,12 +98,20 @@ void QuickEdPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSh
     styleSheets.push_back(node);
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithClass(const String& className)
+UIControl* QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+    if (control.Valid())
     {
-        control->RemoveAllControls();
+        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        {
+            control->RemoveAllControls();
+        }
+
+        if (controlName.IsValid())
+        {
+            control->SetName(controlName);
+        }
     }
 
     controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
@@ -111,13 +119,21 @@ UIControl* QuickEdPackageBuilder::BeginControlWithClass(const String& className)
     return control.Get();
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const String& customClassName, const String& className)
+UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+    if (control.Valid())
     {
-        control->RemoveAllControls();
+        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        {
+            control->RemoveAllControls();
+        }
+
+        if (controlName.IsValid())
+        {
+            control->SetName(controlName);
+        }
     }
 
     ControlNode* node = ControlNode::CreateFromControl(control.Get());
@@ -127,15 +143,16 @@ UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const String& cust
     return control.Get();
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeFastName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     ControlNode* prototypeNode = nullptr;
+    String prototypeName(prototypeFastName.c_str());
     if (packageName.empty())
     {
         prototypeNode = FindPrototype(prototypeName);
         if (prototypeNode == nullptr)
         {
-            if (loader->LoadControlByName(prototypeName, this))
+            if (loader->LoadControlByName(prototypeFastName, this))
                 prototypeNode = FindPrototype(prototypeName);
         }
     }
@@ -158,7 +175,14 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packag
     DVASSERT(prototypeNode);
     ControlNode* node = ControlNode::CreateFromPrototype(prototypeNode);
     if (customClassName)
+    {
         node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
+    }
+
+    if (controlName.IsValid())
+    {
+        node->GetControl()->SetName(controlName);
+    }
     controlsStack.push_back(ControlDescr(node, true));
 
     return node->GetControl();
@@ -188,7 +212,7 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
     return control->GetControl();
 }
 
-UIControl* QuickEdPackageBuilder::BeginUnknownControl(const YamlNode* node)
+UIControl* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     return nullptr;

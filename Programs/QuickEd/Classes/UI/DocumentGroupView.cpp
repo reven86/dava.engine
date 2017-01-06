@@ -91,7 +91,7 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
     else
     {
         mainWindow->ui->libraryWidget->SetLibraryPackages(DAVA::Vector<DAVA::FilePath>());
-        mainWindow->ui->libraryWidget->SetPrototypes(DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>());
+        mainWindow->ui->libraryWidget->SetPrototypes(DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>());
     }
 
     mainWindow->ui->propertiesWidget->SetProject(project);

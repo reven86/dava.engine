@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -149,9 +149,17 @@
     <addaction name="separator"/>
     <addaction name="actionFindFileInProject"/>
    </widget>
+   <widget class="QMenu" name="menuFind">
+    <property name="title">
+     <string>Find</string>
+    </property>
+    <addaction name="actionJumpToPrototype"/>
+    <addaction name="actionFindPrototypeInstances"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuFind"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -263,6 +271,14 @@
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
+   </attribute>
+  </widget>
+  <widget class="FindWidget" name="findWidget">
+   <property name="windowTitle">
+    <string>Find</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
    </attribute>
   </widget>
   <action name="actionOpenProject">
@@ -537,6 +553,22 @@
     <string>Alt+Shift+O</string>
    </property>
   </action>
+  <action name="actionJumpToPrototype">
+   <property name="text">
+    <string>Jump to Prototype</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionFindPrototypeInstances">
+   <property name="text">
+    <string>Find Prototype Instances</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -581,9 +613,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+<<<<<<< HEAD
    <class>StyleSheetInspectorWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/StyleSheetInspector/StyleSheetInspectorWidget.h</header>
+=======
+   <class>FindWidget</class>
+   <extends>QDockWidget</extends>
+   <header>UI/Find/FindWidget.h</header>
+>>>>>>> development
    <container>1</container>
   </customwidget>
  </customwidgets>
