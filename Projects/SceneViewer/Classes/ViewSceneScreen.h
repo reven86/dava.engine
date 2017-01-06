@@ -1,15 +1,23 @@
-#ifndef __VIEW_SCENE_SCREEN_H__
-#define __VIEW_SCENE_SCREEN_H__
+#pragma once
 
 #include "BaseScreen.h"
 #include "Menu.h"
 
-#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
-#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include <GridTest.h>
 
-class ViewSceneScreen : public BaseScreen, public UIFileSystemDialogDelegate
+#include <Scene3D/Systems/Controller/RotationControllerSystem.h>
+#include <Scene3D/Systems/Controller/WASDControllerSystem.h>
+
+class ViewSceneScreen
+: public BaseScreen
+  ,
+  public UIFileSystemDialogDelegate
+  ,
+  public GridTestListener
 {
 public:
+    ViewSceneScreen(DAVA::Engine& engine);
+
     // UIScreen
     void LoadResources() override;
     void UnloadResources() override;
@@ -22,42 +30,17 @@ public:
     void Input(UIEvent* currentInput) override;
 
 private:
-    struct Sample
-    {
-        Vector3 pos;
-        float32 angle = 0.0f;
-        float32 sine = 0.0f;
-        float32 cos = 0.0f;
-
-        float32 fps = 0.0f;
-    };
-
-    class ScreenshotSaver
-    {
-    public:
-        explicit ScreenshotSaver(FilePath& path, Sample& sample)
-            : savePath(path)
-            , sample(sample)
-        {
-        }
-
-        void SaveTexture(Texture* screenshot)
-        {
-            ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
-            const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-            image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
-            image->Save(savePath);
-            saved = true;
-        }
-
-        Sample sample;
-        FilePath savePath;
-        bool saved = false;
-    };
-
     // UIFileSystemDialogDelegate
     void OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile) override;
     void OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog) override;
+
+    // GridTestListener
+    void OnGridTestStateChanged() override;
+
+    void AddMenuControl();
+    void AddFileDialogControl();
+    void AddJoypadControl();
+    void AddInfoTextControl();
 
     void OnButtonReloadShaders(BaseObject* caller, void* param, void* callerData);
     void OnButtonPerformanceTest(BaseObject* caller, void* param, void* callerData);
@@ -69,27 +52,17 @@ private:
     void UpdatePerformanceTest(float32 timeElapsed);
     void ProcessUserInput(float32 timeElapsed);
 
-    void MakeScreenshot(ScreenshotSaver&);
-
     void SetCameraAtCenter(Camera* camera);
-
-    void SetSamplePosition(Sample& sample);
 
     void ReloadScene();
 
     ScopedPtr<UI3DView> sceneView;
 
     DAVA::ScopedPtr<DAVA::UIStaticText> info;
-    //DAVA::UIStaticText* dbg = nullptr;
     DAVA::ScopedPtr<DAVA::UIJoypad> moveJoyPAD;
 
     DAVA::float32 framesTime = 0.0f;
     DAVA::uint32 frameCounter = 0;
-
-    DAVA::float32 framesTimePT = 0.0f;
-    DAVA::uint32 frameCounterPT = 0;
-    DAVA::uint32 fpsSum = 0;
-    DAVA::uint32 sampleIndex = 0;
 
     DAVA::uint64 drawTime = 0;
     DAVA::uint64 updateTime = 0;
@@ -106,22 +79,9 @@ private:
     ScopedPtr<UIFileSystemDialog> fileSystemDialog;
     FilePath selectedScenePath;
 
-    enum class PT_State
-    {
-        Running,
-        MakingScreenshots,
-        Finished
-    };
-    PT_State performanceTestState = PT_State::Finished;
-
-    Vector<Sample> samples;
-    List<ScreenshotSaver> screenshotsToStart;
-    List<ScreenshotSaver> screenshotsToSave;
-    bool isEvenFrame = false;
-    FilePath reportFolderPath;
-    ScopedPtr<File> reportFile;
+    FpsMeter fpsMeter;
 
     std::unique_ptr<Menu> menu;
-};
 
-#endif //__VIEW_SCENE_SCREEN_H__
+    GridTest gridTest;
+};

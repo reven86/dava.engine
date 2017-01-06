@@ -1,12 +1,23 @@
 #include "ViewSceneScreen.h"
 #include "GameCore.h"
 
-#include "Math/MathHelpers.h"
+#include <Math/MathHelpers.h>
 
-using namespace DAVA;
+namespace ViewSceneScreenDetails
+{
+const float32 INFO_UPDATE_INTERVAL_SEC = 1.0f;
+}
+
+ViewSceneScreen::ViewSceneScreen(DAVA::Engine& engine)
+    : fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
+    , gridTest(engine, this)
+{
+}
 
 void ViewSceneScreen::LoadResources()
 {
+    using namespace DAVA;
+
     if (!loaded)
     {
         BaseScreen::LoadResources();
@@ -61,9 +72,9 @@ void ViewSceneScreen::LoadResources()
 
         ScopedPtr<Camera> camera(new Camera);
 
-        VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
+        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
         vcs->RegisterAvailableResourceSize(vcs->GetVirtualScreenSize().dx, vcs->GetVirtualScreenSize().dy, "Gfx");
-        float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
+        float32 aspect = static_cast<float32>(vcs->GetVirtualScreenSize().dy) / static_cast<float32>(vcs->GetVirtualScreenSize().dx);
         camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
         SetCameraAtCenter(camera);
         //camera->SetPosition(Vector3(0, -10, 1));
@@ -96,49 +107,60 @@ void ViewSceneScreen::LoadResources()
         //sceneView->SetDrawToFrameBuffer(true);
         AddControl(sceneView);
 
-        menu.reset(new Menu(nullptr, this, font, Rect(10, 30, 250, 60)));
-        Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
-
-        Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
-        mainSubMenu->AddActionItem(L"Reload shaders", Message(this, &ViewSceneScreen::OnButtonReloadShaders));
-        mainSubMenu->AddActionItem(L"Performance test", Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
-        mainSubMenu->AddBackItem();
-
-        selectSceneSubMenu->AddActionItem(L"Select from ~res", Message(this, &ViewSceneScreen::OnButtonSelectFromRes));
-        selectSceneSubMenu->AddActionItem(L"Select from documents", Message(this, &ViewSceneScreen::OnButtonSelectFromDoc));
-        selectSceneSubMenu->AddActionItem(L"Select from ext storage", Message(this, &ViewSceneScreen::OnButtonSelectFromExt));
-        selectSceneSubMenu->AddBackItem();
-
-        fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
-        fileSystemDialog->SetDelegate(this);
-        fileSystemDialog->SetExtensionFilter(".sc2");
-        fileSystemDialog->SetOperationType(UIFileSystemDialog::OPERATION_LOAD);
-
-        info.reset(new UIStaticText(Rect(screenRect.dy / 2, 30, 100, 30)));
-        info->SetFont(font);
-        info->SetTextColor(Color::White);
-        info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
-        AddControl(info);
-
-        //         dbg = new UIStaticText(Rect(screenRect.dy / 2, 130, 400, 30));
-        //         dbg->SetFont(font);
-        //         dbg->SetTextColor(Color::White);
-        //         dbg->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
-        //         AddControl(dbg);
-
-        moveJoyPAD = new UIJoypad(Rect(10, screenRect.dy - 210.f, 200.f, 200.f));
-        moveJoyPAD->SetDebugDraw(true);
-        moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad.tex", 0);
-        AddControl(moveJoyPAD);
+        AddMenuControl();
+        AddFileDialogControl();
+        AddInfoTextControl();
+        AddJoypadControl();
     }
+}
+
+void ViewSceneScreen::AddMenuControl()
+{
+    menu.reset(new Menu(nullptr, this, font, Rect(10, 30, 250, 60)));
+    Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
+
+    Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
+    mainSubMenu->AddActionItem(L"Reload shaders", Message(this, &ViewSceneScreen::OnButtonReloadShaders));
+    mainSubMenu->AddActionItem(L"Performance test", Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
+    mainSubMenu->AddBackItem();
+
+    selectSceneSubMenu->AddActionItem(L"Select from ~res", Message(this, &ViewSceneScreen::OnButtonSelectFromRes));
+    selectSceneSubMenu->AddActionItem(L"Select from documents", Message(this, &ViewSceneScreen::OnButtonSelectFromDoc));
+    selectSceneSubMenu->AddActionItem(L"Select from ext storage", Message(this, &ViewSceneScreen::OnButtonSelectFromExt));
+    selectSceneSubMenu->AddBackItem();
+}
+
+void ViewSceneScreen::AddFileDialogControl()
+{
+    fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
+    fileSystemDialog->SetDelegate(this);
+    fileSystemDialog->SetExtensionFilter(".sc2");
+    fileSystemDialog->SetOperationType(UIFileSystemDialog::OPERATION_LOAD);
+}
+
+void ViewSceneScreen::AddJoypadControl()
+{
+    moveJoyPAD = new UIJoypad(Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
+    moveJoyPAD->SetDebugDraw(true);
+    moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad.tex", 0);
+    AddControl(moveJoyPAD);
+}
+
+void ViewSceneScreen::AddInfoTextControl()
+{
+    info.reset(new UIStaticText(Rect(GetRect().dy / 2, 30, 100, 30)));
+    info->SetFont(font);
+    info->SetTextColor(Color::White);
+    info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
+    AddControl(info);
 }
 
 void ViewSceneScreen::SetCameraAtCenter(Camera* camera)
 {
-    camera->SetLeft(Vector3(1, 0, 0));
-    camera->SetUp(Vector3(0, 0, 1.f));
-    camera->SetTarget(Vector3(0, 0, 0));
-    camera->SetPosition(Vector3(0, -45, 10));
+    camera->SetLeft(DAVA::Vector3(1, 0, 0));
+    camera->SetUp(DAVA::Vector3(0, 0, 1.f));
+    camera->SetTarget(DAVA::Vector3(0, 0, 0));
+    camera->SetPosition(DAVA::Vector3(0, -45, 10));
 }
 
 void ViewSceneScreen::OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile)
@@ -181,77 +203,12 @@ void ViewSceneScreen::OnButtonSelectFromExt(BaseObject* caller, void* param, voi
     }
 }
 
-const uint32 PT_GRID_SIZE = 4;
-const uint32 PT_ANGLE_COUNT = 4;
-const float32 PT_EXPOSURE_INTERVAL_SEC = 0.1f;
-const float32 PT_YELLOW_THRESHOLD_FPS = 57.0f;
-
 void ViewSceneScreen::OnButtonPerformanceTest(BaseObject* caller, void* param, void* callerData)
 {
-    if (performanceTestState != PT_State::Finished)
+    if (gridTest.GetState() != GridTest::Finished)
         return;
 
-    Landscape* landscape = FindLandscape(scene);
-    if (landscape)
-    {
-        samples.reserve(PT_GRID_SIZE * PT_GRID_SIZE * PT_ANGLE_COUNT);
-
-        float32 f = landscape->GetLandscapeSize();
-
-        float32 step = f / (PT_GRID_SIZE + 1);
-        float32 xMin = -f / 2 + step;
-        float32 xMax = f / 2 - step;
-        float32 yMin = -f / 2 + step;
-        float32 angleStep = 360.f / PT_ANGLE_COUNT;
-
-        bool invertedDirection = false;
-        float32 yPos = yMin;
-        for (uint32 y = 0; y < PT_GRID_SIZE; ++y, yPos += step)
-        {
-            float32 xPos = invertedDirection ? xMax : xMin;
-            float32 xInc = invertedDirection ? -step : step;
-            for (uint32 x = 0; x < PT_GRID_SIZE; ++x, xPos += xInc)
-            {
-                static float32 angle = 0.1f;
-                for (uint32 n = 0; n < PT_ANGLE_COUNT; ++n, angle += angleStep)
-                {
-                    samples.push_back(Sample());
-                    Sample& testPosition = samples.back();
-
-                    testPosition.pos.x = xPos;
-                    testPosition.pos.y = yPos;
-
-                    float landscapeHeight = 0.0;
-                    landscape->GetHeightAtPoint(testPosition.pos, landscapeHeight);
-                    testPosition.pos.z = landscapeHeight + 10.0f;
-
-                    testPosition.angle = angle;
-                    SinCosFast(DegToRad(angle), testPosition.sine, testPosition.cos);
-                }
-            }
-
-            invertedDirection = !invertedDirection;
-        }
-
-        performanceTestState = PT_State::Running;
-        DateTime now = DateTime::Now();
-        reportFolderPath = FilePath(Format("~doc:/PerformanceReports/Report_%u/", now.GetTimestamp()));
-        FileSystem::Instance()->CreateDirectory(reportFolderPath, true);
-        reportFile = File::Create(reportFolderPath + "report.txt", File::CREATE | File::WRITE);
-
-        screenshotsToStart.clear();
-        screenshotsToSave.clear();
-
-        sampleIndex = 0;
-        SetSamplePosition(samples[sampleIndex]);
-    }
-}
-
-void ViewSceneScreen::SetSamplePosition(Sample& sample)
-{
-    Camera* camera = scene->GetCurrentCamera();
-    camera->SetPosition(Vector3(sample.pos.x, sample.pos.y, sample.pos.z));
-    camera->SetDirection(Vector3(sample.cos, sample.sine, 0));
+    gridTest.Start(sceneView);
 }
 
 void ViewSceneScreen::UnloadResources()
@@ -339,12 +296,6 @@ void ViewSceneScreen::ReloadScene()
     }
 }
 
-void ViewSceneScreen::MakeScreenshot(ScreenshotSaver& screenshotSaver)
-{
-    SetSamplePosition(screenshotSaver.sample);
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(&screenshotSaver, &ScreenshotSaver::SaveTexture));
-}
-
 void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
 {
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
@@ -380,136 +331,25 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     BaseScreen::Update(timeElapsed);
 
     UpdateInfo(timeElapsed);
-    UpdatePerformanceTest(timeElapsed);
     ProcessUserInput(timeElapsed);
 }
 
-static const float32 INFO_UPDATE_INTERVAL_SEC = 1.0f;
-
 void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
 {
-    ++frameCounter;
-    framesTime += timeElapsed;
-
-    if (framesTime > INFO_UPDATE_INTERVAL_SEC)
+    fpsMeter.Update(timeElapsed);
+    if (fpsMeter.IsFpsReady())
     {
-        float32 fps = frameCounter / framesTime;
-        info->SetText(Format(L"FPS: %.0f", fps));
-
-        //         Camera* camera = scene->GetCurrentCamera();
-        //         auto v = camera->GetPosition();
-        //         auto d = camera->GetDirection();
-        //         dbg->SetText(Format(L"pos: %2.1f,%2.1f,%2.1f d: %2.1f,%2.1f,%2.1f", v.x, v.y, v.z, d.x, d.y, d.z));
-
-        framesTime = 0;
-        frameCounter = 0;
+        info->SetText(Format(L"FPS: %.0f", fpsMeter.GetFps()));
 
         drawTime = updateTime = 0;
     }
 }
 
-void ViewSceneScreen::UpdatePerformanceTest(float32 timeElapsed)
+void ViewSceneScreen::OnGridTestStateChanged()
 {
-    switch (performanceTestState)
+    if (gridTest.GetState() == GridTest::Finished)
     {
-    case PT_State::Running:
-    {
-        ++frameCounterPT;
-        framesTimePT += timeElapsed;
-
-        if (framesTimePT > PT_EXPOSURE_INTERVAL_SEC)
-        {
-            Sample& sample = samples[sampleIndex];
-            sample.fps = frameCounterPT / framesTimePT;
-
-            framesTimePT = 0;
-            frameCounterPT = 0;
-
-            if (++sampleIndex < samples.size())
-            {
-                SetSamplePosition(samples[sampleIndex]);
-            }
-            else
-            {
-                float32 avgFps = 0.0;
-                float32 minFps = 60.0;
-                float32 maxFps = 0.0;
-                for (uint32 sampleIndex = 0; sampleIndex < samples.size(); ++sampleIndex)
-                {
-                    Sample& sample = samples[sampleIndex];
-
-                    reportFile->WriteLine(Format("Sample %.0f.%.0f.%.0f angle %.0f-%.0f: fps %.1f", sample.pos.x, sample.pos.y, sample.pos.z, sample.cos, sample.sine, sample.fps));
-
-                    avgFps += sample.fps;
-
-                    if (sample.fps < minFps)
-                        minFps = sample.fps;
-
-                    if (sample.fps > maxFps)
-                        maxFps = sample.fps;
-
-                    if (sample.fps < PT_YELLOW_THRESHOLD_FPS)
-                    {
-                        String screenshotName = Format("shot%u_fps%2.0f.png", sampleIndex, sample.fps);
-                        FilePath path = reportFolderPath + screenshotName;
-                        screenshotsToStart.emplace_back(ScreenshotSaver(path, sample));
-                    }
-                }
-                avgFps /= samples.size();
-                String total = Format("Avg fps: %.1f, min %.1f, max %.1f", avgFps, minFps, maxFps);
-                Logger::Info("%s", total.c_str());
-                reportFile->WriteLine(total);
-                reportFile.reset();
-
-                performanceTestState = PT_State::MakingScreenshots;
-            }
-        }
-        return;
-    }
-    case PT_State::MakingScreenshots:
-    {
-        isEvenFrame = !isEvenFrame;
-        if (!screenshotsToStart.empty())
-        {
-            if (isEvenFrame) // hack: making screenshots only on even frames (to avoid bugs in screenshot maker)
-            {
-                // move first element from screenshotsToStart to the end of screenshotsToSave
-                screenshotsToSave.splice(screenshotsToSave.end(), screenshotsToStart, screenshotsToStart.begin());
-
-                MakeScreenshot(screenshotsToSave.back());
-            }
-        }
-        else
-        {
-            auto& it = screenshotsToSave.begin();
-            while (it != screenshotsToSave.end())
-            {
-                ScreenshotSaver& screenshotSaver = *it;
-                if (screenshotSaver.saved)
-                {
-                    auto itDel = it++;
-                    screenshotsToSave.erase(itDel);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-
-            if (screenshotsToSave.empty())
-            {
-                performanceTestState = PT_State::Finished;
-                SetCameraAtCenter(scene->GetCurrentCamera());
-            }
-        }
-
-        return;
-    }
-    case PT_State::Finished:
-    default:
-    {
-        return;
-    }
+        SetCameraAtCenter(scene->GetCurrentCamera());
     }
 }
 

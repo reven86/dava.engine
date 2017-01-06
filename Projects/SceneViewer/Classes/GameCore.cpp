@@ -70,7 +70,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     //const FXDescriptor& res = FXCache::GetFXDescriptor(FastName("~res:/Materials/Silhouette.material"), flags);
 
     //selectSceneScreen = new SelectSceneScreen();
-    viewSceneScreen = new ViewSceneScreen();
+    viewSceneScreen = new ViewSceneScreen(engine);
     SetScenePath("~res:/Scene-15-effect/test_scene.sc2");
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
