@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="CustomRules">
+    <target name="-pre-build" >
+        <copy todir="tmp-src" >
+            <fileset dir="../../Sources/Internal/Platform/TemplateAndroid/Java/" includes="**" />
+            <fileset dir="../../Sources/Internal/Engine/Private/Android/Java/" includes="**" />
+            <fileset dir="../../Sources/Internal/Notification/Private/Android/Java/" includes="**" />
+        </copy>
+    </target>
+
+    <target name="-post-build" >
+        <delete dir="tmp-src" />
+    </target>
+</project>

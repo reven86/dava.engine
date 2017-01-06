@@ -1,5 +1,6 @@
 #include "ParticlesQualitySettings.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 
@@ -77,7 +78,7 @@ bool ParticlesQualitySettings::QualitySheet::Action::Apply(const FilePath& origi
 {
     if (name == FastName("replace"))
     {
-        DVASSERT_MSG(params.size() == 2, "Wrong params count");
+        DVASSERT(params.size() == 2, "Wrong params count");
         String str = originalPath.GetStringValue();
         String::size_type findpos = str.find(params[0], 0);
         if (findpos == String::npos)
@@ -270,7 +271,7 @@ void ParticlesQualitySettings::SetCurrentQuality(const FastName& name)
     int32 index = GetQualityIndex(name);
     if (index == -1)
     {
-        DVASSERT_MSG(0, Format("No %s particles quality", name.c_str()).c_str());
+        DVASSERT(0, Format("No %s particles quality", name.c_str()).c_str());
         return;
     }
 

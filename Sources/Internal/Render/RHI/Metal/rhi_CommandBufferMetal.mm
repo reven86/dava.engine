@@ -401,7 +401,7 @@ void CommandBufferMetal_t::Execute()
 
         default:
             Logger::Error("unsupported command: %d", cmd->type);
-            DVASSERT_MSG(false, "unsupported command");
+            DVASSERT(false, "unsupported command");
         }
 
         if (cmd->type == CMD_END)
@@ -516,7 +516,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
             break;
 
         default:
-            DVASSERT_MSG(0, "Invalid store action specified.");
+            DVASSERT(0, "Invalid store action specified.");
             break;
         }
     }

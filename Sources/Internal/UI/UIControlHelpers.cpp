@@ -56,7 +56,14 @@ String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UICon
         String str;
         while (p != commonParent)
         {
-            str += "../";
+            if (str.empty())
+            {
+                str += "..";
+            }
+            else
+            {
+                str += "/..";
+            }
             p = p->GetParent();
         }
 
@@ -74,7 +81,16 @@ String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UICon
             }
             p = p->GetParent();
         }
-        return str + str2;
+
+        if (str2.empty())
+        {
+            return str;
+        }
+        if (str.empty())
+        {
+            return str2;
+        }
+        return str + "/" + str2;
     }
     else
     {
