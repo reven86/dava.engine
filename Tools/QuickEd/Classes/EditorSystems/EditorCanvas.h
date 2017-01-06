@@ -9,7 +9,7 @@ class UIControl;
 }
 class QScrollBar;
 
-class EditorCanvasView final : public BaseEditorSystem
+class EditorCanvas final : public BaseEditorSystem
 {
 public:
     ScrollAreaController(EditorSystemsManager* parent);
@@ -17,6 +17,9 @@ public:
 
     void SetHorizontalScrollBar(QScrollBar* hScrollBar);
     void SetVerticalScrollBar(QScrollBar* vScrollBar);
+
+    void
+    DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
     void SetNestedControl(DAVA::UIControl* nestedControl);

@@ -1,7 +1,7 @@
-#ifndef __QUICKED_CANVAS_SYSTEM_H__
-#define __QUICKED_CANVAS_SYSTEM_H__
+#pragma once
 
 #include "EditorSystems/BaseEditorSystem.h"
+#include "Base/BaseTypes.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "SelectionContainer.h"
 #include "Model/PackageHierarchy/PackageListener.h"
@@ -37,5 +37,3 @@ private:
     bool inTransformState = false;
     bool needRecalculate = false;
 };
-
-#endif // __QUICKED_CANVAS_SYSTEM_H__

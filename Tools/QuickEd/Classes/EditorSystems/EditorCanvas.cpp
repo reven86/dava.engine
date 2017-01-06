@@ -1,7 +1,10 @@
+#include "EditorSystems/EditorCanvas.h"
+#include "UI/UIScreenManager.h"
+#include ""
 
 using namespace DAVA;
 
-ScrollAreaController::ScrollAreaController(QObject* parent)
+EditorCanvas::EditorCanvas(QObject* parent)
 ,
 backgroundControl(new UIControl)
 {
@@ -15,12 +18,12 @@ backgroundControl(new UIControl)
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
-ScrollAreaController::~ScrollAreaController()
+EditorCanvas::~EditorCanvas()
 {
     UIScreenManager::Instance()->ResetScreen();
 }
 
-void ScrollAreaController::SetNestedControl(UIControl* arg)
+void EditorCanvas::SetNestedControl(UIControl* arg)
 {
     if (nullptr != nestedControl)
     {
@@ -34,7 +37,7 @@ void ScrollAreaController::SetNestedControl(UIControl* arg)
     }
 }
 
-void ScrollAreaController::SetMovableControl(UIControl* arg)
+void EditorCanvas::SetMovableControl(UIControl* arg)
 {
     if (arg != movableControl)
     {
@@ -43,7 +46,7 @@ void ScrollAreaController::SetMovableControl(UIControl* arg)
     }
 }
 
-void ScrollAreaController::AdjustScale(float newScale, const QPointF& mousePos)
+void EditorCanvas::AdjustScale(float newScale, const QPointF& mousePos)
 {
     newScale = fmax(minScale, newScale);
     newScale = fmin(maxScale, newScale); //crop scale to 800
@@ -72,48 +75,48 @@ void ScrollAreaController::AdjustScale(float newScale, const QPointF& mousePos)
     SetPosition(newPosition);
 }
 
-QSize ScrollAreaController::GetCanvasSize() const
+QSize EditorCanvas::GetCanvasSize() const
 {
     return canvasSize;
 }
 
-QSize ScrollAreaController::GetViewSize() const
+QSize EditorCanvas::GetViewSize() const
 {
     return viewSize;
 }
 
-QPoint ScrollAreaController::GetPosition() const
+QPoint EditorCanvas::GetPosition() const
 {
     return position;
 }
 
-float ScrollAreaController::GetScale() const
+float EditorCanvas::GetScale() const
 {
     return scale;
 }
 
-float ScrollAreaController::GetMinScale() const
+float EditorCanvas::GetMinScale() const
 {
     return minScale;
 }
 
-float ScrollAreaController::GetMaxScale() const
+float EditorCanvas::GetMaxScale() const
 {
     return maxScale;
 }
 
-QPoint ScrollAreaController::GetMinimumPos() const
+QPoint EditorCanvas::GetMinimumPos() const
 {
     return QPoint(0, 0);
 }
 
-QPoint ScrollAreaController::GetMaximumPos() const
+QPoint EditorCanvas::GetMaximumPos() const
 {
     QSize maxSize = canvasSize - viewSize;
     return QPoint(maxSize.width(), maxSize.height());
 }
 
-void ScrollAreaController::UpdateCanvasContentSize()
+void EditorCanvas::UpdateCanvasContentSize()
 {
     Vector2 contentSize;
     if (nullptr != nestedControl)
@@ -130,7 +133,7 @@ void ScrollAreaController::UpdateCanvasContentSize()
     emit CanvasSizeChanged(canvasSize);
 }
 
-void ScrollAreaController::SetScale(float arg)
+void EditorCanvas::SetScale(float arg)
 {
     if (scale != arg)
     {
@@ -138,12 +141,12 @@ void ScrollAreaController::SetScale(float arg)
     }
 }
 
-void ScrollAreaController::SetViewSize(int32 width, int32 height)
+void EditorCanvas::SetViewSize(int32 width, int32 height)
 {
     SetViewSize(QSize(width, height));
 }
 
-void ScrollAreaController::SetViewSize(const QSize& viewSize_)
+void EditorCanvas::SetViewSize(const QSize& viewSize_)
 {
     if (viewSize_ != viewSize)
     {
@@ -163,7 +166,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
     }
 }
 
-void ScrollAreaController::SetPosition(const QPoint& position_)
+void EditorCanvas::SetPosition(const QPoint& position_)
 {
     QPoint minPos = GetMinimumPos();
     QPoint maxPos = GetMaximumPos();
@@ -177,7 +180,7 @@ void ScrollAreaController::SetPosition(const QPoint& position_)
     }
 }
 
-void ScrollAreaController::UpdatePosition()
+void EditorCanvas::UpdatePosition()
 {
     if (nullptr != movableControl)
     {

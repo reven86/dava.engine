@@ -68,7 +68,7 @@ class PackageNode;
 class EditorControlView;
 class SelectionSystem;
 class HUDSystem;
-class ScrollCanvasSystem;
+class EditorCanvas;
 
 class EditorSystemsManager : PackageListener
 {
@@ -92,7 +92,7 @@ public:
 
     //
 
-    ScrollCanvasSystem* GetScrollCanvasSystem() const;
+    EditorCanvas* GetScrollCanvasSystem() const;
 
     bool OnInput(DAVA::UIEvent* currentInput);
 
@@ -154,7 +154,7 @@ private:
     EditorControlView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
-    ScrollCanvasSystem = nullptr;
+    EditorCanvas* editorCanvas = nullptr;
 
     DAVA::RenderWidget* renderWidget = nullptr;
 };
