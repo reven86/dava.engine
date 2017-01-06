@@ -307,22 +307,37 @@ bool CEFWebViewControl::OnBeforePopup(CefRefPtr<CefBrowser> browser,
 
 void CEFWebViewControl::LoadURL(const String& url, bool clearSurface)
 {
-    StopLoading();
-    if (clearSurface)
+    // Ops, chromium crashes on empty url
+    if (!url.empty())
     {
-        webPageRender->ClearRenderSurface();
+        StopLoading();
+        if (clearSurface)
+        {
+            webPageRender->ClearRenderSurface();
+        }
+        cefBrowser->GetMainFrame()->LoadURL(url);
     }
-    cefBrowser->GetMainFrame()->LoadURL(url);
+    else
+    {
+        Logger::Error("CEFWebViewControl::LoadURL empty URL has come");
+    }
 }
 
 void CEFWebViewControl::LoadHtml(const CefString& html, const CefString& url)
 {
-    requestedUrl = "";
-    CefRefPtr<CefFrame> frame = cefBrowser->GetMainFrame();
+    if (!html.empty())
+    {
+        requestedUrl = "";
+        CefRefPtr<CefFrame> frame = cefBrowser->GetMainFrame();
 
-    // loading of "about:blank" is needed for loading string
-    frame->LoadURL("about:blank");
-    frame->LoadString(html, url);
+        // loading of "about:blank" is needed for loading string
+        frame->LoadURL("about:blank");
+        frame->LoadString(html, url);
+    }
+    else
+    {
+        Logger::Error("CEFWebViewControl::LoadHtml empty HTML has come");
+    }
 }
 
 void CEFWebViewControl::StopLoading()
