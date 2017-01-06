@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 project( ToolSet )
 
 set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-include ( CMake-common )
+include ( GlobalVariables )
 
 macro ( add_tool TARGET_NAME )
     cmake_parse_arguments ( ARG ""  "ROOT_DIR;CUSTOM_DEPLOY_DIR;DEPLOY_DEFINE" "" ${ARGN} )
@@ -40,9 +40,6 @@ set( JOIN_PROJECT_NAME 1 )
 set( DAVA_DISABLE_AUTOTESTS true )
 set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
-set( DAVA_COREV2 1 )
-
-add_definitions (-D__DAVAENGINE_COREV2__)
 
 find_package ( DavaTools     REQUIRED )
 
