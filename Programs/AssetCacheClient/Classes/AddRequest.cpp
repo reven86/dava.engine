@@ -1,5 +1,6 @@
 #include "AddRequest.h"
 
+#include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "Platform/DateTime.h"
 #include "Platform/DeviceInfo.h"
@@ -45,7 +46,7 @@ DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
             data.get()->resize(dataSize);
 
             auto read = file->Read(data.get()->data(), dataSize);
-            DVVERIFY(read == dataSize);
+            DVASSERT(read == dataSize);
 
             value.Add(path.GetFilename(), data);
         }

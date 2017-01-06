@@ -7,10 +7,12 @@
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/Settings/Settings.h"
+#include "Classes/Application/REGlobal.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/QtAction.h"
+#include "TArc/Utils/ModuleCollection.h"
 
 #include "Functional/Function.h"
 #include "FileSystem/FilePath.h"

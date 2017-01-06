@@ -3,6 +3,10 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
 
+#include "Debug/DVAssertDefaultHandlers.h"
+#include "Platform/DateTime.h"
+#include "CommandLine/CommandLineParser.h"
+#include "Utils/Utils.h"
 #include <Platform/DateTime.h>
 #include <CommandLine/CommandLineParser.h>
 #include <Utils/Utils.h>
@@ -53,6 +57,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
     using namespace Net;
+
+    Assert::SetupDefaultHandlers();
 
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);
@@ -255,7 +261,7 @@ void TestBed::RunOnlyThisTest()
 
 void TestBed::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void TestBed::RegisterTests()

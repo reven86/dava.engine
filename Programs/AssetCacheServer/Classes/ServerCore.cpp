@@ -1,5 +1,7 @@
 #include "ServerCore.h"
 #include "Platform/DeviceInfo.h"
+#include "Utils/Utils.h"
+#include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 
 #include <QTimer>
@@ -99,7 +101,7 @@ void ServerCore::StopListening()
 
 bool ServerCore::ConnectRemote()
 {
-    DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT)
+    DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT);
 
     if (!currentRemoteServer.IsEmpty())
     {

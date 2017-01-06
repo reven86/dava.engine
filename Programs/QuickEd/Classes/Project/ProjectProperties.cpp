@@ -6,6 +6,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 using namespace DAVA;
 
@@ -13,7 +14,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
 {
     ResultList resultList;
 
-    DVASSERT_MSG(version == ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only ");
+    DVASSERT(version == ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only ");
     if (version != ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1)
     {
         String message = Format("Supported only project files with versions %d and %d.", ProjectProperties::CURRENT_PROJECT_FILE_VERSION, ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1);

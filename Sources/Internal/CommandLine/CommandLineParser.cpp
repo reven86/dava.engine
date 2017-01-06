@@ -1,5 +1,6 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 
 #include "Engine/Engine.h"
 

@@ -4,6 +4,7 @@
 #include <stdio.h> // vsnprintf
 #include <string.h> // strcmp, strcasecmp
 #include <stdlib.h> // strtod, strtol
+#include <cstdarg> // va_start, va_end
 
 namespace sl
 {

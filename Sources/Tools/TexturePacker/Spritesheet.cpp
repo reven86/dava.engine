@@ -1,6 +1,8 @@
 #include "TexturePacker/Spritesheet.h"
 #include "TexturePacker/TexturePacker.h"
 #include "Base/BaseTypes.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "Base/GlobalEnum.h"
 
@@ -317,7 +319,7 @@ const SpriteBoundsRect* MaxRectsSpritesheetLayout::InsertNewSpriteRect(const Spr
     boundsRect.marginsRect.dy = boundsRect.spriteRect.dy + boundsRect.topEdgePixel + boundsRect.bottomEdgePixel + boundsRect.bottomMargin;
 
     auto insertResult = spriteRects.insert(std::make_pair(spritePtr, boundsRect));
-    DVASSERT_MSG(insertResult.second == true, "Second attempt to insert same sprite");
+    DVASSERT(insertResult.second == true, "Second attempt to insert same sprite");
 
     return &(insertResult.first->second);
 }
@@ -624,7 +626,7 @@ std::unique_ptr<SpritesheetLayout> SpritesheetLayout::Create(uint32 w, uint32 h,
     case PackingAlgorithm::ALG_MAXRRECT_BEST_CONTACT_POINT:
         return std::unique_ptr<SpritesheetLayout>(new MaxRectsSpritesheetLayout_CP(w, h, duplicateEdgePixel, spritesMargin));
     default:
-        DVASSERT_MSG(false, Format("Unknown algorithm id: %d", alg).c_str());
+        DVASSERT(false, Format("Unknown algorithm id: %d", alg).c_str());
         return nullptr;
     }
 }

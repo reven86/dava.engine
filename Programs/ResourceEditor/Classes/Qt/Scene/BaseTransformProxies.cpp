@@ -27,7 +27,7 @@ bool EntityTransformProxy::SupportsTransformType(Selectable::Object* object, Sel
 
 bool EntityTransformProxy::TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const
 {
-    DVASSERT_MSG(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
+    DVASSERT(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
 
     auto asEntity = Selectable(dependsOn).AsEntity();
     return (asEntity != nullptr) && asEntity->IsMyChildRecursive(static_cast<DAVA::Entity*>(dependant));
@@ -84,7 +84,7 @@ bool EmitterTransformProxy::SupportsTransformType(Selectable::Object* object, Se
 
 bool EmitterTransformProxy::TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const
 {
-    DVASSERT_MSG(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
+    DVASSERT(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
 
     auto asEntity = Selectable(dependsOn).AsEntity();
     if (asEntity == nullptr)

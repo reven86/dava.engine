@@ -185,7 +185,7 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format)
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
     default:
-        DVASSERT_MSG(0, "Invalid TextureFormat provided");
+        DVASSERT(0, "Invalid TextureFormat provided");
     }
 
     return DXGI_FORMAT_UNKNOWN;
@@ -212,7 +212,7 @@ D3D11_COMPARISON_FUNC DX11_CmpFunc(CmpFunc func)
     case CMP_ALWAYS:
         return D3D11_COMPARISON_ALWAYS;
     default:
-        DVASSERT_MSG(0, "Invalid CmpFunc provided");
+        DVASSERT(0, "Invalid CmpFunc provided");
     }
     return D3D11_COMPARISON_ALWAYS;
 }
@@ -238,7 +238,7 @@ D3D11_STENCIL_OP DX11_StencilOp(StencilOperation op)
     case STENCILOP_DECREMENT_WRAP:
         return D3D11_STENCIL_OP_DECR;
     default:
-        DVASSERT_MSG(0, "Invalid StencilOperation provided");
+        DVASSERT(0, "Invalid StencilOperation provided");
     }
     return D3D11_STENCIL_OP_KEEP;
 }
@@ -277,7 +277,7 @@ D3D11_FILTER DX11_TextureFilter(TextureFilter min_filter, TextureFilter mag_filt
     break;
 
     default:
-        DVASSERT_MSG(0, "Invalid TextureMipFilter provided");
+        DVASSERT(0, "Invalid TextureMipFilter provided");
     }
 
     return D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -294,7 +294,7 @@ D3D11_TEXTURE_ADDRESS_MODE DX11_TextureAddrMode(TextureAddrMode mode)
     case TEXADDR_MIRROR:
         return D3D11_TEXTURE_ADDRESS_MIRROR;
     default:
-        DVASSERT_MSG(0, "Invalid TextureAddrMode provided");
+        DVASSERT(0, "Invalid TextureAddrMode provided");
     }
 
     return D3D11_TEXTURE_ADDRESS_WRAP;
@@ -317,7 +317,7 @@ D3D11_BLEND DX11_BlendOp(BlendOp op)
     case BLENDOP_DST_COLOR:
         return D3D11_BLEND_DEST_COLOR;
     default:
-        DVASSERT_MSG(0, "Invalid BlendOp provided");
+        DVASSERT(0, "Invalid BlendOp provided");
     }
 
     return D3D11_BLEND_ONE;

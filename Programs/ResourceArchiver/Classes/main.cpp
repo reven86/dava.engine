@@ -1,5 +1,7 @@
 #include <Base/BaseTypes.h>
 #include <Engine/Engine.h>
+#include <Logger/Logger.h>
+#include <Debug/DVAssertDefaultHandlers.h>
 
 #include "CommandLineApplication.h"
 #include "ArchivePackTool.h"
@@ -14,6 +16,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #endif
 
     using namespace DAVA;
+
+    Assert::SetupDefaultHandlers();
 
     Vector<String> modules = {
         "JobManager",

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ColladaSceneNode.h"
 #include "Scene3D/SceneNodeAnimation.h"
+#include "Utils/StringFormat.h"
 #include <cmath>
 
 namespace DAVA
@@ -409,7 +410,7 @@ SceneNodeAnimation* ColladaSceneNode::ExportNodeAnimation(FCDSceneNode* original
         {
             if ((transform->GetType() == FCDTransform::MATRIX) && (originalNode->GetTransformCount() > 1))
             {
-                DVASSERT_MSG(false, "Multiple matrix animations are not supported.");
+                DVASSERT(false, "Multiple matrix animations are not supported.");
                 return NULL;
             }
 

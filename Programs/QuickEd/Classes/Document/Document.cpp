@@ -7,6 +7,8 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Project/Project.h"
 
+#include "Logger/Logger.h"
+
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include <QFileSystemWatcher>
 #include <QFile>
@@ -94,7 +96,7 @@ void Document::SetContext(void* requester, WidgetContext* widgetContext)
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
     {
-        DVASSERT_MSG(false, "document already have this context");
+        DVASSERT(false, "document already have this context");
         delete iter->second;
         contexts.erase(iter);
     }

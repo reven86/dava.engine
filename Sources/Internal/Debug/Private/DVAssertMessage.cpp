@@ -14,8 +14,6 @@ Atomic<uint32> messageDisplayed{ 0 };
 Function<bool(DVAssertMessage::eModalType, const char8*)> innerShowOverride;
 }
 
-#if defined(ENABLE_ASSERT_MESSAGE)
-
 bool ShowMessage(eModalType modalType, const char8* text, ...)
 {
     bool userClickBreak = false;
@@ -45,16 +43,6 @@ bool ShowMessage(eModalType modalType, const char8* text, ...)
 
     return userClickBreak;
 }
-
-#else
-
-bool ShowMessage(eModalType /*modalType*/, const char8* /*text*/, ...)
-{
-    // Do nothing here.
-    return false;
-}
-
-#endif // ENABLE_ASSERT_MESSAGE
 
 bool IsHidden()
 {

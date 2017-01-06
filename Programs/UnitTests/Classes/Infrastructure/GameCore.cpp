@@ -4,6 +4,8 @@
 #include "CommandLine/CommandLineParser.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Infrastructure/GameCore.h"
 
@@ -34,6 +36,8 @@ const String TestCoverageFileName = "Tests.cover";
 
 int DAVAMain(Vector<String> cmdline)
 {
+    Assert::AddHandler(Assert::DefaultLoggerHandler);
+
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetString("title", "UnitTests");
     appOptions->SetInt32("fullscreen", 0);
@@ -195,7 +199,7 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void GameCore::OnTestClassStarted(const DAVA::String& testClassName)

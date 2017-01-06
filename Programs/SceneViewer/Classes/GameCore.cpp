@@ -2,6 +2,8 @@
 #include "SelectSceneScreen.h"
 #include "ViewSceneScreen.h"
 
+#include "Debug/DVAssertDefaultHandlers.h"
+
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 
@@ -214,6 +216,8 @@ KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    Assert::SetupDefaultHandlers();
+
     Vector<String> modules =
     {
       "JobManager",

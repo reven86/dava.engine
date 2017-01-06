@@ -1,6 +1,7 @@
 #ifndef __RESOURCEEDITORQT__SETTINGS_MANAGER__
 #define __RESOURCEEDITORQT__SETTINGS_MANAGER__
 
+#include "Base/Singleton.h"
 #include "Base/IntrospectionBase.h"
 #include "Base/FastNameMap.h"
 #include "FileSystem/VariantType.h"

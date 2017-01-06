@@ -1,5 +1,6 @@
 #include "Debug/DVAssert.h"
 #include "MemoryManager/MemoryManagerTypes.h"
+#include "Utils/StringFormat.h"
 
 #include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"

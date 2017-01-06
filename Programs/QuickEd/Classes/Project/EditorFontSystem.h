@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/2d/Font.h"
+#include "FileSystem/FilePath.h"
 #include <QObject>
 #include <QStringList>
 

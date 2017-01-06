@@ -9,6 +9,8 @@
 #include "DAVAVersion.h"
 #include "Engine/Engine.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"

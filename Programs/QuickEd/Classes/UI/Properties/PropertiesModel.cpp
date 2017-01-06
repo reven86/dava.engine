@@ -16,6 +16,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
+#include "Utils/StringFormat.h"
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
