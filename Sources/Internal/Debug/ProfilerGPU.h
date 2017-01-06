@@ -103,7 +103,7 @@ protected:
         bool IsReady();
         void GetTimestamps(uint64& t0, uint64& t1);
 
-        rhi::HPerfQuery query[2] = {};
+        rhi::HPerfQuery query[2];
     };
 
     struct Marker
