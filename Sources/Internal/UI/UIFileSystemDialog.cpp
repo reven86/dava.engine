@@ -12,6 +12,7 @@
 #include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FTFont.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

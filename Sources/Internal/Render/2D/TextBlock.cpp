@@ -7,6 +7,7 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/TextBox.h"
 #include "Utils/StringUtils.h"
+#include "Logger/Logger.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -736,7 +737,7 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        DVASSERT_MSG(textBox->GetLinesCount() > 0, "Empty lines information");
+        DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;

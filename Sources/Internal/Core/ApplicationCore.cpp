@@ -10,6 +10,8 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
@@ -91,7 +93,7 @@ void ApplicationCore::OnRenderingIsNotPossible(rhi::RenderingError error)
     String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x",
                          static_cast<DAVA::uint32>(error));
 
-    DVASSERT_MSG(0, info.c_str());
+    DVASSERT(0, info.c_str());
     Logger::Error("%s", info.c_str());
     abort();
 }

@@ -7,6 +7,8 @@
 #include "Render/Highlevel/ShadowVolume.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -365,7 +367,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
             vxCount += data[dataIndex].batch->GetPolygonGroup()->GetVertexCount();
             indCount += data[dataIndex].batch->GetPolygonGroup()->GetIndexCount();
 
-            DVASSERT_MSG(meshFormat == data[dataIndex].batch->GetPolygonGroup()->GetFormat(), Format("Invalid Entity: %s", fromEntity->GetName().c_str()).c_str());
+            DVASSERT(meshFormat == data[dataIndex].batch->GetPolygonGroup()->GetFormat(), Format("Invalid Entity: %s", fromEntity->GetName().c_str()).c_str());
         }
 
         PolygonGroup* polygonGroup = new PolygonGroup();

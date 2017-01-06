@@ -4,6 +4,8 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 #include "DLC/DLC.h"
 #include "Base/Exception.h"
 

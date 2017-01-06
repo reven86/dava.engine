@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "Base/BaseTypes.h"
+#include "Logger/Logger.h"
 #include "Render/RenderBase.h"
 #include "Render/RHI/rhi_Type.h"
 

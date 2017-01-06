@@ -25,11 +25,13 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
+
 #include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -165,7 +167,7 @@ void Landscape::RestoreGeometry()
             break;
 
         default:
-            DVASSERT_MSG(0, "Invalid RestoreBufferData type");
+            DVASSERT(0, "Invalid RestoreBufferData type");
         }
     }
 }
@@ -1516,7 +1518,7 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
 
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
+        DVASSERT(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
         newObject = new Landscape();
     }
 

@@ -8,6 +8,7 @@
 #include "DLC/Patcher/ZLibStream.h"
 #include "Time/SystemTimer.h"
 #include "Utils/Random.h"
+#include "Utils/StringFormat.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"

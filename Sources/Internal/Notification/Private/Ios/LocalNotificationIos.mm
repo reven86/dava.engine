@@ -1,4 +1,5 @@
 #include "Notification/Private/Ios/LocalNotificationIos.h"
+#include "Utils/StringFormat.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 

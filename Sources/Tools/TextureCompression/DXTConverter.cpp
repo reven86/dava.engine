@@ -1,5 +1,6 @@
 #include "DXTConverter.h"
 
+#include "Logger/Logger.h"
 #include "FileSystem/FilePath.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Image/Image.h"

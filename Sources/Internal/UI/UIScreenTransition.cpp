@@ -9,6 +9,7 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "UI/UIScreenshoter.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

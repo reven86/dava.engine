@@ -2,6 +2,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Time/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

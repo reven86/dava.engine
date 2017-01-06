@@ -9,6 +9,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/FTFont.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
