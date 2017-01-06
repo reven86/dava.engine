@@ -15,7 +15,7 @@ LogModel::LogModel(QObject* parent)
     , mutex(new QMutex)
     , syncTimer(new QTimer(this))
 {
-    DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
+    DVASSERT(thread() == qApp->thread(), "don't create this model in the separate thread!");
     CreateIcons();
     func = [](const DAVA::String& str)
     {
@@ -136,7 +136,7 @@ void LogModel::CreateIcons()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
+            DVASSERT(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         QPixmap pix(16, 16);

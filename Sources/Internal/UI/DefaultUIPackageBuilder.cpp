@@ -14,6 +14,8 @@
 #include "UI/Styles/UIStyleSheet.h"
 #include "Styles/UIStyleSheetSystem.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 namespace
@@ -157,32 +159,51 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
     }
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const String& className)
+UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
-    if (!control.Valid())
-        Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
-
-    if (control.Valid() && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+    if (control.Valid())
     {
-        control->RemoveAllControls();
+        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        {
+            control->RemoveAllControls();
+        }
+
+        if (controlName.IsValid())
+        {
+            control->SetName(controlName);
+        }
+    }
+    else
+    {
+        DVASSERT(false);
     }
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
     return control.Get();
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const String& customClassName, const String& className)
+UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(customClassName));
 
-    if (!control.Valid())
-        control.Set(ObjectFactory::Instance()->New<UIControl>(className)); // TODO: remove
-
-    if (control.Valid() && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+    if (control.Valid())
     {
-        control->RemoveAllControls();
+        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        {
+            control->RemoveAllControls();
+        }
+
+        if (controlName.IsValid())
+        {
+            control->SetName(controlName);
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+        control.Set(ObjectFactory::Instance()->New<UIControl>(className)); // TODO: remove
     }
 
     DVASSERT(control.Valid());
@@ -191,7 +212,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const String& cu
     return control.Get();
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     UIControl* prototype = nullptr;
 
@@ -226,6 +247,11 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const String& pack
         control.Set(prototype->Clone());
     }
 
+    if (controlName.IsValid())
+    {
+        control->SetName(controlName);
+    }
+
     control->SetPackageContext(nullptr);
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
@@ -245,7 +271,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
     return control;
 }
 
-UIControl* DefaultUIPackageBuilder::BeginUnknownControl(const YamlNode* node)
+UIControl* DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     controlsStack.push_back(new ControlDescr(nullptr, false));

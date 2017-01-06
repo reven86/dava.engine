@@ -88,7 +88,7 @@ endif()
 
 set( DAVA_MODULES_DIR                   "${DAVA_ROOT_DIR}/Modules" )
 set( DAVA_SOURCES_DIR                   "${DAVA_ROOT_DIR}/Sources" )
-set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Tools" )
+set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Programs" )
 set( DAVA_ENGINE_DIR                    "${DAVA_SOURCES_DIR}/Internal" )
 set( DAVA_EXTERNAL_DIR                  "${DAVA_SOURCES_DIR}/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )

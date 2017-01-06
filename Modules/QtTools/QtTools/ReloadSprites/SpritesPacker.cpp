@@ -1,5 +1,6 @@
 #include "SpritesPacker.h"
 #include "Render/2D/Sprite.h"
+#include "Logger/Logger.h"
 
 #include <QDir>
 #include <QDirIterator>

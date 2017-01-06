@@ -17,12 +17,14 @@ IOLoop::IOLoop(bool useDefaultIOLoop)
     }
     else
     {
-        DVVERIFY(0 == uv_loop_init(&uvloop));
+        const int loopInitResult = uv_loop_init(&uvloop);
+        DVASSERT(loopInitResult == 0);
         actualLoop = &uvloop;
     }
     actualLoop->data = this;
 
-    DVVERIFY(0 == uv_async_init(actualLoop, &uvasync, &HandleAsyncThunk));
+    const int initResult = uv_async_init(actualLoop, &uvasync, &HandleAsyncThunk);
+    DVASSERT(initResult == 0);
     uvasync.data = this;
 #endif
 }
@@ -31,7 +33,8 @@ IOLoop::~IOLoop()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     // We can close default loop too
-    DVVERIFY(0 == uv_loop_close(actualLoop));
+    const int closeResult = uv_loop_close(actualLoop);
+    DVASSERT(closeResult == 0);
 #endif
 }
 

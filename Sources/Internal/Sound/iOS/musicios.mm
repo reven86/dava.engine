@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "FileSystem/FilePath.h"
 #include "Sound/SoundSystem.h"
 

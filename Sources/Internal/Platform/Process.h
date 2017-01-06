@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
+#include "FileSystem/FilePath.h"
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
