@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArc/Core/ClientModule.h"
+#include "Reflection/Reflection.h"
 
 class QCloseEvent;
 
@@ -22,6 +23,11 @@ protected:
     ContextManager* GetContextManager();
 
     friend class Core;
+
+private:
+    DAVA_VIRTUAL_REFLECTION(ControllerModule, ClientModule)
+    {
+    }
 };
 } // namespace TArc
 } // namespace DAVA

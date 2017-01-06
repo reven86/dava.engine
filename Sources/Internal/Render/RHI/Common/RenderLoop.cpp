@@ -281,7 +281,11 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (!executed)
             {
                 framePreparedEvent.Signal();
+#ifdef __DAVAENGINE_WIN32__
+                DAVA::Thread::Sleep(1);
+#else
                 DAVA::Thread::Yield();
+#endif
             }
         }
     }
@@ -349,7 +353,7 @@ void ProcessScheduledDelete()
                     PipelineState::Delete(res.handle);
                     break;
                 default:
-                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
+                    DVASSERT(false, "Not supported resource scheduled for deletion");
                 }
             }
             scheduledDeleteResources[i].clear();

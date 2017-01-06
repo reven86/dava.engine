@@ -9,6 +9,8 @@
 #include <Platform/DateTime.h>
 #include <UI/UIControlSystem.h>
 #include <UI/UIScreenshoter.h>
+#include <Logger/Logger.h>
+#include <Utils/StringFormat.h>
 
 GridTest::ScreenshotSaver::ScreenshotSaver(DAVA::FilePath& path, Sample& sample)
     : savePath(path)
@@ -55,21 +57,21 @@ bool GridTest::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
 
     if (state != State::Finished)
     {
-        DVASSERT_MSG(false, "can't start already started test");
+        DVASSERT(false, "can't start already started test");
         return false;
     }
 
     sceneView = view;
     if (!sceneView)
     {
-        DVASSERT_MSG(false, "scene view is empty");
+        DVASSERT(false, "scene view is empty");
         return false;
     }
 
     scene = sceneView->GetScene();
     if (!scene)
     {
-        DVASSERT_MSG(false, "scene view contains no scene");
+        DVASSERT(false, "scene view contains no scene");
         return false;
     }
 

@@ -7,11 +7,13 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
 
+#include "Utils/StringFormat.h"
 #include "Animation/AnimationManager.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
@@ -328,6 +330,21 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         {
             UpdateVirtualCoordinatesSystem();
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            // TODO:
+            // Resources must be separated from VirtualCoordinateSystem
+            // Each resource consumer have to care for his resources by itself,
+            // e.g. sprites reloading mechanism should be implemented in Sprite.cpp
+            // by handling Window::sizeChanged signal and making sprites reload
+            // inside that particular handler...
+            //
+            // Unfortunately we have only temporary solution:
+            // call reloadig sprites/fonts from this point ((
+            if (uiControlSystem->vcs->GetReloadResourceOnResize())
+            {
+                Sprite::ValidateForSize();
+                TextBlock::ScreenResolutionChanged();
+            }
         }
     }
 }
@@ -620,7 +637,7 @@ void Window::SetSurfaceScaleAsync(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
-        DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        DVASSERT(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
         return;
     }
 
