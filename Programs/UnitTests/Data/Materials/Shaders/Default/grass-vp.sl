@@ -28,7 +28,7 @@ uniform sampler2D vegetationmap;
 [auto][a] property float4x4 worldViewInvTransposeMatrix;
 [auto][a] property float4 lightPosition0;
 #if DISTANCE_ATTENUATION
-[material][a] property float lightIntensity0 = 1.0; 
+[material][a] property float lightIntensity0; 
 #endif
 #endif
 
