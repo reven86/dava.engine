@@ -75,7 +75,7 @@ private slots:
 
 private:
     void SetCanSave(bool canSave);
-    //fileSystemWatcher send fileChanged on Windows on the next frame 
+    //fileSystemWatcher send fileChanged on Windows on the next frame
     //and removePath/addPath not work on OS X
     //so the only way to block "fileChanged" signal while you saving document is delete watcher and recreate it
     void CreateFileSystemWatcher();
