@@ -16,8 +16,8 @@ class EngineBackend;
     SystemTimer is a static class and its methods can be used even without `Engine` initialization. But I believe
     it's clear that methods returning frame deltas or working with global time make sense only in game loop.
 
-    Methods `GetAbsoluteMillis`, `GetAbsoluteMicros` and `GetAbsoluteNanos` return value of monotonic clock of
-    corresponding precision. Monotonic clock always increases and is not related to wall clock and can be used for
+    Methods `GetMs`, `GetUs` and `GetNs` return value of monotonic clock of corresponding precision.
+    Monotonic clock always increases and is not related to wall clock and can be used for
     measuring time intervals. Also these methods counter time spent when device was in deep sleep.
 */
 class SystemTimer final
@@ -29,26 +29,25 @@ class SystemTimer final
 
 public:
     /** Get monotonic clock value in milliseconds, including time spent in deep sleep. */
-    static int64 GetAbsoluteMillis();
+    static int64 GetMs();
 
     /** Get monotonic clock value in microseconds, including time spent in deep sleep. */
-    static int64 GetAbsoluteMicros();
+    static int64 GetUs();
 
     /** Get monotonic clock value in nanoseconds, including time spent in deep sleep. */
-    static int64 GetAbsoluteNanos();
-
-    /** Get current calendar time in seconds from epoch beginning 1970-01-01 00:00 UTC. */
-    static int64 GetSystemTime();
+    static int64 GetNs();
 
     /** Get number of microseconds elapsed from system boot, including time spent in deep sleep. */
-    static int64 GetSystemUptimeMicros();
+    static int64 GetSystemUptimeUs();
+
+    DAVA_DEPRECATED(static int64 GetSystemTime());
 
     /**
-        Get current frame timestamp in milliseconds.
+        Get current frame timestamp in seconds.
 
-        Frame timestamp is a result of `GetAbsoluteMillis()` call at the beginning of a frame.
+        Frame timestamp is a result of `GetMs()` call at the beginning of a frame divided by 1000.
     */
-    static int64 GetFrameTimestamp();
+    static float32 GetFrameTimestamp();
 
     /**
         Get clamped time difference in seconds between current frame timestamp and previous frame timestamp.

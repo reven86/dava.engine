@@ -30,31 +30,31 @@ int64 SystemTimer::adjustmentMillis = 0;
 int64 SystemTimer::adjustmentMicros = 0;
 int64 SystemTimer::adjustmentNanos = 0;
 
-int64 SystemTimer::GetAbsoluteMillis()
+int64 SystemTimer::GetMs()
 {
     using namespace std::chrono;
     return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentMillis;
 }
 
-int64 SystemTimer::GetAbsoluteMicros()
+int64 SystemTimer::GetUs()
 {
     using namespace std::chrono;
     return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentMicros;
 }
 
-int64 SystemTimer::GetAbsoluteNanos()
+int64 SystemTimer::GetNs()
 {
     using namespace std::chrono;
     return duration_cast<nanoseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentNanos;
 }
 
-int64 SystemTimer::GetSystemTime()
+DAVA_DEPRECATED(int64 SystemTimer::GetSystemTime())
 {
     using namespace std::chrono;
     return static_cast<int64>(system_clock::to_time_t(system_clock::now()));
 }
 
-int64 SystemTimer::GetSystemUptimeMicros()
+int64 SystemTimer::GetSystemUptimeUs()
 {
 #if defined(__DAVAENGINE_WINDOWS__)
     // Windows provides only milliseconds elapsed from boot
@@ -82,9 +82,9 @@ int64 SystemTimer::GetSystemUptimeMicros()
 #endif
 }
 
-int64 SystemTimer::GetFrameTimestamp()
+float32 SystemTimer::GetFrameTimestamp()
 {
-    return frameTimestamp;
+    return static_cast<float32>(frameTimestamp / 1000.);
 }
 
 float32 SystemTimer::GetFrameDelta()
@@ -135,11 +135,11 @@ void SystemTimer::StartFrame()
 {
     if (frameTimestamp == 0)
     {
-        frameTimestamp = GetAbsoluteMillis();
+        frameTimestamp = GetMs();
         frameTimestampForRealDelta = frameTimestamp;
     }
 
-    int64 timestamp = GetAbsoluteMillis();
+    int64 timestamp = GetMs();
     frameDelta = static_cast<float32>((timestamp - frameTimestamp) / 1000.0);
     realFrameDelta = frameDelta;
     frameDelta = std::min(0.1f, std::max(0.001f, frameDelta));
@@ -156,7 +156,7 @@ void SystemTimer::ComputeRealFrameDelta()
 void SystemTimer::Adjust(int64 micros)
 {
     /*
-        On several platforms GetAbsoluteMillis() and friends may stop after some amount of time
+        On several platforms GetMs() and friends may stop after some amount of time
         when device enters sleep mode (screen is darkened, power cable is not connected).
         To ensure clock monotonicity SystemTimer uses time adjustment which tells how long
         device has spent in deep sleep.
