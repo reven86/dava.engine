@@ -16,6 +16,7 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
