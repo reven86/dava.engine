@@ -512,8 +512,8 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
     {
         builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
     }
-
-    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), "", &builder))
+    
+    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), root->GetPath(), &builder))
     {
         const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
         const Vector<ControlNode*>& controls = builder.GetRootControls();

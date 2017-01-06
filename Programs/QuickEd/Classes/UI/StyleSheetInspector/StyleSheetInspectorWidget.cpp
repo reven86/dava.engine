@@ -111,7 +111,10 @@ void StyleSheetInspectorWidget::Update()
 
             QListWidgetItem* styleSheetItem = new QListWidgetItem(selector.c_str());
             styleSheetItem->setFont(boldFont);
-            styleSheetItem->setToolTip(ss->GetSourceInfo().file.GetFrameworkPath().c_str());
+            if (!ss->GetSourceInfo().file.IsEmpty())
+            {
+                styleSheetItem->setToolTip(ss->GetSourceInfo().file.GetFrameworkPath().c_str());
+            }
             ui->listWidget->addItem(styleSheetItem);
 
             const UIStyleSheetPropertyTable* propertyTable = ss->GetPropertyTable();
