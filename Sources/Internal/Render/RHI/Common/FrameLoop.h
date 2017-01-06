@@ -1,6 +1,7 @@
 #pragma once
 #include "rhi_Pool.h"
 #include "rhi_CommonImpl.h"
+#include "../rhi_Public.h"
 
 namespace rhi
 {
