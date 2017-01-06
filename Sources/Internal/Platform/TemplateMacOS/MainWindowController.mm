@@ -1,6 +1,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #import "Platform/TemplateMacOS/MainWindowController.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -24,6 +25,8 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    Assert::SetupDefaultHandlers();
+
     NSAutoreleasePool* globalPool = 0;
     globalPool = [[NSAutoreleasePool alloc] init];
     CoreMacOSPlatform* core = new CoreMacOSPlatform();
@@ -38,7 +41,7 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
         delegateClass = NSClassFromString(@"HelperAppDelegate");
     }
 
-    DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
+    DVASSERT(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
 
     HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
 
@@ -176,7 +179,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
     if (result != kIOReturnSuccess)
     {
-        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        DVASSERT(false, "IOPM Assertion manipulation failed");
         return;
     }
 }
@@ -343,7 +346,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         else
         {
             // fullscreen for older macOS isn't supperted
-            DVASSERT_MSG(false, "Fullscreen isn't supported for this MacOS version");
+            DVASSERT(false, "Fullscreen isn't supported for this MacOS version");
             return NO;
         }
     }

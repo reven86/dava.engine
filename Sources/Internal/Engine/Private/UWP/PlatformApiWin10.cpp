@@ -7,6 +7,7 @@
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 
 namespace DAVA
 {

@@ -24,6 +24,8 @@
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
@@ -910,7 +912,7 @@ void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
             return;
         }
     }
-    DVASSERT_MSG(0, "Control _belowThisChild not found");
+    DVASSERT(0, "Control _belowThisChild not found");
 }
 
 void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
@@ -941,7 +943,7 @@ void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
         }
     }
 
-    DVASSERT_MSG(0, "Control _aboveThisChild not found");
+    DVASSERT(0, "Control _aboveThisChild not found");
 }
 
 UIControl* UIControl::Clone()
@@ -1568,7 +1570,7 @@ void UIControl::SystemVisible()
 {
     if (viewState == eViewState::VISIBLE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1602,7 +1604,7 @@ void UIControl::SystemInvisible()
 {
     if (viewState != eViewState::VISIBLE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1643,7 +1645,7 @@ void UIControl::SystemActive()
 {
     if (viewState >= eViewState::ACTIVE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1675,7 +1677,7 @@ void UIControl::SystemInactive()
 {
     if (viewState != eViewState::ACTIVE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1833,7 +1835,7 @@ void UIControl::ChangeViewState(eViewState newViewState)
     {
         String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
         Logger::Error(errorMsg.c_str());
-        DVASSERT_MSG(false, errorMsg.c_str());
+        DVASSERT(false, errorMsg.c_str());
     }
 
     viewState = newViewState;

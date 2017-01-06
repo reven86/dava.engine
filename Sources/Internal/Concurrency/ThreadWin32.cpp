@@ -1,6 +1,8 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS__)
 
+#include "Logger/Logger.h"
+
 #include <thread>
 #include "Concurrency/Thread.h"
 

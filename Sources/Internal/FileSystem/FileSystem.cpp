@@ -12,6 +12,7 @@
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
 #include "Concurrency/LockGuard.h"
@@ -23,6 +24,7 @@
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <copyfile.h>
 #include <libgen.h>
@@ -43,7 +45,6 @@
 #include "Engine/Private/Android/AndroidBridge.h"
 #else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-
 #endif
 #include <unistd.h>
 #endif //PLATFORMS

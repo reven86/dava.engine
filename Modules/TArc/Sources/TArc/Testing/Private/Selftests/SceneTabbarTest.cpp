@@ -46,11 +46,7 @@ public:
 DAVA::TArc::WindowKey wndKey = DAVA::TArc::WindowKey(DAVA::FastName("SceneTabbarTest"));
 QString tabbarObjectName = QString("tabbar");
 
-class Tag
-{
-};
-
-class TabbarModule : public DAVA::TArc::MockClientModule<Tag>
+class TabbarModule : public DAVA::TArc::MockClientModule, public DAVA::Singleton<TabbarModule>
 {
 public:
     void OnContextCreatedImpl(DAVA::TArc::DataContext* context) override
@@ -86,6 +82,13 @@ public:
         DAVA::TArc::SceneTabbar* tabbar = new DAVA::TArc::SceneTabbar(GetAccessor(), DAVA::Reflection::Create(GetAccessor()->GetGlobalContext()->GetData<TabsModel>()));
         DAVA::TArc::PanelKey panelKey(tabbarObjectName, DAVA::TArc::CentralPanelInfo());
         ui->AddView(wndKey, panelKey, tabbar);
+    }
+
+    DAVA_VIRTUAL_REFLECTION(TabbarModule, DAVA::TArc::MockClientModule, DAVA::Singleton<TabbarModule>)
+    {
+        DAVA::ReflectionRegistrator<TabbarModule>::Begin()
+        .ConstructorByPointer()
+        .End();
     }
 };
 
@@ -309,7 +312,7 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
         using namespace ::testing;
         using namespace SceneTabbarDetail;
 
-        TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
+        TabbarModule* module = TabbarModule::Instance();
         ::testing::InSequence sequence;
         EXPECT_CALL(*module, OnContextCreated(_))
         .WillOnce(Invoke(module, &TabbarModule::OnContextCreatedImpl));
@@ -326,7 +329,7 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
         using namespace ::testing;
         using namespace SceneTabbarDetail;
 
-        TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
+        TabbarModule* module = TabbarModule::Instance();
         ::testing::InSequence sequence;
         EXPECT_CALL(*module, OnContextCreated(_))
         .WillOnce(Invoke(module, &TabbarModule::OnContextCreatedImpl));
@@ -349,7 +352,7 @@ DAVA_TARC_TESTCLASS(SceneTabbarTest)
         using namespace ::testing;
         using namespace SceneTabbarDetail;
 
-        TabbarModule* module = dynamic_cast<TabbarModule*>(TabbarModule::instance);
+        TabbarModule* module = TabbarModule::Instance();
         InSequence sequence;
         EXPECT_CALL(*module, OnContextWillBeChanged(_, nullptr))
         .WillOnce(Return());

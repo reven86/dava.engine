@@ -411,7 +411,14 @@ void dx9_InitContext()
             DAVA::Logger::Error("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
     }
 
-    dx9_InitCaps();
+    if (_D3D9_Device)
+    {
+        dx9_InitCaps();
+    }
+    else if (_DX9_InitParam.renderingErrorCallback)
+    {
+        _DX9_InitParam.renderingErrorCallback(RenderingError::FailedToCreateDevice, _DX9_InitParam.renderingErrorCallbackContext);
+    }
 }
 
 bool dx9_CheckSurface()

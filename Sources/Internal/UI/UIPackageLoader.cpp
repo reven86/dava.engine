@@ -14,6 +14,7 @@
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

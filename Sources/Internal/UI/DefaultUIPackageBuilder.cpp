@@ -14,6 +14,8 @@
 #include "UI/Styles/UIStyleSheet.h"
 #include "Styles/UIStyleSheetSystem.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 namespace
