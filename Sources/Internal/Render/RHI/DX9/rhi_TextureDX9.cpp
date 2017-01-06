@@ -271,7 +271,7 @@ void TextureDX9_t::Destroy()
 
     if (!RecreatePending() && (mappedData != nullptr))
     {
-        DVASSERT(!isMapped)
+        DVASSERT(!isMapped);
         ::free(mappedData);
         mappedData = nullptr;
     }

@@ -149,7 +149,7 @@ template <typename T>
 template <typename U>
 void Dispatcher<T>::SendEvent(U&& e)
 {
-    DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
+    DVASSERT(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
     uint64 curThreadId = Thread::GetCurrentIdAsUInt64();
     if (linkedThreadId == curThreadId)

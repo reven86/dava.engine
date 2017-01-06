@@ -33,7 +33,7 @@ void TextLayout::Reset(const WideString& _input)
             bidiHelper.PrepareString(inputText, preparedText, &isRtl);
         }
         StringUtils::GetLineBreaks(preparedText, breaks);
-        DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");
+        DVASSERT(breaks.size() == preparedText.length(), "Incorrect breaks information");
     }
     characterSizes.clear();
     Seek(0);
@@ -134,7 +134,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
         return false;
     }
 
-    DVASSERT_MSG(lineData.offset == textLength, "Incorrect line split");
+    DVASSERT(lineData.offset == textLength, "Incorrect line split");
     return false;
 }
 

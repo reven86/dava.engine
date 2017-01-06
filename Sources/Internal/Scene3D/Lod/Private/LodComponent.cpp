@@ -2,6 +2,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

@@ -3,6 +3,7 @@
 #include "Utils/StringFormat.h"
 #include "Render/Image/Image.h"
 #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
