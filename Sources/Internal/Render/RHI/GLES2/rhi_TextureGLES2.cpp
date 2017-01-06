@@ -27,7 +27,7 @@ public:
     TextureGLES2_t();
 
     bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     uint32 uid = 0;
     uint32 uid2 = 0;
@@ -287,7 +287,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 //------------------------------------------------------------------------------
 
-void TextureGLES2_t::Destroy(bool force_immediate)
+void TextureGLES2_t::Destroy()
 {
     GLCommand cmd[16] = {};
     size_t cmd_cnt = 1;
@@ -322,7 +322,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
+    ExecGL(cmd, static_cast<uint32>(cmd_cnt), true);
 
     fbo.clear();
 

@@ -20,7 +20,7 @@ public:
     VertexBufferDX9_t();
 
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     uint32 size = 0;
     IDirect3DVertexBuffer9* buffer = nullptr;
@@ -102,7 +102,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 
 //------------------------------------------------------------------------------
 
-void VertexBufferDX9_t::Destroy(bool force_immediate)
+void VertexBufferDX9_t::Destroy()
 {
     if (buffer == nullptr)
     {
@@ -111,7 +111,7 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
     else
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
-        ExecDX9(cmd, countof(cmd), force_immediate);
+        ExecDX9(cmd, countof(cmd), true);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }

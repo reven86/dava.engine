@@ -21,7 +21,7 @@ public:
     IndexBufferDX9_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     uint32 size = 0;
     IDirect3DIndexBuffer9* buffer = nullptr;
@@ -105,12 +105,12 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
 
 //------------------------------------------------------------------------------
 
-void IndexBufferDX9_t::Destroy(bool force_immediate)
+void IndexBufferDX9_t::Destroy()
 {
     if (buffer)
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
-        ExecDX9(cmd, countof(cmd), force_immediate);
+        ExecDX9(cmd, countof(cmd), true);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }

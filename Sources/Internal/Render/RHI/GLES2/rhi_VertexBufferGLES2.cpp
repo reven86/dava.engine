@@ -18,7 +18,7 @@ VertexBufferGLES2_t
     VertexBufferGLES2_t();
 
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     uint32 size;
     uint32 uid;
@@ -102,12 +102,12 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
 //------------------------------------------------------------------------------
 
-void VertexBufferGLES2_t::Destroy(bool force_immediate)
+void VertexBufferGLES2_t::Destroy()
 {
     if (uid)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-        ExecGL(&cmd, 1, force_immediate);
+        ExecGL(&cmd, 1, true);
     }
 
     if (mappedData)

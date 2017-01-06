@@ -49,7 +49,7 @@ void DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate)
     if (forceImmediate)
         VertexBuffer::Delete(vb);
     else
-        RenderLoop::ScheduleResourceDeletion(vb, RESOURCE_VERTEX_BUFFER);
+        FrameLoop::ScheduleResourceDeletion(vb, RESOURCE_VERTEX_BUFFER);
 }
 
 //------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ void DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate)
     if (forceImmediate)
         IndexBuffer::Delete(ib);
     else
-        RenderLoop::ScheduleResourceDeletion(ib, RESOURCE_INDEX_BUFFER);
+        FrameLoop::ScheduleResourceDeletion(ib, RESOURCE_INDEX_BUFFER);
 }
 
 //------------------------------------------------------------------------------
@@ -146,7 +146,7 @@ void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate)
     if (forceImmediate)
         QueryBuffer::Delete(buf);
     else
-        RenderLoop::ScheduleResourceDeletion(buf, RESOURCE_QUERY_BUFFER);
+        FrameLoop::ScheduleResourceDeletion(buf, RESOURCE_QUERY_BUFFER);
 }
 
 //------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ void DeletePerfQuery(HPerfQuery handle, bool forceImmediate)
     if (forceImmediate)
         PerfQuery::Delete(handle);
     else
-        RenderLoop::ScheduleResourceDeletion(handle, RESOURCE_PERFQUERY);
+        FrameLoop::ScheduleResourceDeletion(handle, RESOURCE_PERFQUERY);
 }
 
 void ResetPerfQuery(HPerfQuery handle)
@@ -271,7 +271,7 @@ void DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate)
     if (forceImmediate)
         ConstBuffer::Delete(constBuf);
     else
-        RenderLoop::ScheduleResourceDeletion(constBuf, RESOURCE_CONST_BUFFER);
+        FrameLoop::ScheduleResourceDeletion(constBuf, RESOURCE_CONST_BUFFER);
 }
 
 HTextureSet AcquireTextureSet(const TextureSetDescriptor& desc)
@@ -341,7 +341,7 @@ void ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
             if (forceImmediate)
                 TextureSet::Delete(tsh);
             else
-                RenderLoop::ScheduleResourceDeletion(tsh, RESOURCE_TEXTURE_SET);
+                FrameLoop::ScheduleResourceDeletion(tsh, RESOURCE_TEXTURE_SET);
 
             DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
             for (std::vector<TextureSetInfo>::iterator i = _TextureSetInfo.begin(), i_end = _TextureSetInfo.end(); i != i_end; ++i)
@@ -459,7 +459,7 @@ void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate)
                 if (forceImmediate)
                     DepthStencilState::Delete(i->state);
                 else
-                    RenderLoop::ScheduleResourceDeletion(i->state, RESOURCE_DEPTHSTENCIL_STATE);
+                    FrameLoop::ScheduleResourceDeletion(i->state, RESOURCE_DEPTHSTENCIL_STATE);
                 _DepthStencilStateInfo.erase(i);
             }
 
@@ -534,7 +534,7 @@ void ReleaseSamplerState(HSamplerState ss, bool forceImmediate)
                 if (forceImmediate)
                     SamplerState::Delete(i->state);
                 else
-                    RenderLoop::ScheduleResourceDeletion(i->state, RESOURCE_SAMPLER_STATE);
+                    FrameLoop::ScheduleResourceDeletion(i->state, RESOURCE_SAMPLER_STATE);
                 _SamplerStateInfo.erase(i);
             }
 
@@ -556,7 +556,7 @@ void DeleteTexture(HTexture tex, bool forceImmediate)
     if (forceImmediate)
         Texture::Delete(tex);
     else
-        RenderLoop::ScheduleResourceDeletion(tex, RESOURCE_TEXTURE);
+        FrameLoop::ScheduleResourceDeletion(tex, RESOURCE_TEXTURE);
 }
 
 //------------------------------------------------------------------------------

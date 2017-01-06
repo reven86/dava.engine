@@ -20,8 +20,5 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command); //blocking un
 void CheckImmediateCommand(); //called from render thread only
 
 void SetResetPending();
-
-void ScheduleResourceDeletion(Handle handle, ResourceType resourceType);
-HSyncObject GetCurrentFrameSyncObject();
 }
 }

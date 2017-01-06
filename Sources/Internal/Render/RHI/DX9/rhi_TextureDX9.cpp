@@ -17,7 +17,7 @@ namespace rhi
 struct TextureDX9_t : public ResourceImpl<TextureDX9_t, Texture::Descriptor>
 {
     bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     IDirect3DBaseTexture9* basetex9 = nullptr;
     IDirect3DTexture9* tex9 = nullptr;
@@ -232,7 +232,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
 //------------------------------------------------------------------------------
 
-void TextureDX9_t::Destroy(bool force_immediate)
+void TextureDX9_t::Destroy()
 {
     DVASSERT(!isMapped);
 
@@ -261,7 +261,7 @@ void TextureDX9_t::Destroy(bool force_immediate)
         SetRecreatePending(false);
     }
 
-    ExecDX9(cmd, countof(cmd), force_immediate);
+    ExecDX9(cmd, countof(cmd), true);
     surf9 = nullptr;
     tex9 = nullptr;
     cubetex9 = nullptr;

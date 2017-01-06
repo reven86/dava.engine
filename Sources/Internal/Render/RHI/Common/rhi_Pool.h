@@ -287,7 +287,7 @@ ResourcePool<T, RT, DT, nr>::ReleaseAll()
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         i->SetRecreatePending(true);
-        i->Destroy(true);
+        i->Destroy();
         ++count;
     }
     return count;

@@ -63,6 +63,13 @@ void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
 
 //------------------------------------------------------------------------------
 
+HSyncObject GetCurrentFrameSyncObject()
+{
+    return FrameLoop::GetCurrentFrameSyncObject();
+}
+
+//------------------------------------------------------------------------------
+
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList)
 {
     Handle cb[8];
@@ -344,11 +351,6 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 void Present()
 {
     RenderLoop::Present();
-}
-
-HSyncObject GetCurrentFrameSyncObject()
-{
-    return RenderLoop::GetCurrentFrameSyncObject();
 }
 
 void SuspendRendering()

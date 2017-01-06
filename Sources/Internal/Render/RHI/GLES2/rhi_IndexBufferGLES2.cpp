@@ -21,7 +21,7 @@ public:
     IndexBufferGLES2_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    void Destroy();
 
     unsigned size;
     GLenum usage;
@@ -126,12 +126,12 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
 
 //------------------------------------------------------------------------------
 
-void IndexBufferGLES2_t::Destroy(bool force_immediate)
+void IndexBufferGLES2_t::Destroy()
 {
     if (uid)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-        ExecGL(&cmd, 1, force_immediate);
+        ExecGL(&cmd, 1, true);
     }
 
     if (mappedData)
