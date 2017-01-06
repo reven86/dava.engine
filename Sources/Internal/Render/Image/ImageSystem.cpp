@@ -7,6 +7,7 @@
 #include "Render/Image/LibTgaHelper.h"
 #include "Render/Image/LibWebPHelper.h"
 #include "Render/Image/LibPSDHelper.h"
+#include "Render/Image/LibHDRHelper.h"
 
 #include "Render/Image/ImageConvert.h"
 #include "Render/PixelFormatDescriptor.h"
@@ -33,7 +34,8 @@ const Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COU
       std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()),
       std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()),
       std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibPSDHelper())
+      std::unique_ptr<ImageFormatInterface>(new LibPSDHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibHDRHelper())
     };
 
     return wrappers;
