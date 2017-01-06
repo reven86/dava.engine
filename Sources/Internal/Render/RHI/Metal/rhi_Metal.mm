@@ -1,10 +1,10 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/dbg_StatSet.h"
-    #include "../rhi_Public.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/dbg_StatSet.h"
+#include "../rhi_Public.h"
+#include "rhi_Metal.h"
 
-    #include "_metal.h"
+#include "_metal.h"
 
 #import <UIKit/UIKit.h>
 
@@ -82,29 +82,6 @@ static void metal_Uninitialize()
 {
     if (_Metal_DrawableDispatchSemaphore != nullptr)
         _Metal_DrawableDispatchSemaphore->Post(_Metal_DrawableDispatchSemaphoreFrameCount); //resume render thread if parked there
-}
-
-//------------------------------------------------------------------------------
-
-static void metal_Reset(const ResetParam& param)
-{
-    if (_Metal_DefDepthBuf)
-    {
-        [_Metal_DefDepthBuf release];
-        _Metal_DefDepthBuf = nil;
-    }
-
-    if (_Metal_DefStencilBuf)
-    {
-        [_Metal_DefStencilBuf release];
-        _Metal_DefStencilBuf = nil;
-    }
-
-    MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:param.width height:param.height mipmapped:NO];
-    MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:param.width height:param.height mipmapped:NO];
-
-    _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
-    _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +215,6 @@ void metal_Initialize(const InitParam& param)
     RenderPassMetal::SetupDispatch(&DispatchMetal);
     CommandBufferMetal::SetupDispatch(&DispatchMetal);
 
-    DispatchMetal.impl_Reset = &metal_Reset;
     DispatchMetal.impl_Uninitialize = &metal_Uninitialize;
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;

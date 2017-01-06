@@ -94,6 +94,7 @@ Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)
 
     spr->resourceSizeIndex = resourceSizeIndex;
     spr->relativePathname = spriteName;
+    spr->relativePathname.TruncateExtension();
 
     spr->InitFromFile(spriteFile);
     SafeRelease(spriteFile);
@@ -110,9 +111,15 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath& pathname)
 {
     Sprite* ret = NULL;
 
+    FilePath path = pathname;
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+    }
+
     spriteMapMutex.Lock();
 
-    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(pathname));
+    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(path));
     if (it != spriteMap.end())
     {
         Sprite* spr = it->second;
@@ -489,6 +496,7 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
     if (relativePathname.IsEmpty())
     {
         relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+        relativePathname.TruncateExtension();
     }
 
     spriteMapMutex.Lock();
@@ -920,6 +928,7 @@ void Sprite::SetRelativePathname(const FilePath& path)
     spriteMapMutex.Lock();
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     relativePathname = path;
+    relativePathname.TruncateExtension();
     spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
     spriteMapMutex.Unlock();
     GetTexture()->SetPathname(path);
