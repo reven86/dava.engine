@@ -149,8 +149,8 @@ void CubeListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         const ListCacheItem& cacheItem = itemIter->second;
         for (size_t iconIndex = 0; iconIndex < cacheItem.icons.size(); ++iconIndex)
         {
-            painter->drawImage(QPoint(faceStartX + iconIndex * (thumbnailSize.width() + FACE_IMAGE_BORDER), y + FACE_IMAGE_BORDER),
-                               *cacheItem.icons[iconIndex]);
+            painter->drawImage(QPoint(static_cast<int>(faceStartX + iconIndex * (thumbnailSize.width() + FACE_IMAGE_BORDER)), 
+                                    static_cast<int>(y + FACE_IMAGE_BORDER)), *cacheItem.icons[iconIndex]);
         }
 
         if (cacheItem.actualSize.size() > 0)

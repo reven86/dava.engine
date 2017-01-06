@@ -291,7 +291,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     if (frameDeltaFound)
     {
         String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-        params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+        params.targetFrameDelta = static_cast<float32>(std::atof(frameDeltaParam.c_str()));
 
         if (params.targetFrameDelta < 0.0f)
         {
@@ -315,7 +315,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     if (maxDeltaFound)
     {
         String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
-        params.maxDelta = std::atof(maxDeltaParam.c_str());
+        params.maxDelta = static_cast<float32>(std::atof(maxDeltaParam.c_str()));
 
         if (params.maxDelta < 0.0f)
         {
