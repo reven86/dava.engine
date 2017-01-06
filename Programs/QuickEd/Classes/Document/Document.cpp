@@ -76,8 +76,7 @@ WidgetContext* Document::GetContext(void* requester) const
 
 void Document::Save()
 {
-    delete fileSystemWatcher;
-    fileSystemWatcher = nullptr;
+    SafeDelete(fileSystemWatcher);
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package.Get());
     serializer.WriteToFile(package->GetPath());
