@@ -3,13 +3,11 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
 
-#include "Debug/DVAssertDefaultHandlers.h"
-#include "Platform/DateTime.h"
-#include "CommandLine/CommandLineParser.h"
-#include "Utils/Utils.h"
 #include <CommandLine/CommandLineParser.h>
+#include <Debug/DVAssertDefaultHandlers.h>
 #include <Time/DateTime.h>
 #include <Utils/Utils.h>
+
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
