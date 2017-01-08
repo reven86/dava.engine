@@ -1,7 +1,5 @@
 #include "PreviewWidget.h"
 
-#include "ScrollAreaController.h"
-
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
@@ -20,7 +18,7 @@
 #include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/EditorControlsView.h"
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
@@ -53,7 +51,6 @@ struct SystemsContext : WidgetContext
 
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
-    , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
@@ -78,10 +75,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     {
         scaleCombo->addItem(ScaleStringFromReal(percentage));
     }
-    connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
-    connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
-    connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
-    connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
 
     connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
@@ -99,16 +92,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 PreviewWidget::~PreviewWidget()
 {
     continuousUpdater->Stop();
-}
-
-ScrollAreaController* PreviewWidget::GetScrollAreaController()
-{
-    return scrollAreaController;
-}
-
-RulerController* PreviewWidget::GetRulerController()
-{
-    return rulerController;
 }
 
 float PreviewWidget::GetScaleFromComboboxText() const
@@ -688,19 +671,6 @@ void PreviewWidget::OnMouseMove(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
-    if (systemsManager->GetDragState() == EditorSystemsManager::DragScreen)
-    {
-        QPoint delta(event->pos() - lastMousePos);
-        lastMousePos = event->pos();
-
-        int horizontalScrollBarValue = horizontalScrollBar->value();
-        horizontalScrollBarValue -= delta.x();
-        horizontalScrollBar->setValue(horizontalScrollBarValue);
-
-        int verticalScrollBarValue = verticalScrollBar->value();
-        verticalScrollBarValue -= delta.y();
-        verticalScrollBar->setValue(verticalScrollBarValue);
-    }
 }
 
 void PreviewWidget::OnDragEntered(QDragEnterEvent* event)
@@ -928,14 +898,6 @@ void PreviewWidget::NotifySelectionChanged()
     }
     tmpSelected.clear();
     tmpDeselected.clear();
-}
-
-void PreviewWidget::UpdateDragScreenState()
-{
-    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
-    EditorSystemsManager::eDragState dragState = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
-
-    systemsManager->SetDragState(dragState);
 }
 
 float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const

@@ -1,12 +1,13 @@
 #include "EditorSystems/EditorCanvas.h"
+#include "EditorSystems/EditorSystemsManager.h"
+
 #include "UI/UIScreenManager.h"
-#include ""
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(QObject* parent)
-,
-backgroundControl(new UIControl)
+EditorCanvas::EditorCanvas(EditorSystemsManager *parent)
+    : BaseEditorSystem(parent)
+    , backgroundControl(new UIControl)
 {
     backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
@@ -46,7 +47,7 @@ void EditorCanvas::SetMovableControl(UIControl* arg)
     }
 }
 
-void EditorCanvas::AdjustScale(float newScale, const QPointF& mousePos)
+void EditorCanvas::AdjustScale(float newScale, const Vector2& mousePos)
 {
     newScale = fmax(minScale, newScale);
     newScale = fmin(maxScale, newScale); //crop scale to 800
@@ -54,66 +55,65 @@ void EditorCanvas::AdjustScale(float newScale, const QPointF& mousePos)
     {
         return;
     }
-    QPoint oldPos = position;
-    float oldScale = scale;
+    Vector2 oldPos = position;
+    float32 oldScale = scale;
     scale = newScale;
     UpdateCanvasContentSize();
-    emit ScaleChanged(scale);
+    scaleChanged.Emit(scale);
 
-    if (oldScale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
+    if (oldScale == 0.0f || viewSize.dx <= 0.0f || viewSize.dy <= 0.0f)
     {
-        SetPosition(QPoint(0, 0));
+        SetPosition(Vector2(0.0f, 0.0f));
         return;
     }
 
-    QPoint absPosition = oldPos / oldScale;
-    QPointF deltaMousePos = mousePos * (1 - newScale / oldScale);
-    QPoint newPosition(absPosition.x() * scale - deltaMousePos.x(), absPosition.y() * scale - deltaMousePos.y());
+    Vector2 absPosition = oldPos / oldScale;
+    Vector2 deltaMousePos = mousePos * (1.0f - newScale / oldScale);
+    Vector2 newPosition(absPosition.x * scale - deltaMousePos.x, absPosition.y * scale - deltaMousePos.y);
 
-    newPosition.setX(qBound(0, newPosition.x(), (canvasSize - viewSize).width()));
-    newPosition.setY(qBound(0, newPosition.y(), (canvasSize - viewSize).height()));
+    newPosition.x = Clamp(newPosition.x, 0.0f, (canvasSize - viewSize).dx);
+    newPosition.y = Clamp(newPosition.y, 0.0f, (canvasSize - viewSize).dy);
     SetPosition(newPosition);
 }
 
-QSize EditorCanvas::GetCanvasSize() const
+Vector2 EditorCanvas::GetCanvasSize() const
 {
     return canvasSize;
 }
 
-QSize EditorCanvas::GetViewSize() const
+Vector2 EditorCanvas::GetViewSize() const
 {
     return viewSize;
 }
 
-QPoint EditorCanvas::GetPosition() const
+Vector2 EditorCanvas::GetPosition() const
 {
     return position;
 }
 
-float EditorCanvas::GetScale() const
+float32 EditorCanvas::GetScale() const
 {
     return scale;
 }
 
-float EditorCanvas::GetMinScale() const
+float32 EditorCanvas::GetMinScale() const
 {
     return minScale;
 }
 
-float EditorCanvas::GetMaxScale() const
+float32 EditorCanvas::GetMaxScale() const
 {
     return maxScale;
 }
 
-QPoint EditorCanvas::GetMinimumPos() const
+Vector2 EditorCanvas::GetMinimumPos() const
 {
-    return QPoint(0, 0);
+    return Vector2(0.0f, 0.0f);
 }
 
-QPoint EditorCanvas::GetMaximumPos() const
+Vector2 EditorCanvas::GetMaximumPos() const
 {
-    QSize maxSize = canvasSize - viewSize;
-    return QPoint(maxSize.width(), maxSize.height());
+    return canvasSize - viewSize;
 }
 
 void EditorCanvas::UpdateCanvasContentSize()
@@ -121,62 +121,62 @@ void EditorCanvas::UpdateCanvasContentSize()
     Vector2 contentSize;
     if (nullptr != nestedControl)
     {
-        const auto& gd = nestedControl->GetGeometricData();
+        const UIGeometricData& gd = nestedControl->GetGeometricData();
 
         contentSize = gd.GetAABBox().GetSize() * scale;
     }
-    Vector2 marginsSize(Margin * 2, Margin * 2);
+    Vector2 marginsSize(Margin * 2.0f, Margin * 2.0f);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);
-    canvasSize = QSize(tmpSize.dx, tmpSize.dy);
+    canvasSize = Vector2(tmpSize.dx, tmpSize.dy);
     UpdatePosition();
-    emit CanvasSizeChanged(canvasSize);
+    canvasSizeChanged.Emit(canvasSize);
 }
 
-void EditorCanvas::SetScale(float arg)
+void EditorCanvas::SetScale(float32 arg)
 {
     if (scale != arg)
     {
-        AdjustScale(arg, QPoint(viewSize.width() / 2, viewSize.height() / 2)); //like cursor at center of view
+        AdjustScale(arg, Vector2(viewSize.dx / 2.0f, viewSize.dy / 2.0f)); //cursor at center of view
     }
 }
 
 void EditorCanvas::SetViewSize(int32 width, int32 height)
 {
-    SetViewSize(QSize(width, height));
+    SetViewSize(Vector2(width, height));
 }
 
-void EditorCanvas::SetViewSize(const QSize& viewSize_)
+void EditorCanvas::SetViewSize(const Vector2& viewSize_)
 {
     if (viewSize_ != viewSize)
     {
         viewSize = viewSize_;
 
-        DAVA::VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
+        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
 
         vcs->UnregisterAllAvailableResourceSizes();
-        vcs->SetVirtualScreenSize(viewSize.width(), viewSize.height());
-        vcs->RegisterAvailableResourceSize(viewSize.width(), viewSize.height(), "Gfx");
-        vcs->RegisterAvailableResourceSize(viewSize.width(), viewSize.height(), "Gfx2");
+        vcs->SetVirtualScreenSize(viewSize.dx, viewSize.dy);
+        vcs->RegisterAvailableResourceSize(viewSize.dx, viewSize.dy, "Gfx");
+        vcs->RegisterAvailableResourceSize(viewSize.dx, viewSize.dy, "Gfx2");
 
-        auto newSize = Vector2(viewSize_.width(), viewSize_.height());
+        Vector2 newSize(viewSize_.dx, viewSize_.dy);
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
         UpdatePosition();
-        emit ViewSizeChanged(viewSize);
+        viewSizeChanged.Emit(viewSize);
     }
 }
 
-void EditorCanvas::SetPosition(const QPoint& position_)
+void EditorCanvas::SetPosition(const Vector2& position_)
 {
-    QPoint minPos = GetMinimumPos();
-    QPoint maxPos = GetMaximumPos();
-    QPoint fixedPos(qBound(minPos.x(), position_.x(), maxPos.x()),
-                    qBound(minPos.y(), position_.y(), maxPos.y()));
+    Vector2 minPos = GetMinimumPos();
+    Vector2 maxPos = GetMaximumPos();
+    Vector2 fixedPos(Clamp(position_.x, minPos.x, maxPos.x),
+        Clamp(position_.y, minPos.y, maxPos.y));
     if (fixedPos != position)
     {
         position = fixedPos;
         UpdatePosition();
-        emit PositionChanged(position);
+        positionChanged.Emit(position);
     }
 }
 
@@ -184,21 +184,46 @@ void EditorCanvas::UpdatePosition()
 {
     if (nullptr != movableControl)
     {
-        QSize offset = (canvasSize - viewSize) / 2;
+        Vector2 offset = (canvasSize - viewSize) / 2.0f;
 
-        if (offset.width() > 0)
+        if (offset.dx > 0.0f)
         {
-            offset.setWidth(position.x());
+            offset.dx = position.x;
         }
-        if (offset.height() > 0)
+        if (offset.dy > 0.0f)
         {
-            offset.setHeight(position.y());
+            offset.dy = position.y;
         }
-        offset -= QSize(Margin, Margin);
-        Vector2 position(-offset.width(), -offset.height());
+        offset -= Vector2(Margin, Margin);
+        Vector2 position(-offset.dx, -offset.dy);
         movableControl->SetPosition(position);
 
-        QPoint positionPoint(static_cast<int>(position.x), static_cast<int>(position.y));
-        NestedControlPositionChanged(positionPoint);
+        Vector2 positionPoint(position.x, position.y);
     }
+}
+
+bool EditorCanvas::CanProcessInput() const
+{
+    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen;
+}
+
+bool EditorCanvas::OnInput(UIEvent* currentInput)
+{
+    Vector2 delta(currentInput->point - lastMousePos);
+    lastMousePos = currentInput->point;
+
+    SetPosition(position + delta);
+}
+
+void EditorCanvas::UpdateDragScreenState()
+{
+    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    EditorSystemsManager::eDragState dragState_ = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
+
+    if (dragState_ == dragState)
+    {
+        return;
+    }
+    dragState = dragState_;
+    systemsManager->dragStateChanged.Emit(dragState);
 }

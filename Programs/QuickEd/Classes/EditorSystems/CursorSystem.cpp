@@ -39,7 +39,6 @@ void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState
     RenderWidget* renderWidget = systemsManager->GetRenderWidget();
     if (dragState == EditorSystemsManager::DragScreen)
     {
-        lastMousePos = mapFromGlobal(QCursor::pos());
         lastCursor = renderWidget->cursor();
         renderWidget->setCursor(Qt::OpenHandCursor);
     }

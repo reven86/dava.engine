@@ -10,11 +10,11 @@ class EditorSystemsManager;
 class PackageBaseNode;
 class BackgroundController;
 
-class EditorControlView final : public BaseEditorSystem, PackageListener
+class EditorControlsView final : public BaseEditorSystem, PackageListener
 {
 public:
-    EditorControlView(EditorSystemsManager* parent);
-    ~EditorControlView() override;
+    EditorControlsView(EditorSystemsManager* parent);
+    ~EditorControlsView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
     void Layout();

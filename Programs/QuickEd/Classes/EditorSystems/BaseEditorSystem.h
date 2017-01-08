@@ -1,20 +1,29 @@
 #pragma once
+#include "EditorSystems/EditorSystemsManager.h"
 
 namespace DAVA
 {
 class UIEvent;
 }
 
-class EditorSystemsManager;
-
 class BaseEditorSystem
 {
-public:
+private:
+    friend class EditorSystemsManager;
+
+    enum eInternalState
+    {
+        NO_STATE = EditorSystemsManager::StatesCount
+    };
+
     explicit BaseEditorSystem(EditorSystemsManager* parent);
     virtual ~BaseEditorSystem() = default;
 
-    virtual bool OnInput(DAVA::UIEvent* currentInput);
+    virtual bool CanProcessInput() const;
 
-protected:
+    virtual eInternalState RequireNewState() const;
+
+    virtual void OnInput(DAVA::UIEvent* currentInput);
+
     EditorSystemsManager* systemsManager = nullptr;
 };

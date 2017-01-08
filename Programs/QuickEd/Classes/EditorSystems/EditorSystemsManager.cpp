@@ -7,12 +7,12 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 
 #include "EditorSystems/SelectionSystem.h"
-#include "EditorSystems/EditorControlView.h"
+#include "EditorSystems/EditorControlsView.h"
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "EditorSystems/ScrollCanvasSystem.h"
+#include "EditorSystems/EditorControlsView.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -23,7 +23,9 @@ using namespace DAVA;
 
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
-class EditorSystemsManager::InputLayerControl : public UIControl
+namespace EditorSystemsManagerDetails
+{
+class InputLayerControl : public UIControl
 {
 public:
     InputLayerControl(EditorSystemsManager* systemManager_)
@@ -41,13 +43,13 @@ public:
 private:
     EditorSystemsManager* systemManager = nullptr;
 };
+}
 
 EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     : rootControl(new UIControl())
-    , inputLayerControl(new InputLayerControl(this))
+    , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
-    , renderWidget(renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -55,13 +57,10 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
-    //this function must be called first when the transformStateChanged will be emitted
-    transformStateChanged.Connect(this, &EditorSystemsManager::OnTransformStateChanged);
-
-    packageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
+    packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
     selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
-    controlViewPtr = new EditorControlView(this);
+    controlViewPtr = new EditorControlsView(this);
     systems.emplace_back(controlViewPtr);
 
     selectionSystemPtr = new SelectionSystem(this);
@@ -70,8 +69,8 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
-    ScrollCanvasSystem* scrollCanvasSystem = new ScrollCanvasSystem(this);
-    systems.emplace_back(scrollCanvasSystem);
+    EditorCanvas* editorCanvas = new EditorCanvas(this);
+    systems.emplace_back(editorCanvas);
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
@@ -98,10 +97,6 @@ UIControl* EditorSystemsManager::GetScalableControl() const
 
 bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 {
-    if (dragState != DragControls)
-    {
-        return false;
-    }
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         if ((*it)->OnInput(currentInput))
@@ -168,16 +163,6 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     return controlsNode->GetCount();
 }
 
-void EditorSystemsManager::SetDragState(eDragState dragState_)
-{
-    if (dragState_ == dragState)
-    {
-        return;
-    }
-    dragState = dragState_;
-    dragStateChanged.Emit(dragState);
-}
-
 void EditorSystemsManager::SelectAll()
 {
     selectionSystemPtr->SelectAllControls();
@@ -212,7 +197,7 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::OnPackageNodeChanged(PackageNode* package_)
+void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
 {
     if (nullptr != package)
     {

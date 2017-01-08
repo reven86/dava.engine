@@ -65,7 +65,7 @@ struct MagnetLineInfo
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
-class EditorControlView;
+class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 class EditorCanvas;
@@ -76,21 +76,30 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
-    enum eDragState
+    enum eState
     {
-        DragControls,
-        DragScreen
+        //just display all root controls
+        Preview,
+        //display one root control
+        Display,
+        //if cursor is under control and it selectable
+        CanSelect,
+        //if cursor under selected control - we can move it or select another control
+        CanMoveOrSelect,
+        //if cursor under selected control corner, pivot point or rotate area - transform only
+        CanTransform,
+        //drag screen using middle mouse button or space bar + left mouse button
+        DragScreen,
+        //Emulation mode, all inputs pass to the framework through the editor
+        Emulation,
+        StatesCount
     };
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
 
-    DAVA::RenderWidget* GetRenderWidget() const;
-
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetInputLayerControl() const;
     DAVA::UIControl* GetScalableControl() const;
-
-    //
 
     EditorCanvas* GetScrollCanvasSystem() const;
 
@@ -115,33 +124,29 @@ public:
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
-    DAVA::Signal<bool> emulationModeChangedSignal;
-    DAVA::Signal<> canvasSizeChanged;
+    DAVA::Signal<> canvasContentChanged;
     DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
-    DAVA::Signal<PackageNode* /*node*/> packageNodeChanged;
-    DAVA::Signal<bool> transformStateChanged; //indicates when user transform control
-    DAVA::Signal<eDragState> dragStateChanged;
+    DAVA::Signal<PackageNode* /*node*/> packageChanged;
+    DAVA::Signal<eState> stateChanged;
 
 private:
-    class InputLayerControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(PackageNode* node);
+    void OnPackageChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);
-    void SetDragState(eDragState dragState);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
-    DAVA::RefPtr<InputLayerControl> inputLayerControl;
+    DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
@@ -149,14 +154,13 @@ private:
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
-    bool previewMode = true;
     SelectionContainer selectionContainer;
-    EditorControlView* controlViewPtr = nullptr; //weak pointer to canvas system;
+    EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
     EditorCanvas* editorCanvas = nullptr;
-
-    DAVA::RenderWidget* renderWidget = nullptr;
+    eState currentState = Preview;
+    eState previousState = Preview;
 };
 
 template <class OutIt, class Predicate>

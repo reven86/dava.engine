@@ -5,7 +5,17 @@ BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
 {
 }
 
-bool BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+void BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+{
+
+}
+
+bool BaseEditorSystem::CanProcessInput() const
 {
     return false;
+}
+
+BaseEditorSystem::eInternalState BaseEditorSystem::RequireNewState() const
+{
+    return NO_STATE;
 }

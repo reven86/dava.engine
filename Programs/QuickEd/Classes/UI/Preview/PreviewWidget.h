@@ -33,6 +33,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::Re
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
+    void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnWindowCreated();
@@ -69,6 +70,7 @@ private slots:
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
+
 
 private:
     void ShowMenu(const QMouseEvent* mouseEvent);
@@ -112,7 +114,6 @@ private:
     QPoint lastMousePos;
     QPointer<Document> document;
     DAVA::RenderWidget* renderWidget = nullptr;
-    ScrollAreaController* scrollAreaController = nullptr;
     QList<float> percentages;
 
     SelectionContainer selectionContainer;
@@ -133,9 +134,4 @@ private:
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
-
-    //helper members to store space button and left mouse buttons states
-    bool isSpacePressed = false;
-    bool isMouseLeftButtonPressed = false;
-    bool isMouseMidButtonPressed = false;
 };

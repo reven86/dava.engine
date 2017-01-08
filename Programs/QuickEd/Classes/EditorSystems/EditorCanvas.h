@@ -1,24 +1,33 @@
 #pragma once
 
-#include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/BaseEditorSystem.h" 
+#include "Functional/Signal.h"
+#include "Base/ScopedPtr.h"
 
 namespace DAVA
 {
 class Vector2;
 class UIControl;
 }
-class QScrollBar;
 
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    ScrollAreaController(EditorSystemsManager* parent);
-    ~ScrollAreaController() override;
+    EditorCanvas(EditorSystemsManager* parent);
+    ~EditorCanvas() override;
 
-    void SetHorizontalScrollBar(QScrollBar* hScrollBar);
-    void SetVerticalScrollBar(QScrollBar* vScrollBar);
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+    bool CanProcessInput() const override;
 
-    void
+    void SetViewSize(const DAVA::Vector2& size);
+    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
+
+    void SetPosition(const DAVA::Vector2& position);
+    void SetScale(DAVA::float32 scale);
+
+    DAVA::Signal<const DAVA::Vector2&> viewSizeChanged;
+    DAVA::Signal<const DAVA::Vector2&> canvasSizeChanged;
+    DAVA::Signal<const DAVA::Vector2&> positionChanged;
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
@@ -38,14 +47,10 @@ private:
     DAVA::Vector2 GetMinimumPos() const;
     DAVA::Vector2 GetMaximumPos() const;
 
-    void SetViewSize(const DAVA::Vector2& size);
-    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
-
-    void SetPosition(const DAVA::Vector2& position);
-    void SetScale(DAVA::float32 scale);
     void UpdateCanvasContentSize();
 
     //private
+    void UpdateDragScreenState();
     void UpdatePosition();
     DAVA::ScopedPtr<DAVA::UIControl> backgroundControl;
     DAVA::UIControl* nestedControl = nullptr;
@@ -54,11 +59,15 @@ private:
     DAVA::Vector2 viewSize = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 position = DAVA::Vector2(0.0f, 0.0f);
     DAVA::float32 scale = 0.0f;
+
+    DAVA::Vector2 lastMousePos;
+
     const DAVA::float32 minScale = 0.25f;
     const DAVA::float32 maxScale = 8.0f;
     const DAVA::int32 Margin = 50;
 
-    QScrollBar* hScrollBar = nullptr;
-    QScrollBar* vScrollBar = nullptr;
-    EditorSystemsManager::eDragState dragState = EditorSystemsManager::DragControls;
+    //helper members to store space button and left mouse buttons states
+    bool isSpacePressed = false;
+    bool isMouseLeftButtonPressed = false;
+    bool isMouseMidButtonPressed = false;
 };

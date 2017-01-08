@@ -2,7 +2,7 @@
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 
-#include "EditorControlView.h"
+#include "EditorControlsView.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "Preferences/PreferencesRegistrator.h"
@@ -14,7 +14,7 @@
 
 using namespace DAVA;
 
-namespace EditorControlView_namespace
+namespace EditorControlsView_namespace
 {
 class ColorControl : public UIControl
 {
@@ -206,7 +206,7 @@ private:
 };
 
 BackgroundController::BackgroundController(UIControl* nestedControl_)
-    : gridControl(new EditorControlView_namespace::GridControl())
+    : gridControl(new EditorControlsView_namespace::GridControl())
     , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , nestedControl(nestedControl_)
@@ -372,24 +372,24 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
-EditorControlView::EditorControlView(EditorSystemsManager* parent)
+EditorControlsView::EditorControlsView(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
     controlsCanvas->SetName(FastName("controls canvas"));
     systemsManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
-    systemsManager->editingRootControlsChanged.Connect(this, &EditorControlView::OnRootContolsChanged);
-    systemsManager->packageNodeChanged.Connect(this, &EditorControlView::OnPackageNodeChanged);
-    systemsManager->transformStateChanged.Connect(this, &EditorControlView::OnTransformStateChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &EditorControlsView::OnRootContolsChanged);
+    systemsManager->packageNodeChanged.Connect(this, &EditorControlsView::OnPackageNodeChanged);
+    systemsManager->transformStateChanged.Connect(this, &EditorControlsView::OnTransformStateChanged);
 }
 
-EditorControlView::~EditorControlView()
+EditorControlsView::~EditorControlsView()
 {
     systemsManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void EditorControlView::OnPackageNodeChanged(PackageNode* package_)
+void EditorControlsView::OnPackageNodeChanged(PackageNode* package_)
 {
     if (nullptr != package)
     {
@@ -402,7 +402,7 @@ void EditorControlView::OnPackageNodeChanged(PackageNode* package_)
     }
 }
 
-void EditorControlView::OnTransformStateChanged(bool inTransformState_)
+void EditorControlsView::OnTransformStateChanged(bool inTransformState_)
 {
     inTransformState = inTransformState_;
     if (!inTransformState)
@@ -419,7 +419,7 @@ void EditorControlView::OnTransformStateChanged(bool inTransformState_)
     needRecalculate = false;
 }
 
-void EditorControlView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -431,7 +431,7 @@ void EditorControlView::ControlWasRemoved(ControlNode* node, ControlsContainerNo
     }
 }
 
-void EditorControlView::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
+void EditorControlsView::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -443,7 +443,7 @@ void EditorControlView::ControlWasAdded(ControlNode* node, ControlsContainerNode
     }
 }
 
-void EditorControlView::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void EditorControlsView::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != property);
@@ -470,16 +470,16 @@ void EditorControlView::ControlPropertyWasChanged(ControlNode* node, AbstractPro
     }
 }
 
-BackgroundController* EditorControlView::CreateControlBackground(PackageBaseNode* node)
+BackgroundController* EditorControlsView::CreateControlBackground(PackageBaseNode* node)
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
-    backgroundController->ContentSizeChanged.Connect(this, &EditorControlView::Layout);
+    backgroundController->ContentSizeChanged.Connect(this, &EditorControlsView::Layout);
     backgroundController->RootControlPosChanged.Connect(&systemsManager->rootControlPositionChanged, &Signal<const Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
 
-void EditorControlView::AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos)
+void EditorControlsView::AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos)
 {
     UIControl* grid = backgroundController->GetGridControl();
     if (pos >= controlsCanvas->GetChildren().size())
@@ -496,7 +496,7 @@ void EditorControlView::AddBackgroundControllerToCanvas(BackgroundController* ba
     backgroundController->AdjustToNestedControl();
 }
 
-uint32 EditorControlView::GetIndexByPos(const Vector2& pos) const
+uint32 EditorControlsView::GetIndexByPos(const Vector2& pos) const
 {
     uint32 index = 0;
     for (auto& iter : gridControls)
@@ -512,7 +512,7 @@ uint32 EditorControlView::GetIndexByPos(const Vector2& pos) const
     return index;
 }
 
-void EditorControlView::Layout()
+void EditorControlsView::Layout()
 {
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
@@ -545,7 +545,7 @@ void EditorControlView::Layout()
     systemsManager->canvasSizeChanged.Emit();
 }
 
-void EditorControlView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
+void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
 {
     Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
     Set<PackageBaseNode*> newNodes;
