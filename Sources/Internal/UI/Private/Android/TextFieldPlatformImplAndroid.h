@@ -72,6 +72,7 @@ public:
 
     void nativeOnFocusChange(JNIEnv* env, jboolean hasFocus);
     void nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, jint w, jint h);
+    void nativeOnKeyboardHidden(JNIEnv* env);
     void nativeOnEnterPressed(JNIEnv* env);
     jboolean nativeOnKeyPressed(JNIEnv* env, jint replacementStart, jint replacementLength, jstring replaceWith);
     void nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange);

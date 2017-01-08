@@ -44,6 +44,14 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardShown(
         backend->nativeOnKeyboardShown(env, x, y, w, h);
 }
 
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardHidden(JNIEnv* env, jclass jclazz, jlong backendPointer)
+{
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+    if (auto backend = weak->lock())
+        backend->nativeOnKeyboardHidden(env);
+}
+
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnEnterPressed(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
@@ -397,6 +405,16 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
     });
 }
 
+void TextFieldPlatformImpl::nativeOnKeyboardHidden(JNIEnv* env)
+{
+    RunOnMainThreadAsync([this]() {
+        if (uiTextField != nullptr)
+        {
+            uiTextField->OnKeyboardHidden();
+        }
+    });
+}
+
 void TextFieldPlatformImpl::nativeOnEnterPressed(JNIEnv* env)
 {
     RunOnMainThreadAsync([this]() {
@@ -461,7 +479,6 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
         }
         else
         {
-            uiTextField->OnKeyboardHidden();
             uiTextField->StopEdit();
         }
     }

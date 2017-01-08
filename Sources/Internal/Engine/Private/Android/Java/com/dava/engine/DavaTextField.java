@@ -94,6 +94,8 @@ final class DavaTextField implements TextWatcher,
                                      TextView.OnEditorActionListener,
                                      DavaKeyboardState.KeyboardStateListener
 {
+    private static final int CLOSE_KEYBOARD_DELAY = 30;
+
     // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
     private volatile long textfieldBackendPointer = 0;
     private DavaSurfaceView surfaceView = null;
@@ -115,6 +117,7 @@ final class DavaTextField implements TextWatcher,
     public static native void nativeReleaseWeakPtr(long backendPointer);
     public static native void nativeOnFocusChange(long backendPointer, boolean hasFocus);
     public static native void nativeOnKeyboardShown(long backendPointer, int x, int y, int w, int h);
+    public static native void nativeOnKeyboardHidden(long backendPointer);
     public static native void nativeOnEnterPressed(long backendPointer);
     public static native boolean nativeOnKeyPressed(long backendPointer, int replacementStart, int replacementLength, String replaceWith);
     public static native void nativeOnTextChanged(long backendPointer, String newText, boolean programmaticTextChange);
@@ -665,9 +668,9 @@ final class DavaTextField implements TextWatcher,
             if (!pendingKeyboardClose)
             {
                 // Close keyboard delayed (to avoid reopening it when switching between textfields)
-                // If other textfield gets focus until that happens, it will cancel this action
+                // If another textfield gets focus until that happens, it will cancel this action
 
-                DavaActivity.commandHandler().post(new Runnable()
+                DavaActivity.commandHandler().postDelayed(new Runnable()
                 {
                     @Override
                     public void run()
@@ -681,9 +684,11 @@ final class DavaTextField implements TextWatcher,
                         IBinder windowToken = nativeTextField.getWindowToken();
                         imm.hideSoftInputFromWindow(windowToken, 0);
 
+                        nativeOnKeyboardHidden(textfieldBackendPointer);
+
                         pendingKeyboardClose = false;
                     }
-                });
+                }, CLOSE_KEYBOARD_DELAY);
 
                 pendingKeyboardClose = true;
             }
@@ -740,6 +745,10 @@ final class DavaTextField implements TextWatcher,
     @Override
     public void onKeyboardClosed()
     {
+        if (nativeTextField.hasFocus())
+        {
+            nativeOnKeyboardHidden(textfieldBackendPointer);
+        }
     }
 
     void applyChangedProperties(TextFieldProperties props)
