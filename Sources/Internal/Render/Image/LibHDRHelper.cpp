@@ -12,9 +12,21 @@ namespace LibHDRDetails
 const String kRadianceHeader = "#?RADIANCE";
 const String kRadianceFormatEntry = "FORMAT=";
 const String kRadiance32Bit_RLE_RGBE = "32-BIT_RLE_RGBE";
-using RGBE = uint8[4];
 
-uint8* ReadScanline(uint8* ptr, int width, RGBE* scanline);
+struct RGBE
+{
+    uint8 components[4];
+    uint8& operator[](uint32 i)
+    {
+        return components[i];
+    }
+    const uint8& operator[](uint32 i) const
+    {
+        return components[i];
+    }
+};
+
+uint8* ReadScanline(uint8* ptr, uint32 width, RGBE* scanline);
 Vector4 RGBEToFloat(const RGBE& data);
 }
 
@@ -165,7 +177,7 @@ eErrorCode LibHDRHelper::WriteFile(const FilePath& fileName, const Vector<Image*
  */
 namespace LibHDRDetails
 {
-uint8* ReadScanline(uint8* ptr, int width, RGBE* scanline)
+uint8* ReadScanline(uint8* ptr, uint32 width, RGBE* scanline)
 {
     if (*ptr++ == 2)
     {
@@ -174,9 +186,9 @@ uint8* ReadScanline(uint8* ptr, int width, RGBE* scanline)
 
         ++ptr;
 
-        for (int i = 0; i < 4; ++i)
+        for (uint32 i = 0; i < 4; ++i)
         {
-            for (int j = 0; j < width;)
+            for (uint32 j = 0; j < width;)
             {
                 uint8 code = *ptr++;
                 if (code > 128)
