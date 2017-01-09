@@ -6,6 +6,7 @@
 #include "PackageNode.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -111,7 +112,7 @@ void PackageControlsNode::RefreshControlProperties()
         node->RefreshProperties();
 }
 
-ControlNode* PackageControlsNode::FindControlNodeByName(const DAVA::String& name) const
+ControlNode* PackageControlsNode::FindControlNodeByName(const String& name) const
 {
     FastName fName(name);
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
@@ -120,6 +121,26 @@ ControlNode* PackageControlsNode::FindControlNodeByName(const DAVA::String& name
             return *it;
     }
     return NULL;
+}
+
+ControlNode* PackageControlsNode::FindControlNodeByPath(const String& path) const
+{
+    Vector<String> strPath;
+    Split(path, "/", strPath, false, true);
+
+    if (!strPath.empty())
+    {
+        ControlNode* res = FindControlNodeByName(strPath[0]);
+
+        for (size_t i = 1; res != nullptr && i < strPath.size(); i++)
+        {
+            res = res->FindByName(strPath[i]);
+        }
+
+        return res;
+    }
+
+    return nullptr;
 }
 
 DAVA::Vector<ControlNode*>::const_iterator PackageControlsNode::begin() const

@@ -68,7 +68,7 @@ signals:
     void FontPresetChanged(const DAVA::String& presetName);
 
 public slots:
-    void AddDocument(const QString& path);
+    Document* AddDocument(const QString& path);
 
     bool TryCloseCurrentDocument();
     bool TryCloseDocument(int index);
