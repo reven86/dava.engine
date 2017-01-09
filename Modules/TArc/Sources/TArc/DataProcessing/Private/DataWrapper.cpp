@@ -128,6 +128,16 @@ void DataWrapper::SetListener(DataListener* listener)
     impl->nextListenerToSet = listener;
 }
 
+void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
+{
+    DVASSERT(HasData() == true);
+    Reflection data = GetData();
+    Reflection field = data.GetField(fieldKey);
+    DVASSERT(field.IsValid() == true);
+    field.SetValue(value);
+    Sync(false);
+}
+
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();

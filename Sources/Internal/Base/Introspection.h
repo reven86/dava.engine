@@ -233,7 +233,7 @@ protected:
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info(#_type, data, sizeof(data) / sizeof(data[0])); \
-		info.OneTimeMetaSafeSet<_type>(); \
+		info.OneTimeMetaSafeSet<ObjectT>(); \
         return &info; \
 	} \
     const DAVA::InspInfo* GetTypeInfo() const override \
@@ -248,7 +248,7 @@ protected:
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
-		info.OneTimeMetaSafeSet<_type>(); \
+		info.OneTimeMetaSafeSet<ObjectT>(); \
 		return &info; \
 	} \
     const DAVA::InspInfo* GetTypeInfo() const override \

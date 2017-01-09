@@ -10,15 +10,12 @@ namespace DAVA
 {
 namespace TArc
 {
-template <typename Tag>
 class MockClientModule : public ClientModule
 {
 public:
     MockClientModule()
     {
         using namespace ::testing;
-        DVASSERT(instance == nullptr);
-        instance = this;
 
         EXPECT_CALL(*this, PostInit());
 
@@ -38,11 +35,7 @@ public:
 
     ~MockClientModule()
     {
-        DVASSERT(instance != nullptr);
-        instance = nullptr;
     }
-
-    static MockClientModule<Tag>* instance;
 
     MOCK_METHOD1(OnContextCreated, void(DataContext* context));
     MOCK_METHOD1(OnContextDeleted, void(DataContext* context));
@@ -69,10 +62,14 @@ public:
     virtual void PostInitImpl()
     {
     }
-};
 
-template <typename Tag>
-MockClientModule<Tag>* MockClientModule<Tag>::instance = nullptr;
+    DAVA_VIRTUAL_REFLECTION(MockClientModule, ClientModule)
+    {
+        ReflectionRegistrator<MockClientModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
+};
 
 } // namespace TArc
 } // namespace DAVA

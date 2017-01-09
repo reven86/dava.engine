@@ -8,7 +8,7 @@ namespace DAVA
 {
 uint32 ChannelFloatToInt(float32 ch)
 {
-    return static_cast<uint32>(ch / (ch + 1) * std::numeric_limits<uint8>::max());
+    return static_cast<uint32>(Min(ch, 1.0f) * std::numeric_limits<uint8>::max());
 }
 
 float32 ChannelIntToFloat(uint32 ch)

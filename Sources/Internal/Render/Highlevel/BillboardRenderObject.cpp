@@ -84,7 +84,7 @@ RenderObject* BillboardRenderObject::Clone(RenderObject* toObject)
 {
     if (toObject == nullptr)
     {
-        DVASSERT_MSG(IsPointerToExactClass<BillboardRenderObject>(this), "Can clone only BillboardRenderObject");
+        DVASSERT(IsPointerToExactClass<BillboardRenderObject>(this), "Can clone only BillboardRenderObject");
         toObject = new BillboardRenderObject();
     }
 

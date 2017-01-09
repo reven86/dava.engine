@@ -63,9 +63,12 @@ void QtAction::OnFieldValueChanged(const Any& value, eActionState state)
     }
     break;
     case Text:
-        DVASSERT(stateResult.CanCast<DAVA::String>());
-        setText(QString::fromStdString(stateResult.Cast<DAVA::String>()));
+        DVASSERT(stateResult.CanCast<String>());
+        setText(QString::fromStdString(stateResult.Cast<String>()));
         break;
+    case Icon:
+        DVASSERT(stateResult.CanCast<String>());
+        setIcon(QIcon(QString::fromStdString(stateResult.Cast<String>())));
     default:
         DVASSERT(false);
         break;

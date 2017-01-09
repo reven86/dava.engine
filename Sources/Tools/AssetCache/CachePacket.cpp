@@ -1,6 +1,7 @@
 #include "AssetCache/CachePacket.h"
 #include "FileSystem/StaticMemoryFile.h"
 #include "Network/IChannel.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
