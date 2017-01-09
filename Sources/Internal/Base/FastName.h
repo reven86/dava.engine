@@ -3,6 +3,7 @@
 
 #include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
+#include "Base/Any.h"
 
 #include "Concurrency/Mutex.h"
 
