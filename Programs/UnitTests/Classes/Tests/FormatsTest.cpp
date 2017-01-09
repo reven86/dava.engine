@@ -156,6 +156,19 @@ DAVA_TESTCLASS (FormatsTest)
         }
     }
 
+    DAVA_TEST(TestHDR)
+    {
+        Vector<PixelFormat> suportedFormats;
+        suportedFormats.push_back(FORMAT_RGBA32F);
+
+        for (PixelFormat requestedFormat : suportedFormats)
+        {
+            const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
+            const DAVA::FilePath compressedPathname(DAVA::Format("~res:/TestData/FormatsTest/hdr/%s.dat", formatName.c_str()));
+            TestImageInfo(compressedPathname, requestedFormat);
+        }
+    }
+
     void TestImageInfo(const DAVA::FilePath& fileName, DAVA::PixelFormat& requestedFormat)
     {
         // NOTE: if file is generated in DXT1A format then lib returned new file in DXT1
