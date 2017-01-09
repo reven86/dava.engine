@@ -27,7 +27,6 @@ bool LibHDRHelper::CanProcessFileInternal(File* infile) const
 {
     String buffer(1024, 0);
     uint32 bytesRead = infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-    ;
     return strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()) == 0;
 }
 
@@ -35,7 +34,6 @@ ImageInfo LibHDRHelper::GetImageInfo(File* infile) const
 {
     String buffer(1024, 0);
     infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-    ;
     if (strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()))
     {
         Logger::Error("HDR file contain invalid header: %s", buffer.c_str());
@@ -49,7 +47,6 @@ ImageInfo LibHDRHelper::GetImageInfo(File* infile) const
     {
         std::fill(buffer.begin(), buffer.end(), 0);
         infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-        ;
     }
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), toupper);
 
@@ -68,12 +65,10 @@ ImageInfo LibHDRHelper::GetImageInfo(File* infile) const
 
     std::fill(buffer.begin(), buffer.end(), 0);
     infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-    ;
     while (!infile->IsEof() && ((buffer.front() == 0) || (buffer.find('#') == 0)))
     {
         std::fill(buffer.begin(), buffer.end(), 0);
         infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-        ;
     }
     buffer.erase(std::remove_if(buffer.begin(), buffer.end(), [](int8 c) {
                      return std::isspace(c) != 0;

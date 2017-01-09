@@ -156,7 +156,7 @@ DAVA_TESTCLASS (FormatsTest)
         }
     }
 
-    DAVA_TEST(TestHDR)
+    DAVA_TEST (TestHDR)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_RGBA32F);
