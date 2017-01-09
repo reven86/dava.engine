@@ -38,7 +38,7 @@ LibHDRHelper::LibHDRHelper()
 bool LibHDRHelper::CanProcessFileInternal(File* infile) const
 {
     String buffer(1024, 0);
-    uint32 bytesRead = infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
+    infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
     return strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()) == 0;
 }
 
