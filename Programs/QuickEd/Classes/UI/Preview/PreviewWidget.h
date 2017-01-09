@@ -36,6 +36,7 @@ public:
     ~PreviewWidget();
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
+    void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnWindowCreated();

@@ -6,6 +6,7 @@
 #include "ui_LibraryWidget.h"
 
 #include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
 
 class Document;
@@ -20,7 +21,7 @@ public:
     ~LibraryWidget() = default;
 
     void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
-    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes);
+    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
 
 public slots:
     void OnDocumentChanged(Document* document);
