@@ -222,7 +222,8 @@ String GetFrameSymbol(void* frame, bool demangle)
         // Include SO name
         if (dlinfo.dli_fname != nullptr)
         {
-            result = dlinfo.dli_fname;
+            const char* moduleName = rindex(dlinfo.dli_fname, '/');
+            result = moduleName != nullptr ? (moduleName + 1) : dlinfo.dli_fname;
             result += '!';
         }
 
@@ -303,13 +304,7 @@ String GetBacktraceString(void* const* frames, size_t framesSize)
     for (size_t i = 0; i < framesSize; ++i)
     {
         void *frame = frames[i];
-        String frameString = GetFrameSymbol(frame);
-        size_t pos = frameString.find_last_of("/");
-        if (pos != String::npos)
-        {
-            frameString = frameString.substr(pos + 1);
-        }
-        result << Format("    #%2u: [%p] %s\n", static_cast<uint32>(i), frame, frameString.c_str());
+        result << Format("    #%2u: [%p] %s\n", static_cast<uint32>(i), frame, GetFrameSymbol(frame).c_str());
     }
 
     return result.str();
