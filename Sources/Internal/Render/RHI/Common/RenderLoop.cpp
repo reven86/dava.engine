@@ -225,7 +225,7 @@ void SetResetPending()
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    if (command->forceImmediate || (renderThreadFrameCount == 0))
+    if (command->forceExecute || (renderThreadFrameCount == 0))
     {
         DispatchPlatform::ProcessImmediateCommand(command);
     }

@@ -184,16 +184,16 @@ void ProcessScheduledDelete()
             switch (res.resourceType)
             {
             case RESOURCE_VERTEX_BUFFER:
-                VertexBuffer::Delete(res.handle);
+                VertexBuffer::Delete(res.handle, true);
                 break;
             case RESOURCE_INDEX_BUFFER:
-                IndexBuffer::Delete(res.handle);
+                IndexBuffer::Delete(res.handle, true);
                 break;
             case RESOURCE_CONST_BUFFER:
                 ConstBuffer::Delete(res.handle);
                 break;
             case RESOURCE_TEXTURE:
-                Texture::Delete(res.handle);
+                Texture::Delete(res.handle, true);
                 break;
             case RESOURCE_TEXTURE_SET:
                 TextureSet::Delete(res.handle);

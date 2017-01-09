@@ -1661,12 +1661,12 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 //------------------------------------------------------------------------------
 
-void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceImmediate)
+void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = forceImmediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 

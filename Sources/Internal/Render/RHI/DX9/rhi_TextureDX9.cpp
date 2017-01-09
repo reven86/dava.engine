@@ -16,8 +16,8 @@ namespace rhi
 
 struct TextureDX9_t : public ResourceImpl<TextureDX9_t, Texture::Descriptor>
 {
-    bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
-    void Destroy();
+    bool Create(const Texture::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     IDirect3DBaseTexture9* basetex9 = nullptr;
     IDirect3DTexture9* tex9 = nullptr;
@@ -54,7 +54,7 @@ D3DCUBEMAP_FACES textureFaceToD3DFace[] =
 
 //------------------------------------------------------------------------------
 
-bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
+bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool forceExecute)
 {
     DVASSERT(desc.levelCount);
     bool success = false;
@@ -86,7 +86,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
         {
             cmds[0] = { DX9Command::CREATE_RENDER_TARGET, { desc.width, desc.height, fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
         };
-        ExecDX9(cmds, countof(cmds), force_immediate);
+        ExecDX9(cmds, countof(cmds), forceExecute);
         DVASSERT(surf9 != nullptr);
 
         success = true;
@@ -129,7 +129,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
                 }
             }
 
-            ExecDX9(cmd1, cmd1_cnt, force_immediate);
+            ExecDX9(cmd1, cmd1_cnt, forceExecute);
             hr = cmd1[0].retval;
 
             if (SUCCEEDED(hr))
@@ -143,12 +143,12 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
                 if (!auto_mip)
                     cmd2[1].func = DX9Command::NOP;
 
-                ExecDX9(cmd2, countof(cmd2), force_immediate);
+                ExecDX9(cmd2, countof(cmd2), forceExecute);
 
                 if (desc.isRenderTarget || is_depthbuf)
                 {
                     DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(&tex9), 0, uint64_t(&surf9) } };
-                    ExecDX9(&cmd3, 1, force_immediate);
+                    ExecDX9(&cmd3, 1, forceExecute);
                 }
 
                 success = true;
@@ -199,7 +199,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
                 }
             }
 
-            ExecDX9(cmd1, cmd1_cnt, force_immediate);
+            ExecDX9(cmd1, cmd1_cnt, forceExecute);
             hr = cmd1[0].retval;
 
             if (SUCCEEDED(hr))
@@ -215,7 +215,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
                 if (!auto_mip)
                     cmd2[1].func = DX9Command::NOP;
 
-                ExecDX9(cmd2, countof(cmd2), force_immediate);
+                ExecDX9(cmd2, countof(cmd2), forceExecute);
                 success = true;
             }
             else
@@ -232,7 +232,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
 //------------------------------------------------------------------------------
 
-void TextureDX9_t::Destroy()
+void TextureDX9_t::Destroy(bool forceExecute)
 {
     DVASSERT(!isMapped);
 
@@ -261,7 +261,7 @@ void TextureDX9_t::Destroy()
         SetRecreatePending(false);
     }
 
-    ExecDX9(cmd, countof(cmd), true);
+    ExecDX9(cmd, countof(cmd), forceExecute);
     surf9 = nullptr;
     tex9 = nullptr;
     cubetex9 = nullptr;
@@ -299,11 +299,11 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
 //------------------------------------------------------------------------------
 
 static void
-dx9_Texture_Delete(Handle tex)
+dx9_Texture_Delete(Handle tex, bool forceExecute)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
     self->SetRecreatePending(false);
-    self->Destroy();
+    self->Destroy(forceExecute);
     TextureDX9Pool::Free(tex);
 }
 
