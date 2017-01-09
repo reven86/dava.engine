@@ -26,7 +26,7 @@ static DAVA::Spinlock frameSync;
 static uint32 currFrameSyncId = 0;
 static DAVA::Array<HSyncObject, FRAME_POOL_SIZE> frameSyncObjects;
 static DAVA::Array<std::vector<ScheduledDeleteResource>, FRAME_POOL_SIZE> scheduledDeleteResources;
-static DAVA::Spinlock scheduledDeleteMutex;
+static DAVA::Spinlock scheduledDeleteSync;
 static void ProcessScheduledDelete();
 
 void RejectFrames()
@@ -99,14 +99,17 @@ void ProcessFrame()
 
 bool FinishFrame()
 {
-    scheduledDeleteMutex.Lock();
-    if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
+    scheduledDeleteSync.Lock();
+
+    if (!scheduledDeleteResources[currFrameSyncId].empty() && !frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
     Handle sync = frameSyncObjects[currFrameSyncId];
+
     currFrameSyncId = (currFrameSyncId + 1) % FRAME_POOL_SIZE;
     DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
     DVASSERT(!frameSyncObjects[currFrameSyncId].IsValid());
-    scheduledDeleteMutex.Unlock();
+
+    scheduledDeleteSync.Unlock();
 
     DispatchPlatform::FinishFrame();
     bool frameValid = false;
@@ -151,9 +154,8 @@ void SetFramePerfQueries(Handle startQuery, Handle endQuery)
 
 void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
 {
-    scheduledDeleteMutex.Lock();
+    DAVA::LockGuard<DAVA::Spinlock> guard(scheduledDeleteSync);
     scheduledDeleteResources[currFrameSyncId].push_back({ handle, resourceType });
-    scheduledDeleteMutex.Unlock();
 }
 
 void ProcessScheduledDelete()
@@ -161,18 +163,19 @@ void ProcessScheduledDelete()
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
 
     std::vector<std::vector<ScheduledDeleteResource>> resourcesToDelete;
-    scheduledDeleteMutex.Lock();
+    scheduledDeleteSync.Lock();
     for (int i = 0; i < FRAME_POOL_SIZE; i++)
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
         {
-            resourcesToDelete.push_back(scheduledDeleteResources[i]);
-            scheduledDeleteResources[i].clear();
+            resourcesToDelete.emplace_back();
+            std::swap(resourcesToDelete.back(), scheduledDeleteResources[i]);
+
             DeleteSyncObject(frameSyncObjects[i]);
             frameSyncObjects[i] = HSyncObject();
         }
     }
-    scheduledDeleteMutex.Unlock();
+    scheduledDeleteSync.Unlock();
 
     for (std::vector<ScheduledDeleteResource>& resources : resourcesToDelete)
     {
@@ -219,7 +222,7 @@ void ProcessScheduledDelete()
 
 HSyncObject GetCurrentFrameSyncObject()
 {
-    DAVA::LockGuard<DAVA::Spinlock> lock(scheduledDeleteMutex);
+    DAVA::LockGuard<DAVA::Spinlock> lock(scheduledDeleteSync);
     if (!frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
     return frameSyncObjects[currFrameSyncId];
