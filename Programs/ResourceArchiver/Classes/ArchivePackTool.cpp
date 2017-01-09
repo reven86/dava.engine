@@ -1,11 +1,14 @@
-#include "FileSystem/FileSystem.h"
-#include "ResourceArchiver/ResourceArchiver.h"
-
-#include "AssetCache/AssetCacheClient.h"
-
 #include "ArchivePackTool.h"
+
+#include <FileSystem/FileSystem.h>
+#include <ResourceArchiver/ResourceArchiver.h>
+#include <AssetCache/AssetCacheClient.h>
+#include <Utils/StringUtils.h>
+#include <Utils/StringFormat.h>
+#include <Logger/Logger.h>
+#include <Debug/DVAssert.h>
 #include "ResultCodes.h"
-#include "Utils/StringUtils.h"
+
 
 using namespace DAVA;
 
@@ -161,7 +164,7 @@ int ArchivePackTool::ProcessInternal()
         break;
     default:
     {
-        DVASSERT_MSG(false, Format("Incorrect source type: %d", source).c_str());
+        DVASSERT(false, DAVA::Format("Incorrect source type: %d", source).c_str());
         return ResourceArchiverResult::ERROR_INTERNAL;
     }
     }

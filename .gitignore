@@ -88,3 +88,8 @@ Tools/support/total_commander_plugins/packer_wcx/.gitignore
 Tools/support/total_commander_plugins/packer_wcx/.project
 Tools/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
 Tools/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+Programs/support/total_commander_plugins/packer_wcx/.cproject
+Programs/support/total_commander_plugins/packer_wcx/.gitignore
+Programs/support/total_commander_plugins/packer_wcx/.project
+Programs/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
+Programs/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs

@@ -7,6 +7,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
 #include "Utils/StringFormat.h"
+#include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"

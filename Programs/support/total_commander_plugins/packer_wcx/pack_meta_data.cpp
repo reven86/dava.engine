@@ -55,7 +55,7 @@ std::vector<uint8_t> PackMetaData::Serialize() const
     return std::vector<uint8_t>();
 }
 
-struct membuf : public std::streambuf
+struct membuf : std::streambuf
 {
     membuf(const void* ptr, size_t size)
     {
@@ -135,7 +135,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     }
 
     const char* startBuf = reinterpret_cast<const char*>(&uncompressedBuf[0]);
-    const char* endBuf = reinterpret_cast<const char*>(&uncompressedBuf[uncompressedSize]);
 
     membuf outBuf(startBuf, uncompressedSize);
     istream ss(&outBuf);

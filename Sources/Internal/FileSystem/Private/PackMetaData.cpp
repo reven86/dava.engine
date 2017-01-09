@@ -97,16 +97,12 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "can't compress pack table");
     }
 
-    // 4b header - "meta"
-    // 4b num_files
-    // num_files b
-    // 4b - uncompressed_size
-    // 4b - compressed_size
-    // compressed_size b
-
-    size_t numBytes = sizeof(uint32) * 4 + tableFiles.size() * sizeof(uint32)
-    + sizePackData;
-
+    // (4b) header - "meta"
+    // (4b) num_files
+    // (4*num_files) meta_indexes
+    // (4b) - uncompressed_size
+    // (4b) - compressed_size
+    // (compressed_size b) packs_and_dependencies_compressed
     ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::READ | File::WRITE));
     if (4 != file->Write("meta", 4))
     {
@@ -119,7 +115,7 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write num_files failed");
     }
 
-    uint32 sizeOfFilesMetaIndexes = static_cast<uint32>(tableFiles.size() * 4);
+    uint32 sizeOfFilesMetaIndexes = static_cast<uint32>(tableFiles.size() * sizeof(uint32));
     if (sizeOfFilesMetaIndexes != file->Write(&tableFiles[0], sizeOfFilesMetaIndexes))
     {
         DAVA_THROW(Exception, "write meta file indexes failed");
@@ -145,84 +141,105 @@ Vector<uint8> PackMetaData::Serialize() const
     }
 
     // write num of files
-    Vector<uint8> result = file->GetDataVector();
-    return result;
+    return file->GetDataVector();
 }
+
+struct membuf : std::streambuf
+{
+    membuf(const void* ptr, size_t size)
+    {
+        char* begin = const_cast<char*>(static_cast<const char*>(ptr));
+        char* end = const_cast<char*>(begin + size);
+        setg(begin, begin, end);
+    }
+};
 
 void PackMetaData::Deserialize(const void* ptr, size_t size)
 {
     DVASSERT(ptr != nullptr);
     DVASSERT(size >= 16);
 
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(ptr), static_cast<int32>(size), File::READ | File::WRITE));
+    using namespace std;
 
-    // 4b header - "meta"
-    // 4b num_files
-    // num_files b
-    // 4b - uncompressed_size
-    // 4b - compressed_size
-    // compressed_size b
-    std::array<char, 4> header;
-    if (4 != file->Read(&header[0], 4) ||
-        header != std::array<char, 4>{ 'm', 'e', 't', 'a' })
+    membuf buf(ptr, size);
+
+    istream file(&buf);
+
+    // (4b) header - "meta"
+    // (4b) num_files
+    // (4*num_files) meta_indexes
+    // (4b) - uncompressed_size
+    // (4b) - compressed_size
+    // (compressed_size b) packs_and_dependencies_compressed
+    array<char, 4> header;
+    file.read(&header[0], 4);
+    if (header != array<char, 4>{ 'm', 'e', 't', 'a' })
     {
         DAVA_THROW(Exception, "read metadata error - not meta");
     }
-    uint32 numFiles = 0;
-    if (4 != file->Read(&numFiles, 4))
+    uint32_t numFiles = 0;
+    file.read(reinterpret_cast<char*>(&numFiles), 4);
+    if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no numFiles");
     }
     tableFiles.resize(numFiles);
 
-    const uint32 numFilesBytes = numFiles * 4;
-    if (numFilesBytes != file->Read(&tableFiles[0], numFilesBytes))
+    const uint32_t numFilesBytes = numFiles * 4;
+    file.read(reinterpret_cast<char*>(&tableFiles[0]), numFilesBytes);
+    if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no tableFiles");
     }
 
-    uint32 uncompressedSize = 0;
-    if (4 != file->Read(&uncompressedSize, 4))
+    uint32_t uncompressedSize = 0;
+    file.read(reinterpret_cast<char*>(&uncompressedSize), 4);
+    if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no uncompressedSize");
     }
-    uint32 compressedSize = 0;
-    if (4 != file->Read(&compressedSize, 4))
+    uint32_t compressedSize = 0;
+    file.read(reinterpret_cast<char*>(&compressedSize), 4);
+    if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no compressedSize");
     }
 
     DVASSERT(16 + numFilesBytes + compressedSize == size);
 
-    Vector<uint8> compressedBuf(compressedSize);
+    vector<uint8_t> compressedBuf(compressedSize);
 
-    if (compressedSize != file->Read(&compressedBuf[0], compressedSize))
+    file.read(reinterpret_cast<char*>(&compressedBuf[0]), compressedSize);
+    if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no compressedBuf");
     }
 
     DVASSERT(uncompressedSize >= compressedSize);
 
-    Vector<uint8> uncompressedBuf(uncompressedSize);
+    vector<uint8_t> uncompressedBuf(uncompressedSize);
 
-    LZ4Compressor compressor;
-    if (!compressor.Decompress(compressedBuf, uncompressedBuf))
+    if (!LZ4Compressor().Decompress(compressedBuf, uncompressedBuf))
     {
         DAVA_THROW(Exception, "read metadata error - can't decompress");
     }
 
     const char* startBuf = reinterpret_cast<const char*>(&uncompressedBuf[0]);
-    const char* endBuf = reinterpret_cast<const char*>(&uncompressedBuf[uncompressedSize]);
-    const String str(startBuf, endBuf);
+
+    membuf outBuf(startBuf, uncompressedSize);
+    istream ss(&outBuf);
 
     // now parse decompressed packs data line by line (%s %s\n) format
-    std::stringstream ss(str);
-    String packName;
-    String packDependency;
-    for (; !ss.eof();)
+    for (string line, packName, packDependency; getline(ss, line);)
     {
-        ss >> packName >> packDependency;
-        tablePacks.push_back(std::tuple<String, String>(packName, packDependency));
+        auto first_space = line.find(' ');
+        if (first_space == string::npos)
+        {
+            DAVA_THROW(Exception, "can't parse packs and dependencies");
+        }
+        packName = line.substr(0, first_space);
+        packDependency = line.substr(first_space + 1);
+        tablePacks.push_back(tuple<String, String>(packName, packDependency));
     }
 
     // debug check that max index of fileIndex exist in packIndex

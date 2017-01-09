@@ -15,7 +15,7 @@ struct PackFile
     {
     } rawBytesOfCompressedFiles;
 
-    // 0 to footer.sizeOfMetaData bytes
+    // 0 or footer.sizeOfMetaData bytes
     struct CastomMetadataBlock
     {
     } metadata;
