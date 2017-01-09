@@ -153,7 +153,7 @@ private:
     int32 mouseMoveSkipCount = 0;
     const int32 SKIP_N_MOUSE_MOVE_EVENTS = 2;
 
-    bool pendingPinning = false;
+    bool forceCursorHide = false;
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
     POINT lastCursorPosition;

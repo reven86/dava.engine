@@ -347,7 +347,8 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
             break;
 
         case UIEvent::Phase::MOVE:
-            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
+        case UIEvent::Phase::DRAG:
+            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f, rel=%d", currentInput->physPoint.dx, currentInput->physPoint.dy, currentInput->isRelative));
             break;
 
         default:

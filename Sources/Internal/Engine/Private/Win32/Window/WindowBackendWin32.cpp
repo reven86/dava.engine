@@ -162,12 +162,7 @@ LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
     uint16 hittest = LOWORD(lparam);
     if (hittest == HTCLIENT)
     {
-        if (pendingPinning)
-        {
-            pendingPinning = false;
-            SwitchToPinning();
-        }
-
+        forceCursorHide = false;
         ::SetCursor(mouseVisible ? hcurCursor : nullptr);
         return TRUE;
     }
@@ -320,7 +315,8 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 {
     if (captureMode != mode)
     {
-        pendingPinning = false;
+        forceCursorHide = false;
+        captureMode = mode;
         switch (mode)
         {
         case eCursorCapture::FRAME:
@@ -330,26 +326,23 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
         case eCursorCapture::PINNING:
         {
             // Windows 7 does not send WM_SETCURSOR message (which controls cursor visibility) while any mouse button is pressed.
-            // As a result cursor is visible but pinning is on. So delay switching to pinning to WM_SETCURSOR handler if any mouse button is pressed.
+            // As a result cursor is visible but pinning is on. So if any mouse button is pressed set flag forceCursorHide which
+            // will hide cursor in mouse move events until WM_SETCURSOR will come.
             // Windows 8 and later send WM_SETCURSOR in any case.
 
             // clang-format off
-            pendingPinning = 
+            forceCursorHide =
                 (::GetKeyState(VK_LBUTTON) & 0x80) != 0 ||
                 (::GetKeyState(VK_RBUTTON) & 0x80) != 0 ||
                 (::GetKeyState(VK_MBUTTON) & 0x80) != 0 ||
                 (::GetKeyState(VK_XBUTTON1) & 0x80) != 0 ||
                 (::GetKeyState(VK_XBUTTON2) & 0x80) != 0;
             // clang-format on
-            if (!pendingPinning)
-            {
-                SwitchToPinning();
-            }
+            SwitchToPinning();
             break;
         }
         case eCursorCapture::OFF:
         {
-            captureMode = mode;
             ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
             break;
         }
@@ -360,7 +353,6 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 
 void WindowBackend::SwitchToPinning()
 {
-    captureMode = eCursorCapture::PINNING;
     mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
 
     POINT pt;
@@ -600,6 +592,12 @@ LRESULT WindowBackend::OnMouseMoveRelativeEvent(int x, int y)
 
 LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
 {
+    if (forceCursorHide)
+    {
+        // Hide cursor here untill WM_SETCURSOR message (see comment in DoSetCursorCapture)
+        ::SetCursor(nullptr);
+    }
+
     if (captureMode == eCursorCapture::PINNING)
     {
         return OnMouseMoveRelativeEvent(x, y);
