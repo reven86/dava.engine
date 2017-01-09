@@ -76,42 +76,39 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
+    //all states strongly ordered
+    //state with biggest value overrides each other states with a less value
     enum eState
     {
-        //just display all root controls
+        //all user input used only to drag canvas inide rednder widget
+        DragScreen,
+        //just display all root controls, no other iteraction enabled
         Preview,
+        //if cursor under selected control, pressed left mouse button and starts dragging
+        Transform,
+        //if cursor is under control and it selectable
+        Select,
         //display one root control
         Display,
-        //if cursor is under control and it selectable
-        CanSelect,
-        //if cursor under selected control - we can move it or select another control
-        CanMoveOrSelect,
-        //if cursor under selected control corner, pivot point or rotate area - transform only
-        CanTransform,
-        //drag screen using middle mouse button or space bar + left mouse button
-        DragScreen,
-        //Emulation mode, all inputs pass to the framework through the editor
-        Emulation,
         StatesCount
     };
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
-
-    DAVA::UIControl* GetRootControl() const;
-    DAVA::UIControl* GetInputLayerControl() const;
-    DAVA::UIControl* GetScalableControl() const;
+    
+    eState GetState() const;
 
     EditorCanvas* GetScrollCanvasSystem() const;
 
-    bool OnInput(DAVA::UIEvent* currentInput);
-
-    void SetEmulationMode(bool emulationMode);
-
+    void OnInput(DAVA::UIEvent* currentInput);
+    
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     void HighlightNode(ControlNode* node);
     void ClearHighlight();
+    
+    void SetEmulationMode(bool emulationMode);
+    
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
@@ -133,6 +130,8 @@ public:
     DAVA::Signal<eState> stateChanged;
 
 private:
+    void SetState(eState state);
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
@@ -159,7 +158,7 @@ private:
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
     EditorCanvas* editorCanvas = nullptr;
-    eState currentState = Preview;
+    eState state = Preview;
     eState previousState = Preview;
 };
 

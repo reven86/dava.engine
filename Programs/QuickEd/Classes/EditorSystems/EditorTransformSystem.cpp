@@ -144,52 +144,52 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     UpdateNeighboursToMove();
 }
 
-bool EditorTransformSystem::OnInput(UIEvent* currentInput)
+void EditorTransformSystem::OnInput(UIEvent* currentInput)
 {
-    if (currentInput->device == eInputDevices::MOUSE && currentInput->mouseButton != eMouseButtons::LEFT)
-    {
-        return false;
-    }
-    switch (currentInput->phase)
-    {
-    case UIEvent::Phase::KEY_DOWN:
-        return ProcessKey(currentInput->key);
-
-    case UIEvent::Phase::BEGAN:
-    {
-        systemsManager->transformStateChanged.Emit(true);
-        inTransformState = true;
-        extraDelta.SetZero();
-        prevPos = currentInput->point;
-        return false;
-    }
-    case UIEvent::Phase::DRAG:
-    {
-        eMouseButtons button = currentInput->mouseButton;
-        if (button == eMouseButtons::LEFT && currentInput->point != prevPos)
-        {
-            if (ProcessDrag(currentInput->point))
-            {
-                prevPos = currentInput->point;
-            }
-        }
-        return false;
-    }
-    case UIEvent::Phase::ENDED:
-        if (activeArea == HUDAreaInfo::ROTATE_AREA)
-        {
-            ClampAngle();
-        }
-        systemsManager->magnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        if (inTransformState)
-        {
-            systemsManager->transformStateChanged.Emit(false);
-            inTransformState = false;
-        }
-        return false;
-    default:
-        return false;
-    }
+//    if (currentInput->device == eInputDevices::MOUSE && currentInput->mouseButton != eMouseButtons::LEFT)
+//    {
+//        return false;
+//    }
+//    switch (currentInput->phase)
+//    {
+//    case UIEvent::Phase::KEY_DOWN:
+//        return ProcessKey(currentInput->key);
+//
+//    case UIEvent::Phase::BEGAN:
+//    {
+//        systemsManager->transformStateChanged.Emit(true);
+//        inTransformState = true;
+//        extraDelta.SetZero();
+//        prevPos = currentInput->point;
+//        return false;
+//    }
+//    case UIEvent::Phase::DRAG:
+//    {
+//        eMouseButtons button = currentInput->mouseButton;
+//        if (button == eMouseButtons::LEFT && currentInput->point != prevPos)
+//        {
+//            if (ProcessDrag(currentInput->point))
+//            {
+//                prevPos = currentInput->point;
+//            }
+//        }
+//        return false;
+//    }
+//    case UIEvent::Phase::ENDED:
+//        if (activeArea == HUDAreaInfo::ROTATE_AREA)
+//        {
+//            ClampAngle();
+//        }
+//        systemsManager->magnetLinesChanged.Emit(Vector<MagnetLineInfo>());
+//        if (inTransformState)
+//        {
+//            systemsManager->transformStateChanged.Emit(false);
+//            inTransformState = false;
+//        }
+//        return false;
+//    default:
+//        return false;
+//    }
 }
 
 void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)

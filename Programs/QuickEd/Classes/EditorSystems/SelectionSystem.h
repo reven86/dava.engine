@@ -36,7 +36,7 @@ public:
 
 private:
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
-    bool OnInput(DAVA::UIEvent* currentInput) override;
+    void OnInput(DAVA::UIEvent* currentInput) override;
     void OnPackageNodeChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);

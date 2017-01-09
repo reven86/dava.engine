@@ -13,7 +13,7 @@ class BackgroundController;
 class EditorControlsView final : public BaseEditorSystem, PackageListener
 {
 public:
-    EditorControlsView(EditorSystemsManager* parent);
+    EditorControlsView(DAVA::UIControl *canvasParent, EditorSystemsManager* parent);
     ~EditorControlsView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
@@ -21,8 +21,8 @@ public:
 
 private:
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
-    void OnPackageNodeChanged(PackageNode* node);
-    void OnTransformStateChanged(bool inTransformState);
+    void OnPackageChanged(PackageNode* node);
+    void OnStateChanged(EditorSystemsManager::eState state);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -36,4 +36,5 @@ private:
     PackageNode* package = nullptr;
     bool inTransformState = false;
     bool needRecalculate = false;
+    DAVA::UIControl *canvasParent;
 };

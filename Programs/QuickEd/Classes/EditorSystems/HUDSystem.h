@@ -21,7 +21,7 @@ private:
     };
     struct HUD;
 
-    bool OnInput(DAVA::UIEvent* currentInput) override;
+    void OnInput(DAVA::UIEvent* currentInput) override;
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);

@@ -19,6 +19,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/EditorControlsView.h"
+#include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
@@ -65,8 +66,9 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
+    
+    systemsManager->transformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
 
-    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
     verticalRuler->SetRulerOrientation(Qt::Vertical);
 
@@ -82,7 +84,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    SetActualScale();
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -102,7 +103,7 @@ float PreviewWidget::GetScaleFromComboboxText() const
     curTextValue.remove(' ');
     bool ok;
     float scaleValue = curTextValue.toFloat(&ok);
-    DVASSERT_MSG(ok, "can not parse text to float");
+    DVASSERT(ok, "can not parse text to float");
     return scaleValue / 100.0f;
 }
 
@@ -113,8 +114,8 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
 
-    connect(renderWidget, &RenderWidget::Resized, scrollAreaController,
-            static_cast<void (ScrollAreaController::*)(int32, int32)>(&ScrollAreaController::SetViewSize));
+    connect(renderWidget, &RenderWidget::Resized, editorCanvas,
+            static_cast<void (EditorCanvas::*)(int32, int32)>(&EditorCanvas::SetViewSize));
 
     CreateActions();
 }
@@ -184,11 +185,11 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     systemsManager->ClearHighlight();
     if (document.isNull())
     {
-        systemsManager->packageNodeChanged.Emit(nullptr);
+        systemsManager->packageChanged.Emit(nullptr);
     }
     else
     {
-        systemsManager->packageNodeChanged.Emit(document->GetPackage());
+        systemsManager->packageChanged.Emit(document->GetPackage());
         LoadContext();
     }
 
@@ -238,18 +239,6 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemsManager->selectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
-{
-    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
-    ApplyPosChanges();
-}
-
-void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
-{
-    canvasPos = pos;
-    ApplyPosChanges();
-}
-
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
     systemsManager->SetEmulationMode(emulationMode);
@@ -292,7 +281,7 @@ void PreviewWidget::OnIncrementScale()
         nextIndex = std::distance(percentages.begin(), iter);
     }
     DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    scrollAreaController->SetScale(percentages.at(nextIndex));
+    editorCanvas->SetScale(percentages.at(nextIndex));
 }
 
 void PreviewWidget::OnDecrementScale()
@@ -315,31 +304,21 @@ void PreviewWidget::OnDecrementScale()
         nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
     }
     DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    scrollAreaController->SetScale(percentages.at(nextIndex));
+    editorCanvas->SetScale(percentages.at(nextIndex));
 }
 
-void PreviewWidget::SetActualScale()
-{
-    scrollAreaController->SetScale(1.0f); //1.0f is a 100% scale
-}
-
-void PreviewWidget::ApplyPosChanges()
-{
-    QPoint viewPos = canvasPos + rootControlPos;
-    rulerController->SetViewPos(-viewPos);
-}
 
 void PreviewWidget::UpdateScrollArea()
 {
-    QSize areaSize = scrollAreaController->GetViewSize();
+    Vector2 areaSize = editorCanvas->GetViewSize();
 
-    verticalScrollBar->setPageStep(areaSize.height());
-    horizontalScrollBar->setPageStep(areaSize.width());
+    verticalScrollBar->setPageStep(areaSize.dy);
+    horizontalScrollBar->setPageStep(areaSize.dx);
 
-    QPoint minPos = scrollAreaController->GetMinimumPos();
-    QPoint maxPos = scrollAreaController->GetMaximumPos();
-    horizontalScrollBar->setRange(minPos.x(), maxPos.x());
-    verticalScrollBar->setRange(minPos.y(), maxPos.y());
+    Vector2 minPos = editorCanvas->GetMinimumPos();
+    Vector2 maxPos = editorCanvas->GetMaximumPos();
+    horizontalScrollBar->setRange(minPos.x, maxPos.x);
+    verticalScrollBar->setRange(minPos.y, maxPos.y);
 }
 
 void PreviewWidget::OnPositionChanged(const QPoint& position)
@@ -352,14 +331,11 @@ void PreviewWidget::OnWindowCreated()
 {
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));
-    scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
-    scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
-    systemsManager->canvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
-    systemsManager->transformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
-    systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
+
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));

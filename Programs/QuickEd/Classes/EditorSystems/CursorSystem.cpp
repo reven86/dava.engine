@@ -11,16 +11,16 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(EditorSystemsManager* parent)
+CursorSystem::CursorSystem(RenderWidget *renderWidget_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
+    , renderWidget(renderWidget_)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
-    systemsManager->dragStateChanged.Connect(this, &CursorSystem::OnDragStateChanged);
+    systemsManager->stateChanged.Connect(this, &CursorSystem::OnStateChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
-    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
         renderWidget->unsetCursor();
@@ -34,10 +34,9 @@ void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     }
 }
 
-void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState)
+void CursorSystem::OnStateChanged(EditorSystemsManager::eState state)
 {
-    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
-    if (dragState == EditorSystemsManager::DragScreen)
+    if (state == EditorSystemsManager::DragScreen)
     {
         lastCursor = renderWidget->cursor();
         renderWidget->setCursor(Qt::OpenHandCursor);
@@ -78,7 +77,7 @@ QPixmap CursorSystem::CreatePixmapForArea(float angle, const HUDAreaInfo::eArea 
     case HUDAreaInfo::ROTATE_AREA:
         return CreatePixmap(":/Cursors/cursorRotate.png");
     default:
-        DVASSERT_MSG(false, "unexpected enum value");
+        DVASSERT(false, "unexpected enum value");
         return QPixmap();
     }
 }

@@ -18,6 +18,7 @@ class Document;
 class ControlNode;
 class PackageBaseNode;
 class RulerController;
+class EditorCanvas;
 class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
@@ -53,12 +54,9 @@ public slots:
     void SaveSystemsContextAndClear();
     void LoadSystemsContext(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
-    void OnNestedControlPositionChanged(const QPoint& pos);
     void OnEmulationModeChanged(bool emulationMode);
     void OnIncrementScale();
     void OnDecrementScale();
-    void SetActualScale();
 
 private slots:
     void OnScaleChanged(float scale);
@@ -83,7 +81,6 @@ private:
 
 private:
     void CreateActions();
-    void ApplyPosChanges();
     void OnWheel(QWheelEvent* event) override;
     void OnNativeGuesture(QNativeGestureEvent* event) override;
     void OnMousePressed(QMouseEvent* event) override;
@@ -109,11 +106,10 @@ private:
     void NotifySelectionChanged();
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
-    void OnDragStateChanged(EditorSystemsManager::eDragState dragState);
 
-    QPoint lastMousePos;
     QPointer<Document> document;
     DAVA::RenderWidget* renderWidget = nullptr;
+    
     QList<float> percentages;
 
     SelectionContainer selectionContainer;
@@ -126,6 +122,7 @@ private:
     QAction* focusPreviousChildAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
+    EditorCanvas *editorCanvas = nullptr;
 
     ContinuousUpdater* continuousUpdater = nullptr;
 

@@ -5,10 +5,15 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(EditorSystemsManager *parent)
+EditorCanvas::EditorCanvas(UIControl *nestedControl_, UIControl *movableControl_, EditorSystemsManager *parent)
     : BaseEditorSystem(parent)
     , backgroundControl(new UIControl)
+    , nestedControl(nestedControl_)
+    , movableControl(movableControl_)
 {
+    
+    systemsManager->canvasContentChanged.Connect(this, &EditorCanvas::UpdateCanvasContentSize);
+    
     backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
@@ -24,28 +29,6 @@ EditorCanvas::~EditorCanvas()
     UIScreenManager::Instance()->ResetScreen();
 }
 
-void EditorCanvas::SetNestedControl(UIControl* arg)
-{
-    if (nullptr != nestedControl)
-    {
-        backgroundControl->RemoveControl(nestedControl);
-    }
-    nestedControl = arg;
-    if (nullptr != nestedControl)
-    {
-        backgroundControl->AddControl(nestedControl);
-        UpdateCanvasContentSize();
-    }
-}
-
-void EditorCanvas::SetMovableControl(UIControl* arg)
-{
-    if (arg != movableControl)
-    {
-        movableControl = arg;
-        UpdatePosition();
-    }
-}
 
 void EditorCanvas::AdjustScale(float newScale, const Vector2& mousePos)
 {
@@ -204,10 +187,10 @@ void EditorCanvas::UpdatePosition()
 
 bool EditorCanvas::CanProcessInput() const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen;
+    return systemsManager->GetState() == EditorSystemsManager::DragScreen;
 }
 
-bool EditorCanvas::OnInput(UIEvent* currentInput)
+void EditorCanvas::OnInput(UIEvent* currentInput)
 {
     Vector2 delta(currentInput->point - lastMousePos);
     lastMousePos = currentInput->point;
@@ -218,12 +201,5 @@ bool EditorCanvas::OnInput(UIEvent* currentInput)
 void EditorCanvas::UpdateDragScreenState()
 {
     bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
-    EditorSystemsManager::eDragState dragState_ = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
-
-    if (dragState_ == dragState)
-    {
-        return;
-    }
-    dragState = dragState_;
-    systemsManager->dragStateChanged.Emit(dragState);
+    //EditorSystemsManager::eDragState dragState_ = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
 }

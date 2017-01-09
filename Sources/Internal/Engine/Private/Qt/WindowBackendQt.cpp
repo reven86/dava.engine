@@ -10,6 +10,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
+#include "Logger/Logger.h"
 
 #include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"

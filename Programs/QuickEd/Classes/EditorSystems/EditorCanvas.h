@@ -13,11 +13,26 @@ class UIControl;
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(EditorSystemsManager* parent);
+    EditorCanvas(DAVA::UIControl *nestedControl, DAVA::UIControl *movableControl, EditorSystemsManager* parent);
     ~EditorCanvas() override;
 
-    bool OnInput(DAVA::UIEvent* currentInput) override;
     bool CanProcessInput() const override;
+    
+    BaseEditorSystem::eInternalState RequireNewState() const override;
+    void OnInput(DAVA::UIEvent* currentInput) override;
+    
+    DAVA::Vector2 GetCanvasSize() const;
+    DAVA::Vector2 GetViewSize() const;
+    
+    DAVA::Vector2 GetPosition() const;
+    
+    DAVA::float32 GetScale() const;
+    DAVA::float32 GetMinScale() const;
+    DAVA::float32 GetMaxScale() const;
+    
+    DAVA::Vector2 GetMinimumPos() const;
+    DAVA::Vector2 GetMaximumPos() const;
+
 
     void SetViewSize(const DAVA::Vector2& size);
     void SetViewSize(DAVA::int32 width, DAVA::int32 height);
@@ -31,22 +46,8 @@ public:
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
-    void SetNestedControl(DAVA::UIControl* nestedControl);
-    void SetMovableControl(DAVA::UIControl* movableControl);
     void AdjustScale(DAVA::float32 newScale, const DAVA::Vector2& mousePos);
-
-    DAVA::Vector2 GetCanvasSize() const;
-    DAVA::Vector2 GetViewSize() const;
-
-    DAVA::Vector2 GetPosition() const;
-
-    DAVA::float32 GetScale() const;
-    DAVA::float32 GetMinScale() const;
-    DAVA::float32 GetMaxScale() const;
-
-    DAVA::Vector2 GetMinimumPos() const;
-    DAVA::Vector2 GetMaximumPos() const;
-
+    
     void UpdateCanvasContentSize();
 
     //private

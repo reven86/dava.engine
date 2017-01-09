@@ -13,6 +13,7 @@
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "EditorSystems/EditorControlsView.h"
+#include "EditorSystems/EditorCanvas.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -37,7 +38,9 @@ public:
 
     bool SystemProcessInput(UIEvent* currentInput) override
     {
-        return systemManager->OnInput(currentInput);
+        //redirect input from the framework to the editor
+        systemManager->OnInput(currentInput);
+        return true;
     }
 
 private:
@@ -45,7 +48,7 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
+EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
     : rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
@@ -60,51 +63,43 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
     selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
-    controlViewPtr = new EditorControlsView(this);
+    controlViewPtr = new EditorControlsView(scalableControl.Get(), this);
     systems.emplace_back(controlViewPtr);
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
     hudSystemPtr = new HUDSystem(this);
     systems.emplace_back(hudSystemPtr);
-    systems.emplace_back(new CursorSystem(this));
+    systems.emplace_back(new CursorSystem(renderWidget, this));
     systems.emplace_back(new ::EditorTransformSystem(this));
-    EditorCanvas* editorCanvas = new EditorCanvas(this);
+    EditorCanvas* editorCanvas = new EditorCanvas(rootControl.Get(), scalableControl.Get(), this);
     systems.emplace_back(editorCanvas);
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
 
-DAVA::RenderWidget* EditorSystemsManager::GetRenderWidget() const
+void EditorSystemsManager::OnInput(UIEvent* currentInput)
 {
-    return renderWidget;
-}
-
-UIControl* EditorSystemsManager::GetRootControl() const
-{
-    return rootControl.Get();
-}
-
-DAVA::UIControl* EditorSystemsManager::GetInputLayerControl() const
-{
-    return inputLayerControl.Get();
-}
-
-UIControl* EditorSystemsManager::GetScalableControl() const
-{
-    return scalableControl.Get();
-}
-
-bool EditorSystemsManager::OnInput(UIEvent* currentInput)
-{
+    BaseEditorSystem::eInternalState newBaseState = BaseEditorSystem::NO_STATE;
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
-        if ((*it)->OnInput(currentInput))
+        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        if(newBaseState == BaseEditorSystem::NO_STATE)
         {
-            return true;
+            newBaseState = editorSystem->RequireNewState();
+        }
+        else
+        {
+            DVASSERT_ALWAYS(editorSystem->RequireNewState() == BaseEditorSystem::NO_STATE, "Two different states required by systems on one input");
         }
     }
-    return false;
+    SetState(static_cast<eState>(newBaseState));
+    
+    for (auto it = systems.rbegin(); it != systems.rend(); ++it)
+    {
+        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        editorSystem->OnInput(currentInput);
+    }
 }
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
@@ -117,7 +112,6 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     {
         rootControl->AddControl(inputLayerControl.Get());
     }
-    emulationModeChangedSignal.Emit(emulationMode);
 }
 
 ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
@@ -215,7 +209,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
-        if (!previewMode && editingRootControls.size() == 1)
+        if (state > Preview && editingRootControls.size() == 1)
         {
             SetPreviewMode(true);
         }
@@ -229,7 +223,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
 
 void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
 {
-    if (previewMode)
+    if (state == Preview)
     {
         DVASSERT(nullptr != package);
         if (nullptr != package)
