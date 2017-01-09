@@ -164,7 +164,7 @@ if( IOS )
 
 elseif( MACOS )
     if( DAVA_FOUND )
-        set( DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter.dylib )
+        set( DYLIB_FILES    ${DAVA_THIRD_PARTY_STATIC_LIBRARIES_PATH}/libTextureConverter.dylib )
     endif()
 
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
@@ -240,7 +240,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -548,7 +548,7 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${FILE}  ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
     endforeach ()
 
-    set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
+    set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_STATIC_LIBRARIES_PATH}/ )
 
     if ( NOT ANDROID_BUILD_NO_PACKAGE )
         if( NOT CMAKE_EXTRA_GENERATOR )
@@ -595,7 +595,7 @@ elseif( MACOS )
     if( DAVA_FOUND )
         set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
-            set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
+            set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_STATIC_LIBRARIES_PATH}/" )
         endif()
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
@@ -679,7 +679,7 @@ endif()
 list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
+list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_STATIC_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
@@ -832,7 +832,7 @@ if( DEPLOY )
         endif(APP_DATA)
 
        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})

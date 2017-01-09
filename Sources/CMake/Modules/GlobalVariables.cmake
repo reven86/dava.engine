@@ -41,9 +41,9 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_BIN_DIR         "${DAVA_ROOT_DIR}/Bin" )
+set( DAVA_BIN_DIR "${DAVA_ROOT_DIR}/Bin" )
 
-if (WIN32)
+if( WIN32  )
 	string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
 
 	if( ${X64_PROJECT} EQUAL -1 )
@@ -54,15 +54,27 @@ if (WIN32)
                 set( DAVA_PROJECT_BIT 64 )
 	endif ()
 
-	if( X64_MODE )
-            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
+        if( WINDOWS_UAP )
+            set ( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
+
+	elseif( X64_MODE )
+            set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH         "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/win/x64" )
 	else ()
-            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
+            set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH         "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/win" )
 	endif ()
+
+elseif( MACOS )
+	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/mac" )
+
+elseif( IOS )
+	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/ios" )
     
 else ()
-	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
+	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin" )
+
 endif()
+
+################
 
 set( DAVA_PLATFORM_LIST IOS 
                         MACOS 
@@ -111,10 +123,7 @@ if ( WINDOWS_UAP )
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
-
-    #libs paths
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
-    
+  
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
 
@@ -171,7 +180,7 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+set( DAVA_BINARY_WIN32_DIR  "${DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
 
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
