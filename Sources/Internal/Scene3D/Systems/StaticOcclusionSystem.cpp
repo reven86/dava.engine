@@ -222,8 +222,8 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
         indexedRenderObjects.resize(Max(static_cast<uint32>(indexedRenderObjects.size()), static_cast<uint32>(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT_MSG(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
-                     "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
+                 "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }
 }
@@ -321,6 +321,9 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     rhi::VertexLayout vertexLayout;
     vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vertexLayoutId = rhi::VertexLayout::UniqueId(vertexLayout);
+
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()

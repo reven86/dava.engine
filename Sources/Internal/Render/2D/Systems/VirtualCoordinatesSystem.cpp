@@ -3,6 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Sprite.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

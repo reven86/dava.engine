@@ -12,6 +12,7 @@
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
 #include "Concurrency/LockGuard.h"
@@ -23,6 +24,7 @@
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <copyfile.h>
 #include <libgen.h>
@@ -43,7 +45,6 @@
 #include "Engine/Private/Android/AndroidBridge.h"
 #else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-
 #endif
 #include <unistd.h>
 #endif //PLATFORMS
@@ -469,6 +470,22 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #endif //PLATFORMS
 
     return currentExecuteDirectory.MakeDirectoryPathname();
+}
+
+FilePath FileSystem::GetPluginDirectory()
+{
+    FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
+
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    FilePath pluginDirectory = currentExecuteDirectory + "../PlugIns/";
+
+#else
+    FilePath pluginDirectory = currentExecuteDirectory + "PlugIns/";
+    
+#endif //PLATFORMS
+
+    return pluginDirectory;
 }
 
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)

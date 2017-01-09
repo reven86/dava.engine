@@ -147,6 +147,12 @@ public:
     */
     void AddBackend(const String& name, std::unique_ptr<IBackend> backend);
 
+    /**
+    Remove backend with specified name from Core.
+    Method does nothing if Core doesn't contain the backend with specified name.
+    */
+    void RemoveBackend(const String& name);
+
     /** 
     Post event for filtration and processing.
     Method filters events by using common and per-backend filtration config and then sends them to backends.

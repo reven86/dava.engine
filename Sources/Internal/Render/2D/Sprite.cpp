@@ -111,9 +111,15 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath& pathname)
 {
     Sprite* ret = NULL;
 
+    FilePath path = pathname;
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+    }
+
     spriteMapMutex.Lock();
 
-    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(pathname));
+    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(path));
     if (it != spriteMap.end())
     {
         Sprite* spr = it->second;
@@ -193,7 +199,7 @@ void Sprite::InitFromFile(File* file)
 
         textures[k] = testTexture;
         textureNames[k] = tp;
-        DVASSERT_MSG(textures[k], "ERROR: Texture loading failed" /* + pathName*/);
+        DVASSERT(textures[k], "ERROR: Texture loading failed" /* + pathName*/);
     }
 
     int32 width, height;
@@ -291,7 +297,7 @@ Sprite* Sprite::CreateFromTexture(Texture* fromTexture, int32 xOffset, int32 yOf
 {
     DVASSERT(fromTexture);
     Sprite* spr = new Sprite();
-    DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
+    DVASSERT(spr, "Render Target Sprite Creation failed");
     spr->InitFromTexture(fromTexture, xOffset, yOffset, sprWidth, sprHeight, -1, -1, contentScaleIncluded);
     return spr;
 }
@@ -300,7 +306,7 @@ Sprite* Sprite::CreateFromTexture(Texture* fromTexture, int32 textureRegionOffse
 {
     DVASSERT(fromTexture);
     Sprite* spr = new Sprite();
-    DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
+    DVASSERT(spr, "Render Target Sprite Creation failed");
     spr->InitFromTexture(fromTexture, textureRegionOffsetX, textureRegionOffsetY, sprWidth, sprHeight, textureRegionWidth, textureRegionHeigth, false, spriteName);
     return spr;
 }

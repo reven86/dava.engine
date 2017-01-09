@@ -1,0 +1,69 @@
+Header:
+    version: "4"
+Controls:
+-   class: "UIControl"
+    name: "MainFrame"
+    size: [479.000000, 457.000000]
+    noInput: true
+    components:
+        ActionBinding:
+            actions: "ASSERT_ALWAYS, F1; ASSERT, F2; DELAYED_ASSERT, F3"
+    children:
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 20.000000]
+        size: [439.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Assert_always"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            Action:
+                action: "ASSERT_ALWAYS"
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 57.000000]
+        size: [439.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Assert"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            Action:
+                action: "ASSERT"
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 94.000000]
+        size: [399.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Delayed assert"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 60.000000
+            Action:
+                action: "DELAYED_ASSERT"
+    -   class: "UIStaticText"
+        name: "Countdown"
+        position: [427.000000, 94.000000]
+        size: [32.000000, 32.000000]
+        text: "0"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000

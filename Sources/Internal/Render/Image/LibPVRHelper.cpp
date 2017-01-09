@@ -312,7 +312,7 @@ bool LibPVRHelper::DecompressToRGBA(const Image* encodedImage, Image* decodedIma
 
 bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
 {
-    DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
+    DVASSERT(false, "Compressing to PVR is not implemented yet");
     return false;
 }
 }

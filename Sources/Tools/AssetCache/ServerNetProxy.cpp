@@ -3,6 +3,7 @@
 #include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CachePacket.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 

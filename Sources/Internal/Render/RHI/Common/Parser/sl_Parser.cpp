@@ -1,6 +1,8 @@
 #include "sl_Parser.h"
 #include "sl_Tree.h"
 
+#include "Logger/Logger.h"
+
 #include <algorithm>
 #include <ctype.h>
 
