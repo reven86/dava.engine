@@ -111,6 +111,24 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
+void PreviewWidget::SelectControl(const DAVA::String& path)
+{
+    if (document != nullptr)
+    {
+        PackageNode* package = document->GetPackage();
+        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
+        if (!node)
+        {
+            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
+        }
+        if (node != nullptr)
+        {
+            systemsManager->ClearSelection();
+            systemsManager->SelectNode(node);
+        }
+    }
+}
+
 float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.

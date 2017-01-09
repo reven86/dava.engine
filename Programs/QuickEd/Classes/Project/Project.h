@@ -5,6 +5,7 @@
 
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "EditorSystems/SelectionContainer.h"
 
 #include <QObject>
 #include <QVector>
@@ -55,6 +56,7 @@ public:
     void SetCurrentLanguage(const QString& newLanguageCode);
 
     const QStringList& GetDefaultPresetNames() const;
+    const FileSystemCache* GetFileSystemCache() const;
 
     EditorFontSystem* GetEditorFontSystem() const;
 
@@ -63,8 +65,11 @@ public:
     void SetGlobalStyleClasses(const QString& classesStr);
 
     DAVA::Vector<ProjectProperties::ResDir> GetLibraryPackages() const;
-    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
+    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
+    bool TryCloseAllDocuments();
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
     bool CloseAllDocuments(bool force);
     void SaveAllDocuments();
     bool CanCloseSilently() const;
@@ -77,6 +82,9 @@ private:
     void OnReloadSprites();
     void OnReloadSpritesFinished();
     void OnFindFileInProject();
+    void OnJumpToPrototype();
+    void OnFindPrototypeInstances();
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     ProjectProperties properties;
     const QString projectDirectory;
@@ -89,6 +97,7 @@ private:
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<FileSystemCache> fileSystemCache;
+    SelectionContainer selectionContainer;
 #if defined(__DAVAENGINE_MACOS__)
     std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
 #endif
