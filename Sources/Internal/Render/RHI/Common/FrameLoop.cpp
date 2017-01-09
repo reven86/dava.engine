@@ -160,56 +160,61 @@ void ProcessScheduledDelete()
 {
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
 
+    std::vector<std::vector<ScheduledDeleteResource>> resourcesToDelete;
     scheduledDeleteMutex.Lock();
     for (int i = 0; i < FRAME_POOL_SIZE; i++)
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
         {
-            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)
-            {
-                ScheduledDeleteResource& res = *it;
-                switch (res.resourceType)
-                {
-                case RESOURCE_VERTEX_BUFFER:
-                    VertexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_INDEX_BUFFER:
-                    IndexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_CONST_BUFFER:
-                    ConstBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE:
-                    Texture::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE_SET:
-                    TextureSet::Delete(res.handle);
-                    break;
-                case RESOURCE_DEPTHSTENCIL_STATE:
-                    DepthStencilState::Delete(res.handle);
-                    break;
-                case RESOURCE_SAMPLER_STATE:
-                    SamplerState::Delete(res.handle);
-                    break;
-                case RESOURCE_QUERY_BUFFER:
-                    QueryBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_PIPELINE_STATE:
-                    PipelineState::Delete(res.handle);
-                    break;
-                case RESOURCE_PERFQUERY:
-                    PerfQuery::Delete(res.handle);
-                    break;
-                default:
-                    DVASSERT(false, "Not supported resource scheduled for deletion");
-                }
-            }
+            resourcesToDelete.push_back(scheduledDeleteResources[i]);
             scheduledDeleteResources[i].clear();
             DeleteSyncObject(frameSyncObjects[i]);
             frameSyncObjects[i] = HSyncObject();
         }
     }
     scheduledDeleteMutex.Unlock();
+
+    for (std::vector<ScheduledDeleteResource>& resources : resourcesToDelete)
+    {
+        for (ScheduledDeleteResource& res : resources)
+        {
+            switch (res.resourceType)
+            {
+            case RESOURCE_VERTEX_BUFFER:
+                VertexBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_INDEX_BUFFER:
+                IndexBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_CONST_BUFFER:
+                ConstBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_TEXTURE:
+                Texture::Delete(res.handle);
+                break;
+            case RESOURCE_TEXTURE_SET:
+                TextureSet::Delete(res.handle);
+                break;
+            case RESOURCE_DEPTHSTENCIL_STATE:
+                DepthStencilState::Delete(res.handle);
+                break;
+            case RESOURCE_SAMPLER_STATE:
+                SamplerState::Delete(res.handle);
+                break;
+            case RESOURCE_QUERY_BUFFER:
+                QueryBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_PIPELINE_STATE:
+                PipelineState::Delete(res.handle);
+                break;
+            case RESOURCE_PERFQUERY:
+                PerfQuery::Delete(res.handle);
+                break;
+            default:
+                DVASSERT(false, "Not supported resource scheduled for deletion");
+            }
+        }
+    }
 }
 
 HSyncObject GetCurrentFrameSyncObject()

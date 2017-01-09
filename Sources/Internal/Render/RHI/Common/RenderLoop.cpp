@@ -225,14 +225,14 @@ void SetResetPending()
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
-
     if (command->forceImmediate || (renderThreadFrameCount == 0))
     {
         DispatchPlatform::ProcessImmediateCommand(command);
     }
     else
     {
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
+
         bool scheduled = false;
         bool executed = false;
 
@@ -257,11 +257,7 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (!executed)
             {
                 framePreparedEvent.Signal();
-#ifdef __DAVAENGINE_WIN32__
-                DAVA::Thread::Sleep(1);
-#else
-                DAVA::Thread::Yield();
-#endif
+                DAVA::Thread::Sleep(0);
             }
         }
     }

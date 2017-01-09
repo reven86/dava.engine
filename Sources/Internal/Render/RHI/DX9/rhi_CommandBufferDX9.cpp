@@ -1190,6 +1190,8 @@ void _DX9_ResetBlock()
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
+
 #if 1
     #define CHECK_HR(hr) \
     if (FAILED(hr)) \
