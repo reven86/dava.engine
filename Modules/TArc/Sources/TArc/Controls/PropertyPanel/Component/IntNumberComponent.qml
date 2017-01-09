@@ -15,7 +15,7 @@ NumberBox
 
     onNumberChanged:
     {
-        dataContext.value = numberBox.number;
+        ValueSetHelper.SetValue(dataContext, "value", numberBox.number);
     }
 }
 

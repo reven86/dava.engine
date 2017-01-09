@@ -10,7 +10,10 @@ ValueSetHelper::ValueSetHelper(QObject* parent)
 
 void ValueSetHelper::SetValue(QObject* object, QString property, QVariant value)
 {
-    object->setProperty(property.toUtf8(), value);
+    if (object != nullptr)
+    {
+        object->setProperty(property.toUtf8(), value);
+    }
 }
 
 QObject* ValueSetHelperSingletonProvider(QQmlEngine* engine, QJSEngine* scriptEngine)

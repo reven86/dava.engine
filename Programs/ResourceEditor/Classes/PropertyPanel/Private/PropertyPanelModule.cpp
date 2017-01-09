@@ -1,7 +1,6 @@
 #include "Classes/PropertyPanel/PropertyPanelModule.h"
 #include "Classes/PropertyPanel/PropertyModelExt.h"
-#include "Classes/Qt/Scene/SceneSignals.h"
-#include "Classes/Qt/Scene/SelectableGroup.h"
+#include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
 #include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
@@ -9,9 +8,12 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/DataProcessing/DataNode.h"
 #include "TArc/DataProcessing/QtReflectionBridge.h"
+#include "TArc/Utils/ModuleCollection.h"
+#include "TArc/Core/FieldBinder.h"
 
 #include "Scene3D/Entity.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "Base/FastName.h"
 
 #include <QPointer>
 #include <QQmlEngine>
@@ -56,6 +58,8 @@ public:
 };
 }
 
+PropertyPanelModule::~PropertyPanelModule() = default;
+
 void PropertyPanelModule::PostInit()
 {
     using namespace DAVA::TArc;
@@ -76,22 +80,30 @@ void PropertyPanelModule::PostInit()
     PanelKey panelKey(panelInfo.title, panelInfo);
     ui->AddView(REGlobal::MainWindowKey, panelKey, QStringLiteral("qrc:/TArc/PropertyPanel/Component/PropertyPanel.qml"), std::move(wrapper));
 
-    SceneSignals* sceneSignals = SceneSignals::Instance();
-    connections.AddConnection(sceneSignals, &SceneSignals::SelectionChanged, DAVA::MakeFunction(this, &PropertyPanelModule::SceneSelectionChanged));
+    binder.reset(new FieldBinder(accessor));
+
+    DAVA::TArc::FieldDescriptor fieldDescr;
+    fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
+    fieldDescr.type = ReflectedTypeDB::Get<SelectionData>();
+    binder->BindField(fieldDescr, DAVA::MakeFunction(this, &PropertyPanelModule::SceneSelectionChanged));
 }
 
-void PropertyPanelModule::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
+void PropertyPanelModule::SceneSelectionChanged(const Any& newSelection)
 {
     selection.clear();
-    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
-    {
-        selection.push_back(entity);
-    }
-
     DAVA::Vector<DAVA::Reflection> objects;
-    for (size_t i = 0; i < selection.size(); ++i)
+    if (newSelection.CanGet<SelectableGroup>())
     {
-        objects.push_back(DAVA::Reflection::Create(&selection[i]));
+        SelectableGroup group = newSelection.Get<SelectableGroup>();
+        for (auto entity : group.ObjectsOfType<DAVA::Entity>())
+        {
+            selection.push_back(entity);
+        }
+
+        for (size_t i = 0; i < selection.size(); ++i)
+        {
+            objects.push_back(DAVA::Reflection::Create(&selection[i]));
+        }
     }
 
     DAVA::TArc::DataContext* ctx = GetAccessor()->GetGlobalContext();
@@ -100,9 +112,11 @@ void PropertyPanelModule::SceneSelectionChanged(SceneEditor2* scene, const Selec
     data->model->SetObjects(objects);
 }
 
-//DAVA_REFLECTION(PropertyPanelModule)
-//{
-//    DAVA::ReflectionRegistrator<PropertyPanelModule>::Begin()
-//        .ConstructorByPointer()
-//        .End();
-//}
+DAVA_REFLECTION_IMPL(PropertyPanelModule)
+{
+    DAVA::ReflectionRegistrator<PropertyPanelModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+}
+
+DECL_GUI_MODULE(PropertyPanelModule);

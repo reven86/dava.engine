@@ -41,6 +41,8 @@ set ( DAVA_COREV2 1 )
 set ( DAVA_PLATFORM_QT 1 )
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 
+add_plugin( TArcControls "${DAVA_MODULES_DIR}/TArcControls")
+
 find_package( QT5 REQUIRED )
 find_package( QtHelpers REQUIRED )
 find_package( DavaFramework REQUIRED )

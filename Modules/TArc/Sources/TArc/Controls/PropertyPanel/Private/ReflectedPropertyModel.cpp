@@ -149,11 +149,10 @@ void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> pare
         std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
         valueComponent->Init(this);
 
-        int32 childCount = parentItem->GetChildCount();
         QModelIndex parentIndex = MapItem(parentItem);
 
-        beginInsertRows(parentIndex, childCount, childCount);
-        childItem = parentItem->CreateChild(std::move(valueComponent));
+        beginInsertRows(parentIndex, childPosition, childPosition);
+        childItem = parentItem->CreateChild(std::move(valueComponent), childPosition);
         childItem->AddPropertyNode(node);
         endInsertRows();
     }

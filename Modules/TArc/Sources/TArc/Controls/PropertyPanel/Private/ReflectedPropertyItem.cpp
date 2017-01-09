@@ -68,11 +68,25 @@ QObject* ReflectedPropertyItem::GetModel() const
     return value->GetValueObject();
 }
 
-ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value)
+ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)
 {
     int32 position = static_cast<int32>(children.size());
-    children.emplace_back(new ReflectedPropertyItem(model, this, position, std::move(value)));
-    return children.back().get();
+    if (childPosition == position)
+    {
+        children.emplace_back(new ReflectedPropertyItem(model, this, position, std::move(value)));
+        return children.back().get();
+    }
+    else
+    {
+        auto iter = children.begin() + childPosition;
+        iter = children.insert(iter, std::unique_ptr<ReflectedPropertyItem>(new ReflectedPropertyItem(model, this, childPosition, std::move(value))));
+        for (auto tailIter = iter + 1; tailIter != children.end(); ++tailIter)
+        {
+            (*tailIter)->position++;
+        }
+
+        return iter->get();
+    }
 }
 
 int32 ReflectedPropertyItem::GetChildCount() const

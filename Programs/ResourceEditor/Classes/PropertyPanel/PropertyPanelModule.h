@@ -2,9 +2,8 @@
 
 #include "Base/BaseTypes.h"
 #include "TArc/Core/ClientModule.h"
-#include "TArc/Utils/QtConnections.h"
 
-//#include "Reflection/Reflection.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -16,14 +15,16 @@ class SelectableGroup;
 class PropertyPanelModule final : public DAVA::TArc::ClientModule
 {
 public:
+    PropertyPanelModule() = default;
+    ~PropertyPanelModule();
     void PostInit() override;
 
 private:
-    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
+    void SceneSelectionChanged(const Any& newSelection);
 
 private:
-    DAVA::TArc::QtConnections connections;
+    std::unique_ptr<DAVA::TArc::FieldBinder> binder;
     DAVA::Vector<DAVA::Entity*> selection;
 
-    //DAVA_VIRTUAL_REFLECTION(PropertyPanelModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION(PropertyPanelModule, DAVA::TArc::ClientModule);
 };

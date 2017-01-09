@@ -12,9 +12,6 @@ CheckBox
 
     onCheckedStateChanged:
     {
-        if (dataContext != null)
-        {
-            dataContext.value = checkedState;
-        }
+        ValueSetHelper.SetValue(dataContext, "value", checkedState);
     }
 }
