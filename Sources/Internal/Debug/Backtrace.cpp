@@ -7,6 +7,7 @@
 #   include "Concurrency/Mutex.h"
 #   include "Concurrency/LockGuard.h"
 #   include <dbghelp.h>
+#   include <Psapi.h>
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #   include "Concurrency/Atomic.h"
 #   include "Concurrency/Mutex.h"
@@ -199,9 +200,18 @@ String GetFrameSymbol(void* frame, bool demangle)
         // All DbgHelp functions are single threaded
         static Mutex mutex;
         LockGuard<Mutex> lock(mutex);
-        if (SymFromAddr(GetCurrentProcess(), reinterpret_cast<DWORD64>(frame), nullptr, symInfo))
+        HANDLE currentProcess = GetCurrentProcess();
+        if (SymFromAddr(currentProcess, reinterpret_cast<DWORD64>(frame), nullptr, symInfo))
         {
-            result = symInfo->Name;
+            const DWORD maxNameSize = 1024;
+            CHAR moduleBaseName[maxNameSize];
+            DWORD moduleNameLength = GetModuleBaseNameA(currentProcess, reinterpret_cast<HMODULE>(symInfo->ModBase), moduleBaseName, maxNameSize);
+            if (moduleNameLength != 0)
+            {
+                result = String(moduleBaseName, moduleNameLength);
+                result += "!";
+            }
+            result += symInfo->Name;
         }
     }
 
