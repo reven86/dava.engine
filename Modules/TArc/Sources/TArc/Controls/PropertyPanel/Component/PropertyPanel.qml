@@ -23,6 +23,7 @@ Rectangle
             {
                 Text
                 {
+                    renderType: Text.NativeRendering
                     anchors.fill: parent
                     text:
                     {

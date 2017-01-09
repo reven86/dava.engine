@@ -6,6 +6,7 @@ NumberBox
     id: numberBox
     property var dataContext
 
+    anchors.fill: parent
     number: dataContext != null ? dataContext.value : 0
     minimumValue: dataContext != null ? dataContext.minValue : 0
     maximumValue: dataContext != null ? dataContext.maxValue : 0

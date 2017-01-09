@@ -1,4 +1,5 @@
 import QtQuick 2.4
+import QtQuick.Controls.Styles 1.4 as QtStyles
 import QtQuick.Controls 1.4 as QtControls
 import TArcControls 1.0
 
@@ -22,8 +23,9 @@ QtControls.SpinBox
         ValueSetHelper.SetValue( spinBox, "number", value );
     }
 
-    onNumberChanged:
+    style: QtStyles.SpinBoxStyle
     {
-        value = number;
+        horizontalAlignment: Qt.AlignLeft
+        renderType: Text.NativeRendering
     }
 }
