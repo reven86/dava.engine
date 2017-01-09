@@ -8,6 +8,9 @@
 #include "Render/PixelFormatDescriptor.h"
 
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
+
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -356,7 +359,7 @@ uint32 GetFormatSizeInBits(dds::D3D_FORMAT format)
         return 8 * 16;
 
     default:
-        DVASSERT_MSG(false, Format("undefined format: %d", format).c_str());
+        DVASSERT(false, Format("undefined format: %d", format).c_str());
         return 0;
     }
 }
@@ -403,7 +406,7 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
         break;
     }
     default:
-        DVASSERT_MSG(false, Format("undefined format: %d", srcFormat).c_str());
+        DVASSERT(false, Format("undefined format: %d", srcFormat).c_str());
         break;
     }
 }
@@ -447,7 +450,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
         return;
     }
     default:
-        DVASSERT_MSG(false, Format("undefined format: %d", dstFormat).c_str());
+        DVASSERT(false, Format("undefined format: %d", dstFormat).c_str());
         break;
     }
 }
@@ -978,7 +981,7 @@ std::unique_ptr<DDSReader> DDSReader::CreateReader(File* file)
 
     DDSReaderImpl* readerImpl = new DDSReaderImpl(file);
     std::unique_ptr<DDSReader> ddsFile(readerImpl);
-    DVASSERT_MSG(file->GetPos() == 0, Format("File %s position is not 0 (file had been already read)", file->GetFilename().GetStringValue().c_str()).c_str());
+    DVASSERT(file->GetPos() == 0, Format("File %s position is not 0 (file had been already read)", file->GetFilename().GetStringValue().c_str()).c_str());
 
     if (readerImpl->ReadMagicWord() && readerImpl->ReadHeaders())
     {
@@ -1158,7 +1161,7 @@ struct DDSWriterImpl : public DDSWriter, public DDSHandler
 std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(File* file)
 {
     DVASSERT(file);
-    DVASSERT_MSG(file->GetSize() == 0, Format("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str()).c_str());
+    DVASSERT(file->GetSize() == 0, Format("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str()).c_str());
     std::unique_ptr<DDSWriter> writerPtr(new DDSWriterImpl(file));
     return writerPtr;
 }
@@ -1198,13 +1201,13 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     faceCount = 0;
     for (const Vector<Image*>& faceImageSet : images)
     {
-        DVASSERT_MSG(static_cast<uint32>(faceImageSet.size()) == numImagesInFace, "image faces have different mips count");
+        DVASSERT(static_cast<uint32>(faceImageSet.size()) == numImagesInFace, "image faces have different mips count");
         DVASSERT(faceImageSet[0] != nullptr);
         faces[faceCount++] = static_cast<rhi::TextureFace>(faceImageSet[0]->cubeFaceID);
         for (const Image* image : faceImageSet)
         {
-            DVASSERT_MSG(image != nullptr, "image is null in set");
-            DVASSERT_MSG(image->format == srcFormat, "image mips have different formats")
+            DVASSERT(image != nullptr, "image is null in set");
+            DVASSERT(image->format == srcFormat, "image mips have different formats");
         }
     }
 

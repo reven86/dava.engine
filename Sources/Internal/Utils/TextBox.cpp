@@ -68,14 +68,14 @@ TextBoxImpl::TextBoxImpl(TextBox* tb_)
     : tb(tb_)
 {
     paragraph = ubidi_open();
-    DVASSERT_MSG(paragraph != nullptr, "Can't alocate new paragraph");
+    DVASSERT(paragraph != nullptr, "Can't alocate new paragraph");
 }
 
 TextBoxImpl::TextBoxImpl(TextBox* tb_, const TextBoxImpl& src)
     : tb(tb_)
 {
     paragraph = ubidi_open();
-    DVASSERT_MSG(paragraph != nullptr, "Can't alocate new paragraph");
+    DVASSERT(paragraph != nullptr, "Can't alocate new paragraph");
     uString = src.uString;
     baseLevel = src.baseLevel;
     UpdateParagraph();
@@ -107,7 +107,7 @@ void TextBoxImpl::UpdateParagraph()
     if (paragraph == nullptr)
     {
         Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
-        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT(false, "[TextBox::UpdatePara] pararagraph == nullptr");
         return;
     }
 
@@ -116,7 +116,7 @@ void TextBoxImpl::UpdateParagraph()
     if (errorCode != U_ZERO_ERROR)
     {
         Logger::Error("[TextBox::UpdatePara] errorCode = %d", errorCode);
-        DVASSERT_MSG(false, Format("[TextBox::UpdatePara] errorCode", errorCode).c_str())
+        DVASSERT(false, Format("[TextBox::UpdatePara] errorCode", errorCode).c_str());
     }
 }
 
@@ -125,7 +125,7 @@ void TextBoxImpl::Shape()
     if (paragraph == nullptr)
     {
         Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
-        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT(false, "[TextBox::UpdatePara] pararagraph == nullptr");
         return;
     }
 
@@ -144,7 +144,7 @@ void TextBoxImpl::Shape()
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
         Logger::Error("[TextBox::Shape] shapeArabic2 errorCode = %d", errorCode);
-        DVASSERT_MSG(false, Format("[TextBox::Shape] shapeArabic errorCode", errorCode).c_str());
+        DVASSERT(false, Format("[TextBox::Shape] shapeArabic errorCode", errorCode).c_str());
     }
 
     // Check new shaped length
@@ -153,7 +153,7 @@ void TextBoxImpl::Shape()
     if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
     {
         Logger::Error("[TextBox::Shape] shapeArabic1 errorCode = %d", errorCode);
-        DVASSERT_MSG(false, Format("[TextBox::Shape] detect length errorCode %d", errorCode).c_str());
+        DVASSERT(false, Format("[TextBox::Shape] detect length errorCode %d", errorCode).c_str());
     }
     if (length > outputLength)
     {
@@ -172,7 +172,7 @@ void TextBoxImpl::Shape()
     }
     else if (length < outputLength)
     {
-        DVASSERT_MSG(false, Format("[TextBox::Shape] Unexpected behaviour (%d, %d)", length, outputLength).c_str());
+        DVASSERT(false, Format("[TextBox::Shape] Unexpected behaviour (%d, %d)", length, outputLength).c_str());
     }
 
     // Store shaped text
@@ -197,7 +197,7 @@ void TextBoxImpl::ReorderLines()
     if (lpara == nullptr)
     {
         Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
-        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT(false, "[TextBox::UpdatePara] pararagraph == nullptr");
         return;
     }
 
@@ -213,7 +213,7 @@ void TextBoxImpl::ReorderLines()
         if (errorCode != U_ZERO_ERROR)
         {
             Logger::Error("[TextBox::ReorderLines] setPara errorCode = %d", errorCode);
-            DVASSERT_MSG(false, Format("[TextBox::Shape] setPara errorCode", errorCode).c_str());
+            DVASSERT(false, Format("[TextBox::Shape] setPara errorCode", errorCode).c_str());
         }
 
         // Write reordered string
@@ -223,7 +223,7 @@ void TextBoxImpl::ReorderLines()
         if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
         {
             Logger::Error("[TextBox::ReorderLines] writeReordered errorCode = %d", errorCode);
-            DVASSERT_MSG(false, Format("[TextBox::ReorderLines] writeReordered errorCode", errorCode).c_str());
+            DVASSERT(false, Format("[TextBox::ReorderLines] writeReordered errorCode", errorCode).c_str());
         }
 
         line.visualString = ConvertU2W(visString);
@@ -236,7 +236,7 @@ void TextBoxImpl::ReorderLines()
         if (errorCode != U_ZERO_ERROR)
         {
             Logger::Error("[TextBox::ReorderLines] getLogicalMap errorCode = %d", errorCode);
-            DVASSERT_MSG(false, Format("[TextBox::ReorderLines] getLogicalMap errorCode", errorCode).c_str());
+            DVASSERT(false, Format("[TextBox::ReorderLines] getLogicalMap errorCode", errorCode).c_str());
         }
 
         // Correct global reordered characters map according local map
@@ -283,7 +283,7 @@ UBiDiLevel TextBoxImpl::DirectionModeToBiDiLevel(const TextBox::DirectionMode mo
     case TextBox::DirectionMode::STRONG_RTL:
         return UBIDI_RTL;
     }
-    DVASSERT_MSG(false, "Undefined direction mode");
+    DVASSERT(false, "Undefined direction mode");
     return UBIDI_DEFAULT_LTR;
 }
 
@@ -299,7 +299,7 @@ DAVA::TextBox::Direction TextBoxImpl::BiDiDirectionToDirection(const UBiDiDirect
     case UBIDI_MIXED:
         return TextBox::Direction::MIXED;
     }
-    DVASSERT_MSG(false, "Undefined direction");
+    DVASSERT(false, "Undefined direction");
     return TextBox::Direction::LTR;
 }
 
@@ -436,12 +436,12 @@ void TextBox::Split(const WrapMode mode, const Vector<uint8>& breaks, const Vect
     }
     else
     {
-        DVASSERT_MSG(breaks.size() == processedText.length(),
-                     Format("Incorrect breaks information (%d != %d)", breaks.size(), processedText.length()).c_str());
-        DVASSERT_MSG(widths.size() == processedText.length(),
-                     Format("Incorrect character sizes information (%d != %d)", widths.size(), processedText.length()).c_str());
-        DVASSERT_MSG(characters.size() == processedText.length(),
-                     Format("Incorrect character information and process text lengths (%d != %d)", widths.size(), processedText.length()).c_str())
+        DVASSERT(breaks.size() == processedText.length(),
+                 Format("Incorrect breaks information (%d != %d)", breaks.size(), processedText.length()).c_str());
+        DVASSERT(widths.size() == processedText.length(),
+                 Format("Incorrect character sizes information (%d != %d)", widths.size(), processedText.length()).c_str());
+        DVASSERT(characters.size() == processedText.length(),
+                 Format("Incorrect character information and process text lengths (%d != %d)", widths.size(), processedText.length()).c_str());
 
         float32 currentWidth = 0;
         uint32 lastPossibleBreak = 0;
@@ -578,7 +578,7 @@ void TextBox::CleanUpVisualLines()
 
 void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight, uint32 fromLine, uint32 linesCount)
 {
-    DVASSERT_MSG(characterSizes.size() == processedText.size(), Format("Incorrect character sizes information (%d != %d)", characterSizes.size(), processedText.size()).c_str());
+    DVASSERT(characterSizes.size() == processedText.size(), Format("Incorrect character sizes information (%d != %d)", characterSizes.size(), processedText.size()).c_str());
 
     uint32 lineLimit = fromLine + linesCount;
     uint32 linesSize = uint32(lines.size());

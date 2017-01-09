@@ -183,7 +183,7 @@ void LuaScript::PushArg(const Any& any)
 int32 LuaScript::EndCallFunction(int32 nargs)
 {
     int32 base = lua_gettop(state->lua) - nargs; // store function stack index
-    DVASSERT_MSG(base >= 1, "Lua stack corrupted!");
+    DVASSERT(base >= 1, "Lua stack corrupted!");
     int32 errfunc = PushErrorHandler(base); // stack +1: insert error handler function before function
     int32 res = lua_pcall(state->lua, nargs, LUA_MULTRET, errfunc); // stack -(nargs+1), +nresults: return value or error message
     if (res != 0)
@@ -193,7 +193,7 @@ int32 LuaScript::EndCallFunction(int32 nargs)
     int32 top = lua_gettop(state->lua); // store current stack size (must contains error handler if it has setted
     if (errfunc)
     {
-        DVASSERT_MSG(top >= 1, "Lua stack corrupted!");
+        DVASSERT(top >= 1, "Lua stack corrupted!");
         lua_remove(state->lua, base); // stack -1: remove error hander function
     }
     return top - base; // calculate number of function results

@@ -27,7 +27,7 @@ FTManager::FTManager()
     if (error)
     {
         Logger::Error("FTManager: FT_Init_FreeType failed with error %d", error);
-        DVASSERT_MSG(false, "FTManager: FT_Init_FreeType failed");
+        DVASSERT(false, "FTManager: FT_Init_FreeType failed");
         return;
     }
 
@@ -35,7 +35,7 @@ FTManager::FTManager()
     if (error)
     {
         Logger::Error("FTManager: FTC_Manager_New failed with error %d", error);
-        DVASSERT_MSG(false, "FTManager: FTC_Manager_New failed");
+        DVASSERT(false, "FTManager: FTC_Manager_New failed");
         return;
     }
 
@@ -43,14 +43,14 @@ FTManager::FTManager()
     if (error)
     {
         Logger::Error("FTManager: FTC_ImageCache_New failed with error %d", error);
-        DVASSERT_MSG(false, "FTManager: FTC_ImageCache_New failed");
+        DVASSERT(false, "FTManager: FTC_ImageCache_New failed");
     }
 
     error = FTC_CMapCache_New(manager, &cmapcache);
     if (error)
     {
         Logger::Error("FTManager: FTC_CMapCache_New failed with error %d", error);
-        DVASSERT_MSG(false, "FTManager: FTC_CMapCache_New failed");
+        DVASSERT(false, "FTManager: FTC_CMapCache_New failed");
     }
 }
 
