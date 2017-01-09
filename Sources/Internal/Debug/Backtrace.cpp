@@ -39,6 +39,7 @@ typedef struct _SYMBOL_INFO {
 BOOL (__stdcall *SymInitialize_impl)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
 BOOL (__stdcall *SymFromAddr_impl)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
 BOOL (__stdcall *SymGetSearchPath_impl)(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength);
+DWORD (__stdcall *GetModuleBaseName_impl)(HANDLE hProcess, HMODULE hModule, LPSTR lpBaseName, DWORD nSize);
 
 // Wrapper function to use same code for win32 and winuap
 BOOL SymInitialize(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess)
@@ -60,6 +61,13 @@ BOOL SymGetSearchPath(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength)
     if (SymGetSearchPath_impl != nullptr)
         return SymGetSearchPath_impl(hProcess, SearchPath, SearchPathLength);
     return FALSE;
+}
+
+DWORD GetModuleBaseNameA(HANDLE hProcess, HMODULE hModule, LPSTR lpBaseName, DWORD nSize)
+{
+    if (GetModuleBaseName_impl != nullptr)
+        return GetModuleBaseName_impl(hProcess, hModule, lpBaseName, nSize);
+    return 0;
 }
 
 #elif defined(__DAVAENGINE_APPLE__)
@@ -109,6 +117,21 @@ void InitSymbols()
                     SymInitialize_impl = reinterpret_cast<decltype(SymInitialize_impl)>(GetProcAddress(hdbghelp, "SymInitialize"));
                     SymFromAddr_impl = reinterpret_cast<decltype(SymFromAddr_impl)>(GetProcAddress(hdbghelp, "SymFromAddr"));
                     SymGetSearchPath_impl = reinterpret_cast<decltype(SymGetSearchPath_impl)>(GetProcAddress(hdbghelp, "SymGetSearchPath"));
+                }
+
+                HMODULE kernel32Lib = LoadLibraryW(L"Kernel32.dll");
+                if (kernel32Lib)
+                {
+                    GetModuleBaseName_impl = reinterpret_cast<decltype(GetModuleBaseName_impl)>(GetProcAddress(kernel32Lib, "GetModuleBaseNameA"));
+                }
+
+                if (GetModuleBaseName_impl == nullptr)
+                {
+                    HMODULE psApiLib = LoadLibraryW(L"Psapi.dll");
+                    if (psApiLib)
+                    {
+                        GetModuleBaseName_impl = reinterpret_cast<decltype(GetModuleBaseName_impl)>(GetProcAddress(psApiLib, "GetModuleBaseNameA"));
+                    }
                 }
             }
 
