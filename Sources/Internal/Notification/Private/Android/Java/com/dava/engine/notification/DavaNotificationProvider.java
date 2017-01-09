@@ -43,14 +43,23 @@ public class DavaNotificationProvider {
             Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider not inited!");
             return;
         }
-        icon = android.R.drawable.sym_def_app_icon;
+
+        if (icon == 0)
+        {
+            icon = android.R.drawable.sym_def_app_icon;
+        }
+
         builder.setSmallIcon(icon);
     }
 
-    static void SetNotificationIcon(int value)
+    public static void SetNotificationIcon(int value)
     {
         icon = value;
-        builder.setSmallIcon(icon);
+
+        if (builder != null)
+        {
+            builder.setSmallIcon(icon);
+        }
     }
 
     static int GetNotificationIcon()
