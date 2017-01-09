@@ -86,7 +86,7 @@ private:
     }
     int GetFlowLevel() const
     {
-        return static_cast<int>(m_flows.size());
+        return m_flows.size();
     }
 
     Token::TYPE GetStartTokenFor(IndentMarker::INDENT_TYPE type) const;
