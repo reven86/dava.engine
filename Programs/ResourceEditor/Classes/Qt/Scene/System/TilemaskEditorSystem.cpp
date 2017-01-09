@@ -62,7 +62,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
     quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
     rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
-    
+
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
     quadPacket.vertexCount = 6;
