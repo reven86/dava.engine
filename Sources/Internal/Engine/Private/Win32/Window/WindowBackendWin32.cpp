@@ -5,8 +5,6 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include <ShellScalingAPI.h>
-
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -959,6 +957,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnPointerClick(pointerId, pt.x, pt.y);
+        isHandled = false;
     }
     else if (message == WM_POINTERUPDATE)
     {
@@ -967,6 +966,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnPointerUpdate(pointerId, pt.x, pt.y);
+        isHandled = false;
     }
     else if (message == WM_POINTERWHEEL || message == WM_POINTERHWHEEL)
     {
@@ -980,6 +980,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
+        isHandled = false;
     }
     else if (message == WM_MOUSEMOVE)
     {
