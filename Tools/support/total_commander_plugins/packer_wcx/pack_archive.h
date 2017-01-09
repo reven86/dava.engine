@@ -27,7 +27,7 @@ public:
 
     const PackMetaData& GetMeta() const;
 
-    std::string PringMeta() const;
+    std::string PrintMeta() const;
 
     int32_t fileIndex = 0;
     std::string arcName;

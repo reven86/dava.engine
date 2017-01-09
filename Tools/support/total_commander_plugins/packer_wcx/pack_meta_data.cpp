@@ -61,18 +61,19 @@ struct membuf : public std::streambuf
     {
         char* begin = const_cast<char*>(static_cast<const char*>(ptr));
         char* end = const_cast<char*>(begin + size);
-        this->setg(begin, begin, end);
+        setg(begin, begin, end);
     }
 };
 
 void PackMetaData::Deserialize(const void* ptr, size_t size)
 {
+    using namespace std;
     assert(ptr != nullptr);
     assert(size >= 16);
 
     membuf buf(ptr, size);
 
-    std::istream file(&buf);
+    istream file(&buf);
 
     // 4b header - "meta"
     // 4b num_files
@@ -80,17 +81,17 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     // 4b - uncompressed_size
     // 4b - compressed_size
     // compressed_size b
-    std::array<char, 4> header;
+    array<char, 4> header;
     file.read(&header[0], 4);
-    if (header != std::array<char, 4>{ 'm', 'e', 't', 'a' })
+    if (header != array<char, 4>{ 'm', 'e', 't', 'a' })
     {
-        throw std::runtime_error("read metadata error - not meta");
+        throw runtime_error("read metadata error - not meta");
     }
     uint32_t numFiles = 0;
     file.read(reinterpret_cast<char*>(&numFiles), 4);
     if (!file)
     {
-        throw std::runtime_error("read metadata error - no numFiles");
+        throw runtime_error("read metadata error - no numFiles");
     }
     tableFiles.resize(numFiles);
 
@@ -98,53 +99,57 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     file.read(reinterpret_cast<char*>(&tableFiles[0]), numFilesBytes);
     if (!file)
     {
-        throw std::runtime_error("read metadata error - no tableFiles");
+        throw runtime_error("read metadata error - no tableFiles");
     }
 
     uint32_t uncompressedSize = 0;
     file.read(reinterpret_cast<char*>(&uncompressedSize), 4);
     if (!file)
     {
-        throw std::runtime_error("read metadata error - no uncompressedSize");
+        throw runtime_error("read metadata error - no uncompressedSize");
     }
     uint32_t compressedSize = 0;
     file.read(reinterpret_cast<char*>(&compressedSize), 4);
     if (!file)
     {
-        throw std::runtime_error("read metadata error - no compressedSize");
+        throw runtime_error("read metadata error - no compressedSize");
     }
 
     assert(16 + numFilesBytes + compressedSize == size);
 
-    std::vector<uint8_t> compressedBuf(compressedSize);
+    vector<uint8_t> compressedBuf(compressedSize);
 
     file.read(reinterpret_cast<char*>(&compressedBuf[0]), compressedSize);
     if (!file)
     {
-        throw std::runtime_error("read metadata error - no compressedBuf");
+        throw runtime_error("read metadata error - no compressedBuf");
     }
 
     assert(uncompressedSize >= compressedSize);
 
-    std::vector<uint8_t> uncompressedBuf(uncompressedSize);
+    vector<uint8_t> uncompressedBuf(uncompressedSize);
 
     if (!LZ4CompressorDecompress(compressedBuf, uncompressedBuf))
     {
-        throw std::runtime_error("read metadata error - can't decompress");
+        throw runtime_error("read metadata error - can't decompress");
     }
 
     const char* startBuf = reinterpret_cast<const char*>(&uncompressedBuf[0]);
     const char* endBuf = reinterpret_cast<const char*>(&uncompressedBuf[uncompressedSize]);
 
     membuf outBuf(startBuf, uncompressedSize);
-    std::istream ss(&outBuf);
+    istream ss(&outBuf);
 
     // now parse decompressed packs data line by line (%s %s\n) format
-    std::string packName;
-    std::string packDependency;
-    for (; !ss.eof();)
+    for (string line, packName, packDependency; getline(ss, line);)
     {
-        ss >> packName >> packDependency;
-        tablePacks.push_back(std::tuple<std::string, std::string>(packName, packDependency));
+        auto first_space = line.find(' ');
+        if (first_space == string::npos)
+        {
+            throw runtime_error("can't parse packs and dependencies");
+        }
+        packName = line.substr(0, first_space);
+        packDependency = line.substr(first_space + 1);
+        tablePacks.push_back({ packName, packDependency });
     }
 }

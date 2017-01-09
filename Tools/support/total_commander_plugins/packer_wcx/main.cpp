@@ -152,7 +152,7 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
         PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
         if (archive->lastFileName == std::string("meta.meta"))
         {
-            std::string data = archive->PringMeta();
+            std::string data = archive->PrintMeta();
             std::string outputName = DestName ? DestName : DestPath;
 
             std::ofstream out(outputName, std::ios_base::binary);
