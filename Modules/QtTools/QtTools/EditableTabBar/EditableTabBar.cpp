@@ -12,9 +12,12 @@ EditableTabBar::EditableTabBar(QWidget* parent)
 {
     nameEditor->setWindowFlags(Qt::Popup);
     nameEditor->installEventFilter(this);
-    DVVERIFY(QObject::connect(nameEditor, &QLineEdit::editingFinished, this, &EditableTabBar::onNameEditingFinished));
 
-    DVVERIFY(QObject::connect(this, &QTabBar::tabBarDoubleClicked, this, &EditableTabBar::onTabDoubleClicked));
+    QMetaObject::Connection connectionResult = QObject::connect(nameEditor, &QLineEdit::editingFinished, this, &EditableTabBar::onNameEditingFinished);
+    DVASSERT(connectionResult);
+
+    connectionResult = QObject::connect(this, &QTabBar::tabBarDoubleClicked, this, &EditableTabBar::onTabDoubleClicked);
+    DVASSERT(connectionResult);
 }
 
 void EditableTabBar::setNameValidator(const QValidator* v)

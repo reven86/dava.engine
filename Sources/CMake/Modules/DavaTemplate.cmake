@@ -32,9 +32,9 @@
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 macro( setup_main_executable )
 
@@ -58,6 +58,8 @@ load_property( PROPERTY_LIST
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}
+
+        PLUGIN_LIST
     )
 
 if( COVERAGE )
@@ -617,6 +619,7 @@ elseif ( WIN32 )
 
     # Generate debug info also in release builds
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/DEBUG /SUBSYSTEM:WINDOWS" )
 
     if( NOT DAVA_DEBUGGER_WORKING_DIRECTORY )
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} )
@@ -891,6 +894,70 @@ if( DEPLOY )
     if( QT5_FOUND AND NOT QT_POST_DEPLOY )
         qt_deploy( )
     endif()
+
+endif()
+
+if( PLUGIN_LIST )
+    add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
+
+    if( DEPLOY )
+        set( PLUGIN_OUT_DIR ${DEPLOY_EXECUTE_DIR} )
+    else()
+        set( PLUGIN_OUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>" )
+    endif()
+
+    foreach( PLUGIN ${PLUGIN_LIST} )
+
+        get_property( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+        get_property( ${PLUGIN}_PLUGIN_COPY_ADD_FILES GLOBAL PROPERTY ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
+
+        if( APPLE )
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/../PlugIns" )
+        else ()
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/PlugIns" )
+        endif()
+
+        if( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+            set( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR}/${${PLUGIN}_RELATIVE_PATH_TO_FOLDER} )
+        endif()
+
+        set_property( GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                        
+            if( APPLE )
+                set_target_properties( ${PLUGIN} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )                
+            else()
+                set_target_properties( ${PLUGIN} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )
+            endif()
+
+        endforeach( )
+
+        if(  ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
+
+            foreach( ITEM ${${PLUGIN}_PLUGIN_COPY_ADD_FILES} )
+
+                if( IS_DIRECTORY ${ITEM} )
+                    get_filename_component( FOLDER_NAME ${ITEM}  NAME    )
+
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR}/${FOLDER_NAME} ) 
+
+                else()
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR} )                    
+                endif()
+
+            endforeach( )
+
+        endif()
+                    
+    endforeach( )
 
 endif()
 
