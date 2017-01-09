@@ -116,7 +116,8 @@ void ViewSceneScreen::LoadResources()
 
 void ViewSceneScreen::AddMenuControl()
 {
-    menu.reset(new Menu(nullptr, this, font, Rect(10, 30, 250, 60)));
+    Rect rect = Rect(10, 30, 250, 60);
+    menu.reset(new Menu(nullptr, this, font, rect));
     Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
     Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
