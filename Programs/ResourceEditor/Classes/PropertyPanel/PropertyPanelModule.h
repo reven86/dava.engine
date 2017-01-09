@@ -8,6 +8,10 @@
 namespace DAVA
 {
 class Entity;
+namespace TArc
+{
+class FieldBinder;
+}
 }
 
 class SceneEditor2;
@@ -20,7 +24,7 @@ public:
     void PostInit() override;
 
 private:
-    void SceneSelectionChanged(const Any& newSelection);
+    void SceneSelectionChanged(const DAVA::Any& newSelection);
 
 private:
     std::unique_ptr<DAVA::TArc::FieldBinder> binder;

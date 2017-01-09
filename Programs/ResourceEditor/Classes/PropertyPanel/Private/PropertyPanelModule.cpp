@@ -84,11 +84,11 @@ void PropertyPanelModule::PostInit()
 
     DAVA::TArc::FieldDescriptor fieldDescr;
     fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
-    fieldDescr.type = ReflectedTypeDB::Get<SelectionData>();
+    fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
     binder->BindField(fieldDescr, DAVA::MakeFunction(this, &PropertyPanelModule::SceneSelectionChanged));
 }
 
-void PropertyPanelModule::SceneSelectionChanged(const Any& newSelection)
+void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
 {
     selection.clear();
     DAVA::Vector<DAVA::Reflection> objects;
