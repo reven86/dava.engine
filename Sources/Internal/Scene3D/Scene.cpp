@@ -544,7 +544,7 @@ void Scene::RemoveSystem(SceneSystem* sceneSystem)
     }
     else
     {
-        DVASSERT_MSG(false, "Failed to remove system from scene");
+        DVASSERT(false, "Failed to remove system from scene");
     }
 }
 

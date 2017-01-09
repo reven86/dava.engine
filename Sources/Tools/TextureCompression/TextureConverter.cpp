@@ -5,6 +5,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 
 ENUM_DECLARE(DAVA::TextureConverter::eConvertQuality)
 {

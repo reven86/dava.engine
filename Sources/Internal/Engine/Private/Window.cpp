@@ -7,6 +7,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
 
+#include "Utils/StringFormat.h"
 #include "Animation/AnimationManager.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
@@ -636,7 +637,7 @@ void Window::SetSurfaceScaleAsync(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
-        DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        DVASSERT(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
         return;
     }
 
