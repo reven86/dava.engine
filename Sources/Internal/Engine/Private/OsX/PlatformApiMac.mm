@@ -38,18 +38,18 @@ void PrimaryWindowDeminiaturize()
     [wb->bridge->nswindow becomeKeyWindow];
 }
 
-void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->RegisterNSApplicationDelegateListener(listener);
+    core->bridge->RegisterDVEApplicationListener(listener);
 }
 
-void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->UnregisterNSApplicationDelegateListener(listener);
+    core->bridge->UnregisterDVEApplicationListener(listener);
 }
 
 } // namespace Mac

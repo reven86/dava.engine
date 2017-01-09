@@ -47,10 +47,12 @@
 
 - (void)windowWillStartLiveResize:(NSNotification*)notification
 {
+    bridge->WindowWillStartLiveResize();
 }
 
 - (void)windowDidEndLiveResize:(NSNotification*)notification
 {
+    bridge->WindowDidEndLiveResize();
 }
 
 - (void)windowDidChangeScreen:(NSNotification*)notification
@@ -73,9 +75,19 @@
     bridge->WindowWillEnterFullScreen();
 }
 
+- (void)windowDidEnterFullScreen:(NSNotification*)notification
+{
+    bridge->WindowDidEnterFullScreen();
+}
+
 - (void)windowWillExitFullScreen:(NSNotification*)notification
 {
     bridge->WindowWillExitFullScreen();
+}
+
+- (void)windowDidExitFullScreen:(NSNotification*)notification
+{
+    bridge->WindowDidExitFullScreen();
 }
 
 @end
