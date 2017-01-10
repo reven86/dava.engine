@@ -104,6 +104,15 @@ void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
     if (isFullscreen != isFullscreenRequested)
     {
         [nswindow toggleFullScreen:nil];
+
+        if (isFullscreen)
+        {
+            // If we're entering fullscreen we want our app to also become focused
+            // To handle cases when app is being opened with fullscreen mode,
+            // but another app gets focus before our app's window is created,
+            // thus ignoring any input afterwards
+            [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        }
     }
 }
 
@@ -174,6 +183,18 @@ void WindowNativeBridge::WindowDidResize()
     HandleSizeChanging(false);
 }
 
+void WindowNativeBridge::WindowWillStartLiveResize()
+{
+}
+
+void WindowNativeBridge::WindowDidEndLiveResize()
+{
+    if (!isFullscreenToggling)
+    {
+        ForceBackbufferSizeUpdate();
+    }
+}
+
 void WindowNativeBridge::WindowDidChangeScreen()
 {
     HandleSizeChanging(true);
@@ -204,11 +225,23 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidEnterFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidExitFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -507,18 +540,19 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 
 void WindowNativeBridge::UpdateSystemCursorVisible()
 {
-    bool visible = !cursorInside || mouseVisible;
     static bool mouseVisibleState = true;
+
+    bool visible = !cursorInside || mouseVisible;
     if (mouseVisibleState != visible)
     {
         mouseVisibleState = visible;
         if (visible)
         {
-            [NSCursor unhide];
+            CGDisplayShowCursor(kCGDirectMainDisplay);
         }
         else
         {
-            [NSCursor hide];
+            CGDisplayHideCursor(kCGDirectMainDisplay);
         }
     }
 }
@@ -536,12 +570,16 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setBackbufferScale:scale];
 
+    ForceBackbufferSizeUpdate();
+    WindowDidResize();
+}
+
+void WindowNativeBridge::ForceBackbufferSizeUpdate()
+{
     // Workaround to force change backbuffer size
     [nswindow setContentView:nil];
     [nswindow setContentView:renderView];
     [nswindow makeFirstResponder:renderView];
-
-    WindowDidResize();
 }
 
 } // namespace Private

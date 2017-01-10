@@ -97,7 +97,7 @@ void ProfilingSession::AppendStatItems(const DAVA::MMCurStat* statBuf, size_t it
 
     if (logFile.Valid())
     {
-        logFile->Write(statBuf, itemSize * itemCount);
+        logFile->Write(statBuf, static_cast<DAVA::uint32>(itemSize * itemCount));
         if (stat.size() - statItemFlushed >= statItemFlushThreshold)
         {
             UpdateFileHeader(false);
@@ -279,8 +279,8 @@ bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
     stat.reserve(count);
     while (nloaded < count && result)
     {
-        size_t toread = Min(BUF_CAPACITY * itemSize, (count - nloaded) * itemSize);
-        size_t nread = logFile->Read(&*buf.begin(), toread);
+        uint32 toread = static_cast<uint32>(Min(BUF_CAPACITY * itemSize, (count - nloaded) * itemSize));
+        uint32 nread = logFile->Read(&*buf.begin(), toread);
         result = toread == nread && 0 == nread % itemSize;
         if (result)
         {
