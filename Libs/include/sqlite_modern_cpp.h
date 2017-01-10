@@ -436,7 +436,7 @@ namespace sqlite {
 		void const* buf = reinterpret_cast<void const *>(vec.data());
 		int bytes = vec.size() * sizeof(T);
 		int hresult;
-		if((hresult = sqlite3_bind_blob(db->_stmt.get(), db->_inx, buf, bytes, SQLITE_TRANSIENT)) != SQLITE_OK) {
+		if((hresult = sqlite3_bind_blob(db->_stmt.get(), db->_inx, buf, bytes, -1)) != SQLITE_OK) {
 			exceptions::throw_sqlite_error(hresult);
 		}
 		++db->_inx;
@@ -468,7 +468,7 @@ namespace sqlite {
 
 	template<> inline database_binder::chain_type& operator <<(database_binder::chain_type& db, const std::string& txt) {
 		int hresult;
-		if((hresult = sqlite3_bind_text(db->_stmt.get(), db->_inx, txt.data(), -1, SQLITE_TRANSIENT)) != SQLITE_OK) {
+		if((hresult = sqlite3_bind_text(db->_stmt.get(), db->_inx, txt.data(), -1, -1)) != SQLITE_OK) {
 			exceptions::throw_sqlite_error(hresult);
 		}
 
@@ -488,7 +488,7 @@ namespace sqlite {
 
 	template<> inline database_binder::chain_type& operator <<(database_binder::chain_type& db, const std::u16string& txt) {
 		int hresult;
-		if((hresult = sqlite3_bind_text16(db->_stmt.get(), db->_inx, txt.data(), -1, SQLITE_TRANSIENT)) != SQLITE_OK) {
+		if((hresult = sqlite3_bind_text16(db->_stmt.get(), db->_inx, txt.data(), -1, -1)) != SQLITE_OK) {
 			exceptions::throw_sqlite_error(hresult);
 		}
 
