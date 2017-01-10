@@ -1,4 +1,4 @@
-#include "Notification/Private/Mac/LocalNotificationListenerMac.h"
+#import "Notification/Private/Mac/DVELocalNotificationListener.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
@@ -10,56 +10,58 @@
 #include "Engine/Engine.h"
 #include "Engine/PlatformApi.h"
 #include "Engine/Window.h"
-#include "Logger/Logger.h"
 #include "Notification/LocalNotificationController.h"
 #include "Utils/NSStringUtils.h"
 
-namespace DAVA
+@implementation DVELocalNotificationListener
 {
-namespace Private
-{
-LocalNotificationListener::LocalNotificationListener(DAVA::LocalNotificationController& controller)
-    : localNotificationController(controller)
-{
-    PlatformApi::Mac::RegisterNSApplicationDelegateListener(this);
+    DAVA::LocalNotificationController* notificationController;
 }
 
-LocalNotificationListener::~LocalNotificationListener()
+- (instancetype)initWithController:(DAVA::LocalNotificationController&)controller
 {
-    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(this);
+    if (self = [super init])
+    {
+        notificationController = &controller;
+    }
+
+    return self;
 }
 
-void LocalNotificationListener::applicationDidFinishLaunching(NSNotification* notification)
+- (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
-    //using namespace DAVA;
+    using namespace DAVA;
+
     NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
     if (userNotification && (userNotification.userInfo != nil))
     {
         NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
         if (uid != nil && [uid length] != 0)
         {
-            DAVA::String uidStr = DAVA::StringFromNSString(uid);
-            auto func = [this, uidStr]() {
-                localNotificationController.OnNotificationPressed(uidStr);
+            String uidStr = StringFromNSString(uid);
+            auto func = [self, uidStr]() {
+                notificationController->OnNotificationPressed(uidStr);
             };
             RunOnMainThreadAsync(func);
         }
     }
 }
 
-void LocalNotificationListener::applicationDidBecomeActive()
+- (void)applicationDidBecomeActive:(NSNotification*)notification
 {
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
 }
 
-void LocalNotificationListener::didActivateNotification(NSUserNotification* notification)
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification
 {
+    using namespace DAVA;
+
     NSString* uid = [[notification userInfo] valueForKey:@"uid"];
     if (uid != nil && [uid length] != 0)
     {
-        DAVA::String uidStr = DAVA::StringFromNSString(uid);
-        auto func = [this, uidStr]() {
-            localNotificationController.OnNotificationPressed(uidStr);
+        String uidStr = StringFromNSString(uid);
+        auto func = [self, uidStr]() {
+            notificationController->OnNotificationPressed(uidStr);
         };
         RunOnMainThreadAsync(func);
 
@@ -67,7 +69,8 @@ void LocalNotificationListener::didActivateNotification(NSUserNotification* noti
         PlatformApi::Mac::PrimaryWindowDeminiaturize();
     }
 }
-} // namespace Private
-} //  namespace DAVA
+
+@end
+
 #endif // __DAVAENGINE_MACOS__
 #endif // __DAVAENGINE_COREV2__
