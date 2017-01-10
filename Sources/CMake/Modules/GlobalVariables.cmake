@@ -53,25 +53,6 @@ if( WIN32  )
 		set ( X64_MODE true )
                 set( DAVA_PROJECT_BIT 64 )
 	endif ()
-
-        if( WINDOWS_UAP )
-            set ( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
-
-	elseif( X64_MODE )
-            set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH         "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/win/x64" )
-	else ()
-            set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH         "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/win" )
-	endif ()
-
-elseif( MACOS )
-	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/mac" )
-
-elseif( IOS )
-	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin/ios" )
-    
-else ()
-	set( DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH             "${DAVA_ROOT_DIR}/Libs/lib_CMake/Bin" )
-
 endif()
 
 ################
@@ -180,7 +161,7 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_BINARY_WIN32_DIR  "${DAVA_THIRD_PARTY_DYNAMIC_LIBRARIES_PATH}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+set( DAVA_BINARY_WIN32_DIR  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
 
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
