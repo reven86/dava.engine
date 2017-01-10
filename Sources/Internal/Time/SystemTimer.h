@@ -43,6 +43,13 @@ public:
     DAVA_DEPRECATED(static int64 GetSystemTime());
 
     /**
+        Get current frame timestamp in milliseconds.
+
+        Frame timestamp is a result of `GetMs()` call at the beginning of a frame.
+    */
+    static int64 GetFrameTimestampMs();
+
+    /**
         Get current frame timestamp in seconds.
 
         Frame timestamp is a result of `GetMs()` call at the beginning of a frame divided by 1000.

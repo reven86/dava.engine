@@ -82,6 +82,11 @@ int64 SystemTimer::GetSystemUptimeUs()
 #endif
 }
 
+int64 SystemTimer::GetFrameTimestampMs()
+{
+    return frameTimestamp;
+}
+
 float32 SystemTimer::GetFrameTimestamp()
 {
     return static_cast<float32>(frameTimestamp / 1000.);
