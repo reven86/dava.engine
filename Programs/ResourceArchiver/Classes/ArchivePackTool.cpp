@@ -9,7 +9,6 @@
 #include <Debug/DVAssert.h>
 #include "ResultCodes.h"
 
-
 using namespace DAVA;
 
 namespace OptionNames
