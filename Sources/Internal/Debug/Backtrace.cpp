@@ -39,7 +39,7 @@ typedef struct _SYMBOL_INFO {
 BOOL (__stdcall *SymInitialize_impl)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
 BOOL (__stdcall *SymFromAddr_impl)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
 BOOL (__stdcall *SymGetSearchPath_impl)(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength);
-DWORD (__stdcall *GetModuleBaseName_impl)(HANDLE hProcess, HMODULE hModule, LPSTR lpBaseName, DWORD nSize);
+DWORD (__stdcall *GetModuleFileName_impl)(HMODULE hModule, LPSTR lpBaseName, DWORD nSize);
 
 // Wrapper function to use same code for win32 and winuap
 BOOL SymInitialize(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess)
@@ -63,10 +63,10 @@ BOOL SymGetSearchPath(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength)
     return FALSE;
 }
 
-DWORD GetModuleBaseNameA(HANDLE hProcess, HMODULE hModule, LPSTR lpBaseName, DWORD nSize)
+DWORD GetModuleFileNameA(HMODULE hModule, LPSTR lpBaseName, DWORD nSize)
 {
-    if (GetModuleBaseName_impl != nullptr)
-        return GetModuleBaseName_impl(hProcess, hModule, lpBaseName, nSize);
+    if (GetModuleFileName_impl != nullptr)
+        return GetModuleFileName_impl(hProcess, hModule, lpBaseName, nSize);
     return 0;
 }
 
@@ -122,16 +122,7 @@ void InitSymbols()
                 HMODULE kernel32Lib = LoadLibraryW(L"Kernel32.dll");
                 if (kernel32Lib)
                 {
-                    GetModuleBaseName_impl = reinterpret_cast<decltype(GetModuleBaseName_impl)>(GetProcAddress(kernel32Lib, "GetModuleBaseNameA"));
-                }
-
-                if (GetModuleBaseName_impl == nullptr)
-                {
-                    HMODULE psApiLib = LoadLibraryW(L"Psapi.dll");
-                    if (psApiLib)
-                    {
-                        GetModuleBaseName_impl = reinterpret_cast<decltype(GetModuleBaseName_impl)>(GetProcAddress(psApiLib, "GetModuleBaseNameA"));
-                    }
+                    GetModuleFileName_impl = reinterpret_cast<decltype(GetModuleBaseName_impl)>(GetProcAddress(kernel32Lib, "GetModuleFileNameA"));
                 }
             }
 
@@ -227,11 +218,12 @@ String GetFrameSymbol(void* frame, bool demangle)
         if (SymFromAddr(currentProcess, reinterpret_cast<DWORD64>(frame), nullptr, symInfo))
         {
             const DWORD maxNameSize = 1024;
-            CHAR moduleBaseName[maxNameSize];
-            DWORD moduleNameLength = GetModuleBaseNameA(currentProcess, reinterpret_cast<HMODULE>(symInfo->ModBase), moduleBaseName, maxNameSize);
+            CHAR moduleFileName[maxNameSize];
+            DWORD moduleNameLength = GetModuleFileNameA(reinterpret_cast<HMODULE>(symInfo->ModBase), moduleFileName, maxNameSize);
             if (moduleNameLength != 0)
             {
-                result = String(moduleBaseName, moduleNameLength);
+                const char* moduleName = strrchr(moduleFileName, '\\');
+                result = moduleName != nullptr ? (moduleName + 1) : moduleFileName;
                 result += "!";
             }
             result += symInfo->Name;
