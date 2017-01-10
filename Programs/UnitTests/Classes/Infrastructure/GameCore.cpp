@@ -65,6 +65,7 @@ int DAVAMain(Vector<String> cmdline)
         "LocalizationSystem",
         "SoundSystem",
         "DownloadManager",
+        "PackManager"
     };
 
     Engine e;
