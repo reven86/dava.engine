@@ -12,7 +12,7 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
-#include <Render/2D //SpriteUtils.h>
+#include <Render/2D/SpriteUtils.h>
 
 using namespace DAVA;
 

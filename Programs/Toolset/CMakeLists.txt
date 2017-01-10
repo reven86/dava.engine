@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 project( ToolSet )
 
 set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
-include ( GlobalVariables )
+include ( CMake-common )
 
 macro ( add_tool TARGET_NAME )
     cmake_parse_arguments ( ARG ""  "ROOT_DIR;CUSTOM_DEPLOY_DIR;DEPLOY_DEFINE" "" ${ARGN} )
