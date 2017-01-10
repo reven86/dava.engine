@@ -27,7 +27,7 @@ public:
     ~LibraryModel() override;
 
     void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
-    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes);
+    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
@@ -62,7 +62,7 @@ private:
 
     DAVA::Vector<ControlNode*> defaultControls;
     DAVA::Vector<DAVA::FilePath> libraryPackagePaths;
-    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypes;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>> prototypes;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__

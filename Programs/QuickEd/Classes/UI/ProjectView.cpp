@@ -1,6 +1,8 @@
 #include "ProjectView.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "ui_mainwindow.h"
+#include "Project/Project.h"
+
 
 #include <QComboBox>
 
@@ -13,11 +15,15 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ProjectView::ReloadSprites);
     connect(mainWindow->ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindFileInProject);
-}
+    connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
+    connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
 
-void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
-{
-    mainWindow->SetProjectPath(projectPath);
+    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
+
+    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
+
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
@@ -52,6 +58,8 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
     mainWindow->ui->actionCloseProject->setEnabled(enabled);
     mainWindow->ui->actionFindFileInProject->setEnabled(enabled);
+    mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
+    mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->toolBarPlugins->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
@@ -124,6 +132,16 @@ void MainWindow::ProjectView::InitGlobalClasses()
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::ProjectView::OnGlobalClassesChanged);
 }
 
+void MainWindow::ProjectView::SetProjectPath(const QString& projectPath)
+{
+    mainWindow->SetProjectPath(projectPath);
+}
+
+void MainWindow::ProjectView::OnProjectChanged(Project* project)
+{
+    emit ProjectChanged(project);
+}
+
 void MainWindow::ProjectView::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
@@ -145,9 +163,24 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
     emit CurrentLanguageChanged(langCode);
 }
 
+void MainWindow::ProjectView::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    emit SelectionChanged(selected, deselected);
+}
+
 void MainWindow::ProjectView::SelectFile(const QString& filePath)
 {
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
+}
+
+void MainWindow::ProjectView::SelectControl(const DAVA::String& controlPath)
+{
+    mainWindow->ui->previewWidget->SelectControl(controlPath);
+}
+
+void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
+{
+    mainWindow->ui->findWidget->Find(std::move(filter));
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
