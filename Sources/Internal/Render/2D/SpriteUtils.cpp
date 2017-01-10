@@ -10,12 +10,10 @@ namespace DAVA
 {
 namespace SpriteUtils
 {
-
 Sprite* CreateFromImagePath(const FilePath& imagepath)
 {
     ScopedPtr<Image> image(ImageSystem::LoadSingleMip(imagepath));
-    return  Sprite::CreateFromImage(image);
+    return Sprite::CreateFromImage(image);
 }
-
 }
 }

@@ -7,9 +7,6 @@ class FilePath;
 
 namespace SpriteUtils
 {
-
 Sprite* CreateFromImagePath(const FilePath& imagepath);
-
 }
-
 }
