@@ -33,11 +33,11 @@ set( STATIC_LIBRARIES_WIN64_DEBUG    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/fm
 set( DYNAMIC_LIBRARIES_ANDROID       ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so 
                                      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so )
 
-set( DYNAMIC_LIBRARIES_WIN32         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/fmodex.dll 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/fmod_event.dll )
+set( DYNAMIC_LIBRARIES_WIN32         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex.dll 
+                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event.dll )
 
-set( DYNAMIC_LIBRARIES_WIN64         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/fmodex64.dll 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/fmod_event64.dll )
+set( DYNAMIC_LIBRARIES_WIN64         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex64.dll 
+                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event64.dll )
 
 set( DYNAMIC_LIBRARIES_MACOS         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.dylib
                                      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.dylib )
