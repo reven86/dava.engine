@@ -138,7 +138,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
                 digits << curPosValue;
 
                 int digitPos = curPos + fontSize - 1;
-                int digitsSize = digits.str().size();
+                int digitsSize = static_cast<int>(digits.str().size());
                 for (int j = 0; j < digitsSize; j++)
                 {
                     nextDigit[0] = digits.str().at(j); // next char is always 0x00

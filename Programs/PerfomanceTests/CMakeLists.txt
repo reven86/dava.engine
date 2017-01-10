@@ -8,6 +8,7 @@ if ( ENABLE_MEM_PROFILING )
     add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
 endif()
 
+set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 

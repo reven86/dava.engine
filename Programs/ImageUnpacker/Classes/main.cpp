@@ -111,7 +111,7 @@ void UnpackFile(const FilePath& sourceImagePath)
 void UnpackFolder(const FilePath& folderPath)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPath));
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
         if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
@@ -132,7 +132,7 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPath));
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
         if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
