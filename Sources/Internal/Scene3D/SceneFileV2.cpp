@@ -18,6 +18,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"

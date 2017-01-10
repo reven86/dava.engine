@@ -43,9 +43,7 @@ private:
 
 private:
     Reflection model;
-    DataWrapper modelWrapperWrapper;
-
-    bool inTabChanging = false;
+    DataWrapper modelWrapper;
 };
 
 } // namespace TArc

@@ -45,7 +45,7 @@ LocalNotificationListener::LocalNotificationListener(LocalNotificationController
     catch (const JNI::Exception& e)
     {
         Logger::Error("[LocalNotificationListener] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 }

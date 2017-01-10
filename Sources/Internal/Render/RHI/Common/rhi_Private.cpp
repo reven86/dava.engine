@@ -17,6 +17,7 @@
 #else
 #endif
 
+#include "Logger/Logger.h"
 #include "Core/Core.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
@@ -120,7 +121,7 @@ void InitializeImplementation(Api api, const InitParam& param)
 
     default:
     {
-        DVASSERT_MSG(false, "Unsupported rendering api");
+        DVASSERT(false, "Unsupported rendering api");
     }
     }
 }
