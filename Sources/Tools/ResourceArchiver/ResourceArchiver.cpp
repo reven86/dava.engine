@@ -253,7 +253,11 @@ bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath,
         collectedFiles.clear();
         collectedFiles.reserve(numFiles);
 
+#ifdef __DAVAENGINE_COREV2__
         FileSystem* fs = GetEngineContext()->fileSystem;
+#else
+        FileSystem* fs = FileSystem::Instance();
+#endif
 
         db << "SELECT path FROM files"
         >> [&](String path)
