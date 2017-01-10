@@ -48,12 +48,6 @@ int64 SystemTimer::GetNs()
     return duration_cast<nanoseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentNanos;
 }
 
-DAVA_DEPRECATED(int64 SystemTimer::GetSystemTime())
-{
-    using namespace std::chrono;
-    return static_cast<int64>(system_clock::to_time_t(system_clock::now()));
-}
-
 int64 SystemTimer::GetSystemUptimeUs()
 {
 #if defined(__DAVAENGINE_WINDOWS__)

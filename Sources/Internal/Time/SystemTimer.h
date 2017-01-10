@@ -40,8 +40,6 @@ public:
     /** Get number of microseconds elapsed from system boot, including time spent in deep sleep. */
     static int64 GetSystemUptimeUs();
 
-    DAVA_DEPRECATED(static int64 GetSystemTime());
-
     /**
         Get current frame timestamp in milliseconds.
 

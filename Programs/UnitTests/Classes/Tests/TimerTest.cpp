@@ -62,10 +62,6 @@ DAVA_TESTCLASS (TimerTest)
         SystemTimer::PauseGlobalTime();
         SystemTimer::ResumeGlobalTime();
         TEST_VERIFY(globalTime >= 0.f);
-
-        int64 systime1 = SystemTimer::GetSystemTime();
-        int64 systime2 = static_cast<int64>(std::time(nullptr));
-        TEST_VERIFY(0 <= (systime2 - systime1) && (systime2 - systime1) <= 1); // Include case when time has updated during second measure
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
