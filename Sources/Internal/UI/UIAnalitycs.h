@@ -7,16 +7,16 @@ namespace DAVA
 {
 namespace Analytics
 {
-const char uiEventTypeTag[] = "UIEventType";
+const char UI_EVENT_TYPE_TAG[] = "UIEventType";
 
-const char clickEvent[] = "Click";
-const char doubleClickEvent[] = "DoubleClick";
-const char keyPressEvent[] = "KeyPress";
+const char CLICK_EVENT[] = "Click";
+const char DOUBLE_CLICK_EVENT[] = "DoubleClick";
+const char KEY_PRESS_EVENT[] = "KeyPress";
 
-const char pressedKeyTag[] = "PressedKey";
-const char escKeyPressed[] = "EscKeyPressed";
-const char backKeyPressed[] = "BackKeyPressed";
-const char enterKeyPressed[] = "EnterKeyPressed";
+const char PRESSED_KEY_TAG[] = "PressedKey";
+const char ESC_KEY_PRESSED[] = "EscKeyPressed";
+const char BACK_KEY_PRESSED[] = "BackKeyPressed";
+const char ENTER_KEY_PRESSED[] = "EnterKeyPressed";
 
 bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* uiEvent);
 bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent);

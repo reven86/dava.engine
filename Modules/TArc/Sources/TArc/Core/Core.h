@@ -41,18 +41,18 @@ public:
         bool isControllerModule = TypeInheritance::CanCast(type, Type::Instance<ControllerModule*>());
         bool isConsoleModule = TypeInheritance::CanCast(type, Type::Instance<ConsoleModule*>());
 
-        DVASSERT_MSG(isClientModule == true || isConsoleModule == true || isConsoleModule, "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+        DVASSERT(isClientModule == true || isConsoleModule == true || isConsoleModule, "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
 
         bool isConsoleMode = IsConsoleMode();
         if (isConsoleMode == true && isConsoleModule == false)
         {
-            DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
+            DVASSERT(false, "In console mode module should be Derived from ConsoleModule");
             return;
         }
 
         if (isConsoleMode == false && isConsoleModule == true)
         {
-            DVASSERT_MSG(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
+            DVASSERT(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
             return;
         }
 

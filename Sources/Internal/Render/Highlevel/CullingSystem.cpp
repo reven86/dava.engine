@@ -8,6 +8,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

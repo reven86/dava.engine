@@ -663,7 +663,7 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     {
         MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
 
-        DVASSERT(s != MTLPurgeableStateKeepCurrent)
+        DVASSERT(s != MTLPurgeableStateKeepCurrent);
         if (s == MTLPurgeableStateEmpty)
         {
             if (!self->NeedRestore())

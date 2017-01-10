@@ -4,6 +4,8 @@
 #import "OpenGLView.h"
 #import "AppDelegate.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 @interface MainWindowController : NSWindowController<NSWindowDelegate, NSFileManagerDelegate>
 {
 @public
@@ -42,3 +44,5 @@
 - (void)OnResume;
 
 @end
+
+#endif // #if !defined(__DAVAENGINE_COREV2__)

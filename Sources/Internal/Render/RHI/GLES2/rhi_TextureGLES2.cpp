@@ -427,7 +427,8 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
-            DVASSERT(self->fbo != 0);
+            DVASSERT(self->fbo.size())
+
             GLCommand cmd[] =
             {
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, uint64(self->fbo) } },
@@ -957,7 +958,7 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
     GLuint targetBuffer = _GLES2_Default_FrameBuffer;
 
     bool fromHasDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) || (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
-    DVASSERT(!fromHasDepthFormat)
+    DVASSERT(!fromHasDepthFormat);
     //    DVASSERT(!from->fbo.empty());
 
     if (to != nullptr)

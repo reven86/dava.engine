@@ -2,6 +2,7 @@
 
 #include "Base/StaticSingleton.h"
 #include "Reflection/Reflection.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {

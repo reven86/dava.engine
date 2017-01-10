@@ -178,7 +178,7 @@ bool DX11_CheckResult(HRESULT hr, const char* call, const char* fileName, const 
     {
     #if (RHI_DX11_ASSERT_ON_ERROR)
         DAVA::String error = DAVA::Format("D3D11Error at %s: %d\n%s\nCondition: %s", fileName, line, DX11_GetErrorText(hr), call);
-        DVASSERT_MSG(0, error.c_str());
+        DVASSERT(0, error.c_str());
     #else
         DAVA::Logger::Error("D3D11Error at %s: %d\n%s\nCondition: %s", fileName, line, DX11_GetErrorText(hr), call);
     #endif
@@ -202,7 +202,7 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         DAVA::Logger::Error(info.c_str());
     #else
         // assert will automatically write to log
-        DVASSERT_MSG(0, info.c_str());
+        DVASSERT(0, info.c_str());
     #endif
 
         ReportError(dx11.initParameters, RenderingError::DriverError);

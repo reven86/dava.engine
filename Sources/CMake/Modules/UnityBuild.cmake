@@ -6,7 +6,7 @@ macro( generated_unity_sources SOURCE_FILES )
     endif()
 
     if( UNITY_BUILD )
-        message( ">>> Unity packages ${PROJECT_NAME} info" )
+        message(STATUS ">>> Unity packages ${PROJECT_NAME} info" )
 
         #"ARG"
         set( CUSTOM_PACK_MAX_NUMBER 20 )        
@@ -179,11 +179,11 @@ macro( generated_unity_sources SOURCE_FILES )
         list( LENGTH REMAINING_LIST REMAINING_LIST_SIZE )
 
         foreach( PTYPE CPP OBJCPP ${CUSTOM_PACKS} )
-            message( "    ${PTYPE}_PACK_SIZE            - ${${PTYPE}_PACK_SIZE}")                
-            message( "    ${PTYPE}_NUMBER_FILES_IN_PACK - ${${PTYPE}_NUMBER_FILES_IN_PACK}")
+            message(STATUS "    ${PTYPE}_PACK_SIZE            - ${${PTYPE}_PACK_SIZE}")                
+            message(STATUS "    ${PTYPE}_NUMBER_FILES_IN_PACK - ${${PTYPE}_NUMBER_FILES_IN_PACK}")
         endforeach() 
 
-        message( "    IGNORE_LIST_SIZE            - ${IGNORE_LIST_SIZE}")
+        message(STATUS "    IGNORE_LIST_SIZE            - ${IGNORE_LIST_SIZE}")
 
     endif()
 endmacro ()

@@ -965,7 +965,7 @@ void CommandBufferDX9_t::Execute()
         break;
         default:
             Logger::Error("unsupported command: %d", cmd->type);
-            DVASSERT_MSG(false, "unsupported command");
+            DVASSERT(false, "unsupported command");
         }
 
         if (--immediate_cmd_ttw <= 0)
@@ -1021,7 +1021,7 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
         TextureDX9::LogUnrestoredBacktraces();
         VertexBufferDX9::LogUnrestoredBacktraces();
         IndexBufferDX9::LogUnrestoredBacktraces();
-        DVASSERT_MSG(0, "Failed to restore all resources in time.");
+        DVASSERT(0, "Failed to restore all resources in time.");
     }
 #endif
 }

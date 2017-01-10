@@ -93,7 +93,7 @@ RenderObject* SpeedTreeObject::Clone(RenderObject* newObject)
 {
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<SpeedTreeObject>(this), "Can clone only SpeedTreeObject");
+        DVASSERT(IsPointerToExactClass<SpeedTreeObject>(this), "Can clone only SpeedTreeObject");
         newObject = new SpeedTreeObject();
     }
 
