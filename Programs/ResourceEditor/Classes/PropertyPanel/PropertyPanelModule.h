@@ -28,7 +28,6 @@ private:
 
 private:
     std::unique_ptr<DAVA::TArc::FieldBinder> binder;
-    DAVA::Vector<DAVA::Entity*> selection;
 
     DAVA_VIRTUAL_REFLECTION(PropertyPanelModule, DAVA::TArc::ClientModule);
 };

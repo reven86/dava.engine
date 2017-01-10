@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>Styles/BlackWhiteCheck_6x6.png</file>
-        <file>Styles/DropDownArrow_16x16.png</file>
-    </qresource>
-</RCC>

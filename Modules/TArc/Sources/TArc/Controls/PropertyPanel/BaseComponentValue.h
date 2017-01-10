@@ -21,16 +21,7 @@ struct PropertyNode;
 class BaseComponentValue : public ReflectionBase
 {
 public:
-    BaseComponentValue();
-    virtual ~BaseComponentValue();
-
-    virtual QQmlComponent* GetComponent(QQmlEngine* engine) const
-    {
-        return nullptr;
-    }
-
     void Init(ReflectedPropertyModel* model);
-    QtReflected* GetValueObject();
 
     int32 GetPropertiesNodeCount() const;
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
@@ -46,9 +37,6 @@ protected:
     std::shared_ptr<ModifyExtension> GetModifyInterface();
 
 private:
-    Reflection GetData(const DataContext* ctx);
-    BaseComponentValue* thisValue = nullptr;
-    QtReflected* qtReflected = nullptr;
     ReflectedPropertyModel* model = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);

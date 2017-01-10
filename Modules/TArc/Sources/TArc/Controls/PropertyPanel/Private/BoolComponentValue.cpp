@@ -10,12 +10,6 @@ namespace DAVA
 {
 namespace TArc
 {
-QQmlComponent* BoolComponentValue::GetComponent(QQmlEngine* engine) const
-{
-    static SimpleComponentLoader componentLoader(engine, QUrl("qrc:/TArc/PropertyPanel/Component/BooleanComponent.qml"));
-    return componentLoader.GetComponent();
-}
-
 int BoolComponentValue::GetValue() const
 {
     Any value = nodes.front()->cachedValue;

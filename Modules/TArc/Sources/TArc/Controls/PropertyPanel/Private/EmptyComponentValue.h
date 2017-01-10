@@ -10,7 +10,6 @@ namespace TArc
 class EmptyComponentValue : public BaseComponentValue
 {
 public:
-    QQmlComponent* GetComponent(QQmlEngine* engine) const override;
 
 private:
     DAVA_VIRTUAL_REFLECTION(EmptyComponentValue, BaseComponentValue);

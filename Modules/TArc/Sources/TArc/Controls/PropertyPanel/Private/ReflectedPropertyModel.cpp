@@ -9,9 +9,7 @@ namespace DAVA
 {
 namespace TArc
 {
-ReflectedPropertyModel::ReflectedPropertyModel(QPointer<QQmlEngine> engine_, QPointer<QtReflectionBridge> reflectionBridge_)
-    : engine(engine_)
-    , reflectionBridge(reflectionBridge_)
+ReflectedPropertyModel::ReflectedPropertyModel()
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -54,7 +52,7 @@ QVariant ReflectedPropertyModel::data(const QModelIndex& index, int role) const
     if (role == Qt::DisplayRole)
     {
         /// TODO UVR
-        return QVariant::fromValue(MapItem(index));
+        return MapItem(index)->GetPropertyName();
     }
 
     return QVariant();
@@ -238,11 +236,6 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
     }
 
     iter->second = ExtensionChain::RemoveExtension(iter->second, extension);
-}
-
-QPointer<QQmlEngine> ReflectedPropertyModel::GetQmlEngine() const
-{
-    return engine;
 }
 
 } // namespace TArc

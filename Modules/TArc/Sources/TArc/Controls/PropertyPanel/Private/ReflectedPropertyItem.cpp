@@ -53,21 +53,6 @@ QString ReflectedPropertyItem::GetPropertyName() const
     return QString::fromStdString(fieldName.Cast<String>());
 }
 
-QQmlComponent* ReflectedPropertyItem::GetComponent() const
-{
-    QPointer<QQmlEngine> engine = model->GetQmlEngine();
-    if (engine.isNull())
-    {
-        return nullptr;
-    }
-    return value->GetComponent(engine.data());
-}
-
-QObject* ReflectedPropertyItem::GetModel() const
-{
-    return value->GetValueObject();
-}
-
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)
 {
     int32 position = static_cast<int32>(children.size());

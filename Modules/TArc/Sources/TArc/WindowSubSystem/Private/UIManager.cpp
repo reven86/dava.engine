@@ -6,7 +6,6 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
-#include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include "Engine/Engine.h"
@@ -16,8 +15,6 @@
 #include <QPointer>
 #include <QMainWindow>
 #include <QDockWidget>
-#include <QQmlEngine>
-#include <QQmlContext>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -424,8 +421,6 @@ struct UIManager::Impl : public QObject
     UIManager::Delegate* managerDelegate = nullptr;
     Array<Function<void(const PanelKey&, const WindowKey&, QWidget*)>, PanelKey::TypesCount> addFunctions;
     UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
-    std::unique_ptr<QQmlEngine> qmlEngine;
-    QtReflectionBridge reflectionBridge;
     PropertiesItem propertiesHolder;
     bool initializationFinished = false;
     DAVA::Set<WaitHandle*> activeWaitDialogues;
@@ -607,15 +602,6 @@ protected:
 UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
     : impl(new Impl(delegate, std::move(holder)))
 {
-    impl->qmlEngine.reset(new QQmlEngine());
-    impl->qmlEngine->addImportPath("qrc:/");
-    impl->qmlEngine->addImportPath(":/");
-
-    const EngineContext* engine = GetEngineContext();
-    FileSystem* fileSystem = engine->fileSystem;
-    QString pluginPath = QString::fromStdString(fileSystem->GetPluginDirectory().GetAbsolutePathname());
-    impl->qmlEngine->addImportPath(pluginPath);
-    impl->qmlEngine->addPluginPath(pluginPath);
 }
 
 UIManager::~UIManager() = default;
@@ -648,11 +634,6 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
     }
 }
 
-void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data)
-{
-    AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, std::move(data)));
-}
-
 void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
@@ -663,47 +644,6 @@ void UIManager::RemoveAction(const WindowKey& windowKey, const ActionPlacementIn
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     UIManagerDetail::RemoveAction(windowInfo, placement);
-}
-
-QPointer<QQmlEngine> UIManager::GetQmlEngine() const
-{
-    return QPointer<QQmlEngine>(impl->qmlEngine.get());
-}
-
-QPointer<QtReflectionBridge> UIManager::GetReflectionBridge() const
-{
-    return QPointer<QtReflectionBridge>(&impl->reflectionBridge);
-}
-
-QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper&& data)
-{
-    QPointer<QQuickWidget> view = new QQuickWidget(impl->qmlEngine.get(), nullptr);
-    view->setObjectName(name);
-    view->setResizeMode(QQuickWidget::SizeRootObjectToView);
-
-    QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(std::move(data), view);
-    qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
-                                           {
-                                               if (qtReflected != nullptr && view != nullptr)
-                                               {
-                                                   view->rootContext()->setContextProperty("context", qtReflected);
-                                                   view->setSource(QUrl(resourceName));
-
-                                                   if (view->status() != QQuickWidget::Ready)
-                                                   {
-                                                       Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
-                                                       foreach (QQmlError error, view->errors())
-                                                       {
-                                                           Logger::Error("Error : %s", error.toString().toStdString().c_str());
-                                                       }
-                                                   }
-                                               }
-
-                                               qtReflected->metaObjectCreated.DisconnectAll();
-                                           });
-    qtReflected->Init();
-
-    return view;
 }
 
 void UIManager::ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration)

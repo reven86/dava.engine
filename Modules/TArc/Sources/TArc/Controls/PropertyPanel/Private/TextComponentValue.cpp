@@ -11,12 +11,6 @@ namespace TArc
 {
 const String multipleValuesValue("<multiple values>");
 
-QQmlComponent* DAVA::TArc::TextComponentValue::GetComponent(QQmlEngine* engine) const
-{
-    static SimpleComponentLoader componentLoader(engine, QUrl("qrc:/TArc/PropertyPanel/Component/TextComponent.qml"));
-    return componentLoader.GetComponent();
-}
-
 QString TextComponentValue::GetObjectName() const
 {
     return QString::fromStdString(nodes.front()->field.key.Cast<String>());

@@ -2,26 +2,22 @@
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
-#include "TArc/DataProcessing/QtReflectionBridge.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
 
 #include <QAbstractItemModel>
 
-class QQmlEngine;
 namespace DAVA
 {
 namespace TArc
 {
-class QtReflectionBridge;
 class ReflectedPropertyItem;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
-    Q_OBJECT
 public:
-    ReflectedPropertyModel(QPointer<QQmlEngine> engine, QPointer<QtReflectionBridge> reflectionBridge);
+    ReflectedPropertyModel();
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -46,8 +42,6 @@ public:
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
     void UnregisterExtension(const std::shared_ptr<ExtensionChain>& extension);
 
-    QPointer<QQmlEngine> GetQmlEngine() const;
-
 private:
     friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, size_t childPosition);
@@ -69,8 +63,6 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
-    QPointer<QtReflectionBridge> reflectionBridge;
-    QPointer<QQmlEngine> engine;
 };
 
 template <typename Dst, typename Src>

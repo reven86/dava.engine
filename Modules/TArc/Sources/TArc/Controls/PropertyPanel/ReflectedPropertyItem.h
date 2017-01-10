@@ -1,28 +1,19 @@
 #pragma once
 
-#include "TArc/DataProcessing/QtReflectionBridge.h"
 #include "Base/BaseTypes.h"
+#include <memory>
 
-#include <QObject>
-
-class QQmlComponent;
 namespace DAVA
 {
 namespace TArc
 {
 class ReflectedPropertyModel;
 class BaseComponentValue;
-class QtReflected;
 struct PropertyNode;
 
-class ReflectedPropertyItem : public QObject
+class ReflectedPropertyItem
 {
-    Q_OBJECT
 public:
-    Q_PROPERTY(QString name READ GetPropertyName NOTIFY PropertyNameChanged)
-    Q_PROPERTY(QQmlComponent* component READ GetComponent NOTIFY ComponentChanged)
-    Q_PROPERTY(QObject* model READ GetModel NOTIFY ModelChanged)
-
     ~ReflectedPropertyItem();
 
     ReflectedPropertyItem(const ReflectedPropertyItem& other) = delete;
@@ -34,13 +25,6 @@ public:
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
 
     QString GetPropertyName() const;
-    QQmlComponent* GetComponent() const;
-    QObject* GetModel() const;
-
-private:
-    Q_SIGNAL void PropertyNameChanged(const QString& name);
-    Q_SIGNAL void ModelChanged(QtReflected* model);
-    Q_SIGNAL void ComponentChanged(QQmlComponent* component);
 
 private:
     friend class ReflectedPropertyModel;

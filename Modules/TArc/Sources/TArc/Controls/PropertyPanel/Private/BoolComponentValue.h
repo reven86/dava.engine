@@ -9,7 +9,6 @@ namespace TArc
 class BoolComponentValue : public BaseComponentValue
 {
 public:
-    QQmlComponent* GetComponent(QQmlEngine* engine) const override;
 
 private:
     int GetValue() const;

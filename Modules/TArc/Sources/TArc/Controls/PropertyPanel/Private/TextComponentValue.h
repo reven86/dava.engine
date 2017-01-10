@@ -12,7 +12,6 @@ namespace TArc
 class TextComponentValue : public BaseComponentValue
 {
 public:
-    QQmlComponent* GetComponent(QQmlEngine* engine) const override;
 
 protected:
     virtual Any Convert(const DAVA::String& text) const;

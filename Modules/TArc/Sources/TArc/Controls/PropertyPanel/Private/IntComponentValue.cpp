@@ -9,12 +9,6 @@ namespace DAVA
 {
 namespace TArc
 {
-QQmlComponent* IntComponentValue::GetComponent(QQmlEngine* engine) const
-{
-    static SimpleComponentLoader componentLoader(engine, QUrl("qrc:/TArc/PropertyPanel/Component/IntNumberComponent.qml"));
-    return componentLoader.GetComponent();
-}
-
 double IntComponentValue::GetValue() const
 {
     Any value = nodes.front()->cachedValue;

@@ -30,18 +30,11 @@ add_definitions       (
 -DDISABLE_NATIVE_WEBVIEW
 -DDISABLE_NATIVE_TEXTFIELD
 -DDISABLE_NATIVE_MOVIEVIEW
--DQT_QML_DEBUG_NO_WARNING
 )
-
-if (UVR_DEV)
-    add_definitions (-DNEW_PROPERTY_PANEL )
-endif()
 
 set ( DAVA_COREV2 1 )
 set ( DAVA_PLATFORM_QT 1 )
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
-
-add_plugin( TArcControls "${DAVA_MODULES_DIR}/TArcControls")
 
 find_package( QT5 REQUIRED )
 find_package( QtHelpers REQUIRED )

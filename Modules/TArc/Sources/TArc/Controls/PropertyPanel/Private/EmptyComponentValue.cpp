@@ -8,11 +8,6 @@ namespace DAVA
 {
 namespace TArc
 {
-QQmlComponent* DAVA::TArc::EmptyComponentValue::GetComponent(QQmlEngine* engine) const
-{
-    static QQmlComponent component(engine);
-    return &component;
-}
 
 DAVA_REFLECTION_IMPL(EmptyComponentValue)
 {
