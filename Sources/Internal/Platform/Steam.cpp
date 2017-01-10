@@ -70,6 +70,7 @@ void Steam::Init()
     steamCallbacks = new SteamCallbacks();
 #if defined(__DAVAENGINE_COREV2__)
     GetEngineContext()->localizationSystem->OverrideDeviceLocale(GetLanguage());
+    Engine::Instance()->update.Connect([](float) { SteamAPI_RunCallbacks(); });
 #else
     LocalizationSystem::Instance()->OverrideDeviceLocale(GetLanguage());
 #endif
@@ -89,10 +90,12 @@ bool Steam::IsInited()
     return isInited;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void Steam::Update()
 {
     SteamAPI_RunCallbacks();
 }
+#endif
 
 String Steam::GetLanguage()
 {
