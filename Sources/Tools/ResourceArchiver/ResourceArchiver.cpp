@@ -603,7 +603,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     footerBlock.infoCrc32 = CRC32::ForBuffer(&footerBlock.info, sizeof(footerBlock.info));
     if (meta)
     {
-        footerBlock.sizeOfMetaData = metaBytes.size();
+        footerBlock.sizeOfMetaData = static_cast<uint32>(metaBytes.size());
     }
     else
     {

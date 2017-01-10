@@ -1,6 +1,9 @@
 #include "FileSystem/Private/PackMetaData.h"
+#include "FileSystem/FilePath.h"
+#include "FileSystem/DynamicMemoryFile.h"
 #include "Compression/LZ4Compressor.h"
 #include "Base/Exception.h"
+#include "Debug/DVAssert.h"
 
 #include <sqlite_modern_cpp.h>
 
@@ -76,17 +79,22 @@ Vector<uint8> PackMetaData::Serialize() const
     DVASSERT(tablePacks.size() > 0);
     DVASSERT(tableFiles.size() > 0);
 
-    std::stringstream ss;
+    String bytes;
 
-    size_t sizePackData = 0;
-    for (const auto& tuple : tablePacks)
     {
-        const String& packName = std::get<0>(tuple);
-        const String& depend = std::get<1>(tuple);
-        ss << packName << ' ' << depend << '\n';
+        std::stringstream ss;
+
+        size_t sizePackData = 0;
+        for (const auto& tuple : tablePacks)
+        {
+            const String& packName = std::get<0>(tuple);
+            const String& depend = std::get<1>(tuple);
+            ss << packName << ' ' << depend << '\n';
+        }
+
+        bytes = ss.str();
     }
 
-    String bytes = ss.str();
     Vector<uint8> v(begin(bytes), end(bytes));
     Vector<uint8> compBytes;
 
