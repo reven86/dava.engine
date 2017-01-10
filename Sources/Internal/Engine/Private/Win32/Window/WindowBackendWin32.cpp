@@ -515,6 +515,15 @@ LRESULT WindowBackend::OnEnterMenuLoop()
 LRESULT WindowBackend::OnExitMenuLoop()
 {
     UpdateClipCursor();
+
+    // System menu is usually shown after pressing Alt+Space, window receives Alt up down,
+    // but do not receives Alt key up. So send event to force clearing all inputs.
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCancelInputEvent(window));
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        // Place cursor in window center to prevent big mouse move delta after menu is closed
+        SetCursorInCenter();
+    }
     return 0;
 }
 

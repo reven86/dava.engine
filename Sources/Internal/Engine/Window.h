@@ -316,6 +316,7 @@ private:
     void HandleCursorCaptureLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
+    void HandleCancelInput(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);

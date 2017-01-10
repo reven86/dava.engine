@@ -134,6 +134,13 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDpiChangedEvent(Window* win
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCancelInputEvent(Window* window)
+{
+    MainDispatcherEvent e(WINDOW_CANCEL_INPUT, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated)
 {
     DVASSERT(keyEventType == KEY_DOWN || keyEventType == KEY_UP || keyEventType == KEY_CHAR);

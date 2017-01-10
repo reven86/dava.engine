@@ -268,6 +268,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
         HandleCursorCaptureLost(e);
         break;
+    case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
+        HandleCancelInput(e);
+        break;
     default:
         break;
     }
@@ -433,6 +436,12 @@ bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
     }
     waitInputActivation = false;
     return false;
+}
+
+void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
+{
+    uiControlSystem->CancelAllInputs();
+    inputSystem->GetKeyboard().ClearAllKeys();
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
