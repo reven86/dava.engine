@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
+#include <array>
 
 #include "lz4.h"
 
