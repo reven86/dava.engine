@@ -5,6 +5,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/QtDavaConvertion.h"
+#include "Utils/StringFormat.h"
 
 #include "ui_StyleSheetInspectorWidget.h"
 

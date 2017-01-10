@@ -1,5 +1,6 @@
 #include "QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include <QString>
 #include <QColor>
 #include <QVariant>
