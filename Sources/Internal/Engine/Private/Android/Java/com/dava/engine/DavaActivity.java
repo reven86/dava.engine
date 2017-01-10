@@ -507,8 +507,8 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
-    // Will be invoked when DAVA::Engine finishes initialization
-    public void hideSplashView()
+    // Will be invoked from C++ thread when DAVA::Engine finishes initialization
+    private void hideSplashView()
     {
         runOnUiThread(new Runnable()
         {
