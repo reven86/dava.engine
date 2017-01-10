@@ -31,7 +31,7 @@ QString WideStringToQString(const DAVA::WideString& str)
 #ifdef __DAVAENGINE_MACOS__
     return QString::fromStdWString(str);
 #else
-    return QString((const QChar*)str.c_str(), str.length());
+    return QString((const QChar*)str.c_str(), static_cast<int>(str.length()));
 #endif
 }
 

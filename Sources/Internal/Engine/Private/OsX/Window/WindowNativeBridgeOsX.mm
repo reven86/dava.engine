@@ -51,6 +51,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
+    [nswindow setContentMinSize:NSMakeSize(128, 128)];
 
     {
         float32 dpi = GetDpi();
@@ -65,7 +66,16 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
-    [nswindow setContentSize:NSMakeSize(width, height)];
+    NSRect r = [nswindow frame];
+
+    float32 dx = (r.size.width - width) / 2.0;
+    float32 dy = (r.size.height - height) / 2.0;
+
+    NSPoint pos = NSMakePoint(r.origin.x + dx, r.origin.y + dy);
+    NSSize sz = NSMakeSize(width, height);
+
+    [nswindow setFrameOrigin:pos];
+    [nswindow setContentSize:sz];
 }
 
 void WindowNativeBridge::CloseWindow()
@@ -82,6 +92,8 @@ void WindowNativeBridge::SetTitle(const char8* title)
 
 void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
 {
+    NSSize sz = NSMakeSize(width, height);
+    [nswindow setContentMinSize:sz];
 }
 
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
@@ -91,6 +103,15 @@ void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
     if (isFullscreen != isFullscreenRequested)
     {
         [nswindow toggleFullScreen:nil];
+
+        if (isFullscreen)
+        {
+            // If we're entering fullscreen we want our app to also become focused
+            // To handle cases when app is being opened with fullscreen mode,
+            // but another app gets focus before our app's window is created,
+            // thus ignoring any input afterwards
+            [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        }
     }
 }
 
@@ -150,6 +171,18 @@ void WindowNativeBridge::WindowDidResize()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
 }
 
+void WindowNativeBridge::WindowWillStartLiveResize()
+{
+}
+
+void WindowNativeBridge::WindowDidEndLiveResize()
+{
+    if (!isFullscreenToggling)
+    {
+        ForceBackbufferSizeUpdate();
+    }
+}
+
 void WindowNativeBridge::WindowDidChangeScreen()
 {
     CGSize size = [renderView frame].size;
@@ -187,11 +220,23 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidEnterFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidExitFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -490,18 +535,19 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 
 void WindowNativeBridge::UpdateSystemCursorVisible()
 {
-    bool visible = !cursorInside || mouseVisible;
     static bool mouseVisibleState = true;
+
+    bool visible = !cursorInside || mouseVisible;
     if (mouseVisibleState != visible)
     {
         mouseVisibleState = visible;
         if (visible)
         {
-            [NSCursor unhide];
+            CGDisplayShowCursor(kCGDirectMainDisplay);
         }
         else
         {
-            [NSCursor hide];
+            CGDisplayHideCursor(kCGDirectMainDisplay);
         }
     }
 }
@@ -519,12 +565,16 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setBackbufferScale:scale];
 
+    ForceBackbufferSizeUpdate();
+    WindowDidResize();
+}
+
+void WindowNativeBridge::ForceBackbufferSizeUpdate()
+{
     // Workaround to force change backbuffer size
     [nswindow setContentView:nil];
     [nswindow setContentView:renderView];
     [nswindow makeFirstResponder:renderView];
-
-    WindowDidResize();
 }
 
 } // namespace Private

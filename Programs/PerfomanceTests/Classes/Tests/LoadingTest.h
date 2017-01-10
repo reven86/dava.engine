@@ -75,8 +75,8 @@ private:
     };
 
     List<LoadJob*> loadJobs;
-    uint64 loadResults[JOB_GROUP_MAX_COUNT] = {};
-    uint32 loadGroupSize[JOB_GROUP_MAX_COUNT] = {};
+    Array<uint64, JOB_GROUP_MAX_COUNT> loadResults = {};
+    Array<uint32, JOB_GROUP_MAX_COUNT> loadGroupSize = {};
 
     UIStaticText* loadingText;
     UIStaticText* testText;
