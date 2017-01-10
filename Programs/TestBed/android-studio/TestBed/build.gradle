@@ -1,0 +1,57 @@
+apply plugin: 'com.android.application'
+import org.gradle.internal.os.OperatingSystem;
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
+
+    defaultConfig {
+        applicationId 'com.dava.testbed'
+        minSdkVersion 14
+        targetSdkVersion 25
+
+        externalNativeBuild {
+            ndkBuild {
+                abiFilters 'armeabi-v7a', 'x86'
+                arguments '-j', '8',
+                        'NDK_APPLICATION_MK=../../android/jni/Application.mk',
+                        OperatingSystem.current().isWindows() ? 'APP_SHORT_COMMANDS=true' : ''
+            }
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path '../../android/jni/Android.mk'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+
+        debug {
+            externalNativeBuild {
+                ndkBuild {
+                    arguments 'NDK_DEBUG=1'
+                }
+            }
+        }
+    }
+
+    sourceSets.main {
+        java.srcDirs = ['../../android/src/']
+        res.srcDirs = ['../../android/res/']
+        aidl.srcDirs = ['../../android/src/']
+        assets.srcDirs = ['../../android/assets/']
+        manifest.srcFile '../../android/AndroidManifest.xml'
+        jniLibs.srcDir '../../android/libs/'
+    }
+}
+
+dependencies {
+    compile project(':AndroidFramework')
+}
+
