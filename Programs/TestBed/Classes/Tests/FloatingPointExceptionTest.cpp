@@ -10,6 +10,7 @@ FloatingPointExceptionTest::FloatingPointExceptionTest(TestBed& app)
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4723)
+#pragma warning(disable : 4756)
 #endif
 void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
 {

@@ -27,7 +27,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
     RenderComponent* renderComponent = static_cast<RenderComponent*>(skinnedTank->GetOrCreateComponent(Component::RENDER_COMPONENT));
     renderComponent->SetRenderObject(skinnedRo);
 
-    uint32 jointsCount = tankJoints.size();
+    uint32 jointsCount = static_cast<uint32>(tankJoints.size());
 
     for (Entity* wheel : wheels)
     {

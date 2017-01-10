@@ -84,12 +84,12 @@ void TileTexturePreviewWidget::AddTexture(DAVA::Image* previewTexture, const DAV
 
         colors.push_back(color);
 
-        UpdateColor(images.size() - 1);
+        UpdateColor(static_cast<DAVA::uint32>(images.size() - 1));
 
         this->setItemDelegate(new TileTexturePreviewWidgetItemDelegate());
     }
 
-    UpdateImage(images.size() - 1);
+    UpdateImage(static_cast<DAVA::uint32>(images.size() - 1));
     UpdateSelection();
 
     blockSignals(blocked);

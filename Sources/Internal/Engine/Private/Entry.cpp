@@ -41,10 +41,11 @@ extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // clang-format off
 
-#if defined(__DAVAENGINE_QT__ ) || \
-    defined(__DAVAENGINE_MACOS__) || \
-    defined(__DAVAENGINE_IPHONE__) || \
-    (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+
+// Defined in EntryApple.mm since it requies obj-c capabilities
+
+#elif defined(__DAVAENGINE_QT__ ) || (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])
 {

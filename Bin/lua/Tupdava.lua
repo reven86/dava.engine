@@ -354,7 +354,7 @@ function TupState.New(userConf)
     self.cmd = { }
     self.cmd.cp = "cp"
     self.cmd.cat = "cat"
-    self.cmd.fwdep = fwPath .. "../dep"    
+    self.cmd.fwdep = fwPath .. "../Toolset/dep"    
     self.cmd.fwzip = fwPath .. "../7za"    
     self.cmd.fwsql = fwPath .. "../sqlite3"
     self.cmd.fwResourceArchive = fwPath .. "../x64/ResourceArchiver"

@@ -3,6 +3,7 @@
 #include "Platform/Steam.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_STEAM__)
 
