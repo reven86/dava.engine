@@ -345,7 +345,7 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
 //------------------------------------------------------------------------------
 
 static void
-_Destroy(TextureMetal_t* self, bool)
+_Destroy(TextureMetal_t* self)
 {
     //Logger::Info("{%u} del-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "",self->width,self->height);
     if (self->mappedData)
@@ -417,7 +417,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 //------------------------------------------------------------------------------
 
 static void
-metal_Texture_Delete(Handle tex)
+metal_Texture_Delete(Handle tex, bool)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
