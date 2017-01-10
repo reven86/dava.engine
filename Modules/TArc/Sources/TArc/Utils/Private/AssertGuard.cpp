@@ -101,7 +101,7 @@ public:
         return Assert::FailBehaviour::Default;
     }
 
-    bool IsInsideAssert()
+    bool IsInsideAssert() const
     {
         return isInAssert;
     }
