@@ -18,7 +18,7 @@ public:
 
     bool CanProcessInput() const override;
     
-    BaseEditorSystem::eInternalState RequireNewState() const override;
+    BaseEditorSystem::eInternalState RequireNewState(DAVA::UIEvent* currentInput) const override;
     void OnInput(DAVA::UIEvent* currentInput) override;
     
     DAVA::Vector2 GetCanvasSize() const;
@@ -32,10 +32,10 @@ public:
     
     DAVA::Vector2 GetMinimumPos() const;
     DAVA::Vector2 GetMaximumPos() const;
+    void AdjustScale(DAVA::float32 newScale, const DAVA::Vector2& mousePos);
 
 
     void SetViewSize(const DAVA::Vector2& size);
-    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
 
     void SetPosition(const DAVA::Vector2& position);
     void SetScale(DAVA::float32 scale);
@@ -46,7 +46,6 @@ public:
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
-    void AdjustScale(DAVA::float32 newScale, const DAVA::Vector2& mousePos);
     
     void UpdateCanvasContentSize();
 
@@ -65,7 +64,7 @@ private:
 
     const DAVA::float32 minScale = 0.25f;
     const DAVA::float32 maxScale = 8.0f;
-    const DAVA::int32 Margin = 50;
+    const DAVA::float32 Margin = 50.0f;
 
     //helper members to store space button and left mouse buttons states
     bool isSpacePressed = false;

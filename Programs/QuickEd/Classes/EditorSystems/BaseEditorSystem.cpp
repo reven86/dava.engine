@@ -15,7 +15,12 @@ bool BaseEditorSystem::CanProcessInput() const
     return false;
 }
 
-BaseEditorSystem::eInternalState BaseEditorSystem::RequireNewState() const
+BaseEditorSystem::eInternalState BaseEditorSystem::RequireNewState(UIEvent* currentInput) const
 {
     return NO_STATE;
+}
+
+void BaseEditorSystem::OnStateChanged(EditorSystemsManager::eState /*state*/)
+{
+
 }

@@ -74,6 +74,12 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
     systems.emplace_back(new ::EditorTransformSystem(this));
     EditorCanvas* editorCanvas = new EditorCanvas(rootControl.Get(), scalableControl.Get(), this);
     systems.emplace_back(editorCanvas);
+
+    for (auto it = systems.begin(); it != systems.end(); ++it)
+    {
+        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        stateChanged.Connect(editorSystem.get(), &BaseEditorSystem::OnStateChanged);
+    }
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
@@ -84,6 +90,7 @@ void EditorSystemsManager::OnInput(UIEvent* currentInput)
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+
         if(newBaseState == BaseEditorSystem::NO_STATE)
         {
             newBaseState = editorSystem->RequireNewState();
@@ -187,7 +194,7 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     if (!selectedControlNodes.empty())
     {
-        SetPreviewMode(false);
+        RefreshRootControls();
     }
 }
 
@@ -198,7 +205,7 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
         package->RemoveListener(this);
     }
     package = package_;
-    SetPreviewMode(true);
+    SetState(Preview);
     if (nullptr != package)
     {
         package->AddListener(this);
@@ -209,9 +216,10 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
-        if (state > Preview && editingRootControls.size() == 1)
+        if (state != Preview && editingRootControls.size() == 1)
         {
-            SetPreviewMode(true);
+            DVASSERT(state != DragScreen, "can not remove control while drag screen");
+            SetState(Preview);
         }
         else
         {
@@ -238,17 +246,11 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
     }
 }
 
-void EditorSystemsManager::SetPreviewMode(bool mode)
-{
-    previewMode = mode;
-    RefreshRootControls();
-}
-
 void EditorSystemsManager::RefreshRootControls()
 {
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
 
-    if (previewMode)
+    if (state == Preview)
     {
         if (nullptr != package)
         {
@@ -273,6 +275,10 @@ void EditorSystemsManager::RefreshRootControls()
                 newRootControls.insert(root);
             }
         }
+        if (newRootControls.size() > 1)
+        {
+            SetState(Preview);
+        }
     }
     if (editingRootControls != newRootControls)
     {
@@ -289,4 +295,30 @@ void EditorSystemsManager::OnTransformStateChanged(bool inTransformState)
         //calling this function can refresh all properties and styles in this node
         package->SetCanUpdateAll(!inTransformState);
     }
+}
+
+DAVA::UIControl* EditorSystemsManager::GetRootControl() const
+{
+    return rootControl.Get();
+}
+
+EditorSystemsManager::eState EditorSystemsManager::GetState() const
+{
+    return state;
+}
+
+void EditorSystemsManager::SetState(eState state_)
+{
+    if (state == state_)
+    {
+        return;
+    }
+    previousState = state;
+    state = state_;
+    if (state == Preview || previousState == Preview)
+    {
+        RefreshRootControls();
+    }
+
+    stateChanged.Emit(state);
 }

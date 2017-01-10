@@ -57,6 +57,7 @@ public slots:
     void OnEmulationModeChanged(bool emulationMode);
     void OnIncrementScale();
     void OnDecrementScale();
+    void SetActualScale();
 
 private slots:
     void OnScaleChanged(float scale);
@@ -68,7 +69,7 @@ private slots:
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
-
+    void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
 private:
     void ShowMenu(const QMouseEvent* mouseEvent);
@@ -83,7 +84,6 @@ private:
     void CreateActions();
     void OnWheel(QWheelEvent* event) override;
     void OnNativeGuesture(QNativeGestureEvent* event) override;
-    void OnMousePressed(QMouseEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
     void OnMouseDBClick(QMouseEvent* event) override;
@@ -93,7 +93,6 @@ private:
     void OnDragLeaved(QDragLeaveEvent* event) override;
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
-    void OnKeyReleased(QKeyEvent* event) override;
 
     void OnTransformStateChanged(bool inTransformState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);

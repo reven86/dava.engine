@@ -20,7 +20,7 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
     systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->packageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
+    systemsManager->packageChanged.Connect(this, &SelectionSystem::OnPackageChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -30,7 +30,7 @@ SelectionSystem::~SelectionSystem()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-bool SelectionSystem::OnInput(UIEvent* currentInput)
+void SelectionSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
@@ -47,10 +47,9 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     default:
         break;
     }
-    return false;
 }
 
-void SelectionSystem::OnPackageNodeChanged(PackageNode* packageNode_)
+void SelectionSystem::OnPackageChanged(PackageNode* packageNode_)
 {
     if (nullptr != packageNode)
     {

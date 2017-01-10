@@ -118,6 +118,8 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
+    DAVA::UIControl* GetRootControl() const;
+
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
@@ -127,6 +129,7 @@ public:
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageChanged;
+    DAVA::Signal<bool> emulationModeChanged;
     DAVA::Signal<eState> stateChanged;
 
 private:
@@ -140,7 +143,6 @@ private:
     void OnPackageChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
-    void SetPreviewMode(bool mode);
     void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);
 

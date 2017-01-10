@@ -41,7 +41,7 @@ QString ScaleStringFromReal(float scale)
 
 struct PreviewContext : WidgetContext
 {
-    QPoint canvasPosition;
+    Vector2 canvasPosition;
 };
 
 struct SystemsContext : WidgetContext
@@ -67,9 +67,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
     
-    systemsManager->transformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
-
-
     verticalRuler->SetRulerOrientation(Qt::Vertical);
 
     // Setup the Scale Combo.
@@ -84,6 +81,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
+    SetActualScale();
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -113,10 +111,7 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget = renderWidget_;
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
-
-    connect(renderWidget, &RenderWidget::Resized, editorCanvas,
-            static_cast<void (EditorCanvas::*)(int32, int32)>(&EditorCanvas::SetViewSize));
-
+    connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
     CreateActions();
 }
 
@@ -332,7 +327,6 @@ void PreviewWidget::OnWindowCreated()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));
 
-    systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
 
@@ -354,37 +348,33 @@ void PreviewWidget::OnScaleChanged(float scale)
 
     rulerController->SetScale(scale);
     float32 realScale = static_cast<float32>(scale);
-    if (systemsManager)
-    {
-        systemsManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
-    }
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    scrollAreaController->SetScale(scale);
+    editorCanvas->SetScale(scale);
 }
 
 void PreviewWidget::OnScaleByComboText()
 {
     float scale = GetScaleFromComboboxText();
-    scrollAreaController->SetScale(scale);
+    editorCanvas->SetScale(scale);
 }
 
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
-    QPoint canvasPosition = scrollAreaController->GetPosition();
-    canvasPosition.setY(vPosition);
-    scrollAreaController->SetPosition(canvasPosition);
+    Vector2 canvasPosition = editorCanvas->GetPosition();
+    canvasPosition.y = vPosition;
+    editorCanvas->SetPosition(canvasPosition);
 }
 
 void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
-    QPoint canvasPosition = scrollAreaController->GetPosition();
-    canvasPosition.setX(hPosition);
-    scrollAreaController->SetPosition(canvasPosition);
+    Vector2 canvasPosition = editorCanvas->GetPosition();
+    canvasPosition.x = hPosition;
+    editorCanvas->SetPosition(canvasPosition);
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
@@ -501,12 +491,12 @@ void PreviewWidget::LoadContext()
     {
         context = new PreviewContext();
         document->SetContext(this, context);
-        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-        scrollAreaController->SetPosition(position);
+        Vector2 position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+        editorCanvas->SetPosition(position);
     }
     else
     {
-        scrollAreaController->SetPosition(context->canvasPosition);
+        editorCanvas->SetPosition(context->canvasPosition);
     }
 }
 
@@ -520,7 +510,7 @@ void PreviewWidget::SaveContext()
     //check that we do not leave document in non valid state
     DVASSERT(document->GetPackage()->CanUpdateAll());
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    context->canvasPosition = scrollAreaController->GetPosition();
+    context->canvasPosition = editorCanvas->GetPosition();
 }
 
 void PreviewWidget::OnWheel(QWheelEvent* event)
@@ -548,7 +538,7 @@ void PreviewWidget::OnWheel(QWheelEvent* event)
         }
         float scale = GetScaleFromWheelEvent(ticksCount);
         QPoint pos = event->pos();
-        scrollAreaController->AdjustScale(scale, pos);
+        editorCanvas->AdjustScale(scale, Vector2(pos.x(), pos.y()));
     }
     else
     {
@@ -559,10 +549,10 @@ void PreviewWidget::OnWheel(QWheelEvent* event)
 #endif //platform
         //scroll view up and down
         static const float wheelDelta = 0.002f;
-        QPoint position = scrollAreaController->GetPosition();
-        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+        Vector2 position = editorCanvas->GetPosition();
+        Vector2 additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
                              (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
-        scrollAreaController->SetPosition(position - additionalPos);
+        editorCanvas->SetPosition(position - additionalPos);
     }
 }
 
@@ -574,15 +564,16 @@ void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
     }
     const float normalScale = 1.0f;
     const float expandedScale = 1.5f;
-    float scale = scrollAreaController->GetScale();
-    QPoint pos = event->pos();
+    float scale = editorCanvas->GetScale();
+    QPoint qtPos = event->pos();
+    Vector2 pos(qtPos.x(), qtPos.y());
     switch (event->gestureType())
     {
     case Qt::ZoomNativeGesture:
-        scrollAreaController->AdjustScale(scale + event->value(), pos);
+        editorCanvas->AdjustScale(scale + event->value(), pos);
         break;
     case Qt::SmartZoomNativeGesture:
-        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
+        editorCanvas->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
         //event->value() returns 1 or 0
         break;
     default:
@@ -590,33 +581,8 @@ void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
     }
 }
 
-void PreviewWidget::OnMousePressed(QMouseEvent* event)
-{
-    Qt::MouseButtons buttons = event->buttons();
-    if (buttons & Qt::LeftButton)
-    {
-        isMouseLeftButtonPressed = true;
-    }
-    if (buttons & Qt::MidButton)
-    {
-        isMouseMidButtonPressed = true;
-    }
-    UpdateDragScreenState();
-}
-
 void PreviewWidget::OnMouseReleased(QMouseEvent* event)
 {
-    Qt::MouseButtons buttons = event->buttons();
-    if ((buttons & Qt::LeftButton) == false)
-    {
-        isMouseLeftButtonPressed = false;
-    }
-    if ((buttons & Qt::MidButton) == false)
-    {
-        isMouseMidButtonPressed = false;
-    }
-    UpdateDragScreenState();
-
     if (event->button() == Qt::RightButton)
     {
         ShowMenu(event);
@@ -738,7 +704,7 @@ void PreviewWidget::OnDrop(QDropEvent* event)
         if (node == nullptr)
         {
             node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
-            index = systemsManager->GetIndexOfNearestControl(pos - systemsManager->GetScalableControl()->GetPosition());
+            index = systemsManager->GetIndexOfNearestControl(pos);
         }
         else
         {
@@ -769,11 +735,6 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
         return;
     }
     int key = event->key();
-    if (key == Qt::Key_Space)
-    {
-        isSpacePressed = true;
-        UpdateDragScreenState();
-    }
     if (key == Qt::Key_Enter || key == Qt::Key_Return)
     {
         SelectedNodes selectedNodes = selectionContainer.selectedNodes;
@@ -785,15 +746,6 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
                 ChangeControlText(node);
             }
         }
-    }
-}
-
-void PreviewWidget::OnKeyReleased(QKeyEvent* event)
-{
-    if (event->isAutoRepeat() == false && event->key() == Qt::Key_Space)
-    {
-        isSpacePressed = false;
-        UpdateDragScreenState();
     }
 }
 
@@ -824,7 +776,7 @@ void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* prope
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
 {
-    float scale = scrollAreaController->GetScale();
+    float scale = editorCanvas->GetScale();
     if (ticksCount > 0)
     {
         scale = GetNextScale(scale, ticksCount);
@@ -887,4 +839,19 @@ float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
     ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
+}
+
+void PreviewWidget::SetActualScale()
+{
+    editorCanvas->SetScale(1.0f); //1.0f is a 100% scale
+}
+
+void PreviewWidget::OnResized(uint32 width, uint32 height)
+{
+    Vector2 size(static_cast<float32>(width), static_cast<float32>(height));
+    editorCanvas->SetViewSize(size);
+}
+
+void PreviewWidget::SelectControl(const DAVA::String& path)
+{
 }

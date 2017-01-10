@@ -124,26 +124,21 @@ void EditorCanvas::SetScale(float32 arg)
     }
 }
 
-void EditorCanvas::SetViewSize(int32 width, int32 height)
-{
-    SetViewSize(Vector2(width, height));
-}
-
 void EditorCanvas::SetViewSize(const Vector2& viewSize_)
 {
     if (viewSize_ != viewSize)
     {
         viewSize = viewSize_;
-
+        int32 width = static_cast<int32>(viewSize.dx);
+        int32 height = static_cast<int32>(viewSize.dy);
         VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
 
         vcs->UnregisterAllAvailableResourceSizes();
-        vcs->SetVirtualScreenSize(viewSize.dx, viewSize.dy);
-        vcs->RegisterAvailableResourceSize(viewSize.dx, viewSize.dy, "Gfx");
-        vcs->RegisterAvailableResourceSize(viewSize.dx, viewSize.dy, "Gfx2");
+        vcs->SetVirtualScreenSize(width, height);
+        vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+        vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
 
-        Vector2 newSize(viewSize_.dx, viewSize_.dy);
-        UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
+        UIScreenManager::Instance()->GetScreen()->SetSize(viewSize);
         UpdatePosition();
         viewSizeChanged.Emit(viewSize);
     }
@@ -202,4 +197,10 @@ void EditorCanvas::UpdateDragScreenState()
 {
     bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
     //EditorSystemsManager::eDragState dragState_ = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
+}
+
+BaseEditorSystem::eInternalState EditorCanvas::RequireNewState(UIEvent* currentInput) const
+{
+    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    return inDragScreenState ? 
 }

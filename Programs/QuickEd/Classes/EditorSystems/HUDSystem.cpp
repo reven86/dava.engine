@@ -119,15 +119,9 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     InvalidatePressedPoint();
     hudControl->SetName(FastName("hudControl"));
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
-    systemsManager->emulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemsManager->emulationModeChanged.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemsManager->editingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
-    systemsManager->transformStateChanged.Connect([this](bool inTransformState_) {
-        inTransformState = inTransformState_;
-    });
-    systemsManager->dragStateChanged.Connect([this](EditorSystemsManager::eDragState) {
-        OnMagnetLinesChanged(Vector<MagnetLineInfo>());
-    });
 }
 
 HUDSystem::~HUDSystem()
@@ -168,7 +162,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     HighlightNodes({ node });
 }
 
-bool HUDSystem::OnInput(UIEvent* currentInput)
+void HUDSystem::OnInput(UIEvent* currentInput)
 {
     bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
@@ -190,7 +184,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::MOVE:
         ProcessCursor(hoveredPoint, searchOrder);
-        return false;
+        break;
     case UIEvent::Phase::BEGAN:
     {
         HighlightNodes({});
@@ -198,7 +192,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         pressedPoint = hoveredPoint;
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != eMouseButtons::LEFT)
         {
-            return true;
+            break;
         }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
@@ -213,7 +207,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
         SetCanDrawRect(isPlacedOnScreen && (hotKeyDetected || noHudableControls));
-        return canDrawRect;
+        break;
     }
     case UIEvent::Phase::DRAG:
         dragRequested = true;
@@ -235,7 +229,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             selectionRectControl->SetRect(Rect(point, size));
             systemsManager->selectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
-        return true;
+        break;
     case UIEvent::Phase::ENDED:
     {
         ProcessCursor(hoveredPoint, searchOrder);
@@ -243,12 +237,11 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         dragRequested = false;
         bool retVal = (pressedPoint - hoveredPoint).Length() > 0;
         InvalidatePressedPoint();
-        return retVal;
+        break;   
     }
     default:
-        return false;
+        break;
     }
-    return false;
 }
 
 void HUDSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
@@ -491,5 +484,13 @@ void HUDSystem::UpdatePlacedOnScreenStatus()
     else
     {
         systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
+    }
+}
+
+void HUDSystem::OnStateChanged(EditorSystemsManager::eState state)
+{
+    if (state == EditorSystemsManager::DragScreen)
+    {
+        DVASSERT(nullptr, "realize");
     }
 }
