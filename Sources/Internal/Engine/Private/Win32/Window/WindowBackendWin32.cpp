@@ -900,6 +900,13 @@ bool WindowBackend::OnClose()
     return closeRequestByApp;
 }
 
+bool WindowBackend::OnSysCommand(int sysCommand)
+{
+    // Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
+    // Window still can be moved and sized by mouse.
+    return sysCommand == SC_MOVE || sysCommand == SC_SIZE;
+}
+
 LRESULT WindowBackend::OnDestroy()
 {
     if (!isMinimized)
@@ -955,7 +962,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnPointerClick(pointerId, pt.x, pt.y);
-        isHandled = false;
     }
     else if (message == WM_POINTERUPDATE)
     {
@@ -964,7 +970,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnPointerUpdate(pointerId, pt.x, pt.y);
-        isHandled = false;
     }
     else if (message == WM_POINTERWHEEL || message == WM_POINTERHWHEEL)
     {
@@ -978,7 +983,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         ::ScreenToClient(hwnd, &pt);
 
         lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
-        isHandled = false;
     }
     else if (message == WM_MOUSEMOVE)
     {
@@ -1082,6 +1086,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_EXITMENULOOP)
     {
         lresult = OnExitMenuLoop();
+    }
+    else if (message == WM_SYSCOMMAND)
+    {
+        isHandled = OnSysCommand(static_cast<int>(wparam));
     }
     else
     {
