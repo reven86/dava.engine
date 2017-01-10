@@ -2,6 +2,8 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/RHI/Common/PreProcess.h"
 

@@ -101,10 +101,18 @@ ModalMessageParams::Button Convert(const QMessageBox::StandardButton& button)
     return iter->second;
 }
 
+struct StatusBarWidget
+{
+    QWidget* widget = nullptr;
+    QAction* action = nullptr;
+};
+
 struct MainWindowInfo
 {
     QMainWindow* window = nullptr;
     QMenuBar* menuBar = nullptr;
+    Vector<StatusBarWidget> nonPermanentStatusBarWidgets;
+    Vector<StatusBarWidget> permanentStatusBarWidgets;
 };
 
 QAction* FindAction(QWidget* w, const QString& actionName)
@@ -116,7 +124,7 @@ QAction* FindAction(QWidget* w, const QString& actionName)
             return action;
     }
 
-    QMenu* menu = w->findChild<QMenu*>(actionName);
+    QMenu* menu = w->findChild<QMenu*>(actionName, Qt::FindDirectChildrenOnly);
     if (menu != nullptr)
     {
         return menu->menuAction();
@@ -216,9 +224,9 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
         QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
         if (menu == nullptr)
         {
+            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             menu = new QMenu(currentLevelTittle, currentLevelMenu);
             menu->setObjectName(currentLevelTittle);
-            QAction* action = FindAction(currentLevelMenu, currentLevelTittle);
             if (action != nullptr)
             {
                 action->setMenu(menu);
@@ -252,23 +260,60 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
 {
     bool isPermanent = url.path() == permanentStatusbarAction;
     int stretchFactor = url.fragment().toInt();
-    QWidget* widget = action->data().value<QWidget*>();
-    if (widget == nullptr)
+    QWidget* actionWidget = action->data().value<QWidget*>();
+    if (actionWidget == nullptr)
     {
         QToolButton* toolButton = new QToolButton();
         toolButton->setDefaultAction(action);
-        widget = toolButton;
+        toolButton->setAutoRaise(true);
+        toolButton->setMaximumSize(QSize(16, 16));
+        actionWidget = toolButton;
     }
 
-    //action->setParent(widget);
-    QStatusBar* statusBar = windowInfo.window->statusBar();
+    InsertionParams insertParams = InsertionParams::Create(url);
+    Vector<StatusBarWidget>* widgets = nullptr;
     if (isPermanent)
     {
-        statusBar->addPermanentWidget(widget, stretchFactor);
+        widgets = &windowInfo.permanentStatusBarWidgets;
     }
     else
     {
-        statusBar->addWidget(widget, stretchFactor);
+        widgets = &windowInfo.nonPermanentStatusBarWidgets;
+    }
+
+    size_t positionIndex = 0;
+    if (insertParams.item.isEmpty())
+    {
+        if (insertParams.method == InsertionParams::eInsertionMethod::AfterItem)
+        {
+            positionIndex = widgets->size();
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < widgets->size(); ++i)
+        {
+            const StatusBarWidget& w = (*widgets)[i];
+            if (w.action->objectName() == insertParams.item)
+            {
+                positionIndex = i;
+                break;
+            }
+        }
+    }
+
+    StatusBarWidget statusBarWidget;
+    statusBarWidget.widget = actionWidget;
+    statusBarWidget.action = action;
+    widgets->insert(widgets->begin() + positionIndex, statusBarWidget);
+    QStatusBar* statusBar = windowInfo.window->statusBar();
+    if (isPermanent)
+    {
+        statusBar->insertPermanentWidget(static_cast<int>(positionIndex), actionWidget, stretchFactor);
+    }
+    else
+    {
+        statusBar->insertWidget(static_cast<int>(positionIndex), actionWidget, stretchFactor);
     }
 }
 

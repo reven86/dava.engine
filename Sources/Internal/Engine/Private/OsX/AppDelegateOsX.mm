@@ -21,7 +21,8 @@
 
 - (void)applicationWillFinishLaunching:(NSNotification*)notification
 {
-    bridge->ApplicationWillFinishLaunching();
+    [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
+    bridge->ApplicationWillFinishLaunching(notification);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
@@ -36,12 +37,12 @@
 
 - (void)applicationDidBecomeActive:(NSNotification*)notification
 {
-    bridge->ApplicationDidBecomeActive();
+    bridge->ApplicationDidBecomeActive(notification);
 }
 
 - (void)applicationDidResignActive:(NSNotification*)notification
 {
-    bridge->ApplicationDidResignActive();
+    bridge->ApplicationDidResignActive(notification);
 }
 
 - (void)applicationDidHide:(NSNotification*)notification
@@ -68,7 +69,12 @@
 
 - (void)applicationWillTerminate:(NSNotification*)notification
 {
-    bridge->ApplicationWillTerminate();
+    bridge->ApplicationWillTerminate(notification);
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification
+{
+    bridge->ApplicationDidActivateNotification(center, notification);
 }
 
 @end

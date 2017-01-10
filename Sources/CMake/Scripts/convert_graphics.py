@@ -41,6 +41,10 @@ def convert_graphics_args( args ):
     print 'Path to Dava tools ->', pathTools
     print 'Clear data ->', args.clearData
 
+    if not os.path.exists(pathDataSource):
+        print pathDataSource, 'is not existing. Skipping graphics converting'
+        return
+
     paramPacker = ''
     if args.paramPacker :
         paramPacker = ''.join(args.paramPacker)

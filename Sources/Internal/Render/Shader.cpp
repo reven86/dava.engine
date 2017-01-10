@@ -1,6 +1,7 @@
 #include "Render/Shader.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RenderBase.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

@@ -1,5 +1,4 @@
 #include "TArc/Controls/SceneTabbar.h"
-#include "TArc/Utils/ScopedValueGuard.h"
 
 #include "Debug/DVAssert.h"
 #include "Base/BaseTypes.h"
@@ -16,8 +15,8 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
     , model(model_)
 {
     DataWrapper::DataAccessor accessorFn(this, &SceneTabbar::GetSceneTabsModel);
-    modelWrapperWrapper = accessor->CreateWrapper(accessorFn);
-    modelWrapperWrapper.SetListener(this);
+    modelWrapper = accessor->CreateWrapper(accessorFn);
+    modelWrapper.SetListener(this);
 
     QObject::connect(this, &QTabBar::currentChanged, this, &SceneTabbar::OnCurrentTabChanged);
     QObject::connect(this, &QTabBar::tabCloseRequested, this, &SceneTabbar::OnCloseTabRequest);
@@ -30,14 +29,8 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
 void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
     DVASSERT(wrapper.HasData());
-    if (fields.empty())
-    {
-        OnTabsCollectionChanged();
-        OnActiveTabChanged();
-    }
-
-    bool tabsPropertyChanged = false;
-    bool activeTabPropertyChanged = false;
+    bool tabsPropertyChanged = fields.empty();
+    bool activeTabPropertyChanged = fields.empty();
     for (const Any& fieldName : fields)
     {
         if (fieldName.CanCast<String>())
@@ -68,8 +61,6 @@ void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& f
 
 void SceneTabbar::OnActiveTabChanged()
 {
-    SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
-
     Reflection ref = model.GetField(Any(activeTabPropertyName));
     DVASSERT(ref.IsValid());
     Any value = ref.GetValue();
@@ -99,8 +90,7 @@ void SceneTabbar::OnTabsCollectionChanged()
 {
     bool activeTabRemoved = false;
     {
-        SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
-
+        QSignalBlocker blocker(this);
         uint64 currentTabID = tabData(currentIndex()).value<uint64>();
         UnorderedMap<uint64, int> existsIds;
         int tabCount = count();
@@ -176,17 +166,15 @@ DAVA::Reflection SceneTabbar::GetSceneTabsModel(const DataContext* /*context*/)
 
 void SceneTabbar::OnCurrentTabChanged(int currentTab)
 {
-    SCOPED_VALUE_GUARD(bool, inTabChanging, true, void());
-
-    if (currentTab == -1)
+    uint64 newActiveTabID = 0;
+    if (currentTab != -1)
     {
-        model.GetField(activeTabPropertyName).SetValue(uint64(0));
-        return;
+        QVariant data = tabData(currentTab);
+        DVASSERT(data.canConvert<uint64>());
+        newActiveTabID = data.value<uint64>();
     }
 
-    QVariant data = tabData(currentTab);
-    DVASSERT(data.canConvert<uint64>());
-    model.GetField(activeTabPropertyName).SetValue(data.value<uint64>());
+    modelWrapper.SetFieldValue(activeTabPropertyName, newActiveTabID);
 }
 
 void SceneTabbar::OnCloseTabRequest(int index)
