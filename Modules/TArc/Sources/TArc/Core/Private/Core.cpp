@@ -458,7 +458,6 @@ public:
 
     void OnLoopStarted() override
     {
-        ToolsAssertGuard::Instance()->Init();
         Impl::OnLoopStarted();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));

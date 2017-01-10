@@ -1,11 +1,16 @@
 #include "TArc/Utils/AssertGuard.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
+#include "Debug/DVAssert.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "TArc/Utils/AssertGuardMacOSHack.h"
 #endif
+
+#include "Base/StaticSingleton.h"
 
 #include <QApplication>
 #include <QAbstractEventDispatcher>
@@ -15,7 +20,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class ToolsAssertGuard::EventFilter final : public QObject
+class EventFilter final : public QObject
 {
 public:
     EventFilter()
@@ -57,28 +62,71 @@ public:
     }
 };
 
-void ToolsAssertGuard::Init()
+class AssertGuard : public StaticSingleton<AssertGuard>
 {
-    DVAssertMessage::SetShowInnerOverride([](DVAssertMessage::eModalType type, const char8* message)
-                                          {
-                                              return ToolsAssertGuard::Instance()->InnerShow(type, message);
-                                          });
-}
-
-bool ToolsAssertGuard::InnerShow(DVAssertMessage::eModalType modalType, const char8* message)
-{
-    LockGuard<Mutex> mutexGuard(mutex);
-
-    std::unique_ptr<EventFilter> filter;
-    if (Thread::IsMainThread())
+public:
+    void SetMode(eApplicationMode mode_)
     {
-        filter.reset(new EventFilter());
+        mode = mode_;
     }
 
+    Assert::FailBehaviour HandleAssert(const Assert::AssertInfo& assertInfo)
+    {
+        LockGuard<Mutex> mutexGuard(mutex);
+        DAVA::TArc::ScopedValueGuard<bool> valueGuard(isInAssert, true);
+
+        std::unique_ptr<EventFilter> filter;
+        if (Thread::IsMainThread())
+        {
+            filter.reset(new EventFilter());
+        }
+
 #if defined(__DAVAENGINE_MACOS__)
-    MacOSRunLoopGuard macOSGuard;
+        MacOSRunLoopGuard macOSGuard;
 #endif
-    return DVAssertMessage::InnerShow(DVAssertMessage::ALWAYS_MODAL, message);
+
+        switch (mode)
+        {
+        case eApplicationMode::CONSOLE_MODE:
+            return Assert::DefaultLoggerHandler(assertInfo);
+        case eApplicationMode::GUI_MODE:
+            Assert::DefaultLoggerHandler(assertInfo);
+            return Assert::DefaultDialogBoxHandler(assertInfo);
+        case eApplicationMode::TEST_MODE:
+            return Assert::DefaultLoggerHandler(assertInfo);
+        default:
+            break;
+        }
+
+        return Assert::FailBehaviour::Default;
+    }
+
+    bool IsInsideAssert()
+    {
+        return isInAssert;
+    }
+
+private:
+    Mutex mutex;
+    bool isInAssert = false;
+    eApplicationMode mode;
+};
+
+Assert::FailBehaviour AssertHandler(const Assert::AssertInfo& assertInfo)
+{
+    return AssertGuard::Instance()->HandleAssert(assertInfo);
 }
+
+void SetupToolsAssertHandlers(eApplicationMode mode)
+{
+    AssertGuard::Instance()->SetMode(mode);
+    Assert::AddHandler(&AssertHandler);
+}
+
+bool IsInsideAssertHandler()
+{
+    return AssertGuard::Instance()->IsInsideAssert();
+}
+
 } // namespace TArc
 } // namespace DAVA
