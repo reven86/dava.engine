@@ -29,6 +29,4 @@ set( DISABLE_SOUNDS         true)
 
 setup_main_executable()
 
-if (WIN32)
-set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
-endif ()
+set_subsystem_console()
