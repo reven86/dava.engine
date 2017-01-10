@@ -17,7 +17,6 @@ class Window;
 class TestData;
 class BaseScreen;
 class TestListScreen;
-struct NativeDelegateMac;
 struct NativeDelegateIos;
 struct NativeDelegateWin10;
 
@@ -93,8 +92,6 @@ private:
     
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
-    std::unique_ptr<NativeDelegateMac> nativeDelegate;
 #elif defined(__DAVAENGINE_IPHONE__)
     std::unique_ptr<NativeDelegateIos> nativeDelegate;
 #elif defined(__DAVAENGINE_WIN_UAP__)

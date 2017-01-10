@@ -10,6 +10,7 @@ add_definitions(-D__DAVAENGINE_COREV2__)
 add_definitions(-DCONSOLE)
 add_definitions(-D_CONSOLE)
  
+set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
 include      ( CMake-common )

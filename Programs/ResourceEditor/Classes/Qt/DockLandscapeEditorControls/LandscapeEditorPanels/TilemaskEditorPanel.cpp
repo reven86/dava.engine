@@ -232,7 +232,7 @@ void TilemaskEditorPanel::InitBrushImages()
     DAVA::FilePath toolsPath(ResourceEditor::TILEMASK_EDITOR_TOOLS_PATH);
 
     DAVA::ScopedPtr<DAVA::FileList> fileList(new DAVA::FileList(toolsPath));
-    for (DAVA::int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
+    for (DAVA::uint32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
     {
         auto pathname = fileList->GetPathname(iFile);
         if (DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))

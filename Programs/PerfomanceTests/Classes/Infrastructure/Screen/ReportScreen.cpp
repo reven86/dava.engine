@@ -36,7 +36,7 @@ void ReportScreen::CreateReportScreen()
             float32 testTime = 0.0f;
             float32 elapsedTime = 0.0f;
 
-            uint32 framesCount = framesInfo.size();
+            uint32 framesCount = static_cast<uint32>(framesInfo.size());
 
             for (const auto& frameInfo : framesInfo)
             {
