@@ -20,6 +20,7 @@
 #include <sqlite_modern_cpp.h>
 
 #include <algorithm>
+#include <Engine/Engine.h>
 
 ENUM_DECLARE(DAVA::Compressor::Type)
 {
@@ -252,7 +253,7 @@ bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath,
         collectedFiles.clear();
         collectedFiles.reserve(numFiles);
 
-        FileSystem* fs = FileSystem::Instance();
+        FileSystem* fs = GetEngineContext()->fileSystem;
 
         db << "SELECT path FROM files"
         >> [&](String path)
@@ -497,11 +498,11 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
             fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
             if (!meta)
             {
-                fileEntry.customUserData = 0; // do it or your crc32 randomly change on same files
+                fileEntry.custom = 0; // do it or your crc32 randomly change on same files
             }
             else
             {
-                fileEntry.customUserData = meta->GetPackIndexForFile(fileIndex); // do it or your crc32 randomly change on same files
+                fileEntry.custom = meta->GetPackIndexForFile(fileIndex); // do it or your crc32 randomly change on same files
             }
 
             dataOffset += static_cast<uint32>(useBuffer.size());

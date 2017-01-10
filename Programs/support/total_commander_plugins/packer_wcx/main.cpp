@@ -69,8 +69,7 @@ int STDCALL CloseArchive(HANDLE hArcData)
     return 0;
 }
 
-// тут считаются все файлы, этот метод вызывается кучу раз
-// пока не вернут ноль
+// called multiple times till return 0 on finish files
 int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);

@@ -29,7 +29,7 @@ public:
     uint32_t GetNumFiles() const;
     uint32_t GetNumPacks() const;
     uint32_t GetPackIndexForFile(const uint32_t fileIndex) const;
-    void GetPackInfo(const uint32_t packIndex, std::string& packName, std::string& dependencies) const;
+    const std::tuple<std::string, std::string>& GetPackInfo(const uint32_t packIndex) const;
 
     std::vector<uint8_t> Serialize() const;
     void Deserialize(const void* ptr, size_t size);

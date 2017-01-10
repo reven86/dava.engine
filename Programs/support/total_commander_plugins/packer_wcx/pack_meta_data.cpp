@@ -1,12 +1,12 @@
 #include "pack_meta_data.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
-#include <array>
 
 #include "lz4.h"
 
@@ -44,11 +44,9 @@ uint32_t PackMetaData::GetPackIndexForFile(const uint32_t fileIndex) const
     return tableFiles.at(fileIndex);
 }
 
-void PackMetaData::GetPackInfo(const uint32_t packIndex, std::string& packName, std::string& dependencies) const
+const std::tuple<std::string, std::string>& PackMetaData::GetPackInfo(const uint32_t packIndex) const
 {
-    const auto& tuple = tablePacks.at(packIndex);
-    packName = std::get<0>(tuple);
-    dependencies = std::get<1>(tuple);
+    return tablePacks.at(packIndex);
 }
 
 std::vector<uint8_t> PackMetaData::Serialize() const

@@ -67,11 +67,9 @@ uint32 PackMetaData::GetPackIndexForFile(const uint32 fileIndex) const
     return tableFiles.at(fileIndex);
 }
 
-void PackMetaData::GetPackInfo(const uint32 packIndex, String& packName, String& dependencies) const
+const std::tuple<String, String>& PackMetaData::GetPackInfo(const uint32 packIndex) const
 {
-    const auto& tuple = tablePacks.at(packIndex);
-    packName = std::get<0>(tuple);
-    dependencies = std::get<1>(tuple);
+    return tablePacks.at(packIndex);
 }
 
 Vector<uint8> PackMetaData::Serialize() const
@@ -79,9 +77,10 @@ Vector<uint8> PackMetaData::Serialize() const
     DVASSERT(tablePacks.size() > 0);
     DVASSERT(tableFiles.size() > 0);
 
-    String bytes;
-
+    Vector<uint8> compBytes;
+    uint32 uncompressedSize = 0;
     {
+        String bytes;
         std::stringstream ss;
 
         size_t sizePackData = 0;
@@ -93,16 +92,17 @@ Vector<uint8> PackMetaData::Serialize() const
         }
 
         bytes = ss.str();
-    }
 
-    Vector<uint8> v(begin(bytes), end(bytes));
-    Vector<uint8> compBytes;
+        uncompressedSize = static_cast<uint32>(bytes.size());
 
-    LZ4Compressor compressor;
+        Vector<uint8> v(begin(bytes), end(bytes));
 
-    if (!compressor.Compress(v, compBytes))
-    {
-        DAVA_THROW(Exception, "can't compress pack table");
+        LZ4Compressor compressor;
+
+        if (!compressor.Compress(v, compBytes))
+        {
+            DAVA_THROW(Exception, "can't compress pack table");
+        }
     }
 
     // (4b) header - "meta"
@@ -128,8 +128,6 @@ Vector<uint8> PackMetaData::Serialize() const
     {
         DAVA_THROW(Exception, "write meta file indexes failed");
     }
-
-    uint32 uncompressedSize = static_cast<uint32>(bytes.size());
 
     if (4 != file->Write(&uncompressedSize, sizeof(uncompressedSize)))
     {

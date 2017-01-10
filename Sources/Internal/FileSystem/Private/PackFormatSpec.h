@@ -16,7 +16,7 @@ struct PackFile
     } rawBytesOfCompressedFiles;
 
     // 0 or footer.sizeOfMetaData bytes
-    struct CastomMetadataBlock
+    struct CustomMetadataBlock
     {
     } metadata;
 
@@ -33,7 +33,7 @@ struct PackFile
                 uint32 compressedCrc32;
                 Compressor::Type type;
                 uint32 originalCrc32;
-                uint32 customUserData; // can be castom user index in metaData
+                uint32 custom; // can be castom user index in metaData
             };
 
             Vector<Data> files;

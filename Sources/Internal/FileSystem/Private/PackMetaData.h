@@ -10,9 +10,8 @@ class PackMetaData
 {
 public:
     /** Create meta from sqlite db file
-	    open DB and read and fill tableFiles vector
-		and tablePacks vector
-		    Throw exception on error
+	    open DB and read meta data vector
+		Throw DAVA::Exception exception on error
 		*/
     explicit PackMetaData(const FilePath& metaDb);
     /** Create meta from serialized bytes
@@ -21,7 +20,10 @@ public:
     PackMetaData(const void* ptr, std::size_t size);
 
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
-    void GetPackInfo(const uint32 packIndex, String& packName, String& dependencies) const;
+    /**
+	    Return tuple (packName, packDependencies)
+	*/
+    const std::tuple<String, String>& GetPackInfo(const uint32 packIndex) const;
 
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);

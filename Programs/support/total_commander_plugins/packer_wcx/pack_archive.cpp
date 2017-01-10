@@ -346,7 +346,9 @@ std::string PackArchive::PrintMeta() const
         size_t max_dep_name = 0;
         for (unsigned i = 0; i < numPacks; ++i)
         {
-            meta.GetPackInfo(i, packName, dependencies);
+            const auto& info = meta.GetPackInfo(i);
+            const std::string& packName = std::get<0>(info);
+            const std::string& dependencies = std::get<1>(info);
             if (packName.length() > max_pack_name)
             {
                 max_pack_name = packName.length();
@@ -358,7 +360,9 @@ std::string PackArchive::PrintMeta() const
         }
         for (unsigned i = 0; i < numPacks; ++i)
         {
-            meta.GetPackInfo(i, packName, dependencies);
+            const auto& info = meta.GetPackInfo(i);
+            const std::string& packName = std::get<0>(info);
+            const std::string& dependencies = std::get<1>(info);
             ss << left << setw(max_pack_name)
                << packName << "|" << setw(max_dep_name)
                << dependencies << '\n';
