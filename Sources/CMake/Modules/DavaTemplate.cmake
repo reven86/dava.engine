@@ -801,7 +801,7 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 endif()
 
 if( DEPLOY )
-    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    message( STATUS "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
     
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
