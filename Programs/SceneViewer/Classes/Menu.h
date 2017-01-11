@@ -36,6 +36,7 @@ class Menu
 {
 public:
     explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect);
+    ~Menu();
 
     void AddActionItem(const DAVA::WideString& text, DAVA::Message& action);
     Menu* AddSubMenuItem(const DAVA::WideString& text);
@@ -43,7 +44,6 @@ public:
     void BackToMainMenu();
 
 private:
-
     DAVA::ScopedPtr<DAVA::UIButton> ConstructMenuButton(const DAVA::WideString& text, const DAVA::Message& action);
     void Show(bool toShow);
     void OnBack(DAVA::BaseObject* caller, void* param, void* callerData);

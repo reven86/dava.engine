@@ -15,7 +15,6 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
     bool SystemInput(UIEvent* currentInput) override;
-    void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 
     int32 GetScreenID() const
     {

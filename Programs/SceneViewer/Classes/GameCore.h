@@ -9,7 +9,6 @@ class Engine;
 class Window;
 }
 
-class SelectSceneScreen;
 class ViewSceneScreen;
 class GameCore
 {
@@ -32,26 +31,12 @@ public:
     void Draw(DAVA::Window* window);
     void EndFrame();
 
-    void SetScenePath(const DAVA::FilePath& path)
-    {
-        scenePath = path;
-    };
-
-    const DAVA::FilePath& GetScenePath() const
-    {
-        return scenePath;
-    };
-
 protected:
     void CreateDocumentsFolder();
 
-    SelectSceneScreen* selectSceneScreen;
     ViewSceneScreen* viewSceneScreen;
-
-    DAVA::FilePath scenePath;
 
 private:
     DAVA::Engine& engine;
-
     static GameCore* instance;
 };

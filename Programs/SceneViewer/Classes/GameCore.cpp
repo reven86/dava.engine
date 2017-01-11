@@ -1,5 +1,4 @@
 #include "GameCore.h"
-#include "SelectSceneScreen.h"
 #include "ViewSceneScreen.h"
 
 #include "Engine/Engine.h"
@@ -20,8 +19,7 @@ GameCore::GameCore(Engine& e)
     DVASSERT(instance == nullptr);
     instance = this;
 
-    selectSceneScreen = NULL;
-    viewSceneScreen = NULL;
+    viewSceneScreen = nullptr;
 
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
@@ -71,7 +69,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 
     //selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen(engine);
-    SetScenePath("~res:/Scene-15-effect/test_scene.sc2");
+    //SetScenePath("~res:/Scene-15-effect/test_scene.sc2");
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
@@ -98,7 +96,6 @@ void GameCore::OnAppFinished()
 {
     DbgDraw::Uninitialize();
 
-    SafeRelease(selectSceneScreen);
     SafeRelease(viewSceneScreen);
 }
 

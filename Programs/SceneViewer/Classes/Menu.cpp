@@ -29,6 +29,14 @@ Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, D
 {
 }
 
+Menu::~Menu()
+{
+    for (auto& item : menuItems)
+    {
+        bearerControl->RemoveControl(item->button);
+    }
+}
+
 void Menu::AddActionItem(const DAVA::WideString& text, DAVA::Message& action)
 {
     ActionItem* actionItem = new ActionItem(this, action);

@@ -16,106 +16,124 @@ ViewSceneScreen::ViewSceneScreen(DAVA::Engine& engine)
 
 void ViewSceneScreen::LoadResources()
 {
+    BaseScreen::LoadResources();
+    AddControls();
+    LoadScene();
+}
+
+void ViewSceneScreen::UnloadResources()
+{
+    UnloadScene();
+    RemoveControls();
+    BaseScreen::UnloadResources();
+}
+
+void ViewSceneScreen::LoadScene()
+{
     using namespace DAVA;
 
-    if (!loaded)
+    scene = new Scene();
+    scene->LoadScene(selectedScenePath);
+
+    /*
     {
-        BaseScreen::LoadResources();
-
-        selectedScenePath = GameCore::Instance()->GetScenePath();
-        scene = new Scene();
-        scene->LoadScene(selectedScenePath);
-
-        /*
-    {
-        Entity* hullNode = entity->FindByName("hull")->Clone();
+    Entity* hullNode = entity->FindByName("hull")->Clone();
 
 
-        //create hull hierarchy to collapse in skinned mesh
-        Entity * hullSkeletonRoot = new Entity();
-        hullSkeletonRoot->SetName("hull");
-        hullSkeletonRoot->AddNode(hullNode);
+    //create hull hierarchy to collapse in skinned mesh
+    Entity * hullSkeletonRoot = new Entity();
+    hullSkeletonRoot->SetName("hull");
+    hullSkeletonRoot->AddNode(hullNode);
 
-        Vector<SkeletonComponent::JointConfig> hullJointsConfig;
-        RenderObject * skinnedHullObject = MeshUtils::CreateSkinnedMesh(hullSkeletonRoot, hullJointsConfig);
-        ((RenderComponent *)hullNode->GetOrCreateComponent(Component::RENDER_COMPONENT))->SetRenderObject(skinnedHullObject);
-        skinnedHullObject->Release();
-        hullSkeletonRoot->Release();
+    Vector<SkeletonComponent::JointConfig> hullJointsConfig;
+    RenderObject * skinnedHullObject = MeshUtils::CreateSkinnedMesh(hullSkeletonRoot, hullJointsConfig);
+    ((RenderComponent *)hullNode->GetOrCreateComponent(Component::RENDER_COMPONENT))->SetRenderObject(skinnedHullObject);
+    skinnedHullObject->Release();
+    hullSkeletonRoot->Release();
 
-        Matrix4 x;
-        x.CreateTranslation(Vector3(-20,0,0));
+    Matrix4 x;
+    x.CreateTranslation(Vector3(-20,0,0));
 
     //    hullNode->SetLocalTransform( x );
-        hullNode->RemoveAllChildren();
-        scene->AddNode( hullNode );
+    hullNode->RemoveAllChildren();
+    scene->AddNode( hullNode );
 
-        SkeletonComponent * hullSkeleton = new SkeletonComponent();
-        hullSkeleton->SetConfigJoints(hullJointsConfig);
-        hullNode->AddComponent(hullSkeleton);
+    SkeletonComponent * hullSkeleton = new SkeletonComponent();
+    hullSkeleton->SetConfigJoints(hullJointsConfig);
+    hullNode->AddComponent(hullSkeleton);
 
-    
-        Light*          light   = new Light();
-        LightComponent* light_c = new LightComponent( light );
-        Entity*         light_e = new Entity();
-        Matrix4         light_x; light_x.Identity();
 
-        light_c->SetLightType( Light::TYPE_DIRECTIONAL );
-        light_c->SetDirection( Vector3(0,-1,0) );
+    Light*          light   = new Light();
+    LightComponent* light_c = new LightComponent( light );
+    Entity*         light_e = new Entity();
+    Matrix4         light_x; light_x.Identity();
 
-        light_e->SetLocalTransform( light_x );
-    
-        light_e->SetName( "test-light" );
-        light_e->AddComponent( light_c );
-        scene->AddNode( light_e );
+    light_c->SetLightType( Light::TYPE_DIRECTIONAL );
+    light_c->SetDirection( Vector3(0,-1,0) );
+
+    light_e->SetLocalTransform( light_x );
+
+    light_e->SetName( "test-light" );
+    light_e->AddComponent( light_c );
+    scene->AddNode( light_e );
     }
     */
 
-        ScopedPtr<Camera> camera(new Camera);
+    ScopedPtr<Camera> camera(new Camera);
 
-        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-        vcs->RegisterAvailableResourceSize(vcs->GetVirtualScreenSize().dx, vcs->GetVirtualScreenSize().dy, "Gfx");
-        float32 aspect = static_cast<float32>(vcs->GetVirtualScreenSize().dy) / static_cast<float32>(vcs->GetVirtualScreenSize().dx);
-        camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
-        SetCameraAtCenter(camera);
-        //camera->SetPosition(Vector3(0, -10, 1));
-        scene->AddCamera(camera);
-        scene->SetCurrentCamera(camera);
+    float32 aspect = static_cast<float32>(GetSize().dy) / static_cast<float32>(GetSize().dx);
+    camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
+    SetCameraAtCenter(camera);
+    //camera->SetPosition(Vector3(0, -10, 1));
+    scene->AddCamera(camera);
+    scene->SetCurrentCamera(camera);
 
-        Entity* cameraEntity = new Entity();
-        cameraEntity->AddComponent(new CameraComponent(camera));
-        cameraEntity->AddComponent(new WASDControllerComponent());
-        cameraEntity->AddComponent(new RotationControllerComponent());
-        scene->AddNode(cameraEntity);
-        cameraEntity->Release();
+    Entity* cameraEntity = new Entity();
+    cameraEntity->AddComponent(new CameraComponent(camera));
+    cameraEntity->AddComponent(new WASDControllerComponent());
+    cameraEntity->AddComponent(new RotationControllerComponent());
+    scene->AddNode(cameraEntity);
+    cameraEntity->Release();
 
-        rotationControllerSystem.reset(new DAVA::RotationControllerSystem(scene));
-        scene->AddSystem(rotationControllerSystem.get(), MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-                         Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+    rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
+    scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
-        wasdSystem.reset(new WASDControllerSystem(scene));
-        scene->AddSystem(wasdSystem.get(), MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
-                         Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+    wasdSystem = new WASDControllerSystem(scene);
+    scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
+        Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
-        Rect screenRect = GetRect();
-        Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
-        screenRect.dx = static_cast<float32>(screenSize.dx);
-        screenRect.dy = static_cast<float32>(screenSize.dy);
-        SetRect(screenRect);
-        sceneView = new UI3DView(screenRect);
-        sceneView->SetScene(scene);
-        //sceneView->SetFrameBufferScaleFactor(0.5f);
-        //sceneView->SetDrawToFrameBuffer(true);
-        AddControl(sceneView);
+    DVASSERT(sceneView);
+    sceneView->SetScene(scene);
+}
 
-        AddMenuControl();
-        AddFileDialogControl();
-        AddInfoTextControl();
-        AddJoypadControl();
+void ViewSceneScreen::UnloadScene()
+{
+    if (scene)
+    {
+        scene->RemoveSystem(wasdSystem);
+        scene->RemoveSystem(rotationControllerSystem);
+        sceneView->SetScene(nullptr);
+
+        SafeDelete(wasdSystem);
+        SafeDelete(rotationControllerSystem);
+
+        scene.reset();
     }
+}
+
+void ViewSceneScreen::AddSceneViewControl()
+{
+    DVASSERT(!sceneView);
+    sceneView = new DAVA::UI3DView(GetRect());
+    //sceneView->SetFrameBufferScaleFactor(0.5f);
+    //sceneView->SetDrawToFrameBuffer(true);
+    AddControl(sceneView);
 }
 
 void ViewSceneScreen::AddMenuControl()
 {
+    DVASSERT(!menu);
     menu.reset(new Menu(nullptr, this, font, Rect(10, 30, 250, 60)));
     Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
@@ -132,6 +150,7 @@ void ViewSceneScreen::AddMenuControl()
 
 void ViewSceneScreen::AddFileDialogControl()
 {
+    DVASSERT(!fileSystemDialog);
     fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
     fileSystemDialog->SetDelegate(this);
     fileSystemDialog->SetExtensionFilter(".sc2");
@@ -140,6 +159,7 @@ void ViewSceneScreen::AddFileDialogControl()
 
 void ViewSceneScreen::AddJoypadControl()
 {
+    DVASSERT(!moveJoyPAD);
     moveJoyPAD = new UIJoypad(Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
     moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad.tex", 0);
@@ -148,24 +168,44 @@ void ViewSceneScreen::AddJoypadControl()
 
 void ViewSceneScreen::AddInfoTextControl()
 {
-    info.reset(new UIStaticText(Rect(GetRect().dy / 2, 30, 100, 30)));
-    info->SetFont(font);
-    info->SetTextColor(Color::White);
-    info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
-    AddControl(info);
+    DVASSERT(!infoText);
+    infoText = new UIStaticText(Rect(GetRect().dy / 2, 30, 100, 30));
+    infoText->SetFont(font);
+    infoText->SetTextColor(Color::White);
+    infoText->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
+    AddControl(infoText);
+}
+
+void ViewSceneScreen::AddControls()
+{
+    AddSceneViewControl();
+    AddMenuControl();
+    AddFileDialogControl();
+    AddInfoTextControl();
+    AddJoypadControl();
+}
+
+void ViewSceneScreen::RemoveControls()
+{
+    sceneView.reset();
+    infoText.reset();
+    moveJoyPAD.reset();
+    fileSystemDialog.reset();
+    menu.reset();
 }
 
 void ViewSceneScreen::SetCameraAtCenter(Camera* camera)
 {
-    camera->SetLeft(DAVA::Vector3(1, 0, 0));
-    camera->SetUp(DAVA::Vector3(0, 0, 1.f));
-    camera->SetTarget(DAVA::Vector3(0, 0, 0));
-    camera->SetPosition(DAVA::Vector3(0, -45, 10));
+    camera->SetLeft(DAVA::Vector3(1.f, 0.f, 0.f));
+    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
+    camera->SetTarget(DAVA::Vector3(0.f, 0.f, 0.f));
+    camera->SetPosition(DAVA::Vector3(0.f, -45.f, 10.f));
 }
 
 void ViewSceneScreen::OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile)
 {
     selectedScenePath = pathToFile;
+    ReloadScene();
 }
 
 void ViewSceneScreen::OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog)
@@ -190,8 +230,8 @@ void ViewSceneScreen::OnButtonSelectFromExt(BaseObject* caller, void* param, voi
 {
     DVASSERT(fileSystemDialog);
 
-    auto storageList = DeviceInfo::GetStoragesList();
-    for (const auto& storage : storageList)
+    List<DeviceInfo::StorageInfo> storageList = DeviceInfo::GetStoragesList();
+    for (const DeviceInfo::StorageInfo& storage : storageList)
     {
         if (storage.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL ||
             storage.type == DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL)
@@ -209,21 +249,6 @@ void ViewSceneScreen::OnButtonPerformanceTest(BaseObject* caller, void* param, v
         return;
 
     gridTest.Start(sceneView);
-}
-
-void ViewSceneScreen::UnloadResources()
-{
-    if (scene)
-    {
-        scene->RemoveSystem(wasdSystem.get());
-        scene->RemoveSystem(rotationControllerSystem.get());
-    }
-
-    scene.reset();
-    info.reset();
-    fileSystemDialog.reset();
-
-    BaseScreen::UnloadResources();
 }
 
 void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -279,34 +304,21 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 
 void ViewSceneScreen::ReloadScene()
 {
-    static int unloaded = 0;
-
-    if (!unloaded)
-    {
-        UnloadResources();
-        unloaded = true;
-        return;
-    }
-
-    if (++unloaded == 2)
-    {
-        GameCore::Instance()->SetScenePath(selectedScenePath);
-        LoadResources();
-        unloaded = 0;
-    }
+    UnloadScene();
+    LoadScene();
 }
 
 void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
 {
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::NUMPAD6))
-        cursorPosition.x += timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(Key::NUMPAD4))
-        cursorPosition.x -= timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(Key::NUMPAD8))
-        cursorPosition.y += timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(Key::NUMPAD2))
-        cursorPosition.y -= timeElapsed / 16.f;
+    //     if (keyboard.IsKeyPressed(Key::NUMPAD6))
+    //         cursorPosition.x += timeElapsed / 16.f;
+    //     if (keyboard.IsKeyPressed(Key::NUMPAD4))
+    //         cursorPosition.x -= timeElapsed / 16.f;
+    //     if (keyboard.IsKeyPressed(Key::NUMPAD8))
+    //         cursorPosition.y += timeElapsed / 16.f;
+    //     if (keyboard.IsKeyPressed(Key::NUMPAD2))
+    //         cursorPosition.y -= timeElapsed / 16.f;
     if (keyboard.IsKeyPressed(Key::SPACE))
         wasdSystem->SetMoveSpeed(30.f);
     else
@@ -322,11 +334,6 @@ void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
-    if (selectedScenePath != GameCore::Instance()->GetScenePath())
-    {
-        ReloadScene();
-        return;
-    }
 
     BaseScreen::Update(timeElapsed);
 
@@ -339,7 +346,7 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
     fpsMeter.Update(timeElapsed);
     if (fpsMeter.IsFpsReady())
     {
-        info->SetText(Format(L"FPS: %.0f", fpsMeter.GetFps()));
+        infoText->SetText(Format(L"FPS: %.0f", fpsMeter.GetFps()));
 
         drawTime = updateTime = 0;
     }

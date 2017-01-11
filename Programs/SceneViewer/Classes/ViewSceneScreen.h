@@ -7,13 +7,12 @@
 
 #include <Scene3D/Systems/Controller/RotationControllerSystem.h>
 #include <Scene3D/Systems/Controller/WASDControllerSystem.h>
+#include <Utils/FpsMeter.h>
 
 class ViewSceneScreen
-: public BaseScreen
-  ,
-  public UIFileSystemDialogDelegate
-  ,
-  public GridTestListener
+    : public BaseScreen
+    , public UIFileSystemDialogDelegate
+    , public GridTestListener
 {
 public:
     ViewSceneScreen(DAVA::Engine& engine);
@@ -37,10 +36,14 @@ private:
     // GridTestListener
     void OnGridTestStateChanged() override;
 
+    void AddSceneViewControl();
     void AddMenuControl();
     void AddFileDialogControl();
     void AddJoypadControl();
     void AddInfoTextControl();
+
+    void AddControls();
+    void RemoveControls();
 
     void OnButtonReloadShaders(BaseObject* caller, void* param, void* callerData);
     void OnButtonPerformanceTest(BaseObject* caller, void* param, void* callerData);
@@ -54,34 +57,29 @@ private:
 
     void SetCameraAtCenter(Camera* camera);
 
+    void LoadScene();
+    void UnloadScene();
     void ReloadScene();
 
     ScopedPtr<UI3DView> sceneView;
-
-    DAVA::ScopedPtr<DAVA::UIStaticText> info;
-    DAVA::ScopedPtr<DAVA::UIJoypad> moveJoyPAD;
-
-    DAVA::float32 framesTime = 0.0f;
-    DAVA::uint32 frameCounter = 0;
+    ScopedPtr<UIStaticText> infoText;
+    ScopedPtr<UIJoypad> moveJoyPAD;
+    ScopedPtr<UIFileSystemDialog> fileSystemDialog;
+    std::unique_ptr<Menu> menu;
 
     DAVA::uint64 drawTime = 0;
     DAVA::uint64 updateTime = 0;
 
     DAVA::ScopedPtr<DAVA::Scene> scene;
-    std::unique_ptr<DAVA::RotationControllerSystem> rotationControllerSystem;
-    std::unique_ptr<DAVA::WASDControllerSystem> wasdSystem;
+    DAVA::RotationControllerSystem* rotationControllerSystem;
+    DAVA::WASDControllerSystem* wasdSystem;
 
     Vector2 cursorPosition;
     float32 cursorSize = 0.1f;
 
-    bool selectSceneExtendedMode = false;
-
-    ScopedPtr<UIFileSystemDialog> fileSystemDialog;
     FilePath selectedScenePath;
 
     FpsMeter fpsMeter;
-
-    std::unique_ptr<Menu> menu;
 
     GridTest gridTest;
 };
