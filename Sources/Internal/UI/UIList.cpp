@@ -19,7 +19,6 @@ DAVA_REFLECTION_IMPL(UIList)
     [
     EnumMeta::Create<eListOrientation>(EnumMeta::EM_NOCAST)
     ]
-    .Field("aggregatorPath", &UIList::GetAggregatorPath, &UIList::SetAggregatorPath)
     .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)
     .End();
 }
