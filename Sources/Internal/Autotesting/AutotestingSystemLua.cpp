@@ -592,6 +592,16 @@ String AutotestingSystemLua::GetText(UIControl* control)
     }
     return "";
 }
+    
+String AutotestingSystemLua::GetTaggedClass(UIControl* control, const String& tag)
+{
+    const FastName &value = control->GetTaggedClass(FastName(tag));
+    if (value.IsValid())
+    {
+        return value.c_str();
+    }
+    return "";
+}
 
 uint32 AutotestingSystemLua::GetTextColor(UIControl* control)
 {
