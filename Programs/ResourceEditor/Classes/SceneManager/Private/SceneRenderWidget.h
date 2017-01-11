@@ -30,8 +30,9 @@ class ContextAccessor;
 class SceneEditor2;
 class SelectableGroup;
 class ScenePreviewDialog;
-class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener
-                        , private DAVA::RenderWidget::IClientDelegate, public DAVA::TrackedObject
+class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener,
+                          private DAVA::RenderWidget::IClientDelegate,
+                          public DAVA::TrackedObject
 {
     Q_OBJECT
 public:
