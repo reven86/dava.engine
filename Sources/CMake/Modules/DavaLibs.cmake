@@ -285,7 +285,7 @@ endif()
 
 
 if( WINUAP ) 
-    add_static_libs_win_uap ( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" LIST_SHARED_LIBRARIES )
+    add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
 
     set( DAVA_STATIC_LIBRARIES_WINUAP   "d2d1.lib"
                                         "d3d11.lib"

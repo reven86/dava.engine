@@ -287,6 +287,8 @@ elseif ( WIN32 )
 
     if ( WINDOWS_UAP )
         set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10/$(Platform)" ) 
+        set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
+
     elseif ( X64_MODE )
         set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
     else ()
