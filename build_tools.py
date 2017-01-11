@@ -49,7 +49,7 @@ def get_platform():
 
 def get_mac_values(values = PlatformValues):
     values.cmakeGenerator = "Xcode"
-    values.cmakePath = os.path.join(values.frameworkPath, "/Bin/CMake.app/Contents/bin/cmake")
+    values.cmakePath = os.path.join(values.frameworkPath, "Bin/CMake.app/Contents/bin/cmake")
     values.cmakeConfiguration = "Release"
     values.reBinaryPathname = os.path.join(values.toolsetBinaryPath, "ResourceEditor.app/Contents/MacOS/ResourceEditor")
     values.qeBinaryPathname = os.path.join(values.toolsetBinaryPath, "QuickEd.app/Contents/MacOS/QuickEd")
