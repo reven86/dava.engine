@@ -34,17 +34,17 @@ def get_cmake_executable_path(frameworkPath):
 def get_re_name():
     platformName = platform.system()
     if platformName == "Darwin":
-        return "ResourceEditor.app/Contents/MacOS/ResourceEditor"
+        return "/ResourceEditor.app/Contents/MacOS/ResourceEditor"
     elif platformName == "win32":
-        return "ResourceEditor.exe"
+        return "/ResourceEditor.exe"
 
 
 def get_qe_name():
     platformName = platform.system()
     if platformName == "Darwin":
-        return "QuickEd.app/Contents/MacOS/QuickEd"
+        return "/QuickEd.app/Contents/MacOS/QuickEd"
     elif platformName == "win32":
-        return "ResourceEditor.exe"
+        return "/QuickEd.exe"
 
 
 def create_toolset(cmakePath, toolsetPath, toolsetBuildPath, cmakeGenerator, toolsetBinaryPath):
@@ -93,9 +93,11 @@ if __name__ == '__main__':
     if args.selfTest:
         print "Run Tests:"
         commandLineRE = [toolsetBinaryPath + get_re_name(), "--selfTest"]
+        print commandLineRE
         subprocess.call(commandLineRE)
 
         commandLineQE = [toolsetBinaryPath + get_qe_name(), "--selfTest"]
+        print commandLineQE
         subprocess.call(commandLineQE)
 
 
