@@ -769,7 +769,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new DCLManagerImpl(*engine);
+                context->packManager = new DCLManagerImpl(engine);
             }
         }
     }
@@ -779,7 +779,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
-        
+
 #if defined(__DAVAENGINE_STEAM__)
         Steam::Init();
 #endif
@@ -934,7 +934,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-    
+
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {

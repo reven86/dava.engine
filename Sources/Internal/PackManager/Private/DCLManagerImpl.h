@@ -5,7 +5,6 @@
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/ResourceArchive.h"
-#include "FileSystem/FileSystem.h"
 
 #ifdef __DAVAENGINE_COREV2__
 #include "Engine/Engine.h"
@@ -13,7 +12,7 @@
 
 namespace DAVA
 {
-class DCLManagerImpl final
+class DCLManagerImpl final : public IDLCManager
 {
 public:
     enum class InitState : uint32
@@ -51,7 +50,7 @@ public:
     static const String& ToString(InitError state);
 
 #ifdef __DAVAENGINE_COREV2__
-    explicit DCLManagerImpl(Engine& engine_);
+    explicit DCLManagerImpl(Engine* engine_);
     ~DCLManagerImpl();
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
@@ -64,11 +63,11 @@ public:
                     const FilePath& dirToDownloadPacks_,
                     const FilePath& pathToBasePacksDB_,
                     const String& urlToServerSuperpack_,
-                    const IDLCManager::Hints& hints_);
+                    const Hints& hints_) override;
 
     void RetryInit();
 
-    bool IsInitialized() const;
+    bool IsInitialized() const override;
 
     InitState GetInitState() const;
 
@@ -76,7 +75,7 @@ public:
 
     const String& GetLastErrorMessage() const;
 
-    bool IsRequestingEnabled() const;
+    bool IsRequestingEnabled() const override;
 
     void EnableRequesting();
 
@@ -86,11 +85,11 @@ public:
 
     const String& FindPackName(const FilePath& relativePathInPack) const;
 
-    const IDLCManager::IRequest* RequestPack(const String& packName);
+    const IRequest* RequestPack(const String& packName) override;
 
-    const IDLCManager::IRequest* FindRequest(const String& pack) const;
+    const IRequest* FindRequest(const String& pack) const;
 
-    void SetRequestOrder(const IDLCManager::IRequest*, unsigned orderIndex);
+    void SetRequestOrder(const IRequest*, uint32 orderIndex) override;
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
@@ -103,13 +102,12 @@ public:
         return initFooterOnServer.infoCrc32;
     }
 
-    const IDLCManager::Hints& GetHints() const
+    const Hints& GetHints() const
     {
-        DVASSERT(hints != nullptr);
-        return *hints;
+        return hints;
     }
 
-    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<IDLCManager::IRequest*>& dependency);
+    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<IRequest*>& dependency);
 
 private:
     // initialization state functions
@@ -157,7 +155,7 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 
-    IDLCManager::Hints* hints = nullptr;
+    Hints hints{};
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session

@@ -2,7 +2,6 @@
 
 #include "Functional/Signal.h"
 #include "FileSystem/FilePath.h"
-#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -92,7 +91,7 @@ public:
     virtual const IRequest* RequestPack(const String& packName);
 
     /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    virtual void SetRequestOrder(const IRequest* request, unsigned orderIndex);
+    virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex);
 };
 
 } // end namespace DAVA
