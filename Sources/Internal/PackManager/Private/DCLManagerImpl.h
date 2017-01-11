@@ -64,7 +64,7 @@ public:
                     const FilePath& dirToDownloadPacks_,
                     const FilePath& pathToBasePacksDB_,
                     const String& urlToServerSuperpack_,
-                    const DLCManager::Hints& hints_);
+                    const IDLCManager::Hints& hints_);
 
     void RetryInit();
 
@@ -86,11 +86,11 @@ public:
 
     const String& FindPackName(const FilePath& relativePathInPack) const;
 
-    const DLCManager::IRequest* RequestPack(const String& packName);
+    const IDLCManager::IRequest* RequestPack(const String& packName);
 
-    const DLCManager::IRequest* FindRequest(const String& pack) const;
+    const IDLCManager::IRequest* FindRequest(const String& pack) const;
 
-    void SetRequestOrder(const DLCManager::IRequest*, unsigned orderIndex);
+    void SetRequestOrder(const IDLCManager::IRequest*, unsigned orderIndex);
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
@@ -103,13 +103,13 @@ public:
         return initFooterOnServer.infoCrc32;
     }
 
-    const DLCManager::Hints& GetHints() const
+    const IDLCManager::Hints& GetHints() const
     {
         DVASSERT(hints != nullptr);
         return *hints;
     }
 
-    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<DLCManager::IRequest*>& dependency);
+    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<IDLCManager::IRequest*>& dependency);
 
 private:
     // initialization state functions
@@ -157,7 +157,7 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 
-    DLCManager::Hints* hints = nullptr;
+    IDLCManager::Hints* hints = nullptr;
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session

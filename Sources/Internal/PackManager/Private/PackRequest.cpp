@@ -11,7 +11,7 @@
 
 namespace DAVA
 {
-PackRequest::PackRequest(DCLManagerImpl& packManager_, DLCManager::Pack& pack_)
+PackRequest::PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_)
     : packManagerImpl(&packManager_)
     , rootPack(&pack_)
 {
@@ -23,7 +23,7 @@ PackRequest::PackRequest(DCLManagerImpl& packManager_, DLCManager::Pack& pack_)
 
     dependencies.reserve(dependencyList.size() + 1);
 
-    for (DLCManager::Pack* depPack : dependencyList)
+    for (IDLCManager::Pack* depPack : dependencyList)
     {
         SubRequest subRequest;
 
@@ -136,7 +136,7 @@ void PackRequest::GetFooter()
             }
             else
             {
-                rootPack->state = DLCManager::Pack::Status::ErrorLoading;
+                rootPack->state = IDLCManager::Pack::Status::ErrorLoading;
                 rootPack->downloadError = error;
                 rootPack->otherErrorMsg = "can't load superpack footer: " + DLC::ToString(error);
 
@@ -159,7 +159,7 @@ void PackRequest::StartLoadingPackFile()
 
     // build url to pack file and build filePath to pack file
 
-    DLCManager::Pack& pack = *subRequest.pack;
+    IDLCManager::Pack& pack = *subRequest.pack;
 
     FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + pack.name + RequestManager::packPostfix;
     String url = packManagerImpl->GetSuperPackUrl();
@@ -170,7 +170,7 @@ void PackRequest::StartLoadingPackFile()
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
 
-    pack.state = DLCManager::Pack::Status::Downloading;
+    pack.state = IDLCManager::Pack::Status::Downloading;
 
     packManagerImpl->packStateChanged.Emit(pack);
 }
@@ -183,7 +183,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    DLCManager::Pack& currentPack = *subRequest.pack;
+    IDLCManager::Pack& currentPack = *subRequest.pack;
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
@@ -244,13 +244,13 @@ bool PackRequest::IsLoadingPackFileFinished()
             else
             {
                 String errorMsg = DLC::ToString(downloadError);
-                currentPack.state = DLCManager::Pack::Status::ErrorLoading;
+                currentPack.state = IDLCManager::Pack::Status::ErrorLoading;
                 currentPack.downloadError = downloadError;
                 currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
 
                 if (currentPack.name != rootPack->name)
                 {
-                    rootPack->state = DLCManager::Pack::Status::OtherError;
+                    rootPack->state = IDLCManager::Pack::Status::OtherError;
                     rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
@@ -273,14 +273,14 @@ bool PackRequest::IsLoadingPackFileFinished()
     return result;
 }
 
-void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, DLCManager::Pack& currentPack)
+void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, IDLCManager::Pack& currentPack)
 {
-    currentPack.state = DLCManager::Pack::Status::OtherError;
+    currentPack.state = IDLCManager::Pack::Status::OtherError;
     subRequest.status = SubRequest::Error;
 
     if (rootPack->name != currentPack.name)
     {
-        rootPack->state = DLCManager::Pack::Status::OtherError;
+        rootPack->state = IDLCManager::Pack::Status::OtherError;
         rootPack->otherErrorMsg = "error with dependency: " + currentPack.name;
     }
 
@@ -297,7 +297,7 @@ void PackRequest::StartCheckHash()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    DLCManager::Pack& currentPack = *subRequest.pack;
+    IDLCManager::Pack& currentPack = *subRequest.pack;
 
     // calculate crc32 from PackFile
     FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + subRequest.pack->name + RequestManager::packPostfix;
@@ -332,7 +332,7 @@ void PackRequest::MountPack()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    DLCManager::Pack& pack = *subRequest.pack;
+    IDLCManager::Pack& pack = *subRequest.pack;
 
     if (pack.hashFromDB != RequestManager::emptyLZ4HCArchiveCrc32)
     {
@@ -353,7 +353,7 @@ void PackRequest::MountPack()
 
     subRequest.status = SubRequest::Mounted;
 
-    pack.state = DLCManager::Pack::Status::Mounted;
+    pack.state = IDLCManager::Pack::Status::Mounted;
 
     packManagerImpl->packStateChanged.Emit(pack);
 }
@@ -452,7 +452,7 @@ void PackRequest::ChangePriority(float32 newPriority)
     rootPack->priority = newPriority;
     for (SubRequest& subRequest : dependencies)
     {
-        DLCManager::Pack& pack = *subRequest.pack;
+        IDLCManager::Pack& pack = *subRequest.pack;
         pack.priority = newPriority;
     }
 }
@@ -496,7 +496,7 @@ uint64 PackRequest::GetDownloadedSize() const
     return result;
 }
 
-const DLCManager::Pack& PackRequest::GetErrorPack() const
+const IDLCManager::Pack& PackRequest::GetErrorPack() const
 {
     auto& subRequest = GetCurrentSubRequest();
     return *subRequest.pack;

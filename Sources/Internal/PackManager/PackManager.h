@@ -13,18 +13,17 @@ namespace DAVA
  1. connect to state change signal and to request update signal
  2. call Initialize to connect to server, wait for state become `Pack::Status::Ready`
  3. request pack from server or mount local automatically on request
- 4. find out which pack has file by filePath
 
  example:
  ```
- DLCManager& pm = *engine.GetContext()->packManager;
+ IDLCManager& pm = *engine.GetContext()->packManager;
  // if init failed we will know about it
  pm.networkReady.Connect(this, &PackManagerTest::OnInitChange);
 
  String gpuArchitecture = "mali";
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.dvpk";
- DLCManager::Hints hints;
+ IDLCManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
  hints.dbInMemory = true; // load DB in memory for performance
 
@@ -34,17 +33,11 @@ namespace DAVA
 
  ```
 */
-class DCLManagerImpl;
 
-class DLCManager final
+class IDLCManager
 {
 public:
-#ifdef __DAVAENGINE_COREV2__
-    explicit DLCManager(const EngineContext* ctx);
-#else
-    DLCManager();
-#endif
-    ~DLCManager();
+    virtual ~IDLCManager();
 
     /**
      Proxy interface to easily check pack request progress
@@ -52,9 +45,8 @@ public:
      connect to `requestProgressChanged` signal and then
      call `RequestPack`.
     */
-    class IRequest
+    struct IRequest
     {
-    public:
         virtual ~IRequest();
 
         /** return requested pack name */
@@ -84,26 +76,23 @@ public:
      before you call Initialize.
      At least subscribe to `networkReady` signal
     */
-    void Initialize(const String& architecture,
-                    const FilePath& dirToDownloadPacks,
-                    const FilePath& pathToBasePacksDB,
-                    const String& urlToServerSuperpack,
-                    const Hints& hints);
+    virtual void Initialize(const String& architecture,
+                            const FilePath& dirToDownloadPacks,
+                            const FilePath& pathToBasePacksDB,
+                            const String& urlToServerSuperpack,
+                            const Hints& hints);
 
-    bool IsInitialized() const;
+    virtual bool IsInitialized() const;
 
-    bool IsRequestingEnabled() const;
+    virtual bool IsRequestingEnabled() const;
 
-    void SetRequestingEnabled(bool value);
+    virtual void SetRequestingEnabled(bool value);
 
     /** return nullptr if can't find pack */
-    const IRequest* RequestPack(const String& packName);
+    virtual const IRequest* RequestPack(const String& packName);
 
     /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    void SetRequestOrder(const IRequest* request, unsigned orderIndex);
-
-private:
-    std::unique_ptr<DCLManagerImpl> impl;
+    virtual void SetRequestOrder(const IRequest* request, unsigned orderIndex);
 };
 
 } // end namespace DAVA

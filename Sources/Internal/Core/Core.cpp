@@ -954,7 +954,7 @@ void* DAVA::Core::GetNativeWindow() const
     return nullptr;
 }
 
-DLCManager& Core::GetPackManager() const
+IDLCManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;

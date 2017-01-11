@@ -8,10 +8,10 @@ namespace DAVA
 {
 class DCLManagerImpl;
 
-class PackRequest : public DLCManager::IRequest
+class PackRequest : public IDLCManager::IRequest
 {
 public:
-    PackRequest(DCLManagerImpl& packManager_, DLCManager::Pack& pack_);
+    PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_);
 
     void Start();
     void Update();
@@ -37,13 +37,13 @@ public:
             Error
         };
 
-        DLCManager::Pack* pack = nullptr;
+        IDLCManager::Pack* pack = nullptr;
         String errorMsg;
         uint32 taskId = 0;
         Status status = Wait;
     };
 
-    const DLCManager::Pack& GetRootPack() const override
+    const IDLCManager::Pack& GetRootPack() const override
     {
         return *rootPack;
     }
@@ -59,12 +59,12 @@ public:
     uint64 GetFullSizeWithDependencies() const override;
 
     uint64 GetDownloadedSize() const override;
-    const DLCManager::Pack& GetErrorPack() const override;
+    const IDLCManager::Pack& GetErrorPack() const override;
     const String& GetErrorMessage() const override;
 
 private:
     void Restart();
-    void SetErrorStatusAndFireSignal(SubRequest& subRequest, DLCManager::Pack& currentPack);
+    void SetErrorStatusAndFireSignal(SubRequest& subRequest, IDLCManager::Pack& currentPack);
 
     void AskFooter();
     void GetFooter();
@@ -76,8 +76,8 @@ private:
     void GoToNextSubRequest();
 
     DCLManagerImpl* packManagerImpl = nullptr;
-    DLCManager::Pack* rootPack = nullptr;
-    Vector<DLCManager::Pack*> dependencyList;
+    IDLCManager::Pack* rootPack = nullptr;
+    Vector<IDLCManager::Pack*> dependencyList;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
     uint64 totalAllPacksSize = 0;
 

@@ -476,13 +476,13 @@ FilePath FileSystem::GetPluginDirectory()
 {
     FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
 
-    
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     FilePath pluginDirectory = currentExecuteDirectory + "../PlugIns/";
 
 #else
     FilePath pluginDirectory = currentExecuteDirectory + "PlugIns/";
-    
+
 #endif //PLATFORMS
 
     return pluginDirectory;
@@ -528,14 +528,14 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 #ifdef __DAVAENGINE_COREV2__
         // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
         // access Engine object after it has beem destroyed
-        DLCManager* pm = nullptr;
+        IDLCManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
         pm = context->packManager;
 #else
-        DLCManager* pm = &Core::Instance()->GetPackManager();
+        IDLCManager* pm = &Core::Instance()->GetPackManager();
 #endif
 
         if (nullptr != pm && pm->IsInitialized())

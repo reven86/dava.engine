@@ -119,9 +119,9 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         DVASSERT(e != nullptr);
         const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
-        DLCManager* pm = context->packManager;
+        IDLCManager* pm = context->packManager;
 #else
-        DLCManager* pm = &Core::Instance()->GetPackManager();
+        IDLCManager* pm = &Core::Instance()->GetPackManager();
 #endif
 
         if (nullptr != pm && pm->IsInitialized())

@@ -168,7 +168,7 @@ void PacksDB::ListDependentPacks(const String& pack, const Function<void(const S
     }
 }
 
-void PacksDB::InitializePacks(Vector<DLCManager::Pack>& packs) const
+void PacksDB::InitializePacks(Vector<IDLCManager::Pack>& packs) const
 {
     packs.clear();
 
@@ -187,9 +187,9 @@ void PacksDB::InitializePacks(Vector<DLCManager::Pack>& packs) const
 
         selectQuery >> [&](String name, String hash, int32 isGpu, int32 size, String dependency)
         {
-            DLCManager::Pack pack;
+            IDLCManager::Pack pack;
             pack.name = name;
-            pack.state = DLCManager::Pack::Status::NotRequested;
+            pack.state = IDLCManager::Pack::Status::NotRequested;
             pack.isGPU = (isGpu == 1);
             pack.totalSizeFromDB = static_cast<uint32>(size);
 

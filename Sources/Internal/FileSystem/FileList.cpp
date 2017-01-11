@@ -43,14 +43,14 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
 #ifdef __DAVAENGINE_COREV2__
     // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
     // access Engine object after it has been destroyed
-    DLCManager* pm = nullptr;
+    IDLCManager* pm = nullptr;
     Engine* e = Engine::Instance();
     DVASSERT(e != nullptr);
     const EngineContext* context = e->GetContext();
     DVASSERT(context != nullptr);
     pm = context->packManager;
 #else
-    DLCManager* pm = nullptr;
+    IDLCManager* pm = nullptr;
     Core* core = Core::Instance();
     if (core != nullptr)
     {
