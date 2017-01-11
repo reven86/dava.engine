@@ -863,10 +863,5 @@ void Core::SetInvokeListener(OperationInvoker* proxyInvoker)
     guiImpl->SetInvokeListener(proxyInvoker);
 }
 
-// ContextAccessor* Core::GetAccessor()
-// {
-//     return impl.get();
-// }
-
 } // namespace TArc
 } // namespace DAVA

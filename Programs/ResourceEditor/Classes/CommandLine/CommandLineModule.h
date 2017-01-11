@@ -31,6 +31,10 @@ protected:
 
     bool isInitialized = false;
     DAVA::Result result = DAVA::Result::RESULT_SUCCESS;
+
+    DAVA_VIRTUAL_REFLECTION(CommandLineModule, DAVA::TArc::ConsoleModule)
+    {
+    }
 };
 
 inline int CommandLineModule::GetExitCode() const
