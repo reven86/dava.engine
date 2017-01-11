@@ -15,7 +15,7 @@ const uint32 MaterialsTest::FRAMES_PER_MATERIAL_TEST = 60;
 MaterialsTest::MaterialsTest(const TestParams& testParams)
     : BaseTest(TEST_NAME, testParams)
     , currentTestStartFrame(0)
-    , currentTestStartTime(0)
+    , currentTestStartTime(0.f)
     , currentMaterialIndex(0)
 {
 }
@@ -97,7 +97,7 @@ void MaterialsTest::BeginFrame()
     // material test finished
     if (GetTestFrameNumber() - currentTestStartFrame == FRAMES_PER_MATERIAL_TEST)
     {
-        float32 testTime = (SystemTimer::GetFrameTimestamp() - currentTestStartTime) / 1000.0f;
+        float32 testTime = SystemTimer::GetFrameTimestamp() - currentTestStartTime;
         materialTestsElapsedTime.push_back(testTime);
 
         NMaterial* material = materials[currentMaterialIndex]->GetParent();
@@ -153,14 +153,14 @@ void MaterialsTest::BeginFrame()
 
 bool MaterialsTest::IsFinished() const
 {
-    return GetTestFrameNumber() > materials.size() * FRAMES_PER_MATERIAL_TEST;
+    return static_cast<size_t>(GetTestFrameNumber()) > materials.size() * FRAMES_PER_MATERIAL_TEST;
 }
 
 void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
 {
     BaseTest::PrintStatistic(frames);
 
-    for (int32 i = 0; i < materials.size(); i++)
+    for (uint32 i = 0; i < materials.size(); i++)
     {
         String materialName = "MaterialSubtestName:" + String(materials[i]->GetParent()->GetMaterialName().c_str());
         Logger::Info(materialName.c_str());
