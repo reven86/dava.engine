@@ -75,7 +75,7 @@ bool RequestManager::Empty() const
     return requests.empty();
 }
 
-size_t RequestManager::CountRequests() const
+size_t RequestManager::GetNumRequests() const
 {
     return requests.size();
 }
@@ -88,7 +88,7 @@ PackRequest& RequestManager::Top()
     return topItem;
 }
 
-PackRequest& RequestManager::Find(const String& packName)
+PackRequest* RequestManager::Find(const String& packName)
 {
     auto it = std::find_if(begin(requests), end(requests), [&packName](const PackRequest& r) -> bool
                            {
@@ -107,7 +107,7 @@ void RequestManager::CheckRestartLoading()
 
     PackRequest& top = Top();
 
-    if (CountRequests() == 1)
+    if (GetNumRequests() == 1)
     {
         loadingPackName = top.GetRootPack().name;
         top.Start();
@@ -145,11 +145,11 @@ void RequestManager::Push(const String& packName, float32 priority)
     CheckRestartLoading();
 }
 
-void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
+void RequestManager::UpdatePriority(const String& packName, uint32 orderIndex)
 {
-    if (IsInQueue(packName))
+    PackRequest* packRequest = Find(packName);
+    if (packRequest != nullptr)
     {
-        PackRequest& packRequest = Find(packName);
         if (packRequest.GetPriority() != newPriority)
         {
             packRequest.ChangePriority(newPriority);
@@ -160,11 +160,18 @@ void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
     }
 }
 
-void RequestManager::Pop()
+PackRequest* RequestManager::Pop()
 {
-    DVASSERT(!requests.empty());
+    if (requests.empty())
+    {
+        return nullptr;
+    }
 
-    requests.erase(requests.begin());
+    PackRequest* result = &requests[0];
+
+    requests.erase(begin(requests));
+
+    return result;
 }
 
 } // end namespace DAVA

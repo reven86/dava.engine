@@ -79,19 +79,19 @@ public:
                             const FilePath& dirToDownloadPacks,
                             const FilePath& pathToBasePacksDB,
                             const String& urlToServerSuperpack,
-                            const Hints& hints);
+                            const Hints& hints) = 0;
 
-    virtual bool IsInitialized() const;
+    virtual bool IsInitialized() const = 0;
 
-    virtual bool IsRequestingEnabled() const;
+    virtual bool IsRequestingEnabled() const = 0;
 
-    virtual void SetRequestingEnabled(bool value);
+    virtual void SetRequestingEnabled(bool value) = 0;
 
     /** return nullptr if can't find pack */
-    virtual const IRequest* RequestPack(const String& packName);
+    virtual const IRequest* RequestPack(const String& packName) = 0;
 
     /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex);
+    virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
 };
 
 } // end namespace DAVA
