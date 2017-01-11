@@ -3,6 +3,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
+#include "Logger/Logger.h"
 
 #include "QtHelpers/RunGuard.h"
 #include "QtHelpers/LauncherListener.h"
