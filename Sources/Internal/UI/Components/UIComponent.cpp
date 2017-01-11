@@ -92,7 +92,7 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
         return new UICustomUpdateDeltaComponent();
 
     default:
-        DVASSERT_MSG(false, Format("Can't create component with type %d", componentType).c_str());
+        DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());
         return nullptr;
     }
 }
