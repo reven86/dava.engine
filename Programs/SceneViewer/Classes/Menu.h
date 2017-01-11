@@ -32,7 +32,7 @@ struct SubMenuItem : public MenuItem
     std::unique_ptr<Menu> submenu;
 };
 
-class Menu
+class Menu final
 {
 public:
     explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect);

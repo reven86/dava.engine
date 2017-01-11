@@ -20,49 +20,50 @@
 
 namespace GridTestDetails
 {
-    const DAVA::uint32 GRID_SIZE = 8;
-    const DAVA::uint32 ANGLE_COUNT = 8;
-    const DAVA::float32 EXPOSURE_DURATION_SEC = 3.f;
-    const DAVA::float32 THRESHOLD_LOW_FPS = 30.0f;
+const DAVA::uint32 GRID_SIZE = 8;
+const DAVA::uint32 ANGLE_COUNT = 8;
+const DAVA::float32 EXPOSURE_DURATION_SEC = 3.f;
+const DAVA::float32 THRESHOLD_LOW_FPS = 30.0f;
+const DAVA::float32 ABOVE_LANDSCAPE_ELEVATION = 10.f;
 
-    const DAVA::float32 ANGLE_STEP_DEGREES = 360.f / ANGLE_COUNT;
+const DAVA::float32 ANGLE_STEP_DEGREES = 360.f / ANGLE_COUNT;
 
-    struct Sample
-    {
-        DAVA::Vector3 pos;
-        DAVA::float32 angle = 0.0f;
-        DAVA::float32 sine = 0.0f;
-        DAVA::float32 cos = 0.0f;
+struct Sample
+{
+    DAVA::Vector3 pos;
+    DAVA::float32 angle = 0.0f;
+    DAVA::float32 sine = 0.0f;
+    DAVA::float32 cos = 0.0f;
 
-        DAVA::float32 fps = 0.0f;
-    };
+    DAVA::float32 fps = 0.0f;
+};
 
-    class ScreenshotSaver
-    {
-    public:
-        explicit ScreenshotSaver(DAVA::FilePath& path, Sample& sample);
-        void SaveTexture(DAVA::Texture* screenshot);
+class ScreenshotSaver
+{
+public:
+    explicit ScreenshotSaver(DAVA::FilePath& path, Sample& sample);
+    void SaveTexture(DAVA::Texture* screenshot);
 
-        Sample sample;
-        DAVA::FilePath savePath;
-        bool saved = false;
-    };
+    Sample sample;
+    DAVA::FilePath savePath;
+    bool saved = false;
+};
 
-    ScreenshotSaver::ScreenshotSaver(DAVA::FilePath& path, Sample& sample)
-        : savePath(path)
-        , sample(sample)
-    {
-    }
+ScreenshotSaver::ScreenshotSaver(DAVA::FilePath& path, Sample& sample)
+    : savePath(path)
+    , sample(sample)
+{
+}
 
-    void ScreenshotSaver::SaveTexture(DAVA::Texture* screenshot)
-    {
-        using namespace DAVA;
-        ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
-        const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-        image->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
-        image->Save(savePath);
-        saved = true;
-    }
+void ScreenshotSaver::SaveTexture(DAVA::Texture* screenshot)
+{
+    using namespace DAVA;
+    ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
+    const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
+    image->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
+    image->Save(savePath);
+    saved = true;
+}
 }
 
 class GridTestImpl final
@@ -185,7 +186,7 @@ bool GridTestImpl::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
 
                 float32 landscapeHeight = 0.0;
                 landscape->GetHeightAtPoint(testPosition.pos, landscapeHeight);
-                testPosition.pos.z = landscapeHeight + 10.0f;
+                testPosition.pos.z = landscapeHeight + ABOVE_LANDSCAPE_ELEVATION;
 
                 testPosition.angle = angle;
                 SinCosFast(DegToRad(angle), testPosition.sine, testPosition.cos);

@@ -134,7 +134,7 @@ void ViewSceneScreen::AddSceneViewControl()
 void ViewSceneScreen::AddMenuControl()
 {
     DVASSERT(!menu);
-    Rect rect = Rect(10, 30, 250, 60);
+    Rect rect = Rect(10.f, 30.f, 250.f, 60.f);
     menu.reset(new Menu(nullptr, this, font, rect));
     Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
