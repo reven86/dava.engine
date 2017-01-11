@@ -953,6 +953,11 @@ UIControl* UIControl::Clone()
     return c;
 }
 
+RefPtr<UIControl> UIControl::SafeClone()
+{
+    return RefPtr<UIControl>(Clone());
+}
+
 void UIControl::CopyDataFrom(UIControl* srcControl)
 {
     relativePosition = srcControl->relativePosition;

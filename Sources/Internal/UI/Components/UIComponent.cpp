@@ -93,4 +93,9 @@ bool UIComponent::IsMultiple(uint32 componentType)
 {
     return false;
 }
+
+RefPtr<UIComponent> UIComponent::SafeClone() const
+{
+    return RefPtr<UIComponent>(Clone());
+}
 }

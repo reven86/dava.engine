@@ -21,36 +21,32 @@ UIControlBackground::UIControlBackground()
 {
 }
 
-UIControlBackground* UIControlBackground::Clone()
+UIControlBackground::UIControlBackground(const UIControlBackground& src)
+    : spr(src.spr)
+    , align(src.align)
+    , type(src.type)
+    , spriteModification(src.spriteModification)
+    , leftStretchCap(src.leftStretchCap)
+    , topStretchCap(src.topStretchCap)
+    , colorInheritType(src.colorInheritType)
+    , frame(src.frame)
+    , lastDrawPos(0, 0)
+    , perPixelAccuracyType(src.perPixelAccuracyType)
+    , mask(src.mask)
+    , detail(src.detail)
+    , gradient(src.gradient)
+    , contour(src.contour)
+    , gradientMode(src.gradientMode)
+    , color(src.color)
+    , drawColor(src.drawColor)
 {
-    UIControlBackground* cb = new UIControlBackground();
-    cb->CopyDataFrom(this);
-    return cb;
+    SetMaterial(src.material);
+    SetMargins(src.GetMargins());
 }
 
-void UIControlBackground::CopyDataFrom(UIControlBackground* srcBackground)
+UIControlBackground* UIControlBackground::Clone() const
 {
-    spr = srcBackground->spr;
-    frame = srcBackground->frame;
-    align = srcBackground->align;
-
-    mask = srcBackground->mask;
-    detail = srcBackground->detail;
-    gradient = srcBackground->gradient;
-    contour = srcBackground->contour;
-    gradientMode = srcBackground->gradientMode;
-
-    SetDrawType(srcBackground->type);
-    SetMargins(srcBackground->GetMargins());
-
-    color = srcBackground->color;
-    spriteModification = srcBackground->spriteModification;
-    colorInheritType = srcBackground->colorInheritType;
-    perPixelAccuracyType = srcBackground->perPixelAccuracyType;
-    leftStretchCap = srcBackground->leftStretchCap;
-    topStretchCap = srcBackground->topStretchCap;
-
-    SetMaterial(srcBackground->material);
+    return new UIControlBackground(*this);
 }
 
 UIControlBackground::~UIControlBackground()

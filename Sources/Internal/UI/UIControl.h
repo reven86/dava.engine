@@ -795,6 +795,8 @@ public:
      \returns control copy.
      */
     virtual UIControl* Clone();
+
+    RefPtr<UIControl> SafeClone();
     /**
      \brief Copies all contorl parameters from the sended control.
      \param[in] srcControl Source control to copy parameters from.

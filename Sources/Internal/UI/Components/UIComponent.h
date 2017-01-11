@@ -12,6 +12,7 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
+        BACKGROUND_COMPONENT,
         LINEAR_LAYOUT_COMPONENT,
         FLOW_LAYOUT_COMPONENT,
         FLOW_LAYOUT_HINT_COMPONENT,
@@ -46,6 +47,8 @@ public:
     UIControl* GetControl() const;
 
     virtual UIComponent* Clone() const = 0;
+
+    RefPtr<UIComponent> SafeClone() const;
 
 private:
     UIControl* control;
