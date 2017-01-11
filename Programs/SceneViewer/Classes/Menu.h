@@ -38,7 +38,7 @@ public:
     explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect);
     ~Menu();
 
-    void AddActionItem(const DAVA::WideString& text, DAVA::Message& action);
+    void AddActionItem(const DAVA::WideString& text, DAVA::Message action);
     Menu* AddSubMenuItem(const DAVA::WideString& text);
     void AddBackItem();
     void BackToMainMenu();

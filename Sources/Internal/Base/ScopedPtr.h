@@ -11,7 +11,7 @@ class ScopedPtr
 public:
     explicit ScopedPtr(BASE_OBJECT* p);
     ScopedPtr();
-    ScopedPtr(nullptr_t);
+    ScopedPtr(std::nullptr_t);
     ScopedPtr(const ScopedPtr&);
 
     ~ScopedPtr();
@@ -47,7 +47,7 @@ ScopedPtr<BASE_OBJECT>::ScopedPtr()
 }
 
 template <typename BASE_OBJECT>
-ScopedPtr<BASE_OBJECT>::ScopedPtr(nullptr_t)
+ScopedPtr<BASE_OBJECT>::ScopedPtr(std::nullptr_t)
     : object(nullptr)
 {
 }

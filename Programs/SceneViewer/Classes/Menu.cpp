@@ -17,7 +17,7 @@ void ActionItem::OnActivate(DAVA::BaseObject* caller, void* param, void* callerD
 
 namespace MenuDetails
 {
-    const DAVA::float32 SPACE_BETWEEN_BUTTONS = 10.0f;
+const DAVA::float32 SPACE_BETWEEN_BUTTONS = 10.0f;
 }
 
 Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect)
@@ -37,7 +37,7 @@ Menu::~Menu()
     }
 }
 
-void Menu::AddActionItem(const DAVA::WideString& text, DAVA::Message& action)
+void Menu::AddActionItem(const DAVA::WideString& text, DAVA::Message action)
 {
     ActionItem* actionItem = new ActionItem(this, action);
     menuItems.emplace_back(actionItem);

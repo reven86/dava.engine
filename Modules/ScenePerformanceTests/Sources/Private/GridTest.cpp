@@ -240,7 +240,7 @@ void GridTestImpl::MakeScreenshot(GridTestDetails::ScreenshotSaver& screenshotSa
 
 void GridTestImpl::RemoveSavedScreenshots()
 {
-    auto& it = screenshotsToSave.begin();
+    auto it = screenshotsToSave.begin();
     while (it != screenshotsToSave.end())
     {
         GridTestDetails::ScreenshotSaver& screenshotSaver = *it;
