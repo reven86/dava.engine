@@ -1,5 +1,6 @@
 #include "Scene3D/SceneUtils.h"
 
+#include "Utils/StringFormat.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Mesh.h"

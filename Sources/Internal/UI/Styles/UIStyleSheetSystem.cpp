@@ -6,6 +6,7 @@
 #include "Platform/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
+#include "Logger/Logger.h"
 #include "Render/Renderer.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
@@ -69,7 +70,7 @@ struct AnimatedPropertySetter
             Animate<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor());
             break;
         default:
-            DVASSERT_MSG(false, "Non-animatable property");
+            DVASSERT(false, "Non-animatable property");
         }
     }
 

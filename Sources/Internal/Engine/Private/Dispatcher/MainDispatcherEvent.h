@@ -26,6 +26,7 @@ struct MainDispatcherEvent final
         WINDOW_SIZE_CHANGED,
         WINDOW_DPI_CHANGED,
         WINDOW_CAPTURE_LOST,
+        WINDOW_CANCEL_INPUT,
 
         FIRST_INPUT_EVENT,
         MOUSE_BUTTON_DOWN = FIRST_INPUT_EVENT,
@@ -235,10 +236,11 @@ struct MainDispatcherEvent final
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
-    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, float32 dpi, eFullscreen fullscreen);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
     static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);
+    static MainDispatcherEvent CreateWindowCancelInputEvent(Window* window);
 
     static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated);
     static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, eMouseButtons button, float32 x, float32 y, uint32 clicks, eModifierKeys modifierKeys, bool isRelative);

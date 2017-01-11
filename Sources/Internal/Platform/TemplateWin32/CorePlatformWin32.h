@@ -42,7 +42,7 @@ private:
     static const uint32 FULLSCREEN_STYLE = WS_POPUP;
 
     void OnMouseMove(int32 x, int32 y);
-    void OnMouseWheel(int32 wheelDelta, int32 x, int32 y);
+    void OnMouseWheel(int32 wheelDeltaX, int32 wheelDeltaY, int32 x, int32 y);
     void OnMouseClick(UIEvent::Phase phase, eMouseButtons button, int32 x, int32 y);
     void OnTouchEvent(UIEvent::Phase phase, eInputDevices deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);

@@ -183,7 +183,7 @@ void WindowBackend::TriggerPlatformEvents()
         catch (const JNI::Exception& e)
         {
             Logger::Error("WindowBackend::TriggerPlatformEvents failed: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
     }
 }
@@ -201,7 +201,7 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
 
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, eFullscreen::On));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, dpi, eFullscreen::On));
 }
 
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
@@ -274,7 +274,7 @@ void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
     }
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfaceWidth, int32 surfaceHeight, int32 dpi)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfaceWidth, int32 surfaceHeight, int32 displayDpi)
 {
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
@@ -286,6 +286,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
 
     windowWidth = static_cast<float32>(width);
     windowHeight = static_cast<float32>(height);
+    dpi = static_cast<float32>(displayDpi);
 
     if (firstTimeSurfaceChanged)
     {
@@ -300,7 +301,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         catch (const JNI::Exception& e)
         {
             Logger::Error("[WindowBackend] failed to init java bridge: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
@@ -311,7 +312,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     {
         // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
         // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, eFullscreen::On));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
     }
 }
 

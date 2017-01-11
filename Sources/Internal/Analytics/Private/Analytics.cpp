@@ -1,4 +1,5 @@
 #include "Analytics/Analytics.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -23,7 +24,7 @@ void Core::SetConfig(const KeyedArchive* newConfig)
 {
     if (newConfig == nullptr || !newConfig->IsKeyExists("events"))
     {
-        DVASSERT_MSG(false, "Illegal config");
+        DVASSERT(false, "Illegal config");
         return;
     }
 
@@ -55,16 +56,21 @@ const KeyedArchive* Core::GetConfig() const
 
 void Core::AddBackend(const String& name, std::unique_ptr<IBackend> backend)
 {
-    DVASSERT_MSG(backends.find(name) == backends.end(),
-                 Format("Backend with name %s is already exist", name.c_str()).c_str());
+    DVASSERT(backends.find(name) == backends.end(),
+             Format("Backend with name %s is already exist", name.c_str()).c_str());
 
     if (backend == nullptr)
     {
-        DVASSERT_MSG(false, "Empty backend");
+        DVASSERT(false, "Empty backend");
         return;
     }
 
     backends[name] = std::move(backend);
+}
+
+void Core::RemoveBackend(const String& name)
+{
+    backends.erase(name);
 }
 
 bool CheckEventPass(const KeyedArchive& config, const AnalyticsEvent& event)

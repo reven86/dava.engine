@@ -348,13 +348,6 @@ public:
     void SetBackgroundComponent(int32 index, UIControlBackground* bg) override;
     String GetBackgroundComponentName(int32 index) const override;
 
-    int32 GetInternalControlsCount() const override;
-    UIControl* GetInternalControl(int32 index) const override;
-    UIControl* CreateInternalControl(int32 index) const override;
-    void SetInternalControl(int32 index, UIControl* control) override;
-    String GetInternalControlName(int32 index) const override;
-    String GetInternalControlDescriptions() const override;
-
     INTROSPECTION_EXTEND(UIButton, UIControl,
                          nullptr
                          )

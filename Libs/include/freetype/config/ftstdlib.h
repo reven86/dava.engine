@@ -143,7 +143,7 @@
 
 
 #define ft_strtol  strtol
-#define ft_getenv  getenv
+#define ft_getenv(...) NULL
 
 
   /**********************************************************************/
