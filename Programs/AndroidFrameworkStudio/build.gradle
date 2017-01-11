@@ -20,7 +20,9 @@ android {
     }
 
     sourceSets.main {
-        java.srcDirs = ["${FRAMEWORK_PATH}/Sources/Internal/Engine/Private/Android/Java/", "${FRAMEWORK_PATH}/Sources/Internal/Platform/TemplateAndroid/Java/"]
+        java.srcDirs = ["${FRAMEWORK_PATH}/Sources/Internal/Engine/Private/Android/Java/",
+                        "${FRAMEWORK_PATH}/Sources/Internal/Platform/TemplateAndroid/Java/",
+                        "${FRAMEWORK_PATH}/Sources/Internal/Notification/Private/Android/Java/"]
         res.srcDirs = ["${FRAMEWORK_OLD_PROJECT}/res/"]
         manifest.srcFile "${FRAMEWORK_OLD_PROJECT}/AndroidManifest.xml"
     }

@@ -13,9 +13,10 @@ android {
         externalNativeBuild {
             ndkBuild {
                 abiFilters 'armeabi-v7a', 'x86'
-                arguments '-j', '8',
-                        'NDK_APPLICATION_MK=../../android/jni/Application.mk',
-                        OperatingSystem.current().isWindows() ? 'APP_SHORT_COMMANDS=true' : ''
+                arguments '-j', '8'
+                if (OperatingSystem.current().isWindows()) {
+                    arguments.add('APP_SHORT_COMMANDS=true')
+                }
             }
         }
     }
