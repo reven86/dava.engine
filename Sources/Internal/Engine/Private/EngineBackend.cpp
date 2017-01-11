@@ -38,6 +38,7 @@
 #include "PackManager/Private/PackManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
+#include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
@@ -782,6 +783,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
+        
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Init();
+#endif
     }
     else
     {
@@ -808,6 +813,13 @@ void EngineBackend::DestroySubsystems()
         context->autotestingSystem = nullptr;
     }
 #endif
+
+    if (!IsConsoleMode())
+    {
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Deinit();
+#endif
+    }
 
     if (context->analyticsCore != nullptr)
     {
@@ -926,7 +938,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-
+    
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {

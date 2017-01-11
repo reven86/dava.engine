@@ -414,14 +414,14 @@ void ValueProperty::GenerateBuiltInSubProperties()
             int val = 0;
             const bool getSucceeded = map->GetValue(i, val);
             DVASSERT(getSucceeded);
-            subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
+            subProperties.push_back(new SubValueProperty(static_cast<int32>(i), map->ToString(val)));
         }
     }
 
     if (componentNames != nullptr)
     {
         for (size_type i = 0; i < componentNames->size(); ++i)
-            subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
+            subProperties.push_back(new SubValueProperty(static_cast<int32>(i), componentNames->at(i)));
     }
 
     for (SubValueProperty* prop : subProperties)

@@ -26,8 +26,8 @@ void BaseTest::LoadResources()
     Rect rect;
     rect.x = 0.0f;
     rect.y = 0.0f;
-    rect.dx = size.dx;
-    rect.dy = size.dy;
+    rect.dx = static_cast<float32>(size.dx);
+    rect.dy = static_cast<float32>(size.dy);
 
     sceneView = new UI3DView(rect);
     sceneView->SetScene(scene);

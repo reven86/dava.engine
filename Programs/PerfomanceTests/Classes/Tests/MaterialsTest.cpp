@@ -168,7 +168,7 @@ void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
         float32 materialSubtestTime = 0.0f;
         float32 materialSubtestElapsedTime = materialTestsElapsedTime[i];
 
-        for (int32 j = FRAMES_PER_MATERIAL_TEST * i; j < FRAMES_PER_MATERIAL_TEST * (i + 1); j++)
+        for (uint32 j = FRAMES_PER_MATERIAL_TEST * i; j < FRAMES_PER_MATERIAL_TEST * (i + 1); j++)
         {
             materialSubtestTime += frames[j].delta;
 
