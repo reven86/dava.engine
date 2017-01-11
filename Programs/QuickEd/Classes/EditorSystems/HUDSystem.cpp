@@ -241,7 +241,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return retVal;
     }
     default:
-            break;
+        break;
     }
     return false;
 }
