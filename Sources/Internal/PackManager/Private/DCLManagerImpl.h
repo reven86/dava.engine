@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PackManager/PackManager.h"
-#include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/ResourceArchive.h"
@@ -137,7 +136,6 @@ private:
     String architecture;
     bool isProcessingEnabled = false;
     std::unique_ptr<RequestManager> requestManager;
-    std::unique_ptr<PacksDB> db;
 
     FilePath dbLocalNameZipped;
     FilePath dbLocalName;
