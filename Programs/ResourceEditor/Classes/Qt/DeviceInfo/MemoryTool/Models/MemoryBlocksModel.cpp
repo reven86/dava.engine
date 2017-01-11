@@ -75,7 +75,7 @@ QVariant MemoryBlocksModel::headerData(int section, Qt::Orientation orientation,
 QString MemoryBlocksModel::TagsToString(uint32 tags) const
 {
     QString result("tags=");
-    int bit = HighestBitIndex(tags);
+    int bit = static_cast<int>(HighestBitIndex(tags));
     for (; bit >= 0 && tags != 0; --bit)
     {
         tags &= ~(1 << bit);

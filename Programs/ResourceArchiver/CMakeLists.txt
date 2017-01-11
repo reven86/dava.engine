@@ -10,6 +10,8 @@ add_definitions(-D__DAVAENGINE_COREV2__)
 add_definitions(-DCONSOLE)
 add_definitions(-D_CONSOLE)
  
+set          ( DAVA_DISABLE_AUTOTESTS true )
+set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
 include      ( CMake-common )
@@ -27,6 +29,4 @@ set( DISABLE_SOUNDS         true)
 
 setup_main_executable()
 
-if( MSVC )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
-endif()
+set_subsystem_console()
