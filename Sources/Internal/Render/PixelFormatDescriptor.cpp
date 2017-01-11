@@ -54,7 +54,6 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     { FORMAT_BGR888, { FORMAT_BGR888, FastName("BGR888"), 24, TEXTURE_FORMAT_INVALID, false, false, Size2i(1, 1) } }
 #endif
 
-#if (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
     ,
     { FORMAT_R16F, { FORMAT_R16F, FastName("R16F"), 16, rhi::TextureFormat::TEXTURE_FORMAT_R16F, false, false, Size2i(1, 1) } },
     { FORMAT_RG16F, { FORMAT_RG16F, FastName("RG16F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_RG16F, false, false, Size2i(1, 1) } },
@@ -63,7 +62,6 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     { FORMAT_R32F, { FORMAT_R32F, FastName("R32F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_R32F, false, false, Size2i(1, 1) } },
     { FORMAT_RG32F, { FORMAT_RG32F, FastName("RG32F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RG32F, false, false, Size2i(1, 1) } },
     { FORMAT_RGBA32F, { FORMAT_RGBA32F, FastName("RGBA32F"), 128, rhi::TextureFormat::TEXTURE_FORMAT_RGBA32F, false, false, Size2i(1, 1) } }
-#endif
 };
 
 const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat format)

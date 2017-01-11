@@ -31,6 +31,7 @@ class LocalNotificationController;
 class DLCManager;
 class AssetsManagerAndroid;
 class ModuleManager;
+class PluginManager;
 class EngineSettings;
 
 class DeviceManager;
@@ -77,6 +78,8 @@ public:
     LocalNotificationController* localNotificationController = nullptr;
 
     ModuleManager* moduleManager = nullptr;
+    PluginManager* pluginManager = nullptr;
+
     DLCManager* packManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 

@@ -30,18 +30,26 @@ void RemoveNSView(Window* targetWindow, NSView* nsview)
     [nsview removeFromSuperview];
 }
 
-void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void PrimaryWindowDeminiaturize()
 {
     using namespace DAVA::Private;
-    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->RegisterNSApplicationDelegateListener(listener);
+    WindowBackend* wb = EngineBackend::GetWindowBackend(EngineBackend::Instance()->GetPrimaryWindow());
+    [wb->bridge->nswindow deminiaturize:wb->bridge->windowDelegate];
+    [wb->bridge->nswindow becomeKeyWindow];
 }
 
-void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener)
+void RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->UnregisterNSApplicationDelegateListener(listener);
+    core->bridge->RegisterDVEApplicationListener(listener);
+}
+
+void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
+{
+    using namespace DAVA::Private;
+    PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
+    core->bridge->UnregisterDVEApplicationListener(listener);
 }
 
 } // namespace Mac

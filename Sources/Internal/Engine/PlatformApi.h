@@ -97,78 +97,7 @@ void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
 
 #elif defined(__DAVAENGINE_MACOS__)
 
-/**
-    \defgroup engine_mac Engine facilities specific to macOS platform
-*/
-
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSApplication);
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSNotification);
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSData);
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSError);
-DAVA_FORWARD_DECLARE_OBJC_CLASS(NSView);
-
-namespace DAVA
-{
-class Window;
-namespace PlatformApi
-{
-namespace Mac
-{
-/**
-    \ingroup engine_mac
-    Interface definition for a callbacks to be invoked when `NSApplicationDelegate` lifecycle event occurs (applicationDidFinishLaunching,
-    applicationWillTerminate, etc).
-    Only subset of NSApplicationDelegate methods are mapped to the interface definition, other methods are mapped as required.
-
-    To receive callbacks from `NSApplicationDelegate` application should declare class derived from `NSApplicationDelegateListener`, implement
-    necessary methods and register it through `RegisterNSApplicationDelegateListener` function.
-
-    Methods of `NSApplicationDelegateListener` are always called in the context of UI thread (for Mac UI thread and main thread are the same).
-*/
-struct NSApplicationDelegateListener
-{
-    // clang-format off
-    virtual ~NSApplicationDelegateListener() = default;
-    virtual void applicationDidFinishLaunching(NSNotification* notification) {}
-    virtual void applicationDidBecomeActive() {}
-    virtual void applicationDidResignActive() {}
-    virtual void applicationWillTerminate() {}
-    virtual void didReceiveRemoteNotification(NSApplication* application, NSDictionary* userInfo) {}
-    virtual void didRegisterForRemoteNotificationsWithDeviceToken(NSApplication* application, NSData* deviceToken) {}
-    virtual void didFailToRegisterForRemoteNotificationsWithError(NSApplication* application, NSError* error) {}
-    // clang-format on
-};
-
-void AddNSView(Window* targetWindow, NSView* nsview);
-void RemoveNSView(Window* targetWindow, NSView* nsview);
-
-/**
-    \ingroup engine_mac
-    Register a callback to be invoked in response of `NSApplicationDelegate` lifecycle events.
-
-    Application can register a callback from any thread, but callbacks are invoked in the context of UI thread.
-    The best place to call this function is before calling `Engine::Run` or in `Engine::gameLoopStarted` signal handler.
-
-    \pre `listener` should not be null pointer
-    \pre Function shall not be called before `Engine::Init` or after `Engine::cleanup` signal.
-*/
-void RegisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
-
-/**
-    \ingroup engine_mac
-    Unregister a callback previously registered by `RegisterNSApplicationDelegateListener` function.
-
-    Application can unregister a callback from any thread, even during callback invocation.
-
-    \pre `listener` should be previously registered
-    \pre Function shall not be called after `Engine::cleanup` signal
-*/
-void UnregisterNSApplicationDelegateListener(NSApplicationDelegateListener* listener);
-
-} // namespace Mac
-} // namespace PlatformApi
-} // namespace DAVA
+// Mac/PlatformApi.h
 
 #elif defined(__DAVAENGINE_IPHONE__)
 
@@ -180,6 +109,7 @@ DAVA_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(NSDictionary);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIView);
 DAVA_FORWARD_DECLARE_OBJC_CLASS(UIImage);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(UILocalNotification);
 
 namespace DAVA
 {
@@ -210,6 +140,7 @@ struct UIApplicationDelegateListener
     virtual void applicationWillEnterForeground() {}
     virtual void applicationDidEnterBackground() {}
     virtual void applicationWillTerminate() {}
+    virtual void didReceiveLocalNotification(UILocalNotification* notification) {}
     // clang-format on
 };
 

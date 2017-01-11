@@ -16,12 +16,14 @@
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif
 
 #include "MemoryManager/MemoryProfiler.h"
+#include "Logger/Logger.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -35,6 +37,8 @@ uint32 GetKeyboardModifiers();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    Assert::SetupDefaultHandlers();
+
 #if defined(DENY_RUN_MULTIPLE_APP_INSTANCES)
     if (AlreadyRunning())
     {
@@ -219,7 +223,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         fullscreenMode = FindBestMode(fullscreenMode);
         shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
         String title = options->GetString("title", "[set application title using core options property 'title']");
-        WideString titleW = StringToWString(title);
+        WideString titleW = UTF8Utils::EncodeToWideString(title);
         SetWindowText(hWindow, titleW.c_str());
 
         LoadWindowMinimumSizeSettings();
@@ -467,7 +471,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
         default:
         {
-            DVASSERT_MSG(false, "Incorrect screen mode");
+            DVASSERT(false, "Incorrect screen mode");
             Logger::Error("Incorrect screen mode");
             return false;
         }

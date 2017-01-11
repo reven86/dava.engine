@@ -12,6 +12,7 @@
 #   include "Concurrency/Mutex.h"
 #   include "Concurrency/LockGuard.h"
 #   include "Utils/Utils.h"
+#   include "Utils/UTF8Utils.h"
 
 // Types and prototypes from dbghelp.h
 #define MAX_SYM_NAME            2000
@@ -117,7 +118,7 @@ void InitSymbols()
             // If pdb file is placed somewhere else application will have no access to it
             // dbghelp functions are available only for desktop platfoms not mobile
             using Windows::Storage::ApplicationData;
-            String path = WStringToString(ApplicationData::Current->LocalFolder->Path->Data());
+            String path = UTF8Utils::EncodeToUTF8(ApplicationData::Current->LocalFolder->Path->Data());
             path += ";.";
             const char* symPath = path.c_str();
 #else
@@ -301,6 +302,12 @@ String GetBacktraceString(void* const* frames, size_t framesSize)
 String GetBacktraceString(const Vector<void*>& backtrace)
 {
     return GetBacktraceString(backtrace.data(), backtrace.size());
+}
+
+String GetBacktraceString(const Vector<void*>& backtrace, size_t framesSize)
+{
+    const size_t length = (framesSize == 0) ? backtrace.size() : std::min(backtrace.size(), framesSize);
+    return GetBacktraceString(backtrace.data(), length);
 }
 
 String GetBacktraceString(size_t depth)

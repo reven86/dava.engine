@@ -49,6 +49,9 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
     set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
+    set( CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym" )    
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS "YES" )    
+
     set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
 
     set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
@@ -72,8 +75,8 @@ elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
-    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )    
-    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+    set( CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym" )    
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS "YES" )    
 
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( OTHER_CODE_SIGN_FLAGS "--deep")
@@ -151,68 +154,91 @@ if( WARNING_DISABLE)
 elseif( WARNINGS_AS_ERRORS )
 
 
-    if( ANDROID )
+    if( ANDROID OR MACOS)
         set( LOCAL_DISABLED_WARNINGS "-Werror " ) 
     endif()
 
     set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS}\
--Weverything \
--Wno-c++98-compat-pedantic \
--Wno-newline-eof \
--Wno-gnu-anonymous-struct \
--Wno-nested-anon-types \
--Wno-float-equal \
--Wno-extra-semi \
--Wno-unused-parameter \
--Wno-shadow \
--Wno-exit-time-destructors \
--Wno-documentation \
--Wno-global-constructors \
--Wno-padded \
--Wno-weak-vtables \
--Wno-variadic-macros \
--Wno-deprecated-register \
--Wno-sign-conversion \
--Wno-sign-compare \
--Wno-format-nonliteral \
--Wno-cast-align \
--Wno-conversion \
--Wno-zero-length-array \
--Wno-switch-enum \
--Wno-c99-extensions \
--Wno-missing-prototypes \
--Wno-missing-field-initializers \
--Wno-conditional-uninitialized \
--Wno-covered-switch-default \
--Wno-deprecated \
--Wno-unused-macros \
--Wno-disabled-macro-expansion \
--Wno-undef \
--Wno-char-subscripts \
--Wno-unneeded-internal-declaration \
--Wno-unused-variable \
--Wno-used-but-marked-unused \
--Wno-missing-variable-declarations \
--Wno-gnu-statement-expression \
--Wno-missing-braces \
--Wno-reorder \
--Wno-implicit-fallthrough \
--Wno-ignored-qualifiers \
--Wno-shift-sign-overflow \
--Wno-mismatched-tags \
--Wno-missing-noreturn \
--Wno-consumed \
--Wno-sometimes-uninitialized \
--Wno-delete-non-virtual-dtor \
--Wno-header-hygiene \
--Wno-unknown-warning-option \
--Wno-reserved-id-macro \
--Wno-documentation-pedantic \
--Wno-unused-local-typedef \
--Wno-nullable-to-nonnull-conversion \
--Wno-super-class-method-mismatch \
--Wno-nonnull \
--Wno-gnu-zero-variadic-macro-arguments")
+        -Weverything \
+        -Wno-c++98-compat-pedantic \
+        -Wno-newline-eof \
+        -Wno-gnu-anonymous-struct \
+        -Wno-nested-anon-types \
+        -Wno-float-equal \
+        -Wno-extra-semi \
+        -Wno-unused-parameter \
+        -Wno-shadow \
+        -Wno-exit-time-destructors \
+        -Wno-documentation \
+        -Wno-global-constructors \
+        -Wno-padded \
+        -Wno-weak-vtables \
+        -Wno-variadic-macros \
+        -Wno-deprecated-register \
+        -Wno-sign-conversion \
+        -Wno-sign-compare \
+        -Wno-format-nonliteral \
+        -Wno-cast-align \
+        -Wno-conversion \
+        -Wno-zero-length-array \
+        -Wno-switch-enum \
+        -Wno-c99-extensions \
+        -Wno-missing-prototypes \
+        -Wno-missing-field-initializers \
+        -Wno-conditional-uninitialized \
+        -Wno-covered-switch-default \
+        -Wno-deprecated \
+        -Wno-unused-macros \
+        -Wno-disabled-macro-expansion \
+        -Wno-undef \
+        -Wno-char-subscripts \
+        -Wno-unneeded-internal-declaration \
+        -Wno-unused-variable \
+        -Wno-used-but-marked-unused \
+        -Wno-missing-variable-declarations \
+        -Wno-gnu-statement-expression \
+        -Wno-missing-braces \
+        -Wno-reorder \
+        -Wno-implicit-fallthrough \
+        -Wno-ignored-qualifiers \
+        -Wno-shift-sign-overflow \
+        -Wno-mismatched-tags \
+        -Wno-missing-noreturn \
+        -Wno-consumed \
+        -Wno-sometimes-uninitialized \
+        -Wno-delete-non-virtual-dtor \
+        -Wno-header-hygiene \
+        -Wno-unknown-warning-option \
+        -Wno-reserved-id-macro \
+        -Wno-documentation-pedantic \
+        -Wno-unused-local-typedef \
+        -Wno-nullable-to-nonnull-conversion \
+        -Wno-super-class-method-mismatch \
+        -Wno-nonnull \
+        -Wno-gnu-zero-variadic-macro-arguments")
+
+## temporary disabled warnings for MacOS. They will be fixed and removed from this list in near future
+    if( MACOS )
+        set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
+            -Wno-double-promotion \
+            -Wno-old-style-cast \
+            -Wno-packed \
+            -Wno-pessimizing-move \
+            -Wno-partial-availability \
+            -Wno-#warnings \
+            \
+            -Wno-unused-private-field \
+            -Wno-objc-method-access \
+            -Wno-undefined-reinterpret-cast \
+            -Wno-inconsistent-missing-override \
+            -Wno-range-loop-analysis \
+            -Wno-potentially-evaluated-expression \
+            -Wno-overloaded-virtual \
+            -Wno-format-pedantic \
+            -Wno-shift-negative-value \
+            -Wno-return-stack-address \
+        ")
+    endif()
 
 
     if( ANDROID )

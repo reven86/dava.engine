@@ -4,6 +4,7 @@
 #include "AssetCache/CachePacket.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
 namespace DAVA

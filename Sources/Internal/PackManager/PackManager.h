@@ -2,6 +2,7 @@
 
 #include "Functional/Signal.h"
 #include "FileSystem/FilePath.h"
+#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -38,6 +39,11 @@ class DCLManagerImpl;
 class DLCManager final
 {
 public:
+#ifdef __DAVAENGINE_COREV2__
+    explicit DLCManager(const EngineContext* ctx);
+#else
+    DLCManager();
+#endif
     ~DLCManager();
 
     /**
@@ -63,7 +69,7 @@ public:
 
     /** you have to subscribe to this signal before call `Initialize` */
     Signal<bool> networkReady;
-    /** signal per user request with complete size of all depended packs */
+    /** signal per user request with full size of all depended packs */
     Signal<const IRequest&> requestProgressChanged;
 
     struct Hints

@@ -8,6 +8,7 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -148,7 +149,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     LockGuard<Mutex> guard(mutex);
 
     AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
-    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+    DVASSERT(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     Vector<uint8> data;
     if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))

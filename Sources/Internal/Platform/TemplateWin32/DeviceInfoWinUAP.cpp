@@ -6,6 +6,7 @@
 #include <winsock2.h>
 #include <collection.h>
 
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/MD5.h"
@@ -14,6 +15,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 
+#include "Engine/Engine.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
 
@@ -77,7 +79,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     }
     catch (Platform::Exception ^ e)
     {
-        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str());
     }
     gpu = GPUFamily();
     if (isMobileMode)

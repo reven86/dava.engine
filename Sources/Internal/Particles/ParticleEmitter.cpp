@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -260,17 +261,21 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
 {
     Cleanup(true);
 
-    YamlParser* parser = YamlParser::Create(filename);
+    ScopedPtr<YamlParser> parser(YamlParser::Create(filename));
     if (!parser)
     {
-        Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
+        Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetStringValue().c_str());
+        return false;
+    }
+
+    YamlNode* rootNode = parser->GetRootNode();
+    if (rootNode == nullptr)
+    {
+        Logger::Error("ParticleEmitter::LoadFromYaml: (%s) has no rootNode", filename.GetStringValue().c_str());
         return false;
     }
 
     configPath = filename;
-
-    YamlNode* rootNode = parser->GetRootNode();
-
     const YamlNode* emitterNode = rootNode->Get("emitter");
     if (emitterNode)
     {
@@ -373,8 +378,6 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
     // Yuri Coder, 2013/01/15. The "name" node for Layer was just added and may not exist for
     // old yaml files. Generate the default name for nodes with empty names.
     UpdateEmptyLayerNames();
-    SafeRelease(parser);
-
     return true;
 }
 

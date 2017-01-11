@@ -1,12 +1,9 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
 #include "Concurrency/Mutex.h"
-#include "Notification/LocalNotificationAndroid.h"
-#include "Notification/LocalNotificationNotImplemented.h"
 
 namespace DAVA
 {
@@ -14,11 +11,19 @@ class LocalNotification;
 class LocalNotificationText;
 class LocalNotificationProgress;
 
+#if defined(__DAVAENGINE_COREV2__)
+namespace Private
+{
+struct LocalNotificationListener;
+}
+#endif
+
 class LocalNotificationController : public Singleton<LocalNotificationController>
 {
     friend class LocalNotification;
 
 public:
+    LocalNotificationController();
     virtual ~LocalNotificationController();
     LocalNotificationProgress* const CreateNotificationProgress(const WideString& title = L"", const WideString& text = L"", uint32 max = 0, uint32 current = 0, bool useSound = false);
     LocalNotificationText* const CreateNotificationText(const WideString& title = L"", const WideString& text = L"", bool useSound = false);
@@ -35,7 +40,8 @@ public:
 private:
     Mutex notificationsListMutex;
     List<LocalNotification*> notificationsList;
+#if defined(__DAVAENGINE_COREV2__)
+    std::unique_ptr<Private::LocalNotificationListener> localListener;
+#endif
 };
-}
-
-#endif // __NOTIFICATION_H__
+} // namespace DAVA

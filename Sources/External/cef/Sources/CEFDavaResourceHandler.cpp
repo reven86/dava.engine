@@ -58,7 +58,7 @@ bool CEFDavaResourceHandler::ReadResponse(void* data_out,
         file.Set(File::Create(davaPath, File::OPEN | File::READ));
         if (!file)
         {
-            DVASSERT_MSG(false, "Cannot open file");
+            DVASSERT(false, "Cannot open file");
             return false;
         }
     }
