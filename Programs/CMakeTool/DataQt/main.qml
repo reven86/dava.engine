@@ -1,5 +1,5 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.3
+import QtQuick 2.6
+import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import Cpp.Utils 1.0
@@ -15,21 +15,24 @@ ApplicationWindow {
     property int historyVersion: 4
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
-    minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
-    menuBar: MenuBar {
-        Menu {
-            title: "CMake Tool"
-            MenuItem {
-                text: "Show help"
-                shortcut: StandardKey.HelpContents
-                onTriggered: help.Show();
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.margins * 4 + wrapper.spacing * 4
+    minimumWidth: wrapper.Layout.minimumWidth + splitView.anchors.margins * 2 + 50
+    toolBar: ToolBar {
+		RowLayout {
+            anchors.fill: parent
+			ToolButton {
+				tooltip: qsTr("Preferences")
+                iconSource: "qrc:///Icons/settings.png"
+				onClicked: preferencesDialog.show();
             }
-            MenuItem {
-                text: "Preferences"
-                shortcut: StandardKey.Preferences
-                onTriggered: preferencesDialog.open();
+            ToolButton {
+				tooltip: qsTr("Show help")
+                iconSource: "qrc:///Icons/help.ico"
+				onClicked: help.Show();
             }
+			Item {
+				Layout.fillWidth: true
+			}
         }
     }
     function processText(text) {
@@ -43,7 +46,13 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-        property string historyStr;
+		
+		property alias prefWidth: preferencesDialog.width
+		property alias prefHeight: preferencesDialog.height
+		property alias prefX: preferencesDialog.x
+		property alias prefY: preferencesDialog.y
+		
+		property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
             function compare(left, right) {
@@ -54,16 +63,17 @@ ApplicationWindow {
             historyVersion = applicationWindow.historyVersion;
         }
         property int historyVersion: -1
-        property var generateBuildFolderName: false
+        property bool buildToTheSourceFolder: true
+		property string customBuildFolder;
     }
     property var history;
     function applyProjectSettings(buildSettings) {
-        columnLayoutOutput.needClean = buildSettings.needClean;
         rowLayout_buildFolder.path = buildSettings.buildFolder;
         rowLayout_cmakeFolder.path = buildSettings.cmakePath;
         rowLayout_davaFolder.path = buildSettings.davaPath;
         textField_customOptions.text = buildSettings.customOptions
         mutableContent.loadState(buildSettings.state);
+		columnLayoutOutput.loadState(buildSettings.outputState);
     }
 
     function loadHistory() {
@@ -93,12 +103,12 @@ ApplicationWindow {
         
         var newItem = {};
         newItem.source = source
-        newItem.needClean = columnLayoutOutput.needClean
         newItem.buildFolder = rowLayout_buildFolder.path
         newItem.cmakePath = rowLayout_cmakeFolder.path
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
+		newItem.outputState = columnLayoutOutput.saveState();
         
         //now update current history, because we load fields from it.
         for(var i = 0, length = history.length; i < length && !found; ++i) {
@@ -134,25 +144,10 @@ ApplicationWindow {
         id: help;
     }
     
-    Dialog {
+    PreferencesDialog {
         id: preferencesDialog
         visible: false
-        title: "CMakeTool preferences dialog"
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-        onAccepted: {   
-            settings.generateBuildFolderName = checkBox_generateBuildFolderName.checked
-        }
-        onVisibleChanged: { 
-            if(visible) {
-                checkBox_generateBuildFolderName.checked = settings.generateBuildFolderName
-            }
-        }
-        Column {
-            CheckBox {
-                id: checkBox_generateBuildFolderName
-                text: "generate build folder name"
-            }
-        }
+        settings: settings
     }
 
     property var configuration; //main JS object, contained in config file
@@ -230,7 +225,8 @@ ApplicationWindow {
     SplitView {
         id: splitView;
         anchors.fill: parent
-        anchors.margins: 10
+		property int margins: 10
+        anchors.margins: margins
         objectName: "splitView"
 
         Item {
@@ -243,7 +239,7 @@ ApplicationWindow {
             ColumnLayout {
                 id: wrapper
                 anchors.fill: parent
-
+				anchors.rightMargin: splitView.margins
                 RowLayoutPath {
                     id: rowLayout_sourceFolder
                     labelText: qsTr("Source folder");
@@ -259,10 +255,17 @@ ApplicationWindow {
                                     onCurrentProjectChaged(i);
                                 }
                             }
-                            if(!found && settings.generateBuildFolderName)
-                            {
-                                rowLayout_buildFolder.path = text + "/_build";
-                            }
+                            if (!found) {
+								if (settings.buildToTheSourceFolder) {
+									rowLayout_buildFolder.path = text + "/_build";
+								} else {
+									var array = text.split(/[\\\/]+/g);
+									if(array.length > 0) {
+										var path = settings.customBuildFolder + "/" + array[array.length - 1] + "/_build";
+										rowLayout_buildFolder.path = fileSystemHelper.NormalizePath(path);
+									}
+								}
+							}
                         }
                     }
                 }
@@ -342,10 +345,12 @@ ApplicationWindow {
                         updateOutputString()
 
                     }
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
                 }
-
+				Item {
+					id: spacer
+					height: 20
+				}
                 RowLayout {
                     Label {
                         id: label_customOptions

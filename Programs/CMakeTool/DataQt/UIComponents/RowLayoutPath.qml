@@ -1,5 +1,5 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.3
+import QtQuick 2.6
+import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import Cpp.Utils 1.0
@@ -15,8 +15,7 @@ RowLayout {
     Binding { target: rowLayout; property: "path"; value: loader.item.text}
     Binding { target: loader.item; property: "text"; value: path }
     onPathChanged: loader.item.text = path
-    Layout.minimumWidth: label.width + button.width + image.width + spacing * 3 + 50
-    Layout.minimumHeight: Math.max(label.height, button.height, image.height, loader.item.height)
+	Layout.fillWidth: true
     property bool pathIsValid: selectFolders
                                ? fileSystemHelper.IsDirExists(loader.item.text)
                                : fileSystemHelper.IsFileExists(loader.item.text)

@@ -1,5 +1,4 @@
-#ifndef PROCESSWRAPPER_H
-#define PROCESSWRAPPER_H
+#pragma once
 
 #include <QObject>
 #include <QProcess>
@@ -56,5 +55,3 @@ private:
     QQueue<Task> taskQueue;
     bool running = false;
 };
-
-#endif // PROCESSWRAPPER_H

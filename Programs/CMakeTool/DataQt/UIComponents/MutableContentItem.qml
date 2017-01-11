@@ -1,12 +1,13 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.3
+import QtQuick 2.6
+import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 
-Item {
+GroupBox {
     id: mutableContentItem;
     signal dataUpdated();
     property var localConfiguration;
+	Layout.fillWidth: true;
     function processConfiguration(configuration) {
         localConfiguration = configuration;
         var arrayPlatforms = localConfiguration["platforms"];
@@ -69,16 +70,13 @@ Item {
     }
 
    
-    Layout.minimumHeight: columnLayout.minHeight
     ColumnLayout {
         id: columnLayout
         spacing: 10
-        property int minHeight: rowLayout.minHeight + columnLayout_globalOptions.minHeight + columnLayout.spacing
+		Layout.fillWidth: true;
         RowLayout {
             id: rowLayout
-            property int minHeight: Math.max(columnLayout_platforms.minHeight, columnLayout_localOptions.minHeight)
             anchors.fill: parent
-            Layout.fillHeight: true
             ListModel {
                 id: listModel_platforms
             }
@@ -89,7 +87,6 @@ Item {
             ColumnLayout {
                 id: columnLayout_platforms
                 anchors.top: parent.top
-                property int minHeight: label_platforms.height + column_platforms.height + columnLayout_platforms.spacing
                 width: rowLayout.width / 2
                 Label {
                     id: label_platforms
@@ -141,7 +138,6 @@ Item {
             ColumnLayout {
                 id: columnLayout_localOptions
                 anchors.top: parent.top
-                property int minHeight: label_options.height + column_localOptions.height + columnLayout_localOptions.spacing
                 width: rowLayout.width / 2
                 visible: listModel_localOptions.count !== 0
                 Label {
@@ -212,7 +208,6 @@ Item {
         }
         ColumnLayout {
             id: columnLayout_globalOptions
-            property int minHeight: label_globalOptions.height + flow_globalOptions.height + columnLayout_globalOptions.spacing
             width: rowLayout.width
             Label {
                 id: label_globalOptions
