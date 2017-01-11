@@ -39,6 +39,7 @@ public:
     UIComponent& operator=(const UIComponent& src);
 
     static UIComponent* CreateByType(uint32 componentType);
+    static RefPtr<UIComponent> SafeCreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;

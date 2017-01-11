@@ -41,6 +41,10 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
+    case BACKGROUND_COMPONENT:
+        DVASSERT(false, "Background component is not implemented yet.");
+        return nullptr;
+
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -87,6 +91,11 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
         DVASSERT(false);
         return nullptr;
     }
+}
+
+RefPtr<UIComponent> UIComponent::SafeCreateByType(uint32 componentType)
+{
+    return RefPtr<UIComponent>(CreateByType(componentType));
 }
 
 bool UIComponent::IsMultiple(uint32 componentType)

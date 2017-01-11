@@ -22,7 +22,8 @@ UIControlBackground::UIControlBackground()
 }
 
 UIControlBackground::UIControlBackground(const UIControlBackground& src)
-    : spr(src.spr)
+    : UIBaseComponent(src)
+    , spr(src.spr)
     , align(src.align)
     , type(src.type)
     , spriteModification(src.spriteModification)
@@ -39,8 +40,8 @@ UIControlBackground::UIControlBackground(const UIControlBackground& src)
     , gradientMode(src.gradientMode)
     , color(src.color)
     , drawColor(src.drawColor)
+    , material(SafeRetain(src.material))
 {
-    SetMaterial(src.material);
     SetMargins(src.GetMargins());
 }
 
