@@ -10,9 +10,9 @@
 #include <Utils/FpsMeter.h>
 
 class ViewSceneScreen
-    : public BaseScreen
-    , public UIFileSystemDialogDelegate
-    , public GridTestListener
+: public BaseScreen,
+  public UIFileSystemDialogDelegate,
+  public GridTestListener
 {
 public:
     ViewSceneScreen(DAVA::Engine& engine);

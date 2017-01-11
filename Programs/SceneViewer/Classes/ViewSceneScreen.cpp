@@ -97,11 +97,11 @@ void ViewSceneScreen::LoadScene()
 
     rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
     scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     wasdSystem = new WASDControllerSystem(scene);
     scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
-        Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
     DVASSERT(sceneView);
     sceneView->SetScene(scene);
@@ -335,7 +335,6 @@ void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
-
     BaseScreen::Update(timeElapsed);
 
     UpdateInfo(timeElapsed);
