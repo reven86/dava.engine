@@ -33,13 +33,21 @@ macro ( add_tool TARGET_NAME )
 endmacro ()
 
 ############
-
 set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
 set( DAVA_USE_RENDERSTATS true )
 set( JOIN_PROJECT_NAME 1 )
 set( DAVA_DISABLE_AUTOTESTS true )
 set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
+
+if( NOT DEPLOY_DIR )
+    set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
+    set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
+else()
+    set( DEPLOY_DIR_MACOS             ${DEPLOY_DIR} )
+    set( DEPLOY_DIR_WIN               ${DEPLOY_DIR} )
+endif()
+
 
 find_package ( DavaTools     REQUIRED )
 
@@ -49,6 +57,7 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 ## other
 set( DEFINITIONS           )
+
 set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app_other )
 set( DEPLOY_DIR_EXECUTABLE )
 set( QT_POST_DEPLOY        )
@@ -72,14 +81,12 @@ reset_property ( MIX_APP_DATA )
 set( POSTPONED_MIX_DATA 1 )
 set( QT_POST_DEPLOY 0 )
 
-set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR_MACOS}/Libs )
 set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR_MACOS} )
 set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR_MACOS} )
 set( ADDED_LD_RUNPATHES           "@executable_path/../../Libs @executable_path/../../../Libs" )
 
 
-set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_WIN          )
 set( DEPLOY_DIR_DATA_WIN          )
 set( DEPLOY_DIR_EXECUTABLE_WIN    )
