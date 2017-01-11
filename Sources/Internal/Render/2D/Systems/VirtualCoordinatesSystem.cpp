@@ -3,6 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Sprite.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -117,12 +118,6 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
     virtualSizeChanged.Emit(virtualScreenSize);
 #endif
 
-    if (enabledReloadResourceOnResize)
-    {
-        Sprite::ValidateForSize();
-        TextBlock::ScreenResolutionChanged();
-    }
-
     RenderSystem2D::Instance()->ScreenSizeChanged();
     UIControlSystem::Instance()->ScreenSizeChanged(GetFullScreenVirtualRect());
 }
@@ -130,6 +125,11 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
 void VirtualCoordinatesSystem::EnableReloadResourceOnResize(bool enable)
 {
     enabledReloadResourceOnResize = enable;
+}
+
+bool VirtualCoordinatesSystem::GetReloadResourceOnResize() const
+{
+    return enabledReloadResourceOnResize;
 }
 
 void VirtualCoordinatesSystem::SetPhysicalScreenSize(int32 width, int32 height)

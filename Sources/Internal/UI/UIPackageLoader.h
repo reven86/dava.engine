@@ -26,13 +26,13 @@ public:
 
 public:
     UIPackageLoader();
-    UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& legacyPrototypes);
+    UIPackageLoader(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& legacyPrototypes);
     virtual ~UIPackageLoader();
 
 public:
     virtual bool LoadPackage(const FilePath& packagePath, AbstractUIPackageBuilder* builder) override;
     virtual bool LoadPackage(const YamlNode* rootNode, const FilePath& packagePath, AbstractUIPackageBuilder* builder);
-    virtual bool LoadControlByName(const String& name, AbstractUIPackageBuilder* builder) override;
+    virtual bool LoadControlByName(const FastName& name, AbstractUIPackageBuilder* builder) override;
 
 private:
     struct ComponentNode
@@ -53,7 +53,6 @@ private:
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
     void LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
-    void LoadInternalControlPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
     virtual Any ReadVariantTypeFromYamlNode(const Reflection& reflection, const YamlNode* node, const String& name);
 
 private:
@@ -66,7 +65,7 @@ private:
 
     struct QueueItem
     {
-        String name;
+        FastName name;
         const YamlNode* node;
         int32 status;
     };
@@ -75,7 +74,7 @@ private:
     DAVA::int32 version = 0;
 
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
-    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> legacyPrototypes;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>> legacyPrototypes;
 };
 };
 

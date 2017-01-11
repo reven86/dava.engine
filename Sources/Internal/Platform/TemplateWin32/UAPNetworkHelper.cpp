@@ -11,7 +11,7 @@ DeviceInfo::ePlatform GetPlatformChecked()
     bool uapPlatform = platform == DeviceInfo::PLATFORM_DESKTOP_WIN_UAP ||
     platform == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
 
-    DVASSERT_MSG(uapPlatform, "Not UAP platform");
+    DVASSERT(uapPlatform, "Not UAP platform");
     return platform;
 }
 
@@ -46,7 +46,7 @@ Net::Endpoint UAPNetworkHelper::GetEndPoint(Net::eNetworkRole role)
     case Net::CLIENT_ROLE:
         return Net::Endpoint(UAP_IP_ADDRESS, port);
     default:
-        DVASSERT_MSG(false, "Something wrong");
+        DVASSERT(false, "Something wrong");
         return Net::Endpoint();
     }
 }

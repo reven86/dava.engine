@@ -9,7 +9,10 @@
 #include "Base/Platform.h"
 
 #include <QTimer>
+#include <QApplication>
+#include <QAbstractEventDispatcher>
 #include <gmock/gmock-spec-builders.h>
+
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
@@ -56,6 +59,13 @@ protected:
         ContextManager* ctxManager = GetContextManager();
         DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         ctxManager->ActivateContext(id);
+    }
+
+    DAVA_VIRTUAL_REFLECTION(TestControllerModule, ControllerModule)
+    {
+        ReflectionRegistrator<TestControllerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
     }
 };
 
@@ -108,6 +118,22 @@ void TestClass::SetUp(const String& testName)
 {
     if (core == nullptr)
     {
+        using namespace std::chrono;
+        TestInfo::TimePoint startTimePoint = TestInfo::Clock::now();
+        auto timeoutCrashHandler = [startTimePoint]()
+        {
+            double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - startTimePoint).count();
+            if (elapsedSeconds > 10 * 60) // 10 minutes
+            {
+                TEST_VERIFY_WITH_MESSAGE(false, "Timeout fail");
+                std::terminate();
+            }
+        };
+
+        QAbstractEventDispatcher* dispatcher = qApp->eventDispatcher();
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::aboutToBlock, timeoutCrashHandler);
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::awake, timeoutCrashHandler);
+
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         DVASSERT(e->IsConsoleMode() == false);

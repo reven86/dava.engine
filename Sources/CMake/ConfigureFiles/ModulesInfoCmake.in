@@ -1,13 +1,17 @@
 cmake_minimum_required (VERSION 3.0)
 
+set( MODULE_COMPONENTS_VALUE_NAME  @MODULE_COMPONENTS_VALUE_NAME@)
+set( ARG_COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME}  @ARG_MODULE_COMPONENTS@ )
+
+if( MODULE_COMPONENTS_VALUE_NAME )
+    set_property( GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} ${ARG_COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME}} )
+endif()
+
 set                    ( FOLDER_MODULE        @FOLDER_MODULE@ )
 set                    ( CMAKE_MODULE_PATH   "@DAVA_MODULES_FILES_PATH@" )
-set                    ( DAVA_COMPONENTS     "@DAVA_COMPONENTS@" )
 set                    ( DAVA_PLATFORM_CURENT @DAVA_PLATFORM_CURENT@ )
 
 include                ( CMake-common )
-
-set_property           ( GLOBAL PROPERTY      DAVA_COMPONENTS "${DAVA_COMPONENTS}")
 
 get_filename_component ( FOLDER_NAME          ${FOLDER_MODULE} NAME )
 add_subdirectory       ( ${FOLDER_MODULE}     ${FOLDER_NAME} ) 

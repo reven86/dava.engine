@@ -71,8 +71,6 @@ public:
     void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) override;
     void OnScrollViewContainerSizeChanged();
 
-    const String GetDelegateControlPath(const UIControl* rootControl) const override;
-
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
 

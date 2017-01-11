@@ -7,6 +7,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
+#include "Utils/StringFormat.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include <limits>
@@ -275,7 +276,7 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
     }
     break;
     default:
-        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
+        DVASSERT(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
         break;
     }
 }

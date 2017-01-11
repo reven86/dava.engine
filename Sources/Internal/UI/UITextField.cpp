@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #include "Engine/Engine.h"
 

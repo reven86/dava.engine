@@ -3,6 +3,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/StringFormat.h"
 #include "Base/Type.h"
 #include "Reflection/Reflection.h"
 
@@ -757,7 +758,8 @@ bool YamlNode::GetMapOrderRepresentation() const
 
 void YamlNode::InternalSetToString(const VariantType& varType)
 {
-    DVVERIFY(InitStringFromVariantType(varType));
+    const bool initResult = InitStringFromVariantType(varType);
+    DVASSERT(initResult);
 }
 
 void YamlNode::InternalSetToString(const String& value)
@@ -805,7 +807,7 @@ void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rew
         RemoveNodeFromMap(name);
     }
 
-    DVASSERT_MSG(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
+    DVASSERT(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
     objectMap->ordered.insert(std::pair<String, YamlNode*>(name, node));
     objectMap->unordered.push_back(std::pair<String, YamlNode*>(name, node));
 }
@@ -1047,19 +1049,22 @@ YamlNode* YamlNode::CreateNodeFromVariantType(const VariantType& varType)
     case TYPE_STRING:
     {
         node = CreateStringNode();
-        DVVERIFY(node->InitStringFromVariantType(varType));
+        const bool initResult = node->InitStringFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_ARRAY:
     {
         node = CreateArrayNode();
-        DVVERIFY(node->InitArrayFromVariantType(varType));
+        const bool initResult = node->InitArrayFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_MAP:
     {
         node = CreateMapNode();
-        DVVERIFY(node->InitMapFromVariantType(varType));
+        const bool initResult = node->InitMapFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     }

@@ -4,6 +4,7 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"

@@ -1300,13 +1300,6 @@ public:
     virtual void SetBackgroundComponent(int32 index, UIControlBackground* bg);
     virtual String GetBackgroundComponentName(int32 index) const;
 
-    virtual int32 GetInternalControlsCount() const;
-    virtual UIControl* GetInternalControl(int32 index) const;
-    virtual UIControl* CreateInternalControl(int32 index) const;
-    virtual void SetInternalControl(int32 index, UIControl* control);
-    virtual String GetInternalControlName(int32 index) const;
-    virtual String GetInternalControlDescriptions() const;
-
     inline float32 GetWheelSensitivity() const;
     inline void SetWheelSensitivity(float32 newSens);
 

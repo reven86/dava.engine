@@ -222,8 +222,8 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
         indexedRenderObjects.resize(Max(static_cast<uint32>(indexedRenderObjects.size()), static_cast<uint32>(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT_MSG(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
-                     "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
+                 "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }
 }
@@ -305,9 +305,6 @@ void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity* entity
 StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
-
     Color gridColor(0.0f, 0.3f, 0.1f, 0.2f);
     Color coverColor(0.1f, 0.5f, 0.1f, 0.3f);
 
@@ -324,15 +321,34 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     rhi::VertexLayout vertexLayout;
     vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vertexLayoutId = rhi::VertexLayout::UniqueId(vertexLayout);
+
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 {
-    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
-    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
-
+    SetScene(nullptr);
     SafeRelease(gridMaterial);
     SafeRelease(coverMaterial);
+}
+
+void StaticOcclusionDebugDrawSystem::SetScene(Scene* scene)
+{
+    Scene* oldScene = GetScene();
+    if (oldScene != nullptr)
+    {
+        oldScene->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+        oldScene->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+    }
+
+    SceneSystem::SetScene(scene);
+
+    if (scene != nullptr)
+    {
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+    }
 }
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
