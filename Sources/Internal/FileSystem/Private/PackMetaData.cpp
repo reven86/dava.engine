@@ -28,12 +28,12 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
         numIndexes = static_cast<size_t>(countIndexes);
     };
 
-    tableFiles.reserve(numIndexes);
+    packIndexes.reserve(numIndexes);
 
     db << "SELECT path, pack_index FROM files"
     >> [&](std::string, int packIndex)
     {
-        tableFiles.push_back(packIndex);
+        packIndexes.push_back(packIndex);
     };
 
     size_t numPacks = 0;
@@ -45,18 +45,18 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
         numPacks = static_cast<size_t>(countPacks);
     };
 
-    tablePacks.reserve(numPacks);
+    packDependencies.reserve(numPacks);
 
     db << "SELECT name, dependency FROM packs"
     >> [&](std::string name, std::string dependency)
     {
-        tablePacks.push_back(std::tuple<String, String>(name, dependency));
+        packDependencies.push_back(std::tuple<String, String>(name, dependency));
     };
 
     // debug check that max index of fileIndex exist in packIndex
-    auto it = max_element(begin(tableFiles), end(tableFiles));
+    auto it = max_element(begin(packIndexes), end(packIndexes));
     uint32 maxIndex = *it;
-    if (maxIndex >= tablePacks.size())
+    if (maxIndex >= packDependencies.size())
     {
         DAVA_THROW(Exception, "read metadata error - too big index bad meta");
     }
@@ -64,18 +64,18 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
 
 uint32 PackMetaData::GetPackIndexForFile(const uint32 fileIndex) const
 {
-    return tableFiles.at(fileIndex);
+    return packIndexes.at(fileIndex);
 }
 
 const std::tuple<String, String>& PackMetaData::GetPackInfo(const uint32 packIndex) const
 {
-    return tablePacks.at(packIndex);
+    return packDependencies.at(packIndex);
 }
 
 Vector<uint8> PackMetaData::Serialize() const
 {
-    DVASSERT(tablePacks.size() > 0);
-    DVASSERT(tableFiles.size() > 0);
+    DVASSERT(packDependencies.size() > 0);
+    DVASSERT(packIndexes.size() > 0);
 
     Vector<uint8> compBytes;
     uint32 uncompressedSize = 0;
@@ -84,7 +84,7 @@ Vector<uint8> PackMetaData::Serialize() const
         std::stringstream ss;
 
         size_t sizePackData = 0;
-        for (const auto& tuple : tablePacks)
+        for (const auto& tuple : packDependencies)
         {
             const String& packName = std::get<0>(tuple);
             const String& depend = std::get<1>(tuple);
@@ -117,14 +117,14 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write meta header failed");
     }
 
-    uint32 numFiles = static_cast<uint32>(tableFiles.size());
+    uint32 numFiles = static_cast<uint32>(packIndexes.size());
     if (4 != file->Write(&numFiles, sizeof(numFiles)))
     {
         DAVA_THROW(Exception, "write num_files failed");
     }
 
-    uint32 sizeOfFilesMetaIndexes = static_cast<uint32>(tableFiles.size() * sizeof(uint32));
-    if (sizeOfFilesMetaIndexes != file->Write(&tableFiles[0], sizeOfFilesMetaIndexes))
+    uint32 sizeOfFilesMetaIndexes = static_cast<uint32>(packIndexes.size() * sizeof(uint32));
+    if (sizeOfFilesMetaIndexes != file->Write(&packIndexes[0], sizeOfFilesMetaIndexes))
     {
         DAVA_THROW(Exception, "write meta file indexes failed");
     }
@@ -189,13 +189,13 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     {
         DAVA_THROW(Exception, "read metadata error - no numFiles");
     }
-    tableFiles.resize(numFiles);
+    packIndexes.resize(numFiles);
 
     const uint32_t numFilesBytes = numFiles * 4;
-    file.read(reinterpret_cast<char*>(&tableFiles[0]), numFilesBytes);
+    file.read(reinterpret_cast<char*>(&packIndexes[0]), numFilesBytes);
     if (!file)
     {
-        DAVA_THROW(Exception, "read metadata error - no tableFiles");
+        DAVA_THROW(Exception, "read metadata error - no packIndexes");
     }
 
     uint32_t uncompressedSize = 0;
@@ -245,13 +245,13 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
-        tablePacks.push_back(tuple<String, String>(packName, packDependency));
+        packDependencies.push_back(tuple<String, String>(packName, packDependency));
     }
 
     // debug check that max index of fileIndex exist in packIndex
-    auto it = std::max_element(begin(tableFiles), end(tableFiles));
+    auto it = std::max_element(begin(packIndexes), end(packIndexes));
     uint32 maxIndex = *it;
-    if (maxIndex >= tablePacks.size())
+    if (maxIndex >= packDependencies.size())
     {
         DAVA_THROW(Exception, "read metadata error - too big index bad meta");
     }

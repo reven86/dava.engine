@@ -33,7 +33,7 @@ struct PackFile
                 uint32 compressedCrc32;
                 Compressor::Type type;
                 uint32 originalCrc32;
-                uint32 custom; // can be castom user index in metaData
+                uint32 metaIndex; // can be castom user index in metaData
             };
 
             Vector<Data> files;

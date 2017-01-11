@@ -32,10 +32,10 @@ private:
     // fileNames already in DVPK format
     // table 1.
     // fileName -> fileIndex(0-NUM_FILES) -> packIndex(0-NUM_PACKS)
-    Vector<uint32> tableFiles;
+    Vector<uint32> packIndexes;
     // table 2.
     // packIndex(0-NUM_PACKS) -> packName, dependencies
-    Vector<std::tuple<String, String>> tablePacks;
+    Vector<std::tuple<String, String>> packDependencies;
 };
 
 } // end namespace DAVA

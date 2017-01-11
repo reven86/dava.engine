@@ -452,7 +452,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     try
     {
-        for (unsigned fileIndex = 0; fileIndex < collectedFiles.size(); ++fileIndex)
+        for (uint32 fileIndex = 0; fileIndex < collectedFiles.size(); ++fileIndex)
         {
             const CollectedFile& collectedFile = collectedFiles[fileIndex];
             PackFormat::FileTableEntry fileEntry = { 0 };
@@ -502,11 +502,27 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
             fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
             if (!meta)
             {
-                fileEntry.custom = 0; // do it or your crc32 randomly change on same files
+                fileEntry.metaIndex = 0; // do it or your crc32 randomly change on same files
             }
             else
             {
-                fileEntry.custom = meta->GetPackIndexForFile(fileIndex); // do it or your crc32 randomly change on same files
+                // TODO work in progress for next DLC
+                // we have PackArchive with vector of FileInfo's
+                // from PackArchive we can get fileIndex
+                // with fileIndex from PackMetaData we can get packIndex
+                // and later use metaIndex(packIndex) directly from FileInfo
+                // files table example
+                //|--------------------------------------|
+                //|file_path(sorted)----------|pack_index|
+                //|3d/gfx/uber_file.pvr       |         0|
+                //|--------------------------------------|
+                // packs table example
+                //|--------------------------------------|
+                //|pack_index|pack_name-----|pack_dep----|
+                //|         0|group_pack_1  |group_pack_0|
+                //|--------------------------------------|
+                // so packIndex(metaIndex) is duplicated in FileInfo's for now.
+                fileEntry.metaIndex = meta->GetPackIndexForFile(fileIndex);
             }
 
             dataOffset += static_cast<uint32>(useBuffer.size());
