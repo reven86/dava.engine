@@ -966,6 +966,7 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
 
 void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
 {
+    Logger::Info("System timer adjusted by %lld us", adjustMicro);
     SystemTimer::Adjust(adjustMicro);
 }
 
