@@ -29,11 +29,12 @@ class TextFieldPlatformImpl : public TextFieldStbImpl
 {
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    TextFieldPlatformImpl(Window* /*w*/, UITextField* uiTextField)
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
+        : TextFieldStbImpl(w, uiTextField)
 #else
     TextFieldPlatformImpl(UITextField* uiTextField)
-#endif
         : TextFieldStbImpl(uiTextField)
+#endif
     {
     }
 };
