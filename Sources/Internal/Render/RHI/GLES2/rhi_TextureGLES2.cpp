@@ -257,17 +257,17 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             if (isCubeMap)
             {
                 DVASSERT(desc.levelCount < 16);
-                unsigned cmd3Count = 3;
+                unsigned cmd3Count = 2;
                 GLCommand cmd3[4 + 6 * 16] =
                 {
                   { GLCommand::BIND_TEXTURE, { GL_TEXTURE_CUBE_MAP, uint64(&(this->uid)) } },
-                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST } }
+                  { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
                 };
 
                 for (unsigned m = 0; m != desc.levelCount; ++m)
                 {
                     GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+                    Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
 
                     for (unsigned f = 0; f != countof(face); ++f)
                     {
@@ -275,8 +275,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                         cmd3[cmd3Count].arg[0] = face[f];
                         cmd3[cmd3Count].arg[1] = m;
                         cmd3[cmd3Count].arg[2] = uint64(int_fmt);
-                        cmd3[cmd3Count].arg[3] = uint64(desc.width);
-                        cmd3[cmd3Count].arg[4] = uint64(desc.height);
+                        cmd3[cmd3Count].arg[3] = uint64(sz.dx);
+                        cmd3[cmd3Count].arg[4] = uint64(sz.dy);
                         cmd3[cmd3Count].arg[5] = 0;
                         cmd3[cmd3Count].arg[6] = uint64(fmt);
                         cmd3[cmd3Count].arg[7] = type;
@@ -286,6 +286,41 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                         ++cmd3Count;
                     }
                 }
+
+                if (desc.levelCount == 1)
+                {
+                    cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
+                    cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
+                    cmd3[cmd3Count].arg[1] = GL_TEXTURE_MAG_FILTER;
+                    cmd3[cmd3Count].arg[2] = GL_NEAREST;
+                    ++cmd3Count;
+
+                    cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
+                    cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
+                    cmd3[cmd3Count].arg[1] = GL_TEXTURE_MIN_FILTER;
+                    cmd3[cmd3Count].arg[2] = GL_NEAREST;
+                    ++cmd3Count;
+                }
+                else
+                {
+                    cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
+                    cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
+                    cmd3[cmd3Count].arg[1] = GL_TEXTURE_MAG_FILTER;
+                    cmd3[cmd3Count].arg[2] = GL_LINEAR;
+                    ++cmd3Count;
+
+                    cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
+                    cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
+                    cmd3[cmd3Count].arg[1] = GL_TEXTURE_MIN_FILTER;
+                    cmd3[cmd3Count].arg[2] = GL_LINEAR;
+                    ++cmd3Count;
+                }
+
+                cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
+                cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
+                cmd3[cmd3Count].arg[1] = GL_TEXTURE_MAX_LEVEL;
+                cmd3[cmd3Count].arg[2] = desc.levelCount - 1;
+                ++cmd3Count;
 
                 cmd3[cmd3Count].func = GLCommand::RESTORE_TEXTURE0;
                 ++cmd3Count;
@@ -427,12 +462,17 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
-            DVASSERT(self->fbo.size())
+            DVASSERT(self->fbo != 0);
+            GLint internalFormat;
+            GLint format;
+            GLenum type;
+            bool compressed;
+            GetGLTextureFormat(self->format, &internalFormat, &format, &type, &compressed);
 
             GLCommand cmd[] =
             {
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, uint64(self->fbo) } },
-              { GLCommand::READ_PIXELS, { 0, 0, self->width, self->height, GL_RGBA, GL_UNSIGNED_BYTE, uint64(self->mappedData) } },
+              { GLCommand::READ_PIXELS, { 0, 0, self->width, self->height, static_cast<uint64>(format), type, uint64(self->mappedData) } },
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Bound_FrameBuffer } },
             };
 
@@ -866,33 +906,38 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             }
             else
             {
-                GLenum target = GL_TEXTURE_2D;
-
                 if (tex->isCubeMap)
                 {
+                    GLenum layer = 0;
+
                     switch (face[i])
                     {
                     case TEXTURE_FACE_POSITIVE_X:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+                        layer = 0;
                         break;
                     case TEXTURE_FACE_NEGATIVE_X:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+                        layer = 1;
                         break;
                     case TEXTURE_FACE_POSITIVE_Y:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+                        layer = 2;
                         break;
                     case TEXTURE_FACE_NEGATIVE_Y:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+                        layer = 3;
                         break;
                     case TEXTURE_FACE_POSITIVE_Z:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+                        layer = 4;
                         break;
                     case TEXTURE_FACE_NEGATIVE_Z:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+                        layer = 5;
                         break;
                     }
+
+                    GL_CALL(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, tex->uid, level[i], layer));
                 }
-                GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
+                else
+                {
+                    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tex->uid, level[i]));
+                }
             }
         }
 
@@ -958,7 +1003,7 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
     GLuint targetBuffer = _GLES2_Default_FrameBuffer;
 
     bool fromHasDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) || (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
-    DVASSERT(!fromHasDepthFormat);
+    DVASSERT(!fromHasDepthFormat)
     //    DVASSERT(!from->fbo.empty());
 
     if (to != nullptr)
