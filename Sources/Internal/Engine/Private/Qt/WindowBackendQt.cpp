@@ -14,6 +14,7 @@
 #include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
 
+#include "Logger/Logger.h"
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "Debug/DVAssert.h"
