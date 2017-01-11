@@ -81,11 +81,12 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
     DataContext* ctx = GetAccessor()->GetGlobalContext();
     PropertyPanelModuleDetail::PropertyPanelData* data = ctx->GetData<PropertyPanelModuleDetail::PropertyPanelData>();
     data->selectedEntities.clear();
+    data->selectedEntities.shrink_to_fit();
     data->propertyPanelObjects.clear();
 
     if (newSelection.CanGet<SelectableGroup>())
     {
-        SelectableGroup group = newSelection.Get<SelectableGroup>();
+        const SelectableGroup& group = newSelection.Get<SelectableGroup>();
         for (auto entity : group.ObjectsOfType<DAVA::Entity>())
         {
             data->selectedEntities.push_back(entity);
@@ -93,7 +94,7 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
 
         for (size_t i = 0; i < data->selectedEntities.size(); ++i)
         {
-            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(&data->propertyPanelObjects[i]));
+            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(&data->selectedEntities[i]));
         }
     }
 }

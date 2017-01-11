@@ -39,6 +39,9 @@ void PropertiesView::SetupUI()
 
     view = new QTreeView(this);
     layout->addWidget(view);
+
+    view->setModel(model.get());
+    view->setRootIndex(QModelIndex());
 }
 
 void PropertiesView::OnObjectsChanged(const Any& objects)

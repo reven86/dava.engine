@@ -405,6 +405,10 @@ public:
     DAVA_VIRTUAL_REFLECTION(Entity, BaseObject)
     {
         ReflectionRegistrator<Entity>::Begin()
+        .DestructorByPointer([](Entity* e)
+                             {
+                                 DAVA::SafeRelease(e);
+                             })
         .Field("ID", &Entity::GetID, &Entity::SetID)
         .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
         .Field("Tag", &Entity::tag)

@@ -64,6 +64,16 @@ bool ReflectedPropertyModel::setData(const QModelIndex& index, const QVariant& v
     return false;
 }
 
+QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const
+{
+    if (role != Qt::DisplayRole || orientation == Qt::Vertical)
+    {
+        return QVariant();
+    }
+
+    return section == 0 ? QStringLiteral("Property") : QStringLiteral("Value");
+}
+
 QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex& parent) const
 {
     ReflectedPropertyItem* item = MapItem(parent);
@@ -73,6 +83,10 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 {
     ReflectedPropertyItem* item = MapItem(index);
+    if (item == nullptr)
+    {
+        return QModelIndex();
+    }
     return MapItem(item->parent);
 }
 

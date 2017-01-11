@@ -91,4 +91,22 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
+
+template <>
+struct AnyCompare<Reflection>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        return v1.Get<Reflection>() == v2.Get<Reflection>();
+    }
+};
+
+template <>
+struct AnyCompare<Vector<Reflection>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        return v1.Get<Vector<Reflection>>() == v2.Get<Vector<Reflection>>();
+    }
+};
 } // namespace DAVA
