@@ -80,7 +80,7 @@ uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
     return dataSize;
 }
 
-PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
+PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat, uint32 u32ChannelType)
 {
     static const UnorderedMap<uint64, PixelFormat, std::hash<uint64>> mapping =
     {
@@ -111,10 +111,19 @@ PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
     auto found = mapping.find(pixelFormat);
     if (found != mapping.end())
     {
+        if (found->second == FORMAT_RGBA16161616 && u32ChannelType == ePVRTVarTypeFloat)
+        {
+            return FORMAT_RGBA16F;
+        }
+        if (found->second == FORMAT_RGBA32323232 && u32ChannelType == ePVRTVarTypeFloat)
+        {
+            return FORMAT_RGBA32F;
+        }
+
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %lu", pixelFormat).c_str());
+    DVASSERT(false, Format("Unsupported format: %lu", pixelFormat).c_str());
     return FORMAT_INVALID;
 }
 
@@ -142,7 +151,9 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
       { FORMAT_A8, PVRTGENPIXELID1('a', 8) },
       { FORMAT_A16, PVRTGENPIXELID1('a', 16) },
       { FORMAT_RGBA16161616, PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16) },
-      { FORMAT_RGBA32323232, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) }
+      { FORMAT_RGBA32323232, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) },
+      { FORMAT_RGBA16F, PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16) },
+      { FORMAT_RGBA32F, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) }
     };
 
     auto found = mapping.find(pixelFormat);
@@ -151,7 +162,7 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %u", pixelFormat).c_str());
+    DVASSERT(false, Format("Unsupported format: %u", pixelFormat).c_str());
     return ePVRTPF_NumCompressedPFs;
 }
 
@@ -174,16 +185,18 @@ uint32 GetPVRChannelType(PixelFormat pixelFormat)
     case FORMAT_RGBA8888:
     case FORMAT_RGB888:
     case FORMAT_A8:
+    case FORMAT_RGBA16161616:
+    case FORMAT_RGBA32323232:
         return ePVRTVarTypeUnsignedByteNorm;
 
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
+    case FORMAT_A16:
         return ePVRTVarTypeUnsignedShortNorm;
 
-    case FORMAT_A16:
-    case FORMAT_RGBA16161616:
-    case FORMAT_RGBA32323232:
+    case FORMAT_RGBA16F:
+    case FORMAT_RGBA32F:
         return ePVRTVarTypeFloat;
 
     default:
@@ -196,7 +209,7 @@ uint32 GetPVRChannelType(PixelFormat pixelFormat)
 
 PixelFormat GetPixelFormat(const PVRHeaderV3& textureHeader)
 {
-    return GetDAVAFormatFromPVR(textureHeader.u64PixelFormat);
+    return GetDAVAFormatFromPVR(textureHeader.u64PixelFormat, textureHeader.u32ChannelType);
 }
 
 const MetaDataBlock* GetCubemapMetadata(const PVRFile& pvrFile)
@@ -518,7 +531,8 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
                     }
 
                     //TODO: this code should be re-worked with texture refactoring
-                    if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+                    if (image->format == PixelFormat::FORMAT_RGBA4444
+                        || image->format == PixelFormat::FORMAT_RGBA5551)
                     {
                         Image* realImage = Image::Create(image->width, image->height, image->format);
                         realImage->mipmapLevel = image->mipmapLevel;

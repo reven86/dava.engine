@@ -65,7 +65,7 @@ static Handle dx9_PerfQuery_Create()
         perfQuery->isReady = 0;
         perfQuery->isValid = 0;
 
-        DVASSERT(perfQuery->query == nullptr)
+        DVASSERT(perfQuery->query == nullptr);
     }
 
     return handle;
@@ -153,26 +153,31 @@ void IssueTimestampQuery(Handle handle)
 void BeginMeasurment()
 {
     DVASSERT(currentPerfQueryFrameDX9 == nullptr);
-    currentPerfQueryFrameDX9 = NextPerfQueryFrame();
 
-    if (!currentPerfQueryFrameDX9->disjointQuery)
-        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &(currentPerfQueryFrameDX9->disjointQuery));
+    if (DeviceCaps().isPerfQuerySupported)
+    {
+        currentPerfQueryFrameDX9 = NextPerfQueryFrame();
 
-    if (!currentPerfQueryFrameDX9->freqQuery)
-        _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &(currentPerfQueryFrameDX9->freqQuery));
+        if (!currentPerfQueryFrameDX9->disjointQuery)
+            _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &(currentPerfQueryFrameDX9->disjointQuery));
 
-    currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_BEGIN);
-    currentPerfQueryFrameDX9->freqQuery->Issue(D3DISSUE_END);
+        if (!currentPerfQueryFrameDX9->freqQuery)
+            _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &(currentPerfQueryFrameDX9->freqQuery));
+
+        currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_BEGIN);
+        currentPerfQueryFrameDX9->freqQuery->Issue(D3DISSUE_END);
+    }
 }
 
 void EndMeasurment()
 {
-    DVASSERT(currentPerfQueryFrameDX9);
+    if (currentPerfQueryFrameDX9)
+    {
+        currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_END);
 
-    currentPerfQueryFrameDX9->disjointQuery->Issue(D3DISSUE_END);
-
-    pendingPerfQueryFrameDX9.push_back(currentPerfQueryFrameDX9);
-    currentPerfQueryFrameDX9 = nullptr;
+        pendingPerfQueryFrameDX9.push_back(currentPerfQueryFrameDX9);
+        currentPerfQueryFrameDX9 = nullptr;
+    }
 }
 
 void SetupDispatch(Dispatch* dispatch)

@@ -50,7 +50,8 @@ void RotationControllerSystem::AddEntity(Entity* entity)
 
 void RotationControllerSystem::RemoveEntity(Entity* entity)
 {
-    DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
+    const bool removeResult = FindAndRemoveExchangingWithLast(entities, entity);
+    DVASSERT(removeResult);
 }
 
 void RotationControllerSystem::Process(float32 timeElapsed)
@@ -80,11 +81,7 @@ void RotationControllerSystem::Input(UIEvent* event)
     }
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-#if defined(__DAVAENGINE_COREV2__)
     if (event->mouseButton == eMouseButtons::RIGHT || event->mouseButton == eMouseButtons::MIDDLE)
-#else
-    if (event->mouseButton == UIEvent::MouseButton::RIGHT || event->mouseButton == UIEvent::MouseButton::MIDDLE)
-#endif
 #endif
     {
         if (UIEvent::Phase::BEGAN == event->phase)
@@ -115,19 +112,11 @@ void RotationControllerSystem::Input(UIEvent* event)
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                     RotateDirection(camera);
 #else
-#if defined(__DAVAENGINE_COREV2__)
                     if (event->mouseButton == eMouseButtons::RIGHT)
-#else
-                    if (event->mouseButton == DAVA::UIEvent::MouseButton::RIGHT)
-#endif
                     {
                         RotateDirection(camera);
                     }
-#if defined(__DAVAENGINE_COREV2__)
                     else if (event->mouseButton == eMouseButtons::MIDDLE)
-#else
-                    else if (event->mouseButton == DAVA::UIEvent::MouseButton::MIDDLE)
-#endif
                     {
                         KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
                         if (keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT))

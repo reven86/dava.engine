@@ -1,7 +1,7 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 #
 function ( load_config CONFIG_FILE )
@@ -20,11 +20,6 @@ function ( load_config CONFIG_FILE )
     endforeach()
 
 endfunction ()
-
-# Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
-    cmake_policy(SET CMP0054 NEW)
-endif()
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
@@ -91,7 +86,7 @@ endif()
 
 set( DAVA_MODULES_DIR                   "${DAVA_ROOT_DIR}/Modules" )
 set( DAVA_SOURCES_DIR                   "${DAVA_ROOT_DIR}/Sources" )
-set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Tools" )
+set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Programs" )
 set( DAVA_ENGINE_DIR                    "${DAVA_SOURCES_DIR}/Internal" )
 set( DAVA_EXTERNAL_DIR                  "${DAVA_SOURCES_DIR}/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
@@ -118,11 +113,6 @@ if ( WINDOWS_UAP )
     #libs paths
     set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
     
-    #root deployment location for resources
-    #set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
-    #add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}"
-    #                  -DDAVA_WIN_UAP_RESOURCES_PREFIX="_neutral_split.dxfeaturelevel-dx11" )
-
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
 
@@ -187,6 +177,13 @@ if( NOT DEPLOY_DIR )
     set ( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app )
 
 endif()
+
+if( MACOS AND NOT MAC_DISABLE_BUNDLE)
+    set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/MacOS )
+else()
+    set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR} )
+endif()
+
 
 #DavaConfig
 if( CUSTOM_DAVA_CONFIG_PATH_MAC AND MACOS )

@@ -3,12 +3,14 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackFormatSpec.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/StringFormat.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
+#include "Logger/Logger.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
@@ -217,8 +219,8 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
 {
     DateTime timeNow = DateTime::Now();
     AssetCache::CachedItemValue::Description cacheItemDescription;
-    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
-    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    cacheItemDescription.machineName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
+    cacheItemDescription.creationDate = UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
     cacheItemDescription.comment = Format("Resource archive %s", pathToArchive.GetAbsolutePathname().c_str());
 
     bool archiveIsAdded = AddFileToCache(assetCacheClient, cacheItemDescription, keyForArchive, pathToArchive);
@@ -342,7 +344,7 @@ const Compressor* GetCompressor(Compressor::Type compressorType)
         return zipCompressor.get();
     default:
     {
-        DVASSERT_MSG(false, Format("Unexpected compressor type: %u", compressorType).c_str());
+        DVASSERT(false, Format("Unexpected compressor type: %u", compressorType).c_str());
         return nullptr;
     }
     }
@@ -359,7 +361,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     if (compressionType != Compressor::Type::None)
     {
         compressor = GetCompressor(compressionType);
-        DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
+        DVASSERT(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
     }
 
     uint64 dataOffset = 0;
@@ -427,10 +429,10 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
                           packFile.filesTable.data.files.push_back(fileEntry);
 
-                          static String deviceName = WStringToString(DeviceInfo::GetName());
+                          static String deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
                           DateTime dateTime = DateTime::Now();
-                          String date = WStringToString(dateTime.GetLocalizedDate());
-                          String time = WStringToString(dateTime.GetLocalizedTime());
+                          String date = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedDate());
+                          String time = UTF8Utils::EncodeToUTF8(dateTime.GetLocalizedTime());
                           Logger::Debug("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s, crc32: 0x%X",
                                         deviceName.c_str(), date.c_str(), time.c_str(),
                                         collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,

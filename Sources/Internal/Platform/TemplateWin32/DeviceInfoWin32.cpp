@@ -5,7 +5,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "Platform/TemplateWin32/DeviceInfoWin32.h"
 #include "Platform/DPIHelper.h"
@@ -47,7 +47,7 @@ String GetStringForKey(const WideString& path, const WideString& key)
         }
     }
 
-    String ret = WStringToString(val);
+    String ret = UTF8Utils::EncodeToUTF8(val);
     return ret;
 }
 }
@@ -100,7 +100,7 @@ String DeviceInfoPrivate::GetLocale()
     String locale;
     if (0 != size)
     {
-        locale = WStringToString(localeBuffer);
+        locale = UTF8Utils::EncodeToUTF8(localeBuffer);
     }
     return locale;
 }
@@ -117,7 +117,7 @@ String DeviceInfoPrivate::GetRegion()
     WCHAR* buffer = new WCHAR[sizeOfBuffer];
     int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);
     DVASSERT(0 != result);
-    String country = WStringToString(buffer);
+    String country = UTF8Utils::EncodeToUTF8(buffer);
     delete[] buffer;
 
     return country;
@@ -130,7 +130,7 @@ String DeviceInfoPrivate::GetTimeZone()
     DWORD ret = GetDynamicTimeZoneInformation(&timeZoneInformation);
 
     String generalName = TimeZoneHelper::GetGeneralNameByStdName(timeZoneInformation.TimeZoneKeyName);
-    DVASSERT_MSG(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
+    DVASSERT(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
 
     return generalName;
 }
@@ -254,7 +254,7 @@ String DeviceInfoPrivate::GetUDID()
         if (idOk)
         {
             WideString wstr = WideString((wchar_t*)buf);
-            res = WStringToString(wstr);
+            res = UTF8Utils::EncodeToUTF8(wstr);
         }
         else
         {

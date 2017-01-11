@@ -8,11 +8,12 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
+#include "TArc/Utils/Private/CrashDumpHandler.h"
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/NativeService.h"
 #include "Engine/EngineContext.h"
 
 #include "Functional/Function.h"
@@ -44,6 +45,7 @@ public:
         , core(core_)
         , globalContext(new DataContext())
     {
+        InitCrashDumpHandler();
     }
 
     ~Impl()
@@ -113,6 +115,11 @@ public:
         }
     }
 
+    uint32 GetContextCount() const override
+    {
+        return static_cast<uint32>(contexts.size());
+    }
+
     DataContext* GetGlobalContext() override
     {
         return globalContext.get();
@@ -154,31 +161,52 @@ public:
         return wrapper;
     }
 
-    PropertiesItem CreatePropertiesNode(const String& nodeName)
+    PropertiesItem CreatePropertiesNode(const String& nodeName) override
     {
         DVASSERT(propertiesHolder != nullptr);
         return propertiesHolder->CreateSubHolder(nodeName);
     }
 
-    EngineContext* GetEngineContext() override
+    const EngineContext* GetEngineContext() override
     {
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         DVASSERT(engineContext);
         return engineContext;
     }
 
+    virtual UI* GetUI()
+    {
+        return nullptr;
+    }
+
 protected:
+    virtual void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne)
+    {
+    }
+    virtual void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    {
+    }
+
     void ActivateContextImpl(DataContext* context)
     {
+        BeforeContextSwitch(activeContext, context);
+        DataContext* oldContext = activeContext;
         activeContext = context;
         for (DataWrapper& wrapper : wrappers)
         {
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
+        AfterContextSwitch(activeContext, oldContext);
+        SyncWrappers();
     }
 
     void SyncWrappers()
     {
+        if (recursiveSyncGuard == true)
+        {
+            return;
+        }
+        recursiveSyncGuard = true;
         size_t index = 0;
         while (index < wrappers.size())
         {
@@ -195,11 +223,13 @@ protected:
         {
             wrapper.Sync(true);
         }
+        recursiveSyncGuard = false;
     }
 
 protected:
     Engine& engine;
     Core* core;
+    bool recursiveSyncGuard = false;
 
     std::unique_ptr<DataContext> globalContext;
     Vector<std::unique_ptr<DataContext>> contexts;
@@ -278,7 +308,7 @@ public:
         rendererParams.scaleY = 1.0f;
         Renderer::Initialize(renderer, rendererParams);
 
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
         vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
         vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
@@ -316,7 +346,7 @@ public:
 
             if (modules.empty() == true)
             {
-                engine.Quit(0);
+                engine.QuitAsync(0);
             }
         }
         context->swapBuffers(surface);
@@ -350,7 +380,7 @@ private:
     void RegisterOperation(int operationID, AnyFn&& fn) override
     {
     }
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         DVASSERT(false);
         return DataContext::ContextID();
@@ -429,13 +459,12 @@ public:
 
     void OnLoopStarted() override
     {
+        ToolsAssertGuard::Instance()->Init();
         Impl::OnLoopStarted();
 
-        ToolsAssetGuard::Instance()->Init();
-
-        engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
+        PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
-        DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
+        DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->Init(this, uiManager.get());
@@ -465,7 +494,7 @@ public:
         {
             for (std::unique_ptr<ClientModule>& module : modules)
             {
-                module->OnContextDeleted(*context);
+                module->OnContextDeleted(context.get());
             }
         }
         modules.clear();
@@ -491,16 +520,23 @@ public:
         globalOperations.emplace(operationID, fn);
     }
 
-    DataContext::ContextID CreateContext() override
+    DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
         contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
-        DataContext& context = *contexts.back();
+        DataContext* context = contexts.back().get();
+
+        for (std::unique_ptr<DataNode>& data : initialData)
+        {
+            context->CreateData(std::move(data));
+        }
+        initialData.clear();
+
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->OnContextCreated(context);
         }
 
-        return context.GetID();
+        return context->GetID();
     }
 
     void DeleteContext(DataContext::ContextID contextID) override
@@ -515,14 +551,14 @@ public:
             throw std::runtime_error(Format("DeleteContext failed for contextID : %d", contextID));
         }
 
-        for (std::unique_ptr<ClientModule>& module : modules)
-        {
-            module->OnContextDeleted(**iter);
-        }
-
         if (activeContext != nullptr && activeContext->GetID() == contextID)
         {
             ActivateContextImpl(nullptr);
+        }
+
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextDeleted(iter->get());
         }
 
         contexts.erase(iter);
@@ -531,6 +567,11 @@ public:
     void ActivateContext(DataContext::ContextID contextID) override
     {
         if (activeContext != nullptr && activeContext->GetID() == contextID)
+        {
+            return;
+        }
+
+        if (activeContext == nullptr && contextID == DataContext::Empty)
         {
             return;
         }
@@ -556,7 +597,7 @@ public:
 
     RenderWidget* GetRenderWidget() const override
     {
-        return engine.GetNativeService()->GetRenderWidget();
+        return PlatformApi::Qt::GetRenderWidget();
     }
 
     void Invoke(int operationId) override
@@ -596,6 +637,11 @@ public:
     template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args)
     {
+        if (invokeListener != nullptr)
+        {
+            invokeListener->Invoke(operationId, args...);
+        }
+
         AnyFn fn = FindOperation(operationId);
         if (!fn.IsValid())
         {
@@ -618,22 +664,27 @@ public:
         DVASSERT(controllerModule != nullptr);
         bool result = true;
         QCloseEvent closeEvent;
+        String requestWindowText;
         if (controllerModule->ControlWindowClosing(key, &closeEvent))
         {
             result = closeEvent.isAccepted();
         }
-        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        else if (controllerModule->CanWindowBeClosedSilently(key, requestWindowText) == false)
         {
+            if (requestWindowText.empty())
+            {
+                requestWindowText = "Some files have been modified\nDo you want to save changes?";
+            }
             ModalMessageParams params;
-            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
-            params.message = "Some files have been modified\nDo you want to save changes?";
+            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::SaveAll | ModalMessageParams::NoToAll | ModalMessageParams::Cancel);
+            params.message = QString::fromStdString(requestWindowText);
             params.title = "Save Changes?";
             ModalMessageParams::Button resultButton = uiManager->ShowModalMessage(key, params);
-            if (resultButton == ModalMessageParams::Yes)
+            if (resultButton == ModalMessageParams::SaveAll)
             {
                 controllerModule->SaveOnWindowClose(key);
             }
-            else if (resultButton == ModalMessageParams::No)
+            else if (resultButton == ModalMessageParams::NoToAll)
             {
                 controllerModule->RestoreOnWindowClose(key);
             }
@@ -659,7 +710,33 @@ public:
         return controllerModule != nullptr;
     }
 
+    UI* GetUI() override
+    {
+        return uiManager.get();
+    }
+
+    void SetInvokeListener(OperationInvoker* invoker)
+    {
+        invokeListener = invoker;
+    }
+
 private:
+    void BeforeContextSwitch(DataContext* currentContext, DataContext* newOne) override
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextWillBeChanged(currentContext, newOne);
+        }
+    }
+
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne) override
+    {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            module->OnContextWasChanged(currentContext, oldOne);
+        }
+    }
+
     AnyFn FindOperation(int operationId)
     {
         AnyFn operation;
@@ -679,6 +756,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
+    OperationInvoker* invokeListener = nullptr;
 };
 
 Core::Core(Engine& engine)
@@ -708,7 +786,7 @@ Core::Core(Engine& engine, bool connectSignals)
 
 Core::~Core() = default;
 
-EngineContext* Core::GetEngineContext()
+const EngineContext* Core::GetEngineContext()
 {
     return impl->GetEngineContext();
 }
@@ -716,6 +794,11 @@ EngineContext* Core::GetEngineContext()
 CoreInterface* Core::GetCoreInterface()
 {
     return impl.get();
+}
+
+UI* Core::GetUI()
+{
+    return impl->GetUI();
 }
 
 bool Core::IsConsoleMode() const
@@ -768,28 +851,11 @@ bool Core::HasControllerModule() const
     return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
-OperationInvoker* Core::GetMockInvoker()
-{
-    return nullptr;
-}
-
-DataContext* Core::GetActiveContext()
-{
-    DVASSERT(impl);
-    return impl->GetActiveContext();
-}
-
-DataContext* Core::GetGlobalContext()
-{
-    DVASSERT(impl);
-    return impl->GetGlobalContext();
-}
-
-DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+void Core::SetInvokeListener(OperationInvoker* proxyInvoker)
 {
     GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
     DVASSERT(guiImpl != nullptr);
-    return guiImpl->CreateWrapper(type);
+    guiImpl->SetInvokeListener(proxyInvoker);
 }
 
 } // namespace TArc

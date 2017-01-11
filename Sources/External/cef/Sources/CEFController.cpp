@@ -5,11 +5,11 @@
 #include "Base/TypeHolders.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Signal.h"
 #include "CEFController.h"
-
-#include "Engine/EngineModule.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -108,7 +108,7 @@ CEFControllerImpl::CEFControllerImpl()
     else
     {
         Logger::Error("%s: cannot initialize CEF", __FUNCTION__);
-        DVASSERT_MSG(false, "CEF cannot be initialized");
+        DVASSERT(false, "CEF cannot be initialized");
     }
 }
 

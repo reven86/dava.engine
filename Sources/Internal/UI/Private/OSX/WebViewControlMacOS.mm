@@ -3,8 +3,7 @@
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -19,6 +18,8 @@
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
+
+#import "Engine/Mac/PlatformApi.h"
 
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
@@ -214,7 +215,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddNSView(bridge->webView);
+    PlatformApi::Mac::AddNSView(window, bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -249,7 +250,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveNSView(bridge->webView);
+    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -337,8 +338,8 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    DAVA::Rect r = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
-    DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+    float32 dy = static_cast<float32>(UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
     [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)

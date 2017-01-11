@@ -7,6 +7,10 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/TextBox.h"
 #include "Utils/StringUtils.h"
+#include "Logger/Logger.h"
+
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include <numeric>
 
@@ -427,6 +431,8 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_RECALC_PARAMS);
+
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -731,7 +737,7 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        DVASSERT_MSG(textBox->GetLinesCount() > 0, "Empty lines information");
+        DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -1015,6 +1021,7 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
+        DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_PREPARE);
         PrepareInternal();
     }
 

@@ -4,9 +4,11 @@
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 namespace DAVA

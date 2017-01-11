@@ -295,12 +295,9 @@ void Core::CreateRenderer()
     rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
     rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
-
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
-    rendererParams.renderingNotPossibleFunc = []()
-    {
-        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
-    };
+    rendererParams.renderingErrorCallback = &Core::OnRenderingError;
+    rendererParams.renderingErrorCallbackContext = this;
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -888,6 +885,12 @@ void Core::ApplyWindowSize()
         virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
         virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
         virtSystem->ScreenSizeChanged();
+
+        if (virtSystem->GetReloadResourceOnResize())
+        {
+            Sprite::ValidateForSize();
+            TextBlock::ScreenResolutionChanged();
+        }
     }
 }
 
@@ -961,6 +964,11 @@ Analytics::Core& Core::GetAnalyticsCore() const
 {
     DVASSERT(analyticsCore);
     return *analyticsCore;
+}
+
+void Core::OnRenderingError(rhi::RenderingError error, void* context)
+{
+    GetApplicationCore()->OnRenderingIsNotPossible(error);
 }
 
 } // namespace DAVA

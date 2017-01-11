@@ -25,11 +25,13 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
+
 #include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -165,7 +167,7 @@ void Landscape::RestoreGeometry()
             break;
 
         default:
-            DVASSERT_MSG(0, "Invalid RestoreBufferData type");
+            DVASSERT(0, "Invalid RestoreBufferData type");
         }
     }
 }
@@ -827,8 +829,10 @@ void Landscape::DrawLandscapeNoInstancing()
     drawIndices = 0;
     flushQueueCounter = 0;
     activeRenderBatchArray.clear();
+    queuedQuadBuffer = -1;
 
-    ClearQueue();
+    DVASSERT(queueIndexCount == 0);
+
     AddPatchToRender(0, 0, 0);
     FlushQueue();
 }
@@ -939,36 +943,40 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
-    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
-    {
-        AllocateRenderBatch();
-    }
-
     DVASSERT(queuedQuadBuffer != -1);
 
-    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
-    DVASSERT(indexBuffer.allocatedindices == queueIndexCount);
+    uint16* indicesPtr = indices.data();
+    while (queueIndexCount != 0)
+    {
+        DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+        if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+        {
+            AllocateRenderBatch();
+        }
 
-    Memcpy(indexBuffer.data, indices.data(), queueIndexCount * sizeof(uint16));
-    RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
-    batch->indexBuffer = indexBuffer.buffer;
-    batch->indexCount = queueIndexCount;
-    batch->startIndex = indexBuffer.baseIndex;
-    batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
+        DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
+        DVASSERT(queueIndexCount >= indexBuffer.allocatedindices);
+        uint32 allocatedIndices = indexBuffer.allocatedindices - indexBuffer.allocatedindices % 3; //in buffer must be completed triangles
 
-    DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
+        Memcpy(indexBuffer.data, indicesPtr, allocatedIndices * sizeof(uint16));
+        RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;
+        batch->indexBuffer = indexBuffer.buffer;
+        batch->indexCount = allocatedIndices;
+        batch->startIndex = indexBuffer.baseIndex;
+        batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
 
-    activeRenderBatchArray.push_back(batch);
-    ClearQueue();
+        DAVA_PROFILER_GPU_RENDER_BATCH(batch, ProfilerGPUMarkerName::LANDSCAPE);
 
-    drawIndices += batch->indexCount;
-    ++flushQueueCounter;
-}
+        activeRenderBatchArray.push_back(batch);
 
-void Landscape::ClearQueue()
-{
-    queueIndexCount = 0;
+        queueIndexCount -= allocatedIndices;
+        indicesPtr += allocatedIndices;
+
+        drawIndices += allocatedIndices;
+        ++flushQueueCounter;
+    }
+
+    DVASSERT(queueIndexCount == 0);
     queuedQuadBuffer = -1;
 }
 
@@ -1510,7 +1518,7 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
 
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
+        DVASSERT(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
         newObject = new Landscape();
     }
 

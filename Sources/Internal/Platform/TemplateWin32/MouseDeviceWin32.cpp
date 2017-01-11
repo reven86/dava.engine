@@ -1,11 +1,10 @@
 #include "Base/Platform.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-
-#include "Engine/EngineModule.h"
 
 #if !defined(__DAVAENGINE_COREV2__)
 
@@ -79,7 +78,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
         Logger::Error("Unsupported cursor capture mode");
         break;
     default:
-        DVASSERT_MSG(false, "Incorrect cursor capture mode");
+        DVASSERT(false, "Incorrect cursor capture mode");
         Logger::Error("Incorrect cursor capture mode");
         break;
     }

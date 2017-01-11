@@ -1,6 +1,7 @@
 #include "YamlEmitter.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 #include "yaml/yaml.h"
 
 namespace DAVA
@@ -102,7 +103,8 @@ bool YamlEmitter::Emit(const YamlNode* node, File* outFile)
 {
     yaml_emitter_t emitter;
 
-    DVVERIFY(yaml_emitter_initialize(&emitter));
+    const int initializeResult = yaml_emitter_initialize(&emitter);
+    DVASSERT(initializeResult);
     yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
     yaml_emitter_set_break(&emitter, YAML_ANY_BREAK);
     yaml_emitter_set_unicode(&emitter, UNESCAPED_UNICODE_CHARACTERS_ALLOWED);
@@ -155,7 +157,8 @@ bool YamlEmitter::Emit(const YamlNode* node, File* outFile)
         break;
     }
 
-    DVVERIFY(yaml_emitter_flush(&emitter));
+    const int flushResult = yaml_emitter_flush(&emitter);
+    DVASSERT(flushResult);
     yaml_emitter_delete(&emitter);
 
     return true;

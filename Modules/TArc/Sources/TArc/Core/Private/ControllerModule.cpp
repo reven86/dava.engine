@@ -11,10 +11,10 @@ bool ControllerModule::ControlWindowClosing(const WindowKey& key, QCloseEvent* e
     return false;
 }
 
-ContextManager& ControllerModule::GetContextManager()
+ContextManager* ControllerModule::GetContextManager()
 {
     DVASSERT(coreInterface != nullptr);
-    return *coreInterface;
+    return coreInterface;
 }
 } // namespace TArc
 } // namespace DAVA

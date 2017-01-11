@@ -11,6 +11,7 @@
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
+#include "UI/Scroll/UIScrollBarLinkSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -24,7 +25,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "Debug/ProfilerOverlay.h"
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
 
 namespace DAVA
@@ -40,6 +41,7 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UIScrollBarLinkSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
@@ -596,7 +598,7 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
         
 #if defined(__DAVAENGINE_COREV2__)
-        float32 dpi = Engine::Instance()->PrimaryWindow()->GetDPI();
+        float32 dpi = GetPrimaryWindow()->GetDPI();
         float32 doubleClickPhysSquare = doubleClickInchSquare * (dpi * dpi);
 #endif
 

@@ -17,6 +17,7 @@
 #else
 #endif
 
+#include "Logger/Logger.h"
 #include "Core/Core.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
@@ -81,6 +82,8 @@ bool ApiIsSupported(Api api)
         supported = true;
         #endif
         break;
+    default:
+        DVASSERT(!"kaboom!"); // to shut up goddamn warning
     }
 
     return supported;
@@ -118,7 +121,7 @@ void InitializeImplementation(Api api, const InitParam& param)
 
     default:
     {
-        DVASSERT_MSG(false, "Unsupported rendering api");
+        DVASSERT(false, "Unsupported rendering api");
     }
     }
 }

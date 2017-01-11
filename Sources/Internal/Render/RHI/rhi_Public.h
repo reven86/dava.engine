@@ -43,7 +43,9 @@ struct InitParam
 
     void (*acquireContextFunc)() = nullptr;
     void (*releaseContextFunc)() = nullptr;
-    void (*renderingNotPossibleFunc)() = nullptr;
+
+    void* renderingErrorCallbackContext = nullptr;
+    void (*renderingErrorCallback)(RenderingError, void*) = nullptr;
 
     InitParam()
         : width(0)
@@ -378,8 +380,8 @@ struct Packet
         , cullMode(CULL_CCW)
         , vertexConstCount(0)
         , fragmentConstCount(0)
-        , primitiveCount(0)
         , primitiveType(PRIMITIVE_TRIANGLELIST)
+        , primitiveCount(0)
         , instanceCount(0)
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)

@@ -2,8 +2,10 @@
 
 #if defined(__DAVAENGINE_STEAM__)
 
+#include "Engine/Engine.h"
 #include "Logger/Logger.h"
 #include "Core/Core.h"
+#include "FileSystem/KeyedArchive.h"
 #include "FileSystem/LocalizationSystem.h"
 
 #include "steam/steam_api.h"
@@ -28,7 +30,11 @@ Signal<bool> Steam::GameOverlayActivated;
 
 void Steam::Init()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    uint32 useAppId = Engine::Instance()->GetOptions()->GetUInt32(appIdPropertyKey, k_uAppIdInvalid);
+#else
     uint32 useAppId = Core::Instance()->GetOptions()->GetUInt32(appIdPropertyKey, k_uAppIdInvalid);
+#endif
 
     if (SteamAPI_RestartAppIfNecessary(useAppId))
     {
@@ -62,7 +68,12 @@ void Steam::Init()
 
     isInited = true;
     steamCallbacks = new SteamCallbacks();
+#if defined(__DAVAENGINE_COREV2__)
+    GetEngineContext()->localizationSystem->OverrideDeviceLocale(GetLanguage());
+    Engine::Instance()->update.Connect([](float) { SteamAPI_RunCallbacks(); });
+#else
     LocalizationSystem::Instance()->OverrideDeviceLocale(GetLanguage());
+#endif
 }
 
 void Steam::Deinit()
@@ -79,10 +90,12 @@ bool Steam::IsInited()
     return isInited;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void Steam::Update()
 {
     SteamAPI_RunCallbacks();
 }
+#endif
 
 String Steam::GetLanguage()
 {

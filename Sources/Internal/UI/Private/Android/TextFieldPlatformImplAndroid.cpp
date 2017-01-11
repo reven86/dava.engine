@@ -5,7 +5,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -118,12 +117,12 @@ void TextFieldPlatformImpl::Initialize()
     catch (const JNI::Exception& e)
     {
         Logger::Error("[TextFieldControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
     std::weak_ptr<TextFieldPlatformImpl>* selfWeakPtr = new std::weak_ptr<TextFieldPlatformImpl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaTextField", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaTextField", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -375,7 +374,7 @@ void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 
 void TextFieldPlatformImpl::nativeOnFocusChange(JNIEnv* env, jboolean hasFocus)
 {
-    Engine::Instance()->RunAsyncOnMainThread([this, hasFocus]() {
+    RunOnMainThreadAsync([this, hasFocus]() {
         OnFocusChanged(hasFocus == JNI_TRUE);
     });
 }
@@ -386,14 +385,14 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(y),
                       static_cast<float32>(w),
                       static_cast<float32>(h));
-    Engine::Instance()->RunAsyncOnMainThread([this, keyboardRect]() {
+    RunOnMainThreadAsync([this, keyboardRect]() {
         OnKeyboardShown(keyboardRect);
     });
 }
 
 void TextFieldPlatformImpl::nativeOnEnterPressed(JNIEnv* env)
 {
-    Engine::Instance()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnEnterPressed();
     });
 }
@@ -402,7 +401,7 @@ jboolean TextFieldPlatformImpl::nativeOnKeyPressed(JNIEnv* env, jint replacement
 {
     bool accept = true;
     WideString s = JNI::JavaStringToWideString(replaceWith, env);
-    Engine::Instance()->RunAndWaitOnMainThread([this, replacementStart, replacementLength, s, &accept]() mutable {
+    RunOnMainThread([this, replacementStart, replacementLength, s, &accept]() mutable {
         accept = OnKeyPressed(replacementStart, replacementLength, s);
     });
     return accept ? JNI_TRUE : JNI_FALSE;
@@ -411,7 +410,7 @@ jboolean TextFieldPlatformImpl::nativeOnKeyPressed(JNIEnv* env, jint replacement
 void TextFieldPlatformImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange)
 {
     WideString s = JNI::JavaStringToWideString(newText, env);
-    Engine::Instance()->RunAsyncOnMainThread([this, s, programmaticTextChange]() {
+    RunOnMainThreadAsync([this, s, programmaticTextChange]() {
         OnTextChanged(s, programmaticTextChange == JNI_TRUE);
     });
 }
@@ -431,7 +430,7 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
         env->ReleaseIntArrayElements(pixels, arrayElements, JNI_ABORT);
     }
 
-    Engine::Instance()->RunAsyncOnMainThread([this, sprite]() {
+    RunOnMainThreadAsync([this, sprite]() {
         if (uiTextField != nullptr)
         {
             uiTextField->SetSprite(sprite.Get(), 0);

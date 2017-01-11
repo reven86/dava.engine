@@ -41,7 +41,7 @@ public:
     RenderWidgetImpl(RenderWidget::IWindowDelegate* widgetDelegate_, uint32 width, uint32 height);
 
     void ActivateRendering();
-    bool IsInitialized();
+    bool IsInitialized() const;
 
     void SetClientDelegate(IClientDelegate* delegate);
     Signal<uint32, uint32> resized;
@@ -71,7 +71,6 @@ protected:
 
 private:
     void OnCreated();
-    void OnInitialize();
     void OnFrame();
     void OnActiveFocusItemChanged();
     void OnSceneGraphInvalidated();
@@ -103,26 +102,27 @@ RenderWidget::RenderWidgetImpl::RenderWidgetImpl(RenderWidget::IWindowDelegate* 
     window->installEventFilter(this);
     window->setClearBeforeRendering(true);
     window->setColor(QColor(76, 76, 76, 255));
-    QObject::connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated, Qt::DirectConnection);
-    QObject::connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidgetImpl::OnSceneGraphInvalidated, Qt::DirectConnection);
-    QObject::connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetImpl::OnActiveFocusItemChanged, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidgetImpl::OnSceneGraphInvalidated, Qt::DirectConnection);
+    connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetImpl::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
 void RenderWidget::RenderWidgetImpl::OnCreated()
 {
+    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated);
+    setProperty(initializedPropertyName, true);
+
     widgetDelegate->OnCreated();
 
     screenParams = std::make_unique<RenderWidgetDetails::QtScreenParams>();
     screenParams->screenScale = devicePixelRatio();
     screenParams->logicalDPI = logicalDpiX();
 
-    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated);
-}
+    QSize size = geometry().size();
+    QQuickWindow* qWindow = quickWindow();
+    bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
 
-void RenderWidget::RenderWidgetImpl::OnInitialize()
-{
-    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnInitialize);
-    setProperty(initializedPropertyName, true);
+    widgetDelegate->OnResized(size.width(), size.height(), isFullScreen);
+    resized.Emit(size.width(), size.height());
 }
 
 void RenderWidget::RenderWidgetImpl::OnFrame()
@@ -160,6 +160,8 @@ void RenderWidget::RenderWidgetImpl::OnFrame()
         DAVA_THROW(DAVA::Exception, "GL context is not valid!");
     }
 
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     widgetDelegate->OnFrame();
     quickWindow()->resetOpenGLState();
 }
@@ -167,12 +169,12 @@ void RenderWidget::RenderWidgetImpl::OnFrame()
 void RenderWidget::RenderWidgetImpl::ActivateRendering()
 {
     QQuickWindow* w = quickWindow();
-    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnInitialize, Qt::DirectConnection);
+    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated, Qt::DirectConnection);
     connect(w, &QQuickWindow::beforeRendering, this, &RenderWidgetImpl::OnFrame, Qt::DirectConnection);
     w->setClearBeforeRendering(false);
 }
 
-bool RenderWidget::RenderWidgetImpl::IsInitialized()
+bool RenderWidget::RenderWidgetImpl::IsInitialized() const
 {
     return property(initializedPropertyName).isValid();
 }
@@ -433,7 +435,7 @@ void RenderWidget::ActivateRendering()
     impl->ActivateRendering();
 }
 
-bool RenderWidget::IsInitialized()
+bool RenderWidget::IsInitialized() const
 {
     return impl->IsInitialized();
 }

@@ -17,6 +17,7 @@ namespace DAVA
 {
 class RenderWidget final : public QWidget
 {
+    Q_OBJECT
 public:
     class IWindowDelegate
     {
@@ -91,7 +92,7 @@ private:
     ~RenderWidget();
 
     void ActivateRendering();
-    bool IsInitialized();
+    bool IsInitialized() const;
     QQuickWindow* GetQQuickWindow();
 
 private:

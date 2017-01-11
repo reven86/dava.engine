@@ -1,5 +1,6 @@
 #include "UI/UIControl.h"
 
+#include "Engine/Engine.h"
 #include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
@@ -22,6 +23,8 @@
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
+
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -909,7 +912,7 @@ void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
             return;
         }
     }
-    DVASSERT_MSG(0, "Control _belowThisChild not found");
+    DVASSERT(0, "Control _belowThisChild not found");
 }
 
 void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
@@ -940,7 +943,7 @@ void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
         }
     }
 
-    DVASSERT_MSG(0, "Control _aboveThisChild not found");
+    DVASSERT(0, "Control _aboveThisChild not found");
 }
 
 UIControl* UIControl::Clone()
@@ -975,6 +978,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
+    styledProperties = srcControl->styledProperties;
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
@@ -1190,7 +1194,14 @@ void UIControl::DrawPivotPoint(const Rect& drawRect)
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {
     Vector2 point = _point;
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+    if (GetPrimaryWindow()->GetCursorCapture() == eCursorCapture::PINNING)
+    {
+        Size2f sz = GetPrimaryWindow()->GetVirtualSize();
+        point.x = sz.dx / 2.f;
+        point.y = sz.dy / 2.f;
+    }
+#else
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
@@ -1289,12 +1300,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
                 if (!multiInput)
                 {
                     currentInputID = currentInput->touchId;
                 }
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 Input(currentInput);
                 return true;
@@ -1559,7 +1570,7 @@ void UIControl::SystemVisible()
 {
     if (viewState == eViewState::VISIBLE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1593,7 +1604,7 @@ void UIControl::SystemInvisible()
 {
     if (viewState != eViewState::VISIBLE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1634,7 +1645,7 @@ void UIControl::SystemActive()
 {
     if (viewState >= eViewState::ACTIVE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1666,7 +1677,7 @@ void UIControl::SystemInactive()
 {
     if (viewState != eViewState::ACTIVE)
     {
-        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        DVASSERT(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
         return;
     }
 
@@ -1824,7 +1835,7 @@ void UIControl::ChangeViewState(eViewState newViewState)
     {
         String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
         Logger::Error(errorMsg.c_str());
-        DVASSERT_MSG(false, errorMsg.c_str());
+        DVASSERT(false, errorMsg.c_str());
     }
 
     viewState = newViewState;
@@ -2159,40 +2170,6 @@ String UIControl::GetBackgroundComponentName(int32 index) const
 {
     DVASSERT(index == 0);
     return "Background";
-}
-
-int32 UIControl::GetInternalControlsCount() const
-{
-    return 0;
-}
-
-UIControl* UIControl::GetInternalControl(int32 index) const
-{
-    DVASSERT(false);
-    return NULL;
-}
-
-UIControl* UIControl::CreateInternalControl(int32 index) const
-{
-    DVASSERT(false);
-    return NULL;
-}
-
-void UIControl::SetInternalControl(int32 index, UIControl* control)
-{
-    DVASSERT(false);
-}
-
-String UIControl::GetInternalControlName(int32 index) const
-{
-    DVASSERT(false);
-    return "";
-}
-
-String UIControl::GetInternalControlDescriptions() const
-{
-    DVASSERT(false);
-    return "";
 }
 
 void UIControl::UpdateLayout()

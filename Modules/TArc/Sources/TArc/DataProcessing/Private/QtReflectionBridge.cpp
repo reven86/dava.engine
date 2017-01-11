@@ -3,7 +3,7 @@
 #include "Debug/DVAssert.h"
 #include "Base/TemplateHelpers.h"
 
-#include "Reflection/ReflectedType.h"
+#include "Reflection/Reflection.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
@@ -152,20 +152,20 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void** argv)
 
 void QtReflected::Init()
 {
-    wrapper.AddListener(this);
+    wrapper.SetListener(this);
     if (wrapper.HasData())
     {
         CreateMetaObject();
     }
 }
 
-void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Set<String>& fields)
+void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Vector<Any>& fields)
 {
     if (qtMetaObject == nullptr)
     {
         if (reflectionBridge == nullptr)
         {
-            wrapper.RemoveListener(this);
+            wrapper.SetListener(nullptr);
             return;
         }
 
@@ -185,9 +185,10 @@ void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const Set<String
     }
     else
     {
-        for (const String& fieldName : fields)
+        for (const Any& fieldName : fields)
         {
-            FirePropertySignal(fieldName);
+            DVASSERT(fieldName.CanCast<String>());
+            FirePropertySignal(fieldName.Cast<String>());
         }
     }
 }
@@ -198,7 +199,7 @@ void QtReflected::CreateMetaObject()
     DVASSERT(wrapper.HasData());
     Reflection reflectionData = wrapper.GetData();
 
-    const ReflectedType* type = reflectionData.GetReflectedType();
+    const ReflectedType* type = reflectionData.GetValueObject().GetReflectedType();
 
     SCOPE_EXIT
     {
@@ -344,7 +345,7 @@ void QtReflected::CallMethod(int id, void** argv)
         //                                  davaArguments[8]);
         break;
     default:
-        DVASSERT_MSG(false, "Qt Reflection bridge support maximum 6 arguments in methods");
+        DVASSERT(false, "Qt Reflection bridge support maximum 6 arguments in methods");
         break;
     }
 
@@ -378,7 +379,7 @@ QVariant QtReflectionBridge::Convert(const Any& value) const
     auto iter = anyToQVariant.find(value.GetType());
     if (iter == anyToQVariant.end())
     {
-        DVASSERT_MSG(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
+        DVASSERT(false, Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
         return QVariant();
     }
 
@@ -390,7 +391,7 @@ Any QtReflectionBridge::Convert(const QVariant& value) const
     auto iter = qvariantToAny.find(value.userType());
     if (iter == qvariantToAny.end())
     {
-        DVASSERT_MSG(false, Format("Converted (QVariant->Any) has not been registered for userType : %d", value.userType()).c_str());
+        DVASSERT(false, Format("Converted (QVariant->Any) has not been registered for userType : %d", value.userType()).c_str());
         return Any();
     }
 

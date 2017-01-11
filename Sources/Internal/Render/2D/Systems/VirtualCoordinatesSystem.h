@@ -74,18 +74,21 @@ public:
     inline Rect ConvertInputToVirtual(const Rect& rect) const;
     inline Rect ConvertVirtualToInput(const Rect& rect) const;
 
-    inline const String& GetResourceFolder(int32 resourceIndex) const;
-    inline int32 GetDesirableResourceIndex() const;
-    inline void SetDesirableResourceIndex(int32 resourceIndex);
-    inline int32 GetBaseResourceIndex() const;
+    DAVA_DEPRECATED(inline const String& GetResourceFolder(int32 resourceIndex) const);
+    DAVA_DEPRECATED(inline int32 GetDesirableResourceIndex() const);
+    DAVA_DEPRECATED(inline void SetDesirableResourceIndex(int32 resourceIndex));
+    DAVA_DEPRECATED(inline int32 GetBaseResourceIndex() const);
 
     inline bool WasScreenSizeChanged() const;
     void ScreenSizeChanged();
-    void EnableReloadResourceOnResize(bool enable);
+
+    DAVA_DEPRECATED(void EnableReloadResourceOnResize(bool enable));
+    DAVA_DEPRECATED(bool GetReloadResourceOnResize() const);
 
     void SetProportionsIsFixed(bool needFixed);
-    void RegisterAvailableResourceSize(int32 width, int32 height, const String& resourcesFolderName);
-    void UnregisterAllAvailableResourceSizes();
+
+    DAVA_DEPRECATED(void RegisterAvailableResourceSize(int32 width, int32 height, const String& resourcesFolderName));
+    DAVA_DEPRECATED(void UnregisterAllAvailableResourceSizes());
 
     inline const Vector2& GetPhysicalDrawOffset() const;
 
