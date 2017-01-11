@@ -254,7 +254,7 @@ public:
      \brief Creates the absoulutely identic copy of the background.
      \returns UIControlBackground copy
      */
-    virtual UIControlBackground* Clone() const;
+    UIControlBackground* Clone() const override;
 
     /**
      \brief Returns final draw color. This color is affected by the parrent color.
