@@ -58,6 +58,7 @@ public:
     inline float32 DotProduct(const Vector2& _v2) const;
     inline float32 CrossProduct(const Vector2& b) const;
     inline float32 Angle() const; // Need to normalize vector before use function
+    static Vector2 Rotate(const Vector2& in, float32 angleRad);
 
     inline bool IsZero() const
     {
@@ -108,7 +109,7 @@ inline float32 DotProduct(const Vector2& _v1, const Vector2& _v2);
 inline Vector2 Normalize(const Vector2& _v);
 inline float32 CrossProduct(const Vector2& a, const Vector2& b);
 inline Vector2 Reflect(const Vector2& v, const Vector2& n);
-Vector2 Rotate(const Vector2& in, float32 angleRad);
+
 /**	
 	\ingroup math
 	\brief Vector with 3 coordinates

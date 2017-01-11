@@ -60,15 +60,16 @@ public slots:
     void SetActualScale();
 
 private slots:
-    void OnScaleChanged(float scale);
+    void OnScaleChanged(DAVA::float32 scale);
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
 
-    void UpdateScrollArea();
-    void OnPositionChanged(const QPoint& position);
+    //function argument used for signals compatibility
+    void UpdateScrollArea(const DAVA::Vector2 &size = DAVA::Vector2(0.0f, 0.0f));
+    void OnPositionChanged(const DAVA::Vector2& position);
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
 private:

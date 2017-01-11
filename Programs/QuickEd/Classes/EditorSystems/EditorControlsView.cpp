@@ -382,7 +382,6 @@ EditorControlsView::EditorControlsView(UIControl *canvasParent_, EditorSystemsMa
 
     systemsManager->editingRootControlsChanged.Connect(this, &EditorControlsView::OnRootContolsChanged);
     systemsManager->packageChanged.Connect(this, &EditorControlsView::OnPackageChanged);
-    systemsManager->stateChanged.Connect(this, &EditorControlsView::OnStateChanged);
 }
 
 EditorControlsView::~EditorControlsView()
@@ -403,21 +402,16 @@ void EditorControlsView::OnPackageChanged(PackageNode* package_)
     }
 }
 
-void EditorControlsView::OnStateChanged(EditorSystemsManager::eState state)
+void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*currentState*/, EditorSystemsManager::eDragState previousState)
 {
-    inTransformState = state == EditorSystemsManager::Transform;
-    if (!inTransformState)
+    if (previousState == EditorSystemsManager::Transform)
     {
-        if (needRecalculate)
+        for (auto& iter : gridControls)
         {
-            for (auto& iter : gridControls)
-            {
-                iter->UpdateCounterpoise();
-                iter->AdjustToNestedControl();
-            }
+            iter->UpdateCounterpoise();
+            iter->AdjustToNestedControl();
         }
     }
-    needRecalculate = false;
 }
 
 void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -455,11 +449,7 @@ void EditorControlsView::ControlPropertyWasChanged(ControlNode* node, AbstractPr
         return;
     }
 
-    if (inTransformState)
-    {
-        needRecalculate = true;
-    }
-    else
+    if (systemsManager->GetDragState() != EditorSystemsManager::Transform)
     {
         if (BackgroundController::IsPropertyAffectBackground(property))
         {
@@ -540,7 +530,7 @@ void EditorControlsView::Layout()
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
-    systemsManager->canvasContentChanged.Emit();
+    systemsManager->contentSizeChanged.Emit(size);
 }
 
 void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)

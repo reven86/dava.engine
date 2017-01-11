@@ -81,10 +81,10 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    SetActualScale();
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
+    OnScaleChanged(1.0f);
     UpdateScrollArea();
 }
 
@@ -111,7 +111,6 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget = renderWidget_;
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
-    connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
     CreateActions();
 }
 
@@ -276,7 +275,10 @@ void PreviewWidget::OnIncrementScale()
         nextIndex = std::distance(percentages.begin(), iter);
     }
     DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    editorCanvas->SetScale(percentages.at(nextIndex));
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(percentages.at(nextIndex));
+    }
 }
 
 void PreviewWidget::OnDecrementScale()
@@ -299,27 +301,46 @@ void PreviewWidget::OnDecrementScale()
         nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
     }
     DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    editorCanvas->SetScale(percentages.at(nextIndex));
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(percentages.at(nextIndex));
+    }
 }
 
 
-void PreviewWidget::UpdateScrollArea()
+void PreviewWidget::UpdateScrollArea(const DAVA::Vector2 &/*size*/)
 {
-    Vector2 areaSize = editorCanvas->GetViewSize();
+    if (editorCanvas == nullptr)
+    {
+        verticalScrollBar->setPageStep(0);
+        horizontalScrollBar->setPageStep(0);
+        
+        verticalScrollBar->setRange(0, 0);
+        horizontalScrollBar->setRange(0, 0);
+    }
+    else
+    {
+        Vector2 areaSize = editorCanvas->GetViewSize();
 
-    verticalScrollBar->setPageStep(areaSize.dy);
-    horizontalScrollBar->setPageStep(areaSize.dx);
+        verticalScrollBar->setPageStep(areaSize.dy);
+        horizontalScrollBar->setPageStep(areaSize.dx);
 
-    Vector2 minPos = editorCanvas->GetMinimumPos();
-    Vector2 maxPos = editorCanvas->GetMaximumPos();
-    horizontalScrollBar->setRange(minPos.x, maxPos.x);
-    verticalScrollBar->setRange(minPos.y, maxPos.y);
+        Vector2 minPos = editorCanvas->GetMinimumPos();
+        Vector2 maxPos = editorCanvas->GetMaximumPos();
+        horizontalScrollBar->setRange(minPos.x, maxPos.x);
+        verticalScrollBar->setRange(minPos.y, maxPos.y);
+    }
 }
 
-void PreviewWidget::OnPositionChanged(const QPoint& position)
+void PreviewWidget::OnPositionChanged(const Vector2& position)
 {
-    horizontalScrollBar->setSliderPosition(position.x());
-    verticalScrollBar->setSliderPosition(position.y());
+    horizontalScrollBar->setSliderPosition(position.x);
+    verticalScrollBar->setSliderPosition(position.y);
+}
+
+void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
+{
+    editorCanvas->SetViewSize(width, height);
 }
 
 void PreviewWidget::OnWindowCreated()
@@ -333,9 +354,16 @@ void PreviewWidget::OnWindowCreated()
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
+    editorCanvas = systemsManager->GetEditorCanvas();
+    connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
+    editorCanvas->viewSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
+    editorCanvas->canvasSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
+    editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
+    editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
+    OnScaleByComboText();
 }
 
-void PreviewWidget::OnScaleChanged(float scale)
+void PreviewWidget::OnScaleChanged(float32 scale)
 {
     bool wasBlocked = scaleCombo->blockSignals(true);
     int scaleIndex = percentages.indexOf(scale);
@@ -354,27 +382,39 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    editorCanvas->SetScale(scale);
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(scale);
+    }
 }
 
 void PreviewWidget::OnScaleByComboText()
 {
     float scale = GetScaleFromComboboxText();
-    editorCanvas->SetScale(scale);
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(scale);
+    }
 }
 
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
     Vector2 canvasPosition = editorCanvas->GetPosition();
     canvasPosition.y = vPosition;
-    editorCanvas->SetPosition(canvasPosition);
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetPosition(canvasPosition);
+    }
 }
 
 void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
     Vector2 canvasPosition = editorCanvas->GetPosition();
     canvasPosition.x = hPosition;
-    editorCanvas->SetPosition(canvasPosition);
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetPosition(canvasPosition);
+    }
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
@@ -704,7 +744,7 @@ void PreviewWidget::OnDrop(QDropEvent* event)
         if (node == nullptr)
         {
             node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
-            index = systemsManager->GetIndexOfNearestControl(pos);
+            index = systemsManager->GetIndexOfNearestRootControl(pos);
         }
         else
         {
@@ -843,13 +883,10 @@ float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
 
 void PreviewWidget::SetActualScale()
 {
-    editorCanvas->SetScale(1.0f); //1.0f is a 100% scale
-}
-
-void PreviewWidget::OnResized(uint32 width, uint32 height)
-{
-    Vector2 size(static_cast<float32>(width), static_cast<float32>(height));
-    editorCanvas->SetViewSize(size);
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(1.0f); //1.0f is a 100% scale
+    }
 }
 
 void PreviewWidget::SelectControl(const DAVA::String& path)

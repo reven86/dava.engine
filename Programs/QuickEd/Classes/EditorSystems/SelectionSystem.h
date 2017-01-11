@@ -1,5 +1,4 @@
-#ifndef __QUICKED_SELECTION_SYSTEM_H__
-#define __QUICKED_SELECTION_SYSTEM_H__
+#pragma once
 
 #include "EditorSystems/SelectionContainer.h"
 #include "EditorSystems/BaseEditorSystem.h"
@@ -36,7 +35,8 @@ public:
 
 private:
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
-    void OnInput(DAVA::UIEvent* currentInput) override;
+    bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnPackageChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
@@ -44,14 +44,15 @@ private:
     void FocusToChild(bool next);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void ProcessMousePress(const DAVA::Vector2& point, DAVA::eMouseButtons buttonID);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
-    bool mousePressed = false;
     SelectionContainer selectionContainer;
     PackageNode* packageNode = nullptr;
     bool canFindCommonForSelection = true;
+
+    bool selectOnRelease = false;
+    Vector2 pressedPoint = Vector2(-1.0f, -1.0f);
 
 public:
     INTROSPECTION(SelectionSystem,
@@ -59,4 +60,3 @@ public:
                   )
 };
 
-#endif // __QUICKED_SELECTION_SYSTEM_H__

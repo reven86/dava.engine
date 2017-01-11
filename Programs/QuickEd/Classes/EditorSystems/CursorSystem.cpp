@@ -16,7 +16,6 @@ CursorSystem::CursorSystem(RenderWidget *renderWidget_, EditorSystemsManager* pa
     , renderWidget(renderWidget_)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
-    systemsManager->stateChanged.Connect(this, &CursorSystem::OnStateChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
@@ -34,16 +33,15 @@ void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     }
 }
 
-void CursorSystem::OnStateChanged(EditorSystemsManager::eState state)
+void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState /*previousState*/)
 {
-    if (state == EditorSystemsManager::DragScreen)
+    if (currentState == EditorSystemsManager::DragScreen)
     {
-        lastCursor = renderWidget->cursor();
         renderWidget->setCursor(Qt::OpenHandCursor);
     }
     else
     {
-        renderWidget->setCursor(lastCursor);
+        renderWidget->unsetCursor();
     }
 }
 

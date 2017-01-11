@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Functional/Signal.h"
@@ -76,28 +77,35 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
-    //all states strongly ordered
-    //state with biggest value overrides each other states with a less value
-    enum eState
+    enum eDragState
     {
         //all user input used only to drag canvas inide rednder widget
         DragScreen,
-        //just display all root controls, no other iteraction enabled
-        Preview,
         //if cursor under selected control, pressed left mouse button and starts dragging
         Transform,
         //if cursor is under control and it selectable
-        Select,
-        //display one root control
-        Display,
-        StatesCount
+        SelectByRect,
+        //invalid state to request new state from baseEditorSystem
+        NoDrag
     };
+    enum eDisplayState
+    {
+        //remove hud and throw all input to the DAVA frameworkx
+        Emulation,
+        //just display all root controls, no other iteraction enabled
+        Preview,
+        //display one root control
+        Display
+    };
+
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
     
-    eState GetState() const;
+    eDragState GetDragState() const;
+    eDisplayState GetDisplayState() const;
+    HUDAreaInfo GetCurrentHUDArea() const;
 
-    EditorCanvas* GetScrollCanvasSystem() const;
+    EditorCanvas* GetEditorCanvas() const;
 
     void OnInput(DAVA::UIEvent* currentInput);
     
@@ -110,7 +118,7 @@ public:
     void SetEmulationMode(bool emulationMode);
     
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
-    DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
+    DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
     void FocusNextChild();
@@ -122,20 +130,29 @@ public:
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
+    DAVA::Signal<const ControlNode*> highlightNode;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
-    DAVA::Signal<> canvasContentChanged;
+    DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
     DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
-    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageChanged;
     DAVA::Signal<bool> emulationModeChanged;
-    DAVA::Signal<eState> stateChanged;
+    DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
+    DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
+
+    //helpers
+    DAVA::Vector2 GetMouseDelta() const;
+    DAVA::Vector2 GetLastMousePos() const;
 
 private:
-    void SetState(eState state);
-
+    void SetDragState(eDragState dragState);
+    void SetDisplayState(eDisplayState displayState);
+    
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
+    void OnActiveHUDAreaChanged(const HUDAreaInfo &areaInfo);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
@@ -145,6 +162,10 @@ private:
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);
+    void InitDAVAScreen();
+
+    void OnDragStateChanged(eDragState currentState, eDragState previousState);
+    void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
@@ -159,9 +180,18 @@ private:
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
-    EditorCanvas* editorCanvas = nullptr;
-    eState state = Preview;
-    eState previousState = Preview;
+    EditorCanvas* editorCanvasPtr = nullptr;
+
+    eDragState dragState = NoDrag;
+    eDragState previousDragState = NoDrag;
+    eDisplayState displayState = Preview;
+    eDisplayState previousDisplayState = Preview;
+
+
+    HUDAreaInfo currentHUDArea;
+    //helpers
+    DAVA::Vector2 lastMousePos;
+    DAVA::Vector2 mouseDelta;
 };
 
 template <class OutIt, class Predicate>

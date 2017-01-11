@@ -5,22 +5,27 @@ BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
 {
 }
 
-void BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+void BaseEditorSystem::ProcessInput(DAVA::UIEvent* /*currentInput*/)
 {
 
 }
 
-bool BaseEditorSystem::CanProcessInput() const
+bool BaseEditorSystem::CanProcessInput(UIEvent* currentInput) const
 {
     return false;
 }
 
-BaseEditorSystem::eInternalState BaseEditorSystem::RequireNewState(UIEvent* currentInput) const
+EditorSystemsManager::eDragState BaseEditorSystem::RequireNewState(UIEvent* currentInput)
 {
-    return NO_STATE;
+    return EditorSystemsManager::NoDrag;
 }
 
-void BaseEditorSystem::OnStateChanged(EditorSystemsManager::eState /*state*/)
+void BaseEditorSystem::OnDragStateChanged(EditorSystemsManager::eDragState /*currentState*/, EditorSystemsManager::eDragState /*previousState*/)
+{
+
+}
+
+void BaseEditorSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState /*currentState*/, EditorSystemsManager::eDisplayState /*previousState*/)
 {
 
 }

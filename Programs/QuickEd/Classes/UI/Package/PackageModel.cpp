@@ -45,7 +45,7 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     const auto& nodeSize = node->GetControl()->GetSize();
     sizeOffset -= nodeSize / 2;
     sizeOffset *= gd.scale;
-    auto controlPos = gd.position - ::Rotate(sizeOffset, angle); //top left corner of dest control
+    auto controlPos = gd.position - Vector2::Rotate(sizeOffset, angle); //top left corner of dest control
     auto relativePos = pos - controlPos; //new abs pos
 
     //now calculate new relative pos
@@ -59,7 +59,7 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     {
         relativePos /= scale;
     }
-    relativePos = ::Rotate(relativePos, -angle);
+    relativePos = Vector2::Rotate(relativePos, -angle);
     auto rootProperty = node->GetRootProperty();
     auto positionProperty = rootProperty->FindPropertyByName("Position");
     DVASSERT(nullptr != positionProperty);

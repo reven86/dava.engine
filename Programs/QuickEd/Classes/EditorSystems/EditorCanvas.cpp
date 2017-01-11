@@ -5,30 +5,14 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(UIControl *nestedControl_, UIControl *movableControl_, EditorSystemsManager *parent)
+EditorCanvas::EditorCanvas(UIControl *movableControl_, EditorSystemsManager *parent)
     : BaseEditorSystem(parent)
-    , backgroundControl(new UIControl)
-    , nestedControl(nestedControl_)
     , movableControl(movableControl_)
 {
-    
-    systemsManager->canvasContentChanged.Connect(this, &EditorCanvas::UpdateCanvasContentSize);
-    
-    backgroundControl->SetName(FastName("Background control of scroll area controller"));
-    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
-    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
-    UIScreenManager::Instance()->SetFirst(0);
-
-    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
+    systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
 }
 
-EditorCanvas::~EditorCanvas()
-{
-    UIScreenManager::Instance()->ResetScreen();
-}
-
+EditorCanvas::~EditorCanvas() = default;
 
 void EditorCanvas::AdjustScale(float newScale, const Vector2& mousePos)
 {
@@ -101,16 +85,8 @@ Vector2 EditorCanvas::GetMaximumPos() const
 
 void EditorCanvas::UpdateCanvasContentSize()
 {
-    Vector2 contentSize;
-    if (nullptr != nestedControl)
-    {
-        const UIGeometricData& gd = nestedControl->GetGeometricData();
-
-        contentSize = gd.GetAABBox().GetSize() * scale;
-    }
     Vector2 marginsSize(Margin * 2.0f, Margin * 2.0f);
-    Vector2 tmpSize = contentSize + marginsSize;
-    backgroundControl->SetSize(tmpSize);
+    Vector2 tmpSize = contentSize * scale + marginsSize;
     canvasSize = Vector2(tmpSize.dx, tmpSize.dy);
     UpdatePosition();
     canvasSizeChanged.Emit(canvasSize);
@@ -144,6 +120,12 @@ void EditorCanvas::SetViewSize(const Vector2& viewSize_)
     }
 }
 
+void EditorCanvas::SetViewSize(DAVA::uint32 width, DAVA::uint32 height)
+{
+    Vector2 size(static_cast<float32>(width), static_cast<float32>(height));
+    SetViewSize(size);
+}
+
 void EditorCanvas::SetPosition(const Vector2& position_)
 {
     Vector2 minPos = GetMinimumPos();
@@ -160,47 +142,50 @@ void EditorCanvas::SetPosition(const Vector2& position_)
 
 void EditorCanvas::UpdatePosition()
 {
-    if (nullptr != movableControl)
+    DVASSERT(nullptr != movableControl);
+    Vector2 offset = (canvasSize - viewSize) / 2.0f;
+
+    if (offset.dx > 0.0f)
     {
-        Vector2 offset = (canvasSize - viewSize) / 2.0f;
-
-        if (offset.dx > 0.0f)
-        {
-            offset.dx = position.x;
-        }
-        if (offset.dy > 0.0f)
-        {
-            offset.dy = position.y;
-        }
-        offset -= Vector2(Margin, Margin);
-        Vector2 position(-offset.dx, -offset.dy);
-        movableControl->SetPosition(position);
-
-        Vector2 positionPoint(position.x, position.y);
+        offset.dx = position.x;
     }
+    if (offset.dy > 0.0f)
+    {
+        offset.dy = position.y;
+    }
+    offset -= Vector2(Margin, Margin);
+    Vector2 position(-offset.dx, -offset.dy);
+    movableControl->SetPosition(position);
+
+    Vector2 positionPoint(position.x, position.y);
 }
 
-bool EditorCanvas::CanProcessInput() const
+bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    return systemsManager->GetState() == EditorSystemsManager::DragScreen;
+    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen;
 }
 
-void EditorCanvas::OnInput(UIEvent* currentInput)
+void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
-    Vector2 delta(currentInput->point - lastMousePos);
-    lastMousePos = currentInput->point;
-
+    DVASSERT(currentInput->phase == UIEvent::Phase::DRAG);
+    Vector2 delta = systemsManager->GetMouseDelta();
     SetPosition(position + delta);
 }
 
-void EditorCanvas::UpdateDragScreenState()
+EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
 {
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
+    bool isSpacePressed = keyboard.IsKeyPressed(Key::SPACE);
+    bool isMouseMidButtonPressed = currentInput->mouseButton == eMouseButtons::MIDDLE;
+    bool isMouseLeftButtonPressed = currentInput->mouseButton == eMouseButtons::LEFT;
+
     bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
-    //EditorSystemsManager::eDragState dragState_ = inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::DragControls;
+    return inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::NoDrag;
 }
 
-BaseEditorSystem::eInternalState EditorCanvas::RequireNewState(UIEvent* currentInput) const
+void EditorCanvas::OnContentSizeChanged(const DAVA::Vector2& size)
 {
-    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
-    return inDragScreenState ? 
+    contentSize = size;
+    UpdateCanvasContentSize();
 }

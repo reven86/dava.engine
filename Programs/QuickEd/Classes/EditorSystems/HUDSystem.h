@@ -1,5 +1,4 @@
-#ifndef __QUICKED_HUD_SYSTEM_H__
-#define __QUICKED_HUD_SYSTEM_H__
+#pragma once
 
 #include "Math/Vector.h"
 #include "EditorSystems/BaseEditorSystem.h"
@@ -11,7 +10,6 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
-    void HighlightNodes(const DAVA::Vector<ControlNode*>& node);
 
 private:
     enum eSearchOrder
@@ -21,42 +19,36 @@ private:
     };
     struct HUD;
 
-    void OnInput(DAVA::UIEvent* currentInput) override;
-    void OnStateChanged(EditorSystemsManager::eState state) override;
-    void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls);
+    bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
+    EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
+
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
+    void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnEmulationModeChanged(bool emulationMode);
+    void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
+    void ClearMagnetLines();
 
     void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
     HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
-    void SetCanDrawRect(bool canDrawRect_);
     void UpdateAreasVisibility();
-    void InvalidatePressedPoint();
-    void UpdatePlacedOnScreenStatus();
     HUDAreaInfo activeAreaInfo;
 
     DAVA::RefPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     DAVA::Vector2 hoveredPoint;
-    bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    DAVA::UIControl* selectionRectControl = nullptr;
+    DAVA::RefPtr<DAVA::UIControl> selectionRectControl = nullptr;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     SortedPackageBaseNodeSet sortedControlList;
-    bool dragRequested = false;
     SelectionContainer selectionContainer;
-    DAVA::Map<ControlNode*, DAVA::RefPtr<DAVA::UIControl>> hoveredNodes;
-    bool inEmulationMode = false;
-    SortedPackageBaseNodeSet rootControls;
-    bool isPlacedOnScreen = false;
-    bool inTransformState = false;
+    DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl = nullptr;
 };
-
-#endif // __QUICKED_HUD_SYSTEM_H__

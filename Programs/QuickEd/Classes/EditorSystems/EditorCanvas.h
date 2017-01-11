@@ -13,14 +13,14 @@ class UIControl;
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(DAVA::UIControl *nestedControl, DAVA::UIControl *movableControl, EditorSystemsManager* parent);
+    EditorCanvas(DAVA::UIControl *movableControl, EditorSystemsManager* parent);
     ~EditorCanvas() override;
 
-    bool CanProcessInput() const override;
+    bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     
-    BaseEditorSystem::eInternalState RequireNewState(DAVA::UIEvent* currentInput) const override;
-    void OnInput(DAVA::UIEvent* currentInput) override;
-    
+    EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
+
     DAVA::Vector2 GetCanvasSize() const;
     DAVA::Vector2 GetViewSize() const;
     
@@ -36,6 +36,7 @@ public:
 
 
     void SetViewSize(const DAVA::Vector2& size);
+    void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);
 
     void SetPosition(const DAVA::Vector2& position);
     void SetScale(DAVA::float32 scale);
@@ -46,28 +47,21 @@ public:
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
-    
     void UpdateCanvasContentSize();
+    void OnContentSizeChanged(const DAVA::Vector2& size);
 
     //private
     void UpdateDragScreenState();
     void UpdatePosition();
-    DAVA::ScopedPtr<DAVA::UIControl> backgroundControl;
-    DAVA::UIControl* nestedControl = nullptr;
+
     DAVA::UIControl* movableControl = nullptr;
     DAVA::Vector2 canvasSize = DAVA::Vector2(0.0f, 0.0f);
+    DAVA::Vector2 contentSize = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 viewSize = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 position = DAVA::Vector2(0.0f, 0.0f);
     DAVA::float32 scale = 0.0f;
 
-    DAVA::Vector2 lastMousePos;
-
     const DAVA::float32 minScale = 0.25f;
     const DAVA::float32 maxScale = 8.0f;
     const DAVA::float32 Margin = 50.0f;
-
-    //helper members to store space button and left mouse buttons states
-    bool isSpacePressed = false;
-    bool isMouseLeftButtonPressed = false;
-    bool isMouseMidButtonPressed = false;
 };

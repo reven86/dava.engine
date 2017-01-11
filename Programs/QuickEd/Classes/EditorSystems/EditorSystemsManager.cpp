@@ -54,11 +54,17 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
+    dragStateChanged.Connect(this, &EditorSystemsManager::OnDragStateChanged);
+    displayStateChanged.Connect(this, &EditorSystemsManager::OnDisplayStateChanged);
+    activeAreaChanged.Connect(this, &EditorSystemsManager::OnActiveHUDAreaChanged);
+
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
     inputLayerControl->SetName("inputLayerControl");
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
+
+    InitDAVAScreen();
 
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
     selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
@@ -68,57 +74,73 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
-    hudSystemPtr = new HUDSystem(this);
-    systems.emplace_back(hudSystemPtr);
+    systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(renderWidget, this));
     systems.emplace_back(new ::EditorTransformSystem(this));
-    EditorCanvas* editorCanvas = new EditorCanvas(rootControl.Get(), scalableControl.Get(), this);
-    systems.emplace_back(editorCanvas);
+    editorCanvasPtr = new EditorCanvas(scalableControl.Get(), this);
+    systems.emplace_back(editorCanvasPtr);
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
     {
         const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
-        stateChanged.Connect(editorSystem.get(), &BaseEditorSystem::OnStateChanged);
+        BaseEditorSystem* editorSystemPtr = editorSystem.get();
+        dragStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDragStateChanged);
+        displayStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDisplayStateChanged);
     }
 }
 
-EditorSystemsManager::~EditorSystemsManager() = default;
+EditorSystemsManager::~EditorSystemsManager()
+{
+    UIScreenManager::Instance()->ResetScreen();
+}
 
 void EditorSystemsManager::OnInput(UIEvent* currentInput)
 {
-    BaseEditorSystem::eInternalState newBaseState = BaseEditorSystem::NO_STATE;
+    if (currentInput->device == eInputDevices::MOUSE)
+    {
+        mouseDelta = currentInput->point - lastMousePos;
+        lastMousePos = currentInput->point;
+    }
+
+    eDragState newState = NoDrag;
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
 
-        if(newBaseState == BaseEditorSystem::NO_STATE)
+        if(newState == NoDrag)
         {
-            newBaseState = editorSystem->RequireNewState();
+            newState = editorSystem->RequireNewState(currentInput);
         }
         else
         {
-            DVASSERT_ALWAYS(editorSystem->RequireNewState() == BaseEditorSystem::NO_STATE, "Two different states required by systems on one input");
+            DVASSERT(editorSystem->RequireNewState(currentInput) == NoDrag, "Two different states required by systems on one input");
         }
     }
-    SetState(static_cast<eState>(newBaseState));
+    SetDragState(newState);
     
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
-        editorSystem->OnInput(currentInput);
+        if (editorSystem->CanProcessInput(currentInput))
+        {
+            editorSystem->ProcessInput(currentInput);
+        }
     }
+}
+
+void EditorSystemsManager::HighlightNode(ControlNode* node)
+{
+    highlightNode.Emit(node);
+}
+
+void EditorSystemsManager::ClearHighlight()
+{
+    highlightNode.Emit(nullptr);
 }
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    if (emulationMode)
-    {
-        rootControl->RemoveControl(inputLayerControl.Get());
-    }
-    else
-    {
-        rootControl->AddControl(inputLayerControl.Get());
-    }
+    SetDisplayState(emulationMode ? Emulation : previousDisplayState);
 }
 
 ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
@@ -130,17 +152,7 @@ ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& po
     return selectionSystemPtr->GetNearestNodeUnderPoint(point);
 }
 
-void EditorSystemsManager::HighlightNode(ControlNode* node)
-{
-    hudSystemPtr->HighlightNodes({ node });
-}
-
-void EditorSystemsManager::ClearHighlight()
-{
-    hudSystemPtr->HighlightNodes({});
-}
-
-uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
+uint32 EditorSystemsManager::GetIndexOfNearestRootControl(const DAVA::Vector2& point) const
 {
     if (editingRootControls.empty())
     {
@@ -189,6 +201,26 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
+void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
+{
+    if (displayState == newDisplayState)
+    {
+        return;
+    }
+    
+    if (displayState == Emulation)
+    {
+        // go to previous state when emulation flag will be cleared
+        previousDisplayState = newDisplayState;
+    }
+    else
+    {
+        previousDisplayState = displayState;
+        displayState = newDisplayState;
+        displayStateChanged.Emit(displayState, previousDisplayState);
+    }
+}
+
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
@@ -198,6 +230,16 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
+void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
+{
+    SetDisplayState(rootControls.size() <= 1 ? Display : Preview);
+}
+
+void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo &areaInfo)
+{
+    currentHUDArea = areaInfo;
+}
+
 void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
 {
     if (nullptr != package)
@@ -205,7 +247,7 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
         package->RemoveListener(this);
     }
     package = package_;
-    SetState(Preview);
+    RefreshRootControls();
     if (nullptr != package)
     {
         package->AddListener(this);
@@ -216,22 +258,14 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
-        if (state != Preview && editingRootControls.size() == 1)
-        {
-            DVASSERT(state != DragScreen, "can not remove control while drag screen");
-            SetState(Preview);
-        }
-        else
-        {
-            editingRootControls.erase(node);
-            editingRootControlsChanged.Emit(editingRootControls);
-        }
+        editingRootControls.erase(node);
+        editingRootControlsChanged.Emit(editingRootControls);
     }
 }
 
 void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
 {
-    if (state == Preview)
+    if (displayState == Preview || displayState == Emulation)
     {
         DVASSERT(nullptr != package);
         if (nullptr != package)
@@ -250,15 +284,16 @@ void EditorSystemsManager::RefreshRootControls()
 {
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
 
-    if (state == Preview)
+    if (nullptr == package)
     {
-        if (nullptr != package)
+        return;
+    }
+    if (selectedControlNodes.empty())
+    {
+        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+        for (int index = 0; index < controlsNode->GetCount(); ++index)
         {
-            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-            for (int index = 0; index < controlsNode->GetCount(); ++index)
-            {
-                newRootControls.insert(controlsNode->Get(index));
-            }
+            newRootControls.insert(controlsNode->Get(index));
         }
     }
     else
@@ -275,10 +310,6 @@ void EditorSystemsManager::RefreshRootControls()
                 newRootControls.insert(root);
             }
         }
-        if (newRootControls.size() > 1)
-        {
-            SetState(Preview);
-        }
     }
     if (editingRootControls != newRootControls)
     {
@@ -288,37 +319,91 @@ void EditorSystemsManager::RefreshRootControls()
     }
 }
 
-void EditorSystemsManager::OnTransformStateChanged(bool inTransformState)
+void EditorSystemsManager::InitDAVAScreen()
 {
-    if (package != nullptr)
+    RefPtr<UIControl> backgroundControl(new UIControl());
+
+    backgroundControl->SetName(FastName("Background control of scroll area controller"));
+    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
+    UIScreenManager::Instance()->SetFirst(0);
+
+    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl.Get());
+    backgroundControl->AddControl(rootControl.Get());
+}
+
+void EditorSystemsManager::OnDragStateChanged(eDragState currentState, eDragState previousState)
+{
+    if (currentState == Transform || previousState == Transform)
     {
+        DVASSERT(package != nullptr);
         //calling this function can refresh all properties and styles in this node
-        package->SetCanUpdateAll(!inTransformState);
+        package->SetCanUpdateAll(previousState == Transform);
     }
 }
 
-DAVA::UIControl* EditorSystemsManager::GetRootControl() const
+void EditorSystemsManager::OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState)
+{
+    DVASSERT(currentState != previousState);
+    if (currentState == Preview || previousState == Preview
+        || currentState == Emulation || previousState == Emulation)
+    {
+        RefreshRootControls();
+    }
+    if (currentState == Emulation)
+    {
+        rootControl->RemoveControl(inputLayerControl.Get());
+    }
+    if (previousState == Emulation)
+    {
+        rootControl->AddControl(inputLayerControl.Get());
+    }
+}
+
+UIControl* EditorSystemsManager::GetRootControl() const
 {
     return rootControl.Get();
 }
 
-EditorSystemsManager::eState EditorSystemsManager::GetState() const
+Vector2 EditorSystemsManager::GetMouseDelta() const
 {
-    return state;
+    return mouseDelta;
 }
 
-void EditorSystemsManager::SetState(eState state_)
+DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
 {
-    if (state == state_)
+    return lastMousePos;
+}
+
+EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const
+{
+    return dragState;
+}
+
+EditorSystemsManager::eDisplayState EditorSystemsManager::GetDisplayState() const
+{
+    return displayState;
+}
+
+HUDAreaInfo EditorSystemsManager::GetCurrentHUDArea() const
+{
+    return currentHUDArea;
+}
+
+EditorCanvas* EditorSystemsManager::GetEditorCanvas() const
+{
+    return editorCanvasPtr;
+}
+
+void EditorSystemsManager::SetDragState(eDragState newDragState)
+{
+    if (dragState == newDragState)
     {
         return;
     }
-    previousState = state;
-    state = state_;
-    if (state == Preview || previousState == Preview)
-    {
-        RefreshRootControls();
-    }
-
-    stateChanged.Emit(state);
+    previousDragState = dragState;
+    dragState = newDragState;
+    dragStateChanged.Emit(dragState, previousDragState);
 }

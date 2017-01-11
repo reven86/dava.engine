@@ -17,12 +17,12 @@ public:
     ~EditorControlsView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
-    void Layout();
 
 private:
+    void Layout();
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
     void OnPackageChanged(PackageNode* node);
-    void OnStateChanged(EditorSystemsManager::eState state);
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -34,7 +34,5 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
-    bool inTransformState = false;
-    bool needRecalculate = false;
     DAVA::UIControl *canvasParent;
 };

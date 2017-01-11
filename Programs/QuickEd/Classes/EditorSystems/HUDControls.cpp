@@ -62,7 +62,7 @@ bool ControlContainer::GetSystemVisible() const
     return systemVisible;
 }
 
-HUDContainer::HUDContainer(ControlNode* node_)
+HUDContainer::HUDContainer(const ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
 {
@@ -105,11 +105,11 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
         bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
         if (controlIsMoveOnly)
         {
-            changedGD.position -= ::Rotate((minimumSize - actualSize) / 2.0f, changedGD.angle);
+            changedGD.position -= Vector2::Rotate((minimumSize - actualSize) / 2.0f, changedGD.angle);
             changedGD.size = minimumSize / gd.scale;
         }
 
-        Rect ur(changedGD.position - ::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
+        Rect ur(changedGD.position - Vector2::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
         SetRect(ur);
 
         SetAngle(changedGD.angle);
@@ -270,7 +270,7 @@ void SetupHUDMagnetRectControl(UIControl* parentControl)
     }
 }
 
-RefPtr<UIControl> CreateHUDRect(ControlNode* node)
+RefPtr<UIControl> CreateHUDRect(const ControlNode* node)
 {
     RefPtr<HUDContainer> container(new HUDContainer(node));
     container->SetName("HUD rect container");

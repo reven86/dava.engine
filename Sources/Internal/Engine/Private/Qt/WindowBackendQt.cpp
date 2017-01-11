@@ -522,6 +522,10 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, modifierKeys, false));
 }
 
+void WindowBackend::OnLeave(QEvent* e)
+{
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
     DVASSERT(renderWidget);

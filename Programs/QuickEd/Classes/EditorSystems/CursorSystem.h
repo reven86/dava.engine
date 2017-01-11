@@ -1,5 +1,4 @@
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
+#pragma once
 
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -16,7 +15,7 @@ public:
 
 private:
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-    void OnStateChanged(EditorSystemsManager::eState state);
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState);
 
     QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
     QPixmap CreatePixmap(const QString& address) const;
@@ -26,5 +25,3 @@ private:
     
     DAVA::RenderWidget *renderWidget = nullptr;
 };
-
-#endif // __QUICKED_TREE_SYSTEM_H__

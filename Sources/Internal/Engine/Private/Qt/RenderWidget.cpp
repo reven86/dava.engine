@@ -306,6 +306,12 @@ void RenderWidget::keyReleaseEvent(QKeyEvent* e)
     }
 }
 
+void RenderWidget::leaveEvent(QEvent* e)
+{
+    QQuickWidget::leaveEvent(e);
+    widgetDelegate->OnLeave(e);
+}
+
 bool RenderWidget::event(QEvent* e)
 {
     if (e->type() == QEvent::NativeGesture && clientDelegate != nullptr)
