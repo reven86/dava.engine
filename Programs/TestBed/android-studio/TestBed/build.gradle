@@ -47,8 +47,8 @@ android {
         res.srcDirs = ['../../android/res/']
         aidl.srcDirs = ['../../android/src/']
         assets.srcDirs = ['../../android/assets/']
+        jniLibs.srcDirs = ['../../android/libs/', "${android.ndkDirectory}/sources/crystax/libs/"]
         manifest.srcFile '../../android/AndroidManifest.xml'
-        jniLibs.srcDir '../../android/libs/'
     }
 }
 
