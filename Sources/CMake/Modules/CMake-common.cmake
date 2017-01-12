@@ -47,6 +47,15 @@ include ( Coverage             )
 include ( ModuleHelper         )
 
 #
+macro ( set_subsystem_console )
+    if( WIN32 )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE" )
+    endif()
+endmacro ()
+
+#
 macro ( set_project_files_properties FILES_LIST )
     if( APPLE )
         set_source_files_properties( ${FILES_LIST} PROPERTIES COMPILE_FLAGS "-x objective-c++" )

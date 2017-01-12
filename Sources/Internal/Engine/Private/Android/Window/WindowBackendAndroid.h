@@ -61,7 +61,7 @@ public:
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
-    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 dpi);
+    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 displayDpi);
     void SurfaceDestroyed();
     void ProcessProperties();
     void OnMouseEvent(int32 action, int32 nativeButtonState, float32 x, float32 y, float32 deltaX, float32 deltaY, int32 nativeModifierKeys);
@@ -100,6 +100,7 @@ private:
     float32 surfaceScale = 1.0f;
     float32 windowWidth = 0.0f;
     float32 windowHeight = 0.0f;
+    float32 dpi = 120.f;
 
     bool firstTimeSurfaceChanged = true;
 
