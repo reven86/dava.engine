@@ -104,18 +104,18 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
     return image;
 }
 
-void RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->RegisterUIApplicationDelegateListener(listener);
+    core->bridge->RegisterDVEApplicationListener(listener);
 }
 
-void UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->UnregisterUIApplicationDelegateListener(listener);
+    core->bridge->UnregisterDVEApplicationListener(listener);
 }
 
 } // namespace Ios

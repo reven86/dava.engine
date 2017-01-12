@@ -6,8 +6,10 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <UIKit/UIApplication.h>
+#import "Engine/Private/EnginePrivateFwd.h"
+#import "Concurrency/Mutex.h"
 
-#include "Engine/Private/EnginePrivateFwd.h"
+@protocol DVEApplicationListener;
 
 // Implementation of UIApplicationDelegate
 // Forwards all necessary methods to CoreNativeBridge
