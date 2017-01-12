@@ -19,30 +19,30 @@ PackRequest::PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_)
     DVASSERT(rootPack != nullptr);
     // find all dependencies
     // put it all into vector and put final pack into vector too
-    DCLManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyList);
+    DCLManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyPacks);
 
-    dependencies.reserve(dependencyList.size() + 1);
+    dependencies.reserve(dependencyPacks.size() + 1);
 
-    for (IDLCManager::Pack* depPack : dependencyList)
+    for (IDLCManager::Pack* depPack : dependencyPacks)
     {
-        SubRequest subRequest;
+        FileRequest subRequest;
 
         subRequest.pack = depPack;
-        subRequest.status = SubRequest::Wait;
+        subRequest.status = FileRequest::Wait;
         subRequest.taskId = 0;
 
         dependencies.push_back(subRequest);
     }
 
     // last step download pack itself
-    SubRequest subRequest;
+    FileRequest subRequest;
 
     subRequest.pack = rootPack;
-    subRequest.status = SubRequest::Wait;
+    subRequest.status = FileRequest::Wait;
     subRequest.taskId = 0;
     dependencies.push_back(subRequest);
 
-    std::for_each(begin(dependencies), end(dependencies), [&](const SubRequest& request)
+    std::for_each(begin(dependencies), end(dependencies), [&](const FileRequest& request)
                   {
                       totalAllPacksSize += request.pack->totalSizeFromDB;
                   });
@@ -98,8 +98,8 @@ void PackRequest::AskFooter()
         const String& superPackUrl = packManagerImpl->GetSuperPackUrl();
         downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, &footerOnServer, sizeofFooter, downloadOffset, sizeofFooter);
 
-        SubRequest& subRequest = dependencies.at(0);
-        subRequest.status = SubRequest::Status::GetFooter;
+        FileRequest& subRequest = dependencies.at(0);
+        subRequest.status = FileRequest::Status::GetFooter;
     }
 }
 
@@ -155,7 +155,7 @@ void PackRequest::StartLoadingPackFile()
 {
     DVASSERT(!dependencies.empty());
 
-    SubRequest& subRequest = dependencies.at(0);
+    FileRequest& subRequest = dependencies.at(0);
 
     // build url to pack file and build filePath to pack file
 
@@ -168,7 +168,7 @@ void PackRequest::StartLoadingPackFile()
     subRequest.taskId = packManagerImpl->DownloadPack(pack.name, packPath);
 
     // switch state to LoadingPackFile
-    subRequest.status = SubRequest::LoadingPackFile;
+    subRequest.status = FileRequest::LoadingPackFile;
 
     pack.state = IDLCManager::Pack::Status::Downloading;
 
@@ -181,7 +181,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
     DVASSERT(!dependencies.empty());
 
-    SubRequest& subRequest = dependencies.at(0);
+    FileRequest& subRequest = dependencies.at(0);
 
     IDLCManager::Pack& currentPack = *subRequest.pack;
 
@@ -212,7 +212,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                 currentPack.totalSize = total;
                 // fire event on update progress
                 packManagerImpl->packDownloadChanged.Emit(currentPack);
-                packManagerImpl->requestProgressChanged.Emit(*this);
+                packManagerImpl->requestUpdated.Emit(*this);
             }
         }
         break;
@@ -238,7 +238,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                     currentPack.downloadedSize = progress;
                     currentPack.totalSize = progress;
                     packManagerImpl->packDownloadChanged.Emit(currentPack);
-                    packManagerImpl->requestProgressChanged.Emit(*this);
+                    packManagerImpl->requestUpdated.Emit(*this);
                 }
             }
             else
@@ -273,10 +273,10 @@ bool PackRequest::IsLoadingPackFileFinished()
     return result;
 }
 
-void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, IDLCManager::Pack& currentPack)
+void PackRequest::SetErrorStatusAndFireSignal(PackRequest::FileRequest& subRequest, IDLCManager::Pack& currentPack)
 {
     currentPack.state = IDLCManager::Pack::Status::OtherError;
-    subRequest.status = SubRequest::Error;
+    subRequest.status = FileRequest::Error;
 
     if (rootPack->name != currentPack.name)
     {
@@ -287,7 +287,7 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
     // inform user about problem with pack
     packManagerImpl->packStateChanged.Emit(currentPack);
 
-    packManagerImpl->requestProgressChanged.Emit(*this);
+    packManagerImpl->requestUpdated.Emit(*this);
 }
 
 void PackRequest::StartCheckHash()
@@ -295,7 +295,7 @@ void PackRequest::StartCheckHash()
     DVASSERT(Thread::IsMainThread());
     DVASSERT(!dependencies.empty());
 
-    SubRequest& subRequest = dependencies.at(0);
+    FileRequest& subRequest = dependencies.at(0);
 
     IDLCManager::Pack& currentPack = *subRequest.pack;
 
@@ -317,7 +317,7 @@ void PackRequest::StartCheckHash()
     }
     else
     {
-        subRequest.status = SubRequest::CheckHash;
+        subRequest.status = FileRequest::CheckHash;
     }
 }
 
@@ -330,7 +330,7 @@ void PackRequest::MountPack()
 {
     DVASSERT(!dependencies.empty());
 
-    SubRequest& subRequest = dependencies.at(0);
+    FileRequest& subRequest = dependencies.at(0);
 
     IDLCManager::Pack& pack = *subRequest.pack;
 
@@ -351,7 +351,7 @@ void PackRequest::MountPack()
         }
     }
 
-    subRequest.status = SubRequest::Mounted;
+    subRequest.status = FileRequest::Mounted;
 
     pack.state = IDLCManager::Pack::Status::Mounted;
 
@@ -377,16 +377,16 @@ void PackRequest::Stop()
     {
         if (!IsDone() && !IsError())
         {
-            SubRequest& subRequest = dependencies.at(0);
+            FileRequest& subRequest = dependencies.at(0);
             switch (subRequest.status)
             {
-            case SubRequest::LoadingPackFile:
+            case FileRequest::LoadingPackFile:
             {
                 DownloadManager* dm = DownloadManager::Instance();
                 dm->Cancel(subRequest.taskId);
                 subRequest.taskId = 0;
                 // start loading again this subRequest on resume
-                subRequest.status = SubRequest::Wait;
+                subRequest.status = FileRequest::Wait;
             }
             break;
             default:
@@ -402,8 +402,8 @@ void PackRequest::Restart()
     downloadTaskId = 0;
     Memset(&footerOnServer, 0, sizeof(footerOnServer));
 
-    SubRequest& subRequest = dependencies.at(0);
-    subRequest.status = SubRequest::AskFooter;
+    FileRequest& subRequest = dependencies.at(0);
+    subRequest.status = FileRequest::AskFooter;
 }
 
 void PackRequest::Update()
@@ -413,32 +413,32 @@ void PackRequest::Update()
 
     if (!IsDone() && !IsError())
     {
-        SubRequest& subRequest = dependencies.at(0);
+        FileRequest& subRequest = dependencies.at(0);
 
         switch (subRequest.status)
         {
-        case SubRequest::Wait:
+        case FileRequest::Wait:
             Restart();
             break;
-        case SubRequest::AskFooter:
+        case FileRequest::AskFooter:
             AskFooter(); // continue ask footer
             break;
-        case SubRequest::GetFooter:
+        case FileRequest::GetFooter:
             GetFooter();
             break;
-        case SubRequest::LoadingPackFile:
+        case FileRequest::LoadingPackFile:
             if (IsLoadingPackFileFinished())
             {
                 StartCheckHash();
             }
             break;
-        case SubRequest::CheckHash:
+        case FileRequest::CheckHash:
             if (IsCheckingHashFinished())
             {
                 MountPack();
             }
             break;
-        case SubRequest::Mounted:
+        case FileRequest::Mounted:
             GoToNextSubRequest();
             break;
         default:
@@ -450,7 +450,7 @@ void PackRequest::Update()
 void PackRequest::ChangePriority(float32 newPriority)
 {
     rootPack->priority = newPriority;
-    for (SubRequest& subRequest : dependencies)
+    for (FileRequest& subRequest : dependencies)
     {
         IDLCManager::Pack& pack = *subRequest.pack;
         pack.priority = newPriority;
@@ -466,13 +466,13 @@ bool PackRequest::IsError() const
 {
     if (!dependencies.empty())
     {
-        const SubRequest& subRequest = GetCurrentSubRequest();
-        return subRequest.status == SubRequest::Error;
+        const FileRequest& subRequest = GetCurrentSubRequest();
+        return subRequest.status == FileRequest::Error;
     }
     return false;
 }
 
-const PackRequest::SubRequest& PackRequest::GetCurrentSubRequest() const
+const PackRequest::FileRequest& PackRequest::GetCurrentSubRequest() const
 {
     DVASSERT(!dependencies.empty());
     return dependencies.at(0); // at check index
@@ -487,7 +487,7 @@ uint64 PackRequest::GetDownloadedSize() const
 {
     uint64 result = 0ULL;
 
-    for (auto pack : dependencyList)
+    for (auto pack : dependencyPacks)
     {
         result += pack->downloadedSize;
     }

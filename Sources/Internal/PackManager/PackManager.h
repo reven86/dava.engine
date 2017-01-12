@@ -17,16 +17,14 @@ namespace DAVA
  ```
  IDLCManager& pm = *engine.GetContext()->packManager;
  // if init failed we will know about it
- pm.networkReady.Connect(this, &PackManagerTest::OnInitChange);
+ pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
 
- String gpuArchitecture = "mali";
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
- String urlToServerSuperpack = "http://server.net/superpack.dvpk";
+ String urlToServerSuperpack = "http://server.net/superpack.3.7.0.mali.dvpk";
  IDLCManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
- hints.dbInMemory = true; // load DB in memory for performance
 
- pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, hints);
+ pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
  // now we can connect to request signal, and start requesting packs
 
@@ -41,7 +39,7 @@ public:
     /**
      Proxy interface to easily check pack request progress
      to use it interface, for download progress you need to
-     connect to `requestProgressChanged` signal and then
+     connect to `requestUpdated` signal and then
      call `RequestPack`.
     */
     struct IRequest
@@ -61,7 +59,7 @@ public:
     /** you have to subscribe to this signal before call `Initialize` */
     Signal<bool> networkReady;
     /** signal per user request with full size of all depended packs */
-    Signal<const IRequest&> requestProgressChanged;
+    Signal<const IRequest&> requestUpdated;
 
     struct Hints
     {
@@ -75,9 +73,7 @@ public:
      before you call Initialize.
      At least subscribe to `networkReady` signal
     */
-    virtual void Initialize(const String& architecture,
-                            const FilePath& dirToDownloadPacks,
-                            const FilePath& pathToBasePacksDB,
+    virtual void Initialize(const FilePath& dirToDownloadPacks,
                             const String& urlToServerSuperpack,
                             const Hints& hints) = 0;
 

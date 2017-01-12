@@ -58,9 +58,7 @@ public:
     ~DCLManagerImpl() = default;
 #endif
 
-    void Initialize(const String& architecture_,
-                    const FilePath& dirToDownloadPacks_,
-                    const FilePath& pathToBasePacksDB_,
+    void Initialize(const FilePath& dirToDownloadPacks_,
                     const String& urlToServerSuperpack_,
                     const Hints& hints_) override;
 

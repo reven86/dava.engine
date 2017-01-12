@@ -259,29 +259,7 @@ void PackManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnPackStateChange(const DAVA::IPackManager::Pack& pack)
-{
-    if (pack.state == IPackManager::Pack::Status::Mounted)
-    {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
-    }
-    else if (pack.state == IPackManager::Pack::Status::ErrorLoading || pack.state == IPackManager::Pack::Status::OtherError)
-    {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
-    }
-    else if (pack.state == IPackManager::Pack::Status::Downloading)
-    {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("downloading: %s %d", pack.name.c_str(), pack.downloadError,
-                                                                            static_cast<int>(100 * pack.downloadProgress))));
-    }
-}
-
-void PackManagerTest::OnPackDownloadChange(const DAVA::IPackManager::Pack& pack)
-{
-    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
-}
-
-void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& request)
+void PackManagerTest::OnRequestUpdated(const DAVA::IDLCManager::IRequest& request)
 {
     // change total download progress
     uint64 total = request.GetFullSizeWithDependencies();
@@ -293,20 +271,13 @@ void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& reques
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnInitChange(IPackManager& packManager)
+void PackManagerTest::OnNetworkReady(bool isReady)
 {
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
-    StringStream ss;
-
-    ss << "init change state: " << IPackManager::ToString(packManager.GetInitState()) << '\n';
-
-    if (packManager.GetInitError() != IPackManager::InitError::AllGood)
-    {
-        ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetLastErrorMessage() << '\n';
-        ss << "do you want to retry?\n";
-    }
-
+	std::stringstream ss;
+	const char* boolName = isReady ? "True" : "False";
+	ss << "nerwork ready = " << boolName;
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
@@ -314,19 +285,16 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = *engine.GetContext()->packManager;
+    IDLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: start init");
 
-    pm.cdnAvailable.DisconnectAll();
-    pm.cdnAvailable.Connect(this, &PackManagerTest::OnInitChange);
+    pm.networkReady.DisconnectAll();
+    pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
 
-    String dbFile = sqliteDbFile;
-    dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
+    pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, IDLCManager::Hints());
 
-    pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, IPackManager::Hints());
-
-    pm.EnableRequesting();
+	pm.SetRequestingEnabled(true);
 
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
@@ -341,32 +309,17 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = *engine.GetContext()->packManager;
-    const Vector<IPackManager::Pack>& packs = pm.GetPacks();
-
-    std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
-                  {
-                      if (pack.state == IPackManager::Pack::Status::Mounted)
-                      {
-                          pm.DeletePack(pack.name);
-                      }
-                  });
+	IDLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = *engine.GetContext()->packManager;
+	IDLCManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
 
-    for (auto& pack : pm.GetPacks())
-    {
-        if (pack.state == IPackManager::Pack::Status::Mounted)
-        {
-            ss << pack.name << ", ";
-        }
-    }
+    // TODO do I need list loaded packs?
 
     String s = ss.str();
     if (!s.empty())
@@ -381,48 +334,39 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    IPackManager& pm = *engine.GetContext()->packManager;
-    if (pm.GetInitState() < IPackManager::InitState::Ready)
-    {
-        return;
-    }
+	IDLCManager& pm = *engine.GetContext()->packManager;
 
-    pm.packStateChanged.DisconnectAll();
+    pm.requestUpdated.DisconnectAll();
+    pm.requestUpdated.Connect(this, &PackManagerTest::OnRequestUpdated);
 
-    pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
-    pm.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
-
-    WideString packName = packInput->GetText();
+    String packName = packInput->GetUtf8Text();
 
     try
     {
-        packNameLoading->SetText(L"loading: " + packName);
-        pm.RequestPack(UTF8Utils::EncodeToUTF8(packName));
+        packNameLoading->SetUtf8Text("loading: " + packName);
+        pm.RequestPack(packName);
     }
     catch (std::exception& ex)
     {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
+        packNameLoading->SetUtf8Text(ex.what());
     }
 }
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = *engine.GetContext()->packManager;
-    WideString packName = packNextInput->GetText();
+	IDLCManager& pm = *engine.GetContext()->packManager;
+    String packName = packNextInput->GetUtf8Text();
 
-    pm.packStateChanged.DisconnectAll();
-
-    pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
-    pm.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
+    pm.requestUpdated.DisconnectAll();
+    pm.requestUpdated.Connect(this, &PackManagerTest::OnRequestUpdated);
 
     try
     {
-        packNameLoading->SetText(L"loading: " + packName);
-        String pName = UTF8Utils::EncodeToUTF8(packName);
-        const IPackManager::Pack& p = pm.RequestPack(pName);
-        if (p.state == IPackManager::Pack::Status::Requested)
+        packNameLoading->SetUtf8Text("loading: " + packName);
+        const IDLCManager::IRequest* p = pm.RequestPack(packName);
+        if (!p->IsDowndloaded())
         {
-            pm.SetRequestOrder(pName, 0.f);
+            pm.SetRequestOrder(p, 0);
         }
     }
     catch (std::exception& ex)
@@ -486,11 +430,11 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
     // if we read file from pack - it will be DynamicMemoryFile
     if (f && typeid(*f) == typeid(DynamicMemoryFile))
     {
-        packNameLoading->SetText(L"file loaded successfully");
+        packNameLoading->SetUtf8Text("file loaded successfully");
     }
     else
     {
-        packNameLoading->SetText(L"can't load file");
+        packNameLoading->SetUtf8Text("can't load file");
     }
 }
 
@@ -509,7 +453,5 @@ void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, 
         ss << nextPath.GetStringValue() << '\n';
     }
 
-    WideString out(UTF8Utils::EncodeToWideString(ss.str()));
-
-    packNameLoading->SetText(out);
+    packNameLoading->SetUtf8Text(ss.str());
 }

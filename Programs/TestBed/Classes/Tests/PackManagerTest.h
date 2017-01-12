@@ -27,10 +27,8 @@ private:
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void OnPackStateChange(const DAVA::DLCManager::Pack& pack);
-    void OnPackDownloadChange(const DAVA::DLCManager::Pack& pack);
-    void OnRequestChange(const DAVA::DLCManager::IRequest& request);
-    void OnInitChange(DAVA::DLCManager& init);
+    void OnRequestUpdated(const DAVA::IDLCManager::IRequest& request);
+    void OnNetworkReady(bool isReady);
 
     DAVA::Engine& engine;
 

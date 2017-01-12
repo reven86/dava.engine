@@ -11,19 +11,13 @@ class DCLManagerImpl;
 class PackRequest : public IDLCManager::IRequest
 {
 public:
-    PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_);
+    PackRequest(DCLManagerImpl& packManager_, const String& packName);
 
     void Start();
     void Update();
-    void ChangePriority(float32 newPriority);
     void Stop();
 
-    bool operator<(const PackRequest& other) const
-    {
-        return GetPriority() < other.GetPriority();
-    }
-
-    struct SubRequest
+    struct FileRequest
     {
         enum Status : uint32
         {
@@ -37,13 +31,13 @@ public:
             Error
         };
 
-        IDLCManager::Pack* pack = nullptr;
+        String fileName;
         String errorMsg;
         uint32 taskId = 0;
         Status status = Wait;
     };
 
-    const IDLCManager::Pack& GetRootPack() const override
+    const String& GetRootPack() const override
     {
         return *rootPack;
     }
@@ -53,18 +47,14 @@ public:
         return rootPack->priority;
     }
     bool IsDone() const;
-    bool IsError() const override;
-    const SubRequest& GetCurrentSubRequest() const;
+    const FileRequest& GetCurrentSubRequest() const;
 
     uint64 GetFullSizeWithDependencies() const override;
 
     uint64 GetDownloadedSize() const override;
-    const IDLCManager::Pack& GetErrorPack() const override;
-    const String& GetErrorMessage() const override;
-
 private:
     void Restart();
-    void SetErrorStatusAndFireSignal(SubRequest& subRequest, IDLCManager::Pack& currentPack);
+    void SetErrorStatusAndFireSignal(FileRequest& subRequest, IDLCManager::Pack& currentPack);
 
     void AskFooter();
     void GetFooter();
@@ -76,9 +66,9 @@ private:
     void GoToNextSubRequest();
 
     DCLManagerImpl* packManagerImpl = nullptr;
-    IDLCManager::Pack* rootPack = nullptr;
-    Vector<IDLCManager::Pack*> dependencyList;
-    Vector<SubRequest> dependencies; // first all dependencies then pack sub request
+    String rootPack;
+    Vector<PackRequest*> dependencyPacks;
+    Vector<FileRequest> dependencies; // first all dependencies then pack sub request
     uint64 totalAllPacksSize = 0;
 
     uint64 fullSizeServerData = 0;
