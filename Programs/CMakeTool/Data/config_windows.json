@@ -53,7 +53,7 @@
         },
         {
             "name": "Windows 10",
-            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $SOURCE_PATH %1 %2",
+            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project2.bat -G \"Visual Studio 14 2015\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/win_uap.toolchain.cmake $SOURCE_PATH %1 %2",
             "defaults": [
                 "",
                 ""
@@ -81,13 +81,13 @@
                     "name": "Win64",
                     "type": "radiobutton",
                     "substring number": 1,
-                    "value": "Win64"
+                    "value": "x64"
                 },
                 {
                     "name": "Unity build",
                     "type": "checkbox",
                     "substring number": 2,
-                    "value": "UnityBuild"
+                    "value": "-DUNITY_BUILD=true"
                 }
             ]
         }
