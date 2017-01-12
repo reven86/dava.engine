@@ -15,6 +15,7 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ProjectView::ReloadSprites);
     connect(mainWindow->ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindFileInProject);
+    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->ui->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnSelectionChanged);
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
 
