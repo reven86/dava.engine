@@ -527,48 +527,6 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-// void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-// {
-//     const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-//
-//     const YamlNode* componentNode = nullptr;
-//
-//     if (componentsNode)
-//         componentNode = componentsNode->Get("Background");
-//
-//     UIControlBackground* bg = builder->BeginBgPropertiesSection(componentNode != nullptr);
-//     if (bg)
-//     {
-//         const InspInfo* insp = bg->GetTypeInfo();
-//         for (int32 j = 0; j < insp->MembersCount(); j++)
-//         {
-//             const InspMember* member = insp->Member(j);
-//             VariantType res;
-//             if (componentNode)
-//             {
-//                 if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
-//                 {
-//                     const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
-//                     if (valueNode)
-//                     {
-//                         if (member->Name() == FastName("spriteModification"))
-//                         {
-//                             res.SetInt32(valueNode->AsInt32());
-//                         }
-//                     }
-//                 }
-//
-//                 if (res.GetType() == VariantType::TYPE_NONE)
-//                 {
-//                     res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-//                 }
-//             }
-//             builder->ProcessProperty(member, res);
-//         }
-//     }
-//     builder->EndBgPropertiesSection();
-// }
-
 VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const String& propertyName)
 {
     const YamlNode* valueNode = node->Get(propertyName);

@@ -452,7 +452,7 @@ void UIControl::SetBackground(UIControlBackground* newBg)
     if (currentBg != newBg)
     {
         RemoveComponent(currentBg);
-        if (newBg)
+        if (newBg != nullptr)
         {
             AddComponent(newBg);
         }
@@ -1013,8 +1013,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     RemoveAllComponents();
     for (UIComponent* srcComponent : srcControl->components)
     {
-        RefPtr<UIComponent> clone(srcComponent->SafeClone());
-        AddComponent(clone.Get());
+        AddComponent(srcComponent->SafeClone().Get());
     }
 
     RemoveAllControls();
@@ -1029,8 +1028,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     for (UIControl* srcChild : srcControl->GetChildren())
     {
-        RefPtr<UIControl> clone(srcChild->SafeClone());
-        AddControl(clone.Get());
+        AddControl(srcChild->SafeClone().Get());
     }
 }
 

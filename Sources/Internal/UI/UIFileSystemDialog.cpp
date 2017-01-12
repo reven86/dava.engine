@@ -27,7 +27,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     fontPath = _fontPath;
 
     GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    GetBackground()->SetColor(Color(0.5, 0.5, 0.5, 0.75));
+    GetBackground()->SetColor(Color(0.5f, 0.5f, 0.5f, 0.75f));
     SetPivot(Vector2(0.5f, 0.5f));
 
     operationType = OPERATION_LOAD;
