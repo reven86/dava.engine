@@ -3,7 +3,6 @@
 PlatformHelper::PlatformHelper(QObject* parent)
     : QObject(parent)
 {
-
 }
 
 PlatformHelper::ePlatform PlatformHelper::CurrentPlatform()

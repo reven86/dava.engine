@@ -13,7 +13,7 @@ class ProcessWrapper : public QObject
 public:
     explicit ProcessWrapper(QObject* parent = 0);
 
-    Q_INVOKABLE void StartConfigure(const QString &command, bool needClean, const QString &buildFolder);
+    Q_INVOKABLE void StartConfigure(const QString& command, bool needClean, const QString& buildFolder);
     Q_INVOKABLE void LaunchCmake(const QString& command);
 
     Q_INVOKABLE void FindAndOpenProjectFile(const QString& buildFolder);
