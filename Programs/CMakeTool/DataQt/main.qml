@@ -66,6 +66,7 @@ ApplicationWindow {
         property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
+            outputState = columnLayoutOutput.saveState();
             function compare(left, right) {
                 return left.source.localeCompare(right.source);
             }
@@ -76,6 +77,7 @@ ApplicationWindow {
         property int historyVersion: -1
         property bool buildToTheSourceFolder: true
         property string customBuildFolder;
+        property var outputState;
     }
     property var history;
     function applyProjectSettings(buildSettings) {
@@ -84,7 +86,6 @@ ApplicationWindow {
         rowLayout_davaFolder.path = buildSettings.davaPath;
         textField_customOptions.text = buildSettings.customOptions
         mutableContent.loadState(buildSettings.state);
-        columnLayoutOutput.loadState(buildSettings.outputState);
     }
 
     function loadHistory() {
@@ -125,7 +126,6 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-        newItem.outputState = columnLayoutOutput.saveState();
         
         //now update current history, because we load fields from it.
         for(var i = 0, length = history.length; i < length && !found; ++i) {
@@ -208,6 +208,7 @@ ApplicationWindow {
         try {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
+            columnLayoutOutput.loadState(settings.outputState);
             loadHistory();
             var lastSource = settings.lastUsedSourceFolder;
             for(var i = 0, length = history.length; i < length; ++i) {
