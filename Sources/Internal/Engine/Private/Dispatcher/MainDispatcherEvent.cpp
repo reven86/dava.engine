@@ -137,7 +137,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDpiChangedEvent(Window* win
 MainDispatcherEvent MainDispatcherEvent::CreateWindowCancelInputEvent(Window* window)
 {
     MainDispatcherEvent e(WINDOW_CANCEL_INPUT, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     return e;
 }
 
