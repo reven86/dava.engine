@@ -561,7 +561,7 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     }
 }
 
-void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
+void CoreWin32Platform::OnMouseWheel(int32 wheelDeltaX, int32 wheelDeltaY, int32 x, int32 y)
 {
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
@@ -569,16 +569,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::GetMs() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
-
-    KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
-    if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
-    {
-        e.wheelDelta = { static_cast<float32>(wheelDelta), 0 };
-    }
-    else
-    {
-        e.wheelDelta = { 0, static_cast<float32>(wheelDelta) };
-    }
+    e.wheelDelta = { static_cast<float32>(wheelDeltaX), static_cast<float32>(wheelDeltaY) };
 
     UIControlSystem::Instance()->OnInput(&e);
 }
@@ -676,7 +667,7 @@ bool IsMouseMoveEvent(UINT message)
 
 bool IsMouseWheelEvent(UINT message)
 {
-    return message == WM_MOUSEWHEEL;
+    return message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL;
 }
 
 bool IsMouseInputEvent(UINT message, LPARAM messageExtraInfo)
@@ -862,7 +853,15 @@ bool CoreWin32Platform::ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM w
         return false;
     }
 
-    OnMouseWheel(zDelta, pos.x, pos.y);
+    if (message == WM_MOUSEHWHEEL)
+    {
+        OnMouseWheel(zDelta, 0, pos.x, pos.y);
+    }
+    else
+    {
+        OnMouseWheel(0, zDelta, pos.x, pos.y);
+    }
+
     return true;
 }
 

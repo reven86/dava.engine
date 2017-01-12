@@ -627,23 +627,19 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     using ::Windows::Devices::Input::PointerDeviceType;
 
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-    int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
+    Vector2 wheelDelta(0.f, pointerPoint->Properties->MouseWheelDelta / static_cast<float32>(WHEEL_DELTA));
+    if (pointerPoint->Properties->IsHorizontalMouseWheel)
+    {
+        std::swap(wheelDelta.x, wheelDelta.y);
+    }
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     Vector2 physPoint(pointerPoint->Position.X, pointerPoint->Position.Y);
     uint32 modifiers = GetKeyboardModifier();
 
     core->RunOnMainThread([this, wheelDelta, physPoint, type, modifiers]() {
         UIEvent ev;
-        auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
-        KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
-        if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
-        {
-            ev.wheelDelta = { delta, 0 };
-        }
-        else
-        {
-            ev.wheelDelta = { 0, delta };
-        }
+        ev.wheelDelta.x = wheelDelta.x;
+        ev.wheelDelta.y = wheelDelta.y;
         ev.modifiers = modifiers;
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
