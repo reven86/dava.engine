@@ -54,14 +54,13 @@ private:
             , configure(configure_)
         {
         }
-        const QString command;
-
+        QString command;
         //flag to clean folder
-        const bool needClean;
+        bool needClean;
         //and folder to clean
-        const QString buildFolder;
+        QString buildFolder;
         //flag that we start configuring project and need result of that configuring
-        const bool configure;
+        bool configure;
     };
     QQueue<Task> taskQueue;
     bool running = false;
