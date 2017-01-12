@@ -195,17 +195,19 @@ GroupBox {
     Timer {
         id: delayTimer
         interval: 500;
-        running: true;
+        running: false;
         repeat: false
         onTriggered: {
-            if(radioButton_openInIDE.checked) {
-                openInIDE();
-            }
-            else if(radioButton_buildDebug.checked) {
-                buildDebug();
-            }
-            else if(radioButton_buildRelease.checked) {
-                buildRelease();
+            if(groupBox_postConfigure.checked) {
+                if(radioButton_openInIDE.checked) {
+                    openInIDE();
+                }
+                else if(radioButton_buildDebug.checked) {
+                    buildDebug();
+                }
+                else if(radioButton_buildRelease.checked) {
+                    buildRelease();
+                }
             }
         }
     }
