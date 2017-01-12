@@ -2,6 +2,11 @@
 
 #include "TArc/Core/ControllerModule.h"
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winconsistent-missing-override"
+#endif
+
 namespace DAVA
 {
 namespace TArc
@@ -27,3 +32,7 @@ public:
 };
 } // namespace TArc
 } // namespace DAVA
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif

@@ -230,7 +230,6 @@ elseif( WARNINGS_AS_ERRORS )
             -Wno-unused-private-field \
             -Wno-objc-method-access \
             -Wno-undefined-reinterpret-cast \
-            -Wno-inconsistent-missing-override \
             -Wno-range-loop-analysis \
             -Wno-potentially-evaluated-expression \
             -Wno-overloaded-virtual \
