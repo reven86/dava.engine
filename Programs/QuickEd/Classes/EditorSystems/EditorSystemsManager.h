@@ -95,7 +95,7 @@ public:
         //just display all root controls, no other iteraction enabled
         Preview,
         //display one root control
-        Display
+        Edit
     };
 
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);

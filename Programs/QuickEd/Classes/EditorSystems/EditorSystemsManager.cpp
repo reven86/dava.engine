@@ -234,7 +234,7 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
 
 void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
 {
-    SetDisplayState(rootControls.size() <= 1 ? Display : Preview);
+    SetDisplayState(rootControls.size() <= 1 ? Edit : Preview);
 }
 
 void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)

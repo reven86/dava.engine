@@ -420,7 +420,7 @@ bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
-    return (displayState == EditorSystemsManager::Display || displayState == EditorSystemsManager::Preview)
+    return (displayState == EditorSystemsManager::Edit || displayState == EditorSystemsManager::Preview)
     && dragState != EditorSystemsManager::Transform;
 }
 
@@ -462,6 +462,6 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
 
 void HUDSystem::ClearMagnetLines()
 {
-    static const Vector<MagnetLineInfo> dummy;
-    OnMagnetLinesChanged(dummy);
+    static const Vector<MagnetLineInfo> emptyVector;
+    OnMagnetLinesChanged(emptyVector);
 }

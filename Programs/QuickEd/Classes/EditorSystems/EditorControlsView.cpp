@@ -14,7 +14,7 @@
 
 using namespace DAVA;
 
-namespace EditorControlsView_namespace
+namespace EditorControlsViewDetails
 {
 class ColorControl : public UIControl
 {
@@ -206,7 +206,7 @@ private:
 };
 
 BackgroundController::BackgroundController(UIControl* nestedControl_)
-    : gridControl(new EditorControlsView_namespace::GridControl())
+    : gridControl(new EditorControlsViewDetails::GridControl())
     , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , nestedControl(nestedControl_)

@@ -44,7 +44,7 @@ private:
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     void ProcessKey(DAVA::Key key);
-    void ProcessDrag(DAVA::Vector2 point);
+    void ProcessDrag(const DAVA::Vector2 &point);
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustResizeToMinimumSize(DAVA::Vector2 delta);

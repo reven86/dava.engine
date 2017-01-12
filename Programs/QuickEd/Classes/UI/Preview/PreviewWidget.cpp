@@ -656,8 +656,8 @@ void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
         editorCanvas->AdjustScale(scale + event->value(), pos);
         break;
     case Qt::SmartZoomNativeGesture:
+        //event->value() returns 1.0f or 0.0f
         editorCanvas->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
-        //event->value() returns 1 or 0
         break;
     default:
         break;

@@ -244,7 +244,7 @@ void EditorTransformSystem::ProcessKey(Key key)
     }
 }
 
-void EditorTransformSystem::ProcessDrag(Vector2 pos)
+void EditorTransformSystem::ProcessDrag(const Vector2 &pos)
 {
     Vector2 delta = systemsManager->GetMouseDelta();
     switch (activeArea)

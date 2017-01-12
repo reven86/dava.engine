@@ -301,7 +301,7 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
 bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
-    return (displayState == EditorSystemsManager::Display
+    return (displayState == EditorSystemsManager::Edit
             || displayState == EditorSystemsManager::Preview)
     && currentInput->device == eInputDevices::MOUSE
     && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;

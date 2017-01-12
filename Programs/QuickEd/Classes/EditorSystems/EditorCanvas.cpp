@@ -14,10 +14,9 @@ EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* par
 
 EditorCanvas::~EditorCanvas() = default;
 
-void EditorCanvas::AdjustScale(float newScale, const Vector2& mousePos)
+void EditorCanvas::AdjustScale(float32 newScale, const Vector2& mousePos)
 {
-    newScale = fmax(minScale, newScale);
-    newScale = fmin(maxScale, newScale); //crop scale to 800
+    newScale = DAVA::Clamp(newScale, minScale, maxScale);
     if (scale == newScale)
     {
         return;
@@ -87,8 +86,7 @@ Vector2 EditorCanvas::GetMaximumPos() const
 void EditorCanvas::UpdateCanvasContentSize()
 {
     Vector2 marginsSize(Margin * 2.0f, Margin * 2.0f);
-    Vector2 tmpSize = contentSize * scale + marginsSize;
-    canvasSize = Vector2(tmpSize.dx, tmpSize.dy);
+    canvasSize = contentSize * scale + marginsSize;
     UpdatePosition();
     canvasSizeChanged.Emit(canvasSize);
 }
@@ -158,8 +156,7 @@ void EditorCanvas::UpdatePosition()
     Vector2 position(-offset.dx, -offset.dy);
     movableControl->SetPosition(position);
 
-    Vector2 positionPoint(position.x, position.y);
-    nestedControlPositionChanged.Emit(positionPoint);
+    nestedControlPositionChanged.Emit(position);
 }
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
