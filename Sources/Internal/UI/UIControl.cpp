@@ -1027,9 +1027,9 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
         inputProcessorsCount = 0;
     }
 
-    for (UIControl* child : srcControl->GetChildren())
+    for (UIControl* srcChild : srcControl->GetChildren())
     {
-        RefPtr<UIControl> clone(child->Clone());
+        RefPtr<UIControl> clone(srcChild->SafeClone());
         AddControl(clone.Get());
     }
 }

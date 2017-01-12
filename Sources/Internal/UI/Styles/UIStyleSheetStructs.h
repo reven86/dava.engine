@@ -12,7 +12,6 @@ namespace DAVA
 enum class ePropertyOwner
 {
     CONTROL,
-    BACKGROUND,
     COMPONENT,
 };
 
