@@ -316,11 +316,13 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                     ++cmd3Count;
                 }
 
+                #if !defined(__DAVAENGINE_ANDROID__)
                 cmd3[cmd3Count].func = GLCommand::TEX_PARAMETER_I;
                 cmd3[cmd3Count].arg[0] = GL_TEXTURE_CUBE_MAP;
                 cmd3[cmd3Count].arg[1] = GL_TEXTURE_MAX_LEVEL;
                 cmd3[cmd3Count].arg[2] = desc.levelCount - 1;
                 ++cmd3Count;
+                #endif
 
                 cmd3[cmd3Count].func = GLCommand::RESTORE_TEXTURE0;
                 ++cmd3Count;
@@ -908,7 +910,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             {
                 if (tex->isCubeMap)
                 {
-                    #if defined(__DAVAENGINE_MACOS__) // special hipster edition
+                    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 
                     GLenum target = 0;
 
