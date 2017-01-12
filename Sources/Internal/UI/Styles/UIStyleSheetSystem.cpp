@@ -293,8 +293,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         break;
     }
     case ePropertyOwner::BACKGROUND:
-        if (control->GetBackgroundComponentsCount() > 0)
-            action(control, control->GetBackgroundComponent(0), descr.memberInfo);
+        action(control, control->GetBackground(), descr.memberInfo);
         break;
     case ePropertyOwner::COMPONENT:
         if (UIComponent* component = control->GetComponent(descr.group->componentType))

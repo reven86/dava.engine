@@ -42,7 +42,8 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     switch (componentType)
     {
     case BACKGROUND_COMPONENT:
-        DVASSERT(false, "Background component is not implemented yet.");
+        return new UIControlBackground();
+        //DVASSERT(false, "Background component is not implemented yet.");
         return nullptr;
 
     case LINEAR_LAYOUT_COMPONENT:

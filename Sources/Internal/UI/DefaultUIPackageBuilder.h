@@ -37,9 +37,6 @@ public:
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
-    virtual UIControlBackground* BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
-    virtual void EndBgPropertiesSection() override;
-
     virtual void ProcessProperty(const InspMember* member, const VariantType& value) override;
 
 private:
