@@ -7,17 +7,13 @@ namespace rhi
 {
 namespace FrameLoop
 {
-static const uint32 FRAME_POOL_SIZE = 16;
-
+void Initialize(uint32 framePoolSize);
 void ProcessFrame();
-bool FinishFrame(); //return false if frame was empty
+bool FinishFrame(Handle sync); //return false if frame was empty
 bool FrameReady();
 uint32 FramesCount();
 void AddPass(Handle pass);
 void RejectFrames();
 void SetFramePerfQueries(Handle startQuery, Handle endQuery);
-
-void ScheduleResourceDeletion(Handle handle, ResourceType resourceType);
-HSyncObject GetCurrentFrameSyncObject();
 }
 }

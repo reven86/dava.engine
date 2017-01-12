@@ -65,7 +65,7 @@ void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
 
 HSyncObject GetCurrentFrameSyncObject()
 {
-    return FrameLoop::GetCurrentFrameSyncObject();
+    return RenderLoop::GetCurrentFrameSyncObject();
 }
 
 //------------------------------------------------------------------------------
