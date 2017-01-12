@@ -136,8 +136,8 @@ void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
     {
 #if defined(LOCAL_FRAMEWORK_SOURCE_PATH)
         DAVA::FilePath::AddResourcesFolder(ShadersModuleDetail::GetDevMaterialsPath());
-        ReloadShaders();
 #endif
+        ReloadShaders();
     }
 }
 
