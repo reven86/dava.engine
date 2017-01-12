@@ -47,7 +47,7 @@ void CompareCustomProperties(const Entity* entity1, const Entity* entity2, Valid
     }
     else if (entity1HasCustomProperties && entity2HasCustomProperties)
     {
-        static const char* CHECKED_PROPERTIES[] = { "CollisionType", "CollisionTypeCrashed", "editor.ReferenceToOwner", "Health", "MaterialKind" };
+        static const char* CHECKED_PROPERTIES[] = { "CollisionType", "CollisionTypeCrashed", "editor.referenceToOwner", "Health", "MaterialKind" };
 
         for (const char* checkedProperty : CHECKED_PROPERTIES)
         {
