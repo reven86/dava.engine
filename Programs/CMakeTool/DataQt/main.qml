@@ -17,22 +17,33 @@ ApplicationWindow {
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.margins * 4 + wrapper.spacing * 4
     minimumWidth: wrapper.Layout.minimumWidth + splitView.anchors.margins * 2 + 50
+    onMinimumHeightChanged: {
+        if(height < minimumHeight) {
+            height = minimumHeight
+        }
+    }
+    
+    onMinimumWidthChanged: {
+        if(width < minimumWidth) {
+            width = minimumWidth
+        }
+    }
     toolBar: ToolBar {
-		RowLayout {
+        RowLayout {
             anchors.fill: parent
-			ToolButton {
-				tooltip: qsTr("Preferences")
+            ToolButton {
+                tooltip: qsTr("Preferences")
                 iconSource: "qrc:///Icons/settings.png"
-				onClicked: preferencesDialog.show();
+                onClicked: preferencesDialog.show();
             }
             ToolButton {
-				tooltip: qsTr("Show help")
+                tooltip: qsTr("Show help")
                 iconSource: "qrc:///Icons/help.ico"
-				onClicked: help.Show();
+                onClicked: help.Show();
             }
-			Item {
-				Layout.fillWidth: true
-			}
+            Item {
+                Layout.fillWidth: true
+            }
         }
     }
     function processText(text) {
@@ -46,13 +57,13 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-		
-		property alias prefWidth: preferencesDialog.width
-		property alias prefHeight: preferencesDialog.height
-		property alias prefX: preferencesDialog.x
-		property alias prefY: preferencesDialog.y
-		
-		property string historyStr;
+        
+        property alias prefWidth: preferencesDialog.width
+        property alias prefHeight: preferencesDialog.height
+        property alias prefX: preferencesDialog.x
+        property alias prefY: preferencesDialog.y
+        
+        property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
             function compare(left, right) {
@@ -64,7 +75,7 @@ ApplicationWindow {
         }
         property int historyVersion: -1
         property bool buildToTheSourceFolder: true
-		property string customBuildFolder;
+        property string customBuildFolder;
     }
     property var history;
     function applyProjectSettings(buildSettings) {
@@ -73,7 +84,7 @@ ApplicationWindow {
         rowLayout_davaFolder.path = buildSettings.davaPath;
         textField_customOptions.text = buildSettings.customOptions
         mutableContent.loadState(buildSettings.state);
-		columnLayoutOutput.loadState(buildSettings.outputState);
+        columnLayoutOutput.loadState(buildSettings.outputState);
     }
 
     function loadHistory() {
@@ -82,8 +93,14 @@ ApplicationWindow {
         if(settings.historyVersion === historyVersion) {
             history = JSON.parse(settings.historyStr);
         }
-
+        for(var i = history.length - 1; i >= 0; --i) {
+            var source = history[i].source;
+            if(!fileSystemHelper.IsDirExists(source)) {
+                history.splice(i, 1);
+            }
+        }
         for(var i = 0, length = history.length; i < length; ++i) {
+            var source = history[i].source;
             rowLayout_sourceFolder.item.addString(history[i].source)
         }
     }
@@ -108,7 +125,7 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-		newItem.outputState = columnLayoutOutput.saveState();
+        newItem.outputState = columnLayoutOutput.saveState();
         
         //now update current history, because we load fields from it.
         for(var i = 0, length = history.length; i < length && !found; ++i) {
@@ -225,7 +242,7 @@ ApplicationWindow {
     SplitView {
         id: splitView;
         anchors.fill: parent
-		property int margins: 10
+        property int margins: 10
         anchors.margins: margins
         objectName: "splitView"
 
@@ -239,7 +256,7 @@ ApplicationWindow {
             ColumnLayout {
                 id: wrapper
                 anchors.fill: parent
-				anchors.rightMargin: splitView.margins
+                anchors.rightMargin: splitView.margins
                 RowLayoutPath {
                     id: rowLayout_sourceFolder
                     labelText: qsTr("Source folder");
@@ -256,16 +273,16 @@ ApplicationWindow {
                                 }
                             }
                             if (!found) {
-								if (settings.buildToTheSourceFolder) {
-									rowLayout_buildFolder.path = text + "/_build";
-								} else {
-									var array = text.split(/[\\\/]+/g);
-									if(array.length > 0) {
-										var path = settings.customBuildFolder + "/" + array[array.length - 1] + "/_build";
-										rowLayout_buildFolder.path = fileSystemHelper.NormalizePath(path);
-									}
-								}
-							}
+                                if (settings.buildToTheSourceFolder) {
+                                    rowLayout_buildFolder.path = text + "/_build";
+                                } else {
+                                    var array = text.split(/[\\\/]+/g);
+                                    if(array.length > 0) {
+                                        var path = settings.customBuildFolder + "/" + array[array.length - 1] + "/_build";
+                                        rowLayout_buildFolder.path = fileSystemHelper.NormalizePath(path);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -347,10 +364,10 @@ ApplicationWindow {
                     }
                     Layout.fillWidth: true
                 }
-				Item {
-					id: spacer
-					height: 20
-				}
+                Item {
+                    id: spacer
+                    height: 20
+                }
                 RowLayout {
                     Label {
                         id: label_customOptions
@@ -369,6 +386,9 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
+                    processWrapper: processWrapper
+                    buildFolder: rowLayout_buildFolder.path
+                    cmakeFolder: rowLayout_cmakeFolder.path
                     onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
                         textArea_processText.text = "";
@@ -394,10 +414,10 @@ ApplicationWindow {
 
             Connections {
                 target: processWrapper
-                onProcessStateChanged: textArea_processText.append(displayHtmlFormat
+                onProcessStateTextChanged: textArea_processText.append(displayHtmlFormat
                                                                    ? "<font color=\"DarkGreen\">" + text + "</font>"
                                                                    : "****new process state: " + text + " ****");
-                onProcessErrorChanged: textArea_processText.append(displayHtmlFormat
+                onProcessErrorTextChanged: textArea_processText.append(displayHtmlFormat
                                                                    ? "<font color=\"DarkRed\">" + text + "</font>"
                                                                    : "****process error occurred!: " + text + " ****");
                 onProcessStandardOutput: {
