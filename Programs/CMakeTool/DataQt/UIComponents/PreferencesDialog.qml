@@ -1,7 +1,7 @@
 import QtQuick 2.6
 import QtQuick.Controls 1.5
 import QtQuick.Window 2.2
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.3
 import Cpp.Utils 1.0
 
 //qml Dialog not working

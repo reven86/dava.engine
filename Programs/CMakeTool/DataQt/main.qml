@@ -1,7 +1,7 @@
 import QtQuick 2.6
 import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.3
 import Cpp.Utils 1.0
 import Qt.labs.settings 1.0
 import "UIComponents"
@@ -17,16 +17,26 @@ ApplicationWindow {
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.margins * 4 + wrapper.spacing * 4
     minimumWidth: wrapper.Layout.minimumWidth + splitView.anchors.margins * 2 + 50
-    onMinimumHeightChanged: {
-        if(height < minimumHeight) {
-            height = minimumHeight
+    //on os x minimum height changes several times during program launch and changed values not linear
+    Timer {
+        id: geometryTimer
+        repeat: false
+        interval: 200
+        onTriggered: {
+            if(applicationWindow.height < applicationWindow.minimumHeight) {
+                applicationWindow.height = applicationWindow.minimumHeight
+            }
+            if(applicationWindow.width < applicationWindow.minimumWidth) {
+                applicationWindow.width = applicationWindow.minimumWidth
+            }
         }
+    }
+    onMinimumHeightChanged: {
+        geometryTimer.restart();
     }
     
     onMinimumWidthChanged: {
-        if(width < minimumWidth) {
-            width = minimumWidth
-        }
+        geometryTimer.restart();
     }
     toolBar: ToolBar {
         RowLayout {
