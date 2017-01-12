@@ -1,17 +1,11 @@
 import QtQuick 2.6
 import QtQuick.Controls 1.5
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.3
 import Cpp.Utils 1.0
 
-GroupBox {
+ColumnLayout {
     id: wrapper
-    flat: true
-    style: GroupBoxStyle {
-        padding.left: 0 
-        padding.right: 0
-        padding.top: 0
-        
-    }
+
     property string buildFolder;
     property string cmakeFolder;
     property var processWrapper;
@@ -64,6 +58,7 @@ GroupBox {
             textColor: outputComplete ? "black" : "darkred"
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumHeight: 100
         }
         GroupBox {
             title: qsTr("pre-configure actions");
@@ -133,6 +128,29 @@ GroupBox {
         RowLayout {
             Layout.fillWidth: true
             Button {
+                id: openProjectButton
+                iconSource: "qrc:///Icons/" + (platformHelper.CurrentPlatform() == PlatformHelper.Windows ? "msvs.png" : "xcode.png")
+                tooltip: qsTr("open project file")
+                enabled: buildFolder.length !== 0
+                text: qsTr("open project file");
+                onClicked:  {
+                    openInIDE();
+                }
+            }
+            Button {
+                id: openBuildFolderButton
+                iconSource: "qrc:///Icons/openfolder.png"
+                tooltip: qsTr("open build folder")
+                enabled: buildFolder.length !== 0
+                text: qsTr("Open build folder");
+                onClicked:  {
+                    processWrapper.OpenFolderInExplorer(buildFolder);
+                }
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            Button {
                 id: button_runBuildDebug
                 text: qsTr("build debug")
                 enabled: !processWrapper.running
@@ -151,29 +169,6 @@ GroupBox {
                 anchors.bottom: openProjectButton.bottom
                 onClicked: {
                     buildRelease();
-                }
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-            Button {
-                id: openProjectButton
-                iconSource: "qrc:///Icons/" + (platformHelper.CurrentPlatform() == PlatformHelper.Windows ? "msvs.png" : "xcode.png")
-                tooltip: qsTr("open project file")
-                enabled: buildFolder.length !== 0
-                text: qsTr("open project file");
-                onClicked:  {
-                    openInIDE();
-                }
-            }
-            Button {
-                id: openBuildFolderButton
-                iconSource: "qrc:///Icons/openfolder.png"
-                tooltip: qsTr("open build folder")
-                enabled: buildFolder.length !== 0
-                text: qsTr("Open build folder");
-                onClicked:  {
-                    processWrapper.OpenFolderInExplorer(buildFolder);
                 }
             }
         }
