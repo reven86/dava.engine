@@ -24,6 +24,18 @@
 #include "Render/ShaderCache.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 
+namespace ShadersModuleDetail
+{
+#if defined(LOCAL_FRAMEWORK_SOURCE_PATH)
+DAVA::FilePath GetDevMaterialsPath()
+{
+    DAVA::FilePath devShadersPath(LOCAL_FRAMEWORK_SOURCE_PATH);
+    devShadersPath += "/Programs/Data/";
+    return devShadersPath;
+}
+#endif
+}
+
 void ShadersModule::PostInit()
 {
     using namespace DAVA::TArc;
@@ -36,7 +48,7 @@ void ShadersModule::PostInit()
                                                       return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
                                                   });
 
-    ActionPlacementInfo menuPlacement(CreateMenuPoint("menuScene", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "actionEnableCameraLight")));
+    ActionPlacementInfo menuPlacement(CreateMenuPoint("Scene", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "actionEnableCameraLight")));
     GetUI()->AddAction(REGlobal::MainWindowKey, menuPlacement, reloadShadersAction);
 
     ActionPlacementInfo toolbarPlacement(CreateToolbarPoint("sceneToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "Reload Sprites")));
@@ -108,20 +120,6 @@ void ShadersModule::ReloadShaders()
 
 void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
 {
-    DAVA::FilePath shadersDebugPathname = SettingsManager::GetValue(Settings::Debug_DataWithMaterialsPathname).AsString();
-    if (shadersDebugPathname.IsEmpty())
-    {
-        return;
-    }
-    shadersDebugPathname.MakeDirectoryPathname();
-
-    DAVA::String lastFolder = shadersDebugPathname.GetLastDirectoryName();
-    if (lastFolder != "Data")
-    {
-        DAVA::Logger::Warning("Pathname for reloading of shaders should be to Data direcory: %s", shadersDebugPathname.GetStringValue().c_str());
-        return;
-    }
-
     DAVA::FilePath newProjectPathname;
     if (projectFieldValue.CanGet<DAVA::FilePath>())
     {
@@ -130,11 +128,16 @@ void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
 
     if (newProjectPathname.IsEmpty())
     {
-        DAVA::FilePath::RemoveResourcesFolder(shadersDebugPathname);
+#if defined(LOCAL_FRAMEWORK_SOURCE_PATH)
+        DAVA::FilePath::RemoveResourcesFolder(ShadersModuleDetail::GetDevMaterialsPath());
+#endif
     }
     else
     {
-        DAVA::FilePath::AddResourcesFolder(shadersDebugPathname);
+#if defined(LOCAL_FRAMEWORK_SOURCE_PATH)
+        DAVA::FilePath::AddResourcesFolder(ShadersModuleDetail::GetDevMaterialsPath());
+        ReloadShaders();
+#endif
     }
 }
 
