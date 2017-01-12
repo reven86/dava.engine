@@ -38,7 +38,7 @@ ApplicationWindow {
             }
             ToolButton {
                 tooltip: qsTr("Show help")
-                iconSource: "qrc:///Icons/help.ico"
+                iconSource: "qrc:///Icons/help.png"
                 onClicked: help.Show();
             }
             Item {

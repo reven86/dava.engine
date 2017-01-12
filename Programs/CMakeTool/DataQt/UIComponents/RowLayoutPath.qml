@@ -15,7 +15,7 @@ RowLayout {
     Binding { target: rowLayout; property: "path"; value: loader.item.text}
     Binding { target: loader.item; property: "text"; value: path }
     onPathChanged: loader.item.text = path
-	Layout.fillWidth: true
+    Layout.fillWidth: true
     property bool pathIsValid: selectFolders
                                ? fileSystemHelper.IsDirExists(loader.item.text)
                                : fileSystemHelper.IsFileExists(loader.item.text)

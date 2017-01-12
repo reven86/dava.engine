@@ -7,7 +7,7 @@ GroupBox {
     id: mutableContentItem;
     signal dataUpdated();
     property var localConfiguration;
-	Layout.fillWidth: true;
+    Layout.fillWidth: true;
     function processConfiguration(configuration) {
         localConfiguration = configuration;
         var arrayPlatforms = localConfiguration["platforms"];
@@ -73,7 +73,7 @@ GroupBox {
     ColumnLayout {
         id: columnLayout
         spacing: 10
-		Layout.fillWidth: true;
+        Layout.fillWidth: true;
         RowLayout {
             id: rowLayout
             anchors.fill: parent
