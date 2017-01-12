@@ -77,7 +77,6 @@ public:
     void BeginFrame() override;
     void EndFrame() override;
 
-
     void ShowUI(bool visible);
     bool IsUIVisible() const;
 

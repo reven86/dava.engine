@@ -196,7 +196,7 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
                  .c_str());
 }
 
-void BaseTest::SystemUpdate(float32 timeElapsed)
+void BaseTest::Update(float32 timeElapsed)
 {
     BaseScreen::Update(timeElapsed);
     uint32 allocatedMem = GetAllocatedMemory();

@@ -153,14 +153,14 @@ void MaterialsTest::BeginFrame()
 
 bool MaterialsTest::IsFinished() const
 {
-    return GetTestFrameNumber() > materials.size() * FRAMES_PER_MATERIAL_TEST;
+    return static_cast<uint32>(GetTestFrameNumber()) > materials.size() * FRAMES_PER_MATERIAL_TEST;
 }
 
 void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
 {
     BaseTest::PrintStatistic(frames);
 
-    for (int32 i = 0; i < materials.size(); i++)
+    for (uint32 i = 0; i < materials.size(); i++)
     {
         String materialName = "MaterialSubtestName:" + String(materials[i]->GetParent()->GetMaterialName().c_str());
         Logger::Info(materialName.c_str());
