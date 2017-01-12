@@ -626,7 +626,7 @@ void CommandBufferGLES2_t::Execute()
                     #endif
 
                     #if defined(__DAVAENGINE_MACOS__)
-                    if (passCfg.colorBuffer[i].loadAction == LOADACTION_CLEAR)
+                    if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                     {
                         // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
                         GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
