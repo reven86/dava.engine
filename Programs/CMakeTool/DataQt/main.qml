@@ -18,25 +18,42 @@ ApplicationWindow {
     minimumHeight: wrapper.Layout.minimumHeight + splitView.margins * 4 + wrapper.spacing * 4
     minimumWidth: wrapper.Layout.minimumWidth + splitView.anchors.margins * 2 + 50
     //on os x minimum height changes several times during program launch and changed values not linear
+    PlatformHelper {
+        id: platformHelper
+    }
+    function normalizeHeight() {
+        if(applicationWindow.height < applicationWindow.minimumHeight) {
+            applicationWindow.height = applicationWindow.minimumHeight
+        }
+    }
+    function normalizeWidth() {
+        if(applicationWindow.width < applicationWindow.minimumWidth) {
+            applicationWindow.width = applicationWindow.minimumWidth
+        }
+    }
     Timer {
         id: geometryTimer
         repeat: false
         interval: 200
         onTriggered: {
-            if(applicationWindow.height < applicationWindow.minimumHeight) {
-                applicationWindow.height = applicationWindow.minimumHeight
-            }
-            if(applicationWindow.width < applicationWindow.minimumWidth) {
-                applicationWindow.width = applicationWindow.minimumWidth
-            }
+            normalizeHeight();
+            normalizeWidth();
         }
     }
     onMinimumHeightChanged: {
-        geometryTimer.restart();
+        if(platformHelper.CurrentPlatform() == PlatformHelper.Windows ) {
+            normalizeHeight();
+        } else {
+            geometryTimer.restart();
+        }
     }
-    
+
     onMinimumWidthChanged: {
-        geometryTimer.restart();
+        if(platformHelper.CurrentPlatform() == PlatformHelper.Windows ) {
+            normalizeWidth();
+        } else {
+            geometryTimer.restart();
+        }    
     }
     toolBar: ToolBar {
         RowLayout {
