@@ -608,5 +608,4 @@ UIStaticText* UIButton::CreateDefaultTextBlock() const
 {
     return new UIStaticText(Rect(Vector2(), GetSize()));
 }
-
 };

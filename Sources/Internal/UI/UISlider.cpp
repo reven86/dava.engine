@@ -267,10 +267,4 @@ void UISlider::AttachToSubcontrols()
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
 }
 
-
-
-
-
-
-
 } // ns
