@@ -1,3 +1,9 @@
+#include "configstorage.h"
+#include "processwrapper.h"
+#include "filesystemhelper.h"
+#include "help.h"
+#include "platformHelper.h"
+
 #include <QApplication>
 #include <QString>
 #include <QQmlApplicationEngine>
@@ -5,11 +11,6 @@
 #include <QMessageBox>
 #include <QtQuick>
 #include <QtQML>
-#include "configstorage.h"
-#include "processwrapper.h"
-#include "filesystemhelper.h"
-#include "help.h"
-#include "platformHelper.h"
 
 int main(int argc, char* argv[])
 {
