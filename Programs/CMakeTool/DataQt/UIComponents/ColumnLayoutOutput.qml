@@ -153,7 +153,7 @@ GroupBox {
             }
             Button {
                 id: openProjectButton
-                iconSource: "qrc:///Icons/" + (platformHelper.CurrentPlatform() == PlatformHelper.Windows ? "msvs.ico" : "xcode.png")
+                iconSource: "qrc:///Icons/" + (platformHelper.CurrentPlatform() == PlatformHelper.Windows ? "msvs.png" : "xcode.png")
                 tooltip: qsTr("open project file")
                 enabled: buildFolder.length !== 0
                 text: qsTr("open project file");
