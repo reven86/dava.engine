@@ -35,7 +35,7 @@ void AnimationSystem::Process(float32 timeElapsed)
     for (int i = 0; i < componentsCount; i++)
     {
         AnimationComponent* comp = activeComponents[i];
-        comp->time += timeElapsed;
+        comp->time += timeElapsed * comp->animationScale;
         if (comp->time > comp->animation->duration)
         {
             comp->currRepeatsCont++;

@@ -48,6 +48,7 @@ private:
     friend class TransformSystem;
     AnimationData* animation;
     float32 time;
+    float32 animationScale;
     uint32 frameIndex;
     uint32 repeatsCount;
     uint32 currRepeatsCont;
@@ -62,6 +63,7 @@ public:
     INTROSPECTION_EXTEND(AnimationComponent, Component,
                          MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
                          PROPERTY("isPlaying", "isPlaying", GetIsPlaying, SetIsPlaying, I_SAVE | I_EDIT | I_VIEW)
+                         MEMBER(animationScale, "animationScale", I_VIEW | I_EDIT | I_SAVE)
                          );
 };
 
