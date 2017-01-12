@@ -46,6 +46,8 @@ void RejectFrames()
 
 void ProcessFrame()
 {
+    DVASSERT(framePoolSize);
+
     bool presentResult = true;
     if (NeedRestoreResources())
     {
