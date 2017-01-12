@@ -17,6 +17,7 @@
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
