@@ -47,7 +47,7 @@ private:
     DAVA::UIComponent* component;
     DAVA::int32 index;
     const ComponentPropertiesSection* prototypeSection;
-    
+
     bool componentWasCreated = false;
 };
 
