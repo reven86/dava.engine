@@ -908,6 +908,36 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             {
                 if (tex->isCubeMap)
                 {
+                    #if defined(__DAVAENGINE_MACOS__) // special hipster edition
+
+                    GLenum target = 0;
+
+                    switch (face[i])
+                    {
+                    case TEXTURE_FACE_POSITIVE_X:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+                        break;
+                    case TEXTURE_FACE_NEGATIVE_X:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+                        break;
+                    case TEXTURE_FACE_POSITIVE_Y:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+                        break;
+                    case TEXTURE_FACE_NEGATIVE_Y:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+                        break;
+                    case TEXTURE_FACE_POSITIVE_Z:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+                        break;
+                    case TEXTURE_FACE_NEGATIVE_Z:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+                        break;
+                    }
+
+                    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
+                    
+                    #else
+
                     GLenum layer = 0;
 
                     switch (face[i])
@@ -932,7 +962,9 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
                         break;
                     }
 
-                    GL_CALL(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, tex->uid, level[i], layer));
+                    GL_CALL(glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, tex->uid, level[i], layer));
+                    
+                    #endif
                 }
                 else
                 {
@@ -989,6 +1021,8 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             DAVA::Logger::Error("glCheckFramebufferStatus = %08X", status);
             DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
         }
+
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
     return fb;
