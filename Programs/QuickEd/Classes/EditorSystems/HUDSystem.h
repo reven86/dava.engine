@@ -44,10 +44,10 @@ private:
     DAVA::Vector2 hoveredPoint;
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    DAVA::RefPtr<DAVA::UIControl> selectionRectControl = nullptr;
+    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     SortedPackageBaseNodeSet sortedControlList;
     SelectionContainer selectionContainer;
-    DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl = nullptr;
+    DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
 };
