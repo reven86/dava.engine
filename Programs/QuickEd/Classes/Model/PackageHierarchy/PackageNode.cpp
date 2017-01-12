@@ -409,7 +409,9 @@ void PackageNode::RebuildStyleSheets()
     }
 
     for (PackageListener* listener : listeners)
+    {
         listener->StyleSheetsWereRebuilt();
+    }
 }
 
 void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
@@ -546,12 +548,11 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
     result.push_back(DepthPackageNode(0, this));
 
     // collect imported packages recursively
-    int32 firstUnprocessedPackage = 0;
 
-    while (firstUnprocessedPackage < result.size())
+    for (int32 packageIndex = 0; packageIndex < result.size(); ++packageIndex)
     {
-        PackageNode* packageNode = result[firstUnprocessedPackage].packageNode;
-        int32 depth = result[firstUnprocessedPackage].depth;
+        PackageNode* packageNode = result[packageIndex].packageNode;
+        int32 depth = result[packageIndex].depth;
 
         ImportedPackagesNode* importedPackagesNode = packageNode->GetImportedPackagesNode();
         for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
@@ -559,8 +560,6 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
             PackageNode* node = importedPackagesNode->GetImportedPackage(i);
             result.push_back(DepthPackageNode(depth + 1, node));
         }
-
-        ++firstUnprocessedPackage;
     }
 
     return result;

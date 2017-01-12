@@ -141,13 +141,13 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
                 {
                     propertySources[prop.propertyIndex] = &prop;
 
-                    if (debugData)
+                    if (debugData != nullptr)
                     {
                         debugData->propertySources[prop.propertyIndex] = styleSheet;
                     }
                 }
 
-                if (debugData)
+                if (debugData != nullptr)
                 {
                     debugData->styleSheets.push_back(*styleSheetIter);
                 }
@@ -155,7 +155,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
         }
 
         const UIStyleSheetPropertySet propertiesToApply = cascadeProperties & (~localControlProperties);
-        if (debugData)
+        if (debugData != nullptr)
         {
             debugData->appliedProperties = propertiesToApply;
         }

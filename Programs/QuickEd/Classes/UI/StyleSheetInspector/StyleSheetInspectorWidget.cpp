@@ -22,14 +22,14 @@ StyleSheetInspectorWidget::~StyleSheetInspectorWidget() = default;
 
 void StyleSheetInspectorWidget::OnDocumentChanged(Document* context)
 {
-    if (packageNode)
+    if (packageNode != nullptr)
     {
         packageNode->RemoveListener(this);
     }
 
     packageNode = context ? context->GetPackage() : nullptr;
 
-    if (packageNode)
+    if (packageNode != nullptr)
     {
         packageNode->AddListener(this);
     }
@@ -40,17 +40,14 @@ void StyleSheetInspectorWidget::OnDocumentChanged(Document* context)
 
 void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    for (auto node : selected)
+    for (const PackageBaseNode* node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (controlNode != nullptr)
+        if (nullptr != controlNode && nullptr != controlNode->GetControl())
         {
-            if (nullptr != controlNode && nullptr != controlNode->GetControl())
-            {
-                currentControl = controlNode->GetControl();
+            currentControl = controlNode->GetControl();
 
-                break;
-            }
+            break;
         }
     }
 
@@ -76,7 +73,7 @@ void StyleSheetInspectorWidget::Update()
 {
     ui->listWidget->clear();
 
-    if (currentControl)
+    if (currentControl != nullptr)
     {
         UIStyleSheetProcessDebugData debugData;
 

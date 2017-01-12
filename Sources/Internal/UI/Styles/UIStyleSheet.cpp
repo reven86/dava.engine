@@ -33,21 +33,21 @@ const UIStyleSheetSourceInfo& UIStyleSheet::GetSourceInfo() const
     return sourceInfo;
 }
 
-void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
+void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* properties_)
 {
-    properties = newProperties;
+    properties = properties_;
 }
 
-void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& newSelectorChain)
+void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain_)
 {
-    selectorChain = newSelectorChain;
+    selectorChain = selectorChain_;
 
     RecalculateScore();
 }
 
-void UIStyleSheet::SetSourceInfo(const UIStyleSheetSourceInfo& aSourceInfo)
+void UIStyleSheet::SetSourceInfo(const UIStyleSheetSourceInfo& sourceInfo_)
 {
-    sourceInfo = aSourceInfo;
+    sourceInfo = sourceInfo_;
 }
 
 void UIStyleSheet::RecalculateScore()

@@ -134,8 +134,8 @@ struct UIStyleSheetSourceInfo
 {
     UIStyleSheetSourceInfo() = default;
 
-    UIStyleSheetSourceInfo(const FilePath& aFile)
-        : file(aFile)
+    UIStyleSheetSourceInfo(const FilePath& file_)
+        : file(file_)
     {
     }
 

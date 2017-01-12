@@ -94,9 +94,9 @@ public:
 private:
     struct DepthPackageNode
     {
-        DepthPackageNode(DAVA::int32 _depth, PackageNode* _packageNode)
-            : depth(_depth)
-            , packageNode(_packageNode)
+        DepthPackageNode(DAVA::int32 depth_, PackageNode* packageNode_)
+            : depth(depth_)
+            , packageNode(packageNode_)
         {
         }
 
