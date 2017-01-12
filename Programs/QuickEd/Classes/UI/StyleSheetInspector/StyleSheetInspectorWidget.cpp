@@ -42,7 +42,7 @@ void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected
 {
     for (const PackageBaseNode* node : selected)
     {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        const ControlNode* controlNode = dynamic_cast<const ControlNode*>(node);
         if (nullptr != controlNode && nullptr != controlNode->GetControl())
         {
             currentControl = controlNode->GetControl();
