@@ -23,7 +23,12 @@ GroupBox {
     Layout.fillWidth: true;
     Layout.fillHeight: true;
     function loadState(state) {
-        if(state == undefined) {
+        if(state == undefined 
+            || state.needClean == undefined
+            || state.openInIDE == undefined
+            || state.buildDebug == undefined
+            || state.buildRelease == undefined
+            || state.postConfigureEnabled == undefined) {
             return;
         }
         checkBox_clean.checked = state.needClean;
