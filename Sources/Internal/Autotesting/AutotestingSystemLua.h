@@ -113,6 +113,7 @@ public:
     bool SetText(const String& path, const String& text); // lua uses ansi strings
     bool CheckText(UIControl* control, const String& expectedText);
     bool CheckMsgText(UIControl* control, const String& key);
+    String GetTaggedClass(UIControl* control, const String& tag);
     String GetText(UIControl* control);
     uint32 GetTextColor(UIControl* control);
 
