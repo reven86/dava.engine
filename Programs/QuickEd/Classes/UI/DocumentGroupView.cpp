@@ -6,6 +6,7 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/Preview/PreviewWidget.h"
 #include "UI/Properties/PropertiesWidget.h"
+#include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include "ui_mainwindow.h"
 
@@ -18,6 +19,7 @@ MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->packageWidget, &PackageWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->libraryWidget, &LibraryWidget::OnDocumentChanged);
     connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnDocumentChanged);
 
     connect(mainWindow->ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
     connect(mainWindow->ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
@@ -63,6 +65,7 @@ void MainWindow::DocumentGroupView::SetDocumentActionsEnabled(bool enabled)
     mainWindow->ui->packageWidget->setEnabled(enabled);
     mainWindow->ui->propertiesWidget->setEnabled(enabled);
     mainWindow->ui->libraryWidget->setEnabled(enabled);
+    mainWindow->ui->styleSheetInspectorWidget->setEnabled(enabled);
 
     mainWindow->ui->actionSaveDocument->setEnabled(enabled);
     mainWindow->ui->actionSaveAllDocuments->setEnabled(enabled);

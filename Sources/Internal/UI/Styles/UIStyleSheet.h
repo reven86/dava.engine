@@ -25,9 +25,11 @@ public:
 
     const UIStyleSheetPropertyTable* GetPropertyTable() const;
     const UIStyleSheetSelectorChain& GetSelectorChain() const;
+    const UIStyleSheetSourceInfo& GetSourceInfo() const;
 
     void SetPropertyTable(UIStyleSheetPropertyTable* properties);
     void SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain);
+    void SetSourceInfo(const UIStyleSheetSourceInfo& sourceInfo);
 
 private:
     void RecalculateScore();
@@ -35,6 +37,8 @@ private:
     UIStyleSheetSelectorChain selectorChain;
 
     RefPtr<UIStyleSheetPropertyTable> properties;
+
+    UIStyleSheetSourceInfo sourceInfo;
 
     uint32 score;
 };
