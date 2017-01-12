@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
-#include "TArc/Controls/PropertyPanel/Private/SimpleComponentLoader.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include <QUrl>

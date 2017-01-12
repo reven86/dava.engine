@@ -1,6 +1,5 @@
 #include "IntComponentValue.h"
 
-#include "SimpleComponentLoader.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include <QUrl>

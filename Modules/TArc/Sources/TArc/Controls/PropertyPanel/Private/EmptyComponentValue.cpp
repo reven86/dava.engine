@@ -2,12 +2,26 @@
 
 #include "Reflection/ReflectionRegistrator.h"
 
-#include <QQmlComponent>
+#include <QStyle>
+#include <QStyleOption>
 
 namespace DAVA
 {
 namespace TArc
 {
+QWidget* EmptyComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    return nullptr;
+}
+
+void EmptyComponentValue::ReleaseEditorWidget(QWidget* editor, const QModelIndex& index)
+{
+}
+
+void EmptyComponentValue::StaticEditorPaint(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options)
+{
+    style->drawControl(QStyle::CE_ItemViewItem, &options, painter, options.widget);
+}
 
 DAVA_REFLECTION_IMPL(EmptyComponentValue)
 {

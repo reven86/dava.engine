@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 
@@ -9,9 +9,30 @@ namespace DAVA
 {
 namespace TArc
 {
+BaseComponentValue::BaseComponentValue()
+{
+    thisValue = this;
+}
+
 void BaseComponentValue::Init(ReflectedPropertyModel* model_)
 {
     model = model_;
+}
+
+QString BaseComponentValue::GetPropertyName() const
+{
+    Any fieldName = nodes.front()->field.key;
+    const Type* nameType = fieldName.GetType();
+    if (nameType == Type::Instance<int>())
+    {
+        return QString::number(fieldName.Cast<int>());
+    }
+    else if (nameType == Type::Instance<const char*>())
+    {
+        return QString(fieldName.Cast<const char*>());
+    }
+
+    return QString::fromStdString(fieldName.Cast<String>());
 }
 
 int32 BaseComponentValue::GetPropertiesNodeCount() const
@@ -49,6 +70,16 @@ void BaseComponentValue::RemovePropertyNodes()
 std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
 {
     return model->GetExtensionChain<ModifyExtension>();
+}
+
+DAVA::TArc::DataWrappersProcessor* BaseComponentValue::GetWrappersProcessor()
+{
+    return &model->wrappersProcessor;
+}
+
+DAVA::Reflection BaseComponentValue::GetReflection()
+{
+    return Reflection::Create(&thisValue);
 }
 
 DAVA_REFLECTION_IMPL(BaseComponentValue)

@@ -1,7 +1,7 @@
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyItem.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
-#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 
 #include "Debug/DVAssert.h"
 
@@ -51,7 +51,6 @@ QVariant ReflectedPropertyModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole)
     {
-        /// TODO UVR
         return MapItem(index)->GetPropertyName();
     }
 
@@ -72,6 +71,17 @@ QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orienta
     }
 
     return section == 0 ? QStringLiteral("Property") : QStringLiteral("Value");
+}
+
+Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    if (index.column() == 1)
+    {
+        flags |= Qt::ItemIsEditable;
+    }
+
+    return flags;
 }
 
 QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex& parent) const
@@ -119,6 +129,8 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
 
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 {
+    wrappersProcessor.Shoutdown();
+
     int childCount = static_cast<int>(rootItem->GetChildCount());
     if (childCount != 0)
     {
@@ -144,7 +156,7 @@ void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
     Update();
 }
 
-void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, size_t childPosition)
+void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition)
 {
     auto iter = nodeToItem.find(parent);
     DVASSERT(iter != nodeToItem.end());
@@ -250,6 +262,13 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
     }
 
     iter->second = ExtensionChain::RemoveExtension(iter->second, extension);
+}
+
+DAVA::TArc::BaseComponentValue* ReflectedPropertyModel::GetComponentValue(const QModelIndex& index) const
+{
+    ReflectedPropertyItem* item = MapItem(index);
+    DVASSERT(item != nullptr);
+    return item->value.get();
 }
 
 } // namespace TArc

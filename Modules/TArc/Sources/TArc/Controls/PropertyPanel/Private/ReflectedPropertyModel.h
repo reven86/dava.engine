@@ -16,6 +16,7 @@ class ReflectedPropertyItem;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     ReflectedPropertyModel();
     ~ReflectedPropertyModel();
@@ -29,6 +30,7 @@ public:
     QVariant data(const QModelIndex& index, int role /* = Qt::DisplayRole */) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role /* = Qt::EditRole */) override;
     QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     QModelIndex index(int row, int column, const QModelIndex& parent) const override;
     QModelIndex parent(const QModelIndex& index) const override;
@@ -43,9 +45,11 @@ public:
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
     void UnregisterExtension(const std::shared_ptr<ExtensionChain>& extension);
 
+    BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
+
 private:
     friend class BaseComponentValue;
-    void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, size_t childPosition);
+    void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);
     void ChildRemoved(std::shared_ptr<PropertyNode> node);
 
     ReflectedPropertyItem* MapItem(const QModelIndex& item) const;

@@ -1,5 +1,5 @@
-#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.h"
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyItem.h"
+#include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
 
 #include "TArc/Controls/PropertyPanel/Private/ObjectsPool.h"
 #include "TArc/Controls/PropertyPanel/Private/TextComponentValue.h"
@@ -97,7 +97,7 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
     {
         return std::make_unique<TextComponentValue>();
     }
-    else if (valueType == Type::Instance<bool>())
+    /*else if (valueType == Type::Instance<bool>())
     {
         return std::make_unique<BoolComponentValue>();
     }
@@ -105,9 +105,8 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
              valueType == Type::Instance<uint32>())
     {
         return std::make_unique<IntComponentValue>();
-    }
-
-    if (valueType == Type::Instance<FastName>())
+    }*/
+    else if (valueType == Type::Instance<FastName>())
     {
         return std::make_unique<FastNameComponentValue>();
     }

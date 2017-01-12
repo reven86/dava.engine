@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
-#include "TArc/Controls/PropertyPanel/DefaultPropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 
 namespace DAVA
 {
@@ -38,7 +38,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
         newItems = std::move(children);
         for (size_t i = 0; i < newItems.size(); ++i)
         {
-            nodeCreated.Emit(parent, newItems[i], i);
+            nodeCreated.Emit(parent, newItems[i], static_cast<int32>(i));
         }
     }
     else
@@ -56,7 +56,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
             std::swap(children, currentChildren);
             for (size_t i = 0; i < currentChildren.size(); ++i)
             {
-                nodeCreated.Emit(parent, currentChildren[i], i);
+                nodeCreated.Emit(parent, currentChildren[i], static_cast<int32>(i));
             }
         }
         else
@@ -67,7 +67,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
                 {
                     RemoveNode(currentChildren[i]);
                     std::swap(currentChildren[i], children[i]);
-                    nodeCreated.Emit(parent, currentChildren[i], i);
+                    nodeCreated.Emit(parent, currentChildren[i], static_cast<int32>(i));
                 }
             }
         }

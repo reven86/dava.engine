@@ -1,5 +1,5 @@
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyItem.h"
-#include "Tarc/Controls/PropertyPanel/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
+#include "Tarc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
 #include "Debug/DVAssert.h"
@@ -39,18 +39,7 @@ std::shared_ptr<const PropertyNode> ReflectedPropertyItem::GetPropertyNode(int32
 
 QString ReflectedPropertyItem::GetPropertyName() const
 {
-    Any fieldName = value->GetPropertyNode(0)->field.key;
-    const Type* nameType = fieldName.GetType();
-    if (nameType == Type::Instance<int>())
-    {
-        return QString::number(fieldName.Cast<int>());
-    }
-    else if (nameType == Type::Instance<const char*>())
-    {
-        return QString(fieldName.Cast<const char*>());
-    }
-
-    return QString::fromStdString(fieldName.Cast<String>());
+    return value->GetPropertyName();
 }
 
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)

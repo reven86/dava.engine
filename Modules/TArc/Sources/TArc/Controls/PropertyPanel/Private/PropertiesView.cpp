@@ -1,11 +1,13 @@
 #include "TArc/Controls/PropertyPanel/PropertiesView.h"
-#include "TArc/Controls/PropertyPanel/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
 
 #include <QHBoxLayout>
 #include <QTreeView>
+#include <QTimer>
 
 namespace DAVA
 {
@@ -18,6 +20,15 @@ PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor&
     model.reset(new ReflectedPropertyModel());
 
     SetupUI();
+
+    QTimer* timer = new QTimer(this);
+    timer->setInterval(500);
+    QObject::connect(timer, &QTimer::timeout, [this]()
+                     {
+                         model->Update();
+                     });
+
+    timer->start();
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -42,6 +53,7 @@ void PropertiesView::SetupUI()
 
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
+    view->setItemDelegate(new PropertiesViewDelegate(view));
 }
 
 void PropertiesView::OnObjectsChanged(const Any& objects)

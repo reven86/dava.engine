@@ -1,9 +1,10 @@
 #include "TextComponentValue.h"
-#include "SimpleComponentLoader.h"
-#include "Base/FastName.h"
+#include "TArc/Controls/LineEdit.h"
+#include "TArc/Controls/PropertyPanel/TextEditorDrawer.h"
+#include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 #include "Reflection/ReflectionRegistrator.h"
-#include <QQmlComponent>
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -43,6 +44,24 @@ void TextComponentValue::SetText(const DAVA::String& text)
     }
 
     GetModifyInterface()->ModifyPropertyValue(nodes, Convert(text));
+}
+
+QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    LineEdit::FieldsDescriptor descr;
+    descr.valueFieldName = FastName("text");
+
+    return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
+}
+
+void TextComponentValue::ReleaseEditorWidget(QWidget* editor, const QModelIndex& index)
+{
+    editor->deleteLater();
+}
+
+void TextComponentValue::StaticEditorPaint(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options)
+{
+    TextEditorDrawer().Draw(style, painter, options, GetText());
 }
 
 Any TextComponentValue::Convert(const DAVA::String& text) const
