@@ -53,7 +53,7 @@ struct EnumMeta
     template <typename T>
     inline static DAVA::Meta<EnumMeta> Create(DAVA::int32 mode = 0)
     {
-        auto castFn = [](DAVA::int32 value) -> Any
+        auto castFn = [](DAVA::int32 value)
         {
             return DAVA::Any(static_cast<T>(value));
         };
