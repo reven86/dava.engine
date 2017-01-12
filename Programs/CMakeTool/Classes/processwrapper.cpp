@@ -20,7 +20,7 @@ ProcessWrapper::ProcessWrapper(QObject* parent)
     connect(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error), this, &ProcessWrapper::OnProcessError);
 }
 
-void ProcessWrapper::StartConfigure(const QString &command, bool needClean, const QString &buildFolder)
+void ProcessWrapper::StartConfigure(const QString& command, bool needClean, const QString& buildFolder)
 {
     taskQueue.enqueue({ command, needClean, buildFolder, true });
     if (process.state() == QProcess::NotRunning)
