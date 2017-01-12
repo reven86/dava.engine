@@ -284,7 +284,6 @@ bool PropertyWidget::event(QEvent* e)
 
     case QEvent::InputMethod:
         return static_cast<QObject*>(editWidget)->event(e);
-        break;
 
     default:
         break;

@@ -3,7 +3,9 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
-#include "UIStyleSheetStructs.h"
+#include "UI/Styles/UIPriorityStyleSheet.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
 #include "UI/UISystem.h"
 #include "Base/RefPtr.h"
 
@@ -15,6 +17,18 @@ class UIScreenTransition;
 class UIStyleSheet;
 struct UIStyleSheetSelector;
 class VariantType;
+
+struct UIStyleSheetProcessDebugData
+{
+    UIStyleSheetProcessDebugData()
+    {
+        std::fill(propertySources.begin(), propertySources.end(), nullptr);
+    }
+
+    DAVA::Vector<UIPriorityStyleSheet> styleSheets;
+    DAVA::Array<const UIStyleSheet*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources;
+    UIStyleSheetPropertySet appliedProperties;
+};
 
 class UIStyleSheetSystem
 : public UISystem
@@ -30,6 +44,8 @@ public:
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false);
+    void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
+
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
     bool HasGlobalClass(const FastName& clazz) const;
@@ -46,7 +62,7 @@ public:
     void CheckDirty();
 
 private:
-    void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged);
+    void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
     void UpdateControl(UIControl* root);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
