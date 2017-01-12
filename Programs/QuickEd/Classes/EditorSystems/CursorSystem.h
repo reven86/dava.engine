@@ -10,7 +10,7 @@
 class CursorSystem final : public BaseEditorSystem
 {
 public:
-    explicit CursorSystem(DAVA::RenderWidget *renderWidget, EditorSystemsManager* doc);
+    explicit CursorSystem(DAVA::RenderWidget* renderWidget, EditorSystemsManager* doc);
     ~CursorSystem() override = default;
 
 private:
@@ -21,6 +21,6 @@ private:
     QPixmap CreatePixmap(const QString& address) const;
 
     static QMap<QString, QPixmap> cursorpixes;
-    
-    DAVA::RenderWidget *renderWidget = nullptr;
+
+    DAVA::RenderWidget* renderWidget = nullptr;
 };

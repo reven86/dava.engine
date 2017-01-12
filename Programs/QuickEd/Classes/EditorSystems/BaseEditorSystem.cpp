@@ -8,7 +8,6 @@ BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
 
 void BaseEditorSystem::ProcessInput(DAVA::UIEvent* /*currentInput*/)
 {
-
 }
 
 bool BaseEditorSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
@@ -23,10 +22,8 @@ EditorSystemsManager::eDragState BaseEditorSystem::RequireNewState(DAVA::UIEvent
 
 void BaseEditorSystem::OnDragStateChanged(EditorSystemsManager::eDragState /*currentState*/, EditorSystemsManager::eDragState /*previousState*/)
 {
-
 }
 
 void BaseEditorSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState /*currentState*/, EditorSystemsManager::eDisplayState /*previousState*/)
 {
-
 }

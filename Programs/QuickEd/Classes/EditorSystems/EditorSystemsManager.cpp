@@ -84,7 +84,7 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
     {
-        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        const std::unique_ptr<BaseEditorSystem>& editorSystem = *it;
         BaseEditorSystem* editorSystemPtr = editorSystem.get();
         dragStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDragStateChanged);
         displayStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDisplayStateChanged);
@@ -107,9 +107,9 @@ void EditorSystemsManager::OnInput(UIEvent* currentInput)
     eDragState newState = NoDrag;
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
-        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        const std::unique_ptr<BaseEditorSystem>& editorSystem = *it;
 
-        if(newState == NoDrag)
+        if (newState == NoDrag)
         {
             newState = editorSystem->RequireNewState(currentInput);
         }
@@ -119,10 +119,10 @@ void EditorSystemsManager::OnInput(UIEvent* currentInput)
         }
     }
     SetDragState(newState);
-    
+
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
-        const std::unique_ptr<BaseEditorSystem> &editorSystem = *it;
+        const std::unique_ptr<BaseEditorSystem>& editorSystem = *it;
         if (editorSystem->CanProcessInput(currentInput))
         {
             editorSystem->ProcessInput(currentInput);
@@ -209,7 +209,7 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
     {
         return;
     }
-    
+
     if (displayState == Emulation)
     {
         // go to previous state when emulation flag will be cleared
@@ -237,7 +237,7 @@ void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseN
     SetDisplayState(rootControls.size() <= 1 ? Display : Preview);
 }
 
-void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo &areaInfo)
+void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
 {
     currentHUDArea = areaInfo;
 }

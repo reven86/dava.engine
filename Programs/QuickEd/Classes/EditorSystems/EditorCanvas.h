@@ -13,27 +13,26 @@ class UIControl;
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(DAVA::UIControl *movableControl, EditorSystemsManager* parent);
+    EditorCanvas(DAVA::UIControl* movableControl, EditorSystemsManager* parent);
     ~EditorCanvas() override;
 
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
-    
+
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
 
     DAVA::Vector2 GetCanvasSize() const;
     DAVA::Vector2 GetViewSize() const;
-    
+
     DAVA::Vector2 GetPosition() const;
-    
+
     DAVA::float32 GetScale() const;
     DAVA::float32 GetMinScale() const;
     DAVA::float32 GetMaxScale() const;
-    
+
     DAVA::Vector2 GetMinimumPos() const;
     DAVA::Vector2 GetMaximumPos() const;
     void AdjustScale(DAVA::float32 newScale, const DAVA::Vector2& mousePos);
-
 
     void SetViewSize(const DAVA::Vector2& size);
     void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);

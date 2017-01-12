@@ -15,7 +15,7 @@ public:
 
 protected:
     EditorSystemsManager* systemsManager = nullptr;
-    
+
 private:
     //this class is designed to be used only by EditorSystemsManager
     friend class EditorSystemsManager;
@@ -23,7 +23,7 @@ private:
     //Ask system for a new state
     //this state must be unique
     //if two different systems require different states at the same time - this is logical error
-    //this method is not const because it can update cached states 
+    //this method is not const because it can update cached states
     virtual EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput);
     //if system can not process input - OnInput method will not be called
     virtual bool CanProcessInput(DAVA::UIEvent* currentInput) const;

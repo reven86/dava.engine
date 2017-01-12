@@ -13,7 +13,7 @@ class BackgroundController;
 class EditorControlsView final : public BaseEditorSystem, PackageListener
 {
 public:
-    EditorControlsView(DAVA::UIControl *canvasParent, EditorSystemsManager* parent);
+    EditorControlsView(DAVA::UIControl* canvasParent, EditorSystemsManager* parent);
     ~EditorControlsView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
@@ -34,5 +34,5 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
-    DAVA::UIControl *canvasParent;
+    DAVA::UIControl* canvasParent;
 };

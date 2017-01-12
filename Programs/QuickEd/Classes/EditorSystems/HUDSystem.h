@@ -10,7 +10,6 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
-
 private:
     enum eSearchOrder
     {

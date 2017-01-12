@@ -167,8 +167,8 @@ void HUDSystem::ProcessInput(UIEvent* currentInput)
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
     if (phase == UIEvent::Phase::MOVE
-            || phase == UIEvent::Phase::WHEEL
-            || phase == UIEvent::Phase::ENDED
+        || phase == UIEvent::Phase::WHEEL
+        || phase == UIEvent::Phase::ENDED
         )
     {
         ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
@@ -421,7 +421,7 @@ bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     return (displayState == EditorSystemsManager::Display || displayState == EditorSystemsManager::Preview)
-        && dragState != EditorSystemsManager::Transform;
+    && dragState != EditorSystemsManager::Transform;
 }
 
 EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* currentInput)
@@ -429,7 +429,7 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     if (currentInput->device == eInputDevices::MOUSE && currentInput->phase == UIEvent::Phase::DRAG
         && dragState != EditorSystemsManager::Transform && dragState != EditorSystemsManager::DragScreen)
-    { 
+    {
         EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
         //if we in selectByRect and still drag mouse - continue this state
         if (dragState == EditorSystemsManager::SelectByRect)

@@ -166,28 +166,28 @@ bool EditorTransformSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 
 void EditorTransformSystem::ProcessInput(UIEvent* currentInput)
 {
-   switch (currentInput->phase)
-   {
-   case UIEvent::Phase::KEY_DOWN:
-       ProcessKey(currentInput->key);
-       break;
+    switch (currentInput->phase)
+    {
+    case UIEvent::Phase::KEY_DOWN:
+        ProcessKey(currentInput->key);
+        break;
 
-   case UIEvent::Phase::DRAG:
-       if (currentInput->mouseButton == eMouseButtons::LEFT)
-       {
-           ProcessDrag(currentInput->point);
-       }
-       break;
+    case UIEvent::Phase::DRAG:
+        if (currentInput->mouseButton == eMouseButtons::LEFT)
+        {
+            ProcessDrag(currentInput->point);
+        }
+        break;
 
-   case UIEvent::Phase::ENDED:
-       if (activeArea == HUDAreaInfo::ROTATE_AREA)
-       {
-           ClampAngle();
-       }
-       break;
-   default:
-       break;
-   }
+    case UIEvent::Phase::ENDED:
+        if (activeArea == HUDAreaInfo::ROTATE_AREA)
+        {
+            ClampAngle();
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState)

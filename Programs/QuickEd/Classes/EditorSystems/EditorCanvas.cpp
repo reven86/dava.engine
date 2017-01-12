@@ -5,7 +5,7 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(UIControl *movableControl_, EditorSystemsManager *parent)
+EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , movableControl(movableControl_)
 {
@@ -132,7 +132,7 @@ void EditorCanvas::SetPosition(const Vector2& position_)
     Vector2 minPos = GetMinimumPos();
     Vector2 maxPos = GetMaximumPos();
     Vector2 fixedPos(Clamp(position_.x, minPos.x, maxPos.x),
-        Clamp(position_.y, minPos.y, maxPos.y));
+                     Clamp(position_.y, minPos.y, maxPos.y));
     if (fixedPos != position)
     {
         position = fixedPos;

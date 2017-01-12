@@ -52,8 +52,8 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
     {
         return;
     }
-     
-    ControlNode *selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
+
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
     if (nullptr != selectedNode)
     {
         SelectNode(selectedNode);
@@ -302,9 +302,9 @@ bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     return (displayState == EditorSystemsManager::Display
-        || displayState == EditorSystemsManager::Preview)
-        && currentInput->device == eInputDevices::MOUSE 
-        && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
+            || displayState == EditorSystemsManager::Preview)
+    && currentInput->device == eInputDevices::MOUSE
+    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
 ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const

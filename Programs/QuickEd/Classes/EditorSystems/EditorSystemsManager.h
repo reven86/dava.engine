@@ -100,7 +100,7 @@ public:
 
     explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
-    
+
     eDragState GetDragState() const;
     eDisplayState GetDisplayState() const;
     HUDAreaInfo GetCurrentHUDArea() const;
@@ -108,15 +108,15 @@ public:
     EditorCanvas* GetEditorCanvas() const;
 
     void OnInput(DAVA::UIEvent* currentInput);
-    
+
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     void HighlightNode(ControlNode* node);
     void ClearHighlight();
-    
+
     void SetEmulationMode(bool emulationMode);
-    
+
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 
@@ -149,10 +149,10 @@ public:
 private:
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
-    
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
-    void OnActiveHUDAreaChanged(const HUDAreaInfo &areaInfo);
+    void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;

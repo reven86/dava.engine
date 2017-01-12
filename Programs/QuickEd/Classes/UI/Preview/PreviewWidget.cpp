@@ -64,7 +64,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
-    
+
     verticalRuler->SetRulerOrientation(Qt::Vertical);
 
     // Setup the Scale Combo.
@@ -335,7 +335,6 @@ void PreviewWidget::OnDecrementScale()
     }
 }
 
-
 void PreviewWidget::SetActualScale()
 {
     if (editorCanvas != nullptr)
@@ -350,13 +349,13 @@ void PreviewWidget::ApplyPosChanges()
     rulerController->SetViewPos(-viewPos);
 }
 
-void PreviewWidget::UpdateScrollArea(const DAVA::Vector2 &/*size*/)
+void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)
 {
     if (editorCanvas == nullptr)
     {
         verticalScrollBar->setPageStep(0);
         horizontalScrollBar->setPageStep(0);
-        
+
         verticalScrollBar->setRange(0, 0);
         horizontalScrollBar->setRange(0, 0);
     }
@@ -635,7 +634,7 @@ void PreviewWidget::OnWheel(QWheelEvent* event)
         static const float wheelDelta = 0.002f;
         Vector2 position = editorCanvas->GetPosition();
         Vector2 additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
-                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+                              (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
         editorCanvas->SetPosition(position - additionalPos);
     }
 }

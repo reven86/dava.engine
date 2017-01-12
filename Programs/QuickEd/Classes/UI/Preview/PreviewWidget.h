@@ -70,7 +70,7 @@ private slots:
     void OnHScrollbarMoved(int position);
 
     //function argument used for signals compatibility
-    void UpdateScrollArea(const DAVA::Vector2 &size = DAVA::Vector2(0.0f, 0.0f));
+    void UpdateScrollArea(const DAVA::Vector2& size = DAVA::Vector2(0.0f, 0.0f));
     void OnPositionChanged(const DAVA::Vector2& position);
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
@@ -112,7 +112,7 @@ private:
 
     QPointer<Document> document;
     DAVA::RenderWidget* renderWidget = nullptr;
-    
+
     QList<float> percentages;
 
     SelectionContainer selectionContainer;
@@ -125,7 +125,7 @@ private:
     QAction* focusPreviousChildAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
-    EditorCanvas *editorCanvas = nullptr;
+    EditorCanvas* editorCanvas = nullptr;
 
     ContinuousUpdater* continuousUpdater = nullptr;
 

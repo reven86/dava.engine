@@ -372,7 +372,7 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
-EditorControlsView::EditorControlsView(UIControl *canvasParent_, EditorSystemsManager* parent)
+EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
     , canvasParent(canvasParent_)

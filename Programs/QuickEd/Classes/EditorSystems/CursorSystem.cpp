@@ -11,7 +11,7 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(RenderWidget *renderWidget_, EditorSystemsManager* parent)
+CursorSystem::CursorSystem(RenderWidget* renderWidget_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , renderWidget(renderWidget_)
 {

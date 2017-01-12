@@ -34,7 +34,7 @@ private:
     static const CornersDirections cornersDirections;
 
     struct MoveInfo;
-    
+
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput);
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
