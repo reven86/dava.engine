@@ -3,7 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
-#include <Input/MouseDevice.h>
+#include <Input/InputSystem.h>
 
 using namespace DAVA;
 
@@ -15,6 +15,8 @@ FullscreenTest::FullscreenTest(TestBed& app)
 void FullscreenTest::LoadResources()
 {
     BaseScreen::LoadResources();
+
+    inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
 
     GetBackground()->SetColor(Color::White);
 
@@ -179,6 +181,8 @@ void FullscreenTest::LoadResources()
 
 void FullscreenTest::UnloadResources()
 {
+    GetEngineContext()->inputSystem->RemoveHandler(inputHandlerToken);
+
     if (ui3dview->GetScene())
     {
         ui3dview->GetScene()->RemoveSystem(rotationControllerSystem);
@@ -289,6 +293,27 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     UpdateMode();
 }
 
+bool FullscreenTest::OnToggleFullscreen(DAVA::UIEvent* uie)
+{
+    if (uie->phase == UIEvent::Phase::KEY_UP)
+    {
+        Window* window = GetPrimaryWindow();
+        if ((uie->key == Key::ENTER || uie->key == Key::NUMPADENTER) && (uie->modifiers & eModifierKeys::ALT) == eModifierKeys::ALT)
+        {
+            eFullscreen mode = window->GetFullscreen();
+            mode = mode == eFullscreen::On ? eFullscreen::Off : eFullscreen::On;
+            window->SetFullscreenAsync(mode);
+        }
+        else if (uie->key == Key::KEY_P && uie->modifiers == eModifierKeys::NONE)
+        {
+            eCursorCapture mode = window->GetCursorCapture();
+            mode = mode == eCursorCapture::OFF ? eCursorCapture::PINNING : eCursorCapture::OFF;
+            window->SetCursorCapture(mode);
+        }
+    }
+    return false;
+}
+
 void FullscreenTest::UpdateMode()
 {
     Window* w = GetPrimaryWindow();
@@ -347,7 +372,8 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
             break;
 
         case UIEvent::Phase::MOVE:
-            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
+        case UIEvent::Phase::DRAG:
+            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f, rel=%d", currentInput->physPoint.dx, currentInput->physPoint.dy, currentInput->isRelative));
             break;
 
         default:

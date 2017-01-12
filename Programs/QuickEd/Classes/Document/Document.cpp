@@ -24,16 +24,9 @@ Document::Document(Project* project_, const RefPtr<PackageNode>& package_, QObje
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(project_, this))
     , commandStack(new CommandStack())
-    , fileSystemWatcher(new QFileSystemWatcher(this))
     , project(project_)
 {
-    QString path = GetPackageAbsolutePath();
-    DVASSERT(QFile::exists(path));
-    if (!fileSystemWatcher->addPath(path))
-    {
-        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
-    }
-    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
+    CreateFileSystemWatcher();
     commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
 
@@ -83,13 +76,12 @@ WidgetContext* Document::GetContext(void* requester) const
 
 void Document::Save()
 {
-    //we dont need to receive signal "fileChanged" while changing the file in this function
-    QSignalBlocker block(fileSystemWatcher);
-    QString path = GetPackageAbsolutePath();
+    SafeDelete(fileSystemWatcher);
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package.Get());
     serializer.WriteToFile(package->GetPath());
     commandStack->SetClean();
+    CreateFileSystemWatcher();
 }
 
 void Document::SetContext(void* requester, WidgetContext* widgetContext)
@@ -174,4 +166,16 @@ QString Document::GetName() const
 {
     QFileInfo fileInfo(GetPackageAbsolutePath());
     return fileInfo.fileName();
+}
+
+void Document::CreateFileSystemWatcher()
+{
+    DVASSERT(fileSystemWatcher == nullptr);
+    fileSystemWatcher = new QFileSystemWatcher(this);
+    QString path = GetPackageAbsolutePath();
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
 }
