@@ -16,6 +16,7 @@ class Vector2;
 class TextBox;
 class UITextFieldDelegate;
 struct Rect;
+class Window;
 
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
@@ -23,7 +24,11 @@ public:
     static const uint32 INVALID_POS = uint32(-1);
 
     friend class UITextField;
+#if defined(__DAVAENGINE_COREV2__)
+    TextFieldStbImpl(Window* w, UITextField* control);
+#else
     TextFieldStbImpl(UITextField* control);
+#endif
     ~TextFieldStbImpl();
     void Initialize();
     void OwnerIsDying();
@@ -89,6 +94,9 @@ private:
     void UpdateCursor(uint32 cursorPos, bool insertMode);
     void UpdateOffset(const Rect& visibleRect);
 
+    void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
+    void OnWindowDestroyed(Window* w);
+
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
     StbTextEditBridge* stb = nullptr;
@@ -106,6 +114,12 @@ private:
     uint32 lastCursorPos = INVALID_POS;
     uint32 lastSelStart = INVALID_POS;
     uint32 lastSelEnd = INVALID_POS;
+
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+    size_t windowSizeChangedConnection = 0;
+    size_t windowDestroyedConnection = 0;
+#endif
 };
 
 } // end namespace DAVA
