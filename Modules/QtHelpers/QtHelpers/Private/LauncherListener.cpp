@@ -78,7 +78,7 @@ void LauncherListener::ProcessTransportLevel()
     //if this a channel-level message, like ping or handshake, process it and return replt to the sender
     int replyCode = ProcessChannelLevel(data);
     //else process message on the data level
-    if (replyCode != UNKNOWN_MESSAGE)
+    if (replyCode == UNKNOWN_MESSAGE)
     {
         replyCode = ProcessDataLevel(data);
     }
