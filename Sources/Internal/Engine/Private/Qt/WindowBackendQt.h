@@ -87,7 +87,6 @@ private:
     void OnWheel(QWheelEvent* e) override;
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
-    void OnLeave(QEvent* e) override;
 
     eModifierKeys GetModifierKeys() const;
     static eMouseButtons GetMouseButton(Qt::MouseButton button);

@@ -10,7 +10,6 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
-#include "Logger/Logger.h"
 
 #include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
@@ -520,10 +519,6 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 
     eModifierKeys modifierKeys = GetModifierKeys();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, modifierKeys, false));
-}
-
-void WindowBackend::OnLeave(QEvent* e)
-{
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)

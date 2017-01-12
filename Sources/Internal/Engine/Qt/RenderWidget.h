@@ -36,7 +36,6 @@ public:
 
         virtual void OnKeyPressed(QKeyEvent* e) = 0;
         virtual void OnKeyReleased(QKeyEvent* e) = 0;
-        virtual void OnLeave(QEvent* e) = 0;
     };
 
     class IClientDelegate
@@ -103,7 +102,6 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent* e) override;
     void mouseMoveEvent(QMouseEvent* e) override;
     void wheelEvent(QWheelEvent* e) override;
-    void leaveEvent(QEvent* e) override;
 
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
