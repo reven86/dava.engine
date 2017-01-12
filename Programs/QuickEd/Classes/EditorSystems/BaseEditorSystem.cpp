@@ -1,4 +1,5 @@
 #include "EditorSystems/BaseEditorSystem.h"
+#include "UI/UIEvent.h"
 
 BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
     : systemsManager(parent)
@@ -10,12 +11,12 @@ void BaseEditorSystem::ProcessInput(DAVA::UIEvent* /*currentInput*/)
 
 }
 
-bool BaseEditorSystem::CanProcessInput(UIEvent* currentInput) const
+bool BaseEditorSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
     return false;
 }
 
-EditorSystemsManager::eDragState BaseEditorSystem::RequireNewState(UIEvent* currentInput)
+EditorSystemsManager::eDragState BaseEditorSystem::RequireNewState(DAVA::UIEvent* currentInput)
 {
     return EditorSystemsManager::NoDrag;
 }

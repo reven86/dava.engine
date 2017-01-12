@@ -187,7 +187,6 @@ private:
     eDisplayState displayState = Preview;
     eDisplayState previousDisplayState = Preview;
 
-
     HUDAreaInfo currentHUDArea;
     //helpers
     DAVA::Vector2 lastMousePos;

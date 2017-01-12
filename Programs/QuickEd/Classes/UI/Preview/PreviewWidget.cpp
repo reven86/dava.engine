@@ -9,7 +9,7 @@
 #include <QTimer>
 
 #include "UI/UIControl.h"
-#include "UI/UIScreenManager.h"
+#include "UI/UIStaticText.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
@@ -18,9 +18,7 @@
 #include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "EditorSystems/EditorControlsView.h"
 #include "EditorSystems/EditorCanvas.h"
-#include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
 #include "UI/Package/PackageMimeData.h"

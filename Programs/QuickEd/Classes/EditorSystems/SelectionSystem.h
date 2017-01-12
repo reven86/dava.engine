@@ -52,7 +52,7 @@ private:
     bool canFindCommonForSelection = true;
 
     bool selectOnRelease = false;
-    Vector2 pressedPoint = Vector2(-1.0f, -1.0f);
+    DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
 
 public:
     INTROSPECTION(SelectionSystem,

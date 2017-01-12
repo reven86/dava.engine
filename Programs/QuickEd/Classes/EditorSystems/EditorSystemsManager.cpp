@@ -19,6 +19,8 @@
 #include "UI/Input/UIModalInputComponent.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenManager.h"
 
 using namespace DAVA;
 
