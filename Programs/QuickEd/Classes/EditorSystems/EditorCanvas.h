@@ -43,7 +43,8 @@ public:
 
     DAVA::Signal<const DAVA::Vector2&> viewSizeChanged;
     DAVA::Signal<const DAVA::Vector2&> canvasSizeChanged;
-    DAVA::Signal<const DAVA::Vector2&> positionChanged;
+    DAVA::Signal<const DAVA::Vector2&> positionChanged; //canvas position
+    DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:

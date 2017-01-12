@@ -430,6 +430,12 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
     if (currentInput->device == eInputDevices::MOUSE && currentInput->phase == UIEvent::Phase::DRAG
         && dragState != EditorSystemsManager::Transform && dragState != EditorSystemsManager::DragScreen)
     { 
+        EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+        //if we in selectByRect and still drag mouse - continue this state
+        if (dragState == EditorSystemsManager::SelectByRect)
+        {
+            return EditorSystemsManager::SelectByRect;
+        }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;

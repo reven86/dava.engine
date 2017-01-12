@@ -27,6 +27,7 @@ void EditorCanvas::AdjustScale(float newScale, const Vector2& mousePos)
     scale = newScale;
     UpdateCanvasContentSize();
     scaleChanged.Emit(scale);
+    movableControl->SetScale(Vector2(scale, scale));
 
     if (oldScale == 0.0f || viewSize.dx <= 0.0f || viewSize.dy <= 0.0f)
     {
@@ -158,6 +159,7 @@ void EditorCanvas::UpdatePosition()
     movableControl->SetPosition(position);
 
     Vector2 positionPoint(position.x, position.y);
+    nestedControlPositionChanged.Emit(positionPoint);
 }
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const

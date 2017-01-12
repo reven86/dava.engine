@@ -93,6 +93,24 @@ PreviewWidget::~PreviewWidget()
     continuousUpdater->Stop();
 }
 
+void PreviewWidget::SelectControl(const DAVA::String& path)
+{
+    if (document != nullptr)
+    {
+        PackageNode* package = document->GetPackage();
+        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
+        if (!node)
+        {
+            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
+        }
+        if (node != nullptr)
+        {
+            systemsManager->ClearSelection();
+            systemsManager->SelectNode(node);
+        }
+    }
+}
+
 float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.
@@ -233,6 +251,18 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemsManager->selectionChanged.Emit(selected, deselected);
 }
 
+void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
+{
+    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
+}
+
+void PreviewWidget::OnNestedControlPositionChanged(const Vector2& pos)
+{
+    canvasPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
+}
+
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
     systemsManager->SetEmulationMode(emulationMode);
@@ -308,6 +338,20 @@ void PreviewWidget::OnDecrementScale()
 }
 
 
+void PreviewWidget::SetActualScale()
+{
+    if (editorCanvas != nullptr)
+    {
+        editorCanvas->SetScale(1.0f); //1.0f is a 100% scale
+    }
+}
+
+void PreviewWidget::ApplyPosChanges()
+{
+    QPoint viewPos = canvasPos + rootControlPos;
+    rulerController->SetViewPos(-viewPos);
+}
+
 void PreviewWidget::UpdateScrollArea(const DAVA::Vector2 &/*size*/)
 {
     if (editorCanvas == nullptr)
@@ -348,6 +392,7 @@ void PreviewWidget::OnWindowCreated()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));
 
+    systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
 
@@ -359,6 +404,7 @@ void PreviewWidget::OnWindowCreated()
     editorCanvas->viewSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->canvasSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
+    editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     OnScaleByComboText();
 }
@@ -879,16 +925,4 @@ float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
     ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
-}
-
-void PreviewWidget::SetActualScale()
-{
-    if (editorCanvas != nullptr)
-    {
-        editorCanvas->SetScale(1.0f); //1.0f is a 100% scale
-    }
-}
-
-void PreviewWidget::SelectControl(const DAVA::String& path)
-{
 }

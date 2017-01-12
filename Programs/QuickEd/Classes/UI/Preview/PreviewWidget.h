@@ -54,6 +54,8 @@ public slots:
     void SaveSystemsContextAndClear();
     void LoadSystemsContext(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const DAVA::Vector2& pos);
     void OnEmulationModeChanged(bool emulationMode);
     void OnIncrementScale();
     void OnDecrementScale();
@@ -83,6 +85,7 @@ private:
 
 private:
     void CreateActions();
+    void ApplyPosChanges();
     void OnWheel(QWheelEvent* event) override;
     void OnNativeGuesture(QNativeGestureEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
