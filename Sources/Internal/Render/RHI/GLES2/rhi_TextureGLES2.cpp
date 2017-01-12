@@ -1037,7 +1037,7 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
     GLuint targetBuffer = _GLES2_Default_FrameBuffer;
 
     bool fromHasDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) || (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
-    DVASSERT(!fromHasDepthFormat)
+    DVASSERT(!fromHasDepthFormat);
     //    DVASSERT(!from->fbo.empty());
 
     if (to != nullptr)
