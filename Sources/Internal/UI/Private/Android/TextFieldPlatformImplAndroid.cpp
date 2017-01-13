@@ -20,8 +20,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
-    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnFocusChange(JNIEnv* env, jclass jclazz, jlong backendPointer, jboolean hasFocus)
@@ -38,6 +42,14 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardShown(
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnKeyboardShown(env, x, y, w, h);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardHidden(JNIEnv* env, jclass jclazz, jlong backendPointer)
+{
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+    if (auto backend = weak->lock())
+        backend->nativeOnKeyboardHidden(env);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnEnterPressed(JNIEnv* env, jclass jclazz, jlong backendPointer)
@@ -385,8 +397,21 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(y),
                       static_cast<float32>(w),
                       static_cast<float32>(h));
-    RunOnMainThreadAsync([this, keyboardRect]() {
-        OnKeyboardShown(keyboardRect);
+
+    Rect keyboardVirtualRect = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardRect);
+
+    RunOnMainThreadAsync([this, keyboardVirtualRect]() {
+        OnKeyboardShown(keyboardVirtualRect);
+    });
+}
+
+void TextFieldPlatformImpl::nativeOnKeyboardHidden(JNIEnv* env)
+{
+    RunOnMainThreadAsync([this]() {
+        if (uiTextField != nullptr)
+        {
+            uiTextField->OnKeyboardHidden();
+        }
     });
 }
 
@@ -454,7 +479,6 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
         }
         else
         {
-            uiTextField->OnKeyboardHidden();
             uiTextField->StopEdit();
         }
     }

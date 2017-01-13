@@ -1,5 +1,6 @@
 package com.dava.testbed;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
@@ -57,10 +58,28 @@ public class TestBed implements DavaActivity.ActivityListener
         Log.d(DavaActivity.LOG_TAG, "TestBed.onDestroy");
         DavaActivity.instance().unregisterActivityListener(this);
     }
+    
+	@Override
+	public void onSaveInstanceState(Bundle outState)
+	{
+		Log.d(DavaActivity.LOG_TAG, "TestBed.onSaveInstanceState");	
+	}
 
-    @Override
-    public void onNewIntent(Intent intent)
-    {
-        Log.d(DavaActivity.LOG_TAG, "TestBed.onNewIntent");
-    }
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		Log.d(DavaActivity.LOG_TAG, "TestBed.onActivityResult");
+	}
+
+	@Override
+	public void onNewIntent(Intent intent)
+	{
+		Log.d(DavaActivity.LOG_TAG, "TestBed.onNewIntent");	
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+	{
+		Log.d(DavaActivity.LOG_TAG, "TestBed.onRequestPermissionsResult");
+	}
 }

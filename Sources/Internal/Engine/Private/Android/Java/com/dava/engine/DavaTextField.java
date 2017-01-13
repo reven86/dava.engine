@@ -94,6 +94,8 @@ final class DavaTextField implements TextWatcher,
                                      TextView.OnEditorActionListener,
                                      DavaKeyboardState.KeyboardStateListener
 {
+    private static final int CLOSE_KEYBOARD_DELAY = 30;
+
     // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
     private volatile long textfieldBackendPointer = 0;
     private DavaSurfaceView surfaceView = null;
@@ -115,10 +117,17 @@ final class DavaTextField implements TextWatcher,
     public static native void nativeReleaseWeakPtr(long backendPointer);
     public static native void nativeOnFocusChange(long backendPointer, boolean hasFocus);
     public static native void nativeOnKeyboardShown(long backendPointer, int x, int y, int w, int h);
+    public static native void nativeOnKeyboardHidden(long backendPointer);
     public static native void nativeOnEnterPressed(long backendPointer);
     public static native boolean nativeOnKeyPressed(long backendPointer, int replacementStart, int replacementLength, String replaceWith);
     public static native void nativeOnTextChanged(long backendPointer, String newText, boolean programmaticTextChange);
     public static native void nativeOnTextureReady(long backendPointer, int[] pixels, int w, int h);
+
+    private static boolean pendingKeyboardClose = false;
+
+    // To use inside of DavaSurfaceView.onInputConnection
+    private static int lastSelectedImeMode = 0;
+    private static int lastSelectedInputType = 0;
 
     private class TextFieldProperties
     {
@@ -288,6 +297,16 @@ final class DavaTextField implements TextWatcher,
 
         properties.createNew = true;
         properties.anyPropertyChanged = true;
+    }
+
+    public static int getLastSelectedImeMode()
+    {
+        return lastSelectedImeMode;
+    }
+
+    public static int getLastSelectedInputType()
+    {
+        return lastSelectedInputType;
     }
 
     void release()
@@ -548,6 +567,11 @@ final class DavaTextField implements TextWatcher,
                                                  int dstart,
                                                  int dend)
             {
+                if (programmaticTextChange)
+                {
+                    return source;
+                }
+
                 // Workaround on lost focus filter called once more
                 // so if in this moment we are loading/creating 
                 // new TextField synchronously we will get deadlock
@@ -557,7 +581,7 @@ final class DavaTextField implements TextWatcher,
                     return null;
                 }
 
-                if (source instanceof Spanned || source instanceof Spannable)
+                if (source instanceof Spanned)
                 {
                     Spanned spanned = (Spanned)source;
                     SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(source);
@@ -613,23 +637,63 @@ final class DavaTextField implements TextWatcher,
     @Override
     public void onFocusChange(View v, boolean hasFocus)
     {
-        InputMethodManager imm = (InputMethodManager)DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (hasFocus)
         {
-            imm.showSoftInput(nativeTextField, InputMethodManager.SHOW_IMPLICIT);
+            CustomTextField textField = (CustomTextField)v;
+            lastSelectedImeMode = textField.getImeOptions();
+            lastSelectedInputType = textField.getInputType();
 
-            DavaKeyboardState keyboardState = DavaActivity.instance().keyboardState; 
-            if (keyboardState.isKeyboardOpen())
+            if (pendingKeyboardClose)
             {
-                Rect keyboardRect = keyboardState.keyboardRect();
-                nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                // If keyboard is still visible but not hidden yet - just cancel closing
+                pendingKeyboardClose = false;
+            }
+            else
+            {
+                // Otherwise open it
+
+                InputMethodManager imm = (InputMethodManager)DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(nativeTextField, InputMethodManager.SHOW_IMPLICIT);
+
+                DavaKeyboardState keyboardState = DavaActivity.instance().keyboardState;
+                if (keyboardState.isKeyboardOpen())
+                {
+                    Rect keyboardRect = keyboardState.keyboardRect();
+                    nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                }
             }
         }
         else
         {
-            IBinder windowToken = nativeTextField.getWindowToken();
-            imm.hideSoftInputFromWindow(windowToken, 0);
+            if (!pendingKeyboardClose)
+            {
+                // Close keyboard delayed (to avoid reopening it when switching between textfields)
+                // If another textfield gets focus until that happens, it will cancel this action
+
+                DavaActivity.commandHandler().postDelayed(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (!pendingKeyboardClose)
+                        {
+                            return;
+                        }
+
+                        InputMethodManager imm = (InputMethodManager) DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        IBinder windowToken = nativeTextField.getWindowToken();
+                        imm.hideSoftInputFromWindow(windowToken, 0);
+
+                        nativeOnKeyboardHidden(textfieldBackendPointer);
+
+                        pendingKeyboardClose = false;
+                    }
+                }, CLOSE_KEYBOARD_DELAY);
+
+                pendingKeyboardClose = true;
+            }
         }
+
         nativeOnFocusChange(textfieldBackendPointer, hasFocus);
 
         if (!multiline)
@@ -681,6 +745,10 @@ final class DavaTextField implements TextWatcher,
     @Override
     public void onKeyboardClosed()
     {
+        if (nativeTextField.hasFocus())
+        {
+            nativeOnKeyboardHidden(textfieldBackendPointer);
+        }
     }
 
     void applyChangedProperties(TextFieldProperties props)
@@ -750,13 +818,20 @@ final class DavaTextField implements TextWatcher,
         int inputType = nativeTextField.getInputType();
         if (password)
         {
-            inputType |= EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
+            inputType = EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
         }
         else
         {
             inputType &= ~EditorInfo.TYPE_TEXT_VARIATION_PASSWORD;
         }
+
+        int previousCursorPos = getCursorPos();
+        programmaticTextChange = true; // setInputType might toggle filter to execute due to password transformation method
         nativeTextField.setInputType(inputType);
+        programmaticTextChange = false; // In case filter didn't execute (i.e. when text is empty)
+
+        // After transformation (if password is true) move cursor back
+        setNativeCursorPos(previousCursorPos);
     }
 
     void setNativeMultiline(boolean multiline)

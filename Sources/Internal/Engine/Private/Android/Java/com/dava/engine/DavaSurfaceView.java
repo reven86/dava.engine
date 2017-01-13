@@ -3,6 +3,7 @@ package com.dava.engine;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -12,6 +13,8 @@ import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.util.Log;
 import android.util.DisplayMetrics;
@@ -51,6 +54,7 @@ final class DavaSurfaceView extends SurfaceView
     {
         super(context);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
         
         windowBackendPointer = windowBackendPtr;
 
@@ -115,13 +119,26 @@ final class DavaSurfaceView extends SurfaceView
     @Override public void onRestart() {}
     @Override public void onStop() {}
     @Override public void onDestroy() {}
+    @Override public void onSaveInstanceState(Bundle outState) {}
+    @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {}
     @Override public void onNewIntent(Intent intent) {}
+    @Override public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
+    {
+        // To fix keyboard blinking when a DavaTextField looses focus but keyboard isn't hidden yet
+        // (since we wait to close it in case some other field gets focused)
+        outAttrs.imeOptions = DavaTextField.getLastSelectedImeMode();
+        outAttrs.inputType = DavaTextField.getLastSelectedInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
 
     @Override
     public void onResume()
     {
-        setFocusable(true);
         setFocusableInTouchMode(true);
+        setFocusable(true);
         requestFocus();
         setOnTouchListener(this);
 
@@ -225,7 +242,8 @@ final class DavaSurfaceView extends SurfaceView
 
         // Some SOURCE_GAMEPAD and SOURCE_DPAD events are also SOURCE_KEYBOARD. So first check and process events
         // from gamepad and then from keyboard if not processed.
-        if ((source & (InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) != 0)
+        if (((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
+            ((source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD))
         {
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
             return true;

@@ -443,6 +443,7 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 
     env->DeleteLocalRef(jTargetURL);
     env->DeleteLocalRef(jName);
+    env->DeleteLocalRef(item);
 
     return returnStr;
 }
@@ -463,6 +464,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
         {
             jobject item = env->GetObjectArrayElement(jArray, i);
             String cookiesString = JNI::ToString(jstring(item));
+            env->DeleteLocalRef(item);
 
             Vector<String> cookieEntry;
             Split(cookiesString, "=", cookieEntry);
@@ -470,6 +472,8 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
             DVASSERT(1 < cookieEntry.size());
             cookiesMap[cookieEntry[0]] = cookieEntry[1];
         }
+
+        env->DeleteLocalRef(jArray);
     }
 
     env->DeleteLocalRef(jTargetURL);

@@ -201,6 +201,10 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     RegisterDAVAClasses();
 
     isInitialized = true;
+
+#if defined(__DAVAENGINE_ANDROID__)
+    AndroidBridge::HideSplashView();
+#endif
 }
 
 int EngineBackend::Run()
