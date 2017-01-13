@@ -23,7 +23,7 @@
     _Pragma("clang diagnostic pop") \
 
 #else
-    #define MOCK_METHOD0_VIRTUAL MOCK_METHOD0
-    #define MOCK_METHOD1_VIRTUAL MOCK_METHOD1
-    #define MOCK_METHOD2_VIRTUAL MOCK_METHOD2
+    #define MOCK_METHOD0_VIRTUAL(m, arg) MOCK_METHOD0(m, arg);
+    #define MOCK_METHOD1_VIRTUAL(m, arg) MOCK_METHOD1(m, arg);
+    #define MOCK_METHOD2_VIRTUAL(m, arg) MOCK_METHOD2(m, arg);
 #endif
