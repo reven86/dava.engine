@@ -18,6 +18,7 @@ public:
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
 private:
+    ImageInfo GetImageInfo(File* infile, Size2i& flip) const;
     bool CanProcessFileInternal(File* file) const override;
 };
 }
