@@ -67,12 +67,26 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
-    NSRect r = [nswindow frame];
+    NSScreen* screen = [nswindow screen];
 
-    float32 dx = (r.size.width - width) / 2.0;
-    float32 dy = (r.size.height - height) / 2.0;
+    NSRect windowRect = [nswindow frame];
+    NSRect screenRect = [screen visibleFrame];
 
-    NSPoint pos = NSMakePoint(r.origin.x + dx, r.origin.y + dy);
+    float32 dx = (windowRect.size.width - width) / 2.0;
+    float32 dy = (windowRect.size.height - height) / 2.0;
+
+    NSPoint pos = NSMakePoint(windowRect.origin.x + dx, windowRect.origin.y + dy);
+
+    if (pos.x < screenRect.origin.x)
+    {
+        pos.x = screenRect.origin.x;
+    }
+
+    if ((pos.y + height) > (screenRect.origin.y + screenRect.size.height))
+    {
+        pos.y = (screenRect.origin.y + screenRect.size.height) - height;
+    }
+
     NSSize sz = NSMakeSize(width, height);
 
     [nswindow setFrameOrigin:pos];
@@ -197,6 +211,7 @@ void WindowNativeBridge::WindowDidEndLiveResize()
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
+    ForceBackbufferSizeUpdate();
     HandleSizeChanging(true);
 }
 
@@ -577,7 +592,7 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
     [renderView setBackbufferScale:scale];
 
     ForceBackbufferSizeUpdate();
-    WindowDidResize();
+    HandleSizeChanging(false);
 }
 
 void WindowNativeBridge::ForceBackbufferSizeUpdate()
