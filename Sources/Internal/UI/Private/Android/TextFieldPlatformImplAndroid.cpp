@@ -398,9 +398,8 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(w),
                       static_cast<float32>(h));
 
-    Rect keyboardVirtualRect = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardRect);
-
-    RunOnMainThreadAsync([this, keyboardVirtualRect]() {
+    RunOnMainThreadAsync([this, keyboardRect]() {
+        const Rect keyboardVirtualRect = GetPrimaryWindow()->GetUIControlSystem()->vcs->ConvertInputToVirtual(keyboardRect);
         OnKeyboardShown(keyboardVirtualRect);
     });
 }
