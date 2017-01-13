@@ -92,7 +92,9 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
 
 void QuickEdPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
 {
-    StyleSheetNode* node = new StyleSheetNode(selectorChains, properties);
+    UIStyleSheetSourceInfo sourceInfo(packagePath);
+
+    StyleSheetNode* node = new StyleSheetNode(sourceInfo, selectorChains, properties);
     styleSheets.push_back(node);
 }
 

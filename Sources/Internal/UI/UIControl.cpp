@@ -2449,14 +2449,14 @@ bool UIControl::IsStyleSheetInitialized() const
     return styleSheetInitialized;
 }
 
-bool UIControl::IsStyleSheetDirty() const
-{
-    return styleSheetDirty;
-}
-
 void UIControl::SetStyleSheetInitialized()
 {
     styleSheetInitialized = true;
+}
+
+bool UIControl::IsStyleSheetDirty() const
+{
+    return styleSheetDirty;
 }
 
 void UIControl::SetStyleSheetDirty()
