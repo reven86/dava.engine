@@ -2,6 +2,7 @@
 
 #include "Functional/Function.h"
 #include "Base/RefPtr.h"
+#include "FileSystem/FilePath.h"
 
 class SceneEditor2;
 class GlobalOperations;

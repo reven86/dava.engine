@@ -783,7 +783,7 @@ void SelectionSystem::FinishSelection()
     }
     else
     {
-        DVASSERT_MSG(0, "Invalid selection mode");
+        DVASSERT(0, "Invalid selection mode");
     }
     objectsToSelect.Clear();
 

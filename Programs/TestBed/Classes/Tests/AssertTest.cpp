@@ -1,4 +1,3 @@
-
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
 
@@ -22,13 +21,13 @@ void AssertTest::LoadResources()
     DAVA::UIActionBindingComponent* actions = dialog->GetComponent<DAVA::UIActionBindingComponent>();
     if (actions)
     {
-        actions->GetActionMap().Put(DAVA::FastName("NON_MODAL_ASSERT"), [&]() {
-            DVWARNING(false, "Demo assert");
+        actions->GetActionMap().Put(DAVA::FastName("ASSERT_ALWAYS"), [&]() {
+            DVASSERT_ALWAYS(false, "Demo assert");
         });
-        actions->GetActionMap().Put(DAVA::FastName("MODAL_ASSERT"), [&]() {
-            DVASSERT_MSG(false, "Demo assert");
+        actions->GetActionMap().Put(DAVA::FastName("ASSERT"), [&]() {
+            DVASSERT(false, "Demo assert");
         });
-        actions->GetActionMap().Put(DAVA::FastName("DELAYED_MODAL_ASSERT"), [&]() {
+        actions->GetActionMap().Put(DAVA::FastName("DELAYED_ASSERT"), [&]() {
             timeOut = DEFAULT_TIMEOUT;
         });
     }
@@ -51,7 +50,7 @@ void AssertTest::Update(DAVA::float32 timeElapsed)
         if (timeOut <= 0.f)
         {
             timeOut = 0.f;
-            DVASSERT_MSG(false, "Demo assert");
+            DVASSERT(false, "Demo assert");
         }
     }
     if (countdownText.Get())

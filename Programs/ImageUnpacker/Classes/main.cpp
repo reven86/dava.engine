@@ -8,7 +8,7 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Texture.h"
 
-#include "Debug/DVAssert.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "FileSystem/FileList.h"
 #include "Base/BaseTypes.h"
 
@@ -111,7 +111,7 @@ void UnpackFile(const FilePath& sourceImagePath)
 void UnpackFolder(const FilePath& folderPath)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPath));
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
         if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
@@ -132,7 +132,7 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPath));
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
         if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
@@ -221,6 +221,8 @@ void Process(Engine& e)
 
 int DAVAMain(Vector<String> cmdline)
 {
+    Assert::SetupDefaultHandlers();
+
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 

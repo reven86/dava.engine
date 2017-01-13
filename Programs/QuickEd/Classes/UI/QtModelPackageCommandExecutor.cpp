@@ -41,6 +41,9 @@
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
+
 using namespace DAVA;
 
 namespace
@@ -216,7 +219,9 @@ void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode* node)
     if (node->GetRootProperty()->CanAddSelector())
     {
         UIStyleSheetSelectorChain chain;
-        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain));
+        UIStyleSheetSourceInfo sourceInfo(document->GetPackageFilePath());
+
+        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain, sourceInfo));
         ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, true)));
     }
 }
@@ -508,7 +513,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
         builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
     }
 
-    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), "", &builder))
+    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), root->GetPath(), &builder))
     {
         const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
         const Vector<ControlNode*>& controls = builder.GetRootControls();

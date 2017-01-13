@@ -3,6 +3,7 @@
 #include "Base/Introspection.h"
 #include "Preferences/PreferencesRegistrator.h"
 #include "Functional/SignalBase.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "QtTools/Utils/ShortcutChecker.h"

@@ -2,6 +2,7 @@
 
 #include "Project/Project.h"
 #include "UI/mainwindow.h"
+#include "UI/ProjectView.h"
 
 #include "version.h"
 #include "FileSystem/FileSystem.h"
@@ -9,6 +10,8 @@
 #include "DAVAVersion.h"
 #include "Engine/Engine.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
@@ -179,6 +182,8 @@ EditorCore::EditorCore()
     connect(mainWindow, &MainWindow::RecentProject, this, &EditorCore::OpenProject);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
     connect(mainWindow, &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+
+    connect(this, &EditorCore::ProjectChanged, mainWindow->GetProjectView(), &MainWindow::ProjectView::OnProjectChanged);
     UnpackHelp();
     //we need to register preferences when whole class is initialized
     PreferencesStorage::Instance()->RegisterPreferences(this);
@@ -256,6 +261,7 @@ void EditorCore::OpenProject(const QString& path)
     if (newProject.get())
     {
         project = std::move(newProject);
+        emit ProjectChanged(project.get());
         AddRecentProject(project->GetProjectPath());
 
         mainWindow->SetRecentProjects(GetRecentProjects());
@@ -292,6 +298,8 @@ bool EditorCore::CloseProject(bool force)
     disconnect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
 
     DisableCacheClient();
+
+    emit ProjectChanged(nullptr);
     project = nullptr;
     return true;
 }

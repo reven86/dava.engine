@@ -16,6 +16,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
+#include "Utils/StringFormat.h"
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
@@ -149,7 +150,6 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
 
         return makeQVariant(property);
     }
-    break;
 
     case Qt::EditRole:
     {
@@ -160,7 +160,6 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         }
         return var;
     }
-    break;
 
     case Qt::BackgroundRole:
         if (property->GetType() == AbstractProperty::TYPE_HEADER)
@@ -252,7 +251,6 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         UpdateProperty(property);
         return true;
     }
-    break;
 
     case ResetRole:
     {
@@ -260,7 +258,6 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         UpdateProperty(property);
         return true;
     }
-    break;
     }
     return false;
 }

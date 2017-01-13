@@ -2,6 +2,8 @@
 
 #include "Network/Private/TCPServerTransport.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace HttpServerDetail
 {
@@ -32,13 +34,13 @@ HttpServer::~HttpServer()
 void HttpServer::AddListener(HttpServerListener* listener)
 {
     auto insertRes = listeners.insert(listener);
-    DVASSERT_MSG(insertRes.second == true, "Listener was already inserted");
+    DVASSERT(insertRes.second == true, "Listener was already inserted");
 }
 
 void HttpServer::RemoveListener(HttpServerListener* listener)
 {
     size_t erasedCount = listeners.erase(listener);
-    DVASSERT_MSG(erasedCount == 1, "Listener was already removed");
+    DVASSERT(erasedCount == 1, "Listener was already removed");
 }
 
 void HttpServer::Start(const DAVA::Net::Endpoint& endpoint)
@@ -134,7 +136,7 @@ void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* client, co
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
+        DVASSERT(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
     }
 }
 
@@ -159,7 +161,7 @@ void HttpServer::OnTransportSendComplete(DAVA::Net::IClientTransport* client)
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
+        DVASSERT(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
     }
 }
 
@@ -188,21 +190,21 @@ void HttpServer::OnDataChunkAdded(ClientSession& session)
         {
             session.data.erase(0, crlfPos + HttpServerDetail::DOUBLE_CRLF.length());
             OnDataChunkAdded(session);
-            return;
+            break;
         }
         case ClientSession::RequestReady:
         {
             OnRequestAssembled(session);
-            return;
+            break;
         }
         case ClientSession::Error:
         default:
         {
             RemoveClient(session.clientID);
-            return;
+            break;
         }
         }
-        break;
+        return;
     }
     case ClientSession::WaitingForContentPart:
     {
@@ -354,7 +356,7 @@ void HttpServer::SendResponse(ClientID clientId, HttpResponse& resp)
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", clientId).c_str());
+        DVASSERT(false, DAVA::Format("Can't find session for client transport %d", clientId).c_str());
     }
 }
 

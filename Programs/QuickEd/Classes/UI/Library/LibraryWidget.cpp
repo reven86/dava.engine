@@ -32,7 +32,7 @@ void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libra
     libraryModel->SetLibraryPackages(libraryPackages);
 }
 
-void LibraryWidget::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& prototypes)
+void LibraryWidget::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
 {
     libraryModel->SetPrototypes(prototypes);
 }

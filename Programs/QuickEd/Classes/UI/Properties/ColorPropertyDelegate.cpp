@@ -70,7 +70,7 @@ void ColorPropertyDelegate::OnChooseColorClicked()
 {
     DVASSERT(nullptr != lineEdit);
     QWidget* editor = lineEdit->parentWidget();
-    DVASSERT(nullptr != editor)
+    DVASSERT(nullptr != editor);
 
     QColorDialog dlg(editor);
 

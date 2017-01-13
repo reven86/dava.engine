@@ -615,8 +615,8 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>>&&
     if (data.empty())
         return;
 
-    int currentSize = childrenData.size();
-    int newSize = currentSize + data.size();
+    int currentSize = static_cast<int>(childrenData.size());
+    int newSize = static_cast<int>(currentSize + data.size());
     QtPropertyModel::InsertionGuard insertGuard(model, this, currentSize, newSize - 1);
 
     childrenData.reserve(newSize);
@@ -639,7 +639,7 @@ void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData>&& data, int pos
     if (data == nullptr)
         return;
 
-    int insertPosition = childrenData.size();
+    int insertPosition = static_cast<int>(childrenData.size());
     QtPropertyModel::InsertionGuard insertGuard(model, this, insertPosition, insertPosition);
 
     data->parent = this;
@@ -661,7 +661,7 @@ void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData>&& data, int pos
 
 int QtPropertyData::ChildCount() const
 {
-    return childrenData.size();
+    return static_cast<int>(childrenData.size());
 }
 
 QtPropertyData* QtPropertyData::ChildGet(int i) const
@@ -688,7 +688,7 @@ int QtPropertyData::ChildIndex(const QtPropertyData* data) const
     {
         if (iter->first.child == data)
         {
-            return iter->second;
+            return static_cast<int>(iter->second);
         }
 
         auto iter = std::find_if(childrenData.begin(), childrenData.end(), [data](const std::unique_ptr<QtPropertyData>& child)
@@ -709,7 +709,7 @@ void QtPropertyData::ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData
     if (childrenData.empty())
         return;
 
-    QtPropertyModel::DeletionGuard deletionGuard(model, this, 0, childrenData.size() - 1);
+    QtPropertyModel::DeletionGuard deletionGuard(model, this, 0, static_cast<int>(childrenData.size() - 1));
     children = std::move(childrenData);
     keyToDataMap.clear();
 }
@@ -719,8 +719,8 @@ void QtPropertyData::ChildRemove(const QtPropertyData* data)
     TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data));
     if (iter != keyToDataMap.end())
     {
-        size_t index = iter->second;
-        DVASSERT(index < childrenData.size());
+        int index = static_cast<int>(iter->second);
+        DVASSERT(index < static_cast<int>(childrenData.size()));
         QtPropertyModel::DeletionGuard deletionGuard(model, this, index, index);
         childrenData.erase(childrenData.begin() + index);
         RefillSearchIndex();
@@ -732,7 +732,7 @@ void QtPropertyData::ChildRemoveAll()
     if (childrenData.empty())
         return;
 
-    QtPropertyModel::DeletionGuard deletionGuard(model, this, 0, childrenData.size() - 1);
+    QtPropertyModel::DeletionGuard deletionGuard(model, this, 0, static_cast<int>(childrenData.size() - 1));
     ResetChildren();
 }
 
@@ -976,6 +976,8 @@ void QtPropertyData::RefillSearchIndex()
     for (size_t i = 0; i < childrenData.size(); ++i)
     {
         const std::unique_ptr<QtPropertyData>& data = childrenData[i];
-        DVVERIFY(keyToDataMap.emplace(ChildKey(data.get()), i).second);
+
+        const auto emplacedPair = keyToDataMap.emplace(ChildKey(data.get()), i);
+        DVASSERT(emplacedPair.second);
     }
 }

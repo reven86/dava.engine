@@ -998,7 +998,7 @@ void PropertyEditor::ConvertToShadow()
                 return entity;
             }
         }
-        DVASSERT_MSG(0, "UNABLE TO FIND RENDER BATCH");
+        DVASSERT(0, "UNABLE TO FIND RENDER BATCH");
         return nullptr;
     };
 
@@ -1112,7 +1112,7 @@ void PropertyEditor::ActionEditSoundComponent()
         return;
 
     DAVA::Entity* node = curNodes.GetFirst().AsEntity();
-    DVASSERT(node != nullptr)
+    DVASSERT(node != nullptr);
 
     scene->BeginBatch("Edit Sound Component", 1);
     {

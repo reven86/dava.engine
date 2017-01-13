@@ -2,6 +2,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "Platform/SystemTimer.h"
+#include "Logger/Logger.h"
 
 #include "AssetCache/AssetCacheClient.h"
 

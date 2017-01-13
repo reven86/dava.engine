@@ -353,7 +353,7 @@ void ProcessScheduledDelete()
                     PipelineState::Delete(res.handle);
                     break;
                 default:
-                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
+                    DVASSERT(false, "Not supported resource scheduled for deletion");
                 }
             }
             scheduledDeleteResources[i].clear();

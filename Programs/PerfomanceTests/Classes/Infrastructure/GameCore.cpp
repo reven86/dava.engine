@@ -5,6 +5,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Engine/Window.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
@@ -135,10 +136,10 @@ void GameCore::RegisterTests()
 void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>>& mapsVector)
 {
     YamlParser* testsParser = YamlParser::Create("~res:/tests.yaml");
-    DVASSERT_MSG(testsParser, "can't open ~res:/tests.yaml");
+    DVASSERT(testsParser, "can't open ~res:/tests.yaml");
 
     YamlParser* mapsParser = YamlParser::Create("~res:/maps.yaml");
-    DVASSERT_MSG(mapsParser, "can't open ~res:/maps.yaml");
+    DVASSERT(mapsParser, "can't open ~res:/maps.yaml");
 
     YamlNode* testsRootNode = testsParser->GetRootNode();
     YamlNode* mapsRootNode = mapsParser->GetRootNode();
@@ -290,7 +291,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     if (frameDeltaFound)
     {
         String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-        params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+        params.targetFrameDelta = static_cast<float32>(std::atof(frameDeltaParam.c_str()));
 
         if (params.targetFrameDelta < 0.0f)
         {
@@ -314,7 +315,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     if (maxDeltaFound)
     {
         String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
-        params.maxDelta = std::atof(maxDeltaParam.c_str());
+        params.maxDelta = static_cast<float32>(std::atof(maxDeltaParam.c_str()));
 
         if (params.maxDelta < 0.0f)
         {
@@ -379,6 +380,8 @@ KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    Assert::AddHandler(Assert::DefaultLoggerHandler);
+
     Vector<String> modules =
     {
       "JobManager",

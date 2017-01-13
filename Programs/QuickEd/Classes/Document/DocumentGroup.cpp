@@ -190,12 +190,12 @@ void DocumentGroup::DisconnectTabBar(QTabBar* tabBar)
                this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::TryCloseDocument));
 }
 
-void DocumentGroup::AddDocument(const QString& path)
+Document* DocumentGroup::AddDocument(const QString& path)
 {
     DVASSERT(!path.isEmpty());
     if (path.isEmpty())
     {
-        return;
+        return nullptr;
     }
 
     int index = GetIndexByPackagePath(path);
@@ -210,10 +210,11 @@ void DocumentGroup::AddDocument(const QString& path)
         else
         {
             QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
-            return;
+            return nullptr;
         }
     }
     SetActiveDocument(index);
+    return documents.at(index);
 }
 
 bool DocumentGroup::TryCloseCurrentDocument()
@@ -295,7 +296,9 @@ void DocumentGroup::CloseDocument(Document* document)
             nextDocument = documents.at(documents.size() - 2); //last document will be removed
         }
     }
-    DVVERIFY(documents.removeAll(document) == 1);
+
+    const size_t removedCount = documents.removeAll(document);
+    DVASSERT(removedCount == 1);
     emit CanSaveAllChanged(!documents.empty());
 
     commandStackGroup->RemoveStack(document->GetCommandStack());

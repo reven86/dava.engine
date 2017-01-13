@@ -1,4 +1,5 @@
 #include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "ResourceArchiver/ResourceArchiver.h"
 #include "FileSystem/File.h"
 

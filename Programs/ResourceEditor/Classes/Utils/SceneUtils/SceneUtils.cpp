@@ -2,6 +2,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "Render/RHI/rhi_Public.h"
 #include "Render/Renderer.h"

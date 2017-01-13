@@ -1,5 +1,6 @@
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
+#include "Logger/Logger.h"
 #include "FileSystem/FileList.h"
 #include "Functional/Function.h"
 #include "Render/Image/ImageSystem.h"

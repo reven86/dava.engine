@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "EditorSystems/SelectionContainer.h"
 
 struct WidgetContext
 {
@@ -59,6 +58,8 @@ public:
     bool IsDocumentExists() const;
     void RefreshAllControlProperties();
 
+    Project* GetProject() const;
+
 signals:
     void FileChanged(Document* document);
     void CanSaveChanged(bool canSave);
@@ -74,12 +75,17 @@ private slots:
 
 private:
     void SetCanSave(bool canSave);
+    //fileSystemWatcher send fileChanged on Windows on the next frame
+    //and removePath/addPath not work on OS X
+    //so the only way to block "fileChanged" signal while you saving document is delete watcher and recreate it
+    void CreateFileSystemWatcher();
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     std::unique_ptr<DAVA::CommandStack> commandStack;
     QFileSystemWatcher* fileSystemWatcher = nullptr;
+    Project* project = nullptr;
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;

@@ -27,7 +27,7 @@ do {\
         const char* utf = env->GetStringUTFChars(estring, &isCopy);\
         String error(utf);\
         env->ReleaseStringUTFChars(estring, utf);\
-        DVASSERT_MSG(false, error.c_str());\
+        DVASSERT(false, error.c_str());\
     }\
 } while (0);
 

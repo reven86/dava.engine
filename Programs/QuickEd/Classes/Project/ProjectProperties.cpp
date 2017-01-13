@@ -6,6 +6,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 using namespace DAVA;
 
@@ -13,7 +14,7 @@ std::tuple<DAVA::ResultList, ProjectProperties> ProjectProperties::ParseLegacyPr
 {
     ResultList resultList;
 
-    DVASSERT_MSG(version == ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only ");
+    DVASSERT(version == ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only ");
     if (version != ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1)
     {
         String message = Format("Supported only project files with versions %d and %d.", ProjectProperties::CURRENT_PROJECT_FILE_VERSION, ProjectProperties::CURRENT_PROJECT_FILE_VERSION - 1);
@@ -161,7 +162,7 @@ const Vector<ProjectProperties::ResDir>& ProjectProperties::GetLibraryPackages()
     return libraryPackages;
 }
 
-const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& ProjectProperties::GetPrototypes() const
+const Map<String, DAVA::Set<FastName>>& ProjectProperties::GetPrototypes() const
 {
     return prototypes;
 }
@@ -338,13 +339,13 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     {
         for (uint32 i = 0; i < prototypesNode->GetCount(); i++)
         {
-            Set<String> packagePrototypes;
+            Set<FastName> packagePrototypes;
             const YamlNode* packNode = prototypesNode->Get(i);
             const YamlNode* packagePrototypesNode = packNode->Get("prototypes");
 
             for (uint32 j = 0; j < packagePrototypesNode->GetCount(); j++)
             {
-                packagePrototypes.insert(packagePrototypesNode->Get(j)->AsString());
+                packagePrototypes.insert(packagePrototypesNode->Get(j)->AsFastName());
             }
 
             const String& packagePath = packNode->Get("file")->AsString();

@@ -7,6 +7,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
 
+#include "Utils/StringFormat.h"
 #include "Animation/AnimationManager.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
@@ -50,8 +51,8 @@ void Window::SetMinimumSize(Size2f size)
 
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        size.dx = std::max(size.dx, 128.f);
-        size.dy = std::max(size.dy, 128.f);
+        size.dx = std::max(size.dx, static_cast<float32>(smallestWidth));
+        size.dy = std::max(size.dy, static_cast<float32>(smallestHeight));
 
         windowBackend->SetMinimumSize(size);
     }
@@ -267,6 +268,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
         HandleCursorCaptureLost(e);
         break;
+    case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
+        HandleCancelInput(e);
+        break;
     default:
         break;
     }
@@ -363,12 +367,6 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
 
-    // Only WINDOW_CREATED event has valid DPI field
-    if (e.type == MainDispatcherEvent::WINDOW_CREATED)
-    {
-        dpi = e.sizeEvent.dpi;
-    }
-
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
     mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
         if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
@@ -383,8 +381,9 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     surfaceHeight = compressedSize.surfaceHeight;
     surfaceScale = compressedSize.surfaceScale;
     fullscreenMode = compressedSize.fullscreen;
+    dpi = compressedSize.dpi;
 
-    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
+    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f, dpi=%f", width, height, surfaceWidth, surfaceHeight, dpi);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
@@ -437,6 +436,12 @@ bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
     }
     waitInputActivation = false;
     return false;
+}
+
+void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
+{
+    uiControlSystem->CancelAllInputs();
+    inputSystem->GetKeyboard().ClearAllKeys();
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
@@ -636,7 +641,7 @@ void Window::SetSurfaceScaleAsync(float32 scale)
 {
     if (scale <= 0.0f || scale > 1.0f)
     {
-        DVASSERT_MSG(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        DVASSERT(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
         return;
     }
 

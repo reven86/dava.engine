@@ -44,6 +44,8 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
             ProcessMousePress(currentInput->point, currentInput->mouseButton);
         }
         mousePressed = false;
+    default:
+        break;
     }
     return false;
 }

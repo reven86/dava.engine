@@ -6,6 +6,7 @@
 
 #include "TArc/Utils/ModuleCollection.h"
 
+#include "Logger/Logger.h"
 #include "Base/ScopedPtr.h"
 #include "Base/BaseTypes.h"
 #include "Render/GPUFamilyDescriptor.h"

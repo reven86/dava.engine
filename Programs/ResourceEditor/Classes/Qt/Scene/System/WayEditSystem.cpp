@@ -72,7 +72,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
         }
     }
 
-    DVASSERT_MSG(0, "Invalid (not tracked) starting waypoint removed");
+    DVASSERT(0, "Invalid (not tracked) starting waypoint removed");
 }
 
 void WayEditSystem::WillRemove(DAVA::Entity* removedPoint)
@@ -80,7 +80,7 @@ void WayEditSystem::WillRemove(DAVA::Entity* removedPoint)
     if (IsWayEditEnabled() && GetWaypointComponent(removedPoint))
     {
         auto i = mapStartPoints.find(removedPoint->GetParent());
-        DVASSERT(i != mapStartPoints.end())
+        DVASSERT(i != mapStartPoints.end());
         startPointForRemove = i->second;
     }
 }

@@ -309,11 +309,11 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
     QStatusBar* statusBar = windowInfo.window->statusBar();
     if (isPermanent)
     {
-        statusBar->insertPermanentWidget(positionIndex, actionWidget, stretchFactor);
+        statusBar->insertPermanentWidget(static_cast<int>(positionIndex), actionWidget, stretchFactor);
     }
     else
     {
-        statusBar->insertWidget(positionIndex, actionWidget, stretchFactor);
+        statusBar->insertWidget(static_cast<int>(positionIndex), actionWidget, stretchFactor);
     }
 }
 

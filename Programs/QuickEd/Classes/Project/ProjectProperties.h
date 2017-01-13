@@ -1,10 +1,10 @@
 #pragma once
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
-class FilePath;
 class YamlNode;
 class ResultList;
 }
@@ -48,7 +48,7 @@ public:
     const ResDir& GetTextsDirectory() const;
     const DAVA::Vector<GfxDir>& GetGfxDirectories() const;
     const DAVA::Vector<ResDir>& GetLibraryPackages() const;
-    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& GetPrototypes() const;
+    const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
     const DAVA::String& GetDefaultLanguage() const
     {
@@ -80,5 +80,5 @@ private:
     ResDir textsDirectory;
     DAVA::Vector<GfxDir> gfxDirectories;
     DAVA::Vector<ResDir> libraryPackages;
-    DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>> prototypes;
+    DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>> prototypes;
 };

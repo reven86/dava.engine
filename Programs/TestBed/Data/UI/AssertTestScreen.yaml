@@ -7,7 +7,7 @@ Controls:
     noInput: true
     components:
         ActionBinding:
-            actions: "NON_MODAL_ASSERT, F1; MODAL_ASSERT, F2; DELAYED_MODAL_ASSERT, F3"
+            actions: "ASSERT_ALWAYS, F1; ASSERT, F2; DELAYED_ASSERT, F3"
     children:
     -   class: "UIStaticText"
         name: ""
@@ -15,7 +15,7 @@ Controls:
         size: [439.000000, 32.000000]
         noInput: false
         debugDraw: true
-        text: "Non-modal assert"
+        text: "Assert_always"
         font: "Korinna_18"
         components:
             Anchor:
@@ -24,14 +24,14 @@ Controls:
                 rightAnchorEnabled: true
                 rightAnchor: 20.000000
             Action:
-                action: "NON_MODAL_ASSERT"
+                action: "ASSERT_ALWAYS"
     -   class: "UIStaticText"
         name: ""
         position: [20.000000, 57.000000]
         size: [439.000000, 32.000000]
         noInput: false
         debugDraw: true
-        text: "Modal assert"
+        text: "Assert"
         font: "Korinna_18"
         components:
             Anchor:
@@ -40,14 +40,14 @@ Controls:
                 rightAnchorEnabled: true
                 rightAnchor: 20.000000
             Action:
-                action: "MODAL_ASSERT"
+                action: "ASSERT"
     -   class: "UIStaticText"
         name: ""
         position: [20.000000, 94.000000]
         size: [399.000000, 32.000000]
         noInput: false
         debugDraw: true
-        text: "Delayed modal assert"
+        text: "Delayed assert"
         font: "Korinna_18"
         components:
             Anchor:
@@ -56,7 +56,7 @@ Controls:
                 rightAnchorEnabled: true
                 rightAnchor: 60.000000
             Action:
-                action: "DELAYED_MODAL_ASSERT"
+                action: "DELAYED_ASSERT"
     -   class: "UIStaticText"
         name: "Countdown"
         position: [427.000000, 94.000000]

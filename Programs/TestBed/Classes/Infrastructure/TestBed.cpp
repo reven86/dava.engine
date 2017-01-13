@@ -3,6 +3,10 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
 
+#include "Debug/DVAssertDefaultHandlers.h"
+#include "Platform/DateTime.h"
+#include "CommandLine/CommandLineParser.h"
+#include "Utils/Utils.h"
 #include <Platform/DateTime.h>
 #include <CommandLine/CommandLineParser.h>
 #include <Utils/Utils.h>
@@ -53,6 +57,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
     using namespace Net;
+
+    Assert::SetupDefaultHandlers();
 
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);
@@ -107,8 +113,7 @@ TestBed::TestBed(Engine& engine)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
-    nativeDelegate.reset(new NativeDelegateMac());
-    PlatformApi::Mac::RegisterNSApplicationDelegateListener(nativeDelegate.get());
+    RegisterMacApplicationListener();
 #elif defined(__DAVAENGINE_IPHONE__)
     nativeDelegate.reset(new NativeDelegateIos());
     PlatformApi::Ios::RegisterUIApplicationDelegateListener(nativeDelegate.get());
@@ -175,8 +180,6 @@ void TestBed::OnGameLoopStopped()
     
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
-    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     PlatformApi::Ios::UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -188,7 +191,10 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
+    
+#if !defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset();
+#endif
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)
@@ -255,7 +261,7 @@ void TestBed::RunOnlyThisTest()
 
 void TestBed::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void TestBed::RegisterTests()

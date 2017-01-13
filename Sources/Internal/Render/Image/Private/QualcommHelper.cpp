@@ -36,7 +36,7 @@ int32 GetQualcommFromDava(PixelFormat format)
     case FORMAT_RGBA8888:
         return Q_FORMAT_RGBA_8UI;
     default:
-        DVASSERT_MSG(false, "Unsupported pixel format");
+        DVASSERT(false, "Unsupported pixel format");
         return Q_FORMAT_ATC_RGB;
     }
 }
@@ -53,7 +53,7 @@ bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    DVASSERT_MSG(false, "No need to decompress on mobile platforms");
+    DVASSERT(false, "No need to decompress on mobile platforms");
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -118,7 +118,7 @@ bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
 bool CompressRgbaToAtc(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
+    DVASSERT(false, "Qualcomm doesn't provide texture converter library for ios/android");
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)

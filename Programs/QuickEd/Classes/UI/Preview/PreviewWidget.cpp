@@ -111,6 +111,24 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
+void PreviewWidget::SelectControl(const DAVA::String& path)
+{
+    if (document != nullptr)
+    {
+        PackageNode* package = document->GetPackage();
+        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
+        if (!node)
+        {
+            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
+        }
+        if (node != nullptr)
+        {
+            systemsManager->ClearSelection();
+            systemsManager->SelectNode(node);
+        }
+    }
+}
+
 float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.
@@ -119,7 +137,7 @@ float PreviewWidget::GetScaleFromComboboxText() const
     curTextValue.remove(' ');
     bool ok;
     float scaleValue = curTextValue.toFloat(&ok);
-    DVASSERT_MSG(ok, "can not parse text to float");
+    DVASSERT(ok, "can not parse text to float");
     return scaleValue / 100.0f;
 }
 

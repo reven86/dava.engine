@@ -3,10 +3,12 @@
 #include "Document/Document.h"
 #include "Document/DocumentGroup.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "UI/ProjectView.h"
+#include "UI/Find/FindFilter.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
@@ -36,9 +38,9 @@ QString Project::RestoreSymLinkInFilePath(const QString& filePath) const
 {
 #if defined(__DAVAENGINE_MACOS__)
     return symLinkRestorer->RestoreSymLinkInFilePath(filePath);
-#endif
-
+#else
     return filePath;
+#endif
 }
 
 Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& properties_)
@@ -98,6 +100,9 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     connect(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
     connect(view, &MainWindow::ProjectView::ReloadSprites, this, &Project::OnReloadSprites);
     connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::OnFindFileInProject);
+    connect(view, &MainWindow::ProjectView::JumpToPrototype, this, &Project::OnJumpToPrototype);
+    connect(view, &MainWindow::ProjectView::FindPrototypeInstances, this, &Project::OnFindPrototypeInstances);
+    connect(view, &MainWindow::ProjectView::SelectionChanged, this, &Project::OnSelectionChanged);
 
     connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
 
@@ -141,7 +146,7 @@ Vector<ProjectProperties::ResDir> Project::GetLibraryPackages() const
     return properties.GetLibraryPackages();
 }
 
-const DAVA::Map<DAVA::String, DAVA::Set<DAVA::String>>& Project::GetPrototypes() const
+const Map<String, Set<DAVA::FastName>>& Project::GetPrototypes() const
 {
     return properties.GetPrototypes();
 }
@@ -219,6 +224,11 @@ void Project::SetCurrentLanguage(const QString& newLanguageCode)
 const QStringList& Project::GetDefaultPresetNames() const
 {
     return editorFontSystem->GetDefaultPresetNames();
+}
+
+const FileSystemCache* Project::GetFileSystemCache() const
+{
+    return fileSystemCache.get();
 }
 
 EditorFontSystem* Project::GetEditorFontSystem() const
@@ -303,6 +313,20 @@ bool Project::CloseAllDocuments(bool force)
     return true;
 }
 
+void Project::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
+{
+    Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
+    if (document != nullptr)
+    {
+        view->SelectControl(controlName);
+    }
+}
+
+void Project::JumpToPackage(const DAVA::FilePath& packagePath)
+{
+    documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
+}
+
 void Project::SaveAllDocuments()
 {
     documentGroup->SaveAllDocuments();
@@ -327,6 +351,49 @@ void Project::OnFindFileInProject()
     }
     view->SelectFile(filePath);
     documentGroup->AddDocument(filePath);
+}
+
+void Project::OnJumpToPrototype()
+{
+    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
+    if (nodes.size() == 1)
+    {
+        auto it = nodes.begin();
+        PackageBaseNode* node = *it;
+
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr && controlNode->GetPrototype() != nullptr)
+        {
+            ControlNode* prototypeNode = controlNode->GetPrototype();
+            FilePath path = prototypeNode->GetPackage()->GetPath();
+            String name = prototypeNode->GetName();
+            JumpToControl(path, name);
+        }
+    }
+}
+
+void Project::OnFindPrototypeInstances()
+{
+    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
+    if (nodes.size() == 1)
+    {
+        auto it = nodes.begin();
+        PackageBaseNode* node = *it;
+
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            FilePath path = controlNode->GetPackage()->GetPath();
+            String name = controlNode->GetName();
+
+            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
+        }
+    }
+}
+
+void Project::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)

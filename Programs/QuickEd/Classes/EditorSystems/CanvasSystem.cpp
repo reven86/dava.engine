@@ -171,7 +171,7 @@ void ColorControl::SetBackgroundColorIndex(uint32 index)
         color = backgroundColor2;
         break;
     default:
-        DVASSERT_MSG(false, "unsupported background index");
+        DVASSERT(false, "unsupported background index");
         return;
     }
     background->SetColor(color);
@@ -292,7 +292,7 @@ void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootCont
 
     gd.position.SetZero();
     UIControl* scalableControl = gridControl->GetParent()->GetParent();
-    DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
+    DVASSERT(nullptr != scalableControl, "grid update without being attached to screen");
     gd.scale /= scalableControl->GetScale(); //grid->controlCanvas->scalableControl
     if (gd.scale.x != 0.0f || gd.scale.y != 0.0f)
     {

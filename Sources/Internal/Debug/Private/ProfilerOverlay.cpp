@@ -5,6 +5,7 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Utils/StringFormat.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include "Render/RHI/Common/rhi_Utils.h"

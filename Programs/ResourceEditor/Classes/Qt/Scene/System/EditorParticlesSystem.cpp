@@ -25,7 +25,7 @@ EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
 
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
-    DVASSERT(effectEntity != nullptr)
+    DVASSERT(effectEntity != nullptr);
 
     SceneCollisionSystem* collisionSystem = static_cast<SceneEditor2*>(GetScene())->collisionSystem;
 
