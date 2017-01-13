@@ -61,9 +61,8 @@ public:
     virtual void RemoveFromGroup();
 
     virtual int32 GetGroupId();
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
-
-    virtual void SystemScreenSizeChanged(const Rect& newFullScreenSize);
+    void SystemDraw(const UIGeometricData& geometricData) override; // Internal method used by ControlSystem
+    void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 
 protected:
     virtual void LoadResources()
