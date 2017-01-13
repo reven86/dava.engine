@@ -21,12 +21,12 @@ public:
         LoadingRequestGetFooter, //!< download footer and parse it, find out filetable block size and position
         LoadingRequestAskFileTable, //!< start loading filetable block from superpack.dvpk
         LoadingRequestGetFileTable, //!< download filetable and fill info about every file on server superpack.dvpk
-        CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalDB if match
+        CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalMeta if match
         LoadingRequestAskMeta, //!< start loading DB from server
-        LoadingRequestGetDB, //!< download DB and check it's hash
+        LoadingRequestGetMeta, //!< download DB and check it's hash
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
-        LoadingPacksDataFromLocalDB, //!< open local DB and build pack index for all packs
+        LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
         MountingDownloadedPacks, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
         Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
@@ -113,9 +113,9 @@ private:
     void AskFileTable();
     void GetFileTable();
     void CompareLocalMetaWitnRemoteHash();
-    void AskDB();
-    void GetDB();
-    void UnpackingDB();
+    void AskMeta();
+    void GetMeta();
+    void ParseMeta();
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
     void ReloadState();
@@ -128,6 +128,7 @@ private:
 
     mutable Mutex protectPM;
 
+    FilePath metaLocalCache;
     FilePath dirToDownloadedPacks;
     String urlToSuperPack;
     bool isProcessingEnabled = false;

@@ -1,12 +1,11 @@
 #include "PackManager/Private/DCLManagerImpl.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackArchive.h"
-#include "FileSystem/Private/ZipArchive.h"
+#include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
 #include "Utils/StringUtils.h"
 #include "Utils/StringFormat.h"
-#include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
@@ -30,10 +29,10 @@ const String& DCLManagerImpl::ToString(DCLManagerImpl::InitState state)
         "LoadingRequestGetFileTable",
         "CalculateLocalDBHashAndCompare",
         "LoadingRequestAskMeta",
-        "LoadingRequestGetDB",
+        "LoadingRequestGetMeta",
         "UnpakingDB",
         "DeleteDownloadedPacksIfNotMatchHash",
-        "LoadingPacksDataFromLocalDB",
+        "LoadingPacksDataFromLocalMeta",
         "MountingDownloadedPacks",
         "Ready",
         "Offline"
@@ -238,21 +237,21 @@ void DCLManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::LoadingRequestAskMeta == initState)
     {
-        AskDB();
+        AskMeta();
     }
-    else if (InitState::LoadingRequestGetDB == initState)
+    else if (InitState::LoadingRequestGetMeta == initState)
     {
-        GetDB();
+        GetMeta();
     }
     else if (InitState::UnpakingDB == initState)
     {
-        UnpackingDB();
+        ParseMeta();
     }
     else if (InitState::DeleteDownloadedPacksIfNotMatchHash == initState)
     {
         DeleteOldPacks();
     }
-    else if (InitState::LoadingPacksDataFromLocalDB == initState)
+    else if (InitState::LoadingPacksDataFromLocalMeta == initState)
     {
         LoadPacksDataFromDB();
     }
@@ -429,28 +428,19 @@ void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
 
     FileSystem* fs = FileSystem::Instance();
 
-    if (fs->IsFile(dbLocalName) && fs->IsFile(dbLocalNameZipped))
+    if (fs->IsFile(metaLocalCache))
     {
-        const uint32 localCrc32 = CRC32::ForFile(dbLocalNameZipped);
-        auto it = initFileData.find(dbName);
-        if (it != end(initFileData))
+        const uint32 localCrc32 = CRC32::ForFile(metaLocalCache);
+        if (localCrc32 != initFooterOnServer.metaDataCrc32)
         {
-            // on server side we not compress
-            if (localCrc32 != it->second->originalCrc32)
-            {
-                DeleteLocalDBFiles();
-                // we have to download new localDB file from server!
-                initState = InitState::LoadingRequestAskMeta;
-            }
-            else
-            {
-                // all good go to
-                initState = InitState::LoadingPacksDataFromLocalDB;
-            }
+            DeleteLocalDBFiles();
+            // we have to download new localDB file from server!
+            initState = InitState::LoadingRequestAskMeta;
         }
         else
         {
-            DAVA_THROW(DAVA::Exception, "can't find DB at server superpack: " + dbName);
+            // all good go to
+            initState = InitState::LoadingPacksDataFromLocalMeta;
         }
     }
     else
@@ -461,32 +451,29 @@ void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
     }
 }
 
-void DCLManagerImpl::AskDB()
+void DCLManagerImpl::AskMeta()
 {
     //Logger::FrameworkDebug("pack manager ask_db");
 
     DownloadManager* dm = DownloadManager::Instance();
 
-    auto it = initFileData.find(dbName);
-    if (it == end(initFileData))
-    {
-        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + dbName);
-    }
+    uint64 internalDataSize = initFooterOnServer.metaDataSize +
+    initFooterOnServer.info.filesTableSize +
+    initFooterOnServer.info.namesSizeCompressed +
+    sizeof(initFooterOnServer);
 
-    const PackFormat::FileTableEntry& fileData = *(it->second);
-
-    uint64 downloadOffset = fileData.startPosition;
-    uint64 downloadSize = fileData.compressedSize > 0 ? fileData.compressedSize : fileData.originalSize;
+    uint64 downloadOffset = fullSizeServerData - internalDataSize;
+    uint64 downloadSize = initFooterOnServer.metaDataSize;
 
     buffer.resize(static_cast<size_t>(downloadSize));
 
     downloadTaskId = dm->DownloadIntoBuffer(urlToSuperPack, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
     DVASSERT(0 != downloadTaskId);
 
-    initState = InitState::LoadingRequestGetDB;
+    initState = InitState::LoadingRequestGetMeta;
 }
 
-void DCLManagerImpl::GetDB()
+void DCLManagerImpl::GetMeta()
 {
     //Logger::FrameworkDebug("pack manager get_db");
 
@@ -505,7 +492,7 @@ void DCLManagerImpl::GetDB()
             else
             {
                 initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
+                initErrorMsg = "failed get meta from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
             }
         }
     }
@@ -515,42 +502,18 @@ void DCLManagerImpl::GetDB()
     }
 }
 
-void DCLManagerImpl::UnpackingDB()
+void DCLManagerImpl::ParseMeta()
 {
     //Logger::FrameworkDebug("pack manager unpacking_db");
 
     uint32 buffCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(buffer.data()), static_cast<uint32>(buffer.size()));
 
-    auto it = initFileData.find(dbName);
-    if (it == end(initFileData))
+    if (buffCrc32 != initFooterOnServer.metaDataCrc32)
     {
-        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + dbName);
+        DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer meta not match crc32");
     }
 
-    const PackFormat::FileTableEntry& fileData = *it->second;
-
-    if (buffCrc32 != fileData.originalCrc32)
-    {
-        DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer not match crc32");
-    }
-
-    if (Compressor::Type::None != fileData.type)
-    {
-        DAVA_THROW(DAVA::Exception, "can't decompress buffer with local DB");
-    }
-
-    WriteBufferToFile(buffer, dbLocalNameZipped);
-
-    RefPtr<File> fDb(File::Create(dbLocalNameZipped, File::OPEN | File::READ));
-
-    ZipArchive zip(fDb, dbLocalNameZipped);
-    const auto& fileInfos = zip.GetFilesInfo();
-    if (fileInfos.empty() || !zip.LoadFile(fileInfos.front().relativeFilePath, buffer))
-    {
-        DAVA_THROW(DAVA::Exception, "can't unpack db from zip: " + dbLocalNameZipped.GetStringValue());
-    }
-
-    WriteBufferToFile(buffer, dbLocalName);
+    WriteBufferToFile(buffer, metaLocalCache);
 
     buffer.clear();
     buffer.shrink_to_fit();
@@ -560,22 +523,6 @@ void DCLManagerImpl::UnpackingDB()
 
 void DCLManagerImpl::StoreAllMountedPackNames()
 {
-    size_t numMountedPacks = std::count_if(
-    begin(packs),
-    end(packs),
-    [](const Pack& p) { return p.state == Pack::Status::Mounted; }
-    );
-
-    tmpOldMountedPackNames.clear();
-    tmpOldMountedPackNames.reserve(numMountedPacks);
-
-    for (Pack& p : packs)
-    {
-        if (p.state == Pack::Status::Mounted)
-        {
-            tmpOldMountedPackNames.push_back(p.name);
-        }
-    }
 }
 
 void DCLManagerImpl::DeleteOldPacks()
@@ -584,59 +531,13 @@ void DCLManagerImpl::DeleteOldPacks()
 
     StoreAllMountedPackNames();
 
-    // list all packs (dvpk files) downloaded
-    // for each file calculate CRC32
-    // check CRC32 with value in FileTable
-    // we can unmount only packs with new crc32
-
-    ScopedPtr<FileList> fileList(new FileList(dirToDownloadedPacks));
-
-    for (uint32 i = 0; i < fileList->GetCount(); ++i)
-    {
-        const FilePath& path = fileList->GetPathname(i);
-
-        if (path.GetExtension() == RequestManager::packPostfix)
-        {
-            uint32 crc32 = CRC32::ForFile(path);
-
-            String fileName = path.GetBasename();
-
-            for (auto it = initFileData.begin(); it != initFileData.end(); ++it)
-            {
-                const String& relativeFilePath = it->first;
-                if (StringUtils::EndsWith(relativeFilePath, fileName))
-                {
-                    const PackFormat::FileTableEntry* fileEntry = it->second;
-                    if (crc32 != fileEntry->originalCrc32)
-                    {
-                        if (FileSystem::Instance()->IsMounted(path))
-                        {
-                            FileSystem::Instance()->Unmount(path);
-                        }
-                        // delete old packfile
-                        if (!FileSystem::Instance()->DeleteFile(path))
-                        {
-                            DAVA_THROW(DAVA::Exception, "can't delete old packfile: " + path.GetStringValue());
-                        }
-                    }
-                }
-                else
-                {
-                    // this pack not exist in current superpack just delete it.
-                    // To leave more room
-                    FileSystem::Instance()->DeleteFile(path);
-                }
-            }
-        }
-    }
-
-    initState = InitState::LoadingPacksDataFromLocalDB;
+    initState = InitState::LoadingPacksDataFromLocalMeta;
 }
 
 void DCLManagerImpl::ReloadState()
 {
-    bool dbInMemory = true;
-    std::unique_ptr<PacksDB> tmpDb(new PacksDB(dbLocalName, dbInMemory));
+    ScopedPtr<File> metaFile(new DAVA::File::Create(metaLocalCache, File::OPEN | File::READ));
+    std::unique_ptr<PackMetaData> tmpDb(new PackMetaData(metaLocalCache));
     Vector<Pack> tmpPacks;
 
     InitializePacksFromDB(*tmpDb, tmpPacks);
@@ -701,7 +602,7 @@ void DCLManagerImpl::LoadPacksDataFromDB()
         // now build all packs from localDB, later after request to server
         // we can delete localDB and replace with new from server if needed
         bool dbInMemory = true;
-        db.reset(new PacksDB(dbLocalName, dbInMemory));
+        db.reset(new PacksDB(metaLocalCache, dbInMemory));
 
         InitializePacksFromDB(*db, packs);
 
@@ -757,7 +658,7 @@ void DCLManagerImpl::MountDownloadedPacks()
 void DCLManagerImpl::DeleteLocalDBFiles()
 {
     FileSystem* fs = FileSystem::Instance();
-    fs->DeleteFile(dbLocalName);
+    fs->DeleteFile(metaLocalCache);
     fs->DeleteFile(dbLocalNameZipped);
 }
 
