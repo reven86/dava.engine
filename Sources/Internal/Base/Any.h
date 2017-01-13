@@ -185,6 +185,6 @@ struct AnyCast
 } // namespace DAVA
 
 #define __Dava_Any__
-#include "Base/Private/Any_impl.h"
 #include "Base/Private/Any_implCompare.h"
 #include "Base/Private/Any_implCast.h"
+#include "Base/Private/Any_impl.h"

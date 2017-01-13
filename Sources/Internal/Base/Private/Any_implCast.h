@@ -42,7 +42,7 @@ struct AnyCastImpl
 
     static T Cast(const Any& any)
     {
-        AnyCastHolder<T>::CastFn fn = AnyCastHolder<T>::GetCastFn(any.GetType());
+        auto fn = AnyCastHolder<T>::GetCastFn(any.GetType());
 
         if (nullptr != fn)
         {
@@ -55,7 +55,7 @@ struct AnyCastImpl
     template <typename U>
     static T Cast(const Any& any, const U& def)
     {
-        AnyCastHolder<T>::CastFn fn = AnyCastHolder<T>::GetCastFn(any.GetType());
+        auto fn = AnyCastHolder<T>::GetCastFn(any.GetType());
 
         if (nullptr != fn)
         {
