@@ -104,18 +104,7 @@ void EditorCanvas::SetViewSize(const Vector2& viewSize_)
     if (viewSize_ != viewSize)
     {
         viewSize = viewSize_;
-        int32 width = static_cast<int32>(viewSize.dx);
-        int32 height = static_cast<int32>(viewSize.dy);
-        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-
-        vcs->UnregisterAllAvailableResourceSizes();
-        vcs->SetVirtualScreenSize(width, height);
-        vcs->RegisterAvailableResourceSize(width, height, "Gfx");
-        vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
-
-        UIScreenManager::Instance()->GetScreen()->SetSize(viewSize);
         UpdatePosition();
-        viewSizeChanged.Emit(viewSize);
     }
 }
 

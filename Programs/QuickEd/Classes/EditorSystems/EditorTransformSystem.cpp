@@ -273,7 +273,7 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
     }
     case HUDAreaInfo::ROTATE_AREA:
     {
-        Rotate(pos);
+        RotateControl(pos);
         break;
     }
     default:
@@ -310,7 +310,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         const auto& positionProperty = nodeToMoveInfo->positionProperty;
 
         Vector2 scaledDelta = delta / gd->scale;
-        Vector2 deltaPosition(Vector2::Rotate(scaledDelta, -gd->angle));
+        Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
         Vector2 adjustedPosition(deltaPosition);
         adjustedPosition += extraDelta;
         extraDelta.SetZero();
@@ -319,7 +319,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + adjustedPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
-        delta = Vector2::Rotate(adjustedPosition, gd->angle);
+        delta = ::Rotate(adjustedPosition, gd->angle);
         delta *= gd->scale;
     }
     for (auto& nodeToMove : nodesToMoveInfos)
@@ -331,7 +331,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         }
         const UIGeometricData* gd = nodeToMove->parentGD;
         Vector2 scaledDelta = delta / gd->scale;
-        Vector2 deltaPosition(Vector2::Rotate(scaledDelta, -gd->angle));
+        Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
         AbstractProperty* property = nodeToMove->positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
@@ -476,7 +476,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 pivot(control->GetPivot());
 
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
-    deltaMappedToControl = Vector2::Rotate(deltaMappedToControl, -controlGeometricData.angle);
+    deltaMappedToControl = ::Rotate(deltaMappedToControl, -controlGeometricData.angle);
 
     Vector2 deltaSize(deltaMappedToControl);
     Vector2 deltaPosition(deltaMappedToControl);
@@ -558,7 +558,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     }
 
     deltaPosition *= control->GetScale();
-    deltaPosition = Vector2::Rotate(deltaPosition, control->GetAngle());
+    deltaPosition = ::Rotate(deltaPosition, control->GetAngle());
 
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
 
@@ -639,7 +639,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
     //calculate control box in parent
     controlGD.size += deltaSize;
     Rect box = controlGD.GetAABBox();
-    Vector2 sizeAffect = Vector2::Rotate(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
+    Vector2 sizeAffect = ::Rotate(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
     box.SetPosition(box.GetPosition() - sizeAffect);
 
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
@@ -717,7 +717,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
-    Vector2 rotatedDeltaPosition(Vector2::Rotate(scaledDelta, -parentGeometricData.angle));
+    Vector2 rotatedDeltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
@@ -753,7 +753,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
     DVASSERT(controlSize.x > 0.0f && controlSize.y > 0.0f);
-    const Vector2 rotatedDeltaPivot(Vector2::Rotate(delta, -controlGeometricData.angle));
+    const Vector2 rotatedDeltaPivot(::Rotate(delta, -controlGeometricData.angle));
     Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 
     const Vector2 range(pivotMagnetRange / controlSize); //range in pivot coordinates
@@ -793,7 +793,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
         {
             CreateMagnetLinesForPivot(magnetLines, target, controlGeometricData);
             extraDelta = finalPivot - target;
-            delta = Vector2::Rotate((target - origPivot) * controlSize, controlGeometricData.angle);
+            delta = ::Rotate((target - origPivot) * controlSize, controlGeometricData.angle);
 
             finalPivot = target;
         }
@@ -805,14 +805,14 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
         {
             deltaPivot += extraDelta;
             extraDelta.SetZero();
-            delta = Vector2::Rotate(deltaPivot * controlSize, controlGeometricData.angle);
+            delta = ::Rotate(deltaPivot * controlSize, controlGeometricData.angle);
         }
     }
     systemsManager->magnetLinesChanged.Emit(magnetLines);
     return finalPivot;
 }
 
-bool EditorTransformSystem::Rotate(Vector2 pos)
+bool EditorTransformSystem::RotateControl(Vector2 pos)
 {
     Vector2 prevPos = systemsManager->GetLastMousePos();
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());

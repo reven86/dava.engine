@@ -141,6 +141,8 @@ public:
     DAVA::Signal<bool> emulationModeChanged;
     DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
+    //render widget size changed
+    DAVA::Signal<DAVA::uint32 /*width*/, DAVA::uint32 /*height*/> viewSizeChanged;
 
     //helpers
     DAVA::Vector2 GetMouseDelta() const;
@@ -166,6 +168,7 @@ private:
 
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
+    void OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;

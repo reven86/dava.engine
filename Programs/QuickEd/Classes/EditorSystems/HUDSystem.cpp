@@ -278,15 +278,15 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         auto linePos = line.rect.GetPosition();
         auto lineSize = line.rect.GetSize();
 
-        linePos = Vector2::Rotate(linePos, gd->angle);
+        linePos = ::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize[line.axis] *= gd->scale[line.axis];
-        Vector2 gdPos = gd->position - Vector2::Rotate(gd->pivotPoint * gd->scale, gd->angle);
+        Vector2 gdPos = gd->position - ::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
         UIControl* lineControl = magnetControls.at(i).Get();
         float32 angle = line.gd->angle;
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
-        Vector2 extraPos = Vector2::Rotate(extraSize, angle) / 2.0f;
+        Vector2 extraPos = ::Rotate(extraSize, angle) / 2.0f;
         Rect lineRect(Vector2(linePos + gdPos) - extraPos, lineSize + extraSize);
         lineControl->SetRect(lineRect);
         lineControl->SetAngle(angle);
@@ -294,7 +294,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos = line.targetRect.GetPosition();
         lineSize = line.targetRect.GetSize();
 
-        linePos = Vector2::Rotate(linePos, gd->angle);
+        linePos = ::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize *= gd->scale;
 

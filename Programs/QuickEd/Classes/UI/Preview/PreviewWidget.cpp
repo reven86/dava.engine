@@ -10,7 +10,7 @@
 
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/UIControlSystem.h"
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/InputDialogs/MultilineTextInputDialog.h"
@@ -21,6 +21,7 @@
 #include "EditorSystems/EditorCanvas.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/Package/PackageMimeData.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -381,7 +382,15 @@ void PreviewWidget::OnPositionChanged(const Vector2& position)
 
 void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    editorCanvas->SetViewSize(width, height);
+    systemsManager->viewSizeChanged.Emit(width, height);
+
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+    vcs->UnregisterAllAvailableResourceSizes();
+    vcs->SetVirtualScreenSize(width, height);
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
+
+    UpdateScrollArea();
 }
 
 void PreviewWidget::OnWindowCreated()
@@ -398,7 +407,6 @@ void PreviewWidget::OnWindowCreated()
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
     editorCanvas = systemsManager->GetEditorCanvas();
     connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
-    editorCanvas->viewSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->canvasSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);

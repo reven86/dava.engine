@@ -40,7 +40,6 @@ public:
     void SetPosition(const DAVA::Vector2& position);
     void SetScale(DAVA::float32 scale);
 
-    DAVA::Signal<const DAVA::Vector2&> viewSizeChanged;
     DAVA::Signal<const DAVA::Vector2&> canvasSizeChanged;
     DAVA::Signal<const DAVA::Vector2&> positionChanged; //canvas position
     DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
