@@ -3,14 +3,14 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 namespace DAVA
 {
-class UIStyleSheet;
-
 class UIPriorityStyleSheet
 {
 public:
+    UIPriorityStyleSheet() = default;
     UIPriorityStyleSheet(UIStyleSheet* styleSheet, int32 priority = 0);
     UIPriorityStyleSheet(const UIPriorityStyleSheet& other);
     virtual ~UIPriorityStyleSheet();
@@ -23,7 +23,7 @@ public:
 
 private:
     RefPtr<UIStyleSheet> styleSheet;
-    int32 priority;
+    int32 priority = 0;
 };
 
 UIStyleSheet* UIPriorityStyleSheet::GetStyleSheet() const
