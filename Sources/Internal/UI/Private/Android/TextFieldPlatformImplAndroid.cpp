@@ -442,23 +442,31 @@ void TextFieldPlatformImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jb
 
 void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, jint w, jint h)
 {
-    RefPtr<Sprite> sprite;
+    RefPtr<Texture> texture;
     if (pixels != nullptr)
     {
         jint* arrayElements = env->GetIntArrayElements(pixels, nullptr);
 
-        ScopedPtr<Image> image(Image::CreateFromData(w, h, FORMAT_RGBA8888, reinterpret_cast<const uint8*>(arrayElements)));
-        ImageConvert::SwapRedBlueChannels(image);
-        sprite.Set(Sprite::CreateFromImage(image, true, false));
+        uint8* imageBytes = reinterpret_cast<uint8*>(arrayElements);
+        ImageConvert::SwapRedBlueChannels(FORMAT_RGBA8888, imageBytes, w, h, w * 4);
+
+        texture.Set(Texture::CreateFromData(FORMAT_RGBA8888, imageBytes, w, h, false));
 
         // JNI_ABORT tells to free the buffer without copying back the possible changes
         env->ReleaseIntArrayElements(pixels, arrayElements, JNI_ABORT);
     }
 
-    RunOnMainThreadAsync([this, sprite]() {
+    RunOnMainThreadAsync([this, texture]() {
         if (uiTextField != nullptr)
         {
-            uiTextField->SetSprite(sprite.Get(), 0);
+            Sprite* sprite = nullptr;
+            if (texture != nullptr)
+            {
+                const Rect textFieldRect = uiTextField->GetRect();
+                sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
+            }
+
+            uiTextField->SetSprite(sprite, 0);
         }
     });
 }
