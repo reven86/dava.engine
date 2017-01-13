@@ -52,6 +52,11 @@ public:
         return ret;
     }
 
+    bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        return false;
+    }
+
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
     {
         return object;
