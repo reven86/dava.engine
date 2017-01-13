@@ -19,8 +19,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaWebView_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::WebViewControl;
-    std::weak_ptr<WebViewControl>* weak = reinterpret_cast<std::weak_ptr<WebViewControl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<WebViewControl>* weak = reinterpret_cast<std::weak_ptr<WebViewControl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 JNIEXPORT jint JNICALL Java_com_dava_engine_DavaWebView_nativeOnUrlChanged(JNIEnv* env, jclass jclazz, jlong backendPointer, jstring url, jboolean isRedirectedByMouseClick)
