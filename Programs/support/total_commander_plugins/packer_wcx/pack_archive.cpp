@@ -172,12 +172,12 @@ PackArchive::PackArchive(const std::string& archiveName)
                       });
     } // end if (footerBlock.info.numFiles > 0)
 
-    if (footerBlock.sizeOfMetaData > 0)
+    if (footerBlock.metaDataSize > 0)
     {
         l << "parse metadata block\n";
-        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.sizeOfMetaData);
+        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.metaDataSize);
         file.seekg(startMetaBlock, std::fstream::beg);
-        std::vector<uint8_t> metaBlock(footerBlock.sizeOfMetaData);
+        std::vector<uint8_t> metaBlock(footerBlock.metaDataSize);
         if (!file)
         {
             throw std::runtime_error("can't seek meta");

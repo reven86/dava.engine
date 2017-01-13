@@ -15,7 +15,7 @@ struct PackFile
     {
     } rawBytesOfCompressedFiles;
 
-    // 0 or footer.sizeOfMetaData bytes
+    // 0 or footer.metaDataSize bytes
     struct CustomMetadataBlock
     {
     } metadata;
@@ -50,7 +50,9 @@ struct PackFile
 
     struct FooterBlock
     {
-        uint32 sizeOfMetaData; // 0 or size of castom user meta data
+        Array<uint8, 8> reserved;
+        uint32 metaDataCrc32; // 0 or crc32 for custom user meta block
+        uint32 metaDataSize; // 0 or size of custom user meta data block
         uint32 infoCrc32;
         struct Info
         {
@@ -66,7 +68,7 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
-static_assert(sizeof(PackFile::FooterBlock) == 32, "header block size changed, something bad happened!");
+static_assert(sizeof(PackFile::FooterBlock) == 44, "header block size changed, something bad happened!");
 static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
 
 } // end of PackFormat namespace

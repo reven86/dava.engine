@@ -46,7 +46,9 @@ struct PackFile
 
     struct FooterBlock
     {
-        uint32_t sizeOfMetaData; // null bytes (space for future)
+        std::array<uint8_t, 8> reserved;
+        uint32_t metaDataCrc32; // 0 or hash
+        uint32_t metaDataSize; // 0 or size of meta data block
         uint32_t infoCrc32;
         struct Info
         {
@@ -62,7 +64,7 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
-static_assert(sizeof(PackFile::FooterBlock) == 32,
+static_assert(sizeof(PackFile::FooterBlock) == 44,
               "header block size changed, something bad happened!");
 static_assert(sizeof(FileTableEntry) == 32,
               "file table entry size changed, something bad happened!");
