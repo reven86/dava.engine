@@ -159,11 +159,11 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
         FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
     }
 
-    if (footerBlock.sizeOfMetaData > 0)
+    if (footerBlock.metaDataSize > 0)
     {
         // parse metadata block
-        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.sizeOfMetaData);
-        std::vector<uint8> metaBlock(footerBlock.sizeOfMetaData);
+        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.metaDataSize);
+        std::vector<uint8> metaBlock(footerBlock.metaDataSize);
         if (!file->Seek(startMetaBlock, File::SEEK_FROM_START))
         {
             DAVA_THROW(Exception, "can't seek meta");
