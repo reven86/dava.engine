@@ -305,7 +305,14 @@ final class DavaSurfaceView extends SurfaceView
             }
         }
     }
-
+    
+    private int touchIdFromPointerId(int pointerId)
+    {
+    	// Pointer id can be equal to 0 which is used as 'no touch' in InputSystem
+    	// So we should always generate different number
+    	return pointerId + 1;
+    }
+    
     private void handleTouchEvent(MotionEvent event)
     {
         int action = event.getActionMasked();
@@ -319,7 +326,7 @@ final class DavaSurfaceView extends SurfaceView
                 int pointerId = event.getPointerId(i);
                 float x = event.getX(i);
                 float y = event.getY(i);
-                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_MOVE, pointerId, x, y, modifierKeys);
+                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_MOVE, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             }
             break;
         case MotionEvent.ACTION_UP:
@@ -335,7 +342,7 @@ final class DavaSurfaceView extends SurfaceView
             int pointerId = event.getPointerId(i);
             float x = event.getX(i);
             float y = event.getY(i);
-            nativeSurfaceViewOnTouchEvent(windowBackendPointer, action, pointerId, x, y, modifierKeys);
+            nativeSurfaceViewOnTouchEvent(windowBackendPointer, action, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             break;
         }
         case MotionEvent.ACTION_CANCEL:
@@ -344,7 +351,7 @@ final class DavaSurfaceView extends SurfaceView
                 int pointerId = event.getPointerId(i);
                 float x = event.getX(i);
                 float y = event.getY(i);
-                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_UP, pointerId, x, y, modifierKeys);
+                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_UP, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             }
             break;
         default:
