@@ -17,10 +17,10 @@
 
 namespace DAVA
 {
-IPackManager::~IPackManager() = default;
-IPackManager::IRequest::~IRequest() = default;
+IDLCManager::~IDLCManager() = default;
+IDLCManager::IRequest::~IRequest() = default;
 
-const String& IPackManager::ToString(IPackManager::InitState state)
+const String& DCLManagerImpl::ToString(DCLManagerImpl::InitState state)
 {
     static Vector<String> states{
         "Starting",
@@ -29,7 +29,7 @@ const String& IPackManager::ToString(IPackManager::InitState state)
         "LoadingRequestAskFileTable",
         "LoadingRequestGetFileTable",
         "CalculateLocalDBHashAndCompare",
-        "LoadingRequestAskDB",
+        "LoadingRequestAskMeta",
         "LoadingRequestGetDB",
         "UnpakingDB",
         "DeleteDownloadedPacksIfNotMatchHash",
@@ -42,7 +42,7 @@ const String& IPackManager::ToString(IPackManager::InitState state)
     return states.at(static_cast<size_t>(state));
 }
 
-const String& IPackManager::ToString(IPackManager::InitError state)
+const String& DCLManagerImpl::ToString(DCLManagerImpl::InitError state)
 {
     static Vector<String> states{
         "AllGood",
@@ -74,8 +74,8 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 }
 
 #ifdef __DAVAENGINE_COREV2__
-DCLManagerImpl::DCLManagerImpl(Engine& engine_)
-    : engine(engine_)
+DCLManagerImpl::DCLManagerImpl(Engine* engine_)
+    : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
     sigConnectionUpdate = engine.update.Connect(this, &DCLManagerImpl::Update);
@@ -88,9 +88,7 @@ DCLManagerImpl::~DCLManagerImpl()
 }
 #endif
 
-void DCLManagerImpl::Initialize(const String& architecture_,
-                                const FilePath& dirToDownloadPacks_,
-                                const FilePath& dbFileName_,
+void DCLManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                                 const String& urlToServerSuperpack_,
                                 const Hints& hints_)
 {
@@ -99,7 +97,6 @@ void DCLManagerImpl::Initialize(const String& architecture_,
 
     if (!IsInitialized())
     {
-        dbPath = dbFileName_;
         dirToDownloadedPacks = dirToDownloadPacks_;
 
         FileSystem* fs = FileSystem::Instance();
@@ -109,15 +106,7 @@ void DCLManagerImpl::Initialize(const String& architecture_,
         }
 
         urlToSuperPack = urlToServerSuperpack_;
-        architecture = architecture_;
         hints = hints_;
-
-        dbName = dbPath.GetFilename();
-
-        dbLocalNameZipped = dirToDownloadedPacks + dbName;
-
-        dbLocalName = dbLocalNameZipped;
-        dbLocalName.ReplaceExtension("");
     }
 
     // if Initialize called second time
@@ -138,22 +127,19 @@ bool DCLManagerImpl::IsInitialized() const
     // offline mode
     LockGuard<Mutex> lock(protectPM);
 
-    bool dbLoaded = db != nullptr;
     bool requestManagerCreated = requestManager != nullptr;
-    bool packsDataLoaded = packs.size() > 0;
-    bool packIndexBuilded = !packsIndex.empty();
 
-    return dbLoaded && requestManagerCreated && packsDataLoaded && packIndexBuilded;
+    return requestManagerCreated;
 }
 
 // start ISync //////////////////////////////////////
-IPackManager::InitState DCLManagerImpl::GetInitState() const
+DCLManagerImpl::InitState DCLManagerImpl::GetInitState() const
 {
     DVASSERT(Thread::IsMainThread());
     return initState;
 }
 
-IPackManager::InitError DCLManagerImpl::GetInitError() const
+DCLManagerImpl::InitError DCLManagerImpl::GetInitError() const
 {
     DVASSERT(Thread::IsMainThread());
     return initError;
@@ -170,7 +156,7 @@ void DCLManagerImpl::RetryInit()
     DVASSERT(Thread::IsMainThread());
 
     // clear error state
-    Initialize(architecture, dirToDownloadedPacks, dbPath, urlToSuperPack, hints);
+    Initialize(dirToDownloadedPacks, urlToSuperPack, hints);
 
     // wait and then try again
     timeWaitingNextInitializationAttempt = hints.retryConnectMilliseconds / 1000.f; // to seconds
@@ -248,9 +234,9 @@ void DCLManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::CalculateLocalDBHashAndCompare == initState)
     {
-        CompareLocalDBWitnRemoteHash();
+        CompareLocalMetaWitnRemoteHash();
     }
-    else if (InitState::LoadingRequestAskDB == initState)
+    else if (InitState::LoadingRequestAskMeta == initState)
     {
         AskDB();
     }
@@ -283,27 +269,15 @@ void DCLManagerImpl::ContinueInitialization(float frameDelta)
 
     if (newState != beforeState || initError != InitError::AllGood)
     {
-        cdnAvailable.Emit(*this);
-
         if (initError != InitError::AllGood)
         {
+            networkReady.Emit(false);
             RetryInit();
         }
-    }
-}
-
-void DCLManagerImpl::InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_)
-{
-    db_.InitializePacks(packs_);
-}
-
-void DCLManagerImpl::BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_)
-{
-    index_.clear();
-    uint32 packIndex = 0;
-    for (const auto& pack : packs_)
-    {
-        index_[pack.name] = packIndex++;
+        else
+        {
+            networkReady.Emit(true);
+        }
     }
 }
 
@@ -449,7 +423,7 @@ void DCLManagerImpl::GetFileTable()
     }
 }
 
-void DCLManagerImpl::CompareLocalDBWitnRemoteHash()
+void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
 {
     //Logger::FrameworkDebug("pack manager calc_local_db_with_remote_crc32");
 
@@ -466,7 +440,7 @@ void DCLManagerImpl::CompareLocalDBWitnRemoteHash()
             {
                 DeleteLocalDBFiles();
                 // we have to download new localDB file from server!
-                initState = InitState::LoadingRequestAskDB;
+                initState = InitState::LoadingRequestAskMeta;
             }
             else
             {
@@ -483,7 +457,7 @@ void DCLManagerImpl::CompareLocalDBWitnRemoteHash()
     {
         DeleteLocalDBFiles();
 
-        initState = InitState::LoadingRequestAskDB;
+        initState = InitState::LoadingRequestAskMeta;
     }
 }
 

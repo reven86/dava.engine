@@ -22,7 +22,7 @@ public:
         LoadingRequestAskFileTable, //!< start loading filetable block from superpack.dvpk
         LoadingRequestGetFileTable, //!< download filetable and fill info about every file on server superpack.dvpk
         CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalDB if match
-        LoadingRequestAskDB, //!< start loading DB from server
+        LoadingRequestAskMeta, //!< start loading DB from server
         LoadingRequestGetDB, //!< download DB and check it's hash
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
@@ -112,7 +112,7 @@ private:
     void GetFooter();
     void AskFileTable();
     void GetFileTable();
-    void CompareLocalDBWitnRemoteHash();
+    void CompareLocalMetaWitnRemoteHash();
     void AskDB();
     void GetDB();
     void UnpackingDB();
@@ -129,16 +129,10 @@ private:
     mutable Mutex protectPM;
 
     FilePath dirToDownloadedPacks;
-    FilePath dbPath;
     String urlToSuperPack;
-    String architecture;
     bool isProcessingEnabled = false;
     std::unique_ptr<RequestManager> requestManager;
 
-    FilePath dbLocalNameZipped;
-    FilePath dbLocalName;
-
-    String dbName;
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
