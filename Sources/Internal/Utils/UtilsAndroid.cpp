@@ -49,7 +49,7 @@ String JniUtils::GenerateGUID()
 {
     JNIEnv* env = JNI::GetEnv();
     jstring jstr = generateGUID();
-    DAVA::String result = JNI::ToString(jstr);
+    DAVA::String result = JNI::JavaStringToString(jstr);
     env->DeleteLocalRef(jstr);
     return result;
 }
