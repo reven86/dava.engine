@@ -232,11 +232,21 @@ public final class DavaActivity extends Activity
         hideNavigationBar();
 
         // Load & show splash view
-        ApplicationInfo appMetaDataInfo = null;
+        Bitmap splashViewBitmap =  loadSplashViewBitmap();
+        splashView = new DavaSplashView(this, splashViewBitmap);
+
+        layout = new FrameLayout(this);
+        layout.addView(splashView);
+        setContentView(layout);
+    }
+
+    private Bitmap loadSplashViewBitmap()
+    {
         Bitmap splashViewBitmap = null;
+
         try
         {
-            appMetaDataInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            ApplicationInfo appMetaDataInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             if (appMetaDataInfo != null)
             {
                 int splashViewImageId = appMetaDataInfo.metaData.getInt("com.dava.engine.SplashViewImageId", 0);
@@ -251,11 +261,7 @@ public final class DavaActivity extends Activity
             Log.e(LOG_TAG, String.format("DavaActivity: loading splash image failed: %s. Splash view will be empty", e.toString()));
         }
 
-        splashView = new DavaSplashView(this, splashViewBitmap);
-
-        layout = new FrameLayout(this);
-        layout.addView(splashView);
-        setContentView(layout);
+        return splashViewBitmap;
     }
     
     private void startNativeInitialization() {
@@ -507,7 +513,7 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
-    // Will be invoked from C++ thread when DAVA::Engine finishes initialization
+    // Will be invoked from C++ thread right before game loop is started
     private void hideSplashView()
     {
         runOnUiThread(new Runnable()
