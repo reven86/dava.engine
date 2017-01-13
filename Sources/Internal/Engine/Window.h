@@ -284,6 +284,9 @@ public:
     /** Get Window's UIControlSystem */
     UIControlSystem* GetUIControlSystem() const;
 
+    static const int smallestWidth = 256; //<! Smallest window width that window can be resized ever (desktops only)
+    static const int smallestHeight = 256; //<! Smallest window height that window can be resized ever (desktops only)
+
 public:
     // Signals
     Signal<Window*, bool /*visible*/> visibilityChanged; //<! Emitted when window visibility has changed.
@@ -313,6 +316,7 @@ private:
     void HandleCursorCaptureLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
+    void HandleCancelInput(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
@@ -348,7 +352,6 @@ private:
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
     bool waitInputActivation = false;
-    bool skipFirstMouseUpEventBeforeCursorCapture = false;
     float32 dpi = 0.0f; //!< Window DPI
     float32 width = 0.0f; //!< Window client area width.
     float32 height = 0.0f; //!< Window client area height.

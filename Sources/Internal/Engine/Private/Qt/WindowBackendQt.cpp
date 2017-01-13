@@ -14,6 +14,7 @@
 #include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
 
+#include "Logger/Logger.h"
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "Debug/DVAssert.h"
@@ -318,17 +319,14 @@ void WindowBackend::OnCreated()
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::Qt::GetApplication());
-    float32 dpi = renderWidget->logicalDpiX();
+    dpi = static_cast<float32>(renderWidget->logicalDpiX());
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
 
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        OnVisibilityChanged(true);
-        OnApplicationFocusChanged(true);
-    }
+    OnVisibilityChanged(true);
+    OnApplicationFocusChanged(true);
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -369,12 +367,13 @@ void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
         float32 w = static_cast<float32>(width);
         float32 h = static_cast<float32>(height);
         eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, fullscreen));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, dpi, fullscreen));
     }
 }
 
-void WindowBackend::OnDpiChanged(float32 dpi)
+void WindowBackend::OnDpiChanged(float32 dpi_)
 {
+    dpi = dpi_;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 

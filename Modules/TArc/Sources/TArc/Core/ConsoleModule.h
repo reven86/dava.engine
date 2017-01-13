@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Debug/DVAssert.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 namespace TArc
 {
 class ContextAccessor;
-class ConsoleModule
+class ConsoleModule : public ReflectionBase
 {
 protected:
     enum class eFrameResult
@@ -27,6 +28,10 @@ private:
 
 private:
     ContextAccessor* contextAccessor = 0;
+
+    DAVA_VIRTUAL_REFLECTION(ConsoleModule)
+    {
+    }
 };
 
 inline void ConsoleModule::Init(ContextAccessor* accessor)

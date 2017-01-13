@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 #ifndef USE_CPP11_CONCURRENCY
 
+#include "Logger/Logger.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Debug/DVAssert.h"
 

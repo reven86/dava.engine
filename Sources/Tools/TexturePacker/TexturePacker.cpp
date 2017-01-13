@@ -113,7 +113,7 @@ void TexturePacker::PackToTextures(const FilePath& outputPath, const DefinitionF
 
 void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<eGPUFamily>& forGPUs)
 {
-    DVASSERT_MSG(packAlgorithms.empty() == false, "Packing algorithm was not specified");
+    DVASSERT(packAlgorithms.empty() == false, "Packing algorithm was not specified");
 
     Vector<ImageExportKeys> imageExportKeys = GetExportKeys(forGPUs);
     Vector<SpriteItem> spritesToPack = PrepareSpritesVector(defList);

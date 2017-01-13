@@ -115,7 +115,7 @@ void RenderWidget::OnFrame()
         DAVA_THROW(DAVA::Exception, "GL context is not valid!");
     }
 
-    glClearColor(0.3, 0.3, 0.3, 1.0);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     widgetDelegate->OnFrame();
     quickWindow()->resetOpenGLState();
@@ -129,7 +129,7 @@ void RenderWidget::ActivateRendering()
     w->setClearBeforeRendering(false);
 }
 
-bool RenderWidget::IsInitialized()
+bool RenderWidget::IsInitialized() const
 {
     return property(initializedPropertyName).isValid();
 }

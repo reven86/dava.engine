@@ -8,6 +8,8 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
+#include "TArc/Utils/Private/CrashDumpHandler.h"
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
@@ -42,6 +44,7 @@ public:
         , core(core_)
         , globalContext(new DataContext())
     {
+        InitCrashDumpHandler();
     }
 
     ~Impl()
@@ -193,6 +196,7 @@ protected:
             wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         }
         AfterContextSwitch(activeContext, oldContext);
+        SyncWrappers();
     }
 
     void SyncWrappers()
@@ -454,13 +458,12 @@ public:
 
     void OnLoopStarted() override
     {
-        Impl::OnLoopStarted();
-
         ToolsAssertGuard::Instance()->Init();
+        Impl::OnLoopStarted();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
-        DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
+        DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->Init(this, uiManager.get());

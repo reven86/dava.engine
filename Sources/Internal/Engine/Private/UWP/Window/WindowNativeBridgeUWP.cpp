@@ -38,7 +38,7 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWind
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 
     // Limit minimum window size to some reasonable value
-    ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
+    ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(static_cast<float32>(Window::smallestWidth), static_cast<float32>(Window::smallestHeight)));
     ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 
     {
@@ -155,16 +155,11 @@ void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
 
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
-    const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
-    const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    const float32 surfaceWidth = width * xamlSwapChainPanel->CompositionScaleX * scale;
-    const float32 surfaceHeight = height * xamlSwapChainPanel->CompositionScaleY * scale;
-    const bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
-    const eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
     surfaceScale = scale;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, fullscreen));
+    const float32 width = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
+    const float32 height = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
+    HandleSizeChanged(width, height, false);
 }
 
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
@@ -233,45 +228,41 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
     windowBackend->ProcessPlatformEvents();
 }
 
-void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
+void WindowNativeBridge::HandleFocusChanging(bool gotFocus)
 {
-    using namespace ::Windows::UI::Core;
-
-    // System does not send Activated event in these cases:
-    //  - resume after suspend
-    //  - lock (Win+L) and unlock screen
-    // So consider that window gains focus if window becomes visible and here add check to prevent sending multiple
-    // WINDOW_FOCUS_CHANGED events to main dispatcher.
-    bool gotFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     if (hasFocus != gotFocus)
     {
         hasFocus = gotFocus;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
 
         PlatformCore::EnableHighResolutionTimer(hasFocus);
-    }
 
-    if (!hasFocus)
-    {
-        if (captureMode != eCursorCapture::OFF)
+        if (!hasFocus)
         {
-            SetCursorCapture(eCursorCapture::OFF);
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+            if (captureMode != eCursorCapture::OFF)
+            {
+                SetCursorCapture(eCursorCapture::OFF);
+                mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+            }
+            SetCursorVisibility(true);
         }
-        SetCursorVisibility(true);
     }
+}
+
+void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
+{
+    // System does not send Activated event for window when user locks (Win+L) and unlocks screen even if
+    // user clicks on window after unlocking screen.
+    // To ensure proper events delivering to dava.engine force window focus in mouse click and key press event
+    // handlers (if hasFocus member variable is false).
+
+    using ::Windows::UI::Core::CoreWindowActivationState;
+    HandleFocusChanging(arg->WindowActivationState != CoreWindowActivationState::Deactivated);
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, arg->Visible));
-    if (arg->Visible)
-    {
-        hasFocus = true;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
-
-        PlatformCore::EnableHighResolutionTimer(true);
-    }
 }
 
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
@@ -290,6 +281,11 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
 {
     using ::Windows::System::VirtualKey;
     using namespace ::Windows::UI::Core;
+
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
 
     // Process only KeyDown/KeyUp and SystemKeyDown/SystemKeyUp event types to skip unwanted messages, such as
     // Character (handled in OnCharacterReceived), DeadCharacter, SystemCharacter, etc.
@@ -323,38 +319,46 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     }
 }
 
+void WindowNativeBridge::HandleSizeChanged(float32 w, float32 h, bool dpiChanged)
+{
+    using ::Windows::Graphics::Display::DisplayInformation;
+    using ::Windows::UI::ViewManagement::ApplicationView;
+
+    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
+    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
+    float32 dpi = DisplayInformation::GetForCurrentView()->LogicalDpi;
+    eFullscreen fullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode ? eFullscreen::On : eFullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, dpi, fullscreen));
+
+    if (dpiChanged)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    }
+}
+
 void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
 {
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
-    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
-    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
-    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, fullscreen));
+    HandleSizeChanged(w, h, false);
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
-    using Windows::UI::ViewManagement::ApplicationView;
-
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
-    float32 surfW = w * xamlSwapChainPanel->CompositionScaleX * surfaceScale;
-    float32 surfH = h * xamlSwapChainPanel->CompositionScaleY * surfaceScale;
-    float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
-    bool isFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfW, surfH, surfaceScale, fullscreen));
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    HandleSizeChanged(w, h, true);
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
+
+    if (!hasFocus)
+    { // See comment in OnActivated
+        HandleFocusChanging(true);
+    }
 
     lastPressedPointer = arg->Pointer;
 

@@ -37,6 +37,8 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/Steam.h"
+#include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -261,11 +263,17 @@ void EngineBackend::RunConsole()
 
 void EngineBackend::OnGameLoopStarted()
 {
+    Logger::Info("EngineBackend::OnGameLoopStarted: enter");
+
     engine->gameLoopStarted.Emit();
+
+    Logger::Info("EngineBackend::OnGameLoopStarted: leave");
 }
 
 void EngineBackend::OnGameLoopStopped()
 {
+    Logger::Info("EngineBackend::OnGameLoopStopped: enter");
+
     DVASSERT(justCreatedWindows.empty());
 
     for (Window* w : dyingWindows)
@@ -276,10 +284,14 @@ void EngineBackend::OnGameLoopStopped()
 
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+
+    Logger::Info("EngineBackend::OnGameLoopStopped: leave");
 }
 
 void EngineBackend::OnEngineCleanup()
 {
+    Logger::Info("EngineBackend::OnEngineCleanup: enter");
+
     engine->cleanup.Emit();
 
     if (ImGui::IsInitialized())
@@ -296,6 +308,8 @@ void EngineBackend::OnEngineCleanup()
     context = nullptr;
     dispatcher = nullptr;
     platformCore = nullptr;
+
+    Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
 
 void EngineBackend::DoEvents()
@@ -328,18 +342,14 @@ int32 EngineBackend::OnFrame()
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
-#if defined(__DAVAENGINE_QT__)
-    if (Renderer::IsInitialized())
-    {
-        rhi::InvalidateCache();
-    }
-#endif
-
     DoEvents();
     if (!appIsSuspended)
     {
         if (Renderer::IsInitialized())
         {
+#if defined(__DAVAENGINE_QT__)
+            rhi::InvalidateCache();
+#endif
             Update(frameDelta);
             UpdateWindows(frameDelta);
         }
@@ -378,21 +388,18 @@ void EngineBackend::UpdateWindows(float32 frameDelta)
 {
     for (Window* w : aliveWindows)
     {
-        if (w->IsVisible())
+        BeginFrame();
         {
-            BeginFrame();
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
-                w->Update(frameDelta);
-            }
-
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
-                Renderer::GetRenderStats().Reset();
-                w->Draw();
-            }
-            EndFrame();
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
+            w->Update(frameDelta);
         }
+
+        {
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
+            Renderer::GetRenderStats().Reset();
+            w->Draw();
+        }
+        EndFrame();
     }
 }
 
@@ -419,6 +426,8 @@ void EngineBackend::OnWindowCreated(Window* window)
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
+    Logger::Info("EngineBackend::OnWindowDestroyed: enter");
+
     engine->windowDestroyed.Emit(window);
 
     // Remove window from alive window list and place it into dying window list to delete later
@@ -439,6 +448,8 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     { // Initiate app termination if primary window is destroyed, except embedded mode
         PostAppTerminate(false);
     }
+
+    Logger::Info("EngineBackend::OnWindowDestroyed: leave");
 }
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
@@ -506,6 +517,8 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     // usually means simply to exit game loop.
     // This sequence is invented for unification purpose.
 
+    Logger::Info("EngineBackend::HandleAppTerminate: triggeredBySystem=%u", e.terminateEvent.triggeredBySystem);
+
     if (e.terminateEvent.triggeredBySystem != 0)
     {
         appIsTerminating = true;
@@ -533,11 +546,15 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
 {
     if (!appIsSuspended)
     {
+        Logger::Info("EngineBackend::HandleAppSuspended: enter");
+
         appIsSuspended = true;
         if (Renderer::IsInitialized())
             rhi::SuspendRendering();
         rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
+
+        Logger::Info("EngineBackend::HandleAppSuspended: leave");
     }
 }
 
@@ -545,10 +562,14 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
 {
     if (appIsSuspended)
     {
+        Logger::Info("EngineBackend::HandleAppResumed: enter");
+
         appIsSuspended = false;
         if (Renderer::IsInitialized())
             rhi::ResumeRendering();
         engine->resumed.Emit();
+
+        Logger::Info("EngineBackend::HandleAppResumed: leave");
     }
 }
 
@@ -751,6 +772,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
+        
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Init();
+#endif
     }
     else
     {
@@ -760,6 +785,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 
+    context->pluginManager = new PluginManager(GetEngine());
     context->analyticsCore = new Analytics::Core;
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -777,6 +803,13 @@ void EngineBackend::DestroySubsystems()
     }
 #endif
 
+    if (!IsConsoleMode())
+    {
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Deinit();
+#endif
+    }
+
     if (context->analyticsCore != nullptr)
     {
         delete context->analyticsCore;
@@ -792,6 +825,11 @@ void EngineBackend::DestroySubsystems()
         context->moduleManager->ShutdownModules();
         delete context->moduleManager;
         context->moduleManager = nullptr;
+    }
+    if (context->pluginManager != nullptr)
+    {
+        context->pluginManager->UnloadPlugins();
+        delete context->pluginManager;
     }
     if (context->jobManager != nullptr)
     {
@@ -889,7 +927,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-
+    
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {
@@ -927,7 +965,7 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
 
     // abort if signal was ignored
     String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x", static_cast<DAVA::uint32>(err));
-    DVASSERT_MSG(0, info.c_str());
+    DVASSERT(0, info.c_str());
     Logger::Error("%s", info.c_str());
     abort();
 }
