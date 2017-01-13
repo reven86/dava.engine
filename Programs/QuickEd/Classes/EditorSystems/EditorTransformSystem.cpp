@@ -812,7 +812,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     return finalPivot;
 }
 
-bool EditorTransformSystem::RotateControl(Vector2 pos)
+bool EditorTransformSystem::RotateControl(const Vector2& pos)
 {
     Vector2 prevPos = systemsManager->GetLastMousePos();
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());

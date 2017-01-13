@@ -406,10 +406,10 @@ void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*c
 {
     if (previousState == EditorSystemsManager::Transform)
     {
-        for (auto& iter : gridControls)
+        for (auto& control : gridControls)
         {
-            iter->UpdateCounterpoise();
-            iter->AdjustToNestedControl();
+            control->UpdateCounterpoise();
+            control->AdjustToNestedControl();
         }
     }
 }

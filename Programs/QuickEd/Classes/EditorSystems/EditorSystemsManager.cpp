@@ -21,6 +21,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenManager.h"
+#include "Engine/Engine.h"
 
 using namespace DAVA;
 
@@ -93,7 +94,8 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
 
 EditorSystemsManager::~EditorSystemsManager()
 {
-    UIScreenManager::Instance()->ResetScreen();
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiScreenManager->ResetScreen();
 }
 
 void EditorSystemsManager::OnInput(UIEvent* currentInput)
@@ -317,7 +319,8 @@ void EditorSystemsManager::RefreshRootControls()
     {
         editingRootControls = newRootControls;
         editingRootControlsChanged.Emit(editingRootControls);
-        UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
+        const EngineContext* engineContext = GetEngineContext();
+        engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
     }
 }
 
@@ -329,10 +332,11 @@ void EditorSystemsManager::InitDAVAScreen()
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
-    UIScreenManager::Instance()->SetFirst(0);
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiScreenManager->RegisterScreen(0, davaUIScreen);
+    engineContext->uiScreenManager->SetFirst(0);
 
-    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl.Get());
+    engineContext->uiScreenManager->GetScreen()->AddControl(backgroundControl.Get());
     backgroundControl->AddControl(rootControl.Get());
 }
 
@@ -367,7 +371,8 @@ void EditorSystemsManager::OnDisplayStateChanged(eDisplayState currentState, eDi
 void EditorSystemsManager::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
 {
     Vector2 viewSize(width, height);
-    UIScreenManager::Instance()->GetScreen()->SetSize(viewSize);
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiScreenManager->GetScreen()->SetSize(viewSize);
 }
 
 UIControl* EditorSystemsManager::GetRootControl() const

@@ -1,5 +1,6 @@
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/EditorSystemsManager.h"
+#include "Engine/Engine.h"
 
 #include "UI/UIScreenManager.h"
 
@@ -24,7 +25,7 @@ void EditorCanvas::AdjustScale(float32 newScale, const Vector2& mousePos)
     Vector2 oldPos = position;
     float32 oldScale = scale;
     scale = newScale;
-    UpdateCanvasContentSize();
+    UpdateContentSize();
     scaleChanged.Emit(scale);
     movableControl->SetScale(Vector2(scale, scale));
 
@@ -38,14 +39,14 @@ void EditorCanvas::AdjustScale(float32 newScale, const Vector2& mousePos)
     Vector2 deltaMousePos = mousePos * (1.0f - newScale / oldScale);
     Vector2 newPosition(absPosition.x * scale - deltaMousePos.x, absPosition.y * scale - deltaMousePos.y);
 
-    newPosition.x = Clamp(newPosition.x, 0.0f, (canvasSize - viewSize).dx);
-    newPosition.y = Clamp(newPosition.y, 0.0f, (canvasSize - viewSize).dy);
+    newPosition.x = Clamp(newPosition.x, 0.0f, (size - viewSize).dx);
+    newPosition.y = Clamp(newPosition.y, 0.0f, (size - viewSize).dy);
     SetPosition(newPosition);
 }
 
-Vector2 EditorCanvas::GetCanvasSize() const
+Vector2 EditorCanvas::GetSize() const
 {
-    return canvasSize;
+    return size;
 }
 
 Vector2 EditorCanvas::GetViewSize() const
@@ -80,15 +81,15 @@ Vector2 EditorCanvas::GetMinimumPos() const
 
 Vector2 EditorCanvas::GetMaximumPos() const
 {
-    return canvasSize - viewSize;
+    return size - viewSize;
 }
 
-void EditorCanvas::UpdateCanvasContentSize()
+void EditorCanvas::UpdateContentSize()
 {
-    Vector2 marginsSize(Margin * 2.0f, Margin * 2.0f);
-    canvasSize = contentSize * scale + marginsSize;
+    Vector2 marginsSize(margin * 2.0f, margin * 2.0f);
+    size = contentSize * scale + marginsSize;
     UpdatePosition();
-    canvasSizeChanged.Emit(canvasSize);
+    sizeChanged.Emit(size);
 }
 
 void EditorCanvas::SetScale(float32 arg)
@@ -124,14 +125,14 @@ void EditorCanvas::SetPosition(const Vector2& position_)
     {
         position = fixedPos;
         UpdatePosition();
-        positionChanged.Emit(position);
+        ositionChanged.Emit(position);
     }
 }
 
 void EditorCanvas::UpdatePosition()
 {
     DVASSERT(nullptr != movableControl);
-    Vector2 offset = (canvasSize - viewSize) / 2.0f;
+    Vector2 offset = (size - viewSize) / 2.0f;
 
     if (offset.dx > 0.0f)
     {
@@ -141,7 +142,7 @@ void EditorCanvas::UpdatePosition()
     {
         offset.dy = position.y;
     }
-    offset -= Vector2(Margin, Margin);
+    offset -= Vector2(margin, margin);
     Vector2 position(-offset.dx, -offset.dy);
     movableControl->SetPosition(position);
 
@@ -162,7 +163,8 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
 {
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    const EngineContext* engineContext = GetEngineContext();
+    const KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
 
     bool isSpacePressed = keyboard.IsKeyPressed(Key::SPACE);
     bool isMouseMidButtonPressed = currentInput->mouseButton == eMouseButtons::MIDDLE;
@@ -175,5 +177,5 @@ EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentI
 void EditorCanvas::OnContentSizeChanged(const DAVA::Vector2& size)
 {
     contentSize = size;
-    UpdateCanvasContentSize();
+    UpdateContentSize();
 }

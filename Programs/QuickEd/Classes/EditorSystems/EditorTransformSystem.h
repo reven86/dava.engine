@@ -54,7 +54,7 @@ private:
     void MovePivot(DAVA::Vector2 delta);
     DAVA::Vector2 AdjustPivotToNearestArea(DAVA::Vector2& delta);
 
-    bool RotateControl(DAVA::Vector2 pos);
+    bool RotateControl(const DAVA::Vector2& pos);
     DAVA::float32 AdjustRotateToFixedAngle(DAVA::float32 deltaAngle, DAVA::float32 originalAngle);
 
     void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);

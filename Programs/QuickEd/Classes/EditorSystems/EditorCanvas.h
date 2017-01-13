@@ -21,32 +21,29 @@ public:
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
 
-    DAVA::Vector2 GetCanvasSize() const;
+    DAVA::Vector2 GetSize() const;
     DAVA::Vector2 GetViewSize() const;
-
-    DAVA::Vector2 GetPosition() const;
+    void SetViewSize(const DAVA::Vector2& size);
+    void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);
 
     DAVA::float32 GetScale() const;
     DAVA::float32 GetMinScale() const;
     DAVA::float32 GetMaxScale() const;
-
-    DAVA::Vector2 GetMinimumPos() const;
-    DAVA::Vector2 GetMaximumPos() const;
     void AdjustScale(DAVA::float32 newScale, const DAVA::Vector2& mousePos);
-
-    void SetViewSize(const DAVA::Vector2& size);
-    void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);
-
-    void SetPosition(const DAVA::Vector2& position);
     void SetScale(DAVA::float32 scale);
 
-    DAVA::Signal<const DAVA::Vector2&> canvasSizeChanged;
-    DAVA::Signal<const DAVA::Vector2&> positionChanged; //canvas position
+    DAVA::Vector2 GetPosition() const;
+    DAVA::Vector2 GetMinimumPos() const;
+    DAVA::Vector2 GetMaximumPos() const;
+    void SetPosition(const DAVA::Vector2& position);
+
+    DAVA::Signal<const DAVA::Vector2&> sizeChanged;
+    DAVA::Signal<const DAVA::Vector2&> ositionChanged;
     DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
-    void UpdateCanvasContentSize();
+    void UpdateContentSize();
     void OnContentSizeChanged(const DAVA::Vector2& size);
 
     //private
@@ -54,7 +51,7 @@ private:
     void UpdatePosition();
 
     DAVA::UIControl* movableControl = nullptr;
-    DAVA::Vector2 canvasSize = DAVA::Vector2(0.0f, 0.0f);
+    DAVA::Vector2 size = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 contentSize = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 viewSize = DAVA::Vector2(0.0f, 0.0f);
     DAVA::Vector2 position = DAVA::Vector2(0.0f, 0.0f);
@@ -62,5 +59,5 @@ private:
 
     const DAVA::float32 minScale = 0.25f;
     const DAVA::float32 maxScale = 8.0f;
-    const DAVA::float32 Margin = 50.0f;
+    const DAVA::float32 margin = 50.0f;
 };

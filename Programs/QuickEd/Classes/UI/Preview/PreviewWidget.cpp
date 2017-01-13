@@ -1,16 +1,9 @@
 #include "PreviewWidget.h"
 
-#include <QLineEdit>
-#include <QScreen>
-#include <QMenu>
-#include <QShortCut>
-#include <QFileInfo>
-#include <QInputDialog>
-#include <QTimer>
-
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
+#include "Engine/Engine.h"
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/InputDialogs/MultilineTextInputDialog.h"
@@ -28,6 +21,14 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
+
+#include <QLineEdit>
+#include <QScreen>
+#include <QMenu>
+#include <QShortCut>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QTimer>
 
 using namespace DAVA;
 
@@ -384,7 +385,8 @@ void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
 {
     systemsManager->viewSizeChanged.Emit(width, height);
 
-    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+    const EngineContext* engineContext = GetEngineContext();
+    VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
     vcs->UnregisterAllAvailableResourceSizes();
     vcs->SetVirtualScreenSize(width, height);
     vcs->RegisterAvailableResourceSize(width, height, "Gfx");
@@ -407,8 +409,8 @@ void PreviewWidget::OnWindowCreated()
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
     editorCanvas = systemsManager->GetEditorCanvas();
     connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
-    editorCanvas->canvasSizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
-    editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
+    editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
+    editorCanvas->ositionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     OnScaleByComboText();

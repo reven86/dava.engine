@@ -34,5 +34,5 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
-    DAVA::UIControl* canvasParent;
+    DAVA::UIControl* canvasParent = nullptr;
 };

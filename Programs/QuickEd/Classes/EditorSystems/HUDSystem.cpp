@@ -215,11 +215,7 @@ void HUDSystem::OnHighlightNode(const ControlNode* node)
     if (node != nullptr)
     {
         UIControl* targetControl = node->GetControl();
-        auto gd = targetControl->GetGeometricData();
-        Rect ur(gd.position, gd.size * gd.scale);
-
         hoveredNodeControl = CreateHUDRect(node);
-
         hudControl->AddControl(hoveredNodeControl.Get());
     }
 }
