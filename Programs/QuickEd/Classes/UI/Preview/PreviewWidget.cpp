@@ -530,7 +530,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
     AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
     DVASSERT(textProperty != nullptr);
 
-    String text = textProperty->GetValue().AsString();
+    String text = textProperty->GetValue().Get<String>();
 
     QString label = tr("Enter new text, please");
     bool ok;
@@ -542,7 +542,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
         executor->BeginMacro("change text by user");
         AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
         DVASSERT(multilineProperty != nullptr);
-        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
+        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().Get<int32>());
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
             executor->ChangeProperty(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));

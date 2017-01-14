@@ -180,16 +180,17 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
     return properties[index];
 }
 
-// int32 UIStyleSheetPropertyDataBase::FindStyleSheetPropertyByMember(const InspMember* memberInfo) const
-// {
-//     for (size_t index = 0; index < properties.size(); index++)
-//     {
-//         const UIStyleSheetPropertyDescriptor& descr = properties[index];
-//         if (descr.memberInfo == memberInfo)
-//         {
-//             return static_cast<int32>(index);
-//         }
-//     }
-//     return -1;
-// }
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetPropertyByField(const DAVA::ReflectedStructure::Field* field) const
+{
+    for (size_t index = 0; index < properties.size(); index++)
+    {
+        const UIStyleSheetPropertyDescriptor& descr = properties[index];
+        if (descr.field_s == field)
+        {
+            return static_cast<int32>(index);
+        }
+    }
+    return -1;
+}
+    
 }

@@ -27,9 +27,10 @@ class NMaterial;
 
 class UIControlBackground : public BaseObject
 {
-    DAVA_VIRTUAL_REFLECTION(UIControlBackground, BaseObject);
 
 public:
+    DAVA_VIRTUAL_REFLECTION(UIControlBackground, BaseObject);
+    
     /**
      \enum Control draw types.
      */

@@ -10,9 +10,9 @@ public:
     //Apply is already used :(
     void ApplyPreference();
 
-    void SetValue(const DAVA::VariantType& value) override;
+    void SetValue(const DAVA::Any& value) override;
 
-    DAVA::VariantType GetValue() const override;
+    DAVA::Any GetValue() const override;
 
     const EnumMap* GetEnumMap() const override;
 

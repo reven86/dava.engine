@@ -14,10 +14,8 @@ public:
     YamlPackageSerializer();
     virtual ~YamlPackageSerializer();
 
-    virtual void PutValue(const DAVA::String& name, const DAVA::VariantType& value) override;
     virtual void PutValue(const DAVA::String& name, const DAVA::String& value) override;
     virtual void PutValue(const DAVA::String& name, const DAVA::Vector<DAVA::String>& value) override;
-    virtual void PutValue(const DAVA::VariantType& value) override;
     virtual void PutValue(const DAVA::String& value) override;
 
     virtual void BeginMap() override;

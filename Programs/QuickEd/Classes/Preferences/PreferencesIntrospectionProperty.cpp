@@ -38,12 +38,12 @@ void PreferencesIntrospectionProperty::ApplyPreference()
     }
 }
 
-void PreferencesIntrospectionProperty::SetValue(const DAVA::VariantType& val)
+void PreferencesIntrospectionProperty::SetValue(const DAVA::Any& val)
 {
     value = val;
 }
 
-DAVA::VariantType PreferencesIntrospectionProperty::GetValue() const
+DAVA::Any PreferencesIntrospectionProperty::GetValue() const
 {
     return value;
 }

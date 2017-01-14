@@ -25,8 +25,8 @@ public:
 
     DAVA::uint32 GetFlags() const override;
 
-    DAVA::VariantType GetValue() const override;
-    void ApplyValue(const DAVA::VariantType& value) override;
+    DAVA::Any GetValue() const override;
+    void ApplyValue(const DAVA::Any& value) override;
 
     DAVA::Interpolation::FuncType GetTransitionFunction() const;
     void SetTransitionFunction(DAVA::Interpolation::FuncType type);

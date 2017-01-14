@@ -2,16 +2,16 @@
 
 using namespace DAVA;
 
-VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : IntrospectionProperty(object, member, sourceProperty, copyType)
+VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field_, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+    : IntrospectionProperty(object, field_, sourceProperty, copyType)
 {
-    ApplyValue(member->Value(object));
+    ApplyValue(field_->valueWrapper->GetValue(object));
 }
 
 void VisibleValueProperty::SetVisibleInEditor(bool visible)
 {
     visibleInEditor = visible;
-    member->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    field->valueWrapper->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
 }
 
 bool VisibleValueProperty::GetVisibleInEditor() const
@@ -19,13 +19,13 @@ bool VisibleValueProperty::GetVisibleInEditor() const
     return visibleInEditor;
 }
 
-VariantType VisibleValueProperty::GetValue() const
+Any VisibleValueProperty::GetValue() const
 {
-    return VariantType(visibleInGame);
+    return Any(visibleInGame);
 }
 
-void VisibleValueProperty::ApplyValue(const DAVA::VariantType& value)
+void VisibleValueProperty::ApplyValue(const DAVA::Any& value)
 {
-    visibleInGame = value.AsBool();
-    member->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    visibleInGame = value.Get<bool>();
+    field->valueWrapper->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
 }

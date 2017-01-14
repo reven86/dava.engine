@@ -61,12 +61,12 @@ DAVA::uint32 StyleSheetProperty::GetFlags() const
     return EF_CAN_REMOVE;
 }
 
-VariantType StyleSheetProperty::GetValue() const
+Any StyleSheetProperty::GetValue() const
 {
     return property.value;
 }
 
-void StyleSheetProperty::ApplyValue(const DAVA::VariantType& value)
+void StyleSheetProperty::ApplyValue(const DAVA::Any& value)
 {
     property.value = value;
 }

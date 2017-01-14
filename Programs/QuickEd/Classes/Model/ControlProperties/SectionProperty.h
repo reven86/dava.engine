@@ -24,7 +24,7 @@ public:
 
     const DAVA::String& GetName() const override;
 
-    virtual ValueType* FindProperty(const DAVA::InspMember* member) const;
+    virtual ValueType* FindProperty(const DAVA::ReflectedStructure::Field* field) const;
 
     ePropertyType GetType() const override
     {
@@ -136,11 +136,11 @@ const DAVA::String& SectionProperty<ValueType>::GetName() const
 }
 
 template <typename ValueType>
-ValueType* SectionProperty<ValueType>::FindProperty(const DAVA::InspMember* member) const
+ValueType* SectionProperty<ValueType>::FindProperty(const DAVA::ReflectedStructure::Field* field) const
 {
     for (auto child : children)
     {
-        if (child->IsSameMember(member))
+        if (child->IsSameField(field))
             return child;
     }
     return nullptr;

@@ -26,13 +26,11 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* aControl
 
     RefreshName();
 
-    const InspInfo* insp = component->GetTypeInfo();
-    for (int j = 0; j < insp->MembersCount(); j++)
+    const ReflectedType *reflectedType = component->GetReflectedType();
+    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
     {
-        const InspMember* member = insp->Member(j);
-
-        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
-        IntrospectionProperty* prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
+        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(field.get());
+        IntrospectionProperty* prop = new IntrospectionProperty(component, field.get(), sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }
@@ -60,12 +58,11 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
     if (prototypeSection == nullptr)
     {
         prototypeSection = section;
-        const InspInfo* insp = component->GetTypeInfo();
-        for (int j = 0; j < insp->MembersCount(); j++)
+        const ReflectedType *reflectedType = component->GetReflectedType();
+        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
         {
-            const InspMember* member = insp->Member(j);
-            ValueProperty* value = FindProperty(member);
-            ValueProperty* prototypeValue = prototypeSection->FindProperty(member);
+            ValueProperty* value = FindProperty(field.get());
+            ValueProperty* prototypeValue = prototypeSection->FindProperty(field.get());
             value->AttachPrototypeProperty(prototypeValue);
         }
     }

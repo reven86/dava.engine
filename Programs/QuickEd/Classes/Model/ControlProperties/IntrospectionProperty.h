@@ -11,45 +11,45 @@ class UIControl;
 class IntrospectionProperty : public ValueProperty
 {
 public:
-    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType copyType);
 
 protected:
     virtual ~IntrospectionProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
 
     DAVA::uint32 GetFlags() const override;
 
-    DAVA::VariantType GetValue() const override;
+    DAVA::Any GetValue() const override;
 
     DAVA::BaseObject* GetBaseObject() const
     {
         return object;
     }
 
-    bool IsSameMember(const DAVA::InspMember* aMember) const override
+    bool IsSameField(const DAVA::ReflectedStructure::Field* field_) const override
     {
-        return (aMember == member);
+        return (field == field_);
     }
 
-    const DAVA::InspMember* GetMember() const;
+    const DAVA::ReflectedStructure::Field* GetField() const;
 
     void DisableResetFeature();
 
 protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
+    void ApplyValue(const DAVA::Any& value) override;
 
 protected:
-    DAVA::BaseObject* object;
-    const DAVA::InspMember* member;
+    DAVA::BaseObject* object = nullptr;
+    const DAVA::ReflectedStructure::Field* field = nullptr;
     DAVA::int32 flags;
 
 private:
-    DAVA::VariantType sourceValue;
+    DAVA::Any sourceValue;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

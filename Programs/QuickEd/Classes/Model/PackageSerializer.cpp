@@ -26,6 +26,7 @@
 #include "UI/UIControl.h"
 
 #include "Utils/StringFormat.h"
+#include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;
 
@@ -436,7 +437,7 @@ void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty* property)
     {
         BeginMap(property->GetName());
         PutValueProperty("value", property);
-        PutValue("transitionTime", VariantType(property->GetTransitionTime()));
+        PutValue("transitionTime", Format("%f", property->GetTransitionTime()));
 
         const EnumMap* enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
         PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
@@ -458,13 +459,13 @@ void PackageSerializer::AcceptChildren(AbstractProperty* property)
 
 void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty* property)
 {
-    VariantType value = property->GetValue();
+    Any value = property->GetValue();
 
-    if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_FLAGS)
+    if (value.CanGet<int32>() && property->GetType() == AbstractProperty::TYPE_FLAGS)
     {
         Vector<String> values;
         const EnumMap* enumMap = property->GetEnumMap();
-        int val = value.AsInt32();
+        int val = value.Get<int32>();
         int p = 1;
         while (val > 0)
         {
@@ -475,13 +476,13 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
         }
         PutValue(name, values);
     }
-    else if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_ENUM)
+    else if (value.CanGet<int32>() && property->GetType() == AbstractProperty::TYPE_ENUM)
     {
         const EnumMap* enumMap = property->GetEnumMap();
-        PutValue(name, enumMap->ToString(value.AsInt32()));
+        PutValue(name, enumMap->ToString(value.Get<int32>()));
     }
     else
     {
-        PutValue(name, value);
+        PutValue(name, AnyToString(value));
     }
 }

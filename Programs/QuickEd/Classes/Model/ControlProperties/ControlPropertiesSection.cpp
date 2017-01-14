@@ -8,20 +8,16 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, const DAVA::InspInfo* typeInfo, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
-    : SectionProperty(typeInfo->Name().c_str())
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, const DAVA::ReflectedType* reflectedType, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+    : SectionProperty(reflectedType->GetPermanentName())
     , control(SafeRetain(aControl))
 {
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
     {
-        const InspMember* member = typeInfo->Member(i);
-        if ((member->Flags() & I_EDIT) != 0)
-        {
-            IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
-            IntrospectionProperty* prop = IntrospectionProperty::Create(control, member, sourceProperty, cloneType);
-            AddProperty(prop);
-            SafeRelease(prop);
-        }
+        IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(field.get());
+        IntrospectionProperty* prop = IntrospectionProperty::Create(control, field.get(), sourceProperty, cloneType);
+        AddProperty(prop);
+        SafeRelease(prop);
     }
 }
 

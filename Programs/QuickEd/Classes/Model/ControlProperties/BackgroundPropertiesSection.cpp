@@ -22,14 +22,12 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl* aControl, in
 
     if (bg)
     {
-        const InspInfo* insp = bg->GetTypeInfo();
+        const ReflectedType *reflectedType = bg->GetReflectedType();
 
-        for (int j = 0; j < insp->MembersCount(); j++)
+        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
         {
-            const InspMember* member = insp->Member(j);
-
-            IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
-            IntrospectionProperty* prop = new IntrospectionProperty(bg, member, sourceProp, cloneType);
+            IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(field.get());
+            IntrospectionProperty* prop = new IntrospectionProperty(bg, field.get(), sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,11 +52,10 @@ void BackgroundPropertiesSection::CreateControlBackground()
         bg = control->CreateBackgroundComponent(bgNum);
         control->SetBackgroundComponent(bgNum, bg);
 
-        const InspInfo* insp = bg->GetTypeInfo();
-        for (int j = 0; j < insp->MembersCount(); j++)
+        const ReflectedType *reflectedType = bg->GetReflectedType();
+        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
         {
-            const InspMember* member = insp->Member(j);
-            IntrospectionProperty* prop = new IntrospectionProperty(bg, member, nullptr, CT_COPY);
+            IntrospectionProperty* prop = new IntrospectionProperty(bg, field.get(), nullptr, CT_COPY);
             AddProperty(prop);
             SafeRelease(prop);
         }

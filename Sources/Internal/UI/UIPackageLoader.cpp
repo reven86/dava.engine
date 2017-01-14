@@ -378,7 +378,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     builder->BeginControlPropertiesSection(ref.GetValueType()->GetName());
-    auto& fields = ref.GetFields();
+    Vector<Reflection::Field> fields = ref.GetFields();
     for (auto& field : fields)
     {
         String name(field.key.Cast<String>());
@@ -406,7 +406,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         if (component)
         {
             const Reflection& componentRef = Reflection::Create(&component);
-            auto& fields = componentRef.GetFields();
+            Vector<Reflection::Field> fields = componentRef.GetFields();
             for (auto& field : fields)
             {
                 Any res;
@@ -465,7 +465,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
         if (component)
         {
             const Reflection& componentRef = Reflection::Create(&component);
-            auto& fields = componentRef.GetFields();
+            Vector<Reflection::Field> fields = componentRef.GetFields();
             for (auto& field : fields)
             {
                 Any res = ReadVariantTypeFromYamlNode(field.ref, node, legacyAlignsMap[field.key.Cast<String>()]);
@@ -534,7 +534,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
         if (bg)
         {
             const Reflection& bgRef = Reflection::Create(&bg);
-            auto& fields = bgRef.GetFields();
+            Vector<Reflection::Field> fields = bgRef.GetFields();
             for (auto& field : fields)
             {
                 Any res;

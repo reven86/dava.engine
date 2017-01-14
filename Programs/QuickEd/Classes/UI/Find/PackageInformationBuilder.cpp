@@ -208,7 +208,7 @@ void PackageInformationBuilder::EndBgPropertiesSection()
     // do nothing
 }
 
-void PackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
+void PackageInformationBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
 {
 }
 

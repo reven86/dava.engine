@@ -77,8 +77,8 @@ public:
     void AddListener(PropertyListener* listener);
     void RemoveListener(PropertyListener* listener);
 
-    void SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
-    void SetDefaultProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
+    void SetProperty(AbstractProperty* property, const DAVA::Any& newValue);
+    void SetDefaultProperty(AbstractProperty* property, const DAVA::Any& newValue);
     void ResetProperty(AbstractProperty* property);
     void RefreshProperty(AbstractProperty* property, DAVA::int32 refreshFlags);
 
@@ -93,7 +93,7 @@ public:
 
 private:
     void AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
-    void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);
+    void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::ReflectedType* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);
     void MakeBackgroundPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     DAVA::uint32 GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const;
     void RefreshComponentIndices();

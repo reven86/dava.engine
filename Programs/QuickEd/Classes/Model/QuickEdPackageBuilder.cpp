@@ -305,7 +305,7 @@ void QuickEdPackageBuilder::EndBgPropertiesSection()
     currentObject = nullptr;
 }
 
-void QuickEdPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
+void QuickEdPackageBuilder::ProcessProperty(const DAVA::Reflection::Field &member, const DAVA::Any& value)
 {
     if (currentObject && currentSection && (member->Flags() & I_EDIT))
     {

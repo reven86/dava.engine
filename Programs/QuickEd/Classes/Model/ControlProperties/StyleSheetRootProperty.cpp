@@ -107,7 +107,7 @@ void StyleSheetRootProperty::RemoveListener(PropertyListener* listener)
     }
 }
 
-void StyleSheetRootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void StyleSheetRootProperty::SetProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetValue(newValue);
     UpdateStyleSheetPropertyTable();
@@ -255,7 +255,7 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
     {
         if (i > 0)
             stream << ", ";
-        stream << selectors->GetProperty(i)->GetValue().AsString();
+        stream << selectors->GetProperty(i)->GetValue().Get<String>();
     }
     return stream.str();
 }

@@ -71,27 +71,27 @@ bool AbstractProperty::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
-VariantType::eVariantType AbstractProperty::GetValueType() const
+const Type *AbstractProperty::GetValueType() const
 {
-    return VariantType::TYPE_NONE;
+    return nullptr;
 }
 
-VariantType AbstractProperty::GetValue() const
+Any AbstractProperty::GetValue() const
 {
-    return VariantType();
+    return Any();
 }
 
-void AbstractProperty::SetValue(const VariantType& /*newValue*/)
+void AbstractProperty::SetValue(const Any& /*newValue*/)
 {
     // Do nothing by default
 }
 
-VariantType AbstractProperty::GetDefaultValue() const
+Any AbstractProperty::GetDefaultValue() const
 {
-    return VariantType();
+    return Any();
 }
 
-void AbstractProperty::SetDefaultValue(const VariantType& newValue)
+void AbstractProperty::SetDefaultValue(const Any& newValue)
 {
     // Do nothing by default
 }

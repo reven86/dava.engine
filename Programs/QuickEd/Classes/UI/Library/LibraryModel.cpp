@@ -333,7 +333,7 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
             auto item = itemFromIndex(index);
             if (nullptr != item)
             {
-                auto text = QString::fromStdString(property->GetValue().AsString());
+                auto text = QString::fromStdString(property->GetValue().Get<String>());
                 item->setText(text);
             }
         }

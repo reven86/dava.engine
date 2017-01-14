@@ -29,7 +29,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     , nameProperty(nullptr)
 {
     AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
-    MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetTypeInfo(), sourceProperties, cloneType);
+    MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetReflectedType(), sourceProperties, cloneType);
     MakeBackgroundPropertiesSection(node->GetControl(), sourceProperties, cloneType);
 
     if (sourceProperties)
@@ -311,7 +311,7 @@ void RootProperty::RemoveListener(PropertyListener* listener)
     }
 }
 
-void RootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void RootProperty::SetProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetValue(newValue);
 
@@ -319,7 +319,7 @@ void RootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantTy
         listener->PropertyChanged(property);
 }
 
-void RootProperty::SetDefaultProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void RootProperty::SetDefaultProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetDefaultValue(newValue);
 
@@ -398,25 +398,26 @@ void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootPropert
         prop->SetParent(this);
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::ReflectedType* typeInfo, const RootProperty* sourceProperties, eCloneType copyType)
 {
-    const InspInfo* baseInfo = typeInfo->BaseInfo();
-    if (baseInfo)
-        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
-
-    bool hasProperties = false;
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    // TODO: rewrite code
+//    const InspInfo* baseInfo = typeInfo->BaseInfo();
+//    if (baseInfo)
+//        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
+//
+//    bool hasProperties = false;
+//    for (int i = 0; i < typeInfo->MembersCount(); i++)
+//    {
+//        const InspMember* member = typeInfo->Member(i);
+//        if ((member->Flags() & I_EDIT) != 0)
+//        {
+//            hasProperties = true;
+//            break;
+//        }
+//    }
+//    if (hasProperties)
     {
-        const InspMember* member = typeInfo->Member(i);
-        if ((member->Flags() & I_EDIT) != 0)
-        {
-            hasProperties = true;
-            break;
-        }
-    }
-    if (hasProperties)
-    {
-        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name().c_str());
+        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->GetPermanentName());
         ControlPropertiesSection* section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);

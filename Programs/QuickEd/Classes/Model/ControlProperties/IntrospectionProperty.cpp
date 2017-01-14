@@ -14,21 +14,21 @@ using namespace DAVA;
 
 namespace
 {
-const FastName INTROSPECTION_PROPERTY_NAME_SIZE("size");
-const FastName INTROSPECTION_PROPERTY_NAME_POSITION("position");
-const FastName INTROSPECTION_PROPERTY_NAME_TEXT("text");
-const FastName INTROSPECTION_PROPERTY_NAME_FONT("font");
-const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
-const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
+const String INTROSPECTION_PROPERTY_NAME_SIZE("size");
+const String INTROSPECTION_PROPERTY_NAME_POSITION("position");
+const String INTROSPECTION_PROPERTY_NAME_TEXT("text");
+const String INTROSPECTION_PROPERTY_NAME_FONT("font");
+const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
+const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : ValueProperty(aMember->Desc().text, VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::ReflectedStructure::Field* field_, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+    : ValueProperty(field_->name, field_->reflectedType->GetType(), true, field_)
     , object(SafeRetain(anObject))
-    , member(aMember)
+    , field(field_)
     , flags(EF_CAN_RESET)
 {
-    int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByMember(aMember);
+    int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByField(field);
     SetStylePropertyIndex(propertyIndex);
 
     if (sourceProperty)
@@ -41,19 +41,19 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
         else
         {
             AttachPrototypeProperty(sourceProperty);
-            SetDefaultValue(member->Value(object));
+            SetDefaultValue(field->valueWrapper->GetValue(object));
         }
-        member->SetValue(object, sourceProperty->GetValue());
+        field->valueWrapper->SetValue(object, sourceProperty->GetValue());
     }
     else
     {
-        SetDefaultValue(member->Value(object));
+        SetDefaultValue(field->valueWrapper->GetValue(object));
     }
 
     if (sourceProperty != nullptr)
         sourceValue = sourceProperty->sourceValue;
     else
-        sourceValue = member->Value(object);
+        sourceValue = field->valueWrapper->GetValue(object);
 }
 
 IntrospectionProperty::~IntrospectionProperty()
@@ -61,29 +61,29 @@ IntrospectionProperty::~IntrospectionProperty()
     SafeRelease(object);
 }
 
-IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
+IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
-    if (member->Name() == INTROSPECTION_PROPERTY_NAME_TEXT)
+    if (field->name == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
-        return new LocalizedTextValueProperty(control, member, sourceProperty, cloneType);
+        return new LocalizedTextValueProperty(control, field, sourceProperty, cloneType);
     }
-    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_FONT)
+    else if (field->name == INTROSPECTION_PROPERTY_NAME_FONT)
     {
-        return new FontValueProperty(control, member, sourceProperty, cloneType);
+        return new FontValueProperty(control, field, sourceProperty, cloneType);
     }
-    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_VISIBLE)
+    else if (field->name == INTROSPECTION_PROPERTY_NAME_VISIBLE)
     {
-        return new VisibleValueProperty(control, member, sourceProperty, cloneType);
+        return new VisibleValueProperty(control, field, sourceProperty, cloneType);
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, member, sourceProperty, cloneType);
+        IntrospectionProperty* result = new IntrospectionProperty(control, field, sourceProperty, cloneType);
         ;
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+        if (field->name == INTROSPECTION_PROPERTY_NAME_SIZE || field->name == INTROSPECTION_PROPERTY_NAME_POSITION)
         {
             result->flags |= EF_DEPENDS_ON_LAYOUTS;
         }
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_CLASSES)
+        if (field->name == INTROSPECTION_PROPERTY_NAME_CLASSES)
         {
             result->flags |= EF_AFFECTS_STYLES;
         }
@@ -112,14 +112,14 @@ uint32 IntrospectionProperty::GetFlags() const
     return result;
 }
 
-VariantType IntrospectionProperty::GetValue() const
+Any IntrospectionProperty::GetValue() const
 {
-    return member->Value(object);
+    return field->valueWrapper->GetValue(object);
 }
 
-const DAVA::InspMember* IntrospectionProperty::GetMember() const
+const DAVA::ReflectedStructure::Field* IntrospectionProperty::GetField() const
 {
-    return member;
+    return field;
 }
 
 void IntrospectionProperty::DisableResetFeature()
@@ -127,8 +127,8 @@ void IntrospectionProperty::DisableResetFeature()
     flags &= ~EF_CAN_RESET;
 }
 
-void IntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
+void IntrospectionProperty::ApplyValue(const DAVA::Any& value)
 {
     sourceValue = value;
-    member->SetValue(object, value);
+    field->valueWrapper->SetValue(object, value);
 }

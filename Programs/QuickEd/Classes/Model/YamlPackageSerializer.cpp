@@ -20,11 +20,6 @@ YamlPackageSerializer::~YamlPackageSerializer()
     nodesStack.clear();
 }
 
-void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::VariantType& value)
-{
-    nodesStack.back()->Add(name, value);
-}
-
 void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::String& value)
 {
     nodesStack.back()->Add(name, value);
@@ -37,11 +32,6 @@ void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::Vecto
         node->Add(str);
 
     nodesStack.back()->Add(name, node);
-}
-
-void YamlPackageSerializer::PutValue(const DAVA::VariantType& value)
-{
-    nodesStack.back()->Add(value);
 }
 
 void YamlPackageSerializer::PutValue(const DAVA::String& value)

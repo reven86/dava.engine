@@ -8,7 +8,7 @@
 
 using namespace DAVA;
 
-VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, VariantType& vt)
+VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, Any& vt)
     : ValueProperty(name, vt.GetType(), true, desc)
     , value(vt)
 {
@@ -29,12 +29,12 @@ bool VariantTypeProperty::IsReadOnly() const
     return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
 }
 
-VariantType VariantTypeProperty::GetValue() const
+Any VariantTypeProperty::GetValue() const
 {
     return value;
 }
 
-void VariantTypeProperty::ApplyValue(const DAVA::VariantType& newValue)
+void VariantTypeProperty::ApplyValue(const DAVA::Any& newValue)
 {
     value = newValue;
 }

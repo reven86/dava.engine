@@ -4,10 +4,10 @@
 
 using namespace DAVA;
 
-LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMmember, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
-    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
+LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject* anObject, const DAVA::ReflectedStructure::Field* field_, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
+    : IntrospectionProperty(anObject, field_, sourceProperty, cloneType)
 {
-    ApplyValue(member->Value(object));
+    ApplyValue(field_->valueWrapper->GetValue(object));
 }
 
 LocalizedTextValueProperty::~LocalizedTextValueProperty()
@@ -19,16 +19,16 @@ void LocalizedTextValueProperty::Refresh(DAVA::int32 refreshFlags)
     IntrospectionProperty::Refresh(refreshFlags);
 
     if (refreshFlags & REFRESH_LOCALIZATION)
-        member->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
+        field->valueWrapper->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
 }
 
-VariantType LocalizedTextValueProperty::GetValue() const
+Any LocalizedTextValueProperty::GetValue() const
 {
-    return VariantType(text);
+    return Any(text);
 }
 
-void LocalizedTextValueProperty::ApplyValue(const DAVA::VariantType& value)
+void LocalizedTextValueProperty::ApplyValue(const DAVA::Any& value)
 {
-    text = value.AsString();
-    member->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
+    text = value.Get<String>();
+    field->valueWrapper->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
 }

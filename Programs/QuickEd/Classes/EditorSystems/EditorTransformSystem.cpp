@@ -315,7 +315,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         extraDelta.SetZero();
         adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, gd, node->GetControl());
         AbstractProperty* property = positionProperty;
-        Vector2 originalPosition = property->GetValue().AsVector2();
+        Vector2 originalPosition = property->GetValue().Get<Vector2>();
         Vector2 finalPosition(originalPosition + adjustedPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
         delta = ::Rotate(adjustedPosition, gd->angle);
@@ -332,7 +332,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 scaledDelta = delta / gd->scale;
         Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
         AbstractProperty* property = nodeToMove->positionProperty;
-        Vector2 originalPosition = property->GetValue().AsVector2();
+        Vector2 originalPosition = property->GetValue().Get<Vector2>();
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
@@ -563,10 +563,10 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     if (activeControlNode->GetParent() != nullptr)
     {
-        Vector2 originalPosition = positionProperty->GetValue().AsVector2();
+        Vector2 originalPosition = positionProperty->GetValue().Get<Vector2>();
         propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));
     }
-    Vector2 originalSize = sizeProperty->GetValue().AsVector2();
+    Vector2 originalSize = sizeProperty->GetValue().Get<Vector2>();
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
@@ -579,7 +579,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 {
     const Vector2 scaledMinimum(GetMinimumSize() / controlGeometricData.scale);
-    Vector2 origSize = sizeProperty->GetValue().AsVector2();
+    Vector2 origSize = sizeProperty->GetValue().Get<Vector2>();
 
     Vector2 finalSize(origSize + deltaSize);
     Vector<MagnetLineInfo> magnets;
@@ -717,7 +717,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 rotatedDeltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
-    Vector2 originalPos(positionProperty->GetValue().AsVector2());
+    Vector2 originalPos(positionProperty->GetValue().Get<Vector2>());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
@@ -757,7 +757,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
 
     const Vector2 range(pivotMagnetRange / controlSize); //range in pivot coordinates
 
-    Vector2 origPivot = pivotProperty->GetValue().AsVector2();
+    Vector2 origPivot = pivotProperty->GetValue().Get<Vector2>();
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
@@ -829,7 +829,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
 
     deltaAngle += extraDelta.dx;
     extraDelta.SetZero();
-    float32 originalAngle = angleProperty->GetValue().AsFloat();
+    float32 originalAngle = angleProperty->GetValue().Get<float32>();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
@@ -940,7 +940,7 @@ void EditorTransformSystem::UpdateNeighboursToMove()
 
 void EditorTransformSystem::ClampAngle()
 {
-    float32 angle = angleProperty->GetValue().AsFloat();
+    float32 angle = angleProperty->GetValue().Get<float32>();
     if (fabs(angle) > 360)
     {
         angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
