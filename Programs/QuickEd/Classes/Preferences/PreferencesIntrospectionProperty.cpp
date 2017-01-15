@@ -1,9 +1,10 @@
 #include "Model/ControlProperties/SubValueProperty.h"
 #include "Preferences/PreferencesIntrospectionProperty.h"
 #include "Preferences/PreferencesStorage.h"
+#include "Utils/QtDavaConvertion.h"
 
 PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* aMember)
-    : ValueProperty(aMember->Desc().text, DAVA::VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
+    : ValueProperty(aMember->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(aMember->Type())), true, nullptr)
     , member(aMember)
 {
     DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
@@ -13,7 +14,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     }
     else
     {
-        DAVA::VariantType::eVariantType type = ValueProperty::GetValueType();
+        DAVA::VariantType::eVariantType type = DAVA::VariantType::TypeFromMetaInfo(aMember->Type());
         ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
     }
     valueOnOpen = PreferencesStorage::Instance()->GetValue(member);
@@ -34,13 +35,13 @@ void PreferencesIntrospectionProperty::ApplyPreference()
 {
     if (value != valueOnOpen)
     {
-        PreferencesStorage::Instance()->SetValue(member, GetValue());
+        PreferencesStorage::Instance()->SetValue(member, AnyToVariantType(GetValue()));
     }
 }
 
 void PreferencesIntrospectionProperty::SetValue(const DAVA::Any& val)
 {
-    value = val;
+    value = AnyToVariantType(val);
 }
 
 DAVA::Any PreferencesIntrospectionProperty::GetValue() const

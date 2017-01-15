@@ -5,6 +5,7 @@
 #include "FileSystem/VariantType.h"
 #include "qmetatype.h"
 #include "Base/Any.h"
+#include "Reflection/ReflectedStructure.h"
 
 class QString;
 class QColor;
@@ -26,5 +27,9 @@ DAVA::Vector2 QVector2DToVector2(const QVector2D& vector);
 QVector2D Vector2ToQVector2D(const DAVA::Vector2& vector);
 
 QString VariantToQString(const DAVA::VariantType& val, const DAVA::InspMember* memberInfo);
-
+QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field* field);
 DAVA::String AnyToString(const DAVA::Any& any);
+
+DAVA::VariantType AnyToVariantType(const DAVA::Any &any);
+DAVA::Any VariantTypeToAny(const DAVA::VariantType &val);
+const DAVA::Type *VariantTypeToType(DAVA::VariantType::eVariantType type);

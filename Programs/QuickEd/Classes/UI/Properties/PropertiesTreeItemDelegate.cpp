@@ -42,22 +42,22 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
     propertyItemDelegates[AbstractProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR2] = new Vector2PropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_COLOR] = new ColorPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_WIDE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_FILEPATH] = new FilePathPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT8] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT8] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT16] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT16] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT64] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<Vector2>()] = new Vector2PropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<String>()] = new StringPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<Color>()] = new ColorPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<WideString>()] = new StringPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<FilePath>()] = new FilePathPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<int8>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<uint8>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<int16>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<uint16>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<int32>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<uint32>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<int64>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<uint64>()] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<float32>()] = new FloatPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<bool>()] = new BoolPropertyDelegate(this);
+    variantTypeItemDelegates[Type::Instance<Vector4>()] = new Vector4PropertyDelegate(this);
 
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();

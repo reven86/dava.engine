@@ -8,8 +8,8 @@
 
 using namespace DAVA;
 
-VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, Any& vt)
-    : ValueProperty(name, vt.GetType(), true, desc)
+VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::ReflectedStructure::Field* field, Any& vt)
+    : ValueProperty(name, field->reflectedType->GetType(), true, field)
     , value(vt)
 {
     SetOverridden(true);

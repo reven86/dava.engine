@@ -42,7 +42,7 @@ public:
     DAVA::UIControlBackground* BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     void EndBgPropertiesSection() override;
 
-    void ProcessProperty(const Reflection::Field& field, const DAVA::Any& value) override;
+    void ProcessProperty(const DAVA::ReflectedStructure::Field *field, const DAVA::Any& value) override;
 
     std::shared_ptr<PackageInformation> GetPackage() const;
 
