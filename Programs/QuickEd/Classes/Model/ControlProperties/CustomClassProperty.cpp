@@ -27,7 +27,7 @@ CustomClassProperty::CustomClassProperty(ControlNode* aControl, const CustomClas
     }
     else
     {
-        SetDefaultValue(VariantType(String("")));
+        SetDefaultValue(String(""));
     }
 }
 

@@ -142,7 +142,7 @@ void ValueProperty::SetDefaultValue(const Any& newValue)
 
 const EnumMap* ValueProperty::GetEnumMap() const
 {
-    if (fieldDesc)
+    if (fieldDesc != nullptr && fieldDesc->meta != nullptr)
     {
         const EnumMeta *meta = fieldDesc->meta->GetMeta<EnumMeta>();
         if (meta)
@@ -150,6 +150,7 @@ const EnumMap* ValueProperty::GetEnumMap() const
             return meta->GetEnumMap();
         }
     }
+
     return nullptr;
 }
 

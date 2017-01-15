@@ -23,7 +23,7 @@ const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::ReflectedStructure::Field* field_, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : ValueProperty(field_->name, field_->reflectedType->GetType(), true, field_)
+    : ValueProperty(field_->name, field_->valueWrapper->GetType(), true, field_)
     , object(SafeRetain(anObject))
     , field(field_)
     , flags(EF_CAN_RESET)
