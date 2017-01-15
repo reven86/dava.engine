@@ -22,6 +22,9 @@
 
 #include "ui_mainwindow.h"
 
+#include <QMessageBox>
+#include <QCheckBox>
+
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(MainWindow,

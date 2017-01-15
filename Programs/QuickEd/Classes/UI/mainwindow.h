@@ -10,9 +10,7 @@
 #endif //__DAVAENGINE_MACOS__
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
-
-#include <QtGui>
-#include <QtWidgets>
+#include <QMainWindow>
 
 namespace DAVA
 {
@@ -21,6 +19,8 @@ class RenderWidget;
 
 class LoggerOutputObject;
 class Project;
+class QCheckBox;
+class QActionGroup;
 
 namespace DAVA
 {

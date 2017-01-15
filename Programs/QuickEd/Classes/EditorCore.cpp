@@ -20,6 +20,8 @@
 
 #include <QFile>
 #include <QDir>
+#include <QDesktopServices>
+#include <QApplication>
 
 using namespace DAVA;
 
