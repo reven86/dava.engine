@@ -22,31 +22,31 @@
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
+#define DAVA_REFLECTION(Cls) IMPL__DAVA_REFLECTION(Cls)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_VIRTUAL_REFLECTION(Cls, ...) DAVA_VIRTUAL_REFLECTION__IMPL(Cls, ##__VA_ARGS__)
+#define DAVA_VIRTUAL_REFLECTION(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ##__VA_ARGS__)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REFLECTION_IMPL(Cls) DAVA_REFLECTION_IMPL__IMPL(Cls)
+#define DAVA_REFLECTION_IMPL(Cls) IMPL__DAVA_REFLECTION_IMPL(Cls)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REGISTER_PERMANENT_NAME(Cls) DAVA_REFLECTION_REGISTER_PERMANENT_NAME__IMPL(Cls)
+#define DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REGISTER_PERMANENT_CUSTOM_NAME(Cls, Name) DAVA_REFLECTION_REGISTER_PERMANENT_NAME__IMPL(Cls, Name)
+#define DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name)
 
 namespace DAVA
 {
