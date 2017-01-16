@@ -5,6 +5,7 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include <Render/2D/Sprite.h>
+#include <Render/2D/Systems/RenderSystem2D.h>
 
 using namespace DAVA;
 
@@ -159,11 +160,13 @@ FrameControl::FrameControl(eType type_)
         {
             ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/BlackGrid/BlackGrid.png"));
             background->SetSprite(sprite, 0);
+            background->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
         }
         else
         {
             ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/MagnetLine/MagnetLine.png"));
             background->SetSprite(sprite, 0);
+            background->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
         }
         background->SetDrawType(UIControlBackground::DRAW_TILED);
         AddControl(control.Get());
