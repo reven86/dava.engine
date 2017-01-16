@@ -5,7 +5,6 @@
 AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
     : BaseScreen(app, "AnyPerformanceTest")
 {
-
 }
 
 void AnyPerformanceTest::LoadResources()
@@ -18,7 +17,7 @@ void AnyPerformanceTest::LoadResources()
     float y = 10;
     float h = 35;
     float dy = h + 7;
-    
+
     ScopedPtr<UIStaticText> uitext(new UIStaticText(Rect(10, y, 100, h)));
     uitext->SetText(L"Loop count:");
     uitext->SetFont(font);
@@ -117,4 +116,3 @@ void AnyPerformanceTest::OnGetSetTest(DAVA::BaseObject* sender, void* data, void
     Logger::FrameworkDebug("%f", a.Get<float32>());
     SetResult(resultGetSet, endMs - startMs);
 }
-
