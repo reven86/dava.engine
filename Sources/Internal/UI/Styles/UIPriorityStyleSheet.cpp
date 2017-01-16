@@ -1,7 +1,5 @@
 #include "UI/Styles/UIPriorityStyleSheet.h"
 
-#include "UI/Styles/UIStyleSheet.h"
-
 namespace DAVA
 {
 UIPriorityStyleSheet::UIPriorityStyleSheet(UIStyleSheet* aStyleSheet, int32 aPriority)
