@@ -183,7 +183,7 @@ Type* Type::Init()
     auto condPointer = std::integral_constant<bool, needPointer>();
     type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
-    TypeDetail::allTypes.push_back(TypeDetail::TypeHolder<T>::InstancePointer());
+    //TypeDetail::allTypes.push_back(TypeDetail::TypeHolder<T>::InstancePointer());
 
     return &type;
 }
