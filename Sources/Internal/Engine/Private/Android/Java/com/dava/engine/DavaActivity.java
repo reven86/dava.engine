@@ -132,7 +132,6 @@ public final class DavaActivity extends Activity
     private DavaSplashView splashView;
     private ViewGroup layout;
     private ArrayList<ActivityListener> activityListeners = new ArrayList<ActivityListener>();
-    private Bundle savedInstanceStateBundle;
 
     private static final int ON_ACTIVITY_CREATE = 0;
     private static final int ON_ACTIVITY_START = 1;
@@ -210,10 +209,8 @@ public final class DavaActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");
-        super.onCreate(savedInstanceState);
-        
+
         activitySingleton = this;
-        savedInstanceStateBundle = savedInstanceState;
         
         Application app = getApplication();
         externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -238,6 +235,14 @@ public final class DavaActivity extends Activity
         layout = new FrameLayout(this);
         layout.addView(splashView);
         setContentView(layout);
+
+        // Load library modules and create class instances specified under meta-data tag
+        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
+        bootstrap();
+
+        notifyListeners(ON_ACTIVITY_CREATE, savedInstanceState);
+
+        super.onCreate(savedInstanceState);
     }
 
     private Bitmap loadSplashViewBitmap()
@@ -265,19 +270,11 @@ public final class DavaActivity extends Activity
     }
     
     private void startNativeInitialization() {
-        // Load library modules and create class instances specified under meta-data tag
-        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
-        bootstrap();
-        
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
         long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         layout.addView(primarySurfaceView);
-
-        notifyListeners(ON_ACTIVITY_CREATE, savedInstanceStateBundle);
-        notifyListeners(ON_ACTIVITY_START, null);
-        savedInstanceStateBundle = null;
 
         registerActivityListener(gamepadManager);
         registerActivityListener(keyboardState);
