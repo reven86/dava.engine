@@ -14,7 +14,10 @@ namespace TArc
 class StaticEditorDrawer
 {
 public:
-    virtual void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options, const Any& value) = 0;
+    virtual ~StaticEditorDrawer() = default;
+
+    virtual uint32 GetHeight(QStyle* style, const QStyleOptionViewItem& options, const Any& value) const = 0;
+    virtual void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options, const Any& value) const = 0;
 };
 
 } // namespace TARC

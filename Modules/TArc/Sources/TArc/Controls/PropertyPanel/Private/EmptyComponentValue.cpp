@@ -9,18 +9,13 @@ namespace DAVA
 {
 namespace TArc
 {
-QWidget* EmptyComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* EmptyComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     return nullptr;
 }
 
-void EmptyComponentValue::ReleaseEditorWidget(QWidget* editor, const QModelIndex& index)
+void EmptyComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
-}
-
-void EmptyComponentValue::StaticEditorPaint(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options)
-{
-    style->drawControl(QStyle::CE_ItemViewItem, &options, painter, options.widget);
 }
 
 DAVA_REFLECTION_IMPL(EmptyComponentValue)

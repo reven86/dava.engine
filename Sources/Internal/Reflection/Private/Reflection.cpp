@@ -297,20 +297,6 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
     }
 }
 
-bool Reflection::operator==(const Reflection& other) const
-{
-    return object == other.object &&
-    valueWrapper == other.valueWrapper &&
-    structureWrapper == other.structureWrapper;
-}
-
-bool Reflection::operator!=(const Reflection& other) const
-{
-    return object != other.object ||
-    valueWrapper != other.valueWrapper ||
-    structureWrapper != other.structureWrapper;
-}
-
 bool Reflection::HasFields() const
 {
     return structureWrapper->HasFields(object, valueWrapper);

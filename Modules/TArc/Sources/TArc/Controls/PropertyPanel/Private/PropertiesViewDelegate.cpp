@@ -5,6 +5,8 @@
 #include "Engine/PlatformApi.h"
 
 #include <QApplication>
+#include <QtEvents>
+#include <QtGlobal>
 
 namespace DAVA
 {
@@ -48,16 +50,17 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     QStyleOptionViewItem opt = option;
     PropertiesViewDelegateDetail::InitStyleOptions(opt);
 
+    QStyle* style = PropertiesViewDelegateDetail::GetStyle();
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
     DVASSERT(valueComponent != nullptr);
     if (index.column() == 0)
     {
         opt.text = valueComponent->GetPropertyName();
-        PropertiesViewDelegateDetail::GetStyle()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
     }
     else
     {
-        valueComponent->StaticEditorPaint(PropertiesViewDelegateDetail::GetStyle(), painter, opt);
+        valueComponent->GetStaticEditor().Draw(style, painter, opt);
     }
 }
 
@@ -70,33 +73,34 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
     if (index.column() == 0)
     {
         opt.text = valueComponent->GetPropertyName();
-    }
-    else
-    {
-        opt.text = QString::number(valueComponent->GetPropertiesNodeCount());
+        return style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), opt.widget);
     }
 
-    return style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), opt.widget);
+    return QSize(0, valueComponent->GetStaticEditor().GetHeight(style, option));
 }
 
 QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
-    return valueComponent->AcquireEditorWidget(parent, option, index);
+    return valueComponent->GetInteractiveEditor().AcquireEditorWidget(parent, option);
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
-    valueComponent->ReleaseEditorWidget(editor, index);
+    return valueComponent->GetInteractiveEditor().ReleaseEditorWidget(editor);
 }
 
 void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
+    ReflectedPropertyModel* model = const_cast<ReflectedPropertyModel*>(qobject_cast<const ReflectedPropertyModel*>(index.model()));
+    model->SyncWrapper();
 }
 
 void PropertiesViewDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
+    BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
+    valueComponent->GetInteractiveEditor().CommitData();
 }
 
 void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -104,12 +108,9 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
     if (!editor)
         return;
 
-    QStyleOptionViewItem opt = option;
-    opt.showDecorationSelected = true;
+    BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
 
-    QStyle* style = PropertiesViewDelegateDetail::GetStyle();
-    QRect geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, option.widget);
-    editor->setGeometry(geom);
+    editor->setGeometry(valueComponent->GetInteractiveEditor().GetEditorRect(PropertiesViewDelegateDetail::GetStyle(), option));
 }
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -124,6 +125,40 @@ bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* vie
 
 bool PropertiesViewDelegate::eventFilter(QObject* obj, QEvent* e)
 {
+    QWidget* w = qobject_cast<QWidget*>(obj);
+    if (w == nullptr)
+    {
+        return false;
+    }
+
+    if (e->type() == QEvent::FocusOut)
+    {
+        emit commitData(w);
+        emit closeEditor(w);
+    }
+
+    if (e->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+        switch (keyEvent->key())
+        {
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+        {
+            emit commitData(w);
+            emit closeEditor(w, QAbstractItemDelegate::EditNextItem);
+            break;
+        }
+        case Qt::Key_Escape:
+        {
+            emit closeEditor(w, QAbstractItemDelegate::RevertModelCache);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
     return false;
 }
 

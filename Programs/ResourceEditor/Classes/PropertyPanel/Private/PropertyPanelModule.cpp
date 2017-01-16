@@ -10,9 +10,11 @@
 #include "TArc/Utils/ModuleCollection.h"
 #include "TArc/Core/FieldBinder.h"
 
-#include "Scene3D/Entity.h"
-#include "Reflection/ReflectionRegistrator.h"
-#include "Base/FastName.h"
+#include <Scene3D/Entity.h>
+#include <Reflection/Reflection.h>
+#include <Reflection/ReflectionRegistrator.h>
+#include <Base/FastName.h>
+#include <Base/BaseTypes.h>
 
 #include <QPointer>
 #include <QQmlEngine>
@@ -25,8 +27,8 @@ namespace PropertyPanelModuleDetail
 class PropertyPanelData : public DAVA::TArc::DataNode
 {
 public:
-    Vector<Entity*> selectedEntities;
-    Vector<Reflection> propertyPanelObjects;
+    DAVA::Vector<DAVA::Entity*> selectedEntities;
+    DAVA::Vector<DAVA::Reflection> propertyPanelObjects;
 
     static const char* selectedEntitiesProperty;
 
@@ -59,8 +61,8 @@ void PropertyPanelModule::PostInit()
                                                                                          << "Dock"));
 
     FieldDescriptor propertiesDataSourceField;
-    propertiesDataSourceField.type = ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
-    propertiesDataSourceField.fieldName = FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
+    propertiesDataSourceField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
+    propertiesDataSourceField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
 
     PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));

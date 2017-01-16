@@ -46,6 +46,10 @@ public:
     void UnregisterExtension(const std::shared_ptr<ExtensionChain>& extension);
 
     BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
+    void SyncWrapper()
+    {
+        wrappersProcessor.Sync();
+    }
 
 private:
     friend class BaseComponentValue;

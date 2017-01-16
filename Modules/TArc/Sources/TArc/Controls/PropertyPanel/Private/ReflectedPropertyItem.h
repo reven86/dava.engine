@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#include <QString>
 #include <memory>
 
 namespace DAVA

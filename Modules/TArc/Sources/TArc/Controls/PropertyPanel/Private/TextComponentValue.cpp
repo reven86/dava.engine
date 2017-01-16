@@ -1,6 +1,6 @@
 #include "TextComponentValue.h"
 #include "TArc/Controls/LineEdit.h"
-#include "TArc/Controls/PropertyPanel/TextEditorDrawer.h"
+#include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 #include "Reflection/ReflectionRegistrator.h"
@@ -10,43 +10,17 @@ namespace DAVA
 {
 namespace TArc
 {
-const String multipleValuesValue("<multiple values>");
-
-QString TextComponentValue::GetObjectName() const
+String TextComponentValue::GetText() const
 {
-    return QString::fromStdString(nodes.front()->field.key.Cast<String>());
-}
-
-DAVA::String TextComponentValue::GetText() const
-{
-    Any value = nodes.front()->cachedValue;
-    for (const std::shared_ptr<const PropertyNode>& node : nodes)
-    {
-        if (value != node->cachedValue)
-        {
-            return multipleValuesValue;
-        }
-    }
-
-    if (value.GetType() == Type::Instance<DAVA::FastName>())
-    {
-        return DAVA::String(value.Cast<DAVA::FastName>().c_str());
-    }
-
-    return value.Cast<String>();
+    return GetValue().Cast<String>();
 }
 
 void TextComponentValue::SetText(const DAVA::String& text)
 {
-    if (text == multipleValuesValue)
-    {
-        return;
-    }
-
-    GetModifyInterface()->ModifyPropertyValue(nodes, Convert(text));
+    SetValue(Convert(text));
 }
 
-QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     LineEdit::FieldsDescriptor descr;
     descr.valueFieldName = FastName("text");
@@ -54,14 +28,9 @@ QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
     return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 
-void TextComponentValue::ReleaseEditorWidget(QWidget* editor, const QModelIndex& index)
+void TextComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
     editor->deleteLater();
-}
-
-void TextComponentValue::StaticEditorPaint(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options)
-{
-    TextEditorDrawer().Draw(style, painter, options, GetText());
 }
 
 Any TextComponentValue::Convert(const DAVA::String& text) const

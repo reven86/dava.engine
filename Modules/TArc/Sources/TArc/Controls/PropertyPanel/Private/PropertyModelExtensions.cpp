@@ -50,7 +50,7 @@ std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Ref
 bool PropertyNode::operator==(const PropertyNode& other) const
 {
     return propertyType == other.propertyType &&
-    field.ref == other.field.ref &&
+    field.ref.GetValueObject() == other.field.ref.GetValueObject() &&
     cachedValue == other.cachedValue &&
     field.key == other.field.key;
 }
@@ -58,7 +58,7 @@ bool PropertyNode::operator==(const PropertyNode& other) const
 bool PropertyNode::operator!=(const PropertyNode& other) const
 {
     return propertyType != other.propertyType ||
-    field.ref != other.field.ref ||
+    field.ref.GetValueObject() != other.field.ref.GetValueObject() ||
     cachedValue != other.cachedValue ||
     field.key != field.key;
 }

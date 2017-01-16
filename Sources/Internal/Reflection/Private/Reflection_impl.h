@@ -12,7 +12,6 @@
     static void __ReflectionInitializer() \
     { \
         static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
-        DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
@@ -28,7 +27,6 @@
     { \
         static_assert(std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectionBase"); \
         DAVA::ReflectedTypeDB::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
@@ -97,7 +95,9 @@ struct AnyCompare<Reflection>
 {
     static bool IsEqual(const Any& v1, const Any& v2)
     {
-        return v1.Get<Reflection>() == v2.Get<Reflection>();
+        const Reflection r1 = v1.Get<Reflection>();
+        const Reflection r2 = v2.Get<Reflection>();
+        return r1.GetValueObject() == r2.GetValueObject();
     }
 };
 
@@ -106,7 +106,21 @@ struct AnyCompare<Vector<Reflection>>
 {
     static bool IsEqual(const Any& v1, const Any& v2)
     {
-        return v1.Get<Vector<Reflection>>() == v2.Get<Vector<Reflection>>();
+        const Vector<Reflection> r1 = v1.Get<Vector<Reflection>>();
+        const Vector<Reflection> r2 = v2.Get<Vector<Reflection>>();
+        if (r1.size() != r2.size())
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < r1.size(); ++i)
+        {
+            if (AnyCompare<Reflection>::IsEqual(r1[i], r2[i]) == false)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 };
 } // namespace DAVA

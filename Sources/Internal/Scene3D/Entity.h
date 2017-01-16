@@ -4,6 +4,8 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
@@ -27,6 +29,10 @@ class TransformComponent;
 /**
     \brief Base class of 3D scene hierarchy. All nodes in our scene graph is inherited from this node.
  */
+struct ReadOnlyMeta
+{
+};
+
 class Entity : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
@@ -410,7 +416,7 @@ public:
                                  DAVA::SafeRelease(e);
                              })
         .Field("ID", &Entity::GetID, &Entity::SetID)
-        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
+        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))[Meta<ReadOnlyMeta>()]
         .Field("Tag", &Entity::tag)
         .Field("Flags", &Entity::flags)
         .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)

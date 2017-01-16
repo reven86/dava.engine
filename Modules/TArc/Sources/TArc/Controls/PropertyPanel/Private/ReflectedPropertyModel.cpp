@@ -3,7 +3,8 @@
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 
-#include "Debug/DVAssert.h"
+#include <Scene3D/Entity.h>
+#include <Debug/DVAssert.h>
 
 namespace DAVA
 {
@@ -78,7 +79,12 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     if (index.column() == 1)
     {
-        flags |= Qt::ItemIsEditable;
+        ReflectedPropertyItem* item = MapItem(index);
+        std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
+        if (!node->field.ref.IsReadonly() && node->field.ref.GetMeta<ReadOnlyMeta>() == nullptr)
+        {
+            flags |= Qt::ItemIsEditable;
+        }
     }
 
     return flags;
