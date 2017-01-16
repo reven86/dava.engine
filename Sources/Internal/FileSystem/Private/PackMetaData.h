@@ -19,6 +19,8 @@ public:
 		*/
     PackMetaData(const void* ptr, std::size_t size);
 
+    Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
+
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
     /**
 	    Return tuple (packName, packDependencies)

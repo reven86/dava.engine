@@ -62,6 +62,36 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
+Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) const
+{
+    Vector<uint32> result;
+
+    for (const auto& t : packDependencies)
+    {
+        const String& packName = std::get<0>(t);
+        if (packName == requestedPackName)
+        {
+            ptrdiff_t packIndex = std::distance(&packDependencies[0], &t);
+            uint32 pIndex = static_cast<uint32>(packIndex);
+
+            size_t numFilesInThisPack = std::count(begin(packIndexes), end(packIndexes), pIndex);
+            result.reserve(numFilesInThisPack);
+
+            for (const auto& index : packIndexes)
+            {
+                if (index == pIndex)
+                {
+                    ptrdiff_t fileIndex = std::distance(&packIndexes[0], &index);
+                    uint32 fIndex = static_cast<uint32>(fileIndex);
+                    result.push_back(fIndex);
+                }
+            }
+            break;
+        }
+    }
+    return result;
+}
+
 uint32 PackMetaData::GetPackIndexForFile(const uint32 fileIndex) const
 {
     return packIndexes.at(fileIndex);

@@ -11,19 +11,28 @@ class DCLManagerImpl;
 class PackRequest : public IDLCManager::IRequest
 {
 public:
-    PackRequest(DCLManagerImpl& packManager_, const String& packName);
+    PackRequest(DCLManagerImpl& packManager_, const String& packName, const Vector<uint32> fileIndexes);
 
     void Start();
     void Update();
     void Stop();
 
+    /** return requested pack name */
+    const String& GetRequestedPackName() const override;
+    /** recalculate full size with all dependencies */
+    uint64 GetFullSizeWithDependencies() const override;
+    /** recalculate current downloaded size */
+    uint64 GetDownloadedSize() const override;
+    /** return true when all files loaded and ready */
+    bool IsDowndloaded() const override;
+
+private:
     struct FileRequest
     {
         enum Status : uint32
         {
             Wait = 0,
-            AskFooter,
-            GetFooter,
+            CheckLocalFile,
             LoadingPackFile, // download manager thread, wait on main thread
             CheckHash, // on main thread (in future move to job manager)
             Mounted, // on main thread
@@ -31,33 +40,26 @@ public:
             Error
         };
 
+        void Initialize(const String& fileName,
+                        const uint32 hash, const uint64 startLoadingPos,
+                        const uint64 fileSize);
+        void Update();
+
+        bool Error() const;
+        bool IsDone() const;
+
+    private:
+        FilePath localFile;
         String fileName;
         String errorMsg;
+        uint32 hashFromMeta = 0;
+        uint64 startLoadingPos = 0;
+        uint64 sizeOfFile = 0;
         uint32 taskId = 0;
         Status status = Wait;
     };
 
-    const String& GetRootPack() const override
-    {
-        return *rootPack;
-    }
-
-    float32 GetPriority() const
-    {
-        return rootPack->priority;
-    }
-    bool IsDone() const;
-    const FileRequest& GetCurrentSubRequest() const;
-
-    uint64 GetFullSizeWithDependencies() const override;
-
-    uint64 GetDownloadedSize() const override;
-private:
     void Restart();
-    void SetErrorStatusAndFireSignal(FileRequest& subRequest, IDLCManager::Pack& currentPack);
-
-    void AskFooter();
-    void GetFooter();
     void StartLoadingPackFile();
     bool IsLoadingPackFileFinished();
     void StartCheckHash();
@@ -65,14 +67,14 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    DCLManagerImpl* packManagerImpl = nullptr;
-    String rootPack;
-    Vector<PackRequest*> dependencyPacks;
-    Vector<FileRequest> dependencies; // first all dependencies then pack sub request
-    uint64 totalAllPacksSize = 0;
+    DCLManagerImpl& packManagerImpl;
 
-    uint64 fullSizeServerData = 0;
+    String requestedPackName;
+    FileRequest currentFileRequest;
+    uint64 totalAllPacksSize = 0;
+    uint64 downloadedSize = 0;
+
     uint32 downloadTaskId = 0;
-    PackFormat::PackFile::FooterBlock footerOnServer;
 };
+
 } // end namespace DAVA

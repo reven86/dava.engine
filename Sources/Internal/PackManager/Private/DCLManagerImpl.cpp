@@ -84,6 +84,16 @@ DCLManagerImpl::~DCLManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Disconnect(sigConnectionUpdate);
+
+    for (auto request : requests)
+    {
+        delete request;
+    }
+
+    for (auto request : delayedRequests)
+    {
+        delete request;
+    }
 }
 #endif
 
@@ -253,7 +263,7 @@ void DCLManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::LoadingPacksDataFromLocalMeta == initState)
     {
-        LoadPacksDataFromDB();
+        LoadPacksDataFromMeta();
     }
     else if (InitState::MountingDownloadedPacks == initState)
     {
@@ -433,7 +443,7 @@ void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
         const uint32 localCrc32 = CRC32::ForFile(metaLocalCache);
         if (localCrc32 != initFooterOnServer.metaDataCrc32)
         {
-            DeleteLocalDBFiles();
+            DeleteLocalMetaFiles();
             // we have to download new localDB file from server!
             initState = InitState::LoadingRequestAskMeta;
         }
@@ -445,7 +455,7 @@ void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
     }
     else
     {
-        DeleteLocalDBFiles();
+        DeleteLocalMetaFiles();
 
         initState = InitState::LoadingRequestAskMeta;
     }
@@ -534,82 +544,42 @@ void DCLManagerImpl::DeleteOldPacks()
     initState = InitState::LoadingPacksDataFromLocalMeta;
 }
 
-void DCLManagerImpl::ReloadState()
-{
-    ScopedPtr<File> metaFile(new DAVA::File::Create(metaLocalCache, File::OPEN | File::READ));
-    std::unique_ptr<PackMetaData> tmpDb(new PackMetaData(metaLocalCache));
-    Vector<Pack> tmpPacks;
-
-    InitializePacksFromDB(*tmpDb, tmpPacks);
-
-    UnorderedMap<String, uint32> tmpIndex;
-    BuildPackIndex(tmpIndex, tmpPacks);
-
-    std::unique_ptr<RequestManager> tmpRequestManager(new RequestManager(*this));
-
-    // if no exceptions switch to new objects
-
-    db.swap(tmpDb);
-    packs.swap(tmpPacks);
-    packsIndex.swap(tmpIndex);
-    requestManager.swap(tmpRequestManager);
-
-    // now request all previouslly mounted pack
-    for (const String& packName : tmpOldMountedPackNames)
-    {
-        const Pack& p = RequestPack(packName);
-        if (p.state == Pack::Status::Requested)
-        {
-            // move in begin of queue
-            SetRequestOrder(packName, 0.f);
-        }
-    }
-    tmpOldMountedPackNames.clear();
-    tmpOldMountedPackNames.shrink_to_fit();
-
-    // next move old requests to new manager
-    const Vector<PackRequest>& requests = tmpRequestManager->GetRequests();
-
-    for (const PackRequest& request : requests)
-    {
-        const String& packName = request.GetRootPack().name;
-        float32 priority = request.GetPriority();
-        requestManager->Push(packName, priority);
-    }
-}
-
-void DCLManagerImpl::LoadPacksDataFromDB()
+void DCLManagerImpl::LoadPacksDataFromMeta()
 {
     //Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
-    if (IsInitialized())
+    try
     {
-        // 1. create new objects for db, packs, packsIndex, requestManager
-        // 2. transit all pack request from old requestManager
-        // 3. reset db, packs, packsIndex, requestManager to new objects
-        try
-        {
-            ReloadState();
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("can't reinitialize new DB during runtime: %s", ex.what());
-            throw;
-        }
-    }
-    else
-    {
-        // now build all packs from localDB, later after request to server
-        // we can delete localDB and replace with new from server if needed
-        bool dbInMemory = true;
-        db.reset(new PacksDB(metaLocalCache, dbInMemory));
+        ScopedPtr<File> f(File::Create(metaLocalCache, File::OPEN | File::READ));
 
-        InitializePacksFromDB(*db, packs);
+        uint32 size = static_cast<uint32>(f->GetSize());
 
-        BuildPackIndex(packsIndex, packs);
+        buffer.resize(size);
+
+        uint32 readSize = f->Read(&buffer[0], size);
+
+        if (size != readSize)
+        {
+            DAVA_THROW(Exception, "can't read metaLocalCache size not match");
+        }
+
+        uint32 buffHash = CRC32::ForBuffer(&buffer[0], size);
+
+        if (initFooterOnServer.metaDataCrc32 != buffHash)
+        {
+            DAVA_THROW(Exception, "can't read metaLocalCache hash not match");
+        }
+
+        meta.reset(new PackMetaData(&buffer[0], buffer.size()));
 
         // now user can do requests for local packs
         requestManager.reset(new RequestManager(*this));
+    }
+    catch (std::exception& ex)
+    {
+        FileSystem::Instance()->DeleteFile(metaLocalCache);
+        RetryInit();
+        return;
     }
 
     initState = InitState::MountingDownloadedPacks;
@@ -619,384 +589,43 @@ void DCLManagerImpl::MountDownloadedPacks()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
 
-    FileSystem* fs = FileSystem::Instance();
-
-    // now mount all downloaded packs
-    // we have to mount all packs togather it's a client requerement
-    ScopedPtr<FileList> packFiles(new FileList(dirToDownloadedPacks, false));
-    for (unsigned i = 0; i < packFiles->GetCount(); ++i)
-    {
-        if (packFiles->IsDirectory(i))
-        {
-            continue;
-        }
-        const FilePath& packPath = packFiles->GetPathname(i);
-        if (packPath.GetExtension() == RequestManager::packPostfix)
-        {
-            try
-            {
-                Pack& pack = GetPack(packPath.GetBasename());
-                if (!fs->IsMounted(packPath))
-                {
-                    fs->Mount(packPath, "Data/");
-                }
-                // do not do! pack.state = Pack::Status::Mounted;
-                // client code should request pack first
-                // we need it for consistensy with pack dependency
-            }
-            catch (std::exception& ex)
-            {
-                Logger::Error("can't auto mount pack on init: %s, cause: %s, so delete it", packPath.GetAbsolutePathname().c_str(), ex.what());
-                fs->DeleteFile(packPath);
-            }
-        }
-    }
-
     initState = InitState::Ready;
 }
 
-void DCLManagerImpl::DeleteLocalDBFiles()
+void DCLManagerImpl::DeleteLocalMetaFiles()
 {
     FileSystem* fs = FileSystem::Instance();
     fs->DeleteFile(metaLocalCache);
-    fs->DeleteFile(dbLocalNameZipped);
 }
 
-void DCLManagerImpl::UnmountAllPacks()
-{
-    for (auto& pack : packs)
-    {
-        if (pack.state == Pack::Status::Mounted)
-        {
-            FileSystem::Instance()->Unmount(pack.name);
-        }
-    }
-}
-
-static void CheckPackCrc32(const FilePath& path, const uint32 hashFromDB)
-{
-    uint32 crc32ForFile = CRC32::ForFile(path);
-    if (crc32ForFile != hashFromDB)
-    {
-        const char* str = path.GetStringValue().c_str();
-
-        String msg = Format(
-        "crc32 not match for pack %s, crc32 from DB 0x%X crc32 from file 0x%X",
-        str, hashFromDB, crc32ForFile);
-
-        DAVA_THROW(DAVA::Exception, msg.c_str());
-    }
-}
-
-void DCLManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path)
-{
-    FileSystem* fs = FileSystem::Instance();
-    // first check all dependencies already mounted and mount if not
-    // 1. collect dependencies
-    Vector<Pack*> dependencies;
-    dependencies.reserve(64);
-    CollectDownloadableDependency(*this, pack.name, dependencies);
-    // 2. check every dependency
-    Vector<Pack*> notMounted;
-    notMounted.reserve(dependencies.size());
-    for (Pack* packItem : dependencies)
-    {
-        if (packItem->state != Pack::Status::Mounted)
-        {
-            notMounted.push_back(packItem);
-        }
-    }
-    // 3. mount packs
-    const FilePath packsDir = path.GetDirectory();
-    for (Pack* packItem : notMounted)
-    {
-        try
-        {
-            const FilePath packPath = packsDir.GetStringValue() + packItem->name + RequestManager::packPostfix;
-
-            CheckPackCrc32(packPath, packItem->hashFromDB);
-
-            fs->Mount(packPath, "Data/");
-            packItem->state = Pack::Status::Mounted;
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("can't mount dependent pack: %s cause: %s", packItem->name.c_str(), ex.what());
-            throw;
-        }
-    }
-
-    try
-    {
-        CheckPackCrc32(path, pack.hashFromDB);
-    }
-    catch (std::exception& ex)
-    {
-        fs->Unmount(path);
-        if (!fs->DeleteFile(path))
-        {
-            DAVA_THROW(DAVA::Exception, "can't delete old mounted pack: " + path.GetStringValue() + " " + ex.what());
-        }
-
-        throw;
-    }
-
-    fs->Mount(path, "Data/");
-    pack.state = Pack::Status::Mounted;
-}
-
-void DCLManagerImpl::CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<Pack*>& dependency)
-{
-    const Pack& packState = pm.FindPack(packName);
-    for (const String& dependName : packState.dependency)
-    {
-        Pack* dependPack = nullptr;
-        try
-        {
-            dependPack = &pm.GetPack(dependName);
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("pack \"%s\" has dependency to base pack \"%s\", error: %s", packName.c_str(), dependName.c_str(), ex.what());
-            continue;
-        }
-
-        if (dependPack->state != Pack::Status::Mounted)
-        {
-            if (find(begin(dependency), end(dependency), dependPack) == end(dependency))
-            {
-                dependency.push_back(dependPack);
-            }
-
-            CollectDownloadableDependency(pm, dependName, dependency);
-        }
-    }
-}
-
-const IPackManager::Pack& DCLManagerImpl::RequestPack(const String& packName)
+const IDLCManager::IRequest* DCLManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
     if (!IsInitialized())
     {
-        static Pack p;
-        if (p.otherErrorMsg.empty())
-        {
-            p.state = Pack::Status::OtherError;
-            p.otherErrorMsg = "initialization not finished";
-        }
-        return p;
+        IRequest* request = AddDeleyedRequest(packName);
+        return request;
     }
 
-    if (requestManager)
+    const IRequest* request = FindRequest(packName);
+    if (request == nullptr)
     {
-        Pack& pack = GetPack(packName);
-        if (pack.state == Pack::Status::NotRequested)
-        {
-            // first try mount pack in it exist on local dounload dir
-            FilePath path = dirToDownloadedPacks + "/" + packName + RequestManager::packPostfix;
-            FileSystem* fs = FileSystem::Instance();
-            if (fs->Exists(path))
-            {
-                try
-                {
-                    MountPackWithDependencies(pack, path);
-                }
-                catch (std::exception& ex)
-                {
-                    Logger::Error("%s", ex.what());
-                    requestManager->Push(packName, 1.0f); // 1.0f last order by default
-                }
-            }
-            else
-            {
-                requestManager->Push(packName, 1.0f); // 1.0f last order by default
-            }
-        }
-        else if (pack.state == Pack::Status::Mounted)
-        {
-            // pass
-        }
-        else if (pack.state == Pack::Status::Downloading)
-        {
-            // pass
-        }
-        else if (pack.state == Pack::Status::ErrorLoading)
-        {
-            requestManager->Push(packName, 1.0f);
-        }
-        else if (pack.state == Pack::Status::OtherError)
-        {
-            requestManager->Push(packName, 1.0f);
-        }
-        else if (pack.state == Pack::Status::Requested)
-        {
-            // pass
-        }
-        return pack;
+        request = CreateNewRequest(packName);
     }
-    DAVA_THROW(DAVA::Exception, "can't process request initialization not finished");
+    return request;
 }
 
-void DCLManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
-{
-    DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
-
-    if (!relativePathDir.IsDirectoryPathname())
-    {
-        Logger::Error("can't list not directory path: %s", relativePathDir.GetStringValue().c_str());
-        return;
-    }
-
-    Set<String> addedDirectory;
-
-    const String relative = relativePathDir.GetRelativePathname("~res:/");
-
-    auto filterMountedPacks = [&](const String& path, const String& pack)
-    {
-        try
-        {
-            const Pack& p = FindPack(pack);
-            if (p.state == Pack::Status::Mounted)
-            {
-                size_type index = path.find_first_of("/", relative.size());
-                if (String::npos != index)
-                {
-                    String directoryName = path.substr(relative.size(), index - relative.size());
-                    if (addedDirectory.find(directoryName) == end(addedDirectory))
-                    {
-                        addedDirectory.insert(directoryName);
-                        fn("~res:/" + relative + "/" + directoryName + "/", pack);
-                    }
-                }
-                else
-                {
-                    fn("~res:/" + path, pack);
-                }
-            }
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("error while list files in pack: %s", ex.what());
-        }
-    };
-
-    db->ListFiles(relative, filterMountedPacks);
-}
-
-const IPackManager::IRequest* DCLManagerImpl::FindRequest(const String& packName) const
-{
-    DVASSERT(Thread::IsMainThread());
-    try
-    {
-        return &requestManager->Find(packName);
-    }
-    catch (std::exception&)
-    {
-        return nullptr;
-    }
-}
-
-void DCLManagerImpl::SetRequestOrder(const String& packName, float newPriority)
-{
-    DVASSERT(Thread::IsMainThread());
-    if (requestManager->IsInQueue(packName))
-    {
-        requestManager->UpdatePriority(packName, newPriority);
-    }
-}
-
-void DCLManagerImpl::MountOnePack(const FilePath& filePath)
-{
-    String fileName = filePath.GetBasename();
-    auto it = packsIndex.find(fileName);
-    if (it == end(packsIndex))
-    {
-        DAVA_THROW(DAVA::Exception, "can't find pack: " + fileName + " in packIndex");
-    }
-
-    Pack& pack = packs.at(it->second);
-
-    try
-    {
-        FileSystem* fs = FileSystem::Instance();
-        fs->Mount(filePath, "Data/");
-        pack.state = Pack::Status::Mounted;
-    }
-    catch (std::exception& ex)
-    {
-        Logger::Error("%s", ex.what());
-    }
-}
-
-void DCLManagerImpl::MountPacks(const Set<FilePath>& basePacks)
-{
-    for_each(begin(basePacks), end(basePacks), [this](const FilePath& filePath)
-             {
-                 MountOnePack(filePath);
-             });
-}
-
-void DCLManagerImpl::DeletePack(const String& packName)
+void DCLManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
 {
     DVASSERT(Thread::IsMainThread());
 
-    auto& pack = GetPack(packName);
-
-    // first modify pack
-    pack.state = Pack::Status::NotRequested;
-    pack.priority = 0.0f;
-    pack.downloadProgress = 0.f;
-    pack.downloadError = DLE_NO_ERROR;
-
-    // now remove archive from filesystem
-    FilePath archivePath = dirToDownloadedPacks + packName + RequestManager::packPostfix;
-    FileSystem* fs = FileSystem::Instance();
-    fs->Unmount(archivePath);
-    fs->DeleteFile(archivePath);
-
-    // now we in inconsistent state! some packs may depends on it
-    // and it's state may be `Pack::Status::Mounted`
-    // so just insure to find out all dependent packs and set state to it
-    // `Pack::Status::NotRequested`
-    for (auto& p : packs)
+    if (request != nullptr)
     {
-        db->ListDependentPacks(p.name, [&](const String& depName)
-                               {
-                                   GetPack(depName).state = Pack::Status::NotRequested;
-                               });
+        const PackRequest* r = dynamic_cast<const PackRequest*>(request);
+        PackRequest* req = const_cast<PackRequest*>(r);
+        requestManager->UpdateOrder(req, orderIndex);
     }
-}
-
-uint32_t DCLManagerImpl::DownloadPack(const String& packName, const FilePath& packPath)
-{
-    Pack& pack = GetPack(packName);
-    String serverRelativePackFileName = packName + RequestManager::packPostfix;
-
-    if (pack.isGPU)
-    {
-        serverRelativePackFileName = architecture + "/" + serverRelativePackFileName;
-    }
-    else
-    {
-        serverRelativePackFileName = "common/" + serverRelativePackFileName;
-    }
-
-    auto it = initFileData.find(serverRelativePackFileName);
-
-    if (it == end(initFileData))
-    {
-        DAVA_THROW(DAVA::Exception, "can't find pack file: " + serverRelativePackFileName);
-    }
-
-    uint64 downloadOffset = it->second->startPosition;
-    uint64 downloadSize = it->second->originalSize;
-
-    DownloadManager* dm = DownloadManager::Instance();
-    const String& url = GetSuperPackUrl();
-    uint32 result = dm->DownloadRange(url, packPath, downloadOffset, downloadSize);
-    return result;
 }
 
 bool DCLManagerImpl::IsRequestingEnabled() const
@@ -1005,79 +634,57 @@ bool DCLManagerImpl::IsRequestingEnabled() const
     return isProcessingEnabled;
 }
 
-void DCLManagerImpl::EnableRequesting()
+void DCLManagerImpl::SetRequestingEnabled(bool value)
 {
     DVASSERT(Thread::IsMainThread());
 
     LockGuard<Mutex> lock(protectPM);
 
-    if (!isProcessingEnabled)
+    if (value)
     {
-        isProcessingEnabled = true;
-        if (requestManager)
+        if (!isProcessingEnabled)
         {
-            requestManager->Start();
+            isProcessingEnabled = true;
+            if (requestManager)
+            {
+                requestManager->Start();
+            }
+        }
+    }
+    else
+    {
+        if (isProcessingEnabled)
+        {
+            isProcessingEnabled = false;
+            if (requestManager)
+            {
+                requestManager->Stop();
+            }
         }
     }
 }
 
-void DCLManagerImpl::DisableRequesting()
+const IDLCManager::IRequest* DCLManagerImpl::FindRequest(const String& requestedPackName) const
 {
     DVASSERT(Thread::IsMainThread());
 
-    LockGuard<Mutex> lock(protectPM);
-
-    if (isProcessingEnabled)
+    for (auto request : requests)
     {
-        isProcessingEnabled = false;
-        if (requestManager)
+        if (request->GetRootPack() == requestedPackName)
         {
-            requestManager->Stop();
+            return request;
         }
     }
-}
 
-const String& DCLManagerImpl::FindPackName(const FilePath& relativePathInPack) const
-{
-    LockGuard<Mutex> lock(protectPM);
-    const String& result = db->FindPack(relativePathInPack);
-    return result;
-}
-
-uint32 DCLManagerImpl::GetPackIndex(const String& packName) const
-{
-    DVASSERT(Thread::IsMainThread());
-
-    auto it = packsIndex.find(packName);
-    if (it != end(packsIndex))
+    for (auto request : delayedRequests)
     {
-        return it->second;
+        if (request->GetRootPack() == requestedPackName)
+        {
+            return request;
+        }
     }
-    DAVA_THROW(DAVA::Exception, "can't find pack with name: " + packName);
-}
 
-IPackManager::Pack& DCLManagerImpl::GetPack(const String& packName)
-{
-    DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
-
-    uint32 index = GetPackIndex(packName);
-    return packs.at(index);
-}
-
-const IPackManager::Pack& DCLManagerImpl::FindPack(const String& packName) const
-{
-    DVASSERT(Thread::IsMainThread());
-    DVASSERT(IsInitialized());
-
-    uint32 index = GetPackIndex(packName);
-    return packs.at(index);
-}
-
-const Vector<IPackManager::Pack>& DCLManagerImpl::GetPacks() const
-{
-    DVASSERT(Thread::IsMainThread());
-    return packs;
+    return nullptr;
 }
 
 const FilePath& DCLManagerImpl::GetLocalPacksDirectory() const

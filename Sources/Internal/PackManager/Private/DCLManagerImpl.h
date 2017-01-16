@@ -3,6 +3,7 @@
 #include "PackManager/PackManager.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/ResourceArchive.h"
 
 #ifdef __DAVAENGINE_COREV2__
@@ -74,21 +75,15 @@ public:
 
     bool IsRequestingEnabled() const override;
 
-    void EnableRequesting();
-
-    void DisableRequesting();
+    void SetRequestingEnabled(bool value) override;
 
     void Update(float frameDelta);
 
-    const String& FindPackName(const FilePath& relativePathInPack) const;
+    const IRequest* RequestPack(const String& requestedPackName) override;
 
-    const IRequest* RequestPack(const String& packName) override;
+    const IRequest* FindRequest(const String& requestedPackName) const;
 
-    const IRequest* FindRequest(const String& pack) const;
-
-    void SetRequestOrder(const IRequest*, uint32 orderIndex) override;
-
-    uint32_t DownloadPack(const String& packName, const FilePath& packPath);
+    void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
 
     const FilePath& GetLocalPacksDirectory() const;
 
@@ -104,7 +99,10 @@ public:
         return hints;
     }
 
-    static void CollectDownloadableDependency(DCLManagerImpl& pm, const String& packName, Vector<IRequest*>& dependency);
+    const PackMetaData& GetMeta() const
+    {
+        return *meta;
+    }
 
 private:
     // initialization state functions
@@ -118,13 +116,11 @@ private:
     void ParseMeta();
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
-    void ReloadState();
-    void LoadPacksDataFromDB();
+    void LoadPacksDataFromMeta();
     void MountDownloadedPacks();
     // helper functions
-    void DeleteLocalDBFiles();
+    void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
-    void UnmountAllPacks();
 
     mutable Mutex protectPM;
 
@@ -133,6 +129,10 @@ private:
     String urlToSuperPack;
     bool isProcessingEnabled = false;
     std::unique_ptr<RequestManager> requestManager;
+    std::unique_ptr<PackMetaData> meta;
+
+    Vector<PackRequest*> requests; // not forget to delete in destructor
+    Vector<PackRequest*> delayedRequests; // move to requests after initialization finished
 
     String initErrorMsg;
     InitState initState = InitState::Starting;
@@ -150,7 +150,6 @@ private:
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
-    Vector<String> tmpOldMountedPackNames;
 };
 
 } // end namespace DAVA

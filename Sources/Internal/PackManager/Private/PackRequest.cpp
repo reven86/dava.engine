@@ -13,13 +13,13 @@ namespace DAVA
 {
 PackRequest::PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_)
     : packManagerImpl(&packManager_)
-    , rootPack(&pack_)
+    , requestedPackName(&pack_)
 {
     DVASSERT(packManagerImpl != nullptr);
-    DVASSERT(rootPack != nullptr);
+    DVASSERT(requestedPackName != nullptr);
     // find all dependencies
     // put it all into vector and put final pack into vector too
-    DCLManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyPacks);
+    DCLManagerImpl::CollectDownloadableDependency(*packManagerImpl, requestedPackName->name, dependencyPacks);
 
     dependencies.reserve(dependencyPacks.size() + 1);
 
@@ -37,7 +37,7 @@ PackRequest::PackRequest(DCLManagerImpl& packManager_, IDLCManager::Pack& pack_)
     // last step download pack itself
     FileRequest subRequest;
 
-    subRequest.pack = rootPack;
+    subRequest.pack = requestedPackName;
     subRequest.status = FileRequest::Wait;
     subRequest.taskId = 0;
     dependencies.push_back(subRequest);
@@ -136,11 +136,11 @@ void PackRequest::GetFooter()
             }
             else
             {
-                rootPack->state = IDLCManager::Pack::Status::ErrorLoading;
-                rootPack->downloadError = error;
-                rootPack->otherErrorMsg = "can't load superpack footer: " + DLC::ToString(error);
+                requestedPackName->state = IDLCManager::Pack::Status::ErrorLoading;
+                requestedPackName->downloadError = error;
+                requestedPackName->otherErrorMsg = "can't load superpack footer: " + DLC::ToString(error);
 
-                Logger::Error("%s\ntry again", rootPack->otherErrorMsg.c_str());
+                Logger::Error("%s\ntry again", requestedPackName->otherErrorMsg.c_str());
                 Restart();
             }
         }
@@ -248,10 +248,10 @@ bool PackRequest::IsLoadingPackFileFinished()
                 currentPack.downloadError = downloadError;
                 currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
 
-                if (currentPack.name != rootPack->name)
+                if (currentPack.name != requestedPackName->name)
                 {
-                    rootPack->state = IDLCManager::Pack::Status::OtherError;
-                    rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
+                    requestedPackName->state = IDLCManager::Pack::Status::OtherError;
+                    requestedPackName->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
                 FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + currentPack.name + RequestManager::packPostfix;
@@ -278,10 +278,10 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::FileRequest& subReque
     currentPack.state = IDLCManager::Pack::Status::OtherError;
     subRequest.status = FileRequest::Error;
 
-    if (rootPack->name != currentPack.name)
+    if (requestedPackName->name != currentPack.name)
     {
-        rootPack->state = IDLCManager::Pack::Status::OtherError;
-        rootPack->otherErrorMsg = "error with dependency: " + currentPack.name;
+        requestedPackName->state = IDLCManager::Pack::Status::OtherError;
+        requestedPackName->otherErrorMsg = "error with dependency: " + currentPack.name;
     }
 
     // inform user about problem with pack
@@ -449,7 +449,7 @@ void PackRequest::Update()
 
 void PackRequest::ChangePriority(float32 newPriority)
 {
-    rootPack->priority = newPriority;
+    requestedPackName->priority = newPriority;
     for (FileRequest& subRequest : dependencies)
     {
         IDLCManager::Pack& pack = *subRequest.pack;
@@ -492,7 +492,7 @@ uint64 PackRequest::GetDownloadedSize() const
         result += pack->downloadedSize;
     }
 
-    result += rootPack->downloadedSize;
+    result += requestedPackName->downloadedSize;
     return result;
 }
 
@@ -504,7 +504,7 @@ const IDLCManager::Pack& PackRequest::GetErrorPack() const
 
 const String& PackRequest::GetErrorMessage() const
 {
-    return rootPack->otherErrorMsg;
+    return requestedPackName->otherErrorMsg;
 }
 
 } // end namespace DAVA
