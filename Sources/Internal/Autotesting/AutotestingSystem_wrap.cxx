@@ -2797,18 +2797,18 @@ SWIG_Lua_InstallConstants(lua_State* L, swig_lua_const_info constants[])
         {
         case SWIG_LUA_INT:
             lua_pushstring(L, constants[i].name);
-            lua_pushinteger(L, (lua_Number)constants[i].lvalue);
+            lua_pushinteger(L, static_cast<lua_Integer>(constants[i].lvalue));
             lua_rawset(L, -3);
             break;
         case SWIG_LUA_FLOAT:
             lua_pushstring(L, constants[i].name);
-            lua_pushnumber(L, (lua_Number)constants[i].dvalue);
+            lua_pushnumber(L, static_cast<lua_Number>(constants[i].dvalue));
             lua_rawset(L, -3);
             break;
         case SWIG_LUA_CHAR:
             lua_pushstring(L, constants[i].name);
             {
-                char c = constants[i].lvalue;
+                char c = static_cast<char>(constants[i].lvalue);
                 lua_pushlstring(L, &c, 1);
             }
             lua_rawset(L, -3);
@@ -7014,6 +7014,47 @@ fail:
     lua_error(L);
     return SWIG_arg;
 }
+    
+    static int _wrap_AutotestingSystemLua_GetTaggedClass(lua_State* L)
+    {
+        int SWIG_arg = 0;
+        DAVA::AutotestingSystemLua* arg1 = (DAVA::AutotestingSystemLua*)0;
+        DAVA::UIControl* arg2 = (DAVA::UIControl*)0;
+        DAVA::String* arg3 = 0;
+        DAVA::String temp3;
+        DAVA::String result;
+        
+        SWIG_check_num_args("DAVA::AutotestingSystemLua::GetTaggedClass", 3, 3)
+        if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 1, "DAVA::AutotestingSystemLua *");
+        if (!SWIG_isptrtype(L, 2))
+            SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 2, "DAVA::UIControl *");
+        if (!lua_isstring(L, 3))
+            SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 3, "DAVA::String const &");
+        
+        if (!SWIG_IsOK(SWIG_ConvertPtr(L, 1, (void**)&arg1, SWIGTYPE_p_DAVA__AutotestingSystemLua, 0)))
+        {
+            SWIG_fail_ptr("AutotestingSystemLua_GetTaggedClass", 1, SWIGTYPE_p_DAVA__AutotestingSystemLua);
+        }
+        
+        if (!SWIG_IsOK(SWIG_ConvertPtr(L, 2, (void**)&arg2, SWIGTYPE_p_DAVA__UIControl, 0)))
+        {
+            SWIG_fail_ptr("AutotestingSystemLua_GetTaggedClass", 2, SWIGTYPE_p_DAVA__UIControl);
+        }
+        
+        temp3.assign(lua_tostring(L, 3), lua_rawlen(L, 3));
+        arg3 = &temp3;
+        result = (arg1)->GetTaggedClass(arg2, (DAVA::String const&)*arg3);
+        lua_pushlstring(L, (&result)->data(), (&result)->size());
+        SWIG_arg++;
+        return SWIG_arg;
+        
+        if (0)
+            SWIG_fail;
+        
+    fail:
+        lua_error(L);
+        return SWIG_arg;
+    }
 
 static int _wrap_AutotestingSystemLua_GetText(lua_State* L)
 {
@@ -7521,6 +7562,7 @@ static swig_lua_method swig_AutotestingSystemLua_methods[] = {
     { "PressEscape", _wrap_AutotestingSystemLua_PressEscape },
     { "SetText", _wrap_AutotestingSystemLua_SetText },
     { "CheckText", _wrap_AutotestingSystemLua_CheckText },
+    { "GetTaggedClass", _wrap_AutotestingSystemLua_GetTaggedClass },
     { "CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText },
     { "GetText", _wrap_AutotestingSystemLua_GetText },
     { "GetTextColor", _wrap_AutotestingSystemLua_GetTextColor },

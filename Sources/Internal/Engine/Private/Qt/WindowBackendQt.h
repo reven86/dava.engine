@@ -76,7 +76,7 @@ private:
     void OnDestroyed() override;
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, bool isFullScreen) override;
-    void OnDpiChanged(float32 dpi) override;
+    void OnDpiChanged(float32 dpi_) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;
@@ -104,6 +104,7 @@ private:
     QPointer<RenderWidget> renderWidget;
 
     bool closeRequestByApp = false;
+    float32 dpi = 96.f;
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;

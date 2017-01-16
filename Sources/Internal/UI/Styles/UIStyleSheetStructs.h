@@ -4,6 +4,7 @@
 #include "Base/IntrospectionBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
 #include "FileSystem/VariantType.h"
 #include "Animation/Interpolation.h"
 
@@ -127,6 +128,18 @@ public:
 
 private:
     Vector<UIStyleSheetClass> classes;
+};
+
+struct UIStyleSheetSourceInfo
+{
+    UIStyleSheetSourceInfo() = default;
+
+    UIStyleSheetSourceInfo(const FilePath& file_)
+        : file(file_)
+    {
+    }
+
+    FilePath file;
 };
 };
 
