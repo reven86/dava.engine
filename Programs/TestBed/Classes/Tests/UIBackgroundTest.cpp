@@ -1,7 +1,7 @@
 #include "Tests/UIBackgroundTest.h"
 #include "UI/UIControlBackground.h"
 
-#include "Render/2D/SpriteUtils.h"
+#include "Render/2D/Sprite.h"
 
 using namespace DAVA;
 
@@ -19,7 +19,7 @@ void UIBackgroundTest::LoadResources()
     DVASSERT(font);
     font->SetSize(14);
 
-    ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath("~res:/TestData/UI/box.png"));
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/TestData/UI/box.png"));
 
     text_orig = new UIStaticText(Rect(0, 0, 100, 100));
     text_orig->SetText(L"orig");

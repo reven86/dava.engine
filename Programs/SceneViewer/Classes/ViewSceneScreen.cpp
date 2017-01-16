@@ -3,7 +3,7 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-#include "Render/2D/SpriteUtils.h"
+#include "Render/2D/Sprite.h"
 
 using namespace DAVA;
 
@@ -119,7 +119,7 @@ void ViewSceneScreen::LoadResources()
 
         moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
         moveJoyPAD->SetDebugDraw(true);
-        ScopedPtr<Sprite> stickSprite(SpriteUtils::CreateFromImagePath("~res:/Joypad/Stick.png"));
+        ScopedPtr<Sprite> stickSprite(Sprite::CreateFromSourceFile("~res:/Joypad/Stick.png"));
         moveJoyPAD->SetStickSprite(stickSprite, 0);
         AddControl(moveJoyPAD);
         moveJoyPAD->Release();

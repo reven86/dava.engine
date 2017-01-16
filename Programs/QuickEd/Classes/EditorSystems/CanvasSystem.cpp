@@ -12,7 +12,7 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
-#include <Render/2D/SpriteUtils.h>
+#include <Render/2D/Sprite.h>
 
 using namespace DAVA;
 
@@ -74,7 +74,7 @@ GridControl::GridControl()
     : colorControl(new ColorControl)
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
-    ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath("~res:/QuickEd/UI/GrayGrid.png"));
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/GrayGrid.png"));
     background->SetSprite(sprite, 0);
     colorControl->SetName("Color control");
 

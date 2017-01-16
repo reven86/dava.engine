@@ -4,7 +4,7 @@
 #include <Engine/Engine.h>
 #include <Input/InputCallback.h>
 #include <UI/Focus/UIFocusComponent.h>
-#include <Render/2D/SpriteUtils.h>
+#include <Render/2D/Sprite.h>
 
 using namespace DAVA;
 
@@ -104,7 +104,7 @@ void KeyboardTest::LoadResources()
 
     gamepad = new UIControl(gamepadPos);
     FilePath pathToBack("~res:/TestData/GamepadTest/gamepad.png");
-    ScopedPtr<Sprite> gamepadSprite(SpriteUtils::CreateFromImagePath(pathToBack));
+    ScopedPtr<Sprite> gamepadSprite(Sprite::CreateFromSourceFile(pathToBack));
     gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
     gamepad->SetSprite(gamepadSprite, 0);
     AddControl(gamepad);
@@ -115,7 +115,7 @@ void KeyboardTest::LoadResources()
         auto path = FilePath("~res:/TestData/GamepadTest/") + buttonOrAxisName + ".png";
         img->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
 
-        ScopedPtr<Sprite> sprite(SpriteUtils::CreateFromImagePath(path));
+        ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(path));
         img->SetSprite(sprite, 0);
         gamepadButtons[buttonOrAxisName] = img;
         AddControl(img);
