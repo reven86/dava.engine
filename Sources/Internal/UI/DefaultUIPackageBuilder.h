@@ -40,7 +40,7 @@ public:
     virtual UIControlBackground* BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
 
-    virtual void ProcessProperty(const ReflectedStructure::Field *field, const Any& value) override;
+    virtual void ProcessProperty(const Reflection::Field &field, const Any& value) override;
 
 private:
     void PutImportredPackage(const FilePath& path, UIPackage* package);

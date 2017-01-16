@@ -84,6 +84,11 @@ const DAVA::String& StyleSheetRootProperty::GetName() const
     return rootName;
 }
 
+const Type *StyleSheetRootProperty::GetValueType() const
+{
+    return nullptr;
+}
+
 AbstractProperty::ePropertyType StyleSheetRootProperty::GetType() const
 {
     return TYPE_HEADER;

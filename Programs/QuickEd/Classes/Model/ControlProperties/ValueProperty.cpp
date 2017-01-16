@@ -12,10 +12,9 @@ static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "A
 static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
 }
 
-ValueProperty::ValueProperty(const String& propName, const Type *type, bool builtinSubProps, const DAVA::ReflectedStructure::Field* fieldDesc_)
+ValueProperty::ValueProperty(const String& propName, const DAVA::Type *type_, bool builtinSubProps)
     : name(propName)
-    , valueType(type)
-    , fieldDesc(fieldDesc_)
+    , valueType(type_)
 {
     if (builtinSubProps)
     {
@@ -103,18 +102,19 @@ const String& ValueProperty::GetName() const
 
 ValueProperty::ePropertyType ValueProperty::GetType() const
 {
-    if (fieldDesc)
-    {
-        const EnumMeta *meta = fieldDesc->meta->GetMeta<EnumMeta>();
-        if (meta)
-        {
-            return meta->IsFlags() ? TYPE_FLAGS : TYPE_ENUM;
-        }
-    }
+    // TODO
+//    if (reflection.IsValid())
+//    {
+//        const EnumMeta *meta = reflection.GetMeta<EnumMeta>();
+//        if (meta)
+//        {
+//            return meta->IsFlags() ? TYPE_FLAGS : TYPE_ENUM;
+//        }
+//    }
     return TYPE_VARIANT;
 }
 
-const Type *ValueProperty::GetValueType() const
+const DAVA::Type *ValueProperty::GetValueType() const
 {
     return valueType;
 }
@@ -133,7 +133,7 @@ Any ValueProperty::GetDefaultValue() const
 void ValueProperty::SetDefaultValue(const Any& newValue)
 {
     const Type *valueType = GetValueType();
-    DVASSERT(newValue.GetType() == valueType);
+    DVASSERT(newValue.GetType() == valueType || newValue.GetType() == valueType->Decay()); // TODO: Check Decay
 
     defaultValue = newValue;
     if (!overridden)
@@ -142,15 +142,13 @@ void ValueProperty::SetDefaultValue(const Any& newValue)
 
 const EnumMap* ValueProperty::GetEnumMap() const
 {
-    if (fieldDesc != nullptr && fieldDesc->meta != nullptr)
-    {
-        const EnumMeta *meta = fieldDesc->meta->GetMeta<EnumMeta>();
-        if (meta)
-        {
-            return meta->GetEnumMap();
-        }
-    }
-
+//    const EnumMeta *meta = reflection.GetMeta<EnumMeta>();
+//    if (meta)
+//    {
+//        return meta->GetEnumMap();
+//    }
+//
+    //TODO
     return nullptr;
 }
 

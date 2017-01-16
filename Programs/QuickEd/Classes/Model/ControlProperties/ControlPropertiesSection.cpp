@@ -12,10 +12,14 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, co
     : SectionProperty(reflectedType->GetPermanentName())
     , control(SafeRetain(aControl))
 {
-    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+    Reflection controlRef = Reflection::Create(&control);
+    Vector<Reflection::Field> fields = controlRef.GetFields();
+    
+    for (const Reflection::Field &field : fields)
     {
-        IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(field.get());
-        IntrospectionProperty* prop = IntrospectionProperty::Create(control, field.get(), sourceProperty, cloneType);
+        String name = field.key.Get<String>();
+        IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
+        IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }

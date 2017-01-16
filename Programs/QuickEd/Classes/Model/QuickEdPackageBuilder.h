@@ -39,7 +39,7 @@ public:
     virtual DAVA::UIControlBackground* BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
 
-    virtual void ProcessProperty(const DAVA::ReflectedStructure::Field *field, const DAVA::Any& value) override;
+    virtual void ProcessProperty(const DAVA::Reflection::Field &field, const DAVA::Any& value) override;
 
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*>& GetRootControls() const;

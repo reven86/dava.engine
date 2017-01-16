@@ -11,7 +11,6 @@ public:
     void ApplyPreference();
 
     void SetValue(const DAVA::Any& value) override;
-
     DAVA::Any GetValue() const override;
 
     const EnumMap* GetEnumMap() const override;

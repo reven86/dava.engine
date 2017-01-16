@@ -62,15 +62,15 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();
 
-    propertyNameTypeItemDelegates[PropertyPath("*", "Actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Effect path")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Font")] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates[PropertyPath("ScrollBarDelegate", "Delegate")] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
+    propertyNameTypeItemDelegates[PropertyPath("*", "actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "effectPath")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "font")] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("ScrollBarDelegate", "delegate")] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
 
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);

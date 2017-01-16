@@ -26,11 +26,13 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* aControl
 
     RefreshName();
 
-    const ReflectedType *reflectedType = component->GetReflectedType();
-    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+    Reflection componentRef = Reflection::Create(&component);
+    Vector<Reflection::Field> fields = componentRef.GetFields();
+    for (const Reflection::Field &field : fields)
     {
-        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(field.get());
-        IntrospectionProperty* prop = new IntrospectionProperty(component, field.get(), sourceProp, cloneType);
+        String name = field.key.Get<String>();
+        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
+        IntrospectionProperty* prop = new IntrospectionProperty(component, name, field.ref, sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }
@@ -58,11 +60,15 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
     if (prototypeSection == nullptr)
     {
         prototypeSection = section;
-        const ReflectedType *reflectedType = component->GetReflectedType();
-        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+        
+        Reflection componentRef = Reflection::Create(&component);
+        Vector<Reflection::Field> fields = componentRef.GetFields();
+
+        for (const Reflection::Field &field : fields)
         {
-            ValueProperty* value = FindProperty(field.get());
-            ValueProperty* prototypeValue = prototypeSection->FindProperty(field.get());
+            String name = field.key.Get<String>();
+            ValueProperty* value = FindChildPropertyByName(name);
+            ValueProperty* prototypeValue = prototypeSection->FindChildPropertyByName(name);
             value->AttachPrototypeProperty(prototypeValue);
         }
     }

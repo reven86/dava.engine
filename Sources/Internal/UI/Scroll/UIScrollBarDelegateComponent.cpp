@@ -2,6 +2,15 @@
 
 namespace DAVA
 {
+    
+DAVA_REFLECTION_IMPL(UIScrollBarDelegateComponent)
+{
+    ReflectionRegistrator<UIScrollBarDelegateComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScrollBarDelegateComponent* o) { o->Release(); })
+    .Field("delegate", &UIScrollBarDelegateComponent::GetPathToDelegate, &UIScrollBarDelegateComponent::SetPathToDelegate)
+    .End();
+}
 UIScrollBarDelegateComponent::UIScrollBarDelegateComponent()
 {
 }

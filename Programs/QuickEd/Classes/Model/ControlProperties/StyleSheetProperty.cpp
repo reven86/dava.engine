@@ -13,17 +13,17 @@ using namespace DAVA;
 
 namespace SStyleSheetProperty
 {
-static const Type *GetValueType(uint32 propertyIndex)
-{
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    return descr.field_s->reflectedType->GetType();
-}
-    
-static const ReflectedStructure::Field* GetField(uint32 propertyIndex)
-{
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    return descr.field_s;
-}
+//static const Type *GetValueType(uint32 propertyIndex)
+//{
+//    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
+//    return descr.field_s->reflectedType->GetType();
+//}
+//    
+//static const ReflectedStructure::Field* GetField(uint32 propertyIndex)
+//{
+//    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
+//    return descr.field_s;
+//}
 }
 
 DAVA_REFLECTION_IMPL(StyleSheetProperty)
@@ -39,24 +39,26 @@ DAVA_REFLECTION_IMPL(StyleSheetProperty)
     .End();
 }
 
-StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& aProperty)
-    : ValueProperty("prop", SStyleSheetProperty::GetValueType(aProperty.propertyIndex), false, SStyleSheetProperty::GetField(aProperty.propertyIndex))
-    , property(aProperty)
+StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& property_)
+    : ValueProperty("prop", property_.value.GetType(), false)
+    , property(property_)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     SetName(String(descr.GetFullName().c_str()));
     SetOverridden(true);
 
-    RefPtr<VariantTypeProperty> valueProp(new VariantTypeProperty("Value", descr.field_s, property.value));
+    RefPtr<VariantTypeProperty> valueProp(new VariantTypeProperty("Value", property.value));
     valueProp->SetValue(property.value);
     valueProp->SetParent(this);
     AddSubValueProperty(valueProp.Get());
 
-    const ReflectedType *reflectedType = GetReflectedType();
-    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+    StyleSheetProperty *pp = this;
+    Reflection ref = Reflection::Create(&pp);
+    Vector<Reflection::Field> fields = ref.GetFields();
+    for (const Reflection::Field &field : fields)
     {
-        RefPtr<IntrospectionProperty> inspProp(new IntrospectionProperty(this, field.get(), nullptr, CT_COPY));
-        inspProp->SetValue(field->valueWrapper->GetValue(this));
+        RefPtr<IntrospectionProperty> inspProp(new IntrospectionProperty(this, field.key.Get<String>(), field.ref, nullptr, CT_COPY));
+        inspProp->SetValue(field.ref.GetValue());
         inspProp->SetParent(this);
         inspProp->DisableResetFeature();
         AddSubValueProperty(inspProp.Get());

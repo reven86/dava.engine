@@ -129,10 +129,10 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         DVASSERT(controlGeometricData.size.x >= 0.0f && controlGeometricData.size.y >= 0.0f);
 
         RootProperty* rootProperty = activeControlNode->GetRootProperty();
-        sizeProperty = rootProperty->FindPropertyByName("Size");
-        positionProperty = rootProperty->FindPropertyByName("Position");
-        angleProperty = rootProperty->FindPropertyByName("Angle");
-        pivotProperty = rootProperty->FindPropertyByName("Pivot");
+        sizeProperty = rootProperty->FindPropertyByName("size");
+        positionProperty = rootProperty->FindPropertyByName("position");
+        angleProperty = rootProperty->FindPropertyByName("angle");
+        pivotProperty = rootProperty->FindPropertyByName("pivot");
     }
     else
     {

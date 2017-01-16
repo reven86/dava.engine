@@ -6,7 +6,7 @@
 class ValueProperty : public AbstractProperty
 {
 public:
-    ValueProperty(const DAVA::String& propName, const DAVA::Type *valueType, bool builtinSubProps = false, const DAVA::ReflectedStructure::Field* fieldDesc = nullptr);
+    ValueProperty(const DAVA::String& propName, const DAVA::Type *type, bool builtinSubProps = false);
 
 protected:
     virtual ~ValueProperty();
@@ -43,10 +43,6 @@ public:
     virtual void SetDefaultSubValue(DAVA::int32 index, const DAVA::Any& newValue);
 
     virtual const EnumMap* GetEnumMap() const override;
-    DAVA_DEPRECATED(virtual bool IsSameField(const DAVA::ReflectedStructure::Field* field) const)
-    {
-        return false;
-    }
 
 protected:
     virtual void ApplyValue(const DAVA::Any& value);
@@ -68,7 +64,6 @@ private:
     DAVA::Vector<DAVA::RefPtr<AbstractProperty>> children;
     DAVA::int32 stylePropertyIndex = -1;
     bool overridden = false;
-    const DAVA::ReflectedStructure::Field* fieldDesc = nullptr;
     const ValueProperty* prototypeProperty = nullptr; // weak
 
 public:

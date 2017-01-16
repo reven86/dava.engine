@@ -68,7 +68,7 @@ public:
 
     virtual bool IsReadOnly() const;
 
-    virtual const DAVA::Type* GetValueType() const;
+    virtual const DAVA::Type* GetValueType() const = 0;
     virtual DAVA::Any GetValue() const;
     virtual void SetValue(const DAVA::Any& newValue);
     virtual DAVA::Any GetDefaultValue() const;

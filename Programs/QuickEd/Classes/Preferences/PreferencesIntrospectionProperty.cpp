@@ -3,9 +3,9 @@
 #include "Preferences/PreferencesStorage.h"
 #include "Utils/QtDavaConvertion.h"
 
-PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* aMember)
-    : ValueProperty(aMember->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(aMember->Type())), true, nullptr)
-    , member(aMember)
+PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* member_)
+    : ValueProperty(member_->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(member_->Type())), true)
+    , member(member_)
 {
     DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
     if (defaultValue.type != DAVA::VariantType::TYPE_NONE)
@@ -14,12 +14,12 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     }
     else
     {
-        DAVA::VariantType::eVariantType type = DAVA::VariantType::TypeFromMetaInfo(aMember->Type());
+        DAVA::VariantType::eVariantType type = DAVA::VariantType::TypeFromMetaInfo(member_->Type());
         ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
     }
     valueOnOpen = PreferencesStorage::Instance()->GetValue(member);
     value = valueOnOpen;
-    DAVA::String name(aMember->Desc().text);
+    DAVA::String name(member_->Desc().text);
     DAVA::size_type index = name.find_last_of('/');
     if (index == DAVA::String::npos)
     {

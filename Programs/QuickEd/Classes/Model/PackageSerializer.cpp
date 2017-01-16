@@ -410,7 +410,7 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty* proper
 {
     if (property->IsOverriddenLocally())
     {
-        PutValueProperty(property->GetField()->name, property);
+        PutValueProperty(property->GetName(), property);
     }
 }
 

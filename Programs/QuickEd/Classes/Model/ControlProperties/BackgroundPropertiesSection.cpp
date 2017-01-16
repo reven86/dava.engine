@@ -22,12 +22,14 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl* aControl, in
 
     if (bg)
     {
-        const ReflectedType *reflectedType = bg->GetReflectedType();
+        Reflection bgRef = Reflection::Create(&bg);
+        Vector<Reflection::Field> fields = bgRef.GetFields();
 
-        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+        for (const Reflection::Field &field : fields)
         {
-            IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(field.get());
-            IntrospectionProperty* prop = new IntrospectionProperty(bg, field.get(), sourceProp, cloneType);
+            String name = field.key.Get<String>();
+            IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
+            IntrospectionProperty* prop = new IntrospectionProperty(bg, name, field.ref, sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -52,10 +54,12 @@ void BackgroundPropertiesSection::CreateControlBackground()
         bg = control->CreateBackgroundComponent(bgNum);
         control->SetBackgroundComponent(bgNum, bg);
 
-        const ReflectedType *reflectedType = bg->GetReflectedType();
-        for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+        Reflection bgRef = Reflection::Create(&bg);
+        Vector<Reflection::Field> fields = bgRef.GetFields();
+        for (const Reflection::Field &field : fields)
         {
-            IntrospectionProperty* prop = new IntrospectionProperty(bg, field.get(), nullptr, CT_COPY);
+            String name = field.key.Get<String>();
+            IntrospectionProperty* prop = new IntrospectionProperty(bg, name, field.ref, nullptr, CT_COPY);
             AddProperty(prop);
             SafeRelease(prop);
         }

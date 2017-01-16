@@ -46,14 +46,14 @@ private:
     void LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractUIPackageBuilder* builder);
     void LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder);
 
-    void LoadControlPropertiesFromYamlNode(UIControl* control, const ReflectedType *reflectedType, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection &ref, const YamlNode* node, AbstractUIPackageBuilder* builder);
 
     void LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
     void ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
     void LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
-    virtual Any ReadAnyFromYamlNode(const ReflectedStructure::Field *field, const YamlNode* node, const String& name);
+    virtual Any ReadAnyFromYamlNode(const Reflection &ref, const YamlNode* node, const String& name);
 
 private:
     enum eItemStatus

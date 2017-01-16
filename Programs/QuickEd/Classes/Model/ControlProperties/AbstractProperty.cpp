@@ -71,11 +71,6 @@ bool AbstractProperty::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
-const Type *AbstractProperty::GetValueType() const
-{
-    return nullptr;
-}
-
 Any AbstractProperty::GetValue() const
 {
     return Any();

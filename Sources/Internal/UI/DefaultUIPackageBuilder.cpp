@@ -372,13 +372,13 @@ void DefaultUIPackageBuilder::EndBgPropertiesSection()
     currentObject = nullptr;
 }
 
-void DefaultUIPackageBuilder::ProcessProperty(const ReflectedStructure::Field *field, const Any& value)
+void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field &field, const Any& value)
 {
     DVASSERT(currentObject);
 
     if (currentObject && !value.IsEmpty())
     {
-        FastName name(field->name);
+        FastName name(field.key.Get<String>());
         if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(name))
         {
             UIControl* control = controlsStack.back()->control.Get();
@@ -387,11 +387,11 @@ void DefaultUIPackageBuilder::ProcessProperty(const ReflectedStructure::Field *f
 
         if (name == PROPERTY_NAME_TEXT)
         {
-            field->valueWrapper->SetValue(currentObject, Any(LocalizedUtf8String(value.Cast<String>())));
+            field.ref.SetValue(Any(LocalizedUtf8String(value.Cast<String>())));
         }
         else
         {
-            field->valueWrapper->SetValue(currentObject, value);
+            field.ref.SetValue(value);
         }
     }
 }

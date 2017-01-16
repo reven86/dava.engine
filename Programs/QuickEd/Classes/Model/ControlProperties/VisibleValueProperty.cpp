@@ -2,16 +2,16 @@
 
 using namespace DAVA;
 
-VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field_, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : IntrospectionProperty(object, field_, sourceProperty, copyType)
+VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const String &name, const Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+    : IntrospectionProperty(object, name, ref, sourceProperty, copyType)
 {
-    ApplyValue(field_->valueWrapper->GetValue(object));
+    ApplyValue(ref.GetValue());
 }
 
 void VisibleValueProperty::SetVisibleInEditor(bool visible)
 {
     visibleInEditor = visible;
-    field->valueWrapper->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    reflection.SetValue(visibleInGame && visibleInEditor);
 }
 
 bool VisibleValueProperty::GetVisibleInEditor() const
@@ -27,5 +27,5 @@ Any VisibleValueProperty::GetValue() const
 void VisibleValueProperty::ApplyValue(const DAVA::Any& value)
 {
     visibleInGame = value.Get<bool>();
-    field->valueWrapper->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    reflection.SetValue(visibleInGame && visibleInEditor);
 }

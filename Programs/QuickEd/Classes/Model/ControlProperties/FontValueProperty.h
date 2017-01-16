@@ -6,7 +6,7 @@
 class FontValueProperty : public IntrospectionProperty
 {
 public:
-    FontValueProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    FontValueProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
     virtual ~FontValueProperty();
 
     void Refresh(DAVA::int32 refreshFlags) override;

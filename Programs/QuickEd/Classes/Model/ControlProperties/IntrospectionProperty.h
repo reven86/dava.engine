@@ -11,13 +11,13 @@ class UIControl;
 class IntrospectionProperty : public ValueProperty
 {
 public:
-    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
 
 protected:
     virtual ~IntrospectionProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
@@ -31,13 +31,6 @@ public:
         return object;
     }
 
-    bool IsSameField(const DAVA::ReflectedStructure::Field* field_) const override
-    {
-        return (field == field_);
-    }
-
-    const DAVA::ReflectedStructure::Field* GetField() const;
-
     void DisableResetFeature();
 
 protected:
@@ -45,7 +38,7 @@ protected:
 
 protected:
     DAVA::BaseObject* object = nullptr;
-    const DAVA::ReflectedStructure::Field* field = nullptr;
+    DAVA::Reflection reflection;
     DAVA::int32 flags;
 
 private:

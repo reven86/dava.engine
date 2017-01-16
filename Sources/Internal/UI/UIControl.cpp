@@ -51,8 +51,8 @@ DAVA_REFLECTION_IMPL(UIControl)
     .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
     .Field("debugDraw", &UIControl::GetDebugDraw, &UIControl::SetDebugDrawNotHierarchic)
     .Field("debugDrawColor", &UIControl::GetDebugDrawColor, &UIControl::SetDebugDrawColor)
-    .Field("background", &UIControl::GetBackground, &UIControl::SetBackground)
-    .Field("components", &UIControl::GetComponents, nullptr)
+//    .Field("background", &UIControl::GetBackground, &UIControl::SetBackground)
+//    .Field("components", &UIControl::GetComponents, nullptr)
     .End();
 }
 

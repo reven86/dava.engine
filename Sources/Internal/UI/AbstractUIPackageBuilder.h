@@ -59,7 +59,7 @@ public:
     virtual UIControlBackground* BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;
     virtual void EndBgPropertiesSection() = 0;
 
-    virtual void ProcessProperty(const ReflectedStructure::Field *field, const Any& value) = 0;
+    virtual void ProcessProperty(const DAVA::Reflection::Field &field, const Any& value) = 0;
 };
 }
 

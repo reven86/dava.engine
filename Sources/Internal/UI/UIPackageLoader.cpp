@@ -348,7 +348,8 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
     if (control != nullptr)
     {
-        LoadControlPropertiesFromYamlNode(control, control->GetReflectedType(), node, builder);
+        Reflection ref = Reflection::Create(&control);
+        LoadControlPropertiesFromYamlNode(control, ref, node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
 
@@ -375,12 +376,14 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const ReflectedType *reflectedType, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection &ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    builder->BeginControlPropertiesSection(reflectedType->GetPermanentName());
-    for (const std::unique_ptr<ReflectedStructure::Field> &field : reflectedType->GetStrucutre()->fields)
+    builder->BeginControlPropertiesSection("UIControl");
+    Vector<Reflection::Field> fields = ref.GetFields();
+    for (const Reflection::Field &field : fields)
     {
-        if (field->name == "components" || field->name == "background")
+        String name = field.key.Get<String>();
+        if (name == "components" || name == "background")
         {
             // TODO: Make loading components by reflection here
             continue;
@@ -389,9 +392,9 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
         Any res;
         if (node)
         {
-            res = ReadAnyFromYamlNode(field.get(), node, field->name);
+            res = ReadAnyFromYamlNode(field.ref, node, name);
         }
-        builder->ProcessProperty(field.get(), res);
+        builder->ProcessProperty(field, res);
     }
     builder->EndControlPropertiesSection();
 }
@@ -405,12 +408,14 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         if (component)
         {
             const ReflectedStructure *structure = component->GetReflectedType()->GetStrucutre();
-            for (const std::unique_ptr<ReflectedStructure::Field> &field : structure->fields)
+            Reflection componentRef = Reflection::Create(&component);
+            Vector<Reflection::Field> fields = componentRef.GetFields();
+            for (Reflection::Field &field : fields)
             {
                 Any res;
                 if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    FastName name(field->name);
+                    FastName name(field.key.Get<String>());
                     if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && name == FastName("orientation"))
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
@@ -434,10 +439,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
 
                 if (res.IsEmpty())
                 {
-                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name);
+                    res = ReadAnyFromYamlNode(field.ref, nodeDescr.node, field.key.Get<String>());
                 }
 
-                builder->ProcessProperty(field.get(), res);
+                builder->ProcessProperty(field, res);
             }
         }
 
@@ -462,11 +467,13 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
         UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
         if (component)
         {
-            const ReflectedStructure *structure = component->GetReflectedType()->GetStrucutre();
-            for (const std::unique_ptr<ReflectedStructure::Field> &field : structure->fields)
+            Reflection componentRef = Reflection::Create(&component);
+            Vector<Reflection::Field> fields = componentRef.GetFields();
+            for (const Reflection::Field &field : fields)
             {
-                Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[field->name]);
-                builder->ProcessProperty(field.get(), res);
+                String name = field.key.Get<String>();
+                Any res = ReadAnyFromYamlNode(field.ref, node, legacyAlignsMap[name]);
+                builder->ProcessProperty(field, res);
             }
         }
 
@@ -530,18 +537,20 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
         UIControlBackground* bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
         if (bg)
         {
-            const ReflectedStructure *structure = bg->GetReflectedType()->GetStrucutre();
-            for (const std::unique_ptr<ReflectedStructure::Field> &field : structure->fields)
+            Reflection bgRef = Reflection::Create(&bg);
+            Vector<Reflection::Field> fields = bgRef.GetFields();
+            for (const Reflection::Field &field : fields)
             {
+                String name = field.key.Get<String>();
                 Any res;
                 if (componentNode)
                 {
                     if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
                     {
-                        const YamlNode* valueNode = componentNode->Get(field->name);
+                        const YamlNode* valueNode = componentNode->Get(name);
                         if (valueNode)
                         {
-                            if (field->name == "spriteModification")
+                            if (name == "spriteModification")
                             {
                                 res = valueNode->AsInt32();
                             }
@@ -550,23 +559,23 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
 
                     if (res.IsEmpty())
                     {
-                        res = ReadAnyFromYamlNode(field.get(), componentNode, field->name);
+                        res = ReadAnyFromYamlNode(field.ref, componentNode, name);
                     }
                 }
-                builder->ProcessProperty(field.get(), res);
+                builder->ProcessProperty(field, res);
             }
         }
         builder->EndBgPropertiesSection();
     }
 }
 
-Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field *field, const YamlNode* node, const String& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const Reflection &ref, const YamlNode* node, const String& name)
 {
     const YamlNode* valueNode = node->Get(name);
 
     if (valueNode)
     {
-        return valueNode->AsAny(field);
+        return valueNode->AsAny(ref);
     }
     return Any();
 }

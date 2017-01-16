@@ -42,7 +42,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
             AddComponentPropertiesSection(newSection);
         }
     }
-    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("Visible"));
+    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("visible"));
 }
 
 RootProperty::~RootProperty()
@@ -365,6 +365,11 @@ const DAVA::String& RootProperty::GetName() const
 {
     static String rootName = "ROOT";
     return rootName;
+}
+
+const DAVA::Type *RootProperty::GetValueType() const
+{
+    return nullptr;
 }
 
 AbstractProperty::ePropertyType RootProperty::GetType() const

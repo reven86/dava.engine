@@ -305,11 +305,11 @@ void QuickEdPackageBuilder::EndBgPropertiesSection()
     currentObject = nullptr;
 }
 
-void QuickEdPackageBuilder::ProcessProperty(const ReflectedStructure::Field *field, const DAVA::Any& value)
+void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field &field, const DAVA::Any& value)
 {
     if (currentObject && currentSection)
     {
-        ValueProperty* property = currentSection->FindProperty(field);
+        ValueProperty* property = currentSection->FindChildPropertyByName(field.key.Get<String>());
         if (property && !value.IsEmpty())
         {
             if (property->GetStylePropertyIndex() != -1)

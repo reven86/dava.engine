@@ -2,10 +2,10 @@
 
 using namespace DAVA;
 
-FontValueProperty::FontValueProperty(DAVA::BaseObject* object, const DAVA::ReflectedStructure::Field* field, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : IntrospectionProperty(object, field, sourceProperty, copyType)
+FontValueProperty::FontValueProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+    : IntrospectionProperty(object, name, ref, sourceProperty, copyType)
 {
-    ApplyValue(field->valueWrapper->GetValue(object));
+    ApplyValue(ref.GetValue());
 }
 
 FontValueProperty::~FontValueProperty()
@@ -17,16 +17,18 @@ void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
     IntrospectionProperty::Refresh(refreshFlags);
 
     if (refreshFlags & REFRESH_FONT)
-        field->valueWrapper->SetValue(GetBaseObject(), VariantType(presetName));
+    {
+        reflection.SetValue(VariantType(presetName));
+    }
 }
 
 Any FontValueProperty::GetValue() const
 {
-    return field->valueWrapper->GetValue(object);
+    return reflection.GetValue();
 }
 
 void FontValueProperty::ApplyValue(const DAVA::Any& value)
 {
     presetName = value.Get<String>();
-    field->valueWrapper->SetValue(GetBaseObject(), VariantType(presetName));
+    reflection.SetValue(presetName);
 }

@@ -61,7 +61,7 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     }
     relativePos = ::Rotate(relativePos, -angle);
     auto rootProperty = node->GetRootProperty();
-    auto positionProperty = rootProperty->FindPropertyByName("Position");
+    auto positionProperty = rootProperty->FindPropertyByName("position");
     DVASSERT(nullptr != positionProperty);
     package->SetControlProperty(node, positionProperty, VariantType(relativePos));
 }

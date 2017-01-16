@@ -527,7 +527,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
     DVASSERT(staticText != nullptr);
 
     RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
+    AbstractProperty* textProperty = rootProperty->FindPropertyByName("text");
     DVASSERT(textProperty != nullptr);
 
     String text = textProperty->GetValue().Get<String>();
@@ -540,7 +540,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
         DVASSERT(document != nullptr);
         QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
         executor->BeginMacro("change text by user");
-        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
+        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("multiline");
         DVASSERT(multilineProperty != nullptr);
         UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().Get<int32>());
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
