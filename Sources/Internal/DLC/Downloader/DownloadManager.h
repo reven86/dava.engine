@@ -21,6 +21,7 @@ public:
     DownloadManager(Engine* e);
     Engine* engine = nullptr;
     size_t sigUpdateId = 0;
+    size_t sigBackgroundUpdateId = 0;
 #else
     DownloadManager() = default;
 #endif
