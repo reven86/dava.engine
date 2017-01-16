@@ -76,6 +76,7 @@ struct WindowNativeBridge final
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;
+    float32 dpi = 0.f;
 
     const KeyedArchive* engineOptions = nullptr;
 };

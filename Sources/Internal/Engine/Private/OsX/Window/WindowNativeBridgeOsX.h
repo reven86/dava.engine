@@ -45,6 +45,7 @@ struct WindowNativeBridge final
     float32 GetDpi();
 
     void TriggerPlatformEvents();
+    void HandleSizeChanging(bool dpiChanged);
 
     void ApplicationDidHideUnhide(bool hidden);
 
