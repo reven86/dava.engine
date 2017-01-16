@@ -47,6 +47,11 @@ include ( Coverage             )
 include ( ModuleHelper         )
 
 #
+macro ( dava_add_definitions DAVA_DEFINITIONS )
+    append_property( DEFINITIONS "${DAVA_DEFINITIONS};${ARGN}" )
+endmacro ()
+
+#
 macro ( set_subsystem_console )
     if( WIN32 )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )

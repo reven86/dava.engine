@@ -6,8 +6,6 @@ project               ( ResourceEditor )
 
 get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 
-set                   ( DAVA_DISABLE_AUTOTESTS true )
-set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( WARNINGS_AS_ERRORS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -25,7 +23,7 @@ endif()
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
 
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 -D__DAVAENGINE_QT__
 -DDISABLE_NATIVE_WEBVIEW
@@ -34,19 +32,29 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+
+load_property( PROPERTY_LIST 
+                DEFINITIONS )
+
 if (UVR_DEV)
-    add_definitions (-DNEW_PROPERTY_PANEL )
+    dava_add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
 set ( DAVA_COREV2 1 )
-set ( DAVA_PLATFORM_QT 1 )
-set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 
 find_package( QT5 REQUIRED )
 find_package( QtHelpers REQUIRED )
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS ALL
+                                                DAVA_PLATFORM_QT 
+                                                DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
+                                                DAVA_DISABLE_AUTOTESTS 
+                                                DAVA_USE_RENDERSTATS )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
+
+load_property( PROPERTY_LIST 
+                DEFINITIONS )
+
 find_package( TArc REQUIRED )
 find_package( GMock REQUIRED )
 
@@ -71,7 +79,7 @@ include_directories   ( "Classes/Qt/CubemapEditor" )
 include_directories   ( "Classes/Qt/TextureBrowser" )
 include_directories   ( "Classes/Collada" )
 
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_RENDERSTATS__
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
@@ -90,7 +98,7 @@ add_definitions       (
 )
 
 if (NOT PUBLIC_BUILD)
-    add_definitions(-D__DAVAENGINE_SPEEDTREE__)
+    dava_add_definitions(-D__DAVAENGINE_SPEEDTREE__)
 endif()
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
@@ -103,7 +111,7 @@ file              ( GLOB QML_LIST "DataQt/*.qml")
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)
-	    add_definitions( -D__DAVAENGINE_BEAST__ )
+	    dava_add_definitions( -D__DAVAENGINE_BEAST__ )
 	    set( BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} )
         set( BEAST_WRAPPER "${BEAST_DIR}/wrapper" )
 	    if( X64_MODE )

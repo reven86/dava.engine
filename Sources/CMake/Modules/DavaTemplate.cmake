@@ -29,6 +29,7 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
+#set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -39,6 +40,11 @@
 macro( setup_main_executable )
 
 include      ( PlatformSettings )
+
+save_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT}
+             )
 
 load_property( PROPERTY_LIST 
         DEFINITIONS                

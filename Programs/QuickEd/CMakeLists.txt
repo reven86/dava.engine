@@ -7,7 +7,6 @@ project               ( QuickEd )
 get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 
 set                   ( WARNINGS_AS_ERRORS true )
-set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
@@ -23,7 +22,7 @@ if (DEPLOY)
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
 
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 -D__DAVAENGINE_QT__
 -DDISABLE_NATIVE_WEBVIEW
@@ -33,11 +32,9 @@ add_definitions       (
 )
  
 set ( DAVA_COREV2 1 )
-set ( DAVA_PLATFORM_QT 1 )
-set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
  
 find_package( QT5 REQUIRED)
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_PLATFORM_QT DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME DAVA_DISABLE_AUTOTESTS )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
 find_package( QtHelpers REQUIRED )
@@ -50,7 +47,7 @@ include_directories   ( "Classes/Helpers" )
 include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
 
-add_definitions       ( 
+dava_add_definitions       ( 
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
 -DQT_CORE_LIB
