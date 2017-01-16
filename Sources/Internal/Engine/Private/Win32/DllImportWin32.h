@@ -6,6 +6,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <ShellScalingApi.h>
+#include <WinUser.h>
 
 namespace DAVA
 {
@@ -29,6 +30,11 @@ struct DllImport final
     static HRESULT(STDAPICALLTYPE* fnGetDpiForMonitor)(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
     static HRESULT(STDAPICALLTYPE* fnGetProcessDpiAwareness)(HANDLE hprocess, PROCESS_DPI_AWARENESS* value);
     static HRESULT(STDAPICALLTYPE* fnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS value);
+
+    // Screen auto-rotation support functions (WinUser.h)
+    static BOOL(WINAPI* fnGetAutoRotationState)(PAR_STATE pState);
+    static BOOL(WINAPI* fnGetDisplayAutoRotationPreferences)(ORIENTATION_PREFERENCE* pOrientation);
+    static BOOL(WINAPI* fnSetDisplayAutoRotationPreferences)(ORIENTATION_PREFERENCE orientation);
 };
 
 } // namespace Private
