@@ -41,7 +41,7 @@
                     "name": "use MinGW",
                     "type": "checkbox",
                     "substring number": 2,
-                    "value": "Mingw Makefiles"
+                    "value": "MinGW Makefiles"
                 },
                 {
                     "name": "Unity build",
