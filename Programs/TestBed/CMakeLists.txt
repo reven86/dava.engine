@@ -14,6 +14,8 @@ add_definitions(-D__DAVAENGINE_COREV2__)
 # Uncomment to use local resources for android
 # add_definitions(-DUSE_LOCAL_RESOURCES)
 
+set          ( DAVA_DISABLE_AUTOTESTS true )
+set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 

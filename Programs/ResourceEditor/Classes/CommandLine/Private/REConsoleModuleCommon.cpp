@@ -72,12 +72,8 @@ DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
         ShowHelpInternal();
         return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
     }
-    else
-    {
-        return OnFrameInternal();
-    }
 
-    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+    return OnFrameInternal();
 }
 
 void REConsoleModuleCommon::BeforeDestroyed()

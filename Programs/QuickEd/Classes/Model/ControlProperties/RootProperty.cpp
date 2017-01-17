@@ -83,7 +83,7 @@ RootProperty::~RootProperty()
 
 uint32 RootProperty::GetCount() const
 {
-    return (baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size());
+    return static_cast<uint32>(baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size());
 }
 
 AbstractProperty* RootProperty::GetProperty(int index) const
@@ -92,15 +92,15 @@ AbstractProperty* RootProperty::GetProperty(int index) const
 
     if (index < static_cast<int>(baseProperties.size()))
         return baseProperties[index];
-    index -= baseProperties.size();
+    index -= static_cast<int>(baseProperties.size());
 
     if (index < static_cast<int>(controlProperties.size()))
         return controlProperties[index];
-    index -= controlProperties.size();
+    index -= static_cast<int>(controlProperties.size());
 
     if (index < static_cast<int>(componentProperties.size()))
         return componentProperties[index];
-    index -= componentProperties.size();
+    index -= static_cast<int>(componentProperties.size());
 
     DVASSERT(index < static_cast<int>(backgroundProperties.size()));
     return backgroundProperties[index];
@@ -160,11 +160,11 @@ const Vector<ComponentPropertiesSection*>& RootProperty::GetComponents() const
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection* section) const
 {
-    int32 offset = controlProperties.size() + baseProperties.size();
+    int32 offset = static_cast<int32>(controlProperties.size() + baseProperties.size());
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
     if (it != componentProperties.end())
     {
-        return (it - componentProperties.begin()) + offset;
+        return static_cast<int32>(((it - componentProperties.begin()) + offset));
     }
     else
     {

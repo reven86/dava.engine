@@ -41,6 +41,7 @@
 #include "Tests/ImGuiTest.h"
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
+#include "Tests/AnyPerformanceTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -113,8 +114,7 @@ TestBed::TestBed(Engine& engine)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
-    nativeDelegate.reset(new NativeDelegateMac());
-    PlatformApi::Mac::RegisterNSApplicationDelegateListener(nativeDelegate.get());
+    RegisterMacApplicationListener();
 #elif defined(__DAVAENGINE_IPHONE__)
     nativeDelegate.reset(new NativeDelegateIos());
     PlatformApi::Ios::RegisterUIApplicationDelegateListener(nativeDelegate.get());
@@ -181,8 +181,6 @@ void TestBed::OnGameLoopStopped()
     
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
-    PlatformApi::Mac::UnregisterNSApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_IPHONE__)
     PlatformApi::Ios::UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -194,7 +192,10 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
+    
+#if !defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset();
+#endif
 }
 
 void TestBed::OnWindowCreated(DAVA::Window* w)
@@ -297,6 +298,7 @@ void TestBed::RegisterTests()
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
+    new AnyPerformanceTest(*this);
     
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
