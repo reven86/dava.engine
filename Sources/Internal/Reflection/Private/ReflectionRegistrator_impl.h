@@ -303,18 +303,27 @@ struct RFCreator<C, GetT (C::*)() const, void (C::*)(SetT)>
 } // namespace ReflectionQualifierDetail
 
 template <typename C>
-ReflectionRegistrator<C>& ReflectionRegistrator<C>::Begin()
+ReflectionRegistrator<C>::ReflectionRegistrator()
 {
-    static ReflectionRegistrator<C> rq;
+    ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
-    if (nullptr == rq.structure)
+    if (type->structure == nullptr)
     {
-        rq.structure = new ReflectedStructure();
+        type->structure.reset(new ReflectedStructure());
+        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
     }
 
-    rq.lastMeta = &rq.structure->meta;
+    structure = type->structure.get();
+    lastMeta = &structure->meta;
+}
 
-    return rq;
+template <typename C>
+ReflectionRegistrator<C>::~ReflectionRegistrator() = default;
+
+template <typename C>
+ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin()
+{
+    return ReflectionRegistrator<C>();
 }
 
 template <typename C>
@@ -453,16 +462,7 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::operator[](ReflectedMeta&& m
 template <typename C>
 void ReflectionRegistrator<C>::End()
 {
-    if (nullptr != structure)
-    {
-        ReflectedType* type = ReflectedTypeDB::Edit<C>();
-
-        type->structure.reset(structure);
-        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
-
-        structure = nullptr;
-    }
-
+    structure = nullptr;
     lastMeta = nullptr;
 }
 

@@ -23,7 +23,7 @@ template <typename C>
 class ReflectionRegistrator final
 {
 public:
-    static ReflectionRegistrator& Begin();
+    static ReflectionRegistrator Begin();
 
     template <typename... Args>
     ReflectionRegistrator& ConstructorByValue();
@@ -52,14 +52,15 @@ public:
 
     ReflectionRegistrator& BindMeta(ReflectedMeta&& meta);
 
-    void End();
-
     ReflectionRegistrator& operator[](ReflectedMeta&& meta);
 
-private:
-    ReflectionRegistrator() = default;
-    ReflectedStructure* structure = nullptr;
+    void End();
 
+private:
+    ReflectionRegistrator();
+    ~ReflectionRegistrator();
+
+    ReflectedStructure* structure = nullptr;
     std::unique_ptr<ReflectedMeta>* lastMeta;
 
     ReflectionRegistrator& AddField(const char* name, ReflectedStructure::Field* f);
