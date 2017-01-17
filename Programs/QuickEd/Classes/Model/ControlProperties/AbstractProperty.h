@@ -8,6 +8,8 @@ class PropertyVisitor;
 
 class AbstractProperty : public DAVA::BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AbstractProperty, DAVA::BaseObject);
+
 public:
     enum ePropertyType
     {
@@ -85,11 +87,6 @@ public:
 
 private:
     AbstractProperty* parent = nullptr;
-
-public:
-    INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,
-                         nullptr
-                         );
 };
 
 

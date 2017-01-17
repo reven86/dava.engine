@@ -11,21 +11,6 @@
 
 using namespace DAVA;
 
-namespace SStyleSheetProperty
-{
-//static const Type *GetValueType(uint32 propertyIndex)
-//{
-//    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-//    return descr.field_s->reflectedType->GetType();
-//}
-//    
-//static const ReflectedStructure::Field* GetField(uint32 propertyIndex)
-//{
-//    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-//    return descr.field_s;
-//}
-}
-
 DAVA_REFLECTION_IMPL(StyleSheetProperty)
 {
     ReflectionRegistrator<StyleSheetProperty>::Begin()

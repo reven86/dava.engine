@@ -5,6 +5,8 @@
 
 class ValueProperty : public AbstractProperty
 {
+    DAVA_VIRTUAL_REFLECTION(ValueProperty, AbstractProperty);
+
 public:
     ValueProperty(const DAVA::String& propName, const DAVA::Type *type, bool builtinSubProps = false);
 
@@ -65,11 +67,6 @@ private:
     DAVA::int32 stylePropertyIndex = -1;
     bool overridden = false;
     const ValueProperty* prototypeProperty = nullptr; // weak
-
-public:
-    INTROSPECTION_EXTEND(ValueProperty, AbstractProperty,
-                         nullptr
-                         );
 };
 
 #endif //__UI_EDITOR_VALUE_PROPERTY__

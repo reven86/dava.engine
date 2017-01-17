@@ -190,33 +190,36 @@ QString VariantToQString(const VariantType& val, const InspMember* memberInfo)
 
 QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field* field)
 {
-    const EnumMeta *enumMeta = field->meta->GetMeta<EnumMeta>();
-    if (enumMeta != nullptr)
+    if (field->meta)
     {
-        if (enumMeta->IsFlags())
+        const EnumMeta *enumMeta = field->meta->GetMeta<EnumMeta>();
+        if (enumMeta != nullptr)
         {
-            int32 e = val.Get<int32>();
-            QString res = "";
-            int p = 0;
-            while (e)
+            if (enumMeta->IsFlags())
             {
-                if ((e & 0x01) != 0)
+                int32 e = val.Get<int32>();
+                QString res = "";
+                int p = 0;
+                while (e)
                 {
-                    if (!res.isEmpty())
-                        res += " | ";
-                    
-                    const int32 enumValue = 1 << p;
-                    res += QString::fromStdString(enumMeta->GetEnumMap()->ToString(enumValue));
+                    if ((e & 0x01) != 0)
+                    {
+                        if (!res.isEmpty())
+                            res += " | ";
+                        
+                        const int32 enumValue = 1 << p;
+                        res += QString::fromStdString(enumMeta->GetEnumMap()->ToString(enumValue));
+                    }
+                    p++;
+                    e >>= 1;
                 }
-                p++;
-                e >>= 1;
+                return res;
             }
-            return res;
-        }
-        else
-        {
-            int32 e = val.Get<int32>();
-            return QString::fromStdString(enumMeta->GetEnumMap()->ToString(e));
+            else
+            {
+                int32 e = val.Get<int32>();
+                return QString::fromStdString(enumMeta->GetEnumMap()->ToString(e));
+            }
         }
     }
 

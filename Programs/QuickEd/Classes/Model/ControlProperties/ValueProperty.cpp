@@ -2,6 +2,7 @@
 
 #include "SubValueProperty.h"
 #include <Base/BaseMath.h>
+#include "Reflection/ReflectionRegistrator.h"
 
 using namespace DAVA;
 
@@ -11,6 +12,13 @@ static const Vector<String> VECTOR2_COMPONENT_NAMES = { "X", "Y" };
 static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "Alpha" };
 static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
 }
+
+DAVA_REFLECTION_IMPL(ValueProperty)
+{
+    ReflectionRegistrator<ValueProperty>::Begin()
+    .End();
+}
+
 
 ValueProperty::ValueProperty(const String& propName, const DAVA::Type *type_, bool builtinSubProps)
     : name(propName)

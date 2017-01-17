@@ -60,9 +60,9 @@ LibraryModel::LibraryModel(QObject* parent)
             else
                 defaultControls.push_back(ControlNode::CreateFromControl(control));
 
-            auto prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("size");
+            AbstractProperty* prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("size");
 
-            prop->SetValue(VariantType(Vector2(32.0f, 32.0f)));
+            prop->SetValue(Vector2(32.0f, 32.0f));
         }
         else
         {

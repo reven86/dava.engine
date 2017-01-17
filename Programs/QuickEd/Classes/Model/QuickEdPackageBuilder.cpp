@@ -137,7 +137,7 @@ UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& co
     }
 
     ControlNode* node = ControlNode::CreateFromControl(control.Get());
-    node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
+    node->GetRootProperty()->GetCustomClassProperty()->SetValue(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 
     return control.Get();
@@ -176,7 +176,7 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& cont
     ControlNode* node = ControlNode::CreateFromPrototype(prototypeNode);
     if (customClassName)
     {
-        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
+        node->GetRootProperty()->GetCustomClassProperty()->SetValue(*customClassName);
     }
 
     if (controlName.IsValid())

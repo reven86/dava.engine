@@ -1,6 +1,7 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -17,6 +18,10 @@ static const float32 UISPINNER_SLIDE_GESTURE_TIME = 0.1f;
 
 DAVA_REFLECTION_IMPL(UISpinner)
 {
+    ReflectionRegistrator<UISpinner>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISpinner* o) { o->Release(); })
+    .End();
 }
 
 void SpinnerAdapter::AddObserver(SelectionObserver* anObserver)

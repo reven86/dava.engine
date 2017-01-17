@@ -901,7 +901,7 @@ void EditorTransformSystem::CorrectNodesToMove()
     {
         ControlNode* node = moveInfo->node;
         UIControl* control = node->GetControl();
-        moveInfo->positionProperty = node->GetRootProperty()->FindPropertyByName("Position");
+        moveInfo->positionProperty = node->GetRootProperty()->FindPropertyByName("position");
         UIControl* parent = control->GetParent();
         DVASSERT(nullptr != parent);
         moveInfo->parentGD = &parent->GetGeometricData();

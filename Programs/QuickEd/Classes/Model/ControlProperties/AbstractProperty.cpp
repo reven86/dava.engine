@@ -1,6 +1,14 @@
 #include "AbstractProperty.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 using namespace DAVA;
+
+DAVA_REFLECTION_IMPL(AbstractProperty)
+{
+    ReflectionRegistrator<AbstractProperty>::Begin()
+    .End();
+}
+
 
 AbstractProperty::AbstractProperty()
     : parent(NULL)
@@ -135,7 +143,8 @@ AbstractProperty* AbstractProperty::FindPropertyByName(const String& name)
     }
     for (DAVA::uint32 index = 0, count = GetCount(); index < count; ++index)
     {
-        AbstractProperty* property = GetProperty(index)->FindPropertyByName(name);
+        AbstractProperty *child = GetProperty(index);
+        AbstractProperty* property = child->FindPropertyByName(name);
         if (property != nullptr)
         {
             return property;
