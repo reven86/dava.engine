@@ -2,10 +2,10 @@
 #include "Base/GlobalEnum.h"
 #include "Database/MongodbClient.h"
 #include "Database/MongodbObject.h"
-#include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationProgress.h"
-#include "Utils/StringUtils.h"
+#include "Notification/LocalNotificationText.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Utils/StringUtils.h"
 #include "UI/Update/UIUpdateComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -191,7 +191,7 @@ void DlcTest::LoadResources()
     staticText = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y, WIDTH - 2 * BUTTON_H, BUTTON_H));
     staticText->SetFont(fontSmall);
     staticText->SetTextColor(Color::White);
-    staticText->SetText(L"Press Start ...");
+    staticText->SetText(L"Press Start!");
     AddControl(staticText);
 
     progressControl = new UIControl(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H, WIDTH - 2 * BUTTON_H, SPACE));
@@ -291,8 +291,11 @@ void DlcTest::UnloadResources()
     SafeRelease(progressStatistics);
     SafeRelease(animControl);
 
+    if (nullptr != dlc)
+    {
     dlc->Cancel();
     SafeDelete(dlc);
+    }
 
     SafeRelease(startButton);
     SafeRelease(cancelButton);
@@ -315,7 +318,12 @@ void DlcTest::Update(float32 timeElapsed)
 
         uint64 cur = 0;
         uint64 total = 0;
+
+        if (nullptr != dlc)
+        {
         dlc->GetProgress(cur, total);
+        }
+
         DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
         String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
         progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
@@ -423,7 +431,7 @@ void DlcTest::Update(float32 timeElapsed)
             {
                 DAVA::String errorText = DAVA::Format("Done, error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetError()));
                 DAVA::WideString wErrorText;
-                DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)errorText.c_str(), errorText.size(), wErrorText);
+                DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(errorText.c_str()), errorText.size(), wErrorText);
                 staticText->SetText(wErrorText);
             }
             break;
