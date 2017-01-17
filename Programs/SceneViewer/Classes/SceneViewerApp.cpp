@@ -1,42 +1,38 @@
-#include "GameCore.h"
-#include "ViewSceneScreen.h"
+#include "SceneViewerApp.h"
+#include "UIScreens/ViewSceneScreen.h"
+#include "UIScreens/PerformanceResultsScreen.h"
 
-#include "Engine/Engine.h"
-#include "Engine/Window.h"
+#include <Engine/Engine.h>
+#include <Engine/Window.h>
 
-#include "Render/RHI/rhi_Public.h"
-#include "Render/RHI/dbg_Draw.h"
-#include "Render/RHI/Common/dbg_StatSet.h"
-#include "Render/RHI/Common/rhi_Private.h"
-#include "Render/ShaderCache.h"
-#include "Render/Material/FXCache.h"
+#include <Render/RHI/rhi_Public.h>
+#include <Render/RHI/dbg_Draw.h>
+#include <Render/RHI/Common/dbg_StatSet.h>
+#include <Render/RHI/Common/rhi_Private.h>
+#include <Render/ShaderCache.h>
+#include <Render/Material/FXCache.h>
 
 using namespace DAVA;
 
-GameCore::GameCore(Engine& e)
-    : engine(e)
+SceneViewerApp::SceneViewerApp(Engine& engine)
+    : data({ engine })
 {
-    DVASSERT(instance == nullptr);
-    instance = this;
-
-    viewSceneScreen = nullptr;
-
-    engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
-    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
-    engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
-    engine.suspended.Connect(this, &GameCore::OnSuspend);
-    engine.resumed.Connect(this, &GameCore::OnResume);
-    engine.beginFrame.Connect(this, &GameCore::BeginFrame);
-    engine.endFrame.Connect(this, &GameCore::EndFrame);
+    engine.gameLoopStarted.Connect(this, &SceneViewerApp::OnAppStarted);
+    engine.windowCreated.Connect(this, &SceneViewerApp::OnWindowCreated);
+    engine.gameLoopStopped.Connect(this, &SceneViewerApp::OnAppFinished);
+    engine.suspended.Connect(this, &SceneViewerApp::OnSuspend);
+    engine.resumed.Connect(this, &SceneViewerApp::OnResume);
+    engine.beginFrame.Connect(this, &SceneViewerApp::BeginFrame);
+    engine.endFrame.Connect(this, &SceneViewerApp::EndFrame);
 }
 
-void GameCore::OnAppStarted()
+void SceneViewerApp::OnAppStarted()
 {
 }
 
-void GameCore::OnWindowCreated(DAVA::Window* w)
+void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 {
-    engine.PrimaryWindow()->draw.Connect(this, &GameCore::Draw);
+    data.engine.PrimaryWindow()->draw.Connect(this, &SceneViewerApp::Draw);
 
     w->SetTitleAsync("Scene Viewer");
     w->SetSizeAsync({ 1024, 768 });
@@ -67,9 +63,8 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     //flags[FastName("SKINNING")] = 1;
     //const FXDescriptor& res = FXCache::GetFXDescriptor(FastName("~res:/Materials/Silhouette.material"), flags);
 
-    //selectSceneScreen = new SelectSceneScreen();
-    viewSceneScreen = new ViewSceneScreen(engine);
-    //SetScenePath("~res:/Scene-15-effect/test_scene.sc2");
+    viewSceneScreen = new ViewSceneScreen(data);
+    performanceResultsScreen = new PerformanceResultsScreen(data);
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
@@ -92,26 +87,27 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     DbgDraw::EnsureInited();
 }
 
-void GameCore::OnAppFinished()
+void SceneViewerApp::OnAppFinished()
 {
     DbgDraw::Uninitialize();
 
     SafeRelease(viewSceneScreen);
+    SafeRelease(performanceResultsScreen);
 }
 
-void GameCore::OnSuspend()
+void SceneViewerApp::OnSuspend()
 {
 }
 
-void GameCore::OnResume()
+void SceneViewerApp::OnResume()
 {
 }
 
-void GameCore::BeginFrame()
+void SceneViewerApp::BeginFrame()
 {
 }
 
-void GameCore::Draw(DAVA::Window* /*window*/)
+void SceneViewerApp::Draw(DAVA::Window* /*window*/)
 {
 #if 0
     rhi::RenderPassConfig pass_desc;
@@ -135,7 +131,7 @@ void GameCore::Draw(DAVA::Window* /*window*/)
 #endif
 }
 
-void GameCore::EndFrame()
+void SceneViewerApp::EndFrame()
 {
 #if 0
     // stats must be obtained and reset AFTER frame is finished (and Present called)
@@ -174,8 +170,6 @@ void GameCore::EndFrame()
     StatSet::ResetAll();
 #endif
 }
-
-GameCore* GameCore::instance = nullptr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -240,6 +234,6 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     DAVA::Engine e;
     e.Init(eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
 
-    GameCore core(e);
+    SceneViewerApp app(e);
     return e.Run();
 }

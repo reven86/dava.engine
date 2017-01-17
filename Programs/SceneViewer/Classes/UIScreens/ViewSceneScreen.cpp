@@ -1,17 +1,21 @@
 #include "ViewSceneScreen.h"
-#include "GameCore.h"
+#include "SceneViewerApp.h"
 
 #include <Math/MathHelpers.h>
 
 namespace ViewSceneScreenDetails
 {
-const float32 INFO_UPDATE_INTERVAL_SEC = 1.0f;
+const DAVA::float32 ABOVE_LANDSCAPE_ELEVATION = 10.f;
+const DAVA::float32 INFO_UPDATE_INTERVAL_SEC = 0.5f;
 }
 
-ViewSceneScreen::ViewSceneScreen(DAVA::Engine& engine)
-    : fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
-    , gridTest(engine, this)
+ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
+    : data(data)
+    , scenePath(data.scenePath)
+    , fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
+    , gridTest(data.engine, this)
 {
+    data.scenePath = "~doc:/15-effect/test_scene.sc2";
 }
 
 void ViewSceneScreen::LoadResources()
@@ -33,7 +37,7 @@ void ViewSceneScreen::LoadScene()
     using namespace DAVA;
 
     scene = new Scene();
-    scene->LoadScene(selectedScenePath);
+    scene->LoadScene(scenePath);
 
     /*
     {
@@ -83,6 +87,7 @@ void ViewSceneScreen::LoadScene()
 
     float32 aspect = static_cast<float32>(GetSize().dy) / static_cast<float32>(GetSize().dx);
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
+    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
     SetCameraAtCenter(camera);
     //camera->SetPosition(Vector3(0, -10, 1));
     scene->AddCamera(camera);
@@ -134,34 +139,34 @@ void ViewSceneScreen::AddSceneViewControl()
 void ViewSceneScreen::AddMenuControl()
 {
     DVASSERT(!menu);
-    Rect rect = Rect(10.f, 30.f, 250.f, 60.f);
+    DAVA::Rect rect = DAVA::Rect(10.f, 30.f, 250.f, 60.f);
     menu.reset(new Menu(nullptr, this, font, rect));
     Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
     Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
-    mainSubMenu->AddActionItem(L"Reload shaders", Message(this, &ViewSceneScreen::OnButtonReloadShaders));
-    mainSubMenu->AddActionItem(L"Performance test", Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
+    mainSubMenu->AddActionItem(L"Reload shaders", DAVA::Message(this, &ViewSceneScreen::OnButtonReloadShaders));
+    mainSubMenu->AddActionItem(L"Performance test", DAVA::Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
     mainSubMenu->AddBackItem();
 
-    selectSceneSubMenu->AddActionItem(L"Select from ~res", Message(this, &ViewSceneScreen::OnButtonSelectFromRes));
-    selectSceneSubMenu->AddActionItem(L"Select from documents", Message(this, &ViewSceneScreen::OnButtonSelectFromDoc));
-    selectSceneSubMenu->AddActionItem(L"Select from ext storage", Message(this, &ViewSceneScreen::OnButtonSelectFromExt));
+    selectSceneSubMenu->AddActionItem(L"Select from ~res", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromRes));
+    selectSceneSubMenu->AddActionItem(L"Select from documents", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromDoc));
+    selectSceneSubMenu->AddActionItem(L"Select from ext storage", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromExt));
     selectSceneSubMenu->AddBackItem();
 }
 
 void ViewSceneScreen::AddFileDialogControl()
 {
     DVASSERT(!fileSystemDialog);
-    fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
+    fileSystemDialog = new DAVA::UIFileSystemDialog("~res:/Fonts/korinna.ttf");
     fileSystemDialog->SetDelegate(this);
     fileSystemDialog->SetExtensionFilter(".sc2");
-    fileSystemDialog->SetOperationType(UIFileSystemDialog::OPERATION_LOAD);
+    fileSystemDialog->SetOperationType(DAVA::UIFileSystemDialog::OPERATION_LOAD);
 }
 
 void ViewSceneScreen::AddJoypadControl()
 {
     DVASSERT(!moveJoyPAD);
-    moveJoyPAD = new UIJoypad(Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
+    moveJoyPAD = new DAVA::UIJoypad(DAVA::Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
     moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad.tex", 0);
     AddControl(moveJoyPAD);
@@ -170,10 +175,10 @@ void ViewSceneScreen::AddJoypadControl()
 void ViewSceneScreen::AddInfoTextControl()
 {
     DVASSERT(!infoText);
-    infoText = new UIStaticText(Rect(GetRect().dy / 2, 30, 100, 30));
+    infoText = new DAVA::UIStaticText(DAVA::Rect(GetRect().dx / 2 - 150, 30, 300, 30));
     infoText->SetFont(font);
-    infoText->SetTextColor(Color::White);
-    infoText->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
+    infoText->SetTextColor(DAVA::Color::White);
+    infoText->SetTextAlign(DAVA::ALIGN_HCENTER);
     AddControl(infoText);
 }
 
@@ -195,40 +200,50 @@ void ViewSceneScreen::RemoveControls()
     menu.reset();
 }
 
-void ViewSceneScreen::SetCameraAtCenter(Camera* camera)
+void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 {
+    DAVA::Vector3 position = DAVA::Vector3(0.f, -45.f, 10.f);
+
+    DAVA::Landscape* landscape = FindLandscape(scene);
+    if (landscape)
+    {
+        DAVA::float32 landscapeHeight = 0.0;
+        landscape->GetHeightAtPoint(position, landscapeHeight);
+        position.z = landscapeHeight + ViewSceneScreenDetails::ABOVE_LANDSCAPE_ELEVATION;
+    }
+
     camera->SetLeft(DAVA::Vector3(1.f, 0.f, 0.f));
-    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
     camera->SetTarget(DAVA::Vector3(0.f, 0.f, 0.f));
-    camera->SetPosition(DAVA::Vector3(0.f, -45.f, 10.f));
+    camera->SetPosition(position);
 }
 
-void ViewSceneScreen::OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile)
+void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile)
 {
-    selectedScenePath = pathToFile;
+    scenePath = pathToFile;
     ReloadScene();
 }
 
-void ViewSceneScreen::OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog)
+void ViewSceneScreen::OnFileSytemDialogCanceled(DAVA::UIFileSystemDialog* forDialog)
 {
 }
 
-void ViewSceneScreen::OnButtonSelectFromRes(BaseObject* caller, void* param, void* callerData)
+void ViewSceneScreen::OnButtonSelectFromRes(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~res:/");
     fileSystemDialog->Show(this);
 }
 
-void ViewSceneScreen::OnButtonSelectFromDoc(BaseObject* caller, void* param, void* callerData)
+void ViewSceneScreen::OnButtonSelectFromDoc(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     DVASSERT(fileSystemDialog);
-    fileSystemDialog->SetCurrentDir("~doc:/../");
+    fileSystemDialog->SetCurrentDir("~doc:/");
     fileSystemDialog->Show(this);
 }
 
-void ViewSceneScreen::OnButtonSelectFromExt(BaseObject* caller, void* param, void* callerData)
+void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* param, void* callerData)
 {
+    using namespace DAVA;
     DVASSERT(fileSystemDialog);
 
     List<DeviceInfo::StorageInfo> storageList = DeviceInfo::GetStoragesList();
@@ -244,16 +259,21 @@ void ViewSceneScreen::OnButtonSelectFromExt(BaseObject* caller, void* param, voi
     }
 }
 
-void ViewSceneScreen::OnButtonPerformanceTest(BaseObject* caller, void* param, void* callerData)
+void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     if (gridTest.GetState() != GridTest::Finished)
         return;
+
+    menu->Show(false);
+    RemoveControl(moveJoyPAD);
 
     gridTest.Start(sceneView);
 }
 
 void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)
 {
+    using namespace DAVA;
+
     ShaderDescriptorCache::ReloadShaders();
 
     List<NMaterial*> materials;
@@ -296,11 +316,11 @@ void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 {
-    uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
+    DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
 
     BaseScreen::Draw(geometricData);
 
-    drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+    //drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 }
 
 void ViewSceneScreen::ReloadScene()
@@ -309,8 +329,10 @@ void ViewSceneScreen::ReloadScene()
     LoadScene();
 }
 
-void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
+void ViewSceneScreen::ProcessUserInput(DAVA::float32 timeElapsed)
 {
+    using namespace DAVA;
+
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     //     if (keyboard.IsKeyPressed(Key::NUMPAD6))
     //         cursorPosition.x += timeElapsed / 16.f;
@@ -333,7 +355,7 @@ void ViewSceneScreen::ProcessUserInput(float32 timeElapsed)
     camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
-void ViewSceneScreen::Update(float32 timeElapsed)
+void ViewSceneScreen::Update(DAVA::float32 timeElapsed)
 {
     BaseScreen::Update(timeElapsed);
 
@@ -341,14 +363,13 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     ProcessUserInput(timeElapsed);
 }
 
-void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
+void ViewSceneScreen::UpdateInfo(DAVA::float32 timeElapsed)
 {
     fpsMeter.Update(timeElapsed);
     if (fpsMeter.IsFpsReady())
     {
-        infoText->SetText(Format(L"FPS: %.0f", fpsMeter.GetFps()));
-
-        drawTime = updateTime = 0;
+        infoText->SetText(DAVA::Format(L"FPS: %.0f", fpsMeter.GetFps()));
+//      drawTime = updateTime = 0;
     }
 }
 
@@ -356,7 +377,8 @@ void ViewSceneScreen::OnGridTestStateChanged()
 {
     if (gridTest.GetState() == GridTest::Finished)
     {
-        SetCameraAtCenter(scene->GetCurrentCamera());
+        data.gridTestResult = gridTest.GetResult();
+        SetNextScreen();
     }
 }
 
@@ -370,15 +392,15 @@ void ViewSceneScreen::OnGridTestStateChanged()
 //     info->SetText(L"");
 // }
 
-void ViewSceneScreen::Input(UIEvent* currentInput)
+void ViewSceneScreen::Input(DAVA::UIEvent* currentInput)
 {
-    if (currentInput->phase == UIEvent::Phase::CHAR)
-    {
-        if (currentInput->keyChar == '+')
-            cursorSize *= 1.25f;
-        if (currentInput->keyChar == '-')
-            cursorSize *= .8f;
-    }
+//     if (currentInput->phase == UIEvent::Phase::CHAR)
+//     {
+//         if (currentInput->keyChar == '+')
+//             cursorSize *= 1.25f;
+//         if (currentInput->keyChar == '-')
+//             cursorSize *= .8f;
+//     }
 
     BaseScreen::Input(currentInput);
 }
