@@ -35,6 +35,16 @@ public:
         return ValueWrapperDefault<T>::SetValueInternal(ptr, value);
     }
 
+    inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        if (value.CanCast<T>())
+        {
+            return SetValue(object, value.Cast<T>());
+        }
+
+        return false;
+    }
+
     inline ReflectedObject GetValueObject(const ReflectedObject& object) const override
     {
         C* cls = object.GetPtr<C>();
