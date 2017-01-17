@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <AppKit/NSCursor.h>
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
@@ -51,6 +52,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
+    [nswindow setContentMinSize:NSMakeSize(128, 128)];
 
     {
         float32 dpi = GetDpi();
@@ -65,7 +67,16 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
-    [nswindow setContentSize:NSMakeSize(width, height)];
+    NSRect r = [nswindow frame];
+
+    float32 dx = (r.size.width - width) / 2.0;
+    float32 dy = (r.size.height - height) / 2.0;
+
+    NSPoint pos = NSMakePoint(r.origin.x + dx, r.origin.y + dy);
+    NSSize sz = NSMakeSize(width, height);
+
+    [nswindow setFrameOrigin:pos];
+    [nswindow setContentSize:sz];
 }
 
 void WindowNativeBridge::CloseWindow()
@@ -82,6 +93,8 @@ void WindowNativeBridge::SetTitle(const char8* title)
 
 void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
 {
+    NSSize sz = NSMakeSize(width, height);
+    [nswindow setContentMinSize:sz];
 }
 
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
@@ -91,6 +104,15 @@ void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
     if (isFullscreen != isFullscreenRequested)
     {
         [nswindow toggleFullScreen:nil];
+
+        if (isFullscreen)
+        {
+            // If we're entering fullscreen we want our app to also become focused
+            // To handle cases when app is being opened with fullscreen mode,
+            // but another app gets focus before our app's window is created,
+            // thus ignoring any input afterwards
+            [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        }
     }
 }
 
@@ -141,25 +163,41 @@ void WindowNativeBridge::WindowDidResignKey()
     }
 }
 
-void WindowNativeBridge::WindowDidResize()
+void WindowNativeBridge::HandleSizeChanging(bool dpiChanged)
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 surfaceScale = [renderView backbufferScale];
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, dpi, fullscreen));
+    if (dpiChanged)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    }
+}
+
+void WindowNativeBridge::WindowDidResize()
+{
+    HandleSizeChanging(false);
+}
+
+void WindowNativeBridge::WindowWillStartLiveResize()
+{
+}
+
+void WindowNativeBridge::WindowDidEndLiveResize()
+{
+    if (!isFullscreenToggling)
+    {
+        ForceBackbufferSizeUpdate();
+    }
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
-    CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
-    float32 surfaceScale = [renderView backbufferScale];
-    float32 dpi = GetDpi();
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    HandleSizeChanging(true);
 }
 
 bool WindowNativeBridge::WindowShouldClose()
@@ -187,11 +225,23 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidEnterFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidExitFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -251,6 +301,16 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
 {
+    static const float32 scrollK = 10.0f;
+
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = theEvent.locationInWindow;
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    float32 wheelDeltaX = [theEvent scrollingDeltaX];
+    float32 wheelDeltaY = [theEvent scrollingDeltaY];
+
     // detect the wheel event device
     // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
     if (NSEventPhaseNone != [theEvent momentumPhase] || NSEventPhaseNone != [theEvent phase])
@@ -261,32 +321,28 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     else
     {
         //event.device = DAVA::UIEvent::Device::MOUSE;
+        // Invert scroll directions back because MacOS do it by self when Shift pressed
+        if (([theEvent modifierFlags] & NSShiftKeyMask) != 0)
+        {
+            std::swap(wheelDeltaX, wheelDeltaY);
+        }
     }
 
-    const float32 scrollK = 10.0f;
-
-    NSSize sz = [renderView frame].size;
-    NSPoint pt = theEvent.locationInWindow;
-
-    float32 x = pt.x;
-    float32 y = sz.height - pt.y;
-    float32 deltaX = [theEvent scrollingDeltaX];
-    float32 deltaY = [theEvent scrollingDeltaY];
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
         // Touchpad or other precise device send integer values (-3, -1, 0, 1, 40, etc)
-        deltaX /= scrollK;
-        deltaY /= scrollK;
+        wheelDeltaX /= scrollK;
+        wheelDeltaY /= scrollK;
     }
     else
     {
         // Mouse sends float values from 0.1 for one wheel tick
-        deltaX *= scrollK;
-        deltaY *= scrollK;
+        wheelDeltaX *= scrollK;
+        wheelDeltaY *= scrollK;
     }
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     bool isRelative = captureMode == eCursorCapture::PINNING;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, wheelDeltaX, wheelDeltaY, modifierKeys, isRelative));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -490,18 +546,19 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 
 void WindowNativeBridge::UpdateSystemCursorVisible()
 {
-    bool visible = !cursorInside || mouseVisible;
     static bool mouseVisibleState = true;
+
+    bool visible = !cursorInside || mouseVisible;
     if (mouseVisibleState != visible)
     {
         mouseVisibleState = visible;
         if (visible)
         {
-            [NSCursor unhide];
+            CGDisplayShowCursor(kCGDirectMainDisplay);
         }
         else
         {
-            [NSCursor hide];
+            CGDisplayHideCursor(kCGDirectMainDisplay);
         }
     }
 }
@@ -519,12 +576,16 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setBackbufferScale:scale];
 
+    ForceBackbufferSizeUpdate();
+    WindowDidResize();
+}
+
+void WindowNativeBridge::ForceBackbufferSizeUpdate()
+{
     // Workaround to force change backbuffer size
     [nswindow setContentView:nil];
     [nswindow setContentView:renderView];
     [nswindow makeFirstResponder:renderView];
-
-    WindowDidResize();
 }
 
 } // namespace Private

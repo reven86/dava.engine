@@ -11,11 +11,14 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSObject;
+@class NSMutableArray;
 @class NSNotification;
 @class NSUserNotification;
-
+@class NSUserNotificationCenter;
 @class FrameTimer;
 @class AppDelegate;
+
+@protocol DVEApplicationListener;
 
 namespace DAVA
 {
@@ -38,23 +41,24 @@ struct CoreNativeBridge final
     void OnFrameTimer();
 
     // Callbacks from OsXAppDelegate
-    void ApplicationWillFinishLaunching();
+    void ApplicationWillFinishLaunching(NSNotification* notification);
     void ApplicationDidFinishLaunching(NSNotification* notification);
     void ApplicationDidChangeScreenParameters();
-    void ApplicationDidBecomeActive();
-    void ApplicationDidResignActive();
+    void ApplicationDidBecomeActive(NSNotification* notification);
+    void ApplicationDidResignActive(NSNotification* notification);
     void ApplicationDidHide();
     void ApplicationDidUnhide();
     bool ApplicationShouldTerminate();
     bool ApplicationShouldTerminateAfterLastWindowClosed();
-    void ApplicationWillTerminate();
-    void ApplicationDidActivateNotification(NSUserNotification* notification);
+    void ApplicationWillTerminate(NSNotification* notification);
+    void ApplicationDidActivateNotification(NSUserNotificationCenter* notificationCenter, NSUserNotification* notification);
 
-    void RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
-    void UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener);
+    void RegisterDVEApplicationListener(id<DVEApplicationListener> listener);
+    void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener);
 
     enum eNotificationType
     {
+        ON_WILL_FINISH_LAUNCHING,
         ON_DID_FINISH_LAUNCHING,
         ON_DID_BECOME_ACTIVE,
         ON_DID_RESIGN_ACTIVE,
@@ -72,7 +76,7 @@ struct CoreNativeBridge final
     FrameTimer* frameTimer = nullptr;
 
     Mutex listenersMutex;
-    List<PlatformApi::Mac::NSApplicationDelegateListener*> appDelegateListeners;
+    NSMutableArray* appDelegateListeners;
 
     bool quitSent = false;
     bool closeRequestByApp = false;

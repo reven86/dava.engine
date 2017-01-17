@@ -4,21 +4,18 @@
 
 #include "Debug/DVAssert.h"
 
-#include <gmock/gmock.h>
+#include "TArc/Testing/MockDefine.h"
 
 namespace DAVA
 {
 namespace TArc
 {
-template <typename Tag>
 class MockClientModule : public ClientModule
 {
 public:
     MockClientModule()
     {
         using namespace ::testing;
-        DVASSERT(instance == nullptr);
-        instance = this;
 
         EXPECT_CALL(*this, PostInit());
 
@@ -38,18 +35,14 @@ public:
 
     ~MockClientModule()
     {
-        DVASSERT(instance != nullptr);
-        instance = nullptr;
     }
 
-    static MockClientModule<Tag>* instance;
-
-    MOCK_METHOD1(OnContextCreated, void(DataContext* context));
-    MOCK_METHOD1(OnContextDeleted, void(DataContext* context));
-    MOCK_METHOD1(OnWindowClosed, void(const WindowKey& key));
-    MOCK_METHOD2(OnContextWillBeChanged, void(DataContext* current, DataContext* newOne));
-    MOCK_METHOD2(OnContextWasChanged, void(DataContext* current, DataContext* oldOne));
-    MOCK_METHOD0(PostInit, void());
+    MOCK_METHOD1_VIRTUAL(OnContextCreated, void(DataContext* context))
+    MOCK_METHOD1_VIRTUAL(OnContextDeleted, void(DataContext* context))
+    MOCK_METHOD1_VIRTUAL(OnWindowClosed, void(const WindowKey& key))
+    MOCK_METHOD2_VIRTUAL(OnContextWillBeChanged, void(DataContext* current, DataContext* newOne))
+    MOCK_METHOD2_VIRTUAL(OnContextWasChanged, void(DataContext* current, DataContext* oldOne))
+    MOCK_METHOD0_VIRTUAL(PostInit, void())
 
     virtual void OnContextCreatedImpl(DataContext* context)
     {
@@ -69,10 +62,14 @@ public:
     virtual void PostInitImpl()
     {
     }
-};
 
-template <typename Tag>
-MockClientModule<Tag>* MockClientModule<Tag>::instance = nullptr;
+    DAVA_VIRTUAL_REFLECTION(MockClientModule, ClientModule)
+    {
+        ReflectionRegistrator<MockClientModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
+};
 
 } // namespace TArc
 } // namespace DAVA
