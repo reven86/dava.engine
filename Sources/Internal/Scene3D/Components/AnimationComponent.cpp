@@ -11,7 +11,7 @@ namespace DAVA
 AnimationComponent::AnimationComponent()
     : animation(NULL)
     , time(0.0f)
-    , animationScale(1.0f)
+    , animationTimeScale(1.0f)
     , frameIndex(0)
     , repeatsCount(1)
     , currRepeatsCont(0)
@@ -30,7 +30,7 @@ Component* AnimationComponent::Clone(Entity* toEntity)
     newAnimation->SetEntity(toEntity);
 
     newAnimation->time = time;
-    newAnimation->animationScale = animationScale;
+    newAnimation->animationTimeScale = animationTimeScale;
     newAnimation->animation = SafeRetain(animation);
     newAnimation->repeatsCount = repeatsCount;
     newAnimation->currRepeatsCont = 0;

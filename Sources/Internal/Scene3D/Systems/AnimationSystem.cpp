@@ -35,7 +35,7 @@ void AnimationSystem::Process(float32 timeElapsed)
     for (int i = 0; i < componentsCount; i++)
     {
         AnimationComponent* comp = activeComponents[i];
-        comp->time += timeElapsed * comp->animationScale;
+        comp->time += timeElapsed * comp->animationTimeScale;
         if (comp->time > comp->animation->duration)
         {
             comp->currRepeatsCont++;
@@ -49,6 +49,7 @@ void AnimationSystem::Process(float32 timeElapsed)
                 componentsCount--;
                 i--;
                 comp->animationTransform.Identity();
+                comp->time = 0;
                 continue;
             }
         }
