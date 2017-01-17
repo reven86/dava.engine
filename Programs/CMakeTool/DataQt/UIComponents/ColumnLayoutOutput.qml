@@ -194,7 +194,8 @@ ColumnLayout {
     }
     Timer {
         id: delayTimer
-        interval: 500;
+        //cmake will not build solution if it starts immediately after configure
+        interval: 1500;
         running: false;
         repeat: false
         onTriggered: {
