@@ -36,7 +36,7 @@ private:
 class FastNameComponentValue : public TextComponentValue
 {
 private:
-    Any Convert(const DAVA::String& text) const;
+    Any Convert(const DAVA::String& text) const override;
 
     DAVA_VIRTUAL_REFLECTION(FastNameComponentValue, TextComponentValue);
 };

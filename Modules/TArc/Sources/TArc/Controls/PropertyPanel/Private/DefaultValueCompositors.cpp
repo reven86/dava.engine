@@ -4,6 +4,8 @@
 #include <Base/Type.h>
 #include <Base/BaseTypes.h>
 
+#include <Qt>
+
 namespace DAVA
 {
 namespace TArc
@@ -52,6 +54,31 @@ bool TextValueCompositor::IsValidValue(const Any& value) const
         text = value.Get<String>();
     }
     return text != multipleValuesValue;
+}
+
+Any BoolValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const
+{
+    Any value = nodes.front()->cachedValue;
+    for (const std::shared_ptr<const PropertyNode>& node : nodes)
+    {
+        if (value != node->cachedValue)
+        {
+            return Qt::PartiallyChecked;
+        }
+    }
+
+    return value.Get<bool>() ? Qt::Checked : Qt::Unchecked;
+}
+
+bool BoolValueCompositor::IsValidValue(const Any& value) const
+{
+    Qt::CheckState checkedState = Qt::PartiallyChecked;
+    if (value.CanGet<Qt::CheckState>())
+    {
+        checkedState = value.Get<Qt::CheckState>();
+    }
+
+    return checkedState != Qt::PartiallyChecked;
 }
 
 } // namespace TArc

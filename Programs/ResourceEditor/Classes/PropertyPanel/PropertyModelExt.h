@@ -3,6 +3,8 @@
 #include <TArc/Controls/PropertyPanel/PropertyModelExtensions.h>
 #include <TArc/Core/ContextAccessor.h>
 
+#include <Base/BaseTypes.h>
+
 class REModifyPropertyExtension : public DAVA::TArc::ModifyExtension
 {
 public:
@@ -17,5 +19,5 @@ private:
 class EntityChildCreator: public DAVA::TArc::ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
+    void ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
 };

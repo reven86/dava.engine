@@ -97,11 +97,11 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
     {
         return std::make_unique<TextComponentValue>();
     }
-    /*else if (valueType == Type::Instance<bool>())
+    else if (valueType == Type::Instance<bool>())
     {
         return std::make_unique<BoolComponentValue>();
     }
-    else if (valueType == Type::Instance<int32>() ||
+    /*else if (valueType == Type::Instance<int32>() ||
              valueType == Type::Instance<uint32>())
     {
         return std::make_unique<IntComponentValue>();
