@@ -47,6 +47,7 @@ void AnimationComponent::Serialize(KeyedArchive* archive, SerializationContext* 
     {
         archive->SetVariant("animation", VariantType(animation->GetNodeID()));
         archive->SetUInt32("repeatsCount", repeatsCount);
+        archive->SetFloat("animationTimeScale", animationTimeScale);
     }
 }
 
@@ -61,6 +62,7 @@ void AnimationComponent::Deserialize(KeyedArchive* archive, SerializationContext
             animation = SafeRetain(newAnimation);
         }
         repeatsCount = archive->GetUInt32("repeatsCount", 1);
+        animationTimeScale = archive->GetFloat("animationTimeScale", 1.0f);
     }
 
     Component::Deserialize(archive, sceneFile);
