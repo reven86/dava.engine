@@ -29,6 +29,11 @@ bool VariantTypeProperty::IsReadOnly() const
     return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
 }
 
+VariantTypeProperty::ePropertyType VariantTypeProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
 Any VariantTypeProperty::GetValue() const
 {
     return value;

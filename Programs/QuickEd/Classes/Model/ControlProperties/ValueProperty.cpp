@@ -108,20 +108,6 @@ const String& ValueProperty::GetName() const
     return name;
 }
 
-ValueProperty::ePropertyType ValueProperty::GetType() const
-{
-    // TODO
-//    if (reflection.IsValid())
-//    {
-//        const EnumMeta *meta = reflection.GetMeta<EnumMeta>();
-//        if (meta)
-//        {
-//            return meta->IsFlags() ? TYPE_FLAGS : TYPE_ENUM;
-//        }
-//    }
-    return TYPE_VARIANT;
-}
-
 const DAVA::Type *ValueProperty::GetValueType() const
 {
     return valueType;
@@ -146,18 +132,6 @@ void ValueProperty::SetDefaultValue(const Any& newValue)
     defaultValue = newValue;
     if (!overridden)
         ApplyValue(newValue);
-}
-
-const EnumMap* ValueProperty::GetEnumMap() const
-{
-//    const EnumMeta *meta = reflection.GetMeta<EnumMeta>();
-//    if (meta)
-//    {
-//        return meta->GetEnumMap();
-//    }
-//
-    //TODO
-    return nullptr;
 }
 
 void ValueProperty::ResetValue()

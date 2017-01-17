@@ -432,6 +432,31 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 {
     Any val = property->GetValue();
     
+    if (property->GetType() == AbstractProperty::TYPE_ENUM)
+    {
+        int32 e = val.Get<int32>();
+        return QString::fromStdString(property->GetEnumMap()->ToString(e));
+    }
+
+    if (property->GetType() == AbstractProperty::TYPE_FLAGS)
+    {
+        int32 e = val.Get<int32>();
+        QString res = "";
+        int p = 0;
+        while (e)
+        {
+            if ((e & 0x01) != 0)
+            {
+                if (!res.isEmpty())
+                    res += " | ";
+                res += QString::fromStdString(property->GetEnumMap()->ToString(1 << p));
+            }
+            p++;
+            e >>= 1;
+        }
+        return res;
+    }
+
     if (val.IsEmpty())
     {
         return QString();
@@ -464,30 +489,6 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     
     if (val.CanGet<int32>())
     {
-        if (property->GetType() == AbstractProperty::TYPE_ENUM)
-        {
-            int32 e = val.Get<int32>();
-            return QString::fromStdString(property->GetEnumMap()->ToString(e));
-        }
-        else if (property->GetType() == AbstractProperty::TYPE_FLAGS)
-        {
-            int32 e = val.Get<int32>();
-            QString res = "";
-            int p = 0;
-            while (e)
-            {
-                if ((e & 0x01) != 0)
-                {
-                    if (!res.isEmpty())
-                        res += " | ";
-                    res += QString::fromStdString(property->GetEnumMap()->ToString(1 << p));
-                }
-                p++;
-                e >>= 1;
-            }
-            return res;
-        }
-
         return QVariant(val.Get<int32>()).toString();
     }
 

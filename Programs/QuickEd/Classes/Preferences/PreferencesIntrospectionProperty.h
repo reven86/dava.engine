@@ -10,6 +10,7 @@ public:
     //Apply is already used :(
     void ApplyPreference();
 
+    ePropertyType GetType() const override;
     void SetValue(const DAVA::Any& value) override;
     DAVA::Any GetValue() const override;
 

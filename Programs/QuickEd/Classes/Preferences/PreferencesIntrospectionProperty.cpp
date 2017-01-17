@@ -39,6 +39,11 @@ void PreferencesIntrospectionProperty::ApplyPreference()
     }
 }
 
+PreferencesIntrospectionProperty::ePropertyType PreferencesIntrospectionProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
 void PreferencesIntrospectionProperty::SetValue(const DAVA::Any& val)
 {
     value = AnyToVariantType(val);

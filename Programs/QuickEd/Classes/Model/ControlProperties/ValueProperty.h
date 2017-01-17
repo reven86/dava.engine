@@ -26,7 +26,7 @@ public:
 
     bool HasChanges() const override;
     const DAVA::String& GetName() const override;
-    ePropertyType GetType() const override;
+    //ePropertyType GetType() const override;
     DAVA::int32 GetStylePropertyIndex() const override;
 
     const DAVA::Type *GetValueType() const override;
@@ -43,8 +43,6 @@ public:
     virtual void SetSubValue(DAVA::int32 index, const DAVA::Any& newValue);
     virtual DAVA::Any GetDefaultSubValue(DAVA::int32 index) const;
     virtual void SetDefaultSubValue(DAVA::int32 index, const DAVA::Any& newValue);
-
-    virtual const EnumMap* GetEnumMap() const override;
 
 protected:
     virtual void ApplyValue(const DAVA::Any& value);

@@ -101,7 +101,7 @@ void AbstractProperty::SetDefaultValue(const Any& newValue)
 
 const EnumMap* AbstractProperty::GetEnumMap() const
 {
-    return NULL;
+    return nullptr;
 }
 
 void AbstractProperty::ResetValue()

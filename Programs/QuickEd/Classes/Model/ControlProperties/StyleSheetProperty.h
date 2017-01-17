@@ -27,6 +27,7 @@ public:
 
     DAVA::uint32 GetFlags() const override;
 
+    ePropertyType GetType() const override;
     DAVA::Any GetValue() const override;
     void ApplyValue(const DAVA::Any& value) override;
 

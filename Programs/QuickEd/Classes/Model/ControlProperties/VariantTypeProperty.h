@@ -24,6 +24,7 @@ public:
     void Accept(PropertyVisitor* visitor) override;
     bool IsReadOnly() const override;
 
+    ePropertyType GetType() const override;
     DAVA::Any GetValue() const override;
     void ApplyValue(const DAVA::Any& value) override;
 

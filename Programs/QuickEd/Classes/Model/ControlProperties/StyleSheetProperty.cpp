@@ -64,6 +64,11 @@ DAVA::uint32 StyleSheetProperty::GetFlags() const
     return EF_CAN_REMOVE;
 }
 
+StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
 Any StyleSheetProperty::GetValue() const
 {
     return property.value;

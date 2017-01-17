@@ -111,6 +111,32 @@ uint32 IntrospectionProperty::GetFlags() const
     return result;
 }
 
+IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
+{
+    const EnumMeta *enumMeta = reflection.GetMeta<EnumMeta>();
+    if (enumMeta)
+    {
+        if (enumMeta->IsFlags())
+        {
+            return TYPE_FLAGS;
+        }
+        return TYPE_ENUM;
+    }
+    
+    return TYPE_VARIANT;
+}
+
+const EnumMap* IntrospectionProperty::GetEnumMap() const
+{
+    const EnumMeta *enumMeta = reflection.GetMeta<EnumMeta>();
+    if (enumMeta)
+    {
+        return enumMeta->GetEnumMap();
+    }
+    
+    return nullptr;
+}
+
 Any IntrospectionProperty::GetValue() const
 {
     return reflection.GetValue();

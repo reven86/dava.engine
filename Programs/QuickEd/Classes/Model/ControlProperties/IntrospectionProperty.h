@@ -24,6 +24,8 @@ public:
 
     DAVA::uint32 GetFlags() const override;
 
+    ePropertyType GetType() const override;
+    const EnumMap* GetEnumMap() const override;
     DAVA::Any GetValue() const override;
 
     DAVA::BaseObject* GetBaseObject() const
