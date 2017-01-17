@@ -36,10 +36,10 @@ if (DAVA_PLATFORM_QT)
 endif()
 
 if( MACOS OR WIN32 )
-    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" )
+    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
-find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
+find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )

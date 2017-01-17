@@ -49,6 +49,7 @@ save_property( PROPERTY_LIST
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        GLOABAL_DEFINITIONS
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -67,6 +68,8 @@ load_property( PROPERTY_LIST
 
         PLUGIN_LIST
     )
+        
+    list( APPEND DEFINITIONS ${GLOABAL_DEFINITIONS} )
 
 if( COVERAGE )
     string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )

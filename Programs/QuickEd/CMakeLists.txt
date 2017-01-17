@@ -58,7 +58,14 @@ dava_add_definitions       (
 -DQT_HAVE_MMXEXT
 -DQT_HAVE_SSE2
 -DQT_THREAD_SUPPORT
+
+-D__DAVAENGINE_RENDERSTATS__
+-D_CRT_SECURE_NO_DEPRECATE
+-D__DAVAENGINE_RESOURCEEDITOR__
+-DDAVA_FMOD
+-DQT_NETWORK_LIB
 )
+
 
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )

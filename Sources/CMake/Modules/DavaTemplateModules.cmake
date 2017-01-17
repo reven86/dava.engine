@@ -264,7 +264,7 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} )
+    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} GLOABAL_DEFINITIONS )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -325,16 +325,47 @@ macro( setup_main_module )
             modules_tree_info_execute()
             generated_initialization_module_code()
     		set( ROOT_NAME_MODULE ${NAME_MODULE} )
+
+            set( ROOT_MODULE_COMPONENTS ${MODULE_COMPONENTS} )
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
         set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} ) 
     endif()
 
+
+
     if ( INIT AND NOT MODULES_TREE_INFO )
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
             set( MODULE_TYPE "STATIC" )
         endif()
+
+#####
+        if( ${MODULE_TYPE} STREQUAL "STATIC" )
+
+            get_property( DEFINITIONS_PROP GLOBAL PROPERTY DEFINITIONS )
+            get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+
+            set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
+                                ${MODULE_COMPONENTS} 
+                                ${DEFINITIONS} 
+                                ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
+                                ${DEFINITIONS_PROP} 
+                                ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} )
+            list(SORT MODULE_CACHE )
+
+            message( "  " )
+            message( "!!!!!!!!!!!!! -->> PROJECT_NAME  : ${PROJECT_NAME}" )
+            message( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
+
+            message( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )
+
+            string (REPLACE ";" " " MODULE_CACHE "${MODULE_CACHE}")
+            string( MD5  MODULE_CACHE ${MODULE_CACHE} )
+
+            message( "!!!!!!!!!!!!! -->> MD5  : ${MODULE_CACHE}" )
+        endif()
+#####            
 
         if( MODULE_INITIALIZATION_CODE )
             ASSERT( NAME_MODULE "Please define the name of the module in the variable NAME MODULE")
@@ -396,7 +427,7 @@ macro( setup_main_module )
 
         #"FIND PACKAGE"
         foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
-            find_package( ${NAME} )
+            find_package( ${NAME} COMPONENTS ${ROOT_MODULE_COMPONENTS} )
             if (PACKAGE_${NAME}_INCLUDES)
                 foreach( PACKAGE_INCLUDE ${PACKAGE_${NAME}_INCLUDES} )
                     include_directories(${${PACKAGE_INCLUDE}})
@@ -528,6 +559,7 @@ macro( setup_main_module )
         load_property( PROPERTY_LIST 
                 DEFINITIONS
                 DEFINITIONS_${DAVA_PLATFORM_CURENT}
+                GLOABAL_DEFINITIONS                
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
@@ -535,6 +567,8 @@ macro( setup_main_module )
                 INCLUDES
                 INCLUDES_PRIVATE
                 )
+
+        list( APPEND DEFINITIONS ${GLOABAL_DEFINITIONS} )
 
         #"DEFINITIONS"
         if( DEFINITIONS )
@@ -562,29 +596,6 @@ macro( setup_main_module )
 
 
 #####
-        get_property( DEFINITIONS_PROP GLOBAL PROPERTY DEFINITIONS )
-        get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
-
-        set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
-                            ${MODULE_COMPONENTS} 
-                            ${DEFINITIONS} 
-                            ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
-                            ${DEFINITIONS_PROP} 
-                            ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} )
-        list(SORT MODULE_CACHE )
-
-            message( "!!!!!!!!!!!!! -->> PROJECT_NAME  : ${PROJECT_NAME}" )
-            message( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
-
-            message( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )
-
-        string (REPLACE ";" " " MODULE_CACHE "${MODULE_CACHE}")
-        string( MD5  MODULE_CACHE ${MODULE_CACHE} )
-
-            message( "!!!!!!!!!!!!! -->> MD5  : ${MODULE_CACHE}" )
-#####            
-
-######
             set( CREATE_NEW_MODULE true )
 
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
@@ -593,7 +604,7 @@ macro( setup_main_module )
 
                 list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
 
-                message( ">>>>!!!!!!! MODULE_CACHE_LIST -- ${MODULE_CACHE_LIST}")
+                #message( ">>>>!!!!!!! MODULE_CACHE_LIST -- ${MODULE_CACHE_LIST}")
 
                 if ( ${_index} GREATER -1 )
                     set( CREATE_NEW_MODULE )
@@ -606,8 +617,13 @@ macro( setup_main_module )
                     message(" !!!!! FIND CACHE !!!! MODULE_CACHE ---- ${MODULE_CACHE} --- ${MODULE_CACHE_LOADED}")
                 endif()
 
+                message( "  " )
+
+
             endif()
+
 ######
+
             if( CREATE_NEW_MODULE )
                 project( ${NAME_MODULE} )
                 
@@ -764,11 +780,14 @@ macro( setup_main_module )
 
         endif()
 
-        if( CREATE_NEW_MODULE )
+        if( CREATE_NEW_MODULE AND ${MODULE_TYPE} STREQUAL "STATIC" )
             set_property( GLOBAL PROPERTY ${MODULE_CACHE} "${NAME_MODULE}" )
             append_property(  MODULE_CACHE_LIST ${MODULE_CACHE} )
 
+            message( "  " )
             message( "APPEND MODULE_CACHE_LIST --->>> ${MODULE_CACHE}")
+            message( "  " )
+
         endif()
 
 
