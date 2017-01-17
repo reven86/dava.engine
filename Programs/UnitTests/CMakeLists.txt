@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.0)
 set( COVERAGE true )
 project ( UnitTests )
 
+set          ( WARNINGS_AS_ERRORS true )
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+include      ( CMake-common )
+
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
@@ -14,10 +18,6 @@ endif()
 
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
-
-set          ( WARNINGS_AS_ERRORS true )
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
-include      ( CMake-common )
 
 set ( DAVA_COMPONENTS "ALL" DAVA_DISABLE_AUTOTESTS )
 if ( WIN32 AND NOT WINDOWS_UAP )
