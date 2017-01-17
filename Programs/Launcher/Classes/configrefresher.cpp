@@ -25,7 +25,12 @@ int ConfigRefresher::GetTimeout() const
 
 int ConfigRefresher::GetMinimumTimeout() const
 {
-    return 60 * 1000; //one minute
+    return 1 * 60 * 1000; //one minute
+}
+
+int ConfigRefresher::GetMaximumTimeout() const
+{
+    return 60 * 60 * 1000; //one hour
 }
 
 void ConfigRefresher::SetEnabled(bool enabled)

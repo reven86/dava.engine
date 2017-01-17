@@ -153,8 +153,10 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
     }
 
     checkBox_autorefreshEnabled->setChecked(configRefresher->IsEnabled());
-    spinBox_autorefreshTimeout->setMaximum(LONG_MAX);
-    spinBox_autorefreshTimeout->setMinimum(configRefresher->GetMinimumTimeout());
+    int minTimeout = configRefresher->GetMinimumTimeout();
+    int maxTimeout = configRefresher->GetMaximumTimeout();
+    spinBox_autorefreshTimeout->setRange(minTimeout, maxTimeout);
+    spinBox_autorefreshTimeout->setEnabled(true);
     spinBox_autorefreshTimeout->setValue(configRefresher->GetTimeout());
 }
 

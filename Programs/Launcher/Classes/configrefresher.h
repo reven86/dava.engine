@@ -13,6 +13,7 @@ public:
     bool IsEnabled() const;
     int GetTimeout() const;
     int GetMinimumTimeout() const;
+    int GetMaximumTimeout() const;
 
     void SetEnabled(bool enabled);
     void SetTimeout(int timeoutMs);
