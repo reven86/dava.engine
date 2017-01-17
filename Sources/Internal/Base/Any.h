@@ -94,9 +94,6 @@ public:
     template <typename T>
     const T& Get(const T& defaultValue) const;
 
-    /** Returns pointer on internal data. Is Any is empty internal data is unspecified. */
-    const void* GetData() const;
-
     /// \brief Sets the value. It will be copied|moved into Any depending on lvalue|rvalue.
     /// \param [in,out] value   The value to set.
     /// \param          notAny  (Optional) Used to prevent creating Any from other Any. Shouldn't be specified by user.
@@ -127,13 +124,16 @@ public:
     ///         types for which Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on source memory, from where value should be loaded.
     /// \param          type    The type of the loading value.
-    bool LoadValue(void* data, const Type* type);
+    bool LoadData(void* data, const Type* type);
 
     /// \brief  Stores contained value into specified memory location. Storing can
     ///          be done only for values whose type Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on destination memory, where contained value should be stored.
     /// \param          size    The size of the destination memory.
-    bool StoreValue(void* data, size_t size) const;
+    bool StoreData(void* data, size_t size) const;
+
+    /** Returns pointer on internal data. If Any is empty internal data is unspecified. */
+    const void* GetData() const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
@@ -164,6 +164,7 @@ struct AnyCompare
     static bool IsEqual(const Any&, const Any&);
 };
 
+/*
 /// \brief any cast.
 template <typename T>
 struct AnyCast
@@ -171,10 +172,19 @@ struct AnyCast
     static bool CanCast(const Any&);
     static T Cast(const Any&);
 };
+*/
+
+/// \brief any cast.
+template <typename From, typename To>
+struct AnyCast
+{
+    static void Register(To (*)(const Any&));
+    static void RegisterDefault();
+};
 
 } // namespace DAVA
 
 #define __Dava_Any__
-#include "Base/Private/Any_impl.h"
 #include "Base/Private/Any_implCompare.h"
 #include "Base/Private/Any_implCast.h"
+#include "Base/Private/Any_impl.h"
