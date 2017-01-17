@@ -168,7 +168,6 @@ private:
 
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
-    void OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;

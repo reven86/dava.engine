@@ -368,13 +368,6 @@ void EditorSystemsManager::OnDisplayStateChanged(eDisplayState currentState, eDi
     }
 }
 
-void EditorSystemsManager::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
-{
-    Vector2 viewSize(width, height);
-    const EngineContext* engineContext = GetEngineContext();
-    engineContext->uiScreenManager->GetScreen()->SetSize(viewSize);
-}
-
 UIControl* EditorSystemsManager::GetRootControl() const
 {
     return rootControl.Get();
