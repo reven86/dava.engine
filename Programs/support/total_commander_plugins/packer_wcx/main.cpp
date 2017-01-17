@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <sstream>
 
@@ -40,20 +41,25 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 {
     if (!l.is_open())
     {
-        // TODO uncomment for crossplatform debuging
-        // l.open("d:/Users/l_chayka/Documents/dvpk_plugin.log");
+        const char* logger_path = std::getenv("DVPK_PLUGIN_LOG");
+        if (logger_path != nullptr)
+        {
+            l.open(logger_path);
+        }
     }
 
     PackArchive* archive = nullptr;
     try
     {
+        l << "begin open archive: " << ArchiveData->ArcName << '\n';
+
         archive = new PackArchive(ArchiveData->ArcName);
 
         l << "open archive: " << ArchiveData->ArcName << '\n';
     }
     catch (std::exception& ex)
     {
-        l << ex.what();
+        l << ex.what() << std::flush;
         ArchiveData->OpenResult = E_BAD_ARCHIVE;
     }
     return archive;
@@ -72,6 +78,8 @@ int STDCALL CloseArchive(HANDLE hArcData)
 // called multiple times till return 0 on finish files
 int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
+    l << "read header\n";
+
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
 
     const std::vector<FileInfo>& files = archive->GetFilesInfo();
@@ -140,6 +148,8 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
                         char* DestName)
 {
+    l << "process_file\n";
+
     if (PK_SKIP == Operation)
     {
     }
