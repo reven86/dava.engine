@@ -87,13 +87,15 @@ if (NOT PUBLIC_BUILD)
     add_definitions(-D__DAVAENGINE_SPEEDTREE__)
 endif()
 
+if (DEPLOY)
+    add_definitions(-DDEPLOY_BUILD)
+endif()
+
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
-
-file              ( GLOB QML_LIST "DataQt/*.qml")
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)

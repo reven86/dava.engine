@@ -29,9 +29,6 @@ class TransformComponent;
 /**
     \brief Base class of 3D scene hierarchy. All nodes in our scene graph is inherited from this node.
  */
-struct ReadOnlyMeta
-{
-};
 
 class Entity : public BaseObject
 {
@@ -416,10 +413,11 @@ public:
                                  DAVA::SafeRelease(e);
                              })
         .Field("ID", &Entity::GetID, &Entity::SetID)
-        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))[Meta<ReadOnlyMeta>()]
+        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
         .Field("Tag", &Entity::tag)
         .Field("Flags", &Entity::flags)
         .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)
+        .Field("Components", &Entity::components)
         .End();
     }
 };

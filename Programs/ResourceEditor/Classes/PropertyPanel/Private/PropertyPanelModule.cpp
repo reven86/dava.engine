@@ -43,7 +43,11 @@ public:
 const char* PropertyPanelData::selectedEntitiesProperty = "selectedEntities";
 }
 
-PropertyPanelModule::~PropertyPanelModule() = default;
+PropertyPanelModule::~PropertyPanelModule()
+{
+    int x = 0;
+    x++;
+}
 
 void PropertyPanelModule::PostInit()
 {
@@ -66,6 +70,7 @@ void PropertyPanelModule::PostInit()
 
     PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
+    view->RegisterExtension(std::make_shared<EntityChildCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 
     // Bind to current selection changed
@@ -108,4 +113,6 @@ DAVA_REFLECTION_IMPL(PropertyPanelModule)
         .End();
 }
 
+#if !defined(DEPLOY_BUILD)
 DECL_GUI_MODULE(PropertyPanelModule);
+#endif

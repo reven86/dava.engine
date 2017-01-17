@@ -76,12 +76,13 @@ QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orienta
 
 Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
+    DVASSERT(index.isValid());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
         std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-        if (!node->field.ref.IsReadonly() && node->field.ref.GetMeta<ReadOnlyMeta>() == nullptr)
+        if (!node->field.ref.IsReadonly())
         {
             flags |= Qt::ItemIsEditable;
         }
@@ -92,18 +93,23 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 
 QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex& parent) const
 {
-    ReflectedPropertyItem* item = MapItem(parent);
-    return createIndex(row, column, item->GetChild(row));
+    if (!parent.isValid())
+    {
+        return createIndex(row, column, nullptr);
+    }
+
+    return createIndex(row, column, MapItem(parent));
 }
 
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 {
-    ReflectedPropertyItem* item = MapItem(index);
+    DVASSERT(index.isValid());
+    ReflectedPropertyItem* item = reinterpret_cast<ReflectedPropertyItem*>(index.internalPointer());
     if (item == nullptr)
     {
         return QModelIndex();
     }
-    return MapItem(item->parent);
+    return createIndex(0, 0, item->parent);
 }
 
 //////////////////////////////////////
@@ -214,7 +220,12 @@ ReflectedPropertyItem* ReflectedPropertyModel::MapItem(const QModelIndex& item) 
 {
     if (item.isValid())
     {
-        return reinterpret_cast<ReflectedPropertyItem*>(item.internalPointer());
+        ReflectedPropertyItem* p = reinterpret_cast<ReflectedPropertyItem*>(item.internalPointer());
+        if (p == nullptr)
+        {
+            p = rootItem.get();
+        }
+        return p->GetChild(item.row());
     }
 
     return rootItem.get();

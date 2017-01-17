@@ -24,6 +24,7 @@ public:
         Value of "objectsField" could be casted to Vector<Reflection>
     */
     PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField);
+    ~PropertiesView();
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
     void UnregisterExtension(const std::shared_ptr<ExtensionChain>& extension);

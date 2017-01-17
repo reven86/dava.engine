@@ -2,7 +2,7 @@ set(NAME_MODULE TArc)
 
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
-set(HPP_FILES_RECURSE Sources/TArc/*.h Sources/TArc/*.hpp Sources/TArc/Controls/*.qml)
+set(HPP_FILES_RECURSE Sources/TArc/*.h Sources/TArc/*.hpp)
 set(CPP_FILES_RECURSE Sources/TArc/*.cpp)
 set(CPP_FILES_RECURSE_MACOS Sources/TArc/*.mm)
 set(CUSTOM_PACK_1 "Selftests")

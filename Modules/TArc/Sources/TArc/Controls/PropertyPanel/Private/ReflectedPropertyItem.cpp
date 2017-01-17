@@ -70,11 +70,7 @@ int32 ReflectedPropertyItem::GetChildCount() const
 
 ReflectedPropertyItem* ReflectedPropertyItem::GetChild(int32 index) const
 {
-    if (index >= GetChildCount())
-    {
-        return nullptr;
-    }
-
+    DVASSERT(index < GetChildCount());
     return children[index].get();
 }
 

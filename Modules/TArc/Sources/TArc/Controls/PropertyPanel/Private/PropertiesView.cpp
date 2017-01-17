@@ -31,6 +31,12 @@ PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor&
     timer->start();
 }
 
+PropertiesView::~PropertiesView()
+{
+    int x = 0;
+    x++;
+}
+
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
 {
     model->RegisterExtension(extension);

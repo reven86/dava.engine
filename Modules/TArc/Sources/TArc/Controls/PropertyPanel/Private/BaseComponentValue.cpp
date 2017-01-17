@@ -92,6 +92,10 @@ QString BaseComponentValue::GetPropertyName() const
     {
         return QString(fieldName.Cast<const char*>());
     }
+    else if (nameType == Type::Instance<size_t>())
+    {
+        return QString::number(fieldName.Get<size_t>());
+    }
 
     return QString::fromStdString(fieldName.Cast<String>());
 }
