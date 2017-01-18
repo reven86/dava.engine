@@ -32,7 +32,7 @@ public:
         if (!IsReadonly(object))
         {
             void* ptr = object.GetVoidPtr();
-            ret.LoadValue(ptr, type);
+            ret.LoadData(ptr, type);
         }
 
         return ret;
@@ -46,10 +46,15 @@ public:
         {
             void* ptr = object.GetVoidPtr();
             const Type* inType = object.GetReflectedType()->GetType();
-            ret = value.StoreValue(ptr, inType->GetSize());
+            ret = value.StoreData(ptr, inType->GetSize());
         }
 
         return ret;
+    }
+
+    bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        return false;
     }
 
     ReflectedObject GetValueObject(const ReflectedObject& object) const override

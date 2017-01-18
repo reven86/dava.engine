@@ -20,7 +20,7 @@
 #include "Scene3D/Scene.h"
 
 SceneImageDump::SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-sceneimagedump")
+    : CommandLineModule(commandLine, "-sceneimagedump")
 {
     using namespace DAVA;
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
@@ -151,7 +151,7 @@ void SceneImageDump::BeforeDestroyedInternal()
 
 void SceneImageDump::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-sceneimagedump -processfile /Users/SmokeTest/DataSource/3d/Maps/11-grass/test_scene.sc2 -camera TestCamera -width 1024 -height 1024 -gpu adreno -outfile /Users/screenshot.png");

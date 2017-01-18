@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UNITTESTS_H__
-#define __DAVAENGINE_UNITTESTS_H__
+#pragma once
 
 #include "UnitTests/TestClassFactory.h"
 #include "UnitTests/TestClass.h"
@@ -31,11 +30,11 @@
             TEST_VERIFY_WITH_MESSAGE(0, "my message");
         }
     };
- 
+
  DAVA_TESTCLASS defines unit test class with name 'my_unittest'. This class has two tests: test1 and test2.
  Tests test1 and test2 will be executed by test framework in order of declaration. Inside tests you can
  verify assertions with TEST_VERIFY or TEST_VERIFY_WITH_MESSAGE. TEST_VERIFY_WITH_MESSAGE allows append user
- message to output when assertion fails. TEST_VERIFY and TEST_VERIFY_WITH_MESSAGE also can be invoked from 
+ message to output when assertion fails. TEST_VERIFY and TEST_VERIFY_WITH_MESSAGE also can be invoked from
  functions that are called from tests.
 
  As DAVA_TESTCLASS declares C++ class you can define you own data and function members.
@@ -78,20 +77,20 @@
         TEST_VERIFY(CalcSomethingUseful(1) == 42);
     }
  };
- 
+
  ==============================================================================================================
- 
- If you need make some additional initialization for custom BaseTestClass, you can implement custom factory for your test classes and use
+
+ If you need make some additional initialization for custom BaseTestClass, you can implement metaIndex factory for your test classes and use
  DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY macro to declare it. Custom BaseTestClass should be derived from DAVA::UnitTests::TestClass.
  Custom factory should be template class and derived from DAVA::UnitTests::TestClassFactoryBase.
- 
+
  class MyBaseTestClass : public DAVA::UnitTests::TestClass
  {
  public:
  void Init() { do some additional initialization }
  int CalcSomethingUseful(int param) { return param * 42; }
  };
- 
+
  template <typename T>
  class MyCustomTestClassFactory : public DAVA::UnitTests::TestClassFactoryBase
  {
@@ -103,7 +102,7 @@
         return testClass;
      }
  }
- 
+
  DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY(MyTestClass, MyBaseTestClass, MyCustomTestClassFactory)
  {
  DAVA_TEST(Test1)
@@ -276,10 +275,3 @@
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS()
 
 #endif
-
-
-
-
-
-
-#endif // __DAVAENGINE_UNITTESTS_H__

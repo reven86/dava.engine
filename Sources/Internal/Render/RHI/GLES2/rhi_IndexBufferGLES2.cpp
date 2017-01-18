@@ -20,8 +20,8 @@ IndexBufferGLES2_t
 public:
     IndexBufferGLES2_t();
 
-    bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    bool Create(const IndexBuffer::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     unsigned size;
     GLenum usage;
@@ -53,7 +53,7 @@ IndexBufferGLES2_t::IndexBufferGLES2_t()
 
 //------------------------------------------------------------------------------
 
-bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
+bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool forceExecute)
 {
     bool success = false;
     UpdateCreationDesc(desc);
@@ -102,7 +102,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
                 cmd[2].func = GLCommand::NOP;
             }
 
-            ExecGL(cmd, countof(cmd), force_immediate);
+            ExecGL(cmd, countof(cmd), forceExecute);
 
             if (cmd[1].status == GL_NO_ERROR)
             {
@@ -126,12 +126,12 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
 
 //------------------------------------------------------------------------------
 
-void IndexBufferGLES2_t::Destroy(bool force_immediate)
+void IndexBufferGLES2_t::Destroy(bool forceExecute)
 {
     if (uid)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-        ExecGL(&cmd, 1, force_immediate);
+        ExecGL(&cmd, 1, forceExecute);
     }
 
     if (mappedData)
@@ -165,10 +165,10 @@ gles2_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 //------------------------------------------------------------------------------
 
 static void
-gles2_IndexBuffer_Delete(Handle ib)
+gles2_IndexBuffer_Delete(Handle ib, bool forceExecute)
 {
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
-    self->Destroy();
+    self->Destroy(forceExecute);
     IndexBufferGLES2Pool::Free(ib);
 }
 

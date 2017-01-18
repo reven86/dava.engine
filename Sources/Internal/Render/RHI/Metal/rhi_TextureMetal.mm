@@ -417,7 +417,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 //------------------------------------------------------------------------------
 
 static void
-metal_Texture_Delete(Handle tex)
+metal_Texture_Delete(Handle tex, bool)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
