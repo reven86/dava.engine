@@ -33,12 +33,17 @@ dava_add_definitions       (
  
 set ( DAVA_COREV2 1 )
  
-find_package( QT5 REQUIRED)
-find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_PLATFORM_QT DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME DAVA_DISABLE_AUTOTESTS )
+find_package( QT5 REQUIRED )
+find_package( QtHelpers REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS ALL
+                                                DAVA_PLATFORM_QT 
+                                                DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
+                                                DAVA_DISABLE_AUTOTESTS 
+                                                DAVA_USE_RENDERSTATS )
 find_package( DavaTools REQUIRED )
 find_package( QtTools REQUIRED )
-find_package( QtHelpers REQUIRED )
 find_package( TArc REQUIRED )
+
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

@@ -11,9 +11,9 @@ dava_add_definitions (
 -DCONSOLE )
 
 find_package          ( QT5 REQUIRED )
-find_package          ( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
-find_package          ( DavaTools     REQUIRED )
+find_package          ( DavaTools REQUIRED )
 find_package          ( QtHelpers REQUIRED )
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 

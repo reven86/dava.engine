@@ -325,7 +325,6 @@ macro( setup_main_module )
             modules_tree_info_execute()
             generated_initialization_module_code()
     		set( ROOT_NAME_MODULE ${NAME_MODULE} )
-
             set( ROOT_MODULE_COMPONENTS ${MODULE_COMPONENTS} )
         endif()
 
@@ -352,10 +351,11 @@ macro( setup_main_module )
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
                                 ${DEFINITIONS_PROP} 
                                 ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} )
-            list(SORT MODULE_CACHE )
+
+            list( REMOVE_DUPLICATES MODULE_CACHE )
+            list( SORT MODULE_CACHE )
 
             message( "  " )
-            message( "!!!!!!!!!!!!! -->> PROJECT_NAME  : ${PROJECT_NAME}" )
             message( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
 
             message( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )

@@ -24,6 +24,10 @@ if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
+if( ( MACOS OR WIN32 ) AND  DAVA_COREV2 )
+    list ( APPEND DAVA_COMPONENTS "SampleModule" )
+endif()
+
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 if ( WIN32 OR MACOS )
