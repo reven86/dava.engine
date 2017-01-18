@@ -28,7 +28,15 @@ private:
     void SetupControl();
     void StateChanged(int newState);
 
-private:
+    enum class eContainedDataType : uint8
+    {
+        TYPE_NONE = 0,
+        TYPE_BOOL,
+        TYPE_CHECK_STATE
+    };
+
+    eContainedDataType dataType = eContainedDataType::TYPE_NONE;
+
     FieldsDescriptor fieldsDescr;
     QtConnections connections;
 };

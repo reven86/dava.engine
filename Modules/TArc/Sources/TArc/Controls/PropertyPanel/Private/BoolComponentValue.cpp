@@ -17,7 +17,7 @@ Qt::CheckState BoolComponentValue::GetCheckState() const
 
 void BoolComponentValue::SetCheckState(Qt::CheckState checkState)
 {
-    SetValue(Convert(checkState));
+    SetValue(checkState);
 }
 
 QWidget* BoolComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
@@ -31,11 +31,6 @@ QWidget* BoolComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
 void BoolComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
     editor->deleteLater();
-}
-
-Any BoolComponentValue::Convert(Qt::CheckState checkState) const
-{
-    return Any(checkState);
 }
 
 bool BoolComponentValue::IsReadOnly() const

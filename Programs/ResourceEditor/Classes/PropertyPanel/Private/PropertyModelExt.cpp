@@ -30,8 +30,9 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflecti
     scene->EndBatch();
 }
 
-void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
+void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
 {
+    using namespace DAVA;
     using namespace DAVA::TArc;
 
     if (parent->propertyType == PropertyNode::SelfRoot &&

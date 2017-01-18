@@ -67,17 +67,12 @@ Any BoolValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& no
         }
     }
 
-    return value.Get<bool>() ? Qt::Checked : Qt::Unchecked;
+    return value.Cast<bool>() ? Qt::Checked : Qt::Unchecked;
 }
 
 bool BoolValueCompositor::IsValidValue(const Any& value) const
 {
-    Qt::CheckState checkedState = Qt::PartiallyChecked;
-    if (value.CanGet<Qt::CheckState>())
-    {
-        checkedState = value.Get<Qt::CheckState>();
-    }
-
+    Qt::CheckState checkedState = value.Cast<Qt::CheckState>(Qt::PartiallyChecked);
     return checkedState != Qt::PartiallyChecked;
 }
 

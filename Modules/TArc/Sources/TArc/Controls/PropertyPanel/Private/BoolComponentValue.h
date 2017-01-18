@@ -15,8 +15,6 @@ public:
     BoolComponentValue() = default;
 
 protected:
-    Any Convert(Qt::CheckState checkState) const;
-
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
     void ReleaseEditorWidget(QWidget* editor) override;
 
