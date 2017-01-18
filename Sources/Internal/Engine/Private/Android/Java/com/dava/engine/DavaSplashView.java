@@ -129,6 +129,46 @@ public class DavaSplashView extends GLSurfaceView
             gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
         }
 
+        private float[] caculateAspectFitVertices()
+        {
+            float splashWidth = splashBitmap.getWidth();
+            float splashHeight = splashBitmap.getHeight();
+            
+            DeviceManager.DisplayInfo mainDisplayInfo = DeviceManager.instance().getDisplaysInfo()[0];
+            float screenWidth = mainDisplayInfo.width;
+            float screenHeight = mainDisplayInfo.height;
+
+            float aspectX = splashWidth / screenWidth;
+            float aspectY = splashHeight / screenHeight;
+
+            float[] vertices;
+
+            if (aspectX > aspectY)
+            {
+                float height = (screenWidth * splashHeight / splashWidth);
+                float halfHeightNormalized = (height / screenHeight);
+                vertices = new float[] {
+                    -1.0f, -halfHeightNormalized, 0.0f,
+                    1.0f, -halfHeightNormalized, 0.0f,
+                    -1.0f,  halfHeightNormalized, 0.0f,
+                    1.0f,  halfHeightNormalized, 0.0f
+                };
+            }
+            else
+            {
+                float width = (screenHeight * splashWidth / splashHeight);
+                float halfWidthNormalized = (width / screenWidth);
+                vertices = new float[] {
+                    -halfWidthNormalized, -1.0f, 0.0f,
+                    halfWidthNormalized, -1.0f, 0.0f,
+                    -halfWidthNormalized,  1.0f, 0.0f,
+                    halfWidthNormalized,  1.0f, 0.0f
+                };
+            }
+
+            return vertices;
+        }
+
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config)
         {
@@ -147,17 +187,12 @@ public class DavaSplashView extends GLSurfaceView
                             1.0f, 0.0f
                     };
 
-                    short[] indices = new short[]{
+                    short[] indices = {
                             0, 1, 2,
                             1, 3, 2
                     };
 
-                    float[] vertices = new float[]{
-                            -1.0f, -1.0f, 0.0f,
-                             1.0f, -1.0f, 0.0f,
-                            -1.0f,  1.0f, 0.0f,
-                             1.0f,  1.0f, 0.0f
-                    };
+                    float[] vertices = caculateAspectFitVertices();
 
                     setUvCoordsBuffer(textureCoordinates);
                     setIndicesBuffer(indices);
