@@ -93,7 +93,9 @@ ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
     const Type* valueType = node->cachedValue.GetType();
-    if (valueType == Type::Instance<String>())
+    if (valueType == Type::Instance<String>() ||
+        valueType == Type::Instance<FastName>() ||
+        valueType == Type::Instance<const char*>())
     {
         return std::make_unique<TextComponentValue>();
     }
@@ -106,10 +108,6 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
     {
         return std::make_unique<IntComponentValue>();
     }*/
-    else if (valueType == Type::Instance<FastName>())
-    {
-        return std::make_unique<FastNameComponentValue>();
-    }
 
     return EditorComponentExtension::GetEditor(node);
 }

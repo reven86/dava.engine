@@ -203,14 +203,21 @@ void ReflectedPropertyModel::ChildRemoved(std::shared_ptr<PropertyNode> node)
     assert(iter != nodeToItem.end());
 
     ReflectedPropertyItem* item = iter->second;
+    ReflectedPropertyItem* itemParent = item->parent;
+
+    bool needRemoveRow = item->GetPropertyNodesCount() == 1;
+
+    if (needRemoveRow)
+    {
+        QModelIndex parentIndex = MapItem(itemParent);
+        beginRemoveRows(parentIndex, item->position, item->position);
+    }
+
     item->RemovePropertyNode(node);
     nodeToItem.erase(node);
 
-    if (item->GetPropertyNodesCount() == 0)
+    if (needRemoveRow)
     {
-        ReflectedPropertyItem* itemParent = item->parent;
-        QModelIndex parentIndex = MapItem(itemParent);
-        beginRemoveRows(parentIndex, item->position, item->position);
         itemParent->RemoveChild(item->position);
         endRemoveRows();
     }

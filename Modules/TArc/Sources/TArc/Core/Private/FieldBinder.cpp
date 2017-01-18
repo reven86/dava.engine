@@ -70,18 +70,8 @@ public:
             for (size_t i = 0; i < dataFields.size(); ++i)
             {
                 Reflection::Field& dataField = dataFields[i];
-                if (dataField.key.CanCast<const char*>())
-                {
-                    intermidiateFieldMap.emplace(FastName(dataField.key.Cast<const char*>()), i);
-                }
-                else if (dataField.key.CanCast<String>())
-                {
-                    intermidiateFieldMap.emplace(FastName(dataField.key.Cast<String>()), i);
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
+                DVASSERT(dataField.key.CanCast<FastName>());
+                intermidiateFieldMap.emplace(dataField.key.Cast<FastName>(), i);
             }
 
             for (auto& listener : listeners)
@@ -108,21 +98,8 @@ public:
         {
             for (const Any& fieldAnyName : changedFields)
             {
-                FastName fieldName;
-                if (fieldAnyName.CanCast<const char*>())
-                {
-                    fieldName = FastName(fieldAnyName.Cast<const char*>());
-                }
-                else if (fieldAnyName.CanCast<String>())
-                {
-                    fieldName = FastName(fieldAnyName.Cast<String>());
-                }
-                else
-                {
-                    continue;
-                }
-
-                auto iter = listeners.find(FastName(fieldName));
+                DVASSERT(fieldAnyName.CanCast<FastName>());
+                auto iter = listeners.find(fieldAnyName.Cast<FastName>());
                 if (iter != listeners.end())
                 {
                     Reflection field = reflection.GetField(fieldAnyName);
