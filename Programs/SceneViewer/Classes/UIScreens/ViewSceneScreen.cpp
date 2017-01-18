@@ -15,7 +15,6 @@ ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
     , fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
     , gridTest(data.engine, this)
 {
-    data.scenePath = "~doc:/15-effect/test_scene.sc2";
 }
 
 void ViewSceneScreen::LoadResources()
@@ -116,13 +115,7 @@ void ViewSceneScreen::UnloadScene()
 {
     if (scene)
     {
-        scene->RemoveSystem(wasdSystem);
-        scene->RemoveSystem(rotationControllerSystem);
         sceneView->SetScene(nullptr);
-
-        SafeDelete(wasdSystem);
-        SafeDelete(rotationControllerSystem);
-
         scene.reset();
     }
 }
@@ -205,9 +198,9 @@ void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
     DAVA::Vector3 position = DAVA::Vector3(0.f, -45.f, 10.f);
 
     DAVA::Landscape* landscape = FindLandscape(scene);
-    if (landscape)
+    if (landscape != nullptr)
     {
-        DAVA::float32 landscapeHeight = 0.0;
+        DAVA::float32 landscapeHeight = 0.f;
         landscape->GetHeightAtPoint(position, landscapeHeight);
         position.z = landscapeHeight + ViewSceneScreenDetails::ABOVE_LANDSCAPE_ELEVATION;
     }
@@ -316,7 +309,7 @@ void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 {
-    DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
+    //DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
 
     BaseScreen::Draw(geometricData);
 

@@ -81,7 +81,7 @@ private:
 //     Vector2 cursorPosition;
 //     float32 cursorSize = 0.1f;
 
-    FpsMeter fpsMeter;
+    DAVA::FpsMeter fpsMeter;
 
     GridTest gridTest;
 };

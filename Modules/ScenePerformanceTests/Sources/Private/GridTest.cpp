@@ -24,55 +24,51 @@ namespace GridTestDetails
 {
 using namespace DAVA;
 
-const float32 LOW_FPS_THRESHOLD = 57.0f;
+const float32 LOW_FPS_THRESHOLD = 50.f;
 
 const uint32 GRID_SIZE = 8;
 const uint32 ANGLE_COUNT = 8;
-const float32 EXPOSURE_DURATION_SEC = 0.1f;
+const float32 EXPOSURE_DURATION_SEC = 3.f;
 const float32 ELEVATION_ABOVE_LANDSCAPE = 10.f;
 
 const uint32 PANORAMA_IMAGE_SIZE = 512;
 
 const float32 ANGLE_STEP_DEGREES = 360.f / ANGLE_COUNT;
 
-void SetSamplePosition(Scene* scene, GridTestSample& sample)
+void SetSamplePosition(Scene* scene, const GridTestSample& sample)
 {
     DVASSERT(scene != nullptr);
     Camera* camera = scene->GetCurrentCamera();
-    camera->SetPosition(Vector3(sample.pos.x, sample.pos.y, sample.pos.z));
+    camera->SetPosition(sample.pos);
     camera->SetDirection(Vector3(sample.cos, sample.sine, 0));
 }
 
 class Screenshot
 {
 public:
-    explicit Screenshot(UI3DView* sceneView, FilePath& path);
+    explicit Screenshot(UI3DView* sceneView, const FilePath& path)
+        : sceneView(sceneView)
+        , savePath(path) {}
     virtual void MakeScreenshot() = 0;
-    virtual void SaveTexture(Texture* screenshot) = 0;
+    virtual void SaveScreenshot(Texture* screenshot) = 0;
 
     UI3DView* sceneView = nullptr;
-    FilePath savePath;
+    const FilePath& savePath;
     bool saved = false;
 };
-
-Screenshot::Screenshot(UI3DView* sceneView, FilePath& path)
-    : sceneView(sceneView)
-    , savePath(path)
-{
-}
 
 class SectorScreenshot : public Screenshot
 {
 public:
-    explicit SectorScreenshot(UI3DView* sceneView, GridTestSample& sample);
+    explicit SectorScreenshot(UI3DView* sceneView, const GridTestSample& sample);
 
     void MakeScreenshot() override;
-    void SaveTexture(Texture* screenshot) override;
+    void SaveScreenshot(Texture* screenshot) override;
 
-    GridTestSample sample;
+    const GridTestSample& sample;
 };
 
-SectorScreenshot::SectorScreenshot(UI3DView* sceneView, GridTestSample& sample)
+SectorScreenshot::SectorScreenshot(UI3DView* sceneView, const GridTestSample& sample)
     : Screenshot(sceneView, sample.screenshotPath)
     , sample(sample)
 {
@@ -81,10 +77,10 @@ SectorScreenshot::SectorScreenshot(UI3DView* sceneView, GridTestSample& sample)
 void SectorScreenshot::MakeScreenshot()
 {
     SetSamplePosition(sceneView->GetScene(), sample);
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &GridTestDetails::SectorScreenshot::SaveTexture));
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &GridTestDetails::SectorScreenshot::SaveScreenshot));
 }
 
-void SectorScreenshot::SaveTexture(Texture* screenshot)
+void SectorScreenshot::SaveScreenshot(Texture* screenshot)
 {
     ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
@@ -98,7 +94,11 @@ class PanoramaScreenshot : public Screenshot
 public:
     explicit PanoramaScreenshot(UI3DView* sceneView, FilePath& path);
     void MakeScreenshot() override;
-    void SaveTexture(Texture* screenshot) override;
+    void SaveScreenshot(Texture* screenshot) override;
+    
+private:
+    bool vertexFogWasOverriden = false;
+    int32 vertexFogValue = 0;
 };
 
 PanoramaScreenshot::PanoramaScreenshot(UI3DView* sceneView, FilePath& path)
@@ -115,22 +115,27 @@ void PanoramaScreenshot::MakeScreenshot()
 
     if (scene->GetGlobalMaterial())
     {
+        vertexFogWasOverriden = true;
+        vertexFogValue = scene->GetGlobalMaterial()->GetLocalFlagValue(NMaterialFlagName::FLAG_VERTEXFOG);
         scene->GetGlobalMaterial()->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
     }
     Camera* camera = scene->GetCurrentCamera();
-    camera->SetupOrtho(landscapeSize, 1.f, 1, 5000);
-    camera->SetLeft(Vector3(1.f, 0, 0));
-    camera->SetDirection(Vector3(0, 0, -1.f));
-    camera->SetPosition(Vector3(0, 0, 60.f));
+    camera->SetupOrtho(landscapeSize, 1.f, 1.f, 5000.f);
+    camera->SetLeft(Vector3(1.f, 0.f, 0.f));
+    camera->SetDirection(Vector3(0.f, 0.f, -1.f));
+    camera->SetPosition(Vector3(0.f, 0.f, 60.f));
     camera->SetTarget(Vector3(0.f, 0.1f, 0.f));
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &PanoramaScreenshot::SaveTexture));
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &PanoramaScreenshot::SaveScreenshot));
 }
 
-#include <Render/Image/ImageConvert.h>
-
-void PanoramaScreenshot::SaveTexture(Texture* screenshot)
+void PanoramaScreenshot::SaveScreenshot(Texture* screenshot)
 {
+    if (vertexFogWasOverriden)
+    {
+        sceneView->GetScene()->GetGlobalMaterial()->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, vertexFogValue);
+    }
+    
     ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
@@ -174,7 +179,7 @@ private:
 
     GridTest::State state = GridTest::State::Finished;
 
-    FpsMeter fpsMeter;
+    DAVA::FpsMeter fpsMeter;
 
     GridTestResult result;
     DAVA::uint32 currentSampleIndex = 0;
@@ -285,7 +290,7 @@ bool GridTestImpl::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
                 testPosition.pos.x = xPos;
                 testPosition.pos.y = yPos;
 
-                float32 landscapeHeight = 0.0;
+                float32 landscapeHeight = 0.f;
                 landscape->GetHeightAtPoint(testPosition.pos, landscapeHeight);
                 testPosition.pos.z = landscapeHeight + ELEVATION_ABOVE_LANDSCAPE;
 

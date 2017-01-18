@@ -5,26 +5,26 @@
 
 namespace PerformanceResultsScreenDetails
 {
-    using namespace DAVA;
+using namespace DAVA;
 
-    const float32 SECTOR_AXIFUGAL_OFFSET_IN_PIXELS = 2.f;
-    const float32 SECTOR_MARGIN_IN_PIXELS = 2.f;
+const float32 SECTOR_AXIFUGAL_OFFSET_IN_PIXELS = 2.f;
+const float32 SECTOR_MARGIN_IN_PIXELS = 2.f;
 
-    const float32 MAP_RECT_SIDE = 750.f;
-    const float32 MAP_RECT_MARGIN = 10.f;
-    const Rect MAP_RECT = { MAP_RECT_MARGIN, MAP_RECT_MARGIN, MAP_RECT_SIDE, MAP_RECT_SIDE };
+const float32 MAP_RECT_SIDE = 750.f;
+const float32 MAP_RECT_MARGIN = 10.f;
+const Rect MAP_RECT = { MAP_RECT_MARGIN, MAP_RECT_MARGIN, MAP_RECT_SIDE, MAP_RECT_SIDE };
 
-    const float32 INFO_RECT_MARGIN = 10.f;
-    const float32 INFO_RECT_X0 = MAP_RECT_SIDE + MAP_RECT_MARGIN + MAP_RECT_MARGIN;
+const float32 INFO_RECT_MARGIN = 10.f;
+const float32 INFO_RECT_X0 = MAP_RECT_SIDE + MAP_RECT_MARGIN + MAP_RECT_MARGIN;
 
-    const float32 BUTTON_HEIGHT = 60.f;
+const float32 BUTTON_HEIGHT = 60.f;
 
-    const float32 INFO_COLOR_BOXES_Y0 = INFO_RECT_MARGIN;
-    const float32 INFO_RESULTS_Y0 = 120.f;
-    const float32 INFO_PREVIEW_Y0 = 320.f;
+const float32 INFO_COLOR_BOXES_Y0 = INFO_RECT_MARGIN;
+const float32 INFO_RESULTS_Y0 = 120.f;
+const float32 INFO_PREVIEW_Y0 = 320.f;
 
-    const float32 LOW_FPS_THRESHOLD = 50.0f;
-    const float32 MEDIUM_FPS_THRESHOLD = 57.0f;
+const float32 LOW_FPS_THRESHOLD = 40.0f;
+const float32 MEDIUM_FPS_THRESHOLD = 50.0f;
 }
 
 PerformanceResultsScreen::PerformanceResultsScreen(SceneViewerData& data)
@@ -81,7 +81,7 @@ void PerformanceResultsScreen::AddBackgroundMap()
     ScopedPtr<UIControlBackground> panoramaBackground(new UIControlBackground());
     ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(data.gridTestResult.panoramaPath));
     panoramaBackground->SetSprite(sprite);
-    panoramaBackground->SetDrawType(UIControlBackground::DRAW_SCALE_PROPORTIONAL);
+    panoramaBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     panoramaBackground->SetAlign(eAlign::ALIGN_LEFT | eAlign::ALIGN_TOP);
     UIControlBackground::UIMargins panoramaMargins;
     panoramaMargins.left = MAP_RECT.x;
@@ -94,7 +94,8 @@ void PerformanceResultsScreen::AddBackgroundMap()
 
 void PerformanceResultsScreen::RemoveBackgroundMap()
 {
-    SetBackground(new DAVA::UIControlBackground);
+    DAVA::ScopedPtr<DAVA::UIControlBackground> emptyBack(new DAVA::UIControlBackground);
+    SetBackground(emptyBack);
 }
 
 void PerformanceResultsScreen::AddSectors()
@@ -225,9 +226,9 @@ void PerformanceResultsScreen::AddPreviewControls()
     previewFpsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewFpsText);
 
-    float32 imageBoxSide = infoColumnRect.dx;
-    previewImage = new UIControl(Rect(infoColumnRect.x, INFO_PREVIEW_Y0 + font->GetSize(), imageBoxSide, imageBoxSide));
-    previewImage->SetSpriteDrawType(UIControlBackground::DRAW_SCALE_PROPORTIONAL);
+    float32 aspect = GetSize().dx / GetSize().dy;
+    previewImage = new UIControl(Rect(infoColumnRect.x, INFO_PREVIEW_Y0 + font->GetSize(), infoColumnRect.dx, infoColumnRect.dx / aspect));
+    previewImage->SetSpriteDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     AddControl(previewImage);
 }
 
@@ -283,7 +284,7 @@ void PerformanceResultsScreen::OnBackButton(DAVA::BaseObject* caller, void* para
 
 void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    Sector* sector = reinterpret_cast<Sector*>(caller);
+    Sector* sector = static_cast<Sector*>(caller);
     if (sector == nullptr)
     {
         DVASSERT(false, "can't cast to Sector*");
@@ -293,6 +294,8 @@ void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* 
     if (selectedSector != nullptr)
     {
         selectedSector->SetMode(Sector::UNSELECTED);
+        previewImage->SetSprite(nullptr, 0);
+        previewFpsText->SetText(L"");
     }
 
     auto it = sectorToSample.find(sector);

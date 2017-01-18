@@ -43,17 +43,9 @@ const DAVA::Color green = DAVA::Color(0.f, 1.f, 0.f, 0.7f);
 const DAVA::Color yellow = DAVA::Color(1.f, 1.f, 0.f, 0.7f);
 const DAVA::Color red = DAVA::Color(1.f, 0.f, 0.f, 0.7f);
 
-DAVA::Color MakeMoreBright(const DAVA::Color& color)
+DAVA::Color Invert(const DAVA::Color& color)
 {
-    DAVA::Color brighter = color + Color(0.7f, 0.7f, 0.7f, 0.f);
-    if (brighter.r > 1.f)
-        brighter.r = 1.f;
-    if (brighter.g > 1.f)
-        brighter.g = 1.f;
-    if (brighter.b > 1.f)
-        brighter.b = 1.f;
-
-    return brighter;
+    return DAVA::Color(1.f - color.r, 1.f - color.g, 1.f - color.b, color.a);
 }
 
 DAVA::Color GetColorByType(SectorColor type)
@@ -74,12 +66,12 @@ DAVA::Color GetColorByType(SectorColor type)
 
 }
 
-Sector::Sector(DAVA::Vector2 centerPoint, DAVA::float32 startAngle, DAVA::float32 endAngle, DAVA::float32 radius, SectorColor type)
+Sector::Sector(const DAVA::Vector2& centerPoint, DAVA::float32 startAngle, DAVA::float32 endAngle, DAVA::float32 radius, SectorColor type)
     : UIControl(DAVA::Rect(centerPoint.x, centerPoint.y, radius, radius))
 {
     polygon = SectorDetails::GenerateSectorPolygon(centerPoint, startAngle, endAngle, radius);
     fillColorPrimary = SectorDetails::GetColorByType(type);
-    fillColorBright = SectorDetails::MakeMoreBright(fillColorPrimary);
+    fillColorInverted = SectorDetails::Invert(fillColorPrimary);
     borderColor = fillColorPrimary;
     borderColor.a += 0.2f;
     SetMode(mode);
@@ -92,7 +84,7 @@ void Sector::SetMode(Sector::Mode newMode)
     {
     case SELECTED:
     {
-        fillColor = fillColorBright;
+        fillColor = fillColorInverted;
         break;
     }
     case UNSELECTED:
@@ -115,7 +107,7 @@ bool Sector::IsPointInside(const DAVA::Vector2& point, bool) const
     return polygon.IsPointInside(point);
 }
 
-SectorColorBox::SectorColorBox(DAVA::Rect box, SectorColor type)
+SectorColorBox::SectorColorBox(const DAVA::Rect& box, SectorColor type)
     : box(box)
 {
     fillColor = SectorDetails::GetColorByType(type);
