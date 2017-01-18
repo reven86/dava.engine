@@ -55,6 +55,8 @@ const DAVA::String OptionName::Width("-width");
 const DAVA::String OptionName::Height("-height");
 const DAVA::String OptionName::Camera("-camera");
 
+const DAVA::String OptionName::Validate("-validate");
+
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
     return ("-" + DAVA::GPUFamilyDescriptor::GetGPUName(gpuFamily));

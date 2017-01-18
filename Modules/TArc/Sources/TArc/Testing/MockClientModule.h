@@ -4,7 +4,7 @@
 
 #include "Debug/DVAssert.h"
 
-#include <gmock/gmock.h>
+#include "TArc/Testing/MockDefine.h"
 
 namespace DAVA
 {
@@ -37,12 +37,12 @@ public:
     {
     }
 
-    MOCK_METHOD1(OnContextCreated, void(DataContext* context));
-    MOCK_METHOD1(OnContextDeleted, void(DataContext* context));
-    MOCK_METHOD1(OnWindowClosed, void(const WindowKey& key));
-    MOCK_METHOD2(OnContextWillBeChanged, void(DataContext* current, DataContext* newOne));
-    MOCK_METHOD2(OnContextWasChanged, void(DataContext* current, DataContext* oldOne));
-    MOCK_METHOD0(PostInit, void());
+    MOCK_METHOD1_VIRTUAL(OnContextCreated, void(DataContext* context))
+    MOCK_METHOD1_VIRTUAL(OnContextDeleted, void(DataContext* context))
+    MOCK_METHOD1_VIRTUAL(OnWindowClosed, void(const WindowKey& key))
+    MOCK_METHOD2_VIRTUAL(OnContextWillBeChanged, void(DataContext* current, DataContext* newOne))
+    MOCK_METHOD2_VIRTUAL(OnContextWasChanged, void(DataContext* current, DataContext* oldOne))
+    MOCK_METHOD0_VIRTUAL(PostInit, void())
 
     virtual void OnContextCreatedImpl(DataContext* context)
     {
