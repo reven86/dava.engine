@@ -12,6 +12,7 @@
 #include "StringConstants.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
+#include "Base/FastName.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
@@ -253,11 +254,11 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
         materials.erase(globalMaterial);
     }
 
-    const QVector<ProjectManagerData::AvailableMaterialTemplate>* materialTemplates = 0;
+    const DAVA::Vector<MaterialTemplateInfo>* materialTemplates = nullptr;
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     if (data != nullptr)
     {
-        materialTemplates = &data->GetAvailableMaterialTemplates();
+        materialTemplates = data->GetMaterialTemplatesInfo();
     }
 
     DAVA::FastName textureNames[] = {
@@ -324,13 +325,14 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
             }
         }
 
-        if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+        const DAVA::FastName& fxName = (*it)->GetEffectiveFXName();
+        if (fxName.IsValid() && materialTemplates && !materialTemplates->empty() && fxName != DAVA::NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
             // ShadowVolume material is non-assignable and it's okey
             bool templateFound = false;
-            for (int i = 0; i < materialTemplates->size(); ++i)
+            for (const MaterialTemplateInfo& materialTemplate : *materialTemplates)
             {
-                if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
+                if (0 == materialTemplate.path.compare(fxName.c_str()))
                 {
                     templateFound = true;
                     break;
