@@ -7,6 +7,7 @@ namespace DAVA
 namespace PackFormat
 {
 const Array<char8, 4> FILE_MARKER{ { 'D', 'V', 'P', 'K' } };
+const Array<char8, 4> FILE_MARKER_LITE{ { 'D', 'V', 'P', 'L' } };
 
 struct PackFile
 {
@@ -68,8 +69,25 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
-static_assert(sizeof(PackFile::FooterBlock) == 44, "header block size changed, something bad happened!");
-static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
+struct MiniPack
+{
+    struct CompressedBytes
+    {
+    };
+
+    struct Footer
+    {
+        uint32 sizeUncompressed;
+        uint32 sizeCompressed;
+        uint32 crc32Compressed;
+        Compressor::Type type;
+        Array<char8, 4> packMarkerLite;
+    };
+};
+
+static_assert(sizeof(MiniPack::Footer) == 20, "footer block size changed");
+static_assert(sizeof(PackFile::FooterBlock) == 44, "header block size changed");
+static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed");
 
 } // end of PackFormat namespace
 

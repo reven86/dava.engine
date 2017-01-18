@@ -1,11 +1,22 @@
-#ifndef __DAVAENGINE_FILESYSTEM_H__
-#define __DAVAENGINE_FILESYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/ResourceArchive.h"
+
+#ifdef DeleteFile
+#undef DeleteFile
+#endif
+
+#ifdef CreateDirectory
+#undef CreateDirectory
+#endif
+
+#ifdef MoveFile
+#undef MoveFile
+#endif
 
 /**
 	\defgroup filesystem File System
@@ -323,4 +334,3 @@ private:
 };
 };
 
-#endif // __DAVAENGINE_FILESYSTEM_H__

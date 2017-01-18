@@ -100,7 +100,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     intptr_t hFile;
     FileEntry entry;
 
-    WideString searchPath = path.GetNativeAbsolutePathname();
+    WideString searchPath = UTF8Utils::EncodeToWideString(path.GetNativeAbsolutePathname());
     if (searchPath.back() == L'\\' || searchPath.back() == L'/')
         searchPath += L'*';
     else
