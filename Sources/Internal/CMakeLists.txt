@@ -153,6 +153,13 @@ endif()
 
 if (DAVA_PLATFORM_QT)
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+
+    list( APPEND DEFINITIONS    -D__DAVAENGINE_QT__
+                                -DDISABLE_NATIVE_WEBVIEW
+                                -DDISABLE_NATIVE_TEXTFIELD
+                                -DDISABLE_NATIVE_MOVIEVIEW
+                                -DQT_QML_DEBUG_NO_WARNING )
+
 endif()
 
 setup_main_module()

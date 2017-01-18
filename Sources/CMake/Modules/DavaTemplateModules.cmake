@@ -270,7 +270,21 @@ macro( reset_MAIN_MODULE_VALUES )
     endforeach()
 endmacro()
 #
+macro( message_module_log MESSAGE )
+    file( APPEND ${MODULES_LOG_FILE} "${MESSAGE}\n" )
+endmacro()
+#
 macro( setup_main_module )
+
+    set( MODULES_LOG_FILE  ${CMAKE_BINARY_DIR}/MODULES_LOG.txt )
+    get_property( MODULES_LOG_INIT GLOBAL PROPERTY MODULES_LOG_INIT )
+
+    if( NOT MODULES_LOG_INIT )
+        set_property( GLOBAL PROPERTY MODULES_LOG_INIT true )
+        file(WRITE ${MODULES_LOG_FILE} "\n" )
+    endif()
+
+
     if( NOT MODULE_TYPE )
         set( MODULE_TYPE INLINE )
     endif()
@@ -342,6 +356,7 @@ macro( setup_main_module )
 #####
         if( ${MODULE_TYPE} STREQUAL "STATIC" )
 
+            get_property( GLOBAL_DEFINITIONS_PROP GLOBAL PROPERTY GLOABAL_DEFINITIONS )
             get_property( DEFINITIONS_PROP GLOBAL PROPERTY DEFINITIONS )
             get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 
@@ -349,21 +364,22 @@ macro( setup_main_module )
                                 ${MODULE_COMPONENTS} 
                                 ${DEFINITIONS} 
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
+                                ${GLOBAL_DEFINITIONS_PROP}
                                 ${DEFINITIONS_PROP} 
                                 ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} )
 
             list( REMOVE_DUPLICATES MODULE_CACHE )
             list( SORT MODULE_CACHE )
 
-            message( "  " )
-            message( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
+            message_module_log( "  " )
+            message_module_log( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
 
-            message( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )
+            message_module_log( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )
 
             string (REPLACE ";" " " MODULE_CACHE "${MODULE_CACHE}")
             string( MD5  MODULE_CACHE ${MODULE_CACHE} )
 
-            message( "!!!!!!!!!!!!! -->> MD5  : ${MODULE_CACHE}" )
+            message_module_log( "!!!!!!!!!!!!! -->> MD5  : ${MODULE_CACHE}" )
         endif()
 #####            
 
@@ -604,8 +620,6 @@ macro( setup_main_module )
 
                 list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
 
-                #message( ">>>>!!!!!!! MODULE_CACHE_LIST -- ${MODULE_CACHE_LIST}")
-
                 if ( ${_index} GREATER -1 )
                     set( CREATE_NEW_MODULE )
 
@@ -614,10 +628,10 @@ macro( setup_main_module )
                     get_property( MODULE_CACHE_LOADED GLOBAL PROPERTY ${MODULE_CACHE} )
                     set( NAME_MODULE ${MODULE_CACHE_LOADED} )
 
-                    message(" !!!!! FIND CACHE !!!! MODULE_CACHE ---- ${MODULE_CACHE} --- ${MODULE_CACHE_LOADED}")
+                    message_module_log(" !!!!! FIND CACHE !!!! MODULE_CACHE ---- ${MODULE_CACHE} --- ${MODULE_CACHE_LOADED}")
                 endif()
 
-                message( "  " )
+                message_module_log( "  " )
 
 
             endif()
@@ -784,9 +798,9 @@ macro( setup_main_module )
             set_property( GLOBAL PROPERTY ${MODULE_CACHE} "${NAME_MODULE}" )
             append_property(  MODULE_CACHE_LIST ${MODULE_CACHE} )
 
-            message( "  " )
-            message( "APPEND MODULE_CACHE_LIST --->>> ${MODULE_CACHE}")
-            message( "  " )
+            #message_module_log( "  " )
+            #message_module_log( "APPEND MODULE_CACHE_LIST --->>> ${MODULE_CACHE}")
+            #message_module_log( "  " )
 
         endif()
 

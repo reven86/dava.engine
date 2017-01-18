@@ -19,44 +19,34 @@ if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
     set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
 endif()
 
-
-# This definitions should be before "find_package( DavaFramework REQUIRED )"
-# to force defines into DavaFramework project
+set ( DAVA_COREV2 1 )
 
 dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
--D__DAVAENGINE_QT__
--DDISABLE_NATIVE_WEBVIEW
--DDISABLE_NATIVE_TEXTFIELD
--DDISABLE_NATIVE_MOVIEVIEW
--DQT_QML_DEBUG_NO_WARNING
 )
 
+find_package( QT5 REQUIRED )
 
-load_property( PROPERTY_LIST 
-                DEFINITIONS )
+find_package( DavaTools REQUIRED )
+find_package( GMock REQUIRED )
+find_package( QtHelpers REQUIRED )
+
 
 if (UVR_DEV)
     dava_add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
-set ( DAVA_COREV2 1 )
 
-find_package( QT5 REQUIRED )
-find_package( QtHelpers REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS ALL
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
                                                 DAVA_DISABLE_AUTOTESTS 
                                                 DAVA_USE_RENDERSTATS )
-find_package( DavaTools REQUIRED )
+
 find_package( QtTools REQUIRED )
-
-load_property( PROPERTY_LIST 
-                DEFINITIONS )
-
 find_package( TArc REQUIRED )
-find_package( GMock REQUIRED )
+
+#
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )

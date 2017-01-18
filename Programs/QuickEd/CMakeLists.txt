@@ -22,25 +22,23 @@ if (DEPLOY)
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
 
+
+set ( DAVA_COREV2 1 )
+
 dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
--D__DAVAENGINE_QT__
--DDISABLE_NATIVE_WEBVIEW
--DDISABLE_NATIVE_TEXTFIELD
--DDISABLE_NATIVE_MOVIEVIEW
--DQT_QML_DEBUG_NO_WARNING
 )
- 
-set ( DAVA_COREV2 1 )
- 
+
 find_package( QT5 REQUIRED )
+find_package( DavaTools REQUIRED )
 find_package( QtHelpers REQUIRED )
+
 find_package( DavaFramework REQUIRED COMPONENTS ALL
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
                                                 DAVA_DISABLE_AUTOTESTS 
                                                 DAVA_USE_RENDERSTATS )
-find_package( DavaTools REQUIRED )
+
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
 
