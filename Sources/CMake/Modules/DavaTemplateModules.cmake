@@ -361,7 +361,7 @@ macro( setup_main_module )
             get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 
             set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
-                                ${MODULE_COMPONENTS} 
+                                #${MODULE_COMPONENTS} 
                                 ${DEFINITIONS} 
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
                                 ${GLOBAL_DEFINITIONS_PROP}

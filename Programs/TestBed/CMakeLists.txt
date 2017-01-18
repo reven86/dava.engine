@@ -35,9 +35,13 @@ if (DAVA_PLATFORM_QT)
     set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 endif()
 
+dava_add_definitions(-DLOCALIZATION_DEBUG)
+
+
 if( MACOS OR WIN32 )
     add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
+
 
 find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )
 
