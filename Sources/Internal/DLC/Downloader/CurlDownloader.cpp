@@ -419,6 +419,7 @@ DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
     }
     else
     {
+        implErr = retPerform;
         retCode = CurlmCodeToDownloadError(retPerform);
     }
 
@@ -434,6 +435,7 @@ DownloadError CurlDownloader::Download(const String& url, uint64 downloadOffset,
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
     fileErrno = 0;
+    implErr = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
 
     if (DLE_NO_ERROR != retCode)
@@ -611,6 +613,7 @@ DownloadError CurlDownloader::DownloadIntoBuffer(const String& url,
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
     fileErrno = 0;
+    implErr = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
     if (DLE_NO_ERROR != retCode)
     {
@@ -764,7 +767,8 @@ DownloadError CurlDownloader::CurlStatusToDownloadStatus(CURLcode status) const
         return DLE_COULDNT_CONNECT;
 
     default:
-        return DLE_COMMON_ERROR; // need to log status
+        Logger::Error("[CurlDownloader] Unhandled curl status: %u", status);
+        return DLE_COMMON_ERROR;
     }
 }
 
@@ -855,6 +859,7 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL* easyHandle, CURLcode stat
         retError = CurlStatusToDownloadStatus(status);
     }
 
+    implErr = status;
     return retError;
 }
 
