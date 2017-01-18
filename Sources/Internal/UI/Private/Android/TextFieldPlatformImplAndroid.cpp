@@ -467,7 +467,7 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
             else
             {
                 std::shared_ptr<int> connectionIdPtr = std::make_shared<int>(0);
-                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr](){
+                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
                     Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
                     SetSpriteFromImage(image.Get());
                 });
