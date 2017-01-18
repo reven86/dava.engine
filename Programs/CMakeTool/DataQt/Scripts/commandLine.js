@@ -44,7 +44,7 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         if(!fileSystemHelper.IsFileExists(cmakePath)) {
             throw qsTr("cmake path required");
         } else {
-            outputText = outputText.replace("$CMAKE_PATH", cmakePath);
+            outputText = outputText.replace(/\$CMAKE_PATH/g, cmakePath);
         }
     }
 
@@ -52,14 +52,14 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         if(!fileSystemHelper.IsDirExists(sourcePath)) {
             throw qsTr("source path required")
         } else {
-            outputText = outputText.replace("$SOURCE_PATH", sourcePath)
+            outputText = outputText.replace(/\$SOURCE_PATH/g, sourcePath)
         }
     }
     if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
         if(!fileSystemHelper.IsDirExists(davaPath)) {
             throw qsTr("DAVA folder path required");
         } else {
-            outputText = outputText.replace("$DAVA_FRAMEWORK_PATH", davaPath)
+            outputText = outputText.replace(/\$DAVA_FRAMEWORK_PATH/g, davaPath)
         }
     }
     

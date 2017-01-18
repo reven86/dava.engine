@@ -28,6 +28,7 @@ private:
     void OnMulDown(DAVA::BaseObject* sender, void* data, void* callerData);
     void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
+    bool OnToggleFullscreen(DAVA::UIEvent* uie);
 
     DAVA::SigConnectionID sizeChangedSigConn = DAVA::SigConnectionID();
 
@@ -38,4 +39,6 @@ private:
     DAVA::UIStaticText* currect3dScaleText = nullptr;
     DAVA::UIStaticText* pinningText = nullptr;
     DAVA::UIStaticText* pinningMousePosText = nullptr;
+
+    DAVA::uint32 inputHandlerToken = 0;
 };
