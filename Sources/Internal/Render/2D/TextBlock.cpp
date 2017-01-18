@@ -303,7 +303,7 @@ const Vector2& TextBlock::GetTextSize()
     return cacheTextSize;
 }
 
-const Vector<int32>& TextBlock::GetStringSizes()
+const Vector<float32>& TextBlock::GetStringSizes()
 {
     CalculateCacheParamsIfNeed();
     return stringSizes;
@@ -740,9 +740,11 @@ void TextBlock::CalculateCacheParams()
         DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
-        int32 fontHeight = font->GetFontHeight() + yOffset;
-        textMetrics.width = textMetrics.drawRect.dx = 0;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+        float32 fontHeight = font->GetFontHeight() + yOffset;
+        textMetrics.width = 0.f;
+        textMetrics.drawRect.dx = 0;
+        textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+        textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
 
         if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
@@ -768,7 +770,8 @@ void TextBlock::CalculateCacheParams()
                             textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
                             fontHeight = font->GetFontHeight() + yOffset;
-                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+                            textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+                            textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
                             break;
                         }
                     }
@@ -828,7 +831,8 @@ void TextBlock::CalculateCacheParams()
                 textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
                 fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+                textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+                textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
             };
         }
 
@@ -856,7 +860,8 @@ void TextBlock::CalculateCacheParams()
             }
             linesCount = needLines;
         }
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * linesCount - yOffset;
+        textMetrics.height = fontHeight * linesCount - yOffset;
+        textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
 
         // Get lines as visual strings and its metrics
         stringSizes.reserve(linesCount);
@@ -874,7 +879,7 @@ void TextBlock::CalculateCacheParams()
 
             if (requestedSize.dx >= 0)
             {
-                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, static_cast<int32>(drawSize.x)));
+                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, drawSize.x));
             }
             else
             {
