@@ -221,7 +221,7 @@ Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, 
         else
             val.y = component.Get<float32>();
 
-        return VariantType(val);
+        return val;
     }
 
     if (valueType == Type::Instance<Color>())
@@ -236,7 +236,7 @@ Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, 
             DVASSERT(false);
         }
 
-        return VariantType(val);
+        return val;
     }
 
     if (valueType == Type::Instance<Vector4>())

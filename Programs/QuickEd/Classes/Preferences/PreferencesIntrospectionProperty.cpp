@@ -15,7 +15,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     else
     {
         DAVA::VariantType::eVariantType type = DAVA::VariantType::TypeFromMetaInfo(member_->Type());
-        ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
+        ValueProperty::SetDefaultValue(VariantTypeToAny(DAVA::VariantType::FromType(type)));
     }
     valueOnOpen = PreferencesStorage::Instance()->GetValue(member);
     value = valueOnOpen;
@@ -90,5 +90,5 @@ DAVA::uint32 PreferencesIntrospectionProperty::GetFlags() const
 
 void PreferencesIntrospectionProperty::ResetValue()
 {
-    SetValue(PreferencesStorage::Instance()->GetDefaultValue(member));
+    SetValue(VariantTypeToAny(PreferencesStorage::Instance()->GetDefaultValue(member)));
 }

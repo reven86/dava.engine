@@ -76,6 +76,7 @@ public:
     virtual DAVA::Any GetDefaultValue() const;
     virtual void SetDefaultValue(const DAVA::Any& newValue);
     virtual const EnumMap* GetEnumMap() const;
+    virtual const EnumMeta* GetEnumMeta() const;
     virtual void ResetValue();
     virtual bool IsOverriddenLocally() const;
     virtual bool IsOverridden() const;

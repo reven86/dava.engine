@@ -26,6 +26,8 @@ public:
 
     ePropertyType GetType() const override;
     const EnumMap* GetEnumMap() const override;
+    const EnumMeta* GetEnumMeta() const override;
+
     DAVA::Any GetValue() const override;
 
     DAVA::BaseObject* GetBaseObject() const

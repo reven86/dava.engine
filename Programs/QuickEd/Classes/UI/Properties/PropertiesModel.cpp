@@ -226,7 +226,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
         if (property->GetValueType() == Type::Instance<bool>())
         {
-            VariantType newVal(value != Qt::Unchecked);
+            Any newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
             UpdateProperty(property);
             return true;
@@ -434,8 +434,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     
     if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        int32 e = val.Get<int32>();
-        return QString::fromStdString(property->GetEnumMap()->ToString(e));
+        return QString::fromStdString(property->GetEnumMeta()->CastToString(val));
     }
 
     if (property->GetType() == AbstractProperty::TYPE_FLAGS)

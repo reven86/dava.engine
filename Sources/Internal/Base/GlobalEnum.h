@@ -53,11 +53,15 @@ struct EnumMeta
     template <typename T>
     inline static DAVA::Meta<EnumMeta> Create(DAVA::int32 mode = 0)
     {
-        auto castFn = [](DAVA::int32 value)
+        auto castToAnyFn = [](DAVA::int32 value)
         {
             return DAVA::Any(static_cast<T>(value));
         };
-        return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), castFn, mode));
+        auto castToIntFn = [](const DAVA::Any &value)
+        {
+            return static_cast<DAVA::int32>(value.Get<T>());
+        };
+        return DAVA::Meta<EnumMeta>(EnumMeta(GlobalEnumMap<T>::Instance(), castToAnyFn, castToIntFn, mode));
     }
 
     inline const EnumMap* GetEnumMap() const
@@ -67,26 +71,44 @@ struct EnumMeta
 
     inline DAVA::Any Cast(DAVA::int32 value) const
     {
-        return ((mode & EM_NOCAST) != 0) ? DAVA::Any(value) : cast(value);
+        return ((mode & EM_NOCAST) != 0) ? DAVA::Any(value) : castToAny(value);
     }
-
+    
+    inline DAVA::int32 CastToInt(const DAVA::Any &value) const
+    {
+        return ((mode & EM_NOCAST) != 0) ? value.Get<DAVA::int32>() : castToInt(value);
+    }
+    
+    inline DAVA::String CastToString(const DAVA::Any &value) const
+    {
+        return map->ToString(CastToInt(value));
+    }
+    
+    inline DAVA::String CastToString(const DAVA::int32 &value) const
+    {
+        return map->ToString(value);
+    }
+    
     inline bool IsFlags() const
     {
         return (mode & EM_FLAGS) != 0;
     }
 
 private:
-    typedef DAVA::Any (*CastFn)(DAVA::int32);
-
-    EnumMeta(const EnumMap* v, CastFn c, DAVA::int32 mode)
+    typedef DAVA::Any (*CastToAnyFn)(DAVA::int32);
+    typedef DAVA::int32 (*CastToIntFn)(const DAVA::Any&);
+    
+    EnumMeta(const EnumMap* v, CastToAnyFn castToAnyFn, CastToIntFn castToIntFn, DAVA::int32 mode)
         : map(v)
-        , cast(c)
+        , castToAny(castToAnyFn)
+        , castToInt(castToIntFn)
         , mode(mode)
     {
     }
 
     const EnumMap* const map;
-    CastFn const cast;
+    CastToAnyFn const castToAny;
+    CastToIntFn const castToInt;
     const DAVA::int32 mode;
 };
 

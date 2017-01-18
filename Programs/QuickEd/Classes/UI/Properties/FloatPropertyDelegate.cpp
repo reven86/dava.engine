@@ -30,8 +30,8 @@ void FloatPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex&
 {
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    editor->setText(QString("%1").arg(variant.AsFloat()));
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    editor->setText(QString("%1").arg(variant.Get<DAVA::float32>()));
 
     BasePropertyDelegate::SetValueModified(editor, false);
 }

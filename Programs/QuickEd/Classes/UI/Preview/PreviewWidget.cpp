@@ -545,9 +545,9 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
         UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().Get<int32>());
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
-            executor->ChangeProperty(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+            executor->ChangeProperty(node, multilineProperty, UIStaticText::MULTILINE_ENABLED);
         }
-        executor->ChangeProperty(node, textProperty, VariantType(inputText.toStdString()));
+        executor->ChangeProperty(node, textProperty, inputText.toStdString());
         executor->EndMacro();
     }
 }
@@ -886,7 +886,7 @@ void PreviewWidget::OnTransformStateChanged(bool inTransformState)
     }
 }
 
-void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue)
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, Any newValue)
 {
     DVASSERT(!document.isNull());
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();

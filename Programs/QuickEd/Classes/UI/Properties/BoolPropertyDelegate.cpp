@@ -29,9 +29,9 @@ void BoolPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& 
     QComboBox* editor = rawEditor->findChild<QComboBox*>("comboBox");
 
     editor->blockSignals(true);
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DVASSERT(variant.GetType() == DAVA::VariantType::TYPE_BOOLEAN);
-    int comboIndex = editor->findData(QVariant(variant.AsBool()));
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    DVASSERT(variant.CanGet<bool>());
+    int comboIndex = editor->findData(QVariant(variant.Get<bool>()));
     editor->setCurrentIndex(comboIndex);
     editor->blockSignals(false);
 

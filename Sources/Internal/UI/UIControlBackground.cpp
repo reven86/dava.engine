@@ -31,7 +31,7 @@ DAVA_REFLECTION_IMPL(UIControlBackground)
     .Field("contour", &UIControlBackground::GetContourSpritePath, &UIControlBackground::SetContourSpriteFromPath)
     .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification) // TODO: make enum
     [
-    EnumMeta::Create<eSpriteModification>(EnumMeta::EM_NOCAST)
+     EnumMeta::Create<eSpriteModification>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
     ]
     .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode) // TODO: make enum
     [

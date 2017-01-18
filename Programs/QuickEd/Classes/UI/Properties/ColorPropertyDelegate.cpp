@@ -47,7 +47,7 @@ void ColorPropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex
 void ColorPropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     DVASSERT(nullptr != lineEdit);
-    QColor color = ColorToQColor(index.data(Qt::EditRole).value<DAVA::VariantType>().AsColor());
+    QColor color = ColorToQColor(index.data(Qt::EditRole).value<DAVA::Any>().Get<DAVA::Color>());
     lineEdit->setText(QColorToHex(color));
     lineEdit->setProperty("color", color);
 }

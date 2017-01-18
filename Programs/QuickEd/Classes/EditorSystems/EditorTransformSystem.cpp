@@ -832,7 +832,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 originalAngle = angleProperty->GetValue().Get<float32>();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, finalAngle);
     return true;
 }
 
@@ -946,7 +946,7 @@ void EditorTransformSystem::ClampAngle()
         angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, angle);
 }
 
 bool EditorTransformSystem::IsShiftPressed() const

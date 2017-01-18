@@ -104,6 +104,11 @@ const EnumMap* AbstractProperty::GetEnumMap() const
     return nullptr;
 }
 
+const EnumMeta* AbstractProperty::GetEnumMeta() const
+{
+    return nullptr;
+}
+
 void AbstractProperty::ResetValue()
 {
     // Do nothing by default

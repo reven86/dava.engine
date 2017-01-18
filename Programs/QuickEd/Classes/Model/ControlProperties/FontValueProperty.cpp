@@ -18,7 +18,7 @@ void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 
     if (refreshFlags & REFRESH_FONT)
     {
-        reflection.SetValue(VariantType(presetName));
+        reflection.SetValue(presetName);
     }
 }
 

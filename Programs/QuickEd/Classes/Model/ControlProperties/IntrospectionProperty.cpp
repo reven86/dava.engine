@@ -137,6 +137,11 @@ const EnumMap* IntrospectionProperty::GetEnumMap() const
     return nullptr;
 }
 
+const EnumMeta* IntrospectionProperty::GetEnumMeta() const
+{
+    return reflection.GetMeta<EnumMeta>();
+}
+
 Any IntrospectionProperty::GetValue() const
 {
     return reflection.GetValue();

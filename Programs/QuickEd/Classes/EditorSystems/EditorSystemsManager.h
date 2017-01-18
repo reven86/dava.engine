@@ -109,7 +109,7 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
     DAVA::Signal<bool> emulationModeChangedSignal;
     DAVA::Signal<> canvasSizeChanged;
-    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::Any> propertyChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
