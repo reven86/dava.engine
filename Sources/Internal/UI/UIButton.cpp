@@ -23,7 +23,7 @@ UIButton::UIButton(const Rect& rect)
         stateTexts[i] = NULL;
     }
 
-    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(UIControl::GetBackground());
+    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(GetBackground());
 
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
@@ -462,7 +462,7 @@ void UIButton::SetParentColor(const Color& parentColor)
 {
     UIControl::SetParentColor(parentColor);
     if (selectedTextBlock)
-        selectedTextBlock->SetParentColor(UIControl::GetBackground()->GetDrawColor());
+        selectedTextBlock->SetParentColor(GetBackground()->GetDrawColor());
 }
 
 UIControlBackground* UIButton::GetActualBackgroundForState(int32 state) const

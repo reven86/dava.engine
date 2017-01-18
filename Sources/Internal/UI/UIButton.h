@@ -262,6 +262,8 @@ public:
      */
     virtual void CreateBackgroundForState(int32 state);
 
+    using UIControl::GetBackground; //need to avoid name hiding
+
 protected:
     virtual ~UIButton();
 

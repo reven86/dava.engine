@@ -74,8 +74,8 @@ void UIScrollViewTest::LoadResources()
     testButton->SetStateFont(STATE_NORMAL, font);
     testButton->SetStateFontColor(STATE_NORMAL, Color::White);
     testButton->SetStateText(STATE_NORMAL, L"First button");
-    testButton->UIControl::GetBackground()->SetColor(Color(0.6667f, 0.6667f, 0.4980f, 1.0000f));
-    testButton->UIControl::GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    testButton->GetBackground()->SetColor(Color(0.6667f, 0.6667f, 0.4980f, 1.0000f));
+    testButton->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     testButton->SetName("CONTROL_1");
     testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
     testButton->AddControl(testControl);
