@@ -740,7 +740,7 @@ void TextBlock::CalculateCacheParams()
         DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
-        float32 fontHeight = font->GetFontHeight() + yOffset;
+        float32 fontHeight = float32(font->GetFontHeight() + yOffset);
         textMetrics.width = 0.f;
         textMetrics.drawRect.dx = 0;
         textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
@@ -769,7 +769,7 @@ void TextBlock::CalculateCacheParams()
                             font->GetStringMetrics(visualText, &charactersSizes);
                             textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
-                            fontHeight = font->GetFontHeight() + yOffset;
+                            fontHeight = float32(font->GetFontHeight() + yOffset);
                             textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
                             textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
                             break;
@@ -830,7 +830,7 @@ void TextBlock::CalculateCacheParams()
                 font->GetStringMetrics(visualText, &charactersSizes);
                 textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
-                fontHeight = font->GetFontHeight() + yOffset;
+                fontHeight = float32(font->GetFontHeight() + yOffset);
                 textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
                 textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
             };
