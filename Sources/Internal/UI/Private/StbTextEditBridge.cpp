@@ -206,7 +206,7 @@ StbTextEditBridge::StbTextEditBridge(StbTextDelegate* delegate)
     : stb_state(new StbState())
     , delegate(delegate)
 {
-    DVASSERT_MSG(delegate, "StbTextEditBridge must be created with delegate!");
+    DVASSERT(delegate, "StbTextEditBridge must be created with delegate!");
     stb_textedit_initialize_state(stb_state, 0);
 }
 

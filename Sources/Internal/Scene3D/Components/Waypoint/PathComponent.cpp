@@ -2,6 +2,7 @@
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

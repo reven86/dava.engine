@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #include "Engine/Engine.h"
 
@@ -26,11 +27,12 @@ class TextFieldPlatformImpl : public TextFieldStbImpl
 {
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    TextFieldPlatformImpl(Window* /*w*/, UITextField* uiTextField)
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
+        : TextFieldStbImpl(w, uiTextField)
 #else
     TextFieldPlatformImpl(UITextField* uiTextField)
-#endif
         : TextFieldStbImpl(uiTextField)
+#endif
     {
     }
 };

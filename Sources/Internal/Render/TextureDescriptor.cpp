@@ -10,6 +10,7 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -391,7 +392,7 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
 
 void TextureDescriptor::Save() const
 {
-    DVASSERT_MSG(!pathname.IsEmpty(), "Can use this method only after calling Load()");
+    DVASSERT(!pathname.IsEmpty(), "Can use this method only after calling Load()");
     Save(pathname);
 }
 
@@ -515,7 +516,7 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     }
     else
     {
-        DVASSERT_MSG(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
+        DVASSERT(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
     }
 }
 
@@ -1008,7 +1009,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
 
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
-    if (compression[forGPU].format == FORMAT_INVALID)
+    if (forGPU == eGPUFamily::GPU_ORIGIN || compression[forGPU].format == FORMAT_INVALID)
         return 0;
 
     ImageFormat imageFormat = GetImageFormatForGPU(forGPU);

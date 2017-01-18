@@ -339,13 +339,18 @@ public:
             RhiEmptyFrame frame;
             if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
             {
+                if (exitCode == 0)
+                {
+                    exitCode = modules.front()->GetExitCode();
+                }
+
                 modules.front()->BeforeDestroyed();
                 modules.pop_front();
             }
 
             if (modules.empty() == true)
             {
-                engine.QuitAsync(0);
+                engine.QuitAsync(exitCode);
             }
         }
         context->swapBuffers(surface);
@@ -424,6 +429,7 @@ private:
     QOpenGLContext* context = nullptr;
     int argc = 0;
     Vector<char*> argv;
+    int exitCode = 0;
 };
 
 class Core::GuiImpl : public Core::Impl, public UIManager::Delegate
@@ -463,7 +469,7 @@ public:
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
-        DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
+        DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->Init(this, uiManager.get());

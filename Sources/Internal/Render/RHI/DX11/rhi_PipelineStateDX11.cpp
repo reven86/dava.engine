@@ -442,7 +442,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         DAVA::Logger::Error("vertex-shader text:\n");
         DumpShaderText((const char*)(&vprog_bin[0]), (uint32)vprog_bin.size());
         ps->vertexShader = nullptr;
-        DVASSERT_MSG(ps->vertexShader, desc.vprogUid.c_str());
+        DVASSERT(ps->vertexShader, desc.vprogUid.c_str());
     }
 
     hr = D3DCompile((const char*)(&fprog_bin[0]), fprog_bin.size(), "fprog", nullptr, nullptr, "fp_main", fsFeatureLevel,
@@ -480,7 +480,7 @@ static Handle dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         else
         {
             ps->pixelShader = nullptr;
-            DVASSERT_MSG(ps->pixelShader, desc.fprogUid.c_str());
+            DVASSERT(ps->pixelShader, desc.fprogUid.c_str());
         }
     }
     else

@@ -3,6 +3,7 @@
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 #include "Base/Exception.h"
 
 //     +---------------+       +-------------------+

@@ -37,6 +37,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
@@ -341,18 +342,14 @@ int32 EngineBackend::OnFrame()
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
-#if defined(__DAVAENGINE_QT__)
-    if (Renderer::IsInitialized())
-    {
-        rhi::InvalidateCache();
-    }
-#endif
-
     DoEvents();
     if (!appIsSuspended)
     {
         if (Renderer::IsInitialized())
         {
+#if defined(__DAVAENGINE_QT__)
+            rhi::InvalidateCache();
+#endif
             Update(frameDelta);
             UpdateWindows(frameDelta);
         }
@@ -391,21 +388,18 @@ void EngineBackend::UpdateWindows(float32 frameDelta)
 {
     for (Window* w : aliveWindows)
     {
-        if (w->IsVisible())
+        BeginFrame();
         {
-            BeginFrame();
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
-                w->Update(frameDelta);
-            }
-
-            {
-                DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
-                Renderer::GetRenderStats().Reset();
-                w->Draw();
-            }
-            EndFrame();
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
+            w->Update(frameDelta);
         }
+
+        {
+            DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW_WINDOW);
+            Renderer::GetRenderStats().Reset();
+            w->Draw();
+        }
+        EndFrame();
     }
 }
 
@@ -778,6 +772,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
+        
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Init();
+#endif
     }
     else
     {
@@ -804,6 +802,13 @@ void EngineBackend::DestroySubsystems()
         context->autotestingSystem = nullptr;
     }
 #endif
+
+    if (!IsConsoleMode())
+    {
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::Deinit();
+#endif
+    }
 
     if (context->analyticsCore != nullptr)
     {
@@ -922,7 +927,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-
+    
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {
@@ -960,7 +965,7 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
 
     // abort if signal was ignored
     String info = Format("Rendering is not possible and no handler found. Application will likely crash or hang now. Error: 0x%08x", static_cast<DAVA::uint32>(err));
-    DVASSERT_MSG(0, info.c_str());
+    DVASSERT(0, info.c_str());
     Logger::Error("%s", info.c_str());
     abort();
 }

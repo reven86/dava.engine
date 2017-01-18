@@ -1,5 +1,6 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "FileSystem/FilePath.h"
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
 #include <QVariant>
@@ -115,7 +116,7 @@ PropertiesItem::Impl::Impl(JSONObject* impl_, const String& name_)
 
 PropertiesItem::Impl::~Impl()
 {
-    DVASSERT(parent != nullptr)
+    DVASSERT(parent != nullptr);
     if (wasChanged)
     {
         SaveToParent();
@@ -137,7 +138,7 @@ void PropertiesItem::Impl::Set(const QString& key, T value)
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 void PropertiesItem::Impl::Set(const QString& key, const T& value)
 {
-    DVASSERT_MSG(false, "unsupported type: pointer");
+    DVASSERT(false, "unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
@@ -189,7 +190,7 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    DVASSERT_MSG(false, "unsupported type: pointer");
+    DVASSERT(false, "unsupported type: pointer");
 }
 
 QString PropertiesItem::Impl::FromValue(const QJsonValue& value, const QString& defaultValue)
@@ -228,7 +229,7 @@ void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
     QFileInfo fileInfo(dirPathStr);
     if (!fileInfo.isDir())
     {
-        DVASSERT_MSG(false, "Given filePath must be a directory");
+        DVASSERT(false, "Given filePath must be a directory");
         return;
     }
     QString filePathStr = dirPathStr + name;
@@ -264,7 +265,7 @@ void PropertiesHolder::Impl::LoadFromFile()
     }
     else
     {
-        DVASSERT_MSG(false, "Unsupported format of JSON file");
+        DVASSERT(false, "Unsupported format of JSON file");
     }
 }
 

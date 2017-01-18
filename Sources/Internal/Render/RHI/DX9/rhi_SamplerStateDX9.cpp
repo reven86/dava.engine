@@ -72,7 +72,7 @@ _TextureFilterDX9(TextureFilter filter, DAVA::uint32 anisotropyLevel)
         f = anisotropyLevel > 1 ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
         break;
     default:
-        DVASSERT_MSG(0, "Invalid TextureFilter value");
+        DVASSERT(0, "Invalid TextureFilter value");
     }
 
     return f;
@@ -97,7 +97,7 @@ _TextureMipFilterDX9(TextureMipFilter filter, DAVA::uint32 anisotropyLevel)
         f = anisotropyLevel > 1 ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
         break;
     default:
-        DVASSERT_MSG(0, "Invalid TextureMipFilter value");
+        DVASSERT(0, "Invalid TextureMipFilter value");
     }
 
     return f;

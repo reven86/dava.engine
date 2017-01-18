@@ -13,6 +13,8 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 namespace
@@ -535,15 +537,15 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    DVASSERT_MSG(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
-    DVASSERT_MSG(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
-    DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
-    DVASSERT_MSG((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
-                 (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
-                 "Incorrect textureSet or samplerState handle");
+    DVASSERT(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
+    DVASSERT(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
+    DVASSERT(batchDesc.material != nullptr, "Incorrect material");
+    DVASSERT((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
+             (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
+             "Incorrect textureSet or samplerState handle");
 
-    DVASSERT_MSG(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
-    DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
+    DVASSERT(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
+    DVASSERT(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
 
     if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
     {
@@ -1333,6 +1335,10 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
             needGenerateData |= gradient != tiledData->gradient;
             needGenerateData |= contour != tiledData->contour;
             needGenerateData |= size != tiledData->size;
+            needGenerateData |= mask->textures[0] != tiledData->mask_texture;
+            needGenerateData |= detail->textures[0] != tiledData->detail_texture;
+            needGenerateData |= gradient->textures[0] != tiledData->gradient_texture;
+            needGenerateData |= contour->textures[0] != tiledData->contour_texture;
         }
     }
     else
@@ -1351,6 +1357,11 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.detail = detail;
         td.gradient = gradient;
         td.contour = contour;
+
+        td.mask_texture = mask->textures[0];
+        td.detail_texture = detail->textures[0];
+        td.gradient_texture = gradient->textures[0];
+        td.contour_texture = contour->textures[0];
 
         rhi::TextureSetDescriptor textureSetDescriptor;
         textureSetDescriptor.fragmentTextureCount = 4;
@@ -1887,7 +1898,7 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
     if (sideSize > 0.0f)
         gridSize += 2;
 
-    DVASSERT_MSG(gridSize >= 0, "Incorrect grid size value!")
+    DVASSERT(gridSize >= 0, "Incorrect grid size value!");
 
     axisData.resize(gridSize);
 
