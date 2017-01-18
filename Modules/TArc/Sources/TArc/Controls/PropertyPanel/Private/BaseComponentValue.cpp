@@ -82,22 +82,7 @@ InteractiveEditorProxy BaseComponentValue::GetInteractiveEditor()
 
 QString BaseComponentValue::GetPropertyName() const
 {
-    Any fieldName = nodes.front()->field.key;
-    const Type* nameType = fieldName.GetType();
-    if (nameType == Type::Instance<int>())
-    {
-        return QString::number(fieldName.Cast<int>());
-    }
-    else if (nameType == Type::Instance<const char*>())
-    {
-        return QString(fieldName.Cast<const char*>());
-    }
-    else if (nameType == Type::Instance<size_t>())
-    {
-        return QString::number(fieldName.Get<size_t>());
-    }
-
-    return QString::fromStdString(fieldName.Cast<String>());
+    return nodes.front()->field.key.Cast<QString>();
 }
 
 int32 BaseComponentValue::GetPropertiesNodeCount() const
@@ -126,6 +111,7 @@ void BaseComponentValue::RemovePropertyNode(const std::shared_ptr<PropertyNode>&
     auto iter = std::find(nodes.begin(), nodes.end(), node);
     if (iter == nodes.end())
     {
+        DVASSERT(false);
         return;
     }
 

@@ -17,7 +17,7 @@ String TextComponentValue::GetText() const
 
 void TextComponentValue::SetText(const DAVA::String& text)
 {
-    SetValue(Convert(text));
+    SetValue(text);
 }
 
 QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
@@ -31,11 +31,6 @@ QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
 void TextComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
     editor->deleteLater();
-}
-
-Any TextComponentValue::Convert(const DAVA::String& text) const
-{
-    return Any(text);
 }
 
 bool TextComponentValue::IsReadOnly() const
@@ -57,15 +52,5 @@ DAVA_REFLECTION_IMPL(TextComponentValue)
     .End();
 }
 
-Any FastNameComponentValue::Convert(const DAVA::String& text) const
-{
-    return Any(FastName(text));
-}
-
-DAVA_REFLECTION_IMPL(FastNameComponentValue)
-{
-    ReflectionRegistrator<FastNameComponentValue>::Begin()
-    .End();
-}
 }
 }

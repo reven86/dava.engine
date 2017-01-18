@@ -22,7 +22,7 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflecti
     DVASSERT(data != nullptr);
 
     DAVA::RefPtr<SceneEditor2> scene = data->GetScene();
-    scene->BeginBatch("Set property value", objects.size());
+    scene->BeginBatch("Set property value", static_cast<DAVA::uint32>(objects.size()));
     for (const DAVA::Reflection::Field& field : objects)
     {
         scene->Exec(std::make_unique<SetFieldValueCommand>(field, newValue));

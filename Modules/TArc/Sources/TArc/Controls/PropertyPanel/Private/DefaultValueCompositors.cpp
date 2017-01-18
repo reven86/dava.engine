@@ -31,27 +31,12 @@ Any TextValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& no
         }
     }
 
-    if (value.GetType() == Type::Instance<DAVA::FastName>())
-    {
-        return String(value.Get<DAVA::FastName>().c_str());
-    }
-
-    return value.Get<String>();
+    return value.Cast<String>();
 }
 
 bool TextValueCompositor::IsValidValue(const Any& value) const
 {
-    String text;
-    if (value.CanGet<FastName>())
-    {
-        text = value.Get<FastName>().c_str();
-    }
-
-    if (value.CanGet<String>())
-    {
-        text = value.Get<String>();
-    }
-    return text != multipleValuesValue;
+    return value.Cast<String>() != multipleValuesValue;
 }
 
 } // namespace TArc

@@ -17,8 +17,6 @@ public:
     TextComponentValue() = default;
 
 protected:
-    virtual Any Convert(const DAVA::String& text) const;
-
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
     void ReleaseEditorWidget(QWidget* editor) override;
 
@@ -33,12 +31,5 @@ private:
     DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);
 };
 
-class FastNameComponentValue : public TextComponentValue
-{
-private:
-    Any Convert(const DAVA::String& text) const;
-
-    DAVA_VIRTUAL_REFLECTION(FastNameComponentValue, TextComponentValue);
-};
 }
 }

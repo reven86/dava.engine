@@ -12,10 +12,10 @@ SetFieldValueCommand::SetFieldValueCommand(const DAVA::Reflection::Field& field,
 
 void SetFieldValueCommand::Redo()
 {
-    reflection.SetValue(newValue);
+    reflection.SetValueWithCast(newValue);
 }
 
 void SetFieldValueCommand::Undo()
 {
-    reflection.SetValue(oldValue);
+    reflection.SetValueWithCast(oldValue);
 }

@@ -33,6 +33,7 @@ protected:
     // Method init has been written only for backward compatibility. Try not using it
     virtual void Init(const EngineContext* engineContext);
     virtual void Init(Core* tarcCore);
+    virtual void RegisterEditorAnyCasts();
     virtual void Cleanup();
 
     virtual bool AllowMultipleInstances() const;
