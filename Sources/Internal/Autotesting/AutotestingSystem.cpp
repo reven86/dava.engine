@@ -137,19 +137,15 @@ void AutotestingSystem::OnAppStarted()
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
-
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
+ 
+#if defined(__DAVAENGINE_COREV2__)
+    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+#endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-
-    Texture::FBODescriptor desc;
-    desc.width = uint32(size.dx);
-    desc.height = uint32(size.dy);
-    desc.format = FORMAT_RGBA8888;
-    desc.needDepth = true;
-    desc.needPixelReadback = true;
-
-    screenshotTexture = Texture::CreateFBO(desc);
+    ResetScreenshotTexture(size);
 }
 
 void AutotestingSystem::OnAppFinished()
@@ -314,6 +310,7 @@ void AutotestingSystem::Update(float32 timeElapsed)
     {
         screenshotRequested = false;
 
+        screenshotTexture->Retain();
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, screenshotTexture);
         JobManager::Instance()->CreateWorkerJob(fn);
         isScreenShotSaving = true;
@@ -464,6 +461,30 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     int64 finishTime = SystemTimer::GetMs();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %lld", finishTime - startTime);
     isScreenShotSaving = false;
+
+    SafeRelease(texture);
+}
+
+void AutotestingSystem::OnWindowSizeChanged(DAVA::Window*, Size2f windowSize, Size2f surfaceSize)
+{
+    Size2i size;
+    size.dx = static_cast<int>(surfaceSize.dx);
+    size.dy = static_cast<int>(surfaceSize.dy);
+    ResetScreenshotTexture(size);
+}
+
+void AutotestingSystem::ResetScreenshotTexture(Size2i size)
+{
+    SafeRelease(screenshotTexture);
+
+    Texture::FBODescriptor desc;
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = FORMAT_RGBA8888;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+
+    screenshotTexture = Texture::CreateFBO(desc);
 }
 
 void AutotestingSystem::ClickSystemBack()

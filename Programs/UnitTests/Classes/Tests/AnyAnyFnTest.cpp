@@ -231,6 +231,32 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         DoAutoStorageSharedTest<const String*>(&s);
     }
 
+    DAVA_TEST (TypeTest)
+    {
+        struct ccc
+        {
+        };
+
+        const Type* t1 = Type::Instance<ccc&>();
+        const Type* t2 = Type::Instance<ccc const&>();
+        const Type* t3 = Type::Instance<const ccc&>();
+
+        const Type* tp1 = Type::Instance<ccc*>();
+        const Type* tp2 = Type::Instance<ccc const*>();
+        const Type* tp3 = Type::Instance<const ccc* const>();
+
+        TEST_VERIFY(t1 != t2);
+        TEST_VERIFY(t2 == t3);
+        TEST_VERIFY(t1->GetTypeFlags() != t2->GetTypeFlags());
+
+        TEST_VERIFY(tp1 != tp2);
+        TEST_VERIFY(tp1 != tp3);
+        TEST_VERIFY(tp2 != tp3);
+        TEST_VERIFY(tp1->GetTypeFlags() != tp2->GetTypeFlags());
+        TEST_VERIFY(tp1->GetTypeFlags() != tp3->GetTypeFlags());
+        TEST_VERIFY(tp2->GetTypeFlags() != tp3->GetTypeFlags());
+    }
+
     DAVA_TEST (AnyMove)
     {
         int32 v = 516273;
@@ -416,31 +442,31 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(a == b);
 
         // load test
-        a.LoadValue(&v1, Type::Instance<int>());
+        a.LoadData(&v1, Type::Instance<int>());
         TEST_VERIFY(a.Get<int>() == v1);
 
         // store test
-        a.StoreValue(&v2, sizeof(v2));
+        a.StoreData(&v2, sizeof(v2));
         TEST_VERIFY(v1 == v2);
 
         // load/store pointers
-        a.LoadValue(&iptr1, Type::Instance<int*>());
-        a.StoreValue(&iptr2, sizeof(iptr2));
+        a.LoadData(&iptr1, Type::Instance<int*>());
+        a.StoreData(&iptr2, sizeof(iptr2));
         TEST_VERIFY(iptr1 == iptr2);
 
         // load/store trivial types
         Trivial triv;
         Trivial triv1{ 11, 22 };
-        a.LoadValue(&triv, Type::Instance<Trivial>());
+        a.LoadData(&triv, Type::Instance<Trivial>());
         TEST_VERIFY(a.Get<Trivial>() == triv);
-        a.StoreValue(&triv1, sizeof(triv1));
+        a.StoreData(&triv1, sizeof(triv1));
         TEST_VERIFY(triv1 == triv);
 
         // load/store fail cases
         NotTrivial not_triv;
-        TEST_VERIFY(!a.LoadValue(&not_triv, Type::Instance<NotTrivial>()));
-        TEST_VERIFY(!a.StoreValue(&not_triv, sizeof(not_triv)));
-        TEST_VERIFY(!a.StoreValue(&triv, sizeof(triv) / 2));
+        TEST_VERIFY(!a.LoadData(&not_triv, Type::Instance<NotTrivial>()));
+        TEST_VERIFY(!a.StoreData(&not_triv, sizeof(not_triv)));
+        TEST_VERIFY(!a.StoreData(&triv, sizeof(triv) / 2));
     }
 
     DAVA_TEST (AnyCastTest)

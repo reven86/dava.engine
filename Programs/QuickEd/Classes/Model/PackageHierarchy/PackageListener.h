@@ -34,6 +34,8 @@ public:
 
     virtual void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from){};
     virtual void ImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from){};
+
+    virtual void StyleSheetsWereRebuilt(){};
 };
 
 inline PackageListener::~PackageListener()

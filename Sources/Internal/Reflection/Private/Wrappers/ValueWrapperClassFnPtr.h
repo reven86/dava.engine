@@ -59,6 +59,18 @@ public:
         return false;
     }
 
+    inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        using UnrefSetT = typename std::remove_reference<SetT>::type;
+
+        if (value.CanCast<UnrefSetT>())
+        {
+            return SetValue(object, value.Cast<UnrefSetT>());
+        }
+
+        return false;
+    }
+
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
     {
         auto is_pointer = std::integral_constant<bool, std::is_pointer<GetT>::value>();

@@ -41,7 +41,7 @@ public:
 class StyleSheetRootProperty : public AbstractProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode* styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties);
+    StyleSheetRootProperty(StyleSheetNode* styleSheet, const DAVA::UIStyleSheetSourceInfo& sourceInfo, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties);
 
 protected:
     virtual ~StyleSheetRootProperty();
