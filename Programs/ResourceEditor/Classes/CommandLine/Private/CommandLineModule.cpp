@@ -1,35 +1,33 @@
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
 
-namespace REConsoleModuleCommonDetail
+namespace CommandLineModuleDetail
 {
-void SetupLogger(const DAVA::String& logLevelString)
+void SetupLogger(const DAVA::String& requestedLevelString)
 {
-    DAVA::Vector<DAVA::String> levels =
+    static const DAVA::UnorderedMap<DAVA::String, DAVA::Logger::eLogLevel> levels =
     {
-      "f", // LEVEL_FRAMEWORK
-      "d", // LEVEL_DEBUG
-      "i", // LEVEL_INFO
-      "w", // LEVEL_WARNING
-      "e" // LEVEL_ERROR
+      { "f", DAVA::Logger::eLogLevel::LEVEL_FRAMEWORK },
+      { "d", DAVA::Logger::eLogLevel::LEVEL_DEBUG },
+      { "i", DAVA::Logger::eLogLevel::LEVEL_INFO },
+      { "w", DAVA::Logger::eLogLevel::LEVEL_WARNING },
+      { "e", DAVA::Logger::eLogLevel::LEVEL_ERROR }
     };
 
     DAVA::Logger::eLogLevel requestedLevel = DAVA::Logger::LEVEL_INFO;
-    for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(levels.size()); i < count; ++i)
+    const auto& found = levels.find(requestedLevelString);
+    if (found != levels.end())
     {
-        if (levels[i] == logLevelString)
-        {
-            requestedLevel = static_cast<DAVA::Logger::eLogLevel>(i);
-            break;
-        }
+        requestedLevel = found->second;
     }
+
     DAVA::Logger::Instance()->SetLogLevel(requestedLevel);
 }
 }
 
-REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
+CommandLineModule::CommandLineModule(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
     : commandLine(commandLine_)
     , options(moduleName)
 {
@@ -41,13 +39,13 @@ REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& c
     options.AddOption("-teamcity", DAVA::VariantType(false), "Enable extra output in teamcity format");
 }
 
-void REConsoleModuleCommon::PostInit()
+void CommandLineModule::PostInit()
 {
     isInitialized = options.Parse(commandLine);
     if (isInitialized)
     {
         DAVA::String logLevel = options.GetOption("-log").AsString();
-        REConsoleModuleCommonDetail::SetupLogger(logLevel);
+        CommandLineModuleDetail::SetupLogger(logLevel);
 
         DAVA::FilePath logFile = options.GetOption("-logfile").AsString();
         if (logFile.IsEmpty() == false)
@@ -62,9 +60,14 @@ void REConsoleModuleCommon::PostInit()
         }
         isInitialized = PostInitInternal();
     }
+
+    if (!isInitialized)
+    {
+        result = DAVA::Result::RESULT_ERROR;
+    }
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
+DAVA::TArc::ConsoleModule::eFrameResult CommandLineModule::OnFrame()
 {
     bool showHelp = options.GetOption("-h").AsBool();
     if (showHelp || isInitialized == false)
@@ -76,29 +79,29 @@ DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
     return OnFrameInternal();
 }
 
-void REConsoleModuleCommon::BeforeDestroyed()
+void CommandLineModule::BeforeDestroyed()
 {
     BeforeDestroyedInternal();
 }
 
-bool REConsoleModuleCommon::PostInitInternal()
+bool CommandLineModule::PostInitInternal()
 {
     //base implementation is empty
     return true;
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrameInternal()
+DAVA::TArc::ConsoleModule::eFrameResult CommandLineModule::OnFrameInternal()
 {
     //base implementation is empty
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-void REConsoleModuleCommon::BeforeDestroyedInternal()
+void CommandLineModule::BeforeDestroyedInternal()
 {
     //base implementation is empty
 }
 
-void REConsoleModuleCommon::ShowHelpInternal()
+void CommandLineModule::ShowHelpInternal()
 {
     DAVA::String usage = options.GetUsageString();
     DAVA::Logger::Info("\nDetails:\n%s", usage.c_str());

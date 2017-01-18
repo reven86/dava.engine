@@ -21,6 +21,7 @@
 #include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/SceneExporterTool.h"
+#include "CommandLine/SceneValidationTool.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"

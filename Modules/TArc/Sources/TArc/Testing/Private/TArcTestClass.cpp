@@ -240,5 +240,10 @@ void TestClass::CreateTestedModules()
 
 Signal<Core*> TestClass::coreChanged;
 
+// ContextAccessor* TestClass::GetAccessor()
+// {
+//     return core->GetAccessor();
+// }
+
 } // namespace TArc
 } // namespace DAVA

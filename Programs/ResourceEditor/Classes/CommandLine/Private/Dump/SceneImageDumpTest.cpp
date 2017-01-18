@@ -1,17 +1,16 @@
 #include "CommandLine/SceneImageDump.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
-
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 #include <memory>
 
@@ -33,9 +32,9 @@ DAVA_TARC_TESTCLASS(SceneImageDumpTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SIDTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SIDTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SIDTestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SIDTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -55,14 +54,14 @@ DAVA_TARC_TESTCLASS(SceneImageDumpTest)
           FilePath(SIDTestDetail::outPathnameStr).GetAbsolutePathname()
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneImageDump>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneImageDump>(cmdLine);
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         ImageInfo info = ImageSystem::GetImageInfo(SIDTestDetail::outPathnameStr);
         TEST_VERIFY(info.IsEmpty() == false);
         TEST_VERIFY(info.width == 64);
         TEST_VERIFY(info.height == 64);
 
-        REConsoleModuleTestUtils::ClearTestFolder(SIDTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SIDTestDetail::projectStr);
     }
 };
