@@ -481,6 +481,43 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
         const EnumMap* enumMap = property->GetEnumMap();
         PutValue(name, enumMap->ToString(value.Get<int32>()));
     }
+    else if (value.CanGet<Vector2>())
+    {
+        BeginArray(name);
+        const Vector2& vector = value.Get<Vector2>();
+        PutValue(AnyToString(vector.x));
+        PutValue(AnyToString(vector.y));
+        EndArray();
+    }
+    else if (value.CanGet<Vector3>())
+    {
+        BeginArray(name);
+        const Vector3& vector = value.Get<Vector3>();
+        PutValue(AnyToString(vector.x));
+        PutValue(AnyToString(vector.y));
+        PutValue(AnyToString(vector.z));
+        EndArray();
+    }
+    else if (value.CanGet<Vector4>())
+    {
+        BeginArray(name);
+        const Vector4& vector = value.Get<Vector4>();
+        PutValue(AnyToString(vector.x));
+        PutValue(AnyToString(vector.y));
+        PutValue(AnyToString(vector.z));
+        PutValue(AnyToString(vector.w));
+        EndArray();
+    }
+    else if (value.CanGet<Color>())
+    {
+        BeginArray(name);
+        const Color& color = value.Get<Color>();
+        PutValue(AnyToString(color.r));
+        PutValue(AnyToString(color.g));
+        PutValue(AnyToString(color.b));
+        PutValue(AnyToString(color.a));
+        EndArray();
+    }
     else
     {
         PutValue(name, AnyToString(value));

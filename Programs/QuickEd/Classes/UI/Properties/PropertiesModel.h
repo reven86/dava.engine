@@ -2,7 +2,6 @@
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include "Base/RefPtr.h"
-#include "FileSystem/VariantType.h"
 
 #include "Model/ControlProperties/PropertyListener.h"
 

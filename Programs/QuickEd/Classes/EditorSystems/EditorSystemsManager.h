@@ -13,7 +13,6 @@ namespace DAVA
 {
 class UIControl;
 class UIEvent;
-class VariantType;
 class UIGeometricData;
 class RenderWidget;
 }

@@ -22,7 +22,7 @@ DAVA_REFLECTION_IMPL(ValueProperty)
 
 ValueProperty::ValueProperty(const String& propName, const DAVA::Type *type_, bool builtinSubProps)
     : name(propName)
-    , valueType(type_)
+    , valueType(type_ != nullptr ? type_->Decay() : nullptr)
 {
     if (builtinSubProps)
     {
@@ -127,7 +127,7 @@ Any ValueProperty::GetDefaultValue() const
 void ValueProperty::SetDefaultValue(const Any& newValue)
 {
     const Type *valueType = GetValueType();
-    DVASSERT(newValue.GetType() == valueType || newValue.GetType() == valueType->Decay()); // TODO: Check Decay
+    DVASSERT(newValue.GetType() == valueType);
 
     defaultValue = newValue;
     if (!overridden)

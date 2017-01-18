@@ -87,7 +87,7 @@ const float32 TRANSFORM_EPSILON = 0.0005f;
 
 struct ChangePropertyAction
 {
-    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::Any& value_)
         : node(node_)
         , property(property_)
         , value(value_)
@@ -95,7 +95,7 @@ struct ChangePropertyAction
     }
     ControlNode* node = nullptr;
     AbstractProperty* property = nullptr;
-    DAVA::VariantType value;
+    DAVA::Any value;
 };
 }
 
@@ -317,7 +317,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         AbstractProperty* property = positionProperty;
         Vector2 originalPosition = property->GetValue().Get<Vector2>();
         Vector2 finalPosition(originalPosition + adjustedPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+        propertiesToChange.emplace_back(node, property, Any(finalPosition));
         delta = ::Rotate(adjustedPosition, gd->angle);
         delta *= gd->scale;
     }
@@ -334,7 +334,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         AbstractProperty* property = nodeToMove->positionProperty;
         Vector2 originalPosition = property->GetValue().Get<Vector2>();
         Vector2 finalPosition(originalPosition + deltaPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+        propertiesToChange.emplace_back(node, property, Any(finalPosition));
     }
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
@@ -564,11 +564,11 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     if (activeControlNode->GetParent() != nullptr)
     {
         Vector2 originalPosition = positionProperty->GetValue().Get<Vector2>();
-        propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));
+        propertiesToChange.emplace_back(activeControlNode, positionProperty, Any(originalPosition + deltaPosition));
     }
     Vector2 originalSize = sizeProperty->GetValue().Get<Vector2>();
     Vector2 finalSize(originalSize + adjustedSize);
-    propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
+    propertiesToChange.emplace_back(activeControlNode, sizeProperty, Any(finalSize));
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
@@ -713,13 +713,13 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
 {
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
-    propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
+    propertiesToChange.emplace_back(activeControlNode, pivotProperty, Any(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 rotatedDeltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
     Vector2 originalPos(positionProperty->GetValue().Get<Vector2>());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
-    propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
+    propertiesToChange.emplace_back(activeControlNode, positionProperty, Any(finalPosition));
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {

@@ -42,22 +42,22 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
     propertyItemDelegates[AbstractProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<Vector2>()] = new Vector2PropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<String>()] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<Color>()] = new ColorPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<WideString>()] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<FilePath>()] = new FilePathPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<int8>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<uint8>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<int16>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<uint16>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<int32>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<uint32>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<int64>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<uint64>()] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<float32>()] = new FloatPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<bool>()] = new BoolPropertyDelegate(this);
-    variantTypeItemDelegates[Type::Instance<Vector4>()] = new Vector4PropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Vector2>()] = new Vector2PropertyDelegate(this);
+    anyItemDelegates[Type::Instance<String>()] = new StringPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Color>()] = new ColorPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<WideString>()] = new StringPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<FilePath>()] = new FilePathPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int8>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint8>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int16>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint16>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int32>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint32>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int64>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint64>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<float32>()] = new FloatPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<bool>()] = new BoolPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Vector4>()] = new Vector4PropertyDelegate(this);
 
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();
@@ -87,7 +87,7 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
         SafeDelete(iter.value());
     }
 
-    for (auto iter = variantTypeItemDelegates.begin(); iter != variantTypeItemDelegates.end(); ++iter)
+    for (auto iter = anyItemDelegates.begin(); iter != anyItemDelegates.end(); ++iter)
     {
         SafeDelete(iter.value());
     }
@@ -225,8 +225,14 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
             return propNameIt.value();
         }
 
-        auto varIt = variantTypeItemDelegates.find(property->GetValueType());
-        if (varIt != variantTypeItemDelegates.end())
+        auto varIt = anyItemDelegates.find(property->GetValueType());
+        if (varIt != anyItemDelegates.end())
+        {
+            return varIt.value();
+        }
+
+        varIt = anyItemDelegates.find(property->GetValueType()->Decay());
+        if (varIt != anyItemDelegates.end())
         {
             return varIt.value();
         }

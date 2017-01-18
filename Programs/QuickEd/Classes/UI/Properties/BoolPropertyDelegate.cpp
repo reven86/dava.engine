@@ -45,9 +45,9 @@ bool BoolPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* 
 
     QComboBox* comboBox = rawEditor->findChild<QComboBox*>("comboBox");
 
-    DAVA::VariantType variantType(comboBox->itemData(comboBox->currentIndex()).toBool());
+    DAVA::Any variantType(comboBox->itemData(comboBox->currentIndex()).toBool());
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(variantType);
+    variant.setValue<DAVA::Any>(variantType);
 
     return model->setData(index, variant, Qt::EditRole);
 }

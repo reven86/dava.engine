@@ -326,6 +326,8 @@ String AnyToString(const Any& val)
         return val.Get<bool>() ? "true" : "false";
     }
     
+
+    DVASSERT(false);
     return String("");
 }
 
@@ -379,12 +381,28 @@ VariantType AnyToVariantType(const DAVA::Any &val)
     {
         return VariantType(val.Get<bool>());
     }
+    else if (val.CanGet<Color>())
+    {
+        return VariantType(val.Get<Color>());
+    }
+    else if (val.CanGet<Vector2>())
+    {
+        return VariantType(val.Get<Vector2>());
+    }
+    else if (val.CanGet<Vector3>())
+    {
+        return VariantType(val.Get<Vector3>());
+    }
+    else if (val.CanGet<Vector4>())
+    {
+        return VariantType(val.Get<Vector4>());
+    }
     
     DVASSERT(false); // TODO: Implement all cases
     return VariantType();
 }
 
-Any VariantTypeToAny(const DAVA::VariantType &val)
+Any VariantTypeToAny(const VariantType &val)
 {
     switch (val.GetType())
     {
@@ -399,7 +417,7 @@ Any VariantTypeToAny(const DAVA::VariantType &val)
         case VariantType::TYPE_INT16:
             return Any(val.AsInt16());
         case VariantType::TYPE_UINT16:
-            return Any(val.AsUInt16());
+            return Any(static_cast<uint16>(val.AsUInt16()));
         case VariantType::TYPE_INT32:
             return Any(val.AsInt32());
         case VariantType::TYPE_UINT32:

@@ -57,7 +57,7 @@ bool Vector4PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
     Vector4 vector = StringToVector<Vector4>(editor->text());
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(VariantType(vector));
+    variant.setValue<DAVA::Any>(Any(vector));
 
     return model->setData(index, variant, Qt::EditRole);
 }

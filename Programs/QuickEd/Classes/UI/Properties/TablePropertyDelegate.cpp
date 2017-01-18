@@ -54,20 +54,20 @@ bool TablePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel*
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::Any variantType = index.data(Qt::EditRole).value<DAVA::Any>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
 
-    if (variantType.CanGet<DAVA::String>())
+    if (value.CanGet<DAVA::String>())
     {
-        variantType.Set(QStringToString(editor->text()));
+        value.Set(QStringToString(editor->text()));
     }
     else
     {
         DVASSERT(false);
-        variantType.Set(QStringToWideString(editor->text()));
+        value.Set(QStringToWideString(editor->text()));
     }
 
     QVariant variant;
-    variant.setValue<DAVA::Any>(variantType);
+    variant.setValue<DAVA::Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }

@@ -38,13 +38,13 @@ bool FilePathPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMod
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
     DVASSERT(!lineEdit.isNull());
-    DAVA::Any variantType = index.data(Qt::EditRole).value<DAVA::Any>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
     DAVA::String str = QStringToString(lineEdit->text());
     DAVA::FilePath filePath = str;
-    variantType.Set(filePath);
+    value.Set(filePath);
 
     QVariant variant;
-    variant.setValue<DAVA::Any>(variantType);
+    variant.setValue<DAVA::Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }

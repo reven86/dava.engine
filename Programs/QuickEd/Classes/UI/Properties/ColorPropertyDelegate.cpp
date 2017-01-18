@@ -60,9 +60,9 @@ bool ColorPropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* mo
     DVASSERT(nullptr != lineEdit);
 
     QColor newColor = HexToQColor(lineEdit->text());
-    DAVA::VariantType color(QColorToColor(newColor));
+    DAVA::Any color(QColorToColor(newColor));
     QVariant colorVariant;
-    colorVariant.setValue<DAVA::VariantType>(color);
+    colorVariant.setValue<DAVA::Any>(color);
     return model->setData(index, colorVariant, Qt::EditRole);
 }
 

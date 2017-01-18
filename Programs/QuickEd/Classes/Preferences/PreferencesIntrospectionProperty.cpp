@@ -10,7 +10,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
     if (defaultValue.type != DAVA::VariantType::TYPE_NONE)
     {
-        ValueProperty::SetDefaultValue(defaultValue);
+        ValueProperty::SetDefaultValue(VariantTypeToAny(defaultValue));
     }
     else
     {
@@ -51,7 +51,7 @@ void PreferencesIntrospectionProperty::SetValue(const DAVA::Any& val)
 
 DAVA::Any PreferencesIntrospectionProperty::GetValue() const
 {
-    return value;
+    return VariantTypeToAny(value);
 }
 
 const EnumMap* PreferencesIntrospectionProperty::GetEnumMap() const

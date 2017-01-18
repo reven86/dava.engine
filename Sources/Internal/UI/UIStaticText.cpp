@@ -53,7 +53,7 @@ DAVA_REFLECTION_IMPL(UIStaticText)
     ]
     .Field("fitting", &UIStaticText::GetFittingOption, &UIStaticText::SetFittingOption) // TODO: make enum
     [
-    EnumMeta::Create<TextBlock::eFitType>(EnumMeta::EM_NOCAST)
+     EnumMeta::Create<TextBlock::eFitType>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
     ]
     .Field("textalign", &UIStaticText::GetTextAlign, &UIStaticText::SetTextAlign) // TODO: make enum // TODO: camel style
     [
