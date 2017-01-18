@@ -12,7 +12,6 @@ android {
 
         externalNativeBuild {
             ndkBuild {
-                abiFilters 'armeabi-v7a', 'x86'
                 arguments '-j', '8'
                 if (OperatingSystem.current().isWindows()) {
                     arguments.add('APP_SHORT_COMMANDS=true')
@@ -37,6 +36,35 @@ android {
             externalNativeBuild {
                 ndkBuild {
                     arguments 'NDK_DEBUG=1'
+                }
+            }
+        }
+    }
+
+    productFlavors {
+        fat {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'armeabi-v7a', 'x86'
+                }
+            }
+        }
+
+        armv7a {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'armeabi-v7a'
+                }
+            }
+        }
+
+        x86 {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'x86'
                 }
             }
         }
