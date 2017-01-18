@@ -40,11 +40,10 @@ void CheckBox::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fiel
 
     if (shouldUpdateState == true)
     {
-        //        DAVA::Reflection fieldValue = model.GetField(Any(fieldsDescr.valueFieldName.Cast<const char*>()));
-        DAVA::Reflection fieldValue = model.GetField(Any(fieldsDescr.valueFieldName.Cast<FastName>().c_str()));
+        DAVA::Reflection fieldValue = model.GetField(fieldsDescr.valueFieldName);
         DVASSERT(fieldValue.IsValid());
 
-        if (fieldValue.GetValue().CanCast<Qt::CheckState>())
+        if (fieldValue.GetValue().CanGet<Qt::CheckState>())
         {
             dataType = eContainedDataType::TYPE_CHECK_STATE;
 
@@ -71,15 +70,13 @@ void CheckBox::StateChanged(int newState)
     if (newState != Qt::PartiallyChecked)
     {
         setTristate(false);
-
-        //        wrapper.SetFieldValue(Any(fieldsDescr.valueFieldName.fieldsDescr.valueFieldName.Cast<const char*>()), Any(checkState()));
         if (dataType == eContainedDataType::TYPE_CHECK_STATE)
         {
-            wrapper.SetFieldValue(Any(fieldsDescr.valueFieldName.Get<FastName>().c_str()), Any(checkState()));
+            wrapper.SetFieldValue(fieldsDescr.valueFieldName, Any(checkState()));
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            wrapper.SetFieldValue(Any(fieldsDescr.valueFieldName.Get<FastName>().c_str()), Any(checkState() == Qt::Checked));
+            wrapper.SetFieldValue(fieldsDescr.valueFieldName, Any(checkState() == Qt::Checked));
         }
         else
         {

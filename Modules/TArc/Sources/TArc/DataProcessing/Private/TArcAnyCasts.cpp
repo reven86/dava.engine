@@ -4,6 +4,7 @@
 #include <Base/FastName.h>
 
 #include <QString>
+#include <Qt>
 
 namespace DAVA
 {
@@ -42,6 +43,16 @@ QString IntegralToQString(const Any& value)
 
 // Don't create QString -> const char* cast function. It is impossible
 
+Qt::CheckState BoolToCheckState(const Any& value)
+{
+    return value.Get<bool>() ? Qt::Checked : Qt::Unchecked;
+}
+
+bool CheckStateToBool(const Any& value)
+{
+    return value.Get<Qt::CheckState>() == Qt::Checked;
+}
+
 void RegisterAnyCasts()
 {
     AnyCast<String, QString>::Register(&StringToQString);
@@ -60,6 +71,8 @@ void RegisterAnyCasts()
     AnyCast<size_t, QString>::Register(&IntegralToQString<size_t>);
     AnyCast<float32, QString>::Register(&IntegralToQString<float32>);
     AnyCast<float64, QString>::Register(&IntegralToQString<float64>);
+    AnyCast<bool, Qt::CheckState>::Register(&BoolToCheckState);
+    AnyCast<Qt::CheckState, bool>::Register(&CheckStateToBool);
 }
 
 } // namespace TArc
