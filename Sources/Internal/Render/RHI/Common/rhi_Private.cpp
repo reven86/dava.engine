@@ -225,14 +225,14 @@ Handle Create(const Descriptor& desc)
 #endif
 }
 
-void Delete(Handle vb)
+void Delete(Handle vb, bool forceExecute)
 {
     if (vb != rhi::InvalidHandle)
     {
         #if defined(DAVA_MEMORY_PROFILING_ENABLE)
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);        
         #endif
-        (*_Impl.impl_VertexBuffer_Delete)(vb);
+        (*_Impl.impl_VertexBuffer_Delete)(vb, forceExecute);
     }
 }
 
@@ -277,14 +277,14 @@ Handle Create(const Descriptor& desc)
 #endif
 }
 
-void Delete(Handle ib)
+void Delete(Handle ib, bool forceExecute)
 {
     if (ib != InvalidHandle)
     {
         #if defined(DAVA_MEMORY_PROFILING_ENABLE)
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(ib, DAVA::ALLOC_GPU_RDO_INDEX);        
         #endif
-        (*_Impl.impl_IndexBuffer_Delete)(ib);
+        (*_Impl.impl_IndexBuffer_Delete)(ib, forceExecute);
     }
 }
 
@@ -416,14 +416,14 @@ Handle Create(const Texture::Descriptor& desc)
 #endif
 }
 
-void Delete(Handle tex)
+void Delete(Handle tex, bool forceExecute)
 {
     if (tex != InvalidHandle)
     {
         #if defined(DAVA_MEMORY_PROFILING_ENABLE)
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);    
         #endif
-        (*_Impl.impl_Texture_Delete)(tex);
+        (*_Impl.impl_Texture_Delete)(tex, forceExecute);
     }
 }
 

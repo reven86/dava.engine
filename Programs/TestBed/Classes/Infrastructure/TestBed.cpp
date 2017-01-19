@@ -41,6 +41,7 @@
 #include "Tests/ImGuiTest.h"
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
+#include "Tests/AnyPerformanceTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -297,6 +298,7 @@ void TestBed::RegisterTests()
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
+    new AnyPerformanceTest(*this);
     
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 

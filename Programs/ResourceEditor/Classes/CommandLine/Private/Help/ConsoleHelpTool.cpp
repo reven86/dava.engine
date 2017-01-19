@@ -4,7 +4,7 @@
 #include "TArc/Utils/ModuleCollection.h"
 
 ConsoleHelpTool::ConsoleHelpTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-help")
+    : CommandLineModule(commandLine, "-help")
 {
 }
 
@@ -39,7 +39,7 @@ void ConsoleHelpTool::ShowHelpInternal()
 
     DAVA::Logger::Info("\nSee \'ResourceEditor <command> -h\' to read about a specific command.");
 
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 }
 
 DECL_CONSOLE_MODULE(ConsoleHelpTool, "-help");

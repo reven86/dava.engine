@@ -1,6 +1,7 @@
-#include <sstream>
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
+#include <sstream>
 
 #include "pack_archive.h"
 
@@ -19,8 +20,7 @@ const std::uint32_t MAX_PATH = 260;
 
 using HANDLE = void*;
 
-extern "C"
-{
+extern "C" {
 DLL_EXPORT HANDLE STDCALL
 OpenArchive(tOpenArchiveData* ArchiveData);
 DLL_EXPORT int STDCALL
@@ -41,20 +41,25 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 {
     if (!l.is_open())
     {
-        // TODO uncomment for crossplatform debuging
-        // l.open("d:/Users/l_chayka/Documents/dvpk_plugin.log");
+        const char* logger_path = std::getenv("DVPK_PLUGIN_LOG");
+        if (logger_path != nullptr)
+        {
+            l.open(logger_path);
+        }
     }
 
     PackArchive* archive = nullptr;
     try
     {
+        l << "begin open archive: " << ArchiveData->ArcName << '\n';
+
         archive = new PackArchive(ArchiveData->ArcName);
 
         l << "open archive: " << ArchiveData->ArcName << '\n';
     }
     catch (std::exception& ex)
     {
-        l << ex.what();
+        l << ex.what() << std::flush;
         ArchiveData->OpenResult = E_BAD_ARCHIVE;
     }
     return archive;
@@ -70,8 +75,11 @@ int STDCALL CloseArchive(HANDLE hArcData)
     return 0;
 }
 
+// called multiple times till return 0 on finish files
 int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
+    l << "read header\n";
+
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
 
     const std::vector<FileInfo>& files = archive->GetFilesInfo();
@@ -108,11 +116,30 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
     }
     else
     {
-        archive->fileIndex = 0;
-        std::memset(HeaderData, 0, sizeof(*HeaderData));
+        if (archive->fileIndex == files.size() && archive->HasMeta())
+        {
+            ++archive->fileIndex;
+            std::memset(HeaderData, 0, sizeof(*HeaderData));
 
-        l << "end header\n";
-        return E_END_ARCHIVE;
+            std::strncpy(HeaderData->FileName, "meta.meta", MAX_PATH);
+            std::strncpy(HeaderData->ArcName, archive->arcName.c_str(), MAX_PATH);
+            HeaderData->PackSize = 0;
+            auto& meta = archive->GetMeta();
+            HeaderData->UnpSize = meta.GetNumPacks();
+
+            archive->lastFileName = "meta.meta";
+
+            l << "add meta file\n";
+            return 0;
+        }
+        else
+        {
+            archive->fileIndex = 0;
+            std::memset(HeaderData, 0, sizeof(*HeaderData));
+
+            l << "end header\n";
+            return E_END_ARCHIVE;
+        }
     }
 
     return 0;
@@ -121,6 +148,8 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
                         char* DestName)
 {
+    l << "process_file\n";
+
     if (PK_SKIP == Operation)
     {
     }
@@ -130,7 +159,15 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
     else if (PK_EXTRACT == Operation)
     {
         PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
-        if (archive->HasFile(archive->lastFileName))
+        if (archive->lastFileName == std::string("meta.meta"))
+        {
+            std::string data = archive->PrintMeta();
+            std::string outputName = DestName ? DestName : DestPath;
+
+            std::ofstream out(outputName, std::ios_base::binary);
+            out.write(reinterpret_cast<const char*>(data.data()), data.size());
+        }
+        else if (archive->HasFile(archive->lastFileName))
         {
             std::vector<uint8_t> data;
             archive->LoadFile(archive->lastFileName, data);

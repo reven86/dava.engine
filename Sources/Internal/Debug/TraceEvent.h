@@ -4,6 +4,7 @@
 #include "Base/FastName.h"
 #include <type_traits>
 #include <iosfwd>
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
@@ -33,11 +34,32 @@ struct TraceEvent
     Vector<std::pair<FastName, uint32>> args; ///< Any arguments provided for the event. Used as `meta-info`. The arguments are displayed in Trace Viewer.
 
     /**
+        Dump `trace` from any type container with value type `TraceEvent` to file with `filePath` in JSON-format
+    */
+    template <class Container>
+    static void DumpJSON(const Container& trace, const FilePath& filePath);
+
+    /**
         Dump `trace` from any type container with value type `TraceEvent` to `stream` in JSON-format
     */
     template <class Container>
     static void DumpJSON(const Container& trace, std::ostream& stream);
 };
+
+template <class Container>
+void TraceEvent::DumpJSON(const Container& trace, const FilePath& filePath)
+{
+    DAVA::FileSystem::Instance()->CreateDirectory(filePath.GetDirectory(), true);
+    DAVA::FileSystem::Instance()->DeleteFile(filePath);
+    DAVA::File* json = DAVA::File::Create(filePath, DAVA::File::CREATE | DAVA::File::WRITE);
+    if (json)
+    {
+        std::stringstream stream;
+        DumpJSON<Container>(trace, stream);
+        json->WriteNonTerminatedString(stream.str());
+    }
+    SafeRelease(json);
+}
 
 template <class Container>
 void TraceEvent::DumpJSON(const Container& trace, std::ostream& stream)
