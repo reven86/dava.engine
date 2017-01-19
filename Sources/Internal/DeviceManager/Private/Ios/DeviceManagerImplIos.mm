@@ -3,9 +3,12 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#import <sys/utsname.h>
-#import "DeviceManager/DeviceManager.h"
-#import "Engine/Private/Dispatcher/MainDispatcher.h"
+#include <sys/utsname.h>
+
+#include "DeviceManager/DeviceManager.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
+
+#import <UIKit/UIScreen.h>
 
 namespace DAVA
 {

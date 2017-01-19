@@ -5,8 +5,11 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/PlatformApiIos.h"
+
 #import <Foundation/NSObject.h>
-#import "Engine/PlatformApiIos.h"
+
+@class NSNotification;
 
 namespace DAVA
 {
