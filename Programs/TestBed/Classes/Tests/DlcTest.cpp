@@ -293,8 +293,8 @@ void DlcTest::UnloadResources()
 
     if (nullptr != dlc)
     {
-    dlc->Cancel();
-    SafeDelete(dlc);
+        dlc->Cancel();
+        SafeDelete(dlc);
     }
 
     SafeRelease(startButton);
@@ -321,7 +321,7 @@ void DlcTest::Update(float32 timeElapsed)
 
         if (nullptr != dlc)
         {
-        dlc->GetProgress(cur, total);
+            dlc->GetProgress(cur, total);
         }
 
         DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();

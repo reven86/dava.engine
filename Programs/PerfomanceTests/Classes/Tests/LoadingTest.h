@@ -18,7 +18,7 @@ public:
     void OnStart() override;
     void OnFinish() override;
 
-    void Update(float32 timeElapsed);
+    void Update(float32 timeElapsed) override;
 
     bool IsFinished() const override;
 

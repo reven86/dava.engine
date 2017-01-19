@@ -1142,7 +1142,6 @@ public:
     float32 angle; //!<control rotation angle. Rotation around pivot point.
 
 protected:
-
     float32 wheelSensitivity = 30.f;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
