@@ -31,7 +31,7 @@ void CheckBox::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fiel
     bool shouldUpdateState = fields.empty();
     for (const Any& fieldName : fields)
     {
-        if (fieldName == fieldsDescr.valueFieldName)
+        if (fieldName.Cast<FastName>() == fieldsDescr.valueFieldName.Get<FastName>())
         {
             shouldUpdateState = true;
             break;
