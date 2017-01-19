@@ -1,9 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project( DavaTools )
 
-set( DAVA_COREV2 1 )
-add_definitions (-D__DAVAENGINE_COREV2__)
-
 if (WIN32)
     add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
 elseif (MACOS AND NOT ANDROID)
