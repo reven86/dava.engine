@@ -98,7 +98,7 @@ void DeviceManagerImpl::UpdateDisplayConfig()
     size_t screensCount = [[ ::UIScreen screens] count];
 
     deviceManager->displays.clear();
-    deviceManager->displays.resize(screensCount);
+    deviceManager->displays.reserve(screensCount);
 
     ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
     for (::UIScreen* screen in [ ::UIScreen screens])
