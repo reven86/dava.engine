@@ -9,14 +9,11 @@
 #include <ShellScalingAPI.h>
 
 #include "Engine/Window.h"
-#include "Engine/EngineContext.h"
 #include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
-
-#include "Input/InputSystem.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -712,35 +709,16 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
 
 LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    const bool isShift = (key == VK_SHIFT);
-    bool isRightShift = false;
-
     // How to distinguish left and right shift, control and alt
     // http://stackoverflow.com/a/15977613
     if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
     {
         key |= 0x100;
-        isRightShift = true;
     }
 
     eModifierKeys modifierKeys = GetModifierKeys();
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
-
-    // If it's an up event and another shift is pressed right now, consider it's up too
-    // Since Windows does not send event with separate WM_KEYUP for second shift if first one is still pressed
-    if (isShift && type == MainDispatcherEvent::KEY_UP)
-    {
-        KeyboardDevice& keyboard = engineBackend->GetEngineContext()->inputSystem->GetKeyboard();
-
-        const Key anotherShiftKey = isRightShift ? Key::LSHIFT : Key::RSHIFT;
-        if (keyboard.IsKeyPressed(anotherShiftKey))
-        {
-            const uint32 anotherShiftSysCode = isRightShift ? VK_SHIFT : 256 + VK_SHIFT;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, anotherShiftSysCode, modifierKeys, false));
-        }
-    }
-
     return 0;
 }
 
