@@ -37,12 +37,11 @@ void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentSt
 {
     if (currentState == EditorSystemsManager::DragScreen)
     {
-        previousCursor = renderWidget->cursor();
         renderWidget->setCursor(Qt::OpenHandCursor);
     }
     else
     {
-        renderWidget->setCursor(previousCursor);
+        renderWidget->unsetCursor();
     }
 }
 
