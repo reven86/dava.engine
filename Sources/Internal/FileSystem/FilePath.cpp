@@ -375,7 +375,6 @@ String FilePath::GetAbsolutePathname() const
     return absolutePathname;
 }
 
-
 FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 {
     return GetAbsolutePathname();

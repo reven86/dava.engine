@@ -333,4 +333,3 @@ private:
     friend class File;
 };
 };
-
