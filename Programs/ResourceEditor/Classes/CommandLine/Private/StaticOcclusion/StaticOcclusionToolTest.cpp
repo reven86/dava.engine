@@ -1,13 +1,13 @@
 #include "CommandLine/StaticOcclusionTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 namespace SOTestDetail
 {
@@ -47,9 +47,9 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SOTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SOTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SOTestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SOTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -62,12 +62,12 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
 
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 0);
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<StaticOcclusionTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<StaticOcclusionTool>(cmdLine);
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 1);
 
-        REConsoleModuleTestUtils::ClearTestFolder(SOTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SOTestDetail::projectStr);
     }
 }
 ;

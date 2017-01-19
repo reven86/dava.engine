@@ -22,7 +22,7 @@ struct ImmediateCommand
 {
     void* cmdData = nullptr; //TODO - should be common immediate command interface like software command ?
     uint32 cmdCount = 0;
-    bool forceImmediate = false;
+    bool forceExecute = false;
 };
 
 struct TextureSet_t

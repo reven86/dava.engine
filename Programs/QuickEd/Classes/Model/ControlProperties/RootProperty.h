@@ -71,9 +71,6 @@ public:
     void AttachPrototypeComponent(ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection);
     void DetachPrototypeComponent(ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection);
 
-    const DAVA::Vector<BackgroundPropertiesSection*>& GetBackgroundProperties() const;
-    BackgroundPropertiesSection* GetBackgroundPropertiesSection(int num) const;
-
     void AddListener(PropertyListener* listener);
     void RemoveListener(PropertyListener* listener);
 
@@ -94,7 +91,6 @@ public:
 private:
     void AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);
-    void MakeBackgroundPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     DAVA::uint32 GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const;
     void RefreshComponentIndices();
 
@@ -110,7 +106,6 @@ private:
     DAVA::Vector<ValueProperty*> baseProperties;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
     DAVA::Vector<ComponentPropertiesSection*> componentProperties;
-    DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;
 
     DAVA::Vector<PropertyListener*> listeners;
 };

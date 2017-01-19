@@ -1,14 +1,12 @@
 #include "CommandLine/SceneExporterTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
+#include "TArc/Testing/TArcUnitTests.h"
 
 #include "Base/BaseTypes.h"
-
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileList.h"
-
 #include "Render/TextureDescriptor.h"
-
-#include "TArc/Testing/TArcUnitTests.h"
 
 #include <functional>
 
@@ -83,9 +81,9 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -108,13 +106,13 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-hd"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
             TestExportedTextures(dataPath);
 
-            REConsoleModuleTestUtils::ClearTestFolder(dataPath);
+            CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
 
         {
@@ -134,25 +132,25 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-hd"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
             TestExportedTextures(dataPath);
 
-            REConsoleModuleTestUtils::ClearTestFolder(dataPath);
+            CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
     }
 
     DAVA_TEST (ExportTextureTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -176,13 +174,13 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-hd"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));
             TestExportedTextures(dataPath);
 
-            REConsoleModuleTestUtils::ClearTestFolder(dataPath);
+            CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
 
         {
@@ -202,24 +200,24 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-hd"
             };
 
-            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneExporterTool>(cmdLine);
-            REConsoleModuleTestUtils::ExecuteModule(tool.get());
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TestExportedTextures(dataPath);
 
-            REConsoleModuleTestUtils::ClearTestFolder(dataPath);
+            CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
 
-        REConsoleModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
     }
 
     DAVA_TEST (ExportFileListTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
 
         FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
@@ -257,14 +255,14 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
           "-hd"
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneExporterTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));
         TestExportedTextures(dataPath);
 
-        REConsoleModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

@@ -17,8 +17,8 @@ VertexBufferGLES2_t
 {
     VertexBufferGLES2_t();
 
-    bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    bool Create(const VertexBuffer::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     uint32 size;
     uint32 uid;
@@ -46,7 +46,7 @@ VertexBufferGLES2_t::VertexBufferGLES2_t()
 
 //------------------------------------------------------------------------------
 
-bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
+bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forceExecute)
 {
     bool success = false;
     UpdateCreationDesc(desc);
@@ -83,7 +83,7 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
             cmd[2].func = GLCommand::NOP;
         }
 
-        ExecGL(cmd, countof(cmd), force_immediate);
+        ExecGL(cmd, countof(cmd), forceExecute);
 
         if (cmd[1].status == GL_NO_ERROR)
         {
@@ -102,12 +102,12 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
 //------------------------------------------------------------------------------
 
-void VertexBufferGLES2_t::Destroy(bool force_immediate)
+void VertexBufferGLES2_t::Destroy(bool forceExecute)
 {
     if (uid)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-        ExecGL(&cmd, 1, force_immediate);
+        ExecGL(&cmd, 1, forceExecute);
     }
 
     if (mappedData)
@@ -140,10 +140,10 @@ gles2_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 
 //------------------------------------------------------------------------------
 
-void gles2_VertexBuffer_Delete(Handle vb)
+void gles2_VertexBuffer_Delete(Handle vb, bool forceExecute)
 {
     VertexBufferGLES2_t* self = VertexBufferGLES2Pool::Get(vb);
-    self->Destroy();
+    self->Destroy(forceExecute);
     VertexBufferGLES2Pool::Free(vb);
 }
 

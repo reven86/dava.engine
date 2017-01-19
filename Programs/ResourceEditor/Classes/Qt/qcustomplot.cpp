@@ -5705,21 +5705,17 @@ QCPAxis::AxisType QCPAxis::opposite(QCPAxis::AxisType type)
     {
     case atLeft:
         return atRight;
-        break;
     case atRight:
         return atLeft;
-        break;
     case atBottom:
         return atTop;
-        break;
     case atTop:
         return atBottom;
-        break;
     default:
         qDebug() << Q_FUNC_INFO << "invalid axis type";
-        return atLeft;
         break;
     }
+    return atLeft;
 }
 
 /*! \internal
@@ -22074,9 +22070,9 @@ double QCPFinancial::selectTest(const QPointF& pos, bool onlySelectable, QVarian
         {
         case QCPFinancial::csOhlc:
             return ohlcSelectTest(pos, lower, upper + 1);
-            break;
         case QCPFinancial::csCandlestick:
             return candlestickSelectTest(pos, lower, upper + 1);
+        default:
             break;
         }
     }

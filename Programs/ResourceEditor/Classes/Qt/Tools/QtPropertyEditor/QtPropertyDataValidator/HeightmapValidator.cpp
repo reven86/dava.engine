@@ -61,12 +61,10 @@ bool HeightMapValidator::ValidateInternal(const QVariant& v)
                 return true;
             }
             notifyMessage = DAVA::Format("\"%s\" is wrong: png file should be in format A8 or A16.", path.GetAbsolutePathname().c_str());
-            return false;
         }
         else
         {
             notifyMessage = DAVA::Format("\"%s\" is wrong: should be *.png, *.tga, *.jpeg or *.heightmap.", path.GetAbsolutePathname().c_str());
-            return false;
         }
     }
 

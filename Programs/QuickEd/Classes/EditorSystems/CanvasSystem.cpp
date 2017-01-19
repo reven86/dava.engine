@@ -71,8 +71,8 @@ private:
 GridControl::GridControl()
     : colorControl(new ColorControl)
 {
-    background->SetDrawType(UIControlBackground::DRAW_TILED);
-    background->SetSprite("~res:/QuickEd/Gfx/GrayGrid", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    GetBackground()->SetSprite("~res:/QuickEd/Gfx/GrayGrid", 0);
     colorControl->SetName("Color control");
 
     UIControl::AddControl(colorControl);
@@ -99,7 +99,7 @@ void GridControl::Draw(const UIGeometricData& geometricData)
 
 ColorControl::ColorControl()
 {
-    background->SetDrawType(UIControlBackground::DRAW_FILL);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
@@ -118,7 +118,7 @@ void ColorControl::SetBackgroundColor0(const Color& color)
     backgroundColor0 = color;
     if (backgroundColorIndex == 0)
     {
-        background->SetColor(backgroundColor0);
+        GetBackground()->SetColor(backgroundColor0);
     }
 }
 
@@ -132,7 +132,7 @@ void ColorControl::SetBackgroundColor1(const Color& color)
     backgroundColor1 = color;
     if (backgroundColorIndex == 1)
     {
-        background->SetColor(backgroundColor1);
+        GetBackground()->SetColor(backgroundColor1);
     }
 }
 
@@ -146,7 +146,7 @@ void ColorControl::SetBackgroundColor2(const Color& color)
     backgroundColor2 = color;
     if (backgroundColorIndex == 2)
     {
-        background->SetColor(backgroundColor2);
+        GetBackground()->SetColor(backgroundColor2);
     }
 }
 
@@ -174,7 +174,7 @@ void ColorControl::SetBackgroundColorIndex(uint32 index)
         DVASSERT(false, "unsupported background index");
         return;
     }
-    background->SetColor(color);
+    GetBackground()->SetColor(color);
 }
 
 } //unnamed namespe

@@ -14,7 +14,7 @@ namespace DAVA
 {
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     : controlGroup("", ePropertyOwner::CONTROL, 0, UIControl::TypeInfo())
-    , bgGroup("bg", ePropertyOwner::BACKGROUND, 0, UIControlBackground::TypeInfo())
+    , bgGroup("bg", ePropertyOwner::COMPONENT, UIComponent::BACKGROUND_COMPONENT, UIControlBackground::TypeInfo())
     , staticTextGroup("text", ePropertyOwner::CONTROL, 0, UIStaticText::TypeInfo())
     , textFieldGroup("textField", ePropertyOwner::CONTROL, 0, UITextField::TypeInfo())
     , linearLayoutGroup("linearLayout", ePropertyOwner::COMPONENT, UIComponent::LINEAR_LAYOUT_COMPONENT, UILinearLayoutComponent::TypeInfo())

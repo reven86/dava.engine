@@ -109,5 +109,12 @@ public:
     static const DAVA::FastName Internal_EnableSounds;
     static const DAVA::FastName Internal_GizmoEnabled;
 
+    static const DAVA::FastName Internal_Validate_Matrices;
+    static const DAVA::FastName Internal_Validate_SameNames;
+    static const DAVA::FastName Internal_Validate_CollisionProperties;
+    static const DAVA::FastName Internal_Validate_TexturesRelevance;
+    static const DAVA::FastName Internal_Validate_MaterialGroups;
+    static const DAVA::FastName Internal_Validate_ShowConsole;
+
     static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings
