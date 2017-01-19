@@ -270,20 +270,72 @@ macro( reset_MAIN_MODULE_VALUES )
     endforeach()
 endmacro()
 #
-macro( message_module_log MESSAGE )
-    file( APPEND ${MODULES_LOG_FILE} "${MESSAGE}\n" )
+macro( dump_module_log  )
+
+    set( MODULES_LOG_FILE  ${CMAKE_BINARY_DIR}/MODULES_LOG.txt )
+
+    get_property( MODULE_CACHE_LOG_LIST GLOBAL PROPERTY MODULE_CACHE_LOG_LIST )
+
+    if( MODULE_CACHE_LOG_LIST )
+
+        set( UNIQUE_COMPONENTS_NUMBER 0 )
+        set( USED_UNIQUE_COMPONENTS_NUMBER 0 )
+
+        list( SORT MODULE_CACHE_LOG_LIST )
+
+        file(WRITE ${MODULES_LOG_FILE} "\n" )
+
+        file( APPEND ${MODULES_LOG_FILE} "UNIQUE COMPONENTS LIST\n\n" )
+    
+        foreach( ITEM ${MODULE_CACHE_LOG_LIST} )
+            get_property( CACHE_LOG_${ITEM}_MODULE_UNIQUE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_UNIQUE )
+
+            get_property( CACHE_LOG_${ITEM}_MODULE_CACHE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_CACHE )
+            get_property( CACHE_LOG_${ITEM}_MODULE_MD5   GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_MD5 )
+            if( ${CACHE_LOG_${ITEM}_MODULE_UNIQUE} )
+                math( EXPR UNIQUE_COMPONENTS_NUMBER "${UNIQUE_COMPONENTS_NUMBER} + 1" )
+                file( APPEND ${MODULES_LOG_FILE} "-> ${UNIQUE_COMPONENTS_NUMBER}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    NAME_MODULE  - ${ITEM}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    MODULE_CACHE - ${CACHE_LOG_${ITEM}_MODULE_CACHE}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    MD5          - ${CACHE_LOG_${ITEM}_MODULE_MD5}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "\n" )
+            endif()
+
+        endforeach()
+
+        file( APPEND ${MODULES_LOG_FILE} "\n" )
+
+        file( APPEND ${MODULES_LOG_FILE} "USED UNIQUE COMPONENTS LIST\n\n" )
+
+        foreach( ITEM ${MODULE_CACHE_LOG_LIST} )
+            get_property( CACHE_LOG_${ITEM}_MODULE_UNIQUE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_UNIQUE )
+
+            get_property( CACHE_LOG_${ITEM}_MODULE_CACHE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_CACHE )
+            get_property( CACHE_LOG_${ITEM}_MODULE_MD5   GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_MD5 )
+            if( NOT ${CACHE_LOG_${ITEM}_MODULE_UNIQUE} )                
+                math( EXPR USED_UNIQUE_COMPONENTS_NUMBER "${USED_UNIQUE_COMPONENTS_NUMBER} + 1" )
+                file( APPEND ${MODULES_LOG_FILE} "-> ${USED_UNIQUE_COMPONENTS_NUMBER}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    NAME_MODULE  - ${ITEM}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    MODULE_CACHE - ${CACHE_LOG_${ITEM}_MODULE_CACHE}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    MD5          - ${CACHE_LOG_${ITEM}_MODULE_MD5}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "\n" )
+            endif()
+
+        endforeach()
+
+        list(LENGTH MODULE_CACHE_LOG_LIST MODULE_CACHE_LOG_LIST_LENGTH )
+
+        file( APPEND ${MODULES_LOG_FILE} "\n\n" )
+        file( APPEND ${MODULES_LOG_FILE} "UNIQUE      - ${UNIQUE_COMPONENTS_NUMBER}\n" )
+        file( APPEND ${MODULES_LOG_FILE} "USED_UNIQUE - ${USED_UNIQUE_COMPONENTS_NUMBER}\n" )
+        file( APPEND ${MODULES_LOG_FILE} "LIST_LENGTH - ${MODULE_CACHE_LOG_LIST_LENGTH}\n" )
+
+
+    endif()
+
 endmacro()
 #
 macro( setup_main_module )
-
-    set( MODULES_LOG_FILE  ${CMAKE_BINARY_DIR}/MODULES_LOG.txt )
-    get_property( MODULES_LOG_INIT GLOBAL PROPERTY MODULES_LOG_INIT )
-
-    if( NOT MODULES_LOG_INIT )
-        set_property( GLOBAL PROPERTY MODULES_LOG_INIT true )
-        file(WRITE ${MODULES_LOG_FILE} "\n" )
-    endif()
-
 
     if( NOT MODULE_TYPE )
         set( MODULE_TYPE INLINE )
@@ -371,15 +423,16 @@ macro( setup_main_module )
             list( REMOVE_DUPLICATES MODULE_CACHE )
             list( SORT MODULE_CACHE )
 
-            message_module_log( "  " )
-            message_module_log( "!!!!!!!!!!!!! -->> NAME_MODULE  : ${NAME_MODULE}" )
+            append_property( MODULE_CACHE_LOG_LIST ${NAME_MODULE}  )
 
-            message_module_log( "!!!!!!!!!!!!! -->> MODULE_CACHE  : ${MODULE_CACHE}" )
+            set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_CACHE  ${MODULE_CACHE} )
 
             string (REPLACE ";" " " MODULE_CACHE "${MODULE_CACHE}")
             string( MD5  MODULE_CACHE ${MODULE_CACHE} )
 
-            message_module_log( "!!!!!!!!!!!!! -->> MD5  : ${MODULE_CACHE}" )
+            set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_MD5  ${MODULE_CACHE}  )
+            set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  true )
+
         endif()
 #####            
 
@@ -624,15 +677,11 @@ macro( setup_main_module )
                     set( CREATE_NEW_MODULE )
 
                     list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
+                    get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
+                    set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
+                    set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
 
-                    get_property( MODULE_CACHE_LOADED GLOBAL PROPERTY ${MODULE_CACHE} )
-                    set( NAME_MODULE ${MODULE_CACHE_LOADED} )
-
-                    message_module_log(" !!!!! FIND CACHE !!!! MODULE_CACHE ---- ${MODULE_CACHE} --- ${MODULE_CACHE_LOADED}")
                 endif()
-
-                message_module_log( "  " )
-
 
             endif()
 
@@ -797,10 +846,6 @@ macro( setup_main_module )
         if( CREATE_NEW_MODULE AND ${MODULE_TYPE} STREQUAL "STATIC" )
             set_property( GLOBAL PROPERTY ${MODULE_CACHE} "${NAME_MODULE}" )
             append_property(  MODULE_CACHE_LIST ${MODULE_CACHE} )
-
-            #message_module_log( "  " )
-            #message_module_log( "APPEND MODULE_CACHE_LIST --->>> ${MODULE_CACHE}")
-            #message_module_log( "  " )
 
         endif()
 

@@ -157,8 +157,7 @@ if (DAVA_PLATFORM_QT)
     list( APPEND DEFINITIONS    -D__DAVAENGINE_QT__
                                 -DDISABLE_NATIVE_WEBVIEW
                                 -DDISABLE_NATIVE_TEXTFIELD
-                                -DDISABLE_NATIVE_MOVIEVIEW
-                                -DQT_QML_DEBUG_NO_WARNING )
+                                -DDISABLE_NATIVE_MOVIEVIEW )
 
 endif()
 

@@ -104,6 +104,9 @@ reset_property ( MIX_APP_DATA )
 
     processing_mix_data()
 
+
+    dump_module_log()
+
 ############
 
 
