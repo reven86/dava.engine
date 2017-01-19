@@ -81,4 +81,6 @@ DAVA_REFLECTION_IMPL(TestUIModule)
     .End();
 }
 
+#if !defined(DEPLOY_BUILD)
 DECL_GUI_MODULE(TestUIModule);
+#endif
