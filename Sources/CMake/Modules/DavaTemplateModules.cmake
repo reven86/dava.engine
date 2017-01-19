@@ -80,7 +80,6 @@ FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 QT_UI_FILES
 QT_RES_FILES
-QT_QML_FILES
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -95,12 +94,6 @@ EXCLUDE_FROM_ALL
 #
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
-PLUGIN_PREFIX
-PLUGIN_PREFIX_${DAVA_PLATFORM}
-PLUGIN_DEBUG_POSTFIX
-PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM}
-PLUGIN_PRE_BUILD_COMMAND
-PLUGIN_PRE_BUILD_PARAMS
 #
 PLUGIN_RELATIVE_PATH_TO_FOLDER
 PLUGIN_COPY_ADD_FILES 
@@ -475,21 +468,18 @@ macro( setup_main_module )
 
         endif()
 
-        if (QT_UI_FILES OR QT_RES_FILES OR QT_QML_FILES)
+        if (QT_UI_FILES OR QT_RES_FILES)
             file              ( GLOB_RECURSE UI_LIST  ${QT_UI_FILES})
             qt5_wrap_ui ( QT_UI_HEADERS ${UI_LIST} )
 
             file              ( GLOB_RECURSE RCC_LIST  ${QT_RES_FILES})
             qt5_add_resources ( QT_RCC  ${RCC_LIST} )
 
-            file              ( GLOB_RECURSE QML_LIST ${QT_QML_FILES})
-
-            list(APPEND HPP_FILES ${QT_UI_HEADERS} ${QML_LIST})
+            list(APPEND HPP_FILES ${QT_UI_HEADERS})
             list(APPEND CPP_FILES ${QT_RCC})
 
-            set(QtGenerated ${QT_UI_HEADERS} ${QT_RCC} ${QML_LIST})
-            set(Qml ${QML_LIST})
-            list(APPEND GROUP_SOURCE QtGenerated Qml)
+            set(QtGenerated ${QT_UI_HEADERS} ${QT_RCC})
+            list(APPEND GROUP_SOURCE QtGenerated)
         endif()
 
         define_source( SOURCE         ${CPP_FILES} ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
@@ -582,10 +572,6 @@ macro( setup_main_module )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 append_property( PLUGIN_LIST ${NAME_MODULE} )
 
-                if (PLUGIN_PRE_BUILD_COMMAND AND PLUGIN_PRE_BUILD_PARAMS)
-                    add_custom_command(TARGET ${NAME_MODULE} PRE_BUILD COMMAND ${PLUGIN_PRE_BUILD_COMMAND} ${PLUGIN_PRE_BUILD_PARAMS})
-                endif()
-
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST ) 
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${TARGET_MODULES_LIST} )  
                 add_definitions( -DDAVA_IMPLEMENT_PLUGIN_MODULE )  
@@ -594,25 +580,9 @@ macro( setup_main_module )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
                 endif()
 
-                if (PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM_CURENT})
-                    set(PLUGIN_DEBUG_POSTFIX ${PLUGIN_DEBUG_POSTFIX_${DAVA_PLATFORM_CURENT}})
-                endif()
-
-                if (NOT PLUGIN_DEBUG_POSTFIX)
-                    set(PLUGIN_DEBUG_POSTFIX "Debug")
-                endif()
-
-                if (PLUGIN_PREFIX_${DAVA_PLATFORM_CURENT})
-                    set(PLUGIN_PREFIX ${PLUGIN_PREFIX_${DAVA_PLATFORM_CURENT}})
-                endif()
-
-                if (NOT PLUGIN_PREFIX)
-                    set(PLUGIN_PREFIX "")
-                endif()
-
-                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX "${PLUGIN_PREFIX}"
+                set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX "${PLUGIN_DEBUG_POSTFIX}")
+                                                                 DEBUG_POSTFIX "Debug")
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

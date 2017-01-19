@@ -14,7 +14,6 @@
 
 class QWidget;
 class QAction;
-class QQmlEngine;
 
 namespace DAVA
 {

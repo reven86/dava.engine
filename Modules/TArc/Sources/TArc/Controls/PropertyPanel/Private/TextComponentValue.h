@@ -5,7 +5,7 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/Controls/PropertyPanel/DefaultValueCompositors.h"
 
-#include <QString>
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
@@ -15,6 +15,7 @@ class TextComponentValue : public ProxyComponentValue<TextEditorDrawer, TextValu
 {
 public:
     TextComponentValue() = default;
+    ~TextComponentValue() override = default;
 
 protected:
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;

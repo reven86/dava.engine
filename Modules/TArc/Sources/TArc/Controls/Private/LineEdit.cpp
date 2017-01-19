@@ -21,12 +21,7 @@ LineEdit::LineEdit(const FieldsDescriptor& fields_, ContextAccessor* accessor, R
 
 void LineEdit::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
-    if (wrapper.HasData() == false)
-    {
-        setText("");
-        return;
-    }
-
+    DVASSERT(wrapper.HasData());
     bool shouldUpdateText = fields.empty();
     for (const Any& fieldName : fields)
     {

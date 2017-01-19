@@ -57,7 +57,6 @@ class BaseComponentValue : public ReflectionBase
 {
 public:
     BaseComponentValue();
-    virtual ~BaseComponentValue() = default;
 
     void Init(ReflectedPropertyModel* model);
 

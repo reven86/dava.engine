@@ -82,6 +82,7 @@ DAVA_TARC_TESTCLASS(LineEditTest)
     DAVA_TEST (EditModelTextTest)
     {
         using namespace LineEditTestDetails;
+        using namespace testing;
 
         QList<QWidget*> widgets = LookupWidget(wndKey, QString("LineEdit"));
         TEST_VERIFY(widgets.size() == 1);

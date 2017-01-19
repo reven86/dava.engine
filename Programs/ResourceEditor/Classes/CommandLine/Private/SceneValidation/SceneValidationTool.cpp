@@ -1,14 +1,18 @@
-#include "CommandLine/SceneValidationTool.h"
-#include "Qt/Scene/Validation/SceneValidation.h"
-#include "Qt/Scene/Validation/ValidationProgressConsumer.h"
-#include "Project/ProjectResources.h"
-#include "CommandLine/Private/OptionName.h"
+#include "Classes/CommandLine/SceneValidationTool.h"
+#include "Classes/CommandLine/Private/OptionName.h"
+#include "Classes/Qt/Scene/Validation/SceneValidation.h"
+#include "Classes/Qt/Scene/Validation/ValidationProgressConsumer.h"
+#include "Classes/Project/ProjectResources.h"
+#include "Classes/Project/ProjectManagerData.h"
 
-#include "Scene3D/Scene.h"
-#include "Utils/StringUtils.h"
-#include "Base/ScopedPtr.h"
-#include "FileSystem/File.h"
-#include "Logger/Logger.h"
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/Utils/ModuleCollection.h>
+
+#include <Scene3D/Scene.h>
+#include <Utils/StringUtils.h>
+#include <Base/ScopedPtr.h>
+#include <FileSystem/File.h>
+#include <Logger/Logger.h>
 
 namespace SceneValidationToolDetails
 {

@@ -13,10 +13,7 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflecti
 {
     using namespace DAVA::TArc;
     DataContext* ctx = accessor->GetActiveContext();
-    if (ctx == nullptr)
-    {
-        return;
-    }
+    DVASSERT(ctx != nullptr);
 
     SceneData* data = ctx->GetData<SceneData>();
     DVASSERT(data != nullptr);
@@ -30,12 +27,12 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflecti
     scene->EndBatch();
 }
 
-void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
+void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
 {
     using namespace DAVA::TArc;
 
     if (parent->propertyType == PropertyNode::SelfRoot &&
-        parent->cachedValue.GetType() == Type::Instance<DAVA::Entity*>())
+        parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
         DAVA::Reflection::Field f;
         f.key = "Entity";
@@ -43,13 +40,13 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty));
 
         {
-            Reflection componentsField = f.ref.GetField("Components");
+            DAVA::Reflection componentsField = f.ref.GetField("Components");
             DVASSERT(componentsField.IsValid());
 
-            Vector<Reflection::Field> fields = componentsField.GetFields();
-            for (Reflection::Field& field : fields)
+            DAVA::Vector<DAVA::Reflection::Field> fields = componentsField.GetFields();
+            for (DAVA::Reflection::Field& field : fields)
             {
-                Reflection::Field f;
+                DAVA::Reflection::Field f;
                 f.ref = field.ref;
                 f.key = field.key;
                 children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
@@ -57,12 +54,12 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         }
     }
     else if (parent->propertyType == PropertyNode::GroupProperty &&
-             parent->cachedValue.GetType() == Type::Instance<DAVA::Entity*>())
+             parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
-        Vector<Reflection::Field> fields = parent->field.ref.GetFields();
-        for (Reflection::Field& field : fields)
+        DAVA::Vector<DAVA::Reflection::Field> fields = parent->field.ref.GetFields();
+        for (DAVA::Reflection::Field& field : fields)
         {
-            if (field.ref.GetValueType() != Type::Instance<Vector<Component*>>())
+            if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>())
             {
                 children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
             }

@@ -3,7 +3,6 @@
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 
-#include <Scene3D/Entity.h>
 #include <Debug/DVAssert.h>
 
 namespace DAVA
@@ -23,7 +22,6 @@ ReflectedPropertyModel::ReflectedPropertyModel()
     RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
     RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
 
-    using namespace std::placeholders;
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);
 }
@@ -93,12 +91,12 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 
 QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if (!parent.isValid())
+    if (parent.isValid())
     {
-        return createIndex(row, column, nullptr);
+        return createIndex(row, column, MapItem(parent));
     }
 
-    return createIndex(row, column, MapItem(parent));
+    return createIndex(row, column, nullptr);
 }
 
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
@@ -164,6 +162,7 @@ void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
         nodeToItem.emplace(rootNode, rootItem.get());
         rootItem->AddPropertyNode(rootNode);
     }
+    objects.clear();
 
     Update();
 }
@@ -200,7 +199,7 @@ void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> pare
 void ReflectedPropertyModel::ChildRemoved(std::shared_ptr<PropertyNode> node)
 {
     auto iter = nodeToItem.find(node);
-    assert(iter != nodeToItem.end());
+    DVASSERT(iter != nodeToItem.end());
 
     ReflectedPropertyItem* item = iter->second;
     ReflectedPropertyItem* itemParent = item->parent;
