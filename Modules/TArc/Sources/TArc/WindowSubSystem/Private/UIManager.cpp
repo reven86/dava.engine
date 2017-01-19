@@ -22,11 +22,10 @@
 #include <QUrlQuery>
 #include <QLayout>
 #include <QFrame>
+#include <QEvent>
 
 #include <QFileDialog>
 #include <QMessageBox>
-
-#include <QQuickWidget>
 
 namespace DAVA
 {
@@ -109,7 +108,7 @@ struct StatusBarWidget
 
 struct MainWindowInfo
 {
-    QMainWindow* window = nullptr;
+    QPointer<QMainWindow> window = nullptr;
     QMenuBar* menuBar = nullptr;
     Vector<StatusBarWidget> nonPermanentStatusBarWidgets;
     Vector<StatusBarWidget> permanentStatusBarWidgets;
@@ -435,6 +434,10 @@ struct UIManager::Impl : public QObject
 
     ~Impl()
     {
+        for (auto& wnd : windows)
+        {
+            delete wnd.second.window.data();
+        }
     }
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
