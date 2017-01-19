@@ -20,9 +20,16 @@ YamlPackageSerializer::~YamlPackageSerializer()
     nodesStack.clear();
 }
 
-void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::String& value)
+void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::String& value, bool quotes)
 {
-    nodesStack.back()->Add(name, value);
+    YamlNode *parent = nodesStack.back();
+    YamlNode *node = YamlNode::CreateStringNode();
+    node->Set(value);
+    if (!quotes)
+    {
+        node->SetStringRepresentation(YamlNode::SR_PLAIN_REPRESENTATION);
+    }
+    parent->Add(name, node);
 }
 
 void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::Vector<DAVA::String>& value)
@@ -34,9 +41,16 @@ void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::Vecto
     nodesStack.back()->Add(name, node);
 }
 
-void YamlPackageSerializer::PutValue(const DAVA::String& value)
+void YamlPackageSerializer::PutValue(const DAVA::String& value, bool quotes)
 {
-    nodesStack.back()->Add(value);
+    YamlNode *parent = nodesStack.back();
+    YamlNode *node = YamlNode::CreateStringNode();
+    node->Set(value);
+    if (!quotes)
+    {
+        node->SetStringRepresentation(YamlNode::SR_PLAIN_REPRESENTATION);
+    }
+    parent->Add(node);
 }
 
 void YamlPackageSerializer::BeginMap()

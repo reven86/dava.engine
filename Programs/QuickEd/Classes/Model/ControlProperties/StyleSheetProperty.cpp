@@ -18,7 +18,7 @@ DAVA_REFLECTION_IMPL(StyleSheetProperty)
     .Field("transitionTime", &StyleSheetProperty::GetTransitionTime, &StyleSheetProperty::SetTransitionTime)
     .Field("transitionFunction", &StyleSheetProperty::GetTransitionFunction, &StyleSheetProperty::SetTransitionFunction)
     [
-     EnumMeta::Create<Interpolation::FuncType>(EnumMeta::EM_NOCAST)
+     EnumMeta::Create<Interpolation::FuncType>()
      ]
 
     .End();
