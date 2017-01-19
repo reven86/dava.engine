@@ -134,7 +134,8 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
     Reflection data = GetData();
     Reflection field = data.GetField(fieldKey);
     DVASSERT(field.IsValid() == true);
-    field.SetValue(value);
+    bool result = field.SetValueWithCast(value);
+    DVASSERT(result);
     Sync(false);
 }
 
