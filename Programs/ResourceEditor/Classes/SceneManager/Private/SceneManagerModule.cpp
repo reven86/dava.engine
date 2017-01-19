@@ -69,7 +69,6 @@ SceneManagerModule::~SceneManagerModule() = default;
 void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
     DAVA::Renderer::SetDesiredFPS(60);
-    DAVA::DynamicBufferAllocator::SetPageSize(16 * 1024 * 1024); // 16 mb
 
     DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
     DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
