@@ -16,7 +16,7 @@
 
 namespace CheckBoxTestDetails
 {
-DAVA::TArc::WindowKey wndKey = DAVA::FastName("");
+DAVA::TArc::WindowKey wndKey = DAVA::FastName("CheckBoxTestWnd");
 
 class CheckBoxTestModule : public DAVA::TArc::ClientModule
 {
