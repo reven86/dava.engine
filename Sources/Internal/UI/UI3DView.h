@@ -39,6 +39,7 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
     void Input(UIEvent* currentInput) override;
+    void InputCancelled(UIEvent* currentInput) override;
 
     void OnVisible() override;
     void OnInvisible() override;
