@@ -68,7 +68,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_IPHONE__)
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("renderer", rhi::RHI_METAL);
 #elif defined(__DAVAENGINE_WIN32__)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -198,8 +198,20 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
-    w->SetVirtualSize(1024, 768);
-    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    float resW = 1024.0f;
+    float resH = 768.0f;
+
+    float dpiScale = 1.0f;
+    if (w->GetDPI() > 240.0f)
+    {
+        dpiScale = 0.7f;
+    }
+
+    float vw = resW * dpiScale;
+    float vh = resH * dpiScale;
+
+    w->SetVirtualSize(vw, vh);
+    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
     w->GetUIControlSystem()->SetClearColor(Color::Black);
 
     testListScreen = new TestListScreen();

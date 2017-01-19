@@ -28,12 +28,29 @@
 
 - (void)setSurfaceScale:(DAVA::float32)surfaceScale
 {
-    [self setContentScaleFactor:[[UIScreen mainScreen] scale] * surfaceScale];
+    CGFloat scale = [[UIScreen mainScreen] scale] * CGFloat(surfaceScale);
+    [self setContentScaleFactor:scale];
+    [self updateDrawableSize];
 }
 
 - (DAVA::float32)surfaceScale
 {
     return [self contentScaleFactor] / [[UIScreen mainScreen] scale];
+}
+
+// for Metal rendering backend we
+// have to update drawableSize sometime
+- (void)updateDrawableSize
+{
+    CALayer* layer = [self layer];
+    if (layer != nil)
+    {
+        if ([layer isKindOfClass:[CAMetalLayer class]])
+        {
+            CAMetalLayer* metal = static_cast<CAMetalLayer*>(layer);
+            metal.drawableSize = [self surfaceSize];
+        }
+    }
 }
 
 - (CGSize)surfaceSize
