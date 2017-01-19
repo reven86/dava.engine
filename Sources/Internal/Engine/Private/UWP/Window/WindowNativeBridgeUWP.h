@@ -106,6 +106,8 @@ private:
     eCursorCapture captureMode = eCursorCapture::OFF;
     uint32 mouseMoveSkipCount = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
+
+    bool lastShiftStates[2];
 };
 
 inline void* WindowNativeBridge::GetHandle() const

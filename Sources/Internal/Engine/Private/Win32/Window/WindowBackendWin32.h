@@ -180,6 +180,8 @@ private:
     static const DWORD windowedStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD fullscreenStyle = WS_POPUP;
     static const DWORD windowExStyle = 0;
+
+    bool lastShiftStates[2];
 };
 
 inline void* WindowBackend::GetHandle() const

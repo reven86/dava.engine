@@ -21,6 +21,7 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
 {
+    lastShiftStates[0] = lastShiftStates[1] = false;
 }
 
 void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_)
@@ -299,17 +300,48 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     case CoreAcceleratorKeyEventType::KeyUp:
     case CoreAcceleratorKeyEventType::SystemKeyUp:
     {
-        const unsigned int RSHIFT_SCANCODE = 0x36;
+        eModifierKeys modifierKeys = GetModifierKeys();
+
+        // Handle shifts separately
+        // Since Windows does not send separate keyup event for second shift if first one is still pressed
+        // So if it's a shift key event, request every shift state explicitly
+
+        if (arg->VirtualKey == VirtualKey::Shift)
+        {
+            static const uint32 shiftKeyCodes[2] = { static_cast<uint32>(VirtualKey::Shift), static_cast<uint32>(VirtualKey::Shift) | 0x100 };
+
+            CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
+            const bool lshiftPressed = static_cast<bool>(coreWindow->GetKeyState(VirtualKey::LeftShift) & CoreVirtualKeyStates::Down);
+            const bool rshiftPressed = static_cast<bool>(coreWindow->GetKeyState(VirtualKey::RightShift) & CoreVirtualKeyStates::Down);
+            const bool currentShiftStates[2] = { lshiftPressed, rshiftPressed };
+
+            for (int i = 0; i < 2; ++i)
+            {
+                if (lastShiftStates[i] != currentShiftStates[i])
+                {
+                    const MainDispatcherEvent::eType eventType = currentShiftStates[i] ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+                    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, eventType, shiftKeyCodes[i], modifierKeys, false));
+                }
+                else if (currentShiftStates[i] == true)
+                {
+                    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, shiftKeyCodes[i], modifierKeys, true));
+                }
+
+                lastShiftStates[i] = currentShiftStates[i];
+            }
+
+            break;
+        }
 
         CorePhysicalKeyStatus status = arg->KeyStatus;
         uint32 key = static_cast<uint32>(arg->VirtualKey);
+
         // Ups, UWP does not support MapVirtualKey function to distinguish left and right shift
-        if (status.IsExtendedKey || (arg->VirtualKey == VirtualKey::Shift && status.ScanCode == RSHIFT_SCANCODE))
+        if (status.IsExtendedKey)
         {
             key |= 0x100;
         }
 
-        eModifierKeys modifierKeys = GetModifierKeys();
         MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, status.WasKeyDown));
         break;
