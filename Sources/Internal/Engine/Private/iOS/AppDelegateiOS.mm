@@ -83,7 +83,7 @@ extern CoreNativeBridge* coreNativeBridge;
     bridge->HandleActionWithIdentifier(application, identifier, userInfo, completionHandler);
 }
 
-- (bool)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
+- (BOOL)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
 {
     return bridge->OpenURL(application, url, sourceApplication, annotation) ? YES : NO;
 }

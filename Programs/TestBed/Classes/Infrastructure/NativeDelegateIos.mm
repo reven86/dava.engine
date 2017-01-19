@@ -9,7 +9,7 @@
 #include <Utils/NSStringUtils.h>
 
 @interface NativeDelegateIos : NSObject<DVEApplicationListener>
-- (void)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 - (void)applicationDidBecomeActive:(UIApplication *)application;
 - (void)applicationWillResignActive:(UIApplication *)application;
@@ -20,7 +20,7 @@
 
 @implementation NativeDelegateIos
 
-- (void)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     using namespace DAVA;
     Logger::Debug("TestBed.NativeDelegateIos::didFinishLaunchingWithOptions: enter");
@@ -32,6 +32,8 @@
         Logger::Debug("        %s: %d", k.c_str(), d.c_str());
     }
     Logger::Debug("TestBed.NativeDelegateIos::didFinishLaunchingWithOptions: leave");
+
+    return YES;
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application

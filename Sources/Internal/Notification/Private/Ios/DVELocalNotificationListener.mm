@@ -31,7 +31,7 @@
     return self;
 }
 
-- (void)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     NSString* version = [[UIDevice currentDevice] systemVersion];
     if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
@@ -62,6 +62,7 @@
             }
         }
     }
+    return YES;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application

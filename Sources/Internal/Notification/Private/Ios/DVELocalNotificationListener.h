@@ -17,7 +17,7 @@ class LocalNotificationController;
 
 - (instancetype)initWithController:(DAVA::LocalNotificationController&)controller;
 
-- (void)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
 - (void)applicationDidBecomeActive:(NSNotification*)notification;
 // - (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification;
 

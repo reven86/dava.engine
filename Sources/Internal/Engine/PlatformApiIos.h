@@ -4,6 +4,8 @@
 #error This file can only be included from .mm file
 #endif
 
+#import <Foundation/Foundation.h>
+
 @protocol NSObject;
 @class UIApplication;
 @class NSDictionary;
@@ -24,12 +26,12 @@
     To receive callbacks from `UIApplicationDelegate` application should declare class conforming to `DVEApplicationListener` protocol,
     implement necessary methods and register it through `RegisterDVEApplicationListener` function.
 
-    Methods of `DVEApplicationListener` are always called in the context of UI thread (for Mac UI thread and main thread are the same).
+    Methods of `DVEApplicationListener` are always called in the context of UI thread (for IOS UI thread and main thread are the same).
 */
 @protocol DVEApplicationListener<NSObject>
 @optional
-- (bool)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
-- (bool)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
+- (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
 - (void)applicationDidBecomeActive:(UIApplication*)application;
 - (void)applicationWillResignActive:(UIApplication*)application;
 - (void)applicationDidEnterBackground:(UIApplication*)application;
@@ -45,7 +47,7 @@
 - (void)application:(UIApplication*)application handleActionWithIdentifier:(NSString*)identifier
      forRemoteNotification:(NSDictionary*)userInfo
          completionHandler:(void (^)())completionHandler;
-- (bool)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation;
+- (BOOL)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation;
 /*
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center didActivateNotification:(NSUserNotification*)notification;
 */
@@ -81,7 +83,7 @@ Image* ConvertUIImageToImage(UIImage* nativeImage);
 void RegisterDVEApplicationListener(id<DVEApplicationListener> listener);
 
 /**
-    \ingroup engine_mac
+    \ingroup engine_ios
     Unregister a callback previously registered by `RegisterUIApplicationDelegateListener` function.
 
     Application can unregister a callback from any thread, even during callback invocation.
