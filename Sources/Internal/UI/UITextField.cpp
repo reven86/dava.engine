@@ -5,8 +5,8 @@
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
-
 #include "Engine/Engine.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -21,7 +21,6 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

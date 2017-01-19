@@ -1,5 +1,6 @@
 #include "CommandLine/DumpTool.h"
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "TArc/Testing/ConsoleModuleTestExecution.h"
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FileSystem.h"
@@ -140,9 +141,9 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(DTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -161,21 +162,21 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
           "all"
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<DumpTool>(cmdLine);
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TestLinks(SceneDumper::eMode::EXTENDED, { GPU_POWERVR_IOS, GPU_POWERVR_ANDROID, GPU_TEGRA, GPU_MALI, GPU_ADRENO, GPU_DX11 });
 
-        REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
     }
 
     DAVA_TEST (DumpFileRequired)
     {
         using namespace DAVA;
 
-        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
-        REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
-        REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(DTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
@@ -194,12 +195,12 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
           "mali,tegra"
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<DumpTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        std::unique_ptr<CommandLineModule> tool = std::make_unique<DumpTool>(cmdLine);
+        DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
         TestLinks(SceneDumper::eMode::REQUIRED, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_TEGRA });
 
-        REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
+        CommandLineModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

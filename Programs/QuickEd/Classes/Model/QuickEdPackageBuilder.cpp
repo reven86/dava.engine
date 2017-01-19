@@ -5,7 +5,6 @@
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
-#include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -276,32 +275,6 @@ UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(uint32 compo
 }
 
 void QuickEdPackageBuilder::EndComponentPropertiesSection()
-{
-    currentSection = nullptr;
-    currentObject = nullptr;
-}
-
-UIControlBackground* QuickEdPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
-{
-    ControlNode* node = controlsStack.back().node;
-    BackgroundPropertiesSection* section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
-    if (section && sectionHasProperties)
-    {
-        if (section->GetBg() == nullptr)
-            section->CreateControlBackground();
-
-        if (section->GetBg())
-        {
-            currentObject = section->GetBg();
-            currentSection = section;
-            return section->GetBg();
-        }
-    }
-
-    return nullptr;
-}
-
-void QuickEdPackageBuilder::EndBgPropertiesSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;

@@ -85,11 +85,13 @@ UIControl::UIControl(const Rect& rect)
     , parentWithContext(nullptr)
 {
     StartControlTracking(this);
-    UpdateFamily();
 
     parent = NULL;
     prevControlState = controlState = STATE_NORMAL;
     visible = true;
+
+    UpdateFamily();
+    GetOrCreateComponent<UIControlBackground>();
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -98,7 +100,6 @@ UIControl::UIControl(const Rect& rect)
     inputEnabled = true;
     inputProcessorsCount = 1;
 
-    background = new UIControlBackground();
     eventDispatcher = NULL;
     clipContents = false;
 
@@ -123,7 +124,6 @@ UIControl::UIControl(const Rect& rect)
 UIControl::~UIControl()
 {
     UIControlSystem::Instance()->CancelInputs(this);
-    SafeRelease(background);
     SafeRelease(eventDispatcher);
     RemoveAllControls();
     RemoveAllComponents();
@@ -289,48 +289,55 @@ void UIControl::SetState(int32 state)
 
 Sprite* UIControl::GetSprite() const
 {
-    return background->GetSprite();
+    return GetBackground()->GetSprite();
 }
 
 int32 UIControl::GetFrame() const
 {
-    return background->GetFrame();
+    return GetBackground()->GetFrame();
 }
 
 UIControlBackground::eDrawType UIControl::GetSpriteDrawType() const
 {
-    return background->GetDrawType();
+    return GetBackground()->GetDrawType();
 }
+
 int32 UIControl::GetSpriteAlign() const
 {
-    return background->GetAlign();
+    return GetBackground()->GetAlign();
 }
+
 void UIControl::SetSprite(const FilePath& spriteName, int32 spriteFrame)
 {
-    background->SetSprite(spriteName, spriteFrame);
+    GetBackground()->SetSprite(spriteName, spriteFrame);
     SetLayoutDirty();
 }
+
 void UIControl::SetSprite(Sprite* newSprite, int32 spriteFrame)
 {
-    background->SetSprite(newSprite, spriteFrame);
+    GetBackground()->SetSprite(newSprite, spriteFrame);
     SetLayoutDirty();
 }
+
 void UIControl::SetSpriteFrame(int32 spriteFrame)
 {
-    background->SetFrame(spriteFrame);
+    GetBackground()->SetFrame(spriteFrame);
 }
+
 void UIControl::SetSpriteFrame(const FastName& frameName)
 {
-    background->SetFrame(frameName);
+    GetBackground()->SetFrame(frameName);
 }
+
 void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
 {
-    background->SetDrawType(drawType);
+    GetBackground()->SetDrawType(drawType);
     SetLayoutDirty();
 }
+
 void UIControl::SetSpriteAlign(int32 align)
 {
-    background->SetAlign(align);
+    GetBackground()->SetAlign(align);
 }
 
 void UIControl::SetLeftAlign(float32 align)
@@ -467,14 +474,20 @@ bool UIControl::GetBottomAlignEnabled() const
 
 void UIControl::SetBackground(UIControlBackground* newBg)
 {
-    DVASSERT(newBg);
-    SafeRelease(background);
-    background = newBg->Clone();
+    UIControlBackground* currentBg = GetComponent<UIControlBackground>();
+    if (currentBg != newBg)
+    {
+        RemoveComponent(currentBg);
+        if (newBg != nullptr)
+        {
+            AddComponent(newBg);
+        }
+    }
 }
 
 UIControlBackground* UIControl::GetBackground() const
 {
-    return background;
+    return GetComponent<UIControlBackground>();
 }
 
 const UIGeometricData& UIControl::GetGeometricData() const
@@ -626,18 +639,18 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
 Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 {
-    if (background != nullptr && background->GetSprite() != nullptr)
+    if (GetBackground() != nullptr && GetBackground()->GetSprite() != nullptr)
     {
         if (constraints.dx > 0)
         {
             Vector2 size;
             size.dx = constraints.dx;
-            size.dy = background->GetSprite()->GetHeight() * size.dx / background->GetSprite()->GetWidth();
+            size.dy = GetBackground()->GetSprite()->GetHeight() * size.dx / GetBackground()->GetSprite()->GetWidth();
             return size;
         }
         else
         {
-            return background->GetSprite()->GetSize();
+            return GetBackground()->GetSprite()->GetSize();
         }
     }
     return Vector2(0.0f, 0.0f);
@@ -645,12 +658,12 @@ Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 
 bool UIControl::IsHeightDependsOnWidth() const
 {
-    if (background == nullptr || background->GetSprite() == nullptr)
+    if (GetBackground() == nullptr || GetBackground()->GetSprite() == nullptr)
     {
         return false;
     }
 
-    UIControlBackground::eDrawType dt = background->GetDrawType();
+    UIControlBackground::eDrawType dt = GetBackground()->GetDrawType();
     return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
 }
 
@@ -979,6 +992,11 @@ UIControl* UIControl::Clone()
     return c;
 }
 
+RefPtr<UIControl> UIControl::SafeClone()
+{
+    return RefPtr<UIControl>(Clone());
+}
+
 void UIControl::CopyDataFrom(UIControl* srcControl)
 {
     relativePosition = srcControl->relativePosition;
@@ -986,8 +1004,6 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     pivot = srcControl->pivot;
     scale = srcControl->scale;
     angle = srcControl->angle;
-    SafeRelease(background);
-    background = srcControl->background->Clone();
 
     tag = srcControl->GetTag();
     name = srcControl->name;
@@ -1023,9 +1039,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     RemoveAllComponents();
     for (UIComponent* srcComponent : srcControl->components)
     {
-        UIComponent* dest = srcComponent->Clone();
-        AddComponent(dest);
-        SafeRelease(dest);
+        AddComponent(srcComponent->SafeClone().Get());
     }
 
     RemoveAllControls();
@@ -1038,15 +1052,9 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
         inputProcessorsCount = 0;
     }
 
-    // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
-    // unnecessary children we have on the for example UIButton.
-    const List<UIControl*>& realChildren = srcControl->GetChildren();
-    List<UIControl*>::const_iterator it = realChildren.begin();
-    for (; it != realChildren.end(); ++it)
+    for (UIControl* srcChild : srcControl->GetChildren())
     {
-        UIControl* c = (*it)->Clone();
-        AddControl(c);
-        c->Release();
+        AddControl(srcChild->SafeClone().Get());
     }
 }
 
@@ -1110,7 +1118,7 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData drawData = GetLocalGeometricData();
     drawData.AddGeometricData(geometricData);
 
-    const Color& parentColor = parent ? parent->GetBackground()->GetDrawColor() : Color::White;
+    const Color& parentColor = parent && parent->GetBackground() ? parent->GetBackground()->GetDrawColor() : Color::White;
 
     SetParentColor(parentColor);
 
@@ -1152,7 +1160,10 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
 
 void UIControl::SetParentColor(const Color& parentColor)
 {
-    GetBackground()->SetParentColor(parentColor);
+    if (GetBackground())
+    {
+        GetBackground()->SetParentColor(parentColor);
+    }
 }
 
 void UIControl::DrawDebugRect(const UIGeometricData& gd, bool useAlpha)
@@ -1585,7 +1596,10 @@ void UIControl::Update(float32 timeElapsed)
 
 void UIControl::Draw(const UIGeometricData& geometricData)
 {
-    background->Draw(geometricData);
+    if (GetBackground())
+    {
+        GetBackground()->Draw(geometricData);
+    }
 }
 
 void UIControl::DrawAfterChilds(const UIGeometricData& geometricData)
@@ -1996,7 +2010,7 @@ Animation* UIControl::RemoveControlAnimation(int32 track)
 
 Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
-    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
+    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &GetBackground()->color, finalColor, time, interpolationFunc);
     animation->Start(track);
     return animation;
 }
@@ -2169,35 +2183,6 @@ void UIControl::DumpControls(bool onlyOrphans)
     Logger::FrameworkDebug("============================================================");
 }
 
-int32 UIControl::GetBackgroundComponentsCount() const
-{
-    return 1;
-}
-
-UIControlBackground* UIControl::GetBackgroundComponent(int32 index) const
-{
-    DVASSERT(index == 0);
-    return background;
-}
-
-UIControlBackground* UIControl::CreateBackgroundComponent(int32 index) const
-{
-    DVASSERT(index == 0);
-    return new UIControlBackground();
-}
-
-void UIControl::SetBackgroundComponent(int32 index, UIControlBackground* bg)
-{
-    DVASSERT(index == 0);
-    SetBackground(bg);
-}
-
-String UIControl::GetBackgroundComponentName(int32 index) const
-{
-    DVASSERT(index == 0);
-    return "Background";
-}
-
 void UIControl::UpdateLayout()
 {
     UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(this);
@@ -2214,7 +2199,7 @@ void UIControl::AddComponent(UIComponent* component)
     DVASSERT(component->GetControl() == nullptr);
     component->SetControl(this);
     components.push_back(SafeRetain(component));
-    std::stable_sort(components.begin(), components.end(), [](UIComponent* left, UIComponent* right) {
+    std::stable_sort(components.begin(), components.end(), [](const UIComponent* left, const UIComponent* right) {
         return left->GetType() < right->GetType();
     });
     UpdateFamily();

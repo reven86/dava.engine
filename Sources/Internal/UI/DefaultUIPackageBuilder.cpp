@@ -349,30 +349,7 @@ void DefaultUIPackageBuilder::EndComponentPropertiesSection()
     currentObject = nullptr;
 }
 
-UIControlBackground* DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
-{
-    if (sectionHasProperties)
-    {
-        UIControl* control = controlsStack.back()->control.Get();
-        if (!control->GetBackgroundComponent(index))
-        {
-            UIControlBackground* bg = control->CreateBackgroundComponent(index);
-            control->SetBackgroundComponent(index, bg);
-            SafeRelease(bg);
-        }
-        UIControlBackground* res = control->GetBackgroundComponent(index);
-        currentObject = res;
-        return res;
-    }
-    return nullptr;
-}
-
-void DefaultUIPackageBuilder::EndBgPropertiesSection()
-{
-    currentObject = nullptr;
-}
-
-void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field &field, const Any& value)
+void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
 {
     DVASSERT(currentObject);
 

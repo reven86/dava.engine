@@ -30,7 +30,6 @@ public:
     DAVA::int32 GetStylePropertyIndex() const override;
 
     const DAVA::Type *GetValueType() const override;
-    DAVA::Any GetValue() const = 0;
     void SetValue(const DAVA::Any& newValue) override;
     DAVA::Any GetDefaultValue() const override;
     void SetDefaultValue(const DAVA::Any& newValue) override;

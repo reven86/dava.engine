@@ -175,9 +175,9 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
     SetName(FastName("Frame Rect Control"));
-    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rect", 0);
-    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rect", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void FrameRectControl::InitFromGD(const UIGeometricData& gd)
@@ -218,9 +218,9 @@ PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
     SetName(FastName("pivot point control"));
-    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Pivot", 0);
-    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Pivot", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void PivotPointControl::InitFromGD(const UIGeometricData& gd)
@@ -234,9 +234,9 @@ RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
     SetName(FastName("rotate control"));
-    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rotate", 0);
-    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rotate", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void RotateControl::InitFromGD(const UIGeometricData& gd)

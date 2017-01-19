@@ -34,7 +34,6 @@ QVariant TextureListModel::data(const QModelIndex& index, int role) const
         {
         case Qt::DisplayRole:
             return QVariant(QFileInfo(curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).fileName());
-            break;
 
         default:
             break;

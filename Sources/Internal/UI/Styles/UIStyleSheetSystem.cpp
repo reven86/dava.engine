@@ -148,13 +148,13 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
                     if (debugData != nullptr)
                     {
                         debugData->propertySources[prop.propertyIndex] = styleSheet;
-                    }
                 }
+            }
 
                 if (debugData != nullptr)
                 {
                     debugData->styleSheets.push_back(*styleSheetIter);
-                }
+        }
             }
         }
 
@@ -201,10 +201,10 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
 
     if (recursively)
     {
-        for (UIControl* child : control->GetChildren())
-        {
+    for (UIControl* child : control->GetChildren())
+    {
             ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
-        }
+    }
     }
 }
 
@@ -315,18 +315,6 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         }
         break;
     }
-    case ePropertyOwner::BACKGROUND:
-        if (control->GetBackgroundComponentsCount() > 0)
-        {
-            UIControlBackground* background = control->GetBackgroundComponent(0);
-            Reflection bRef = Reflection::Create(&background);
-            Reflection fRef = bRef.GetField(descr.field_s->name);
-            if (fRef.IsValid())
-            {
-                action(control, fRef);
-            }
-        }
-        break;
     case ePropertyOwner::COMPONENT:
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {

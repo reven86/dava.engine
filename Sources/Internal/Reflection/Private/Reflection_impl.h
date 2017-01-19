@@ -6,18 +6,17 @@
 
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
-#define DAVA_REFLECTION__IMPL(Cls) \
+#define IMPL__DAVA_REFLECTION(Cls) \
     template <typename FT__> \
     friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
     static void __ReflectionInitializer() \
     { \
         static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
-        DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
 
-#define DAVA_VIRTUAL_REFLECTION__IMPL(Cls, ...) \
+#define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
     template <typename FT__> \
     friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
     const DAVA::ReflectedType* GetReflectedType() const override \
@@ -28,13 +27,18 @@
     { \
         static_assert(std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectionBase"); \
         DAVA::ReflectedTypeDB::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
 
-#define DAVA_REFLECTION_IMPL__IMPL(Cls) \
+#define IMPL__DAVA_REFLECTION_IMPL(Cls) \
     void Cls::__ReflectionInitializer_Impl()
+
+#define IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls)
+
+#define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
 
 namespace DAVA
 {
@@ -61,6 +65,11 @@ inline Any Reflection::GetValue() const
 inline bool Reflection::SetValue(const Any& value) const
 {
     return valueWrapper->SetValue(object, value);
+}
+
+inline bool Reflection::SetValueWithCast(const Any& value) const
+{
+    return valueWrapper->SetValueWithCast(object, value);
 }
 
 inline bool Reflection::IsValid() const
