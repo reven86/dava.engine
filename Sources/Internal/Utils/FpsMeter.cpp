@@ -2,12 +2,12 @@
 
 namespace DAVA
 {
-FpsMeter::FpsMeter(DAVA::float32 duration)
+FpsMeter::FpsMeter(float32 duration)
     : measureDurationSec(duration)
 {
 }
 
-void FpsMeter::Update(DAVA::float32 timeElapsed)
+void FpsMeter::Update(float32 timeElapsed)
 {
     ++elapsedFrames;
     elapsedSec += timeElapsed;

@@ -362,7 +362,7 @@ void ViewSceneScreen::UpdateInfo(DAVA::float32 timeElapsed)
     if (fpsMeter.IsFpsReady())
     {
         infoText->SetText(DAVA::Format(L"FPS: %.0f", fpsMeter.GetFps()));
-//      drawTime = updateTime = 0;
+        //      drawTime = updateTime = 0;
     }
 }
 
@@ -387,13 +387,13 @@ void ViewSceneScreen::OnGridTestStateChanged()
 
 void ViewSceneScreen::Input(DAVA::UIEvent* currentInput)
 {
-//     if (currentInput->phase == UIEvent::Phase::CHAR)
-//     {
-//         if (currentInput->keyChar == '+')
-//             cursorSize *= 1.25f;
-//         if (currentInput->keyChar == '-')
-//             cursorSize *= .8f;
-//     }
+    //     if (currentInput->phase == UIEvent::Phase::CHAR)
+    //     {
+    //         if (currentInput->keyChar == '+')
+    //             cursorSize *= 1.25f;
+    //         if (currentInput->keyChar == '-')
+    //             cursorSize *= .8f;
+    //     }
 
     BaseScreen::Input(currentInput);
 }

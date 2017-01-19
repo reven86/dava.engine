@@ -7,17 +7,26 @@
 #include <Base/BaseTypes.h>
 #include <Render/2D/Systems/RenderSystem2D.h>
 
-enum SectorColor { Green, Yellow, Red };
+enum SectorColor
+{
+    Green,
+    Yellow,
+    Red
+};
 
 class Sector : public DAVA::UIControl
 {
 public:
     Sector(const DAVA::Vector2& centerPoint, DAVA::float32 startAngle, DAVA::float32 endAngle, DAVA::float32 radius, SectorColor type);
 
-    enum Mode {SELECTED, UNSELECTED};
+    enum Mode
+    {
+        SELECTED,
+        UNSELECTED
+    };
     void SetMode(Mode);
-private:
 
+private:
     // UIControl
     void Draw(const DAVA::UIGeometricData& geometricData) override;
     bool IsPointInside(const DAVA::Vector2& point, bool expandWithFocus = false) const override;

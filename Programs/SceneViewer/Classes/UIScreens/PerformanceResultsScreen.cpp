@@ -150,7 +150,7 @@ void PerformanceResultsScreen::AddColorBoxes()
     float32 fontSize = fontSmall->GetSize();
     float32 boxSize = fontSize - boxMargin - boxMargin;
     float32 boxDistanceY = fontSize + 5.f;
-    
+
     auto AddBoxAndText = [this, fontSize, boxSize](DAVA::ScopedPtr<SectorColorBox>& box, DAVA::ScopedPtr<DAVA::UIStaticText>& text, float32 y0, SectorColor type)
     {
         box = new SectorColorBox(Rect(infoColumnRect.x, y0 + boxMargin, boxSize, boxSize), type);
@@ -315,7 +315,7 @@ void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* 
     GridTestSample& sample = data.gridTestResult.samples[sampleIndex];
     if (sample.screenshotPath.Exists())
     {
-        DVASSERT(previewImage); 
+        DVASSERT(previewImage);
         DAVA::ScopedPtr<DAVA::Sprite> sprite(DAVA::Sprite::CreateFromSourceFile(sample.screenshotPath));
         previewImage->SetSprite(sprite, 0);
         previewFpsText->SetText(DAVA::Format(L"%.1f FPS", sample.fps));

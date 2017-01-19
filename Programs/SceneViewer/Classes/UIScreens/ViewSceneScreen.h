@@ -72,14 +72,14 @@ private:
     DAVA::ScopedPtr<DAVA::UIFileSystemDialog> fileSystemDialog;
     std::unique_ptr<Menu> menu;
 
-//     DAVA::uint64 drawTime = 0;
-//     DAVA::uint64 updateTime = 0;
+    //     DAVA::uint64 drawTime = 0;
+    //     DAVA::uint64 updateTime = 0;
 
     DAVA::RotationControllerSystem* rotationControllerSystem;
     DAVA::WASDControllerSystem* wasdSystem;
 
-//     Vector2 cursorPosition;
-//     float32 cursorSize = 0.1f;
+    //     Vector2 cursorPosition;
+    //     float32 cursorSize = 0.1f;
 
     DAVA::FpsMeter fpsMeter;
 

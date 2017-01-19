@@ -38,26 +38,26 @@ namespace DAVA
 class FpsMeter
 {
 public:
-    /** creates FpsMeter instance which will be calculating FPS values each `duration` seconds */
-    explicit FpsMeter(DAVA::float32 duration = 1.f);
+    /** Create FpsMeter instance which will be calculating FPS values each `duration` seconds. */
+    explicit FpsMeter(float32 duration = 1.f);
 
     /** 
-    passes time in seconds since last Update call.
+    Pass time in seconds since last Update call.
     Normally this function should be invoked on each update tick from engine.
     */
-    void Update(DAVA::float32 timeElapsed);
+    void Update(float32 timeElapsed);
 
-    /** returns true if next FPS value is ready */
+    /** Return true if next FPS value is ready. */
     bool IsFpsReady() const;
 
-    /** returns last measured FPS value */
-    DAVA::float32 GetFps() const;
+    /** Return last measured FPS value. */
+    float32 GetFps() const;
 
 private:
-    DAVA::float32 measureDurationSec = 0.f;
-    DAVA::float32 elapsedSec = 0.f;
-    DAVA::uint32 elapsedFrames = 0;
-    DAVA::float32 lastFps = 0.f;
+    float32 measureDurationSec = 0.f;
+    float32 elapsedSec = 0.f;
+    uint32 elapsedFrames = 0;
+    float32 lastFps = 0.f;
     bool fpsIsReady = false;
 };
 
@@ -66,7 +66,7 @@ inline bool FpsMeter::IsFpsReady() const
     return fpsIsReady;
 }
 
-inline DAVA::float32 FpsMeter::GetFps() const
+inline float32 FpsMeter::GetFps() const
 {
     return lastFps;
 }

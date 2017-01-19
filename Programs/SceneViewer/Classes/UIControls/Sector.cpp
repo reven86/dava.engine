@@ -63,7 +63,6 @@ DAVA::Color GetColorByType(SectorColor type)
         return DAVA::Color();
     }
 }
-
 }
 
 Sector::Sector(const DAVA::Vector2& centerPoint, DAVA::float32 startAngle, DAVA::float32 endAngle, DAVA::float32 radius, SectorColor type)
