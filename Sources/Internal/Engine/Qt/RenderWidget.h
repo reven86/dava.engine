@@ -113,14 +113,13 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnCreated();
-    Q_SLOT void OnInitialize();
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void OnSceneGraphInvalidated();
     Q_SLOT void OnClientDelegateDestroyed();
 
     void ActivateRendering();
-    bool IsInitialized();
+    bool IsInitialized() const;
 
 private:
     IWindowDelegate* widgetDelegate = nullptr;

@@ -5,6 +5,7 @@
 #include <array>
 
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -35,8 +36,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
         }
         // do you really want to print 1Mb with one call may be your format
         // string incorrect?
-        DVASSERT_MSG(dynamicbuf.size() < 1024 * 1024,
-                     DAVA::Format("format: {%s}", format).c_str());
+        DVASSERT(dynamicbuf.size() < 1024 * 1024, Format("format: {%s}", format).c_str());
 
         dynamicbuf.resize(dynamicbuf.size() * 2);
     }
@@ -109,7 +109,7 @@ Logger::eLogLevel Logger::GetLogLevel() const
     return logLevel;
 }
 
-const char8* Logger::GetLogLevelString(eLogLevel ll) const
+const char8* Logger::GetLogLevelString(eLogLevel ll)
 {
 #ifndef __DAVAENGINE_WINDOWS__
     static_assert(logLevelString.size() == LEVEL__DISABLE,
@@ -118,7 +118,7 @@ const char8* Logger::GetLogLevelString(eLogLevel ll) const
     return logLevelString[ll];
 }
 
-Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll) const
+Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll)
 {
     for (size_t i = 0; i < logLevelString.size(); ++i)
     {
@@ -394,7 +394,7 @@ void Logger::FileLog(const FilePath& customLogFileName, eLogLevel ll, const char
             snprintf(&prefix[0], prefix.size(), "- %d:%d:%d %d", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
 #endif
-            snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
+            Snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
         }

@@ -508,6 +508,8 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
+                _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
                 if ((color0.texture != rhi::InvalidHandle) || passCfg.UsingMSAA())
                 {
@@ -958,7 +960,7 @@ void CommandBufferDX9_t::Execute()
         break;
         default:
             Logger::Error("unsupported command: %d", cmd->type);
-            DVASSERT_MSG(false, "unsupported command");
+            DVASSERT(false, "unsupported command");
         }
 
         if (--immediate_cmd_ttw <= 0)
@@ -1014,7 +1016,7 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
         TextureDX9::LogUnrestoredBacktraces();
         VertexBufferDX9::LogUnrestoredBacktraces();
         IndexBufferDX9::LogUnrestoredBacktraces();
-        DVASSERT_MSG(0, "Failed to restore all resources in time.");
+        DVASSERT(0, "Failed to restore all resources in time.");
     }
 #endif
 }
@@ -1188,6 +1190,8 @@ void _DX9_ResetBlock()
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
+
 #if 1
     #define CHECK_HR(hr) \
     if (FAILED(hr)) \
@@ -1657,12 +1661,12 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 //------------------------------------------------------------------------------
 
-void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceImmediate)
+void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = forceImmediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 

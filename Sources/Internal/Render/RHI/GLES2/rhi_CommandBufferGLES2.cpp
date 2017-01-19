@@ -1098,10 +1098,10 @@ void CommandBufferGLES2_t::Execute()
             }
 
             #if defined(__DAVAENGINE_IPHONE__)
-            DVASSERT(baseInst == 0) // it's not supported in GLES
+            DVASSERT(baseInst == 0); // it's not supported in GLES
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
-            DVASSERT(baseInst == 0) // it's not supported in GLES
+            DVASSERT(baseInst == 0); // it's not supported in GLES
             if (glDrawElementsInstanced)
             {
                 GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
@@ -1138,7 +1138,7 @@ void CommandBufferGLES2_t::Execute()
 
         default:
             Logger::Error("unsupported command: %d", cmd->type);
-            DVASSERT_MSG(false, "unsupported command");
+            DVASSERT(false, "unsupported command");
         }
 
         if (--immediate_cmd_ttw <= 0)
@@ -1875,12 +1875,12 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 //------------------------------------------------------------------------------
 
-void ExecGL(GLCommand* command, uint32 cmdCount, bool forceImmediate)
+void ExecGL(GLCommand* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = forceImmediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 

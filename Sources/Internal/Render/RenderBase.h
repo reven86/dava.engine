@@ -16,7 +16,8 @@ enum eBlending
     BLENDING_ALPHA_ADDITIVE,
     BLENDING_SOFT_ADDITIVE,
     BLENDING_MULTIPLICATIVE,
-    BLENDING_STRONG_MULTIPLICATIVE
+    BLENDING_STRONG_MULTIPLICATIVE,
+    BLENDING_PREMULTIPLIED_ALPHA,
 };
 
 enum eGradientBlendMode
@@ -273,7 +274,7 @@ inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveT
     case rhi::PRIMITIVE_TRIANGLESTRIP:
         return indexCount - 2;
     default:
-        DVASSERT_MSG(false, "Unknown primitive type");
+        DVASSERT(false, "Unknown primitive type");
     }
     return 0;
 }

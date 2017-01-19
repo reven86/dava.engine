@@ -1,10 +1,8 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/UWP/WindowNativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
@@ -19,9 +17,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
     , bridge(ref new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge))
 {
 }
 
@@ -42,20 +39,28 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     // Fullscreen mode cannot be changed on phones
-    if (IsWindowsPhone())
+    if (!PlatformCore::IsPhoneContractPresent())
     {
-        return;
+        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
     }
-
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 void* WindowBackend::GetHandle() const
@@ -82,6 +87,13 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
+
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     // Method executes in context of XAML::Window's UI thread
@@ -104,6 +116,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        bridge->SetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
+        break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         bridge->SetFullscreen(e.setFullscreenEvent.mode);
         break;
@@ -116,14 +131,12 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        bridge->SetSurfaceScale(e.setSurfaceScaleEvent.scale);
+        break;
     default:
         break;
     }
-}
-
-bool WindowBackend::IsWindowsPhone() const
-{
-    return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

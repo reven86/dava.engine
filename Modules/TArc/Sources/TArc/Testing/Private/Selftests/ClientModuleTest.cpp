@@ -1,78 +1,24 @@
 #include "TArc/Testing/TArcUnitTests.h"
 #include "TArc/Testing/MockClientModule.h"
+#include "TArc/Testing/MockControllerModule.h"
 
-#include "TArc/Core/ControllerModule.h"
+#include "Base/Singleton.h"
 
-using namespace DAVA::TArc;
-using namespace ::testing;
-
-struct CMTTag
+class CMMockModule : public DAVA::TArc::MockClientModule, public DAVA::Singleton<CMMockModule>
 {
-};
-
-class TestControllerModule : public ControllerModule
-{
-public:
-    TestControllerModule()
+    DAVA_VIRTUAL_REFLECTION(CMMockModule, DAVA::TArc::MockClientModule, DAVA::Singleton<CMMockModule>)
     {
-        DVASSERT(instance == nullptr);
-        instance = this;
-    }
-
-    static TestControllerModule* instance;
-
-    ContextManager& GetContextMng()
-    {
-        return GetContextManager();
-    }
-
-    ContextAccessor& GetCtxAccessor()
-    {
-        return GetAccessor();
-    }
-
-protected:
-    void OnRenderSystemInitialized(DAVA::Window* w) override
-    {
-    }
-
-    bool CanWindowBeClosedSilently(const WindowKey& key) override
-    {
-        return true;
-    }
-
-    void SaveOnWindowClose(const WindowKey& key) override
-    {
-    }
-
-    void RestoreOnWindowClose(const WindowKey& key) override
-    {
-    }
-
-    void OnContextCreated(DataContext& context) override
-    {
-    }
-
-    void OnContextDeleted(DataContext& context) override
-    {
-    }
-
-    void OnWindowClosed(const WindowKey& key) override
-    {
-    }
-
-    void PostInit() override
-    {
+        DAVA::ReflectionRegistrator<CMMockModule>::Begin()
+        .ConstructorByPointer()
+        .End();
     }
 };
-
-TestControllerModule* TestControllerModule::instance = nullptr;
 
 DAVA_TARC_TESTCLASS(ClientModuleTest)
 {
     BEGIN_TESTED_MODULES()
-    DECLARE_TESTED_MODULE(TestControllerModule)
-    DECLARE_TESTED_MODULE(MockClientModule<CMTTag>)
+    DECLARE_TESTED_MODULE(DAVA::TArc::MockControllerModule)
+    DECLARE_TESTED_MODULE(CMMockModule)
     END_TESTED_MODULES()
 
     BEGIN_FILES_COVERED_BY_TESTS()
@@ -82,81 +28,153 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (CreateContextTest)
     {
-        auto fn = [this](DataContext& ctx)
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
+        auto fn = [this](DataContext* ctx)
         {
-            undeletedContext = ctx.GetID();
+            undeletedContext = ctx->GetID();
         };
 
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextCreated(_))
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextCreated(_))
         .WillOnce(Invoke(fn));
 
-        DataContext::ContextID id = TestControllerModule::instance->GetContextMng().CreateContext();
+        DataContext::ContextID id = GetContextManager()->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         TEST_VERIFY(id == undeletedContext);
     }
 
     DAVA_TEST (ActivateContext)
     {
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
+        DataContext::ContextID becomeUnactiveContext = DataContext::Empty;
+        DataContext::ContextID becomeActiveContext = DataContext::Empty;
         DataContext::ContextID newContext = DataContext::Empty;
-        auto fn = [this, &newContext](DataContext& ctx)
+        auto fn = [this, &newContext](DataContext* ctx)
         {
-            newContext = ctx.GetID();
+            newContext = ctx->GetID();
         };
 
-        auto verifyFn = [this, &newContext](DataContext& ctx)
+        auto willChangedFn = [&](DataContext* ctx, DataContext* newOne)
         {
-            TEST_VERIFY(newContext == ctx.GetID());
+            if (becomeUnactiveContext == DataContext::Empty)
+            {
+                TEST_VERIFY(ctx == nullptr);
+            }
+            else
+            {
+                TEST_VERIFY(ctx->GetID() == becomeUnactiveContext);
+            }
+
+            if (becomeActiveContext == DataContext::Empty)
+            {
+                TEST_VERIFY(newOne == nullptr);
+            }
+            else
+            {
+                TEST_VERIFY(newOne->GetID() == becomeActiveContext);
+            }
         };
 
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextCreated(_))
+        auto didChangedFn = [&](DataContext* ctx, DataContext* oldOne)
+        {
+            if (becomeUnactiveContext == DataContext::Empty)
+            {
+                TEST_VERIFY(oldOne == nullptr);
+            }
+            else
+            {
+                TEST_VERIFY(oldOne->GetID() == becomeUnactiveContext);
+            }
+
+            if (becomeActiveContext == DataContext::Empty)
+            {
+                TEST_VERIFY(ctx == nullptr);
+            }
+            else
+            {
+                TEST_VERIFY(ctx->GetID() == becomeActiveContext);
+            }
+        };
+
+        auto verifyFn = [this, &newContext](DataContext* ctx)
+        {
+            TEST_VERIFY(newContext == ctx->GetID());
+        };
+
+        ON_CALL(*CMMockModule::Instance(), OnContextWillBeChanged(_, _))
+        .WillByDefault(Invoke(willChangedFn));
+        ON_CALL(*CMMockModule::Instance(), OnContextWasChanged(_, _))
+        .WillByDefault(Invoke(didChangedFn));
+
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextCreated(_))
         .WillOnce(Invoke(fn));
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDeleted(_))
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextWillBeChanged(_, _))
+        .Times(5);
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextWasChanged(_, _))
+        .Times(5);
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextDeleted(_))
         .WillOnce(Invoke(verifyFn));
 
-        ContextAccessor& accessor = TestControllerModule::instance->GetCtxAccessor();
-        ContextManager& mng = TestControllerModule::instance->GetContextMng();
+        ContextAccessor* accessor = GetAccessor();
+        ContextManager* mng = GetContextManager();
 
-        DataContext::ContextID id = mng.CreateContext();
+        auto activateContext = [&](DataContext::ContextID id)
+        {
+            becomeUnactiveContext = accessor->GetActiveContext() != nullptr ? accessor->GetActiveContext()->GetID() : DataContext::Empty;
+            becomeActiveContext = id;
+            mng->ActivateContext(id);
+        };
+
+        DataContext::ContextID id = mng->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         TEST_VERIFY(id == newContext);
 
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
 
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        activateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
         // activate already active context
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        activateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
         // deactivate context test
-        mng.ActivateContext(DataContext::Empty);
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        activateContext(DataContext::Empty);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
 
-        mng.ActivateContext(undeletedContext);
-        TEST_VERIFY(accessor.GetActiveContext() != nullptr);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor.GetContext(newContext)->GetID() == newContext);
+        activateContext(undeletedContext);
+        TEST_VERIFY(accessor->GetActiveContext() != nullptr);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
+        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
 
-        mng.ActivateContext(newContext);
-        TEST_VERIFY(accessor.GetActiveContext()->GetID() == newContext);
+        activateContext(newContext);
+        TEST_VERIFY(accessor->GetActiveContext()->GetID() == newContext);
 
-        mng.DeleteContext(newContext);
-        TEST_VERIFY(accessor.GetActiveContext() == nullptr);
+        // active context deleting produce context switching
+        becomeActiveContext = DataContext::Empty;
+        becomeUnactiveContext = newContext;
+        mng->DeleteContext(newContext);
+        TEST_VERIFY(accessor->GetActiveContext() == nullptr);
     }
 
     DAVA_TEST (DeleteContextTest)
     {
-        auto verifyFn = [this](DataContext& ctx)
+        using namespace ::testing;
+        using namespace DAVA::TArc;
+
+        auto verifyFn = [this](DataContext* ctx)
         {
-            TEST_VERIFY(ctx.GetID() == undeletedContext);
+            TEST_VERIFY(ctx->GetID() == undeletedContext);
         };
-        EXPECT_CALL(*MockClientModule<CMTTag>::instance, OnContextDeleted(_))
+        EXPECT_CALL(*CMMockModule::Instance(), OnContextDeleted(_))
         .WillOnce(Invoke(verifyFn));
 
-        TestControllerModule::instance->GetContextMng().DeleteContext(undeletedContext);
+        GetContextManager()->DeleteContext(undeletedContext);
     }
 
     DAVA_TEST (DeleteInvalidContextTest)
@@ -164,7 +182,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         bool exeptionCatched = false;
         try
         {
-            TestControllerModule::instance->GetContextMng().DeleteContext(1);
+            GetContextManager()->DeleteContext(1);
         }
         catch (std::runtime_error& /*e*/)
         {
@@ -179,7 +197,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         bool exeptionCatched = false;
         try
         {
-            TestControllerModule::instance->GetContextMng().ActivateContext(1);
+            GetContextManager()->ActivateContext(1);
         }
         catch (std::runtime_error& /*e*/)
         {
@@ -191,13 +209,13 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
 
     DAVA_TEST (GetInvalidContextTest)
     {
-        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetContext(1) == nullptr);
+        TEST_VERIFY(GetAccessor()->GetContext(1) == nullptr);
     }
 
     DAVA_TEST (GetActiveInvalidContextTest)
     {
-        TEST_VERIFY(TestControllerModule::instance->GetCtxAccessor().GetActiveContext() == nullptr);
+        TEST_VERIFY(GetAccessor()->GetActiveContext() == nullptr);
     }
 
-    DataContext::ContextID undeletedContext = DataContext::Empty;
+    DAVA::TArc::DataContext::ContextID undeletedContext = DAVA::TArc::DataContext::Empty;
 };

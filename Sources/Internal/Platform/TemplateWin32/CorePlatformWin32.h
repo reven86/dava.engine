@@ -42,9 +42,9 @@ private:
     static const uint32 FULLSCREEN_STYLE = WS_POPUP;
 
     void OnMouseMove(int32 x, int32 y);
-    void OnMouseWheel(int32 wheelDelta, int32 x, int32 y);
-    void OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton button, int32 x, int32 y);
-    void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnMouseWheel(int32 wheelDeltaX, int32 wheelDeltaY, int32 x, int32 y);
+    void OnMouseClick(UIEvent::Phase phase, eMouseButtons button, int32 x, int32 y);
+    void OnTouchEvent(UIEvent::Phase phase, eInputDevices deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -60,7 +60,7 @@ private:
 
     bool willQuit;
 
-    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(eMouseButtons::COUNT)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 
     float32 minWindowWidth = 0.0f;

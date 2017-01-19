@@ -37,17 +37,20 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
 
     void TriggerPlatformEvents();
+
+    void SetSurfaceScaleAsync(const float32 scale);
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
@@ -58,7 +61,7 @@ public:
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
-    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 dpi);
+    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 displayDpi);
     void SurfaceDestroyed();
     void ProcessProperties();
     void OnMouseEvent(int32 action, int32 nativeButtonState, float32 x, float32 y, float32 deltaX, float32 deltaY, int32 nativeModifierKeys);
@@ -71,6 +74,7 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    void DoSetSurfaceScale(const float32 scale);
     void UIEventHandler(const UIDispatcherEvent& e);
     void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
 
@@ -84,7 +88,6 @@ private:
 
     jobject surfaceView = nullptr;
     ANativeWindow* androidWindow = nullptr;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     float32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     float32 lastMouseMoveY = -1; // spurious mouse move events
@@ -93,6 +96,11 @@ private:
     std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
     Function<void(jobject)> triggerPlatformEvents;
     Function<jobject(jobject, jstring, jlong)> createNativeControl;
+
+    float32 surfaceScale = 1.0f;
+    float32 windowWidth = 0.0f;
+    float32 windowHeight = 0.0f;
+    float32 dpi = 120.f;
 
     bool firstTimeSurfaceChanged = true;
 
@@ -103,11 +111,6 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return androidWindow;
-}
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)

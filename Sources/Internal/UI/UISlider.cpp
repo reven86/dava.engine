@@ -1,5 +1,4 @@
 #include "UI/UISlider.h"
-#include "UI/UIButton.h"
 #include "Render/RenderHelper.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
@@ -16,8 +15,6 @@ static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 
 UISlider::UISlider(const Rect& rect)
     : UIControl(rect)
-    , minBackground(NULL)
-    , maxBackground(NULL)
     , thumbButton(NULL)
 {
     SetInputEnabled(true, false);
@@ -29,8 +26,6 @@ UISlider::UISlider(const Rect& rect)
     maxValue = 1.0f;
     currentValue = 0.5f;
 
-    minBackground = new UIControlBackground();
-    maxBackground = new UIControlBackground();
     InitThumb();
 }
 
@@ -81,8 +76,6 @@ void UISlider::SetThumb(UIControl* newThumb)
 
 UISlider::~UISlider()
 {
-    SafeRelease(minBackground);
-    SafeRelease(maxBackground);
     SafeRelease(thumbButton);
 }
 
@@ -222,40 +215,6 @@ void UISlider::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
-void UISlider::Draw(const UIGeometricData& geometricData)
-{
-    const Rect& aRect = thumbButton->GetGeometricData().GetUnrotatedRect();
-    float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
-
-    Rect fullVirtualScreen = UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect();
-    float32 screenXMin = fullVirtualScreen.x;
-    float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
-    float32 screenYMin = 0.f;
-    float32 screenYMax = static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy);
-
-    if (minBackground)
-    {
-        minBackground->SetParentColor(GetBackground()->GetDrawColor());
-        RenderSystem2D::Instance()->PushClip();
-        RenderSystem2D::Instance()->IntersectClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
-        minBackground->Draw(geometricData);
-        RenderSystem2D::Instance()->PopClip();
-    }
-    if (maxBackground)
-    {
-        maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-        RenderSystem2D::Instance()->PushClip();
-        RenderSystem2D::Instance()->IntersectClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
-        maxBackground->Draw(geometricData);
-        RenderSystem2D::Instance()->PopClip();
-    }
-
-    if (!minBackground && !maxBackground)
-    {
-        UIControl::Draw(geometricData);
-    }
-}
-
 void UISlider::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
@@ -293,18 +252,6 @@ void UISlider::CopyDataFrom(UIControl* srcControl)
 
     currentValue = t->currentValue;
 
-    SafeRelease(minBackground);
-    if (t->minBackground)
-    {
-        minBackground = t->minBackground->Clone();
-    }
-
-    SafeRelease(maxBackground);
-    if (t->maxBackground)
-    {
-        maxBackground = t->maxBackground->Clone();
-    }
-
     relTouchPoint = t->relTouchPoint;
 }
 
@@ -318,48 +265,6 @@ void UISlider::AttachToSubcontrols()
     }
 
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
-}
-
-int32 UISlider::GetBackgroundComponentsCount() const
-{
-    return BACKGROUND_COMPONENTS_COUNT;
-}
-
-UIControlBackground* UISlider::GetBackgroundComponent(int32 index) const
-{
-    switch (index)
-    {
-    case 0:
-        return GetBackground();
-
-    case 1:
-        return minBackground;
-
-    case 2:
-        return maxBackground;
-
-    default:
-        DVASSERT(false);
-        return NULL;
-    }
-}
-
-UIControlBackground* UISlider::CreateBackgroundComponent(int32 index) const
-{
-    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
-    return new UIControlBackground();
-}
-
-void UISlider::SetBackgroundComponent(int32 index, UIControlBackground* bg)
-{
-    DVASSERT(false);
-}
-
-String UISlider::GetBackgroundComponentName(int32 index) const
-{
-    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
-    static const String names[BACKGROUND_COMPONENTS_COUNT] = { "Background", "min", "max" };
-    return names[index];
 }
 
 } // ns

@@ -321,6 +321,7 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
 
 ENUM_DECLARE(UIComponent::eType)
 {
+    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
@@ -334,6 +335,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
+    ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)

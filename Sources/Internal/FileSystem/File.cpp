@@ -8,6 +8,7 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -98,7 +99,10 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
+    if (filename.IsDirectoryPathname())
+    {
+        return nullptr;
+    }
 
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
@@ -113,7 +117,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // access Engine object after it has beem destroyed
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
-        EngineContext* context = e->GetContext();
+        const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
         IPackManager* pm = context->packManager;
 #else
@@ -145,7 +149,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     LockGuard<Mutex> guard(mutex);
 
     AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
-    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+    DVASSERT(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     Vector<uint8> data;
     if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))

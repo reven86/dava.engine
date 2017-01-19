@@ -12,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {
@@ -84,12 +83,12 @@ void WebViewControl::Initialize(const Rect& rect)
     catch (const JNI::Exception& e)
     {
         Logger::Error("[WebViewControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
     std::weak_ptr<WebViewControl>* selfWeakPtr = new std::weak_ptr<WebViewControl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaWebView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaWebView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -282,7 +281,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
     bool isRedirectedByMouseClick = jisRedirectedByMouseClick == JNI_TRUE;
     IUIWebViewDelegate::eAction action = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    window->GetEngine()->RunAndWaitOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
+    RunOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
         action = OnUrlChanged(url, isRedirectedByMouseClick);
     });
 
@@ -291,7 +290,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
 void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 {
-    window->GetEngine()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnPageLoaded();
     });
 }
@@ -299,7 +298,7 @@ void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 void WebViewControl::nativeOnExecuteJavaScript(JNIEnv* env, jstring jresult)
 {
     String result = JNI::JavaStringToString(jresult, env);
-    window->GetEngine()->RunAsyncOnMainThread([this, result]() {
+    RunOnMainThreadAsync([this, result]() {
         OnExecuteJavaScript(result);
     });
 }

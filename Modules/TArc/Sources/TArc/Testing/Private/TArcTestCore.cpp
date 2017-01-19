@@ -4,11 +4,11 @@
 #include "Engine/Engine.h"
 
 #include "UnitTests/TestCore.h"
+#include "Utils/StringFormat.h"
 #include "Logger/TeamCityTestsOutput.h"
 #include "UnitTests/UnitTests.h"
 #include "FileSystem/File.h"
 #include "CommandLine/CommandLineParser.h"
-#include "Engine/NativeService.h"
 #include "Engine/Qt/RenderWidget.h"
 
 #include <QTimer>
@@ -81,7 +81,7 @@ void TestCore::OnAppStarted()
     if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
         Logger::Error("%s", "There are no test classes");
-        e.Quit();
+        e.QuitAsync(0);
     }
     else
     {
@@ -212,7 +212,7 @@ void TestCore::ProcessCommandLine()
 
 void TestCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void TestCore::OnTestClassStarted(const DAVA::String& testClassName)
@@ -274,12 +274,12 @@ void TestCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
-    e.GetNativeService()->GetApplication()->quit();
+    PlatformApi::Qt::GetApplication()->quit();
 }
 
 void TestCore::CreateRenderWidget()
 {
-    RenderWidget* w = e.GetNativeService()->GetRenderWidget();
+    RenderWidget* w = PlatformApi::Qt::GetRenderWidget();
     w->show();
 }
 

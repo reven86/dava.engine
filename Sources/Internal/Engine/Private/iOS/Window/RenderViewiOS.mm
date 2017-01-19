@@ -6,6 +6,7 @@
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
+#import <UIKit/UIScreen.h>
 #import <QuartzCore/CAEAGLLayer.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -23,6 +24,23 @@
         [self setMultipleTouchEnabled:YES];
     }
     return self;
+}
+
+- (void)setSurfaceScale:(DAVA::float32)surfaceScale
+{
+    [self setContentScaleFactor:[[UIScreen mainScreen] scale] * surfaceScale];
+}
+
+- (DAVA::float32)surfaceScale
+{
+    return [self contentScaleFactor] / [[UIScreen mainScreen] scale];
+}
+
+- (CGSize)surfaceSize
+{
+    const CGSize size = [self frame].size;
+    const CGFloat scaleFactor = [self contentScaleFactor];
+    return CGSizeMake(size.width * scaleFactor, size.height * scaleFactor);
 }
 
 - (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event

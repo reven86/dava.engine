@@ -2,6 +2,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "PackManager/PackManager.h"
+#include "Logger/Logger.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #else
@@ -45,7 +46,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     IPackManager* pm = nullptr;
     Engine* e = Engine::Instance();
     DVASSERT(e != nullptr);
-    EngineContext* context = e->GetContext();
+    const EngineContext* context = e->GetContext();
     DVASSERT(context != nullptr);
     pm = context->packManager;
 #else

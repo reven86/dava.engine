@@ -1,15 +1,14 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include <timeapi.h>
 
 #include "Engine/Window.h"
-#include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
@@ -26,9 +25,19 @@ HINSTANCE PlatformCore::hinstance = nullptr;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
-    , nativeService(new NativeService(this))
 {
     DllImport::Initialize();
+
+    // Enable per monitor dpi awareness if by some reason it has not been set in manifest file
+    if (DllImport::fnGetProcessDpiAwareness != nullptr)
+    {
+        PROCESS_DPI_AWARENESS dpiAwareLevel;
+        HRESULT hr = DllImport::fnGetProcessDpiAwareness(nullptr, &dpiAwareLevel);
+        if (hr == S_OK && dpiAwareLevel != PROCESS_PER_MONITOR_DPI_AWARE)
+        {
+            DllImport::fnSetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        }
+    }
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 
@@ -36,6 +45,8 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+// Ops, steam knows nothing about new pointer input, burn it with fire
+#if !defined(__DAVAENGINE_STEAM__)
     // Check whether new pointer input is enabled and enable it if so
     if (DllImport::fnEnableMouseInPointer != nullptr)
     {
@@ -44,6 +55,22 @@ void PlatformCore::Init()
         if (!DllImport::fnEnableMouseInPointer(TRUE))
         {
             Logger::Warning("Failed to enable new pointer input");
+        }
+    }
+#endif
+
+    // TODO: temporal hardcode, separate task for setting rotation
+
+    // Auto-rotation preferences are supported starting from Windows 8.
+    // Also system sets auto-rotation preferences only for calling process and these preferences are applied only
+    // when application's window has focus.
+    if (DllImport::fnGetAutoRotationState != nullptr)
+    {
+        AR_STATE arstate{};
+        BOOL result = DllImport::fnGetAutoRotationState(&arstate);
+        if (result && (arstate & (AR_NOSENSOR | AR_NOT_SUPPORTED)) == 0)
+        {
+            DllImport::fnSetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
         }
     }
 
@@ -58,7 +85,7 @@ void PlatformCore::Run()
     engineBackend.OnGameLoopStarted();
 
     WindowBackend* primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
-    primaryWindowBackend->Create(640.0f, 480.0f);
+    primaryWindowBackend->Create(1024.0f, 768.0f);
 
     for (;;)
     {
@@ -102,6 +129,37 @@ void PlatformCore::PrepareToQuit()
 void PlatformCore::Quit()
 {
     ::PostQuitMessage(engineBackend.GetExitCode());
+}
+
+void PlatformCore::EnableHighResolutionTimer(bool enable)
+{
+    static UINT minTimerPeriod = 0;
+    static bool highResolutionEnabled = false;
+
+    if (minTimerPeriod == 0)
+    {
+        // On first call obtain timer capabilities
+        TIMECAPS timeCaps;
+        if (::timeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) == TIMERR_NOERROR)
+        {
+            minTimerPeriod = timeCaps.wPeriodMin;
+        }
+    }
+
+    // Application must match each call to timeBeginPeriod with a call to timeEndPeriod
+    // https://msdn.microsoft.com/en-us/library/dd757633(v=vs.85).aspx
+    if (minTimerPeriod != 0 && highResolutionEnabled != enable)
+    {
+        if (enable)
+        {
+            ::timeBeginPeriod(minTimerPeriod);
+        }
+        else
+        {
+            timeEndPeriod(minTimerPeriod);
+        }
+        highResolutionEnabled = enable;
+    }
 }
 
 } // namespace Private

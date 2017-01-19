@@ -3,6 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Sprite.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -26,12 +27,10 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
     // calls to this method so here is simple shield
     if (physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0)
     {
-        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
         return;
     }
     if (virtualScreenSize.dx == 0 || virtualScreenSize.dy == 0)
     {
-        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
         return;
     }
     wasScreenResized = false;
@@ -115,13 +114,9 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         inputOffset.x = 0.5f * (virtualScreenSize.dx - inputAreaSize.dx * inputScaleFactor);
     }
 
+#if !defined(__DAVAENGINE_COREV2__)
     virtualSizeChanged.Emit(virtualScreenSize);
-
-    if (enabledReloadResourceOnResize)
-    {
-        Sprite::ValidateForSize();
-        TextBlock::ScreenResolutionChanged();
-    }
+#endif
 
     RenderSystem2D::Instance()->ScreenSizeChanged();
     UIControlSystem::Instance()->ScreenSizeChanged(GetFullScreenVirtualRect());
@@ -132,12 +127,20 @@ void VirtualCoordinatesSystem::EnableReloadResourceOnResize(bool enable)
     enabledReloadResourceOnResize = enable;
 }
 
+bool VirtualCoordinatesSystem::GetReloadResourceOnResize() const
+{
+    return enabledReloadResourceOnResize;
+}
+
 void VirtualCoordinatesSystem::SetPhysicalScreenSize(int32 width, int32 height)
 {
     physicalScreenSize.dx = width;
     physicalScreenSize.dy = height;
     wasScreenResized = true;
 
+#if defined(__DAVAENGINE_COREV2__)
+    ScreenSizeChanged();
+#endif
     physicalSizeChanged.Emit(physicalScreenSize);
 }
 
@@ -146,6 +149,11 @@ void VirtualCoordinatesSystem::SetVirtualScreenSize(int32 width, int32 height)
     requestedVirtualScreenSize.dx = virtualScreenSize.dx = width;
     requestedVirtualScreenSize.dy = virtualScreenSize.dy = height;
     wasScreenResized = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    ScreenSizeChanged();
+    virtualSizeChanged.Emit(virtualScreenSize);
+#endif
 }
 
 void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
@@ -154,6 +162,9 @@ void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
     inputAreaSize.dy = height;
     wasScreenResized = true;
 
+#if defined(__DAVAENGINE_COREV2__)
+    ScreenSizeChanged();
+#endif
     inputAreaSizeChanged.Emit(inputAreaSize);
 }
 
@@ -171,6 +182,10 @@ void VirtualCoordinatesSystem::RegisterAvailableResourceSize(int32 width, int32 
     newSize.folderName = resourcesFolderName;
 
     allowedSizes.push_back(newSize);
+
+#if defined(__DAVAENGINE_COREV2__)
+    ScreenSizeChanged();
+#endif
 }
 
 void VirtualCoordinatesSystem::UnregisterAllAvailableResourceSizes()

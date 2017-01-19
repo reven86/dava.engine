@@ -766,6 +766,10 @@ union luai_Cast { double l_d; long l_l; };
 #define LUA_NO_GETENV
 #define LUA_NO_SYSTEM
 #undef LUA_DL_DLL
+#undef lua_popen
+#undef lua_pclose
+#define lua_popen(L,c,m) ((void)((void)c, m), luaL_error(L, LUA_QL("popen") " not supported"), (FILE*)0)
+#define lua_pclose(L,file) ((void)((void)L, file), 0)
 #endif
 #endif
 

@@ -10,11 +10,14 @@ namespace TArc
 {
 template <typename T>
 class DataEditor;
+template <typename T>
+class DataReader;
+class ReflectedDataEditor;
 class DataListener;
 class DataWrapper
 {
 public:
-    using DataAccessor = Function<Reflection(const DataContext&)>;
+    using DataAccessor = Function<Reflection(const DataContext*)>;
 
     DataWrapper() = default;
     DataWrapper(const DataWrapper& other) = default;
@@ -26,27 +29,35 @@ public:
     bool operator==(const DataWrapper& other) const;
 
     bool HasData() const;
-    void AddListener(DataListener* listener);
-    void RemoveListener(DataListener* listener);
+    // you can call SetListener(nullptr) to remove active listener
+    void SetListener(DataListener* listener);
+    void SetFieldValue(const Any& fieldKey, const Any& value);
 
     template <typename T>
     DataEditor<T> CreateEditor();
+
+    template <typename T>
+    DataReader<T> CreateReader() const;
 
     bool IsActive() const;
 
 private:
     friend class Core;
     friend class QtReflected;
+    friend class DataListener;
     template <typename T>
     friend class DataEditor;
+    template <typename T>
+    friend class DataReader;
     DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
+    void ClearListener(DataListener* listenerForCheck);
 
-    void Sync(bool notifyListeners);
+    void Sync(bool notifyListener);
     void SyncWithEditor(const Reflection& etalonData);
-    void NotifyListeners(bool sendNotify, const Set<String>& fields = Set<String>());
+    void NotifyListener(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
     Reflection GetData() const;
 
 private:
@@ -73,6 +84,24 @@ private:
     Reflection reflection;
     T* dataPtr = nullptr;
     T copyValue;
+    DataWrapper holder;
+};
+
+template <typename T>
+class DataReader final
+{
+public:
+    DataReader(const DataWrapper& holder);
+
+    DataReader(const DataReader& other) = delete;
+    DataReader& operator=(const DataReader& other) = delete;
+
+    DataReader(DataReader&& other);
+    DataReader& operator=(DataReader&& other);
+
+    T const* operator->() const;
+
+private:
     DataWrapper holder;
 };
 } // namespace TArc

@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "FileSystem/FilePath.h"
 #include "Sound/SoundSystem.h"
 
@@ -178,6 +179,25 @@ void MusicIOSSoundEvent::SetVolume(float32 _volume)
 {
     volume = _volume;
     ((AvSound*)avSound).audioPlayer.volume = Clamp(_volume, 0.f, 1.f);
+}
+
+void MusicIOSSoundEvent::SetSpeed(float32 _speed)
+{
+    speed = _speed;
+
+    AVAudioPlayer* player = ((AvSound*)avSound).audioPlayer;
+    if (!FLOAT_EQUAL(_speed, 1.0f))
+    {
+        // AVAudioPlayer only supports 0.5f - 2.0f range
+        player.enableRate = YES;
+        player.rate = Clamp(_speed, 0.5f, 2.0f);
+    }
+    else
+    {
+        player.enableRate = NO;
+    }
+
+    [player prepareToPlay];
 }
 
 void MusicIOSSoundEvent::SetLoopCount(int32 looping)

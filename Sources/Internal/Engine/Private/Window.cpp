@@ -1,17 +1,22 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Window.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
 
+#include "Utils/StringFormat.h"
+#include "Animation/AnimationManager.h"
+#include "Autotesting/AutotestingSystem.h"
+#include "Input/InputSystem.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
-#include "Input/InputSystem.h"
-#include "UI/UIControlSystem.h"
+#include "Render/2D/TextBlock.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -30,7 +35,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
 
 Window::~Window() = default;
 
-void Window::SetSize(Size2f sz)
+void Window::SetSizeAsync(Size2f sz)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
@@ -40,7 +45,31 @@ void Window::SetSize(Size2f sz)
     }
 }
 
-void Window::Close()
+void Window::SetMinimumSize(Size2f size)
+{
+    DVASSERT(size.dx >= 0.f && size.dy >= 0.f);
+
+    if (!engineBackend->IsEmbeddedGUIMode())
+    {
+        size.dx = std::max(size.dx, static_cast<float32>(smallestWidth));
+        size.dy = std::max(size.dy, static_cast<float32>(smallestHeight));
+
+        windowBackend->SetMinimumSize(size);
+    }
+}
+
+void Window::SetVirtualSize(float32 w, float32 h)
+{
+    uiControlSystem->vcs->SetVirtualScreenSize(static_cast<int32>(w), static_cast<int32>(h));
+}
+
+Size2f Window::GetVirtualSize() const
+{
+    Size2i sz = uiControlSystem->vcs->GetVirtualScreenSize();
+    return Size2f(static_cast<float32>(sz.dx), static_cast<float32>(sz.dy));
+}
+
+void Window::CloseAsync()
 {
     // Window cannot be close in embedded mode as window lifetime
     // is controlled by highlevel framework
@@ -50,7 +79,7 @@ void Window::Close()
     }
 }
 
-void Window::SetTitle(const String& title)
+void Window::SetTitleAsync(const String& title)
 {
     // It does not make sense to set window title in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode())
@@ -59,7 +88,7 @@ void Window::SetTitle(const String& title)
     }
 }
 
-void Window::SetFullscreen(eFullscreen newMode)
+void Window::SetFullscreenAsync(eFullscreen newMode)
 {
     // Window's fullscreen mode cannot be changed in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode() && newMode != fullscreenMode)
@@ -78,14 +107,14 @@ void* Window::GetNativeHandle() const
     return windowBackend->GetHandle();
 }
 
-WindowNativeService* Window::GetNativeService() const
-{
-    return windowBackend->GetNativeService();
-}
-
-void Window::RunAsyncOnUIThread(const Function<void()>& task)
+void Window::RunOnUIThreadAsync(const Function<void()>& task)
 {
     windowBackend->RunAsyncOnUIThread(task);
+}
+
+void Window::RunOnUIThread(const Function<void()>& task)
+{
+    windowBackend->RunAndWaitOnUIThread(task);
 }
 
 void Window::InitCustomRenderParams(rhi::InitParam& params)
@@ -95,15 +124,28 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 
 void Window::SetCursorCapture(eCursorCapture mode)
 {
+    // For now FRAME is not supported, introduce somehow later
+    if (mode == eCursorCapture::FRAME)
+        return;
+
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
-        //for now, eCursorCapture::FRAME not supported
-        if (eCursorCapture::FRAME != mode)
+        if (cursorCapture != mode)
         {
-            if (cursorCapture != mode)
+            cursorCapture = mode;
+            if (cursorCapture == eCursorCapture::PINNING)
             {
-                cursorCapture = mode;
-                windowBackend->SetCursorCapture(mode);
+                waitInputActivation |= !hasFocus;
+                if (!waitInputActivation)
+                {
+                    windowBackend->SetCursorCapture(cursorCapture);
+                    windowBackend->SetCursorVisibility(false);
+                }
+            }
+            else if (hasFocus)
+            {
+                windowBackend->SetCursorCapture(cursorCapture);
+                windowBackend->SetCursorVisibility(cursorVisible);
             }
         }
     }
@@ -121,28 +163,48 @@ void Window::SetCursorVisibility(bool visible)
         if (cursorVisible != visible)
         {
             cursorVisible = visible;
-            windowBackend->SetCursorVisibility(visible);
+            if (hasFocus && cursorCapture != eCursorCapture::PINNING)
+            {
+                windowBackend->SetCursorVisibility(cursorVisible);
+            }
         }
     }
 }
 
 bool Window::GetCursorVisibility() const
 {
-    return cursorVisible;
+    return cursorVisible && cursorCapture != eCursorCapture::PINNING;
 }
 
 void Window::Update(float32 frameDelta)
 {
-    uiControlSystem->Update();
     update.Emit(this, frameDelta);
+
+    const EngineContext* context = engineBackend->GetContext();
+
+#if defined(__DAVAENGINE_AUTOTESTING__)
+    float32 realFrameDelta = context->systemTimer->RealFrameDelta();
+    context->autotestingSystem->Update(realFrameDelta);
+#endif
+
+    context->animationManager->Update(frameDelta);
+
+    uiControlSystem->Update();
 }
 
 void Window::Draw()
 {
-    if (isVisible)
-    {
-        uiControlSystem->Draw();
-    }
+    const EngineContext* context = engineBackend->GetContext();
+    context->renderSystem2D->BeginFrame();
+
+    uiControlSystem->Draw();
+
+#if defined(__DAVAENGINE_AUTOTESTING__)
+    context->autotestingSystem->Draw();
+#endif
+    draw.Emit(this);
+
+    context->renderSystem2D->EndFrame();
 }
 
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
@@ -150,11 +212,8 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     using Private::MainDispatcherEvent;
     if (MainDispatcherEvent::IsInputEvent(e.type))
     {
-        if (!hasFocus)
-        {
-            return; // if no focus - skip all input events
-        }
-        if (HandleInputActivation(e))
+        // Skip input events if window does not have focus or pinning switching logic tells to ignore input event
+        if (!hasFocus || HandleInputActivation(e))
         {
             return;
         }
@@ -207,7 +266,10 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         HandleWindowDestroyed(e);
         break;
     case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
-        HandleCursorCaptuleLost(e);
+        HandleCursorCaptureLost(e);
+        break;
+    case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
+        HandleCancelInput(e);
         break;
     default:
         break;
@@ -229,13 +291,13 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     engineBackend->InitRenderer(this);
 
-    EngineContext* context = engineBackend->GetEngineContext();
+    const EngineContext* context = engineBackend->GetContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
 
     UpdateVirtualCoordinatesSystem();
-
     engineBackend->OnWindowCreated(this);
+
     sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
 }
 
@@ -251,7 +313,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     engineBackend->DeinitRender(this);
 }
 
-void Window::HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e)
+void Window::HandleCursorCaptureLost(const Private::MainDispatcherEvent& e)
 {
     // If the native window loses the cursor capture, restore it and visibility when input activated.
     waitInputActivation = true;
@@ -270,8 +332,22 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         if (windowBackend->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
-
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+            // TODO:
+            // Resources must be separated from VirtualCoordinateSystem
+            // Each resource consumer have to care for his resources by itself,
+            // e.g. sprites reloading mechanism should be implemented in Sprite.cpp
+            // by handling Window::sizeChanged signal and making sprites reload
+            // inside that particular handler...
+            //
+            // Unfortunately we have only temporary solution:
+            // call reloadig sprites/fonts from this point ((
+            if (uiControlSystem->vcs->GetReloadResourceOnResize())
+            {
+                Sprite::ValidateForSize();
+                TextBlock::ScreenResolutionChanged();
+            }
         }
     }
 }
@@ -290,6 +366,7 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     //  - single render init/reset call during one frame
     //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
+
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
     mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
         if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
@@ -302,10 +379,11 @@ void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
     height = compressedSize.height;
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
-    dpi = compressedSize.dpi;
+    surfaceScale = compressedSize.surfaceScale;
     fullscreenMode = compressedSize.fullscreen;
+    dpi = compressedSize.dpi;
 
-    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
+    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f, dpi=%f", width, height, surfaceWidth, surfaceHeight, dpi);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
@@ -313,50 +391,64 @@ void Window::UpdateVirtualCoordinatesSystem()
     int32 w = static_cast<int32>(width);
     int32 h = static_cast<int32>(height);
 
-    Size2f surfSize = GetSurfaceSize();
-
-    int32 sw = static_cast<int32>(surfSize.dx);
-    int32 sh = static_cast<int32>(surfSize.dy);
+    int32 sw = static_cast<int32>(surfaceWidth);
+    int32 sh = static_cast<int32>(surfaceHeight);
 
     uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
     uiControlSystem->vcs->SetPhysicalScreenSize(sw, sh);
-    uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
-    uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
-    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
-    // If the pinning mode was activated from mouse button(MOUSE_BUTTON_DOWN), skip the first mouse button event(MOUSE_BUTTON_UP).
-    if (skipFirstMouseUpEventBeforeCursorCapture)
+    if (waitInputActivation && cursorCapture == eCursorCapture::PINNING)
     {
-        skipFirstMouseUpEventBeforeCursorCapture = false;
-        return true;
-    }
-    // Restore the cursor capture and cursor visibility.
-    if (waitInputActivation)
-    {
-        if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
+        bool skipEvent = true;
+        bool enablePinning = true;
+        switch (e.type)
         {
-            skipFirstMouseUpEventBeforeCursorCapture = true;
+        case MainDispatcherEvent::MOUSE_BUTTON_DOWN:
+            skipEvent = true;
+            enablePinning = true;
+            break;
+        case MainDispatcherEvent::MOUSE_BUTTON_UP:
+            skipEvent = true;
+            enablePinning = true;
+            waitInputActivation = false;
+            break;
+        case MainDispatcherEvent::MOUSE_MOVE:
+            skipEvent = true;
+            enablePinning = false;
+            break;
+        default:
+            skipEvent = false;
+            enablePinning = true;
+            waitInputActivation = false;
+            break;
         }
-        else if (MainDispatcherEvent::MOUSE_MOVE == e.type)
+
+        if (enablePinning)
         {
-            return true;
+            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+            windowBackend->SetCursorVisibility(false);
         }
-        waitInputActivation = false;
-        windowBackend->SetCursorCapture(cursorCapture);
-        windowBackend->SetCursorVisibility(cursorVisible);
-        return true;
+        return skipEvent;
     }
+    waitInputActivation = false;
     return false;
+}
+
+void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
+{
+    uiControlSystem->CancelAllInputs();
+    inputSystem->GetKeyboard().ClearAllKeys();
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
+    uiControlSystem->CancelAllInputs();
     inputSystem->GetKeyboard().ClearAllKeys();
     hasFocus = e.stateEvent.state != 0;
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
@@ -364,9 +456,10 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
         // When the native window loses focus, it restores the original cursor capture and visibility.
         // After the window gives the focus back, set the current visibility state, if not set pinning mode.
         // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
-        if (hasFocus && !waitInputActivation)
+        if (hasFocus && cursorCapture != eCursorCapture::PINNING)
         {
             windowBackend->SetCursorVisibility(cursorVisible);
+            windowBackend->SetCursorCapture(cursorCapture);
         }
     }
     focusChanged.Emit(this, hasFocus);
@@ -378,6 +471,8 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);
+
+    waitInputActivation = isVisible;
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
@@ -386,6 +481,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     eMouseButtons button = e.mouseEvent.button;
 
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.isRelative = e.mouseEvent.isRelative;
     uie.physPoint = e.mouseEvent.isRelative ? Vector2(0.f, 0.f) : Vector2(e.mouseEvent.x, e.mouseEvent.y);
@@ -403,6 +499,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.isRelative = e.mouseEvent.isRelative;
@@ -417,6 +514,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.isRelative = e.mouseEvent.isRelative;
@@ -452,6 +550,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     bool pressed = e.type == Private::MainDispatcherEvent::TOUCH_DOWN;
 
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = eInputDevices::TOUCH_SURFACE;
@@ -465,6 +564,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
 void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.phase = UIEvent::Phase::DRAG;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = eInputDevices::TOUCH_SURFACE;
@@ -478,6 +578,7 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
     uie.device = eInputDevices::TOUCH_PAD;
@@ -497,6 +598,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent uie;
+    uie.window = e.window;
     uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
     uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
@@ -525,6 +627,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
+    uie.window = e.window;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
     uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
     uie.device = eInputDevices::KEYBOARD;
@@ -532,6 +635,23 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.keyEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
+}
+
+void Window::SetSurfaceScaleAsync(float32 scale)
+{
+    if (scale <= 0.0f || scale > 1.0f)
+    {
+        DVASSERT(false, Format("Window::SetSurfaceScale: specified scale (%f) is out of range (0;1], ignoring", scale).c_str());
+        return;
+    }
+
+    const float32 currentScale = GetSurfaceScale();
+    if (FLOAT_EQUAL(currentScale, scale))
+    {
+        return;
+    }
+
+    windowBackend->SetSurfaceScaleAsync(scale);
 }
 
 } // namespace DAVA

@@ -7,8 +7,6 @@
 
 #include "Engine/Window.h"
 #include "Engine/EngineContext.h"
-#include "Engine/Qt/NativeServiceQt.h"
-#include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
@@ -16,6 +14,7 @@
 #include "Input/InputSystem.h"
 #include "Render/RHI/rhi_Public.h"
 
+#include "Logger/Logger.h"
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "Debug/DVAssert.h"
@@ -120,7 +119,7 @@ private:
 
 WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
 
-void AcqureContextImpl()
+void AcquireContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->AcquireContext();
@@ -183,7 +182,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
 {
     QtEventListener::TCallback triggered = [this]()
     {
@@ -195,7 +193,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
         qtEventListener = nullptr;
     };
 
-    qtEventListener = new QtEventListener(triggered, destroyed, engineBackend->GetNativeService()->GetApplication());
+    qtEventListener = new QtEventListener(triggered, destroyed, PlatformApi::Qt::GetApplication());
 }
 
 WindowBackend::~WindowBackend()
@@ -219,6 +217,11 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
 void WindowBackend::SetFullscreen(eFullscreen newMode)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
@@ -229,6 +232,11 @@ void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return renderWidget != nullptr && renderWidget->IsInitialized();
@@ -236,13 +244,17 @@ bool WindowBackend::IsWindowReadyForRender() const
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    NativeService* service = engineBackend->GetNativeService();
-    QApplication* app = service->GetApplication();
+    QApplication* app = PlatformApi::Qt::GetApplication();
     DVASSERT(app);
     if (app != nullptr)
     {
         app->postEvent(qtEventListener, new TriggerProcessEvent());
     }
+}
+
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
+{
+    // Not supported natively on OpenGL
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
@@ -258,6 +270,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::SET_FULLSCREEN:
         DoSetFullscreen(e.setFullscreenEvent.mode);
@@ -303,12 +318,15 @@ void WindowBackend::OnCreated()
     QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
-    float32 dpi = renderWidget->logicalDpiX();
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::Qt::GetApplication());
+    dpi = static_cast<float32>(renderWidget->logicalDpiX());
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w * scale, h * scale, dpi, eFullscreen::Off));
+
+    OnVisibilityChanged(true);
+    OnApplicationFocusChanged(true);
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -332,7 +350,7 @@ void WindowBackend::OnFrame()
     // we miss key down event, so we have to check for SHIFT, ALT, CTRL
     // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
     Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
-    KeyboardDevice& keyboard = engineBackend->GetEngineContext()->inputSystem->GetKeyboard();
+    KeyboardDevice& keyboard = engineBackend->GetContext()->inputSystem->GetKeyboard();
     DavaQtApplyModifier mod;
     mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
     mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
@@ -343,21 +361,28 @@ void WindowBackend::OnFrame()
 
 void WindowBackend::OnResized(uint32 width, uint32 height, bool isFullScreen)
 {
-    float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
-    eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, fullscreen));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
+        float32 w = static_cast<float32>(width);
+        float32 h = static_cast<float32>(height);
+        eFullscreen fullscreen = isFullScreen ? eFullscreen::On : eFullscreen::Off;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w * scale, h * scale, 1.0f, dpi, fullscreen));
+    }
 }
 
-void WindowBackend::OnDpiChanged(float32 dpi)
+void WindowBackend::OnDpiChanged(float32 dpi_)
 {
+    dpi = dpi_;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+    }
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
@@ -514,6 +539,11 @@ void WindowBackend::DoSetTitle(const char8* title)
     renderWidget->setWindowTitle(title);
 }
 
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
+{
+    renderWidget->setMinimumSize(static_cast<int>(width), static_cast<int>(height));
+}
+
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
     QQuickWindow* quickWindow = renderWidget->quickWindow();
@@ -532,9 +562,9 @@ void WindowBackend::DoSetFullscreen(eFullscreen newMode)
     }
 }
 
-void WindowBackend::AcqureContext()
+void WindowBackend::AcquireContext()
 {
-    AcqureContextImpl();
+    AcquireContextImpl();
 }
 
 void WindowBackend::ReleaseContext()
@@ -544,7 +574,10 @@ void WindowBackend::ReleaseContext()
 
 void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    if (renderWidget && renderWidget->IsInitialized())
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+    }
 }
 
 void WindowBackend::Update()
@@ -576,7 +609,7 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcqureContextImpl;
+    params.acquireContextFunc = &AcquireContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());

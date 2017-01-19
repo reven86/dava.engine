@@ -297,7 +297,7 @@ String AutotestingSystemLua::GetDeviceName()
     }
     else
     {
-        deviceName = WStringToString(DeviceInfo::GetName());
+        deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
     }
     replace(deviceName.begin(), deviceName.end(), ' ', '_');
     replace(deviceName.begin(), deviceName.end(), '-', '_');
@@ -508,7 +508,7 @@ bool AutotestingSystemLua::SetText(const String& path, const String& text)
     UITextField* tf = dynamic_cast<UITextField*>(FindControl(path));
     if (tf)
     {
-        tf->SetText(StringToWString(text));
+        tf->SetText(UTF8Utils::EncodeToWideString(text));
         return true;
     }
     return false;
@@ -572,6 +572,12 @@ void AutotestingSystemLua::ClickSystemBack()
     AutotestingSystem::Instance()->ClickSystemBack();
 }
 
+void AutotestingSystemLua::PressEscape()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::PressEscape");
+    AutotestingSystem::Instance()->PressEscape();
+}
+
 String AutotestingSystemLua::GetText(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
@@ -583,6 +589,16 @@ String AutotestingSystemLua::GetText(UIControl* control)
     if (uiTextField != nullptr)
     {
         return UTF8Utils::EncodeToUTF8(uiTextField->GetText());
+    }
+    return "";
+}
+
+String AutotestingSystemLua::GetTaggedClass(UIControl* control, const String& tag)
+{
+    const FastName& value = control->GetTaggedClass(FastName(tag));
+    if (value.IsValid())
+    {
+        return value.c_str();
     }
     return "";
 }
@@ -690,13 +706,13 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
     {
-        String actualText = WStringToString(uiStaticText->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
         return (actualText == expectedText);
     }
     UITextField* uiTextField = dynamic_cast<UITextField*>(control);
     if (uiTextField)
     {
-        String actualText = WStringToString(uiTextField->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiTextField->GetText());
         return (actualText == expectedText);
     }
     return false;
@@ -704,7 +720,7 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
 
 bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String& key)
 {
-    WideString expectedText = StringToWString(key);
+    WideString expectedText = UTF8Utils::EncodeToWideString(key);
 
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
@@ -774,13 +790,8 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 {
     UIEvent clickDown;
     clickDown.phase = UIEvent::Phase::BEGAN;
-#if defined(__DAVAENGINE_COREV2__)
-    clickDown.mouseButton = eMouseButtons::LEFT;
     clickDown.device = eInputDevices::MOUSE;
-#else
-    clickDown.mouseButton = UIEvent::MouseButton::LEFT;
-    clickDown.device = UIEvent::Device::MOUSE;
-#endif
+    clickDown.mouseButton = eMouseButtons::LEFT;
     clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     clickDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickDown.point = point;
@@ -790,22 +801,13 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
 {
     UIEvent clickUp;
-#if defined(__DAVAENGINE_COREV2__)
     if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(eMouseButtons::LEFT), clickUp))
-#else
-    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
-#endif
     {
         AutotestingSystem::Instance()->OnError("ClickAction::LeftMouseClickUp click down not found");
     }
     clickUp.phase = UIEvent::Phase::ENDED;
-#if defined(__DAVAENGINE_COREV2__)
-    clickUp.mouseButton = eMouseButtons::LEFT;
     clickUp.device = eInputDevices::MOUSE;
-#else
-    clickUp.mouseButton = UIEvent::MouseButton::LEFT;
-    clickUp.device = UIEvent::Device::MOUSE;
-#endif
+    clickUp.mouseButton = eMouseButtons::LEFT;
     clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     clickUp.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickUp.point = point;
@@ -818,11 +820,7 @@ void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y
     wheel.wheelDelta.x = x;
     wheel.wheelDelta.y = y;
     wheel.phase = UIEvent::Phase::WHEEL;
-#if defined(__DAVAENGINE_COREV2__)
     wheel.device = eInputDevices::MOUSE;
-#else
-    wheel.device = UIEvent::Device::MOUSE;
-#endif
     wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     wheel.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     wheel.point = point;

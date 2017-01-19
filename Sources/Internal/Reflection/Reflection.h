@@ -1,203 +1,245 @@
-#ifndef __DAVA_Reflection_Definition__
-#define __DAVA_Reflection_Definition__
+#pragma once
 
 #include <sstream>
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/Type.h"
+#include "Base/TypeInheritance.h"
 
-#include "Reflection/ReflectedBase.h"
-#include "Reflection/ReflectedObject.h"
+#include "Debug/DVAssert.h"
+
 #include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedTypeDB.h"
+#include "Reflection/ReflectedStructure.h"
+#include "Reflection/ReflectedObject.h"
+
+/** \defgroup reflection Reflection
+    TODO: detailed description 
+*/
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_REFLECTION(Cls) IMPL__DAVA_REFLECTION(Cls)
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_VIRTUAL_REFLECTION(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ##__VA_ARGS__)
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_REFLECTION_IMPL(Cls) IMPL__DAVA_REFLECTION_IMPL(Cls)
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls)
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name)
 
 namespace DAVA
 {
 class ValueWrapper;
 class StructureWrapper;
-class StructureEditorWrapper;
 
-/// \brief  Reflection allows to inspect and modify objects at runtime. It is some kind of runtime object reflection
-///         with predefined methods, that are giving generic access to the real runtime object value or his fields.
-///         Complex types (user type with number of fields) of the object that are going to be reflected should
-///         registered with ReflectionRegistrator class.
-/// \sa ReflectionRegistrator
-/// \sa ReflectedBase
-/// \sa ReflectedObject
-/// \sa ReflectedType
-/// \sa ReflectedMeta
+/**
+    \ingroup reflection
+    Must be used as base class for any user class that is going to have virtual reflection.
+
+    \code
+    class Foo : public DAVA::Reflection
+    {
+        DAVA_VIRTUAL_REFLECTION(Foo);
+        // ...
+    };
+    \endcode
+*/
+struct ReflectionBase
+{
+    virtual ~ReflectionBase() = default;
+    virtual const ReflectedType* GetReflectedType() const = 0;
+};
+
+/** 
+    \ingroup reflection
+    Holds reflected type information linked to appropriate runtime object.
+
+    Reflection is created by linking any class or primitive data with its unique reflected type.
+    Obtained Reflection allows to perform a number of operation over linked object:
+    - get or set value from/to the object at runtime
+    - introspect the object - its fields, methods, enumerations at runtime.
+ 
+        +---------------+
+        | ReflectedType |
+        +---------------+
+
+    It is also possible to create a new object or destroy existing objects from/with known reflected type.
+*/
 class Reflection final
 {
 public:
     struct Field;
+    struct FieldCaps;
     struct Method;
 
-    /// \brief Default constructor.
+    enum class CtorPolicy;
+
     Reflection() = default;
+    Reflection(const Reflection&) = default;
+    Reflection(const ReflectedObject& object, const ValueWrapper* vw, const StructureWrapper* sw, const ReflectedMeta* meta);
 
-    /// \brief Constructor.
-    /// \param  object  ReflectedObject, that is wrapping pointer on runtime object.
-    /// \param  vw      ValueWrapper, that gives direct access to the runtime object value.
-    /// \param  rtype   ReflectedType, that gives access to the registered  runtime object structure.
-    /// \param  meta    Additional meta info.
-    Reflection(const ReflectedObject& object, const ValueWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
-
-    /// \brief Query if reflection is valid.
-    /// \return true if valid, false if not.
     bool IsValid() const;
-
-    /// \brief Query if reflection is readonly.
-    /// \return true if readonly, false if not.
     bool IsReadonly() const;
 
-    /// \brief Gets reflection value type.
-    /// \return null if it fails, else the value type.
     const Type* GetValueType() const;
-
-    /// \brief Gets reflection object.
-    /// \return The reflection object.
     ReflectedObject GetValueObject() const;
-    const ReflectedType* GetReflectedType() const;
 
-    /// \brief Gets reflection value.
-    /// \return Reflection value.
     Any GetValue() const;
-
-    /// \brief Sets reflection value.
-    /// \param  value   Value to set.
-    /// \return true if it succeeds, false if it fails (readonly).
     bool SetValue(const Any& value) const;
+    bool SetValueWithCast(const Any& value) const;
 
-    /// \brief Query if reflection has fields.
-    /// \return true if has, false if not.
     bool HasFields() const;
-
-    /// \brief Gets a reflection field.
-    /// \param  name    The name of the field to get.
-    /// \return The field. If field with specified name isn't found empty field will be returned.
-    Field GetField(const Any& name) const;
-
-    /// \brief Gets all reflection fields.
-    /// \return All fields.
+    Reflection GetField(const Any& name) const;
     Vector<Field> GetFields() const;
 
-    /// \brief Determine if fields can be added to reflection.
-    /// \return true if fields can be added, false if not.
-    bool CanAddFields() const;
-
-    /// \brief Determine if fields can be inserted info reflection.
-    /// \return true if fields can be inserted, false if not.
-    bool CanInsertFields() const;
-
-    /// \brief Determine if fields can be removed from reflection.
-    /// \return true if fields can be removed, false if not.
-    bool CanRemoveFields() const;
-
-    /// \brief  Determine if there is ability to create detached field value.
-    /// \return true if we fields can be added, false if not.
-    /// \sa Reflection::CreateFieldValue
-    bool CanCreateFieldValue() const;
-
-    /// \brief  Creates detached value, that can be added or inserted as a new reflection field. One should do this with
-    ///         Reflection::AddField or Reflection::InsertField calls.
-    /// \return The new field value.
-    /// \sa Reflection::AddField.
-    /// \sa Reflection::InsertField.
-    Any CreateFieldValue() const;
-
-    /// \brief Adds a new field to reflection.
-    /// \param  key     Field key. In some cases it can be ignored, e.g. when reflection is from std::list<T>
-    /// \param  value   Field value.
-    /// \return true if it succeeds, false if it fails.
-    bool AddField(const Any& key, const Any& value) const;
-
-    /// \brief Inserts a new field into reflection.
-    /// \param  beforeKey   Key of the field, before which insertion will be performed.
-    /// \param  key         Field key. In some cases it can be ignored, e.g. when reflection is from std::list<T>
-    /// \param  value       Field value.
-    /// \return true if it succeeds, false if it fails.
-    bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
-
-    /// \brief Removes field with specified key from reflection.
-    /// \param  key Field key, that should be removed.
-    /// \return true if it succeeds, false if it fails.
-    bool RemoveField(const Any& key) const;
-
-    /// \brief Query if reflection has callable methods.
-    /// \return true if has methods, false if not.
     bool HasMethods() const;
-
-    /// \brief  Gets a reflection method. Returned Method is binded to the current reflection, so it will be called over
-    ///         runtime object that is carried by current Reflection instance.
-    /// \param  key Name of the method to get.
-    /// \return Method that is binded to current reflection and can be called.
-    /// \sa AnyFn
-    Method GetMethod(const String& key) const;
-
-    /// \brief Gets all reflection methods.
-    /// \return All methods.
+    AnyFn GetMethod(const String& key) const;
     Vector<Method> GetMethods() const;
 
-    /// \brief Query if this reflection has meta with specified type Meta.
-    /// \return true if there is meta, false if not.
+    void Dump(std::ostream& out, size_t deep = 0) const;
+
     template <typename Meta>
     bool HasMeta() const;
 
-    /// \brief Gets the meta with specified type Meta.
-    /// \return null if it fails, else the meta.
     template <typename Meta>
     const Meta* GetMeta() const;
 
-    /// \brief Dumps reflection fields and its values, including field of the fields and so on.
-    /// \param [out]    out     Output stream.
-    /// \param          deep    (Optional) The max deep. If 0 deep is unlimited.
-    void Dump(std::ostream& out, size_t deep = 0) const;
-
-    /// \brief Dumps reflection methods and its invoke params.
-    /// \param [in,out] out The out.
-    void DumpMethods(std::ostream& out) const;
-
-    /// \brief Creates a new Reflection from given runtime object.
-    /// \param [in] ptr     Pointer on runtime object to reflect.
-    /// \param      meta    (Optional) The meta.
-    /// \return A Reflection.
     template <typename T>
-    static Reflection Create(T* ptr, const ReflectedMeta* meta = nullptr);
+    static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
+
+    //
+    // Experimental API for fields add/remove/insert create.
+    // Is subject of change!
+    //
+    // -->
+    //
+    const FieldCaps& GetFieldsCaps() const;
+    bool AddField(const Any& key, const Any& value) const;
+    bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
+    bool RemoveField(const Any& key) const;
+    AnyFn GetFieldCreator() const;
+
+    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
+    //
+    // <--
+    //
 
 private:
-    const ValueWrapper* vw = nullptr;
-    const StructureWrapper* sw = nullptr;
-    const StructureEditorWrapper* sew = nullptr;
-    const ReflectedMeta* meta = nullptr;
-    const ReflectedType* objectType = nullptr;
-
     ReflectedObject object;
+    const ValueWrapper* valueWrapper = nullptr;
+    const StructureWrapper* structureWrapper = nullptr;
+    const ReflectedMeta* meta = nullptr;
 };
 
-/// \brief A reflection field.
 struct Reflection::Field
 {
-    Any key; ///< field key (usually name or index)
-    Reflection ref; ///< field reflection
-
-    template <typename T>
-    static Reflection::Field Create(const Any& key, T* ptr, const ReflectedMeta* meta = nullptr);
+    Any key;
+    Reflection ref;
 };
 
-/// \brief A reflection method.
 struct Reflection::Method
 {
-    String key; ///< method key (usually its name)
-    AnyFn fn; ///< method itself with binded runtime object it belongs to
+    String key;
+    AnyFn fn;
 };
+
+//
+// Experimental API for fields add/remove/insert create.
+// Is subject of change!
+//
+// -->
+//
+struct Reflection::FieldCaps
+{
+    bool canAddField = false;
+    bool canInsertField = false;
+    bool canRemoveField = false;
+    bool canCreateFieldValue = false;
+    bool hasAutogeneratedKeys = false;
+    bool hasAutogeneratedValues = false;
+    bool hasDynamicStruct = false;
+    bool hasFlatStruct = false;
+    const Type* flatKeysType = nullptr;
+    const Type* flatValuesType = nullptr;
+};
+//
+// <--
+//
+
+class ValueWrapper
+{
+public:
+    ValueWrapper() = default;
+    ValueWrapper(const ValueWrapper&) = delete;
+    virtual ~ValueWrapper() = default;
+
+    virtual const Type* GetType() const = 0;
+
+    virtual bool IsReadonly(const ReflectedObject& object) const = 0;
+    virtual Any GetValue(const ReflectedObject& object) const = 0;
+    virtual bool SetValue(const ReflectedObject& object, const Any& value) const = 0;
+    virtual bool SetValueWithCast(const ReflectedObject& object, const Any& value) const = 0;
+
+    virtual ReflectedObject GetValueObject(const ReflectedObject& object) const = 0;
+};
+
+class EnumWrapper
+{
+    // TODO: implement
+};
+
+class StructureWrapper
+{
+public:
+    StructureWrapper() = default;
+    StructureWrapper(const StructureWrapper&) = delete;
+    virtual ~StructureWrapper() = default;
+
+    virtual bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+    virtual Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual const Reflection::FieldCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+    virtual Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+
+    virtual AnyFn GetFieldCreator(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const = 0;
+    virtual bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const = 0;
+    virtual bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
+};
+
+template <typename T>
+struct StructureWrapperCreator;
 
 } // namespace DAVA
 
-#endif // __DAVA_Reflection_Definition__
-
-#ifndef __DAVA_Reflection_Definition_Only__
 #define __DAVA_Reflection__
-#include "Reflection/Wrappers.h"
-#include "Reflection/ReflectedType.h"
 #include "Reflection/Private/Reflection_impl.h"
-#include "Reflection/Private/StructureWrapperClass.h"
-#endif
+#include "Reflection/Private/ReflectedMeta_impl.h"
+#include "Reflection/Private/ReflectedType_impl.h"
+#include "Reflection/Private/ReflectedTypeDB_impl.h"
+#include "Reflection/Private/ReflectedObject_impl.h"

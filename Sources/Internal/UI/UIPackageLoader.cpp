@@ -14,10 +14,17 @@
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
+    : UIPackageLoader(Map<String, Set<FastName>>())
+{
+}
+
+UIPackageLoader::UIPackageLoader(const Map<String, DAVA::Set<FastName>>& legacyPrototypes_)
+    : legacyPrototypes(legacyPrototypes_)
 {
     version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
@@ -107,15 +114,15 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         LoadStyleSheets(styleSheetsNode, builder);
     }
 
-    const YamlNode* controlsNode = rootNode->Get("Controls");
-    if (controlsNode)
+    const YamlNode* prototypesNode = rootNode->Get("Prototypes");
+    if (prototypesNode)
     {
-        int32 count = static_cast<int32>(controlsNode->GetCount());
+        int32 count = static_cast<int32>(prototypesNode->GetCount());
         for (int32 i = 0; i < count; i++)
         {
-            const YamlNode* node = controlsNode->Get(i);
+            const YamlNode* node = prototypesNode->Get(i);
             QueueItem item;
-            item.name = node->Get("name")->AsString();
+            item.name = node->Get("name")->AsFastName();
             item.node = node;
             item.status = STATUS_WAIT;
             loadingQueue.push_back(item);
@@ -126,7 +133,47 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
             if (loadingQueue[i].status == STATUS_WAIT)
             {
                 loadingQueue[i].status = STATUS_LOADING;
-                LoadControl(loadingQueue[i].node, true, builder);
+                LoadControl(loadingQueue[i].node, AbstractUIPackageBuilder::TO_PROTOTYPES, builder);
+                loadingQueue[i].status = STATUS_LOADED;
+            }
+        }
+
+        loadingQueue.clear();
+    }
+
+    const YamlNode* controlsNode = rootNode->Get("Controls");
+    if (controlsNode)
+    {
+        int32 count = static_cast<int32>(controlsNode->GetCount());
+        for (int32 i = 0; i < count; i++)
+        {
+            const YamlNode* node = controlsNode->Get(i);
+            QueueItem item;
+            item.name = node->Get("name")->AsFastName();
+            item.node = node;
+            item.status = STATUS_WAIT;
+            loadingQueue.push_back(item);
+        }
+
+        for (int32 i = 0; i < count; i++)
+        {
+            if (loadingQueue[i].status == STATUS_WAIT)
+            {
+                loadingQueue[i].status = STATUS_LOADING;
+                AbstractUIPackageBuilder::eControlPlace controlPlace = AbstractUIPackageBuilder::TO_CONTROLS;
+                if (version <= LAST_VERSION_WITHOUT_PROTOTYPES_SUPPORT)
+                {
+                    auto it = legacyPrototypes.find(packagePath.GetFrameworkPath());
+                    if (it != legacyPrototypes.end())
+                    {
+                        if (it->second.find(loadingQueue[i].name) != it->second.end())
+                        {
+                            controlPlace = AbstractUIPackageBuilder::TO_PROTOTYPES;
+                        }
+                    }
+                }
+
+                LoadControl(loadingQueue[i].node, controlPlace, builder);
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
@@ -139,7 +186,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     return true;
 }
 
-bool UIPackageLoader::LoadControlByName(const String& name, AbstractUIPackageBuilder* builder)
+bool UIPackageLoader::LoadControlByName(const FastName& name, AbstractUIPackageBuilder* builder)
 {
     size_t size = loadingQueue.size();
     for (size_t index = 0; index < size; index++)
@@ -150,7 +197,7 @@ bool UIPackageLoader::LoadControlByName(const String& name, AbstractUIPackageBui
             {
             case STATUS_WAIT:
                 loadingQueue[index].status = STATUS_LOADING;
-                LoadControl(loadingQueue[index].node, true, builder);
+                LoadControl(loadingQueue[index].node, AbstractUIPackageBuilder::TO_PROTOTYPES, builder);
                 loadingQueue[index].status = STATUS_LOADED;
                 return true;
 
@@ -252,7 +299,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
     }
 }
 
-void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
     UIControl* control = nullptr;
     const YamlNode* pathNode = node->Get("path");
@@ -260,7 +307,13 @@ void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPac
     const YamlNode* classNode = node->Get("class");
     const YamlNode* nameNode = node->Get("name");
 
-    //DVASSERT(nameNode || pathNode);
+    DVASSERT(nameNode || pathNode);
+
+    FastName controlName;
+    if (nameNode)
+    {
+        controlName = nameNode->AsFastName();
+    }
 
     if (pathNode)
     {
@@ -270,57 +323,55 @@ void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPac
     {
         const YamlNode* customClassNode = node->Get("customClass");
         const String* customClass = customClassNode == nullptr ? nullptr : &(customClassNode->AsString());
-        String controlName = prototypeNode->AsString();
+        String prototypeName = prototypeNode->AsString();
         String packageName = "";
-        size_t pos = controlName.find('/');
+        size_t pos = prototypeName.find('/');
         if (pos != String::npos)
         {
-            packageName = controlName.substr(0, pos);
-            controlName = controlName.substr(pos + 1, controlName.length() - pos - 1);
+            packageName = prototypeName.substr(0, pos);
+            prototypeName = prototypeName.substr(pos + 1, prototypeName.length() - pos - 1);
         }
-        control = builder->BeginControlWithPrototype(packageName, controlName, customClass, this);
+        control = builder->BeginControlWithPrototype(controlName, packageName, FastName(prototypeName), customClass, this);
     }
     else if (classNode)
     {
         const YamlNode* customClassNode = node->Get("customClass");
         if (customClassNode)
-            control = builder->BeginControlWithCustomClass(customClassNode->AsString(), classNode->AsString());
+            control = builder->BeginControlWithCustomClass(controlName, customClassNode->AsString(), classNode->AsString());
         else
-            control = builder->BeginControlWithClass(classNode->AsString());
+            control = builder->BeginControlWithClass(controlName, classNode->AsString());
     }
     else
     {
-        builder->BeginUnknownControl(node);
+        builder->BeginUnknownControl(controlName, node);
     }
 
-    if (control)
+    if (control != nullptr)
     {
-        if (nameNode)
-        {
-            control->SetName(nameNode->AsFastName());
-        }
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
-        LoadBgPropertiesFromYamlNode(control, node, builder);
-        LoadInternalControlPropertiesFromYamlNode(control, node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
             ProcessLegacyAligns(control, node, builder);
         }
+    }
 
-        // load children
-        const YamlNode* childrenNode = node->Get("children");
-        if (childrenNode)
-        {
-            uint32 count = childrenNode->GetCount();
-            for (uint32 i = 0; i < count; i++)
-                LoadControl(childrenNode->Get(i), false, builder);
-        }
+    // load children
+    const YamlNode* childrenNode = node->Get("children");
+    if (childrenNode)
+    {
+        uint32 count = childrenNode->GetCount();
+        for (uint32 i = 0; i < count; i++)
+            LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
+    }
 
+    if (control != nullptr)
+    {
         control->LoadFromYamlNodeCompleted();
     }
-    builder->EndControl(root);
+
+    builder->EndControl(controlPlace);
 }
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder)
@@ -345,8 +396,13 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
+    bool bgProcessed = false;
     for (ComponentNode& nodeDescr : components)
     {
+        if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT)
+        {
+            bgProcessed = true;
+        }
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
@@ -355,9 +411,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             {
                 const InspMember* member = insp->Member(j);
                 VariantType res;
-                if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && member->Name() == FastName("orientation"))
+                    static const FastName propertyName("orientation");
+                    if (member->Name() == propertyName)
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
                         if (valueNode)
@@ -377,6 +434,18 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                         }
                     }
                 }
+                if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                {
+                    static const FastName propertyName("spriteModification");
+                    if (member->Name() == propertyName)
+                    {
+                        const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            res.SetInt32(valueNode->AsInt32());
+                        }
+                    }
+                }
 
                 if (res.GetType() == VariantType::TYPE_NONE)
                 {
@@ -387,6 +456,11 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             }
         }
 
+        builder->EndComponentPropertiesSection();
+    }
+    if (!bgProcessed)
+    {
+        builder->BeginComponentPropertiesSection(UIComponent::BACKGROUND_COMPONENT, 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -456,84 +530,11 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             }
         }
 
-        std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
+        std::stable_sort(components.begin(), components.end(), [](const ComponentNode& l, const ComponentNode& r) {
             return l.type == r.type ? l.index < r.index : l.type < r.type;
         });
     }
     return components;
-}
-
-void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-{
-    const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-
-    for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
-    {
-        const YamlNode* componentNode = nullptr;
-
-        if (componentsNode)
-            componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
-
-        UIControlBackground* bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
-        if (bg)
-        {
-            const InspInfo* insp = bg->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
-            {
-                const InspMember* member = insp->Member(j);
-                VariantType res;
-                if (componentNode)
-                {
-                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
-                    {
-                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
-                        if (valueNode)
-                        {
-                            if (member->Name() == FastName("spriteModification"))
-                            {
-                                res.SetInt32(valueNode->AsInt32());
-                            }
-                        }
-                    }
-
-                    if (res.GetType() == VariantType::TYPE_NONE)
-                    {
-                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-                    }
-                }
-                builder->ProcessProperty(member, res);
-            }
-        }
-        builder->EndBgPropertiesSection();
-    }
-}
-
-void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-{
-    const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-    for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
-    {
-        const YamlNode* componentNode = nullptr;
-        if (componentsNode)
-            componentNode = componentsNode->Get(control->GetInternalControlName(i) + control->GetInternalControlDescriptions());
-
-        UIControl* internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
-        if (internalControl)
-        {
-            const InspInfo* insp = internalControl->GetTypeInfo();
-
-            for (int32 j = 0; j < insp->MembersCount(); j++)
-            {
-                const InspMember* member = insp->Member(j);
-
-                VariantType value;
-                if (componentNode)
-                    value = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-                builder->ProcessProperty(member, value);
-            }
-        }
-        builder->EndInternalControlSection();
-    }
 }
 
 VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const String& propertyName)

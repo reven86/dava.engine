@@ -320,7 +320,7 @@ void ReleaseQueryObjectsPool()
     if (queryObjectPoolGLES2.size())
     {
         GLCommand cmd = { GLCommand::DELETE_QUERIES, { uint64(queryObjectPoolGLES2.size()), uint64(queryObjectPoolGLES2.data()) } };
-        ExecGL(&cmd, 1);
+        ExecGL(&cmd, 1, false);
 
         queryObjectPoolGLES2.clear();
     }

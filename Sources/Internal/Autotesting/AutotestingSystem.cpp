@@ -3,6 +3,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 
 #include "Core/Core.h"
+#include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
 #include "Platform/DeviceInfo.h"
@@ -137,19 +138,15 @@ void AutotestingSystem::OnAppStarted()
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
-
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
+ 
+#if defined(__DAVAENGINE_COREV2__)
+    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+#endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-
-    Texture::FBODescriptor desc;
-    desc.width = uint32(size.dx);
-    desc.height = uint32(size.dy);
-    desc.format = FORMAT_RGBA8888;
-    desc.needDepth = true;
-    desc.needPixelReadback = true;
-
-    screenshotTexture = Texture::CreateFBO(desc);
+    ResetScreenshotTexture(size);
 }
 
 void AutotestingSystem::OnAppFinished()
@@ -314,6 +311,7 @@ void AutotestingSystem::Update(float32 timeElapsed)
     {
         screenshotRequested = false;
 
+        screenshotTexture->Retain();
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, screenshotTexture);
         JobManager::Instance()->CreateWorkerJob(fn);
         isScreenShotSaving = true;
@@ -325,13 +323,10 @@ void AutotestingSystem::Update(float32 timeElapsed)
         if (timeBeforeExit <= 0.0f)
         {
             needExitApp = false;
-            String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
-            if (server != AutotestingDB::DB_ERROR_STR_VALUE)
-            {
-                AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
-            }
             JobManager::Instance()->WaitWorkerJobs();
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+            Engine::Instance()->QuitAsync(0);
+#else
             Core::Instance()->Quit();
 #endif
         }
@@ -426,8 +421,10 @@ void AutotestingSystem::OnError(const String& errorMessage)
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
-    DVASSERT_MSG(false, errorMessage.c_str())
-#if !defined(__DAVAENGINE_COREV2__)
+    DVASSERT(false, errorMessage.c_str());
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->QuitAsync(0);
+#else
     Core::Instance()->Quit();
 #endif
 }
@@ -465,19 +462,48 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
     isScreenShotSaving = false;
+
+    SafeRelease(texture);
+}
+
+void AutotestingSystem::OnWindowSizeChanged(DAVA::Window*, Size2f windowSize, Size2f surfaceSize)
+{
+    Size2i size;
+    size.dx = static_cast<int>(surfaceSize.dx);
+    size.dy = static_cast<int>(surfaceSize.dy);
+    ResetScreenshotTexture(size);
+}
+
+void AutotestingSystem::ResetScreenshotTexture(Size2i size)
+{
+    SafeRelease(screenshotTexture);
+
+    Texture::FBODescriptor desc;
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = FORMAT_RGBA8888;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+
+    screenshotTexture = Texture::CreateFBO(desc);
 }
 
 void AutotestingSystem::ClickSystemBack()
 {
-    Logger::Info("AutotestingSystem::ClickSystemBack");
     UIEvent keyEvent;
-#if defined(__DAVAENGINE_COREV2__)
     keyEvent.device = eInputDevices::KEYBOARD;
-#else
-    keyEvent.device = UIEvent::Device::KEYBOARD;
-#endif
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    UIControlSystem::Instance()->OnInput(&keyEvent);
+}
+
+void AutotestingSystem::PressEscape()
+{
+    UIEvent keyEvent;
+    keyEvent.device = eInputDevices::KEYBOARD;
+    keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+    keyEvent.key = DAVA::Key::ESCAPE;
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }

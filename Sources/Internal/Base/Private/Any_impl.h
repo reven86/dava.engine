@@ -5,6 +5,37 @@
 
 namespace DAVA
 {
+namespace AnyDetail
+{
+using CanGetDefault = std::integral_constant<int, 0>;
+using CanGetPointer = std::integral_constant<int, 1>;
+using CanGetVoidPointer = std::integral_constant<int, 2>;
+//using CanGetEnumOrIntegral = std::integral_constant<int, 2>;
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetDefault)
+{
+    return (t == Type::Instance<T>());
+}
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetPointer)
+{
+    // We should allow cast from "T*" into "const T*".
+    // For any type, that is "const T*" type->Decay() will return "T*".
+    const Type* rt = Type::Instance<T>();
+    return (t == rt || t == rt->Decay());
+}
+
+template <typename T>
+inline bool CanGetImpl(const Type* t, CanGetVoidPointer)
+{
+    // any pointer can be get as "void *"
+    return t->IsPointer();
+}
+
+} // AnyDetail
+
 inline Any::Any(Any&& any)
 {
     Set(std::move(any));
@@ -14,12 +45,6 @@ template <typename T>
 inline Any::Any(T&& value, NotAny<T>)
 {
     Set(std::forward<T>(value));
-}
-
-inline void Any::Swap(Any& any)
-{
-    std::swap(anyStorage, any.anyStorage);
-    std::swap(type, any.type);
 }
 
 inline bool Any::IsEmpty() const
@@ -42,9 +67,7 @@ inline Any& Any::operator=(Any&& any)
 {
     if (this != &any)
     {
-        type = any.type;
-        anyStorage = std::move(any.anyStorage);
-        any.type = nullptr;
+        Set(std::move(any));
     }
 
     return *this;
@@ -59,11 +82,17 @@ template <typename T>
 bool Any::CanGet() const
 {
     using U = AnyStorage::StorableType<T>;
+    using CanGetPointerPolicy = typename std::conditional<std::is_void<std::remove_pointer_t<T>>::value, AnyDetail::CanGetVoidPointer, AnyDetail::CanGetPointer>::type;
+    using CanGetPolicy = typename std::conditional<!std::is_pointer<U>::value, AnyDetail::CanGetDefault, CanGetPointerPolicy>::type;
 
     if (nullptr == type)
     {
         return false;
     }
+
+    return AnyDetail::CanGetImpl<U>(type, CanGetPolicy());
+
+    /*
     else if (type == Type::Instance<U>())
     {
         return true;
@@ -91,6 +120,7 @@ bool Any::CanGet() const
     }
 
     return false;
+    */
 }
 
 template <typename T>
@@ -106,6 +136,18 @@ template <typename T>
 inline const T& Any::Get(const T& defaultValue) const
 {
     return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
+}
+
+inline const void* Any::GetData() const
+{
+    return anyStorage.GetData();
+}
+
+inline void Any::Swap(Any& any)
+{
+    std::swap(type, any.type);
+    std::swap(anyStorage, any.anyStorage);
+    std::swap(compareFn, any.compareFn);
 }
 
 inline void Any::Set(const Any& any)
@@ -131,13 +173,13 @@ void Any::Set(T&& value, NotAny<T>)
 
     type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
-    compareFn = &AnyCompare<std::remove_cv_t<T>>::IsEqual;
+    compareFn = &AnyCompare<U>::IsEqual;
 }
 
 template <typename T>
 bool Any::CanCast() const
 {
-    return CanGet<T>() || AnyCast<T>::CanCast(*this);
+    return CanGet<T>() || AnyDetail::AnyCastImpl<T>::CanCast(*this);
 }
 
 template <typename T>
@@ -146,6 +188,16 @@ T Any::Cast() const
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    return AnyCast<T>::Cast(*this);
+    return AnyDetail::AnyCastImpl<T>::Cast(*this);
 }
+
+template <typename T>
+T Any::Cast(const T& defaultValue) const
+{
+    if (CanGet<T>())
+        return anyStorage.GetAuto<T>();
+
+    return AnyDetail::AnyCastImpl<T>::template Cast<T>(*this, defaultValue);
+}
+
 } // namespace DAVA
