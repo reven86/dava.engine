@@ -492,63 +492,33 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
 
 void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 {
-    HandleKeyPressEvent(e);
-    
-#if defined(__DAVAENGINE_WINDOWS__)
-    // If it's a shift up event and another shift is pressed right now, consider it's up too
-    // Since Windows does not send event with separate WM_KEYUP for second shift if first one is still pressed
+    bool pressed = e.type == Private::MainDispatcherEvent::KEY_DOWN;
 
-    const KeyboardDevice& keyboard = inputSystem->GetKeyboard();
-    const Key key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-
-    if (e.type == Private::MainDispatcherEvent::KEY_UP && (key == Key::RSHIFT || key == Key::LSHIFT))
-    {
-        const Key anotherShiftKey = (key == Key::RSHIFT) ? Key::LSHIFT : Key::RSHIFT;
-
-        if (keyboard.IsKeyPressed(anotherShiftKey))
-        {
-            HandleKeyPressEvent(e, anotherShiftKey);
-        }
-    }
-#endif
-}
-
-void Window::HandleKeyPressEvent(const Private::MainDispatcherEvent& e, const Key eventKeyOverride)
-{
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
-    UIEvent event;
-    event.device = eInputDevices::KEYBOARD;
-    event.timestamp = e.timestamp / 1000.0;
-    event.modifiers = e.keyEvent.modifierKeys;
+    UIEvent uie;
+    uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
+    uie.device = eInputDevices::KEYBOARD;
+    uie.timestamp = e.timestamp / 1000.0;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
-    if (eventKeyOverride == Key::UNKNOWN)
-    {
-        event.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-    }
-    else
-    {
-        event.key = eventKeyOverride;
-    }
-
-    const bool pressed = (e.type == Private::MainDispatcherEvent::KEY_DOWN);
     if (pressed)
     {
-        event.phase = e.keyEvent.isRepeated ? UIEvent::Phase::KEY_DOWN_REPEAT : UIEvent::Phase::KEY_DOWN;
+        uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::KEY_DOWN_REPEAT : UIEvent::Phase::KEY_DOWN;
     }
     else
     {
-        event.phase = UIEvent::Phase::KEY_UP;
+        uie.phase = UIEvent::Phase::KEY_UP;
     }
 
-    inputSystem->HandleInputEvent(&event);
+    inputSystem->HandleInputEvent(&uie);
     if (pressed)
     {
-        keyboard.OnKeyPressed(event.key);
+        keyboard.OnKeyPressed(uie.key);
     }
     else
     {
-        keyboard.OnKeyUnpressed(event.key);
+        keyboard.OnKeyUnpressed(uie.key);
     }
 }
 
