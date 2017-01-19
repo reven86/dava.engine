@@ -170,8 +170,6 @@ void UIControlSystem::AddPopup(UIPopup* newPopup)
 
     newPopup->LoadGroup();
     popupContainer->AddControl(newPopup);
-
-    UpdateControl(newPopup);
 }
 
 void UIControlSystem::RemovePopup(UIPopup* popup)
