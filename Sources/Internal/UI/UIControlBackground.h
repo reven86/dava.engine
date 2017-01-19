@@ -4,9 +4,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
+#include "Base/GlobalEnum.h"
+#include "Components/UIComponent.h"
 #include "Render/2D/Sprite.h"
 #include "FileSystem/FilePath.h"
-#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
@@ -25,7 +26,7 @@ class NMaterial;
         with the set of requested rules.
      */
 
-class UIControlBackground : public BaseObject
+class UIControlBackground : public UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>
 {
     DAVA_VIRTUAL_REFLECTION(UIControlBackground, BaseObject);
 
@@ -108,6 +109,8 @@ public:
      \brief Constructor.
      */
     UIControlBackground();
+
+    UIControlBackground(const UIControlBackground& src);
 
     virtual bool IsEqualTo(const UIControlBackground* back) const;
 
@@ -253,12 +256,7 @@ public:
      \brief Creates the absoulutely identic copy of the background.
      \returns UIControlBackground copy
      */
-    virtual UIControlBackground* Clone();
-    /**
-     \brief Copies all background parameters from the source.
-     \param[in] srcBackground Source background to copy parameters from.
-     */
-    virtual void CopyDataFrom(UIControlBackground* srcBackground);
+    UIControlBackground* Clone() const override;
 
     /**
      \brief Returns final draw color. This color is affected by the parrent color.

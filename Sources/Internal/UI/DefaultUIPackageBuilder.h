@@ -37,9 +37,6 @@ public:
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
-    virtual UIControlBackground* BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
-    virtual void EndBgPropertiesSection() override;
-
     virtual void ProcessProperty(const Reflection::Field& field, const Any& value) override;
 
 private:
@@ -57,6 +54,7 @@ private:
     BaseObject* currentObject;
 
     RefPtr<UIPackage> package;
+    FilePath currentPackagePath;
 
     Vector<UIPackage*> importedPackages;
     Vector<UIPriorityStyleSheet> styleSheets;

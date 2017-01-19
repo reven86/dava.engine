@@ -350,7 +350,6 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     {
         LoadControlPropertiesFromYamlNode(control, Reflection::Create(&control), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
-        LoadBgPropertiesFromYamlNode(control, node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
@@ -400,8 +399,13 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
+    bool bgProcessed = false;
     for (ComponentNode& nodeDescr : components)
     {
+        if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT)
+        {
+            bgProcessed = true;
+        }
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
@@ -410,11 +414,11 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             for (auto& field : fields)
             {
                 Any res;
-                if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
+                    static const FastName propertyName("orientation");
                     FastName name(field.key.Cast<String>());
-                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && name == FastName("orientation"))
-                    {
+                    if (name == propertyName)                    {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
                         if (valueNode)
                         {
@@ -433,6 +437,19 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                         }
                     }
                 }
+                if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                {
+                    static const FastName propertyName("spriteModification");
+                    const FastName name(field.key.Cast<String>());
+                    if (name == propertyName)
+                    {
+                        const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
+                        if (valueNode)
+                        {
+                            res = valueNode->AsInt32();
+                        }
+                    }
+                }
 
                 if (res.IsEmpty())
                 {
@@ -443,6 +460,11 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             }
         }
 
+        builder->EndComponentPropertiesSection();
+    }
+    if (!bgProcessed)
+    {
+        builder->BeginComponentPropertiesSection(UIComponent::BACKGROUND_COMPONENT, 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -512,56 +534,11 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             }
         }
 
-        std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
+        std::stable_sort(components.begin(), components.end(), [](const ComponentNode& l, const ComponentNode& r) {
             return l.type == r.type ? l.index < r.index : l.type < r.type;
         });
     }
     return components;
-}
-
-void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-{
-    const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-
-    for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
-    {
-        const YamlNode* componentNode = nullptr;
-
-        if (componentsNode)
-            componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
-
-        UIControlBackground* bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
-        if (bg)
-        {
-            const Reflection& bgRef = Reflection::Create(&bg);
-            const auto& fields = bgRef.GetFields();
-            for (auto& field : fields)
-            {
-                Any res;
-                if (componentNode)
-                {
-                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
-                    {
-                        const YamlNode* valueNode = componentNode->Get(field.key.Cast<String>());
-                        if (valueNode)
-                        {
-                            if (field.key.Cast<String>() == "spriteModification")
-                            {
-                                res = valueNode->AsInt32();
-                            }
-                        }
-                    }
-
-                    if (res.IsEmpty())
-                    {
-                        res = ReadVariantTypeFromYamlNode(field.ref, componentNode, field.key.Cast<String>());
-                    }
-                }
-                builder->ProcessProperty(field, res);
-            }
-        }
-        builder->EndBgPropertiesSection();
-    }
 }
 
 Any UIPackageLoader::ReadVariantTypeFromYamlNode(const Reflection& reflection, const YamlNode* node, const String& name)

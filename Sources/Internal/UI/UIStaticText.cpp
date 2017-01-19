@@ -76,8 +76,8 @@ UIStaticText::UIStaticText(const Rect& rect)
 {
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
-    background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    GetBackground()->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);

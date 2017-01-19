@@ -30,14 +30,14 @@ struct Dispatch
     void (*impl_ResetBlock)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
-    void (*impl_VertexBuffer_Delete)(Handle);
+    void (*impl_VertexBuffer_Delete)(Handle, bool);
     bool (*impl_VertexBuffer_Update)(Handle, const void*, uint32, uint32);
     void* (*impl_VertexBuffer_Map)(Handle, uint32, uint32);
     void (*impl_VertexBuffer_Unmap)(Handle);
     bool (*impl_VertexBuffer_NeedRestore)(Handle);
 
     Handle (*impl_IndexBuffer_Create)(const IndexBuffer::Descriptor& desc);
-    void (*impl_IndexBuffer_Delete)(Handle);
+    void (*impl_IndexBuffer_Delete)(Handle, bool);
     bool (*impl_IndexBuffer_Update)(Handle, const void*, uint32, uint32);
     void* (*impl_IndexBuffer_Map)(Handle, uint32, uint32);
     void (*impl_IndexBuffer_Unmap)(Handle);
@@ -57,7 +57,7 @@ struct Dispatch
     uint64 (*impl_PerfQuery_Value)(Handle query);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);
-    void (*impl_Texture_Delete)(Handle);
+    void (*impl_Texture_Delete)(Handle, bool);
     void* (*impl_Texture_Map)(Handle, unsigned, TextureFace);
     void (*impl_Texture_Unmap)(Handle);
     void (*impl_Texture_Update)(Handle, const void*, uint32, TextureFace);

@@ -17,6 +17,7 @@ struct Params
     FilePath archivePath;
     FilePath logPath;
     FilePath baseDirPath;
+    FilePath metaDbPath;
     AssetCacheClient* assetCacheClient = nullptr;
 };
 

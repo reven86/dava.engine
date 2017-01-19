@@ -1,5 +1,6 @@
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/Project/ProjectManagerData.h"
+#include "Classes/Project/ProjectResources.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Settings/Settings.h"
@@ -33,12 +34,11 @@ void ProjectManagerModule::PostInit()
 
     ContextAccessor* accessor = GetAccessor();
 
-    DataContext* globalContext = accessor->GetGlobalContext();
-    std::unique_ptr<ProjectManagerData> data = std::make_unique<ProjectManagerData>();
+    projectResources.reset(new ProjectResources(accessor));
 
+    ProjectManagerData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
     data->spritesPacker.reset(new SpritesPackerModule(GetUI()));
     data->editorConfig.reset(new EditorConfig());
-    globalContext->CreateData(std::move(data));
 
     CreateActions();
     RegisterOperations();
@@ -176,21 +176,13 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     ProjectManagerData* data = GetData();
     connections.RemoveConnection(data->spritesPacker.get(), &SpritesPackerModule::SpritesReloaded);
 
-    data->projectPath = incomePath;
-    DAVA::FilePath::AddResourcesFolder(data->GetDataSourcePath());
-    DAVA::FilePath::AddTopResourcesFolder(data->GetDataPath());
+    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
 
+    projectResources->LoadProject(incomePath);
     DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
 
-    propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
-    LoadMaterialsSettings(data);
-
-    DAVA::QualitySettingsSystem::Instance()->Load(data->projectPath + "DataSource/quality.yaml");
-    const DAVA::EngineContext* engineCtx = GetAccessor()->GetEngineContext();
-    engineCtx->soundSystem->InitFromQualitySettings();
-
     DAVA::FilePath editorConfigPath = data->GetProjectPath() + "EditorConfig.yaml";
-    DAVA::FileSystem* fileSystem = engineCtx->fileSystem;
     if (fileSystem->Exists(editorConfigPath))
     {
         data->editorConfig->ParseConfig(editorConfigPath);
@@ -199,6 +191,8 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
     {
         DAVA::Logger::Warning("Selected project doesn't contains EditorConfig.yaml");
     }
+
+    propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
 
     recentProject->Add(incomePath.GetAbsolutePathname());
 }
@@ -236,10 +230,7 @@ bool ProjectManagerModule::CloseProject()
             return false;
         }
 
-        DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
-        DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
-
-        data->projectPath = "";
+        projectResources->UnloadProject();
 
         SettingsManager::ResetPerProjectSettings();
         DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectManagerDetails::PROPERTIES_KEY);
@@ -257,51 +248,6 @@ void ProjectManagerModule::ReloadSprites()
     ProjectManagerData* data = ctx->GetData<ProjectManagerData>();
     DVASSERT(data);
     data->spritesPacker->RepackWithDialog();
-}
-
-void ProjectManagerModule::LoadMaterialsSettings(ProjectManagerData* data)
-{
-    data->templates.clear();
-    data->qualities.clear();
-
-    // parse available material templates
-    const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
-    DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
-    if (fileSystem->Exists(materialsListPath))
-    {
-        DAVA::ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
-        DAVA::YamlNode* rootNode = parser->GetRootNode();
-
-        if (nullptr != rootNode)
-        {
-            DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
-
-            for (DAVA::uint32 i = 0; i < rootNode->GetCount(); ++i)
-            {
-                const DAVA::YamlNode* templateNode = rootNode->Get(i);
-                if (nullptr != templateNode)
-                {
-                    const DAVA::YamlNode* name = templateNode->Get("name");
-                    const DAVA::YamlNode* path = templateNode->Get("path");
-
-                    if (nullptr != name && nullptr != path &&
-                        name->GetType() == DAVA::YamlNode::TYPE_STRING &&
-                        path->GetType() == DAVA::YamlNode::TYPE_STRING)
-                    {
-                        const DAVA::FilePath templatePath = materialsListDir + path->AsString();
-                        if (fileSystem->Exists(templatePath))
-                        {
-                            ProjectManagerData::AvailableMaterialTemplate amt;
-                            amt.name = name->AsString().c_str();
-                            amt.path = templatePath.GetFrameworkPath().c_str();
-
-                            data->templates.append(amt);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 ProjectManagerData* ProjectManagerModule::GetData()

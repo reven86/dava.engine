@@ -5,7 +5,7 @@
 #include "Classes/Qt/Settings/Settings.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 
-#include "Classes/CommandLine/Private/REConsoleModuleTestUtils.h"
+#include "Classes/CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "TArc/Testing/TArcUnitTests.h"
 #include "TArc/Testing/MockListener.h"
@@ -68,7 +68,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(PROPS_KEY);
         propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(lastOpenedProject));
 
-        REConsoleModuleTestUtils::ClearTestFolder(testFolder);
+        CommandLineModuleTestUtils::ClearTestFolder(testFolder);
     }
 
     DAVA_TEST (LaunchAppTest)
@@ -85,11 +85,11 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
             laspOpenedPathInSettings = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
             SettingsManager::SetValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
 
-            REConsoleModuleTestUtils::CreateTestFolder(testFolder);
+            CommandLineModuleTestUtils::CreateTestFolder(testFolder);
         }
 
         {
-            REConsoleModuleTestUtils::CreateProjectInfrastructure(firstFakeProjectPath);
+            CommandLineModuleTestUtils::CreateProjectInfrastructure(firstFakeProjectPath);
             DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(PROPS_KEY);
             propsItem.Set(Settings::Internal_LastProjectPath.c_str(), firstFakeProjectPath);
         }

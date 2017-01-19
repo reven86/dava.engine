@@ -3,6 +3,7 @@
 #include "Classes/Qt/Main/RecentMenuItems.h"
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Utils/QtConnections.h"
+#include "Project/ProjectResources.h"
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
@@ -27,13 +28,13 @@ private:
     void ReloadSprites();
 
 private:
-    void LoadMaterialsSettings(ProjectManagerData* data);
     ProjectManagerData* GetData();
 
 private:
     std::unique_ptr<RecentMenuItems> recentProject;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
+    std::unique_ptr<ProjectResources> projectResources;
 
     DAVA_VIRTUAL_REFLECTION(ProjectManagerModule, DAVA::TArc::ClientModule)
     {

@@ -12,9 +12,18 @@ else()
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-set(SOURCE_FILES main.cpp pack_archive.cpp pack_archive.cpp lz4.c
-        lz4.h pack_archive.h pack_format.h wcxhead.h)
+set(SOURCE_FILES 
+        main.cpp 
+        pack_archive.cpp 
+        pack_archive.cpp 
+        pack_meta_data.cpp
+        lz4.c
+        lz4.h 
+        pack_archive.h 
+        pack_format.h 
+        wcxhead.h)
 
 add_library(double_commander_packer_plugin SHARED ${SOURCE_FILES})
 

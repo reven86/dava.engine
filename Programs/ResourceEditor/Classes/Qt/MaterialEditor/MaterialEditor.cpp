@@ -616,18 +616,18 @@ void MaterialEditor::initTemplates()
     {
         QStandardItemModel* templatesModel = new QStandardItemModel(this);
 
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
+        ProjectManagerData* projectManagerData = REGlobal::GetDataNode<ProjectManagerData>();
+        DVASSERT(projectManagerData != nullptr);
+        const DAVA::Vector<MaterialTemplateInfo>* templates = projectManagerData->GetMaterialTemplatesInfo();
 
-        const QVector<ProjectManagerData::AvailableMaterialTemplate>& templates = data->GetAvailableMaterialTemplates();
         QStandardItem* emptyItem = new QStandardItem(QString());
         templatesModel->appendRow(emptyItem);
 
-        for (int i = 0; i < templates.size(); ++i)
+        for (const MaterialTemplateInfo& t : *templates)
         {
             QStandardItem* item = new QStandardItem();
-            item->setText(templates.at(i).name);
-            item->setData(templates.at(i).path, Qt::UserRole);
+            item->setText(t.name.c_str());
+            item->setData(t.path.c_str(), Qt::UserRole);
             templatesModel->appendRow(item);
         }
 

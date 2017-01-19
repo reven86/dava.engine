@@ -198,16 +198,6 @@ void PackageInformationBuilder::EndComponentPropertiesSection()
     // do nothing
 }
 
-DAVA::UIControlBackground* PackageInformationBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
-{
-    return nullptr; // do nothing
-}
-
-void PackageInformationBuilder::EndBgPropertiesSection()
-{
-    // do nothing
-}
-
 void PackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
 }

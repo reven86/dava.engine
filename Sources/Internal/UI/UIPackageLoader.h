@@ -52,7 +52,6 @@ private:
     void ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
-    void LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
     virtual Any ReadVariantTypeFromYamlNode(const Reflection& reflection, const YamlNode* node, const String& name);
 
 private:
