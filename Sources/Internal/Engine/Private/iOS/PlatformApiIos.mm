@@ -84,7 +84,7 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
             const uint32 bitsPerComponent = 8;
             const uint32 bytesPerRow = bytesPerPixel * width;
 
-            //Memset(rawData, 0, width * height * bytesPerPixel);
+            Memset(rawData, 0, width * height * bytesPerPixel);
 
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
             CGContextRef context = CGBitmapContextCreate(rawData,
