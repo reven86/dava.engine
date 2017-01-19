@@ -11,6 +11,7 @@ EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* par
     , movableControl(movableControl_)
 {
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
+    systemsManager->viewSizeChanged.Connect(this, &EditorCanvas::OnViewSizeChanged);
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -100,19 +101,14 @@ void EditorCanvas::SetScale(float32 arg)
     }
 }
 
-void EditorCanvas::SetViewSize(const Vector2& viewSize_)
+void EditorCanvas::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
 {
+    Vector2 viewSize_(static_cast<float32>(width), static_cast<float32>(height));
     if (viewSize_ != viewSize)
     {
         viewSize = viewSize_;
         UpdatePosition();
     }
-}
-
-void EditorCanvas::SetViewSize(DAVA::uint32 width, DAVA::uint32 height)
-{
-    Vector2 size(static_cast<float32>(width), static_cast<float32>(height));
-    SetViewSize(size);
 }
 
 void EditorCanvas::SetPosition(const Vector2& position_)
@@ -156,20 +152,46 @@ bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
-    DVASSERT(currentInput->phase == UIEvent::Phase::DRAG);
     Vector2 delta = systemsManager->GetMouseDelta();
     SetPosition(position + delta);
 }
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
 {
-    const EngineContext* engineContext = GetEngineContext();
-    const KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
-
-    bool isSpacePressed = keyboard.IsKeyPressed(Key::SPACE);
-    bool isMouseMidButtonPressed = currentInput->mouseButton == eMouseButtons::MIDDLE;
-    bool isMouseLeftButtonPressed = currentInput->mouseButton == eMouseButtons::LEFT;
-
+    Function<void(UIEvent*, bool)> setMouseButtonOnInput = [this](UIEvent* currentInput, bool value) {
+        if (currentInput->mouseButton == eMouseButtons::LEFT)
+        {
+            isMouseLeftButtonPressed = value;
+        }
+        else if (currentInput->mouseButton == eMouseButtons::MIDDLE)
+        {
+            isMouseMidButtonPressed = value;
+        }
+    };
+    if (currentInput->device == eInputDevices::MOUSE)
+    {
+        if (currentInput->phase == UIEvent::Phase::BEGAN)
+        {
+            setMouseButtonOnInput(currentInput, true);
+        }
+        else if (currentInput->phase == UIEvent::Phase::ENDED)
+        {
+            setMouseButtonOnInput(currentInput, false);
+        }
+    }
+    else if (currentInput->device == eInputDevices::KEYBOARD && currentInput->key == Key::SPACE)
+    {
+        //we cant use isKeyPressed here, because DAVA update keyboard state after sending Key_Up event
+        //if we will press key on dock widget and hold it -> DAVA will receive only KEY_REPEAT event without KEY_DOWN
+        if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+        {
+            isSpacePressed = true;
+        }
+        else if (currentInput->phase == UIEvent::Phase::KEY_UP)
+        {
+            isSpacePressed = false;
+        }
+    }
     bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
     return inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::NoDrag;
 }

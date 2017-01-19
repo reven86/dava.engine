@@ -77,17 +77,20 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
+    //we have situations, when one input can produce two different state. To resolve this conflict we declare that state priority is equal to it value
+    //as an example dragging control with pressed spacebar button will perform drag screen and transform at the same time
     enum eDragState
     {
-        //all user input used only to drag canvas inide rednder widget
-        DragScreen,
-        //if cursor under selected control, pressed left mouse button and starts dragging
-        Transform,
+        //invalid state to request new state from baseEditorSystem
+        NoDrag,
         //if cursor is under control and it selectable
         SelectByRect,
-        //invalid state to request new state from baseEditorSystem
-        NoDrag
+        //if cursor under selected control, pressed left mouse button and starts dragging
+        Transform,
+        //all user input used only to drag canvas inide rednder widget
+        DragScreen
     };
+
     enum eDisplayState
     {
         //remove hud and throw all input to the DAVA frameworkx

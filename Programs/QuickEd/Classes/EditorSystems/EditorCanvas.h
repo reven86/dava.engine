@@ -23,8 +23,7 @@ public:
 
     DAVA::Vector2 GetSize() const;
     DAVA::Vector2 GetViewSize() const;
-    void SetViewSize(const DAVA::Vector2& size);
-    void SetViewSize(DAVA::uint32 width, DAVA::uint32 height);
+    void OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height);
 
     DAVA::float32 GetScale() const;
     DAVA::float32 GetMinScale() const;
@@ -60,4 +59,7 @@ private:
     const DAVA::float32 minScale = 0.25f;
     const DAVA::float32 maxScale = 8.0f;
     const DAVA::float32 margin = 50.0f;
+    bool isMouseLeftButtonPressed = false;
+    bool isMouseMidButtonPressed = false;
+    bool isSpacePressed = false;
 };

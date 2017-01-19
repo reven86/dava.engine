@@ -378,25 +378,33 @@ void HUDSystem::UpdateAreasVisibility()
 
 void HUDSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState)
 {
-    if (previousState == EditorSystemsManager::Transform)
+    switch (previousState)
     {
-        ClearMagnetLines();
-    }
-    if (currentState == EditorSystemsManager::Transform)
-    {
-        OnHighlightNode(nullptr);
-    }
-    if (currentState == EditorSystemsManager::SelectByRect)
-    {
-        DVASSERT(selectionRectControl.Valid() == false);
-        selectionRectControl.Set(new FrameControl());
-        hudControl->AddControl(selectionRectControl.Get());
-    }
-    else if (previousState == EditorSystemsManager::SelectByRect)
-    {
+    case EditorSystemsManager::SelectByRect:
         DVASSERT(selectionRectControl.Valid());
         hudControl->RemoveControl(selectionRectControl.Get());
         selectionRectControl.Set(nullptr);
+        break;
+    case EditorSystemsManager::Transform:
+        ClearMagnetLines();
+        break;
+    default:
+        break;
+    }
+
+    switch (currentState)
+    {
+    case EditorSystemsManager::SelectByRect:
+        DVASSERT(selectionRectControl.Valid() == false);
+        selectionRectControl.Set(new FrameControl());
+        hudControl->AddControl(selectionRectControl.Get());
+        break;
+    case EditorSystemsManager::Transform:
+    case EditorSystemsManager::DragScreen:
+        OnHighlightNode(nullptr);
+        break;
+    default:
+        break;
     }
 }
 
@@ -442,9 +450,10 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
         };
         systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
+        bool noHudUnderCursor = (systemsManager->GetCurrentHUDArea().area == HUDAreaInfo::NO_AREA);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
-        if (hotKeyDetected || noHudableControls)
+        if ((hotKeyDetected || noHudableControls) && noHudUnderCursor)
         {
             if (systemsManager->GetDragState() != EditorSystemsManager::SelectByRect)
             {

@@ -110,15 +110,7 @@ void EditorSystemsManager::OnInput(UIEvent* currentInput)
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         const std::unique_ptr<BaseEditorSystem>& editorSystem = *it;
-
-        if (newState == NoDrag)
-        {
-            newState = editorSystem->RequireNewState(currentInput);
-        }
-        else
-        {
-            DVASSERT(editorSystem->RequireNewState(currentInput) == NoDrag, "Two different states required by systems on one input");
-        }
+        newState = Max(newState, editorSystem->RequireNewState(currentInput));
     }
     SetDragState(newState);
 
@@ -288,30 +280,29 @@ void EditorSystemsManager::RefreshRootControls()
 {
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
 
-    if (nullptr == package)
+    if (nullptr != package)
     {
-        return;
-    }
-    if (selectedControlNodes.empty())
-    {
-        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-        for (int index = 0; index < controlsNode->GetCount(); ++index)
+        if (selectedControlNodes.empty())
         {
-            newRootControls.insert(controlsNode->Get(index));
-        }
-    }
-    else
-    {
-        for (ControlNode* selectedControlNode : selectedControlNodes)
-        {
-            PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
-            while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+            for (int index = 0; index < controlsNode->GetCount(); ++index)
             {
-                root = root->GetParent();
+                newRootControls.insert(controlsNode->Get(index));
             }
-            if (nullptr != root)
+        }
+        else
+        {
+            for (ControlNode* selectedControlNode : selectedControlNodes)
             {
-                newRootControls.insert(root);
+                PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
+                while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+                {
+                    root = root->GetParent();
+                }
+                if (nullptr != root)
+                {
+                    newRootControls.insert(root);
+                }
             }
         }
     }

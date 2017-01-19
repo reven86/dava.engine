@@ -23,4 +23,5 @@ private:
     static QMap<QString, QPixmap> cursorpixes;
 
     DAVA::RenderWidget* renderWidget = nullptr;
+    QCursor previousCursor;
 };
