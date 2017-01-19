@@ -1434,6 +1434,8 @@ static void dx11_FinishFrame()
 
 static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
+
     DX11Command* commandData = reinterpret_cast<DX11Command*>(command->cmdData);
     for (DX11Command *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
     {

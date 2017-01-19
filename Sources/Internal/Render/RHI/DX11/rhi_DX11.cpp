@@ -96,12 +96,12 @@ void dx11_InitCaps()
     SetDispatchTable(DispatchDX11);
 }
 
-void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
+void ExecDX11(DX11Command* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = force_immediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 

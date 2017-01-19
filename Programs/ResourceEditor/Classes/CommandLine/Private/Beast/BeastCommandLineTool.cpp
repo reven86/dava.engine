@@ -15,7 +15,7 @@
 #include "TArc/Utils/ModuleCollection.h"
 
 BeastCommandLineTool::BeastCommandLineTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-beast")
+    : CommandLineModule(commandLine, "-beast")
 {
     options.AddOption(OptionName::File, DAVA::VariantType(DAVA::String("")), "Full pathname of scene for beasting");
     options.AddOption(OptionName::Output, DAVA::VariantType(DAVA::String("")), "Full path for output folder for beasting");
@@ -99,7 +99,7 @@ void BeastCommandLineTool::BeforeDestroyedInternal()
 
 void BeastCommandLineTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-beast -file /Users/SmokeTest/DataSource/3d/Maps/scene.sc2 -output /Users/SmokeTest/DataSource/3d/Maps/beast");

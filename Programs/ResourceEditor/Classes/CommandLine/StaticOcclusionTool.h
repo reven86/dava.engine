@@ -2,7 +2,7 @@
 
 #include "Base/ScopedPtr.h"
 #include "FileSystem/FilePath.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -11,7 +11,7 @@ class Scene;
 class StaticOcclusionBuildSystem;
 }
 
-class StaticOcclusionTool : public REConsoleModuleCommon
+class StaticOcclusionTool : public CommandLineModule
 {
 public:
     StaticOcclusionTool(const DAVA::Vector<DAVA::String>& commandLine);
@@ -33,7 +33,7 @@ protected:
     };
     eAction commandAction = ACTION_NONE;
 
-    DAVA_VIRTUAL_REFLECTION(StaticOcclusionTool, REConsoleModuleCommon)
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<StaticOcclusionTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
