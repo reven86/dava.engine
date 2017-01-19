@@ -9,11 +9,17 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSObject;
+@class NSData;
 @class NSDictionary;
+@class NSError;
+@class NSMutableArray;
+@class NSString;
 @class UIApplication;
+@class UILocalNotification;
+@class NSURL;
+
 @class ObjectiveCInterop;
 @class NotificationBridge;
-@class UILocalNotification;
 
 @protocol DVEApplicationListener;
 

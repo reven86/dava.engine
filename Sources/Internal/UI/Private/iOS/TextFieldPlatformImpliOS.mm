@@ -3,7 +3,9 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
+
+#include "Logger/Logger.h"
 #include "UI/UITextField.h"
 #include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #include "UI/Private/iOS/UITextFieldHolder.h"
@@ -16,6 +18,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
+#include "Engine/PlatformApiIos.h"
 #else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 #include "UI/Private/iOS/WebViewControliOS.h"

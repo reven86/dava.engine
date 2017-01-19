@@ -3,6 +3,7 @@
 #include "rhi_Metal.h"
 
 #include "../rhi_Type.h"
+#include "../rhi_Public.h"
 #include "../Common/dbg_StatSet.h"
 
 #include "Debug/DVAssert.h"
