@@ -12,6 +12,7 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
+        BACKGROUND_COMPONENT,
         LINEAR_LAYOUT_COMPONENT,
         FLOW_LAYOUT_COMPONENT,
         FLOW_LAYOUT_HINT_COMPONENT,
@@ -40,6 +41,7 @@ public:
     UIComponent& operator=(const UIComponent& src);
 
     static UIComponent* CreateByType(uint32 componentType);
+    static RefPtr<UIComponent> SafeCreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;
@@ -48,6 +50,8 @@ public:
     UIControl* GetControl() const;
 
     virtual UIComponent* Clone() const = 0;
+
+    RefPtr<UIComponent> SafeClone() const;
 
 private:
     UIControl* control;

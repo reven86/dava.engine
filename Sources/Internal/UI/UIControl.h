@@ -311,12 +311,12 @@ public:
         Background is cloned inside control.
      \param[in] newBg control background you want to use for draw.
      */
-    virtual void SetBackground(UIControlBackground* newBg);
+    void SetBackground(UIControlBackground* newBg);
     /**
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    virtual UIControlBackground* GetBackground() const;
+    UIControlBackground* GetBackground() const;
 
     virtual void SetLeftAlign(float32 align);
     virtual float32 GetLeftAlign() const;
@@ -795,6 +795,8 @@ public:
      \returns control copy.
      */
     virtual UIControl* Clone();
+
+    RefPtr<UIControl> SafeClone();
     /**
      \brief Copies all contorl parameters from the sended control.
      \param[in] srcControl Source control to copy parameters from.
@@ -1140,7 +1142,6 @@ public:
     float32 angle; //!<control rotation angle. Rotation around pivot point.
 
 protected:
-    UIControlBackground* background;
 
     float32 wheelSensitivity = 30.f;
 
@@ -1289,12 +1290,6 @@ private:
     /* Styles */
 
 public:
-    virtual int32 GetBackgroundComponentsCount() const;
-    virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
-    virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
-    virtual void SetBackgroundComponent(int32 index, UIControlBackground* bg);
-    virtual String GetBackgroundComponentName(int32 index) const;
-
     inline float32 GetWheelSensitivity() const;
     inline void SetWheelSensitivity(float32 newSens);
 

@@ -20,7 +20,7 @@ static Handle dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     return handle;
 }
 
-static void dx11_IndexBuffer_Delete(Handle handle)
+static void dx11_IndexBuffer_Delete(Handle handle, bool)
 {
     if (handle != InvalidHandle)
     {
