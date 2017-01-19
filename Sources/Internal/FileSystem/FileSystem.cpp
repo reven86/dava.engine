@@ -435,7 +435,7 @@ const FilePath& FileSystem::GetCurrentWorkingDirectory()
 
     Array<char, PATH_MAX> tempDir;
     getcwd(tempDir.data(), PATH_MAX);
-    path = tempDir.data();
+    String path = tempDir.data();
     currentWorkingDirectory = FilePath(std::move(path));
 
 #endif //PLATFORMS

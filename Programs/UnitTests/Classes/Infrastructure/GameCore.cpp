@@ -24,8 +24,7 @@ String runOnlyTheseTestClasses = "";
 
 // List of names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests.
 // Names should be separated with ' ' or ',' or ';'
-// Disable DispatcherWinUAPTest(on core v2 not working - handing) TODO fix it
-String disableTheseTestClasses = "DispatcherWinUAPTest";
+String disableTheseTestClasses = "";
 
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'

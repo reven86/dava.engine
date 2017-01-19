@@ -51,7 +51,7 @@ int32 RenameFile(const String& oldFileName, const String& newFileName)
     WideString new_ = UTF8Utils::EncodeToWideString(newFileName);
     return _wrename(old.c_str(), new_.c_str());
 #else
-    return rename(fileName.c_str());
+    return rename(oldFileName.c_str(), newFileName.c_str());
 #endif
 }
 
@@ -93,7 +93,7 @@ bool IsDirectory(const String& dirName)
     WideString p = UTF8Utils::EncodeToWideString(dirName);
     int32 result = FileStat(p.c_str(), &fileStat);
 #else
-    int32 result = FileStat(fileName.c_str(), &fileStat);
+    int32 result = FileStat(dirName.c_str(), &fileStat);
 #endif
     if (result == 0)
     {
