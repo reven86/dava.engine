@@ -200,11 +200,14 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 
     float resW = 1024.0f;
     float resH = 768.0f;
+    float resDPI = 240.0;
 
+    float winDpi = w->GetDPI();
     float dpiScale = 1.0f;
-    if (w->GetDPI() > 240.0f)
+
+    if (winDpi > resDPI)
     {
-        dpiScale = 0.7f;
+        dpiScale = std::max(0.7f, (resDPI / winDpi));
     }
 
     float vw = resW * dpiScale;
