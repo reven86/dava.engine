@@ -31,6 +31,5 @@ private:
 private:
     DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);
 };
-
 }
 }

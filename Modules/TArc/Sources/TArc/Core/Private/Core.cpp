@@ -9,9 +9,9 @@
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
 #include "TArc/Utils/Private/CrashDumpHandler.h"
+#include "TArc/Utils/QtMessageHandler.h"
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
-#include "QtTools/Utils/MessageHandler.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"

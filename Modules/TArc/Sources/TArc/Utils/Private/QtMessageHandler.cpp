@@ -1,8 +1,14 @@
-#ifndef __QT_TOOLS_MESSAGE_HANDLER_H__
-#define __QT_TOOLS_MESSAGE_HANDLER_H__
+#include "TArc/Utils/QtMessageHandler.h"
 
-#include "Debug/DVAssert.h"
+#include <Logger/Logger.h>
+#include <Debug/DVAssert.h>
 
+#include <QString>
+
+namespace DAVA
+{
+namespace TArc
+{
 void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
@@ -27,4 +33,5 @@ void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const
     }
 }
 
-#endif // __QT_TOOLS_MESSAGE_HANDLER_H__
+} // namespace TArc
+} // namespace DAVA
