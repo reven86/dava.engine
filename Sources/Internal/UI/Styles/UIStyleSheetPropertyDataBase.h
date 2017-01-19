@@ -28,7 +28,7 @@ public:
 
     bool IsValidStyleSheetProperty(const FastName& name) const;
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
-    int32 FindStyleSheetPropertyByField(const DAVA::ReflectedStructure::Field* field) const;
+    int32 FindStyleSheetProperty(int32 componentType, const FastName &name) const;
 
 private:
     UIStyleSheetPropertyGroup controlGroup;

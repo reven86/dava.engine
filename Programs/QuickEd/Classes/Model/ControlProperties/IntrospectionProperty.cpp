@@ -22,14 +22,13 @@ const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-#include "UI/Components/UIComponent.h"
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(name, ref.GetValueType(), true)
     , object(SafeRetain(anObject))
     , reflection(ref)
     , flags(EF_CAN_RESET)
 {
-    int32 propertyIndex = -1; // UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByField(field); TODO: FIXME
+    int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetProperty(componentType, FastName(name));
     SetStylePropertyIndex(propertyIndex);
 
     if (sourceProperty)
@@ -78,7 +77,7 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const S
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, name, ref, sourceProperty, cloneType);
+        IntrospectionProperty* result = new IntrospectionProperty(control, -1, name, ref, sourceProperty, cloneType);
         if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
         {
             result->flags |= EF_DEPENDS_ON_LAYOUTS;

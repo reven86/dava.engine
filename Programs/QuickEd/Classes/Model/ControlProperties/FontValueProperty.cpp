@@ -3,7 +3,7 @@
 using namespace DAVA;
 
 FontValueProperty::FontValueProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : IntrospectionProperty(object, name, ref, sourceProperty, copyType)
+    : IntrospectionProperty(object, -1, name, ref, sourceProperty, copyType)
 {
     ApplyValue(ref.GetValue());
 }

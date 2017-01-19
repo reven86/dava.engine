@@ -303,9 +303,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
 
-    switch (descr.group->propertyOwner)
-    {
-    case ePropertyOwner::CONTROL:
+    if (descr.group->componentType == -1)
     {
         Reflection cRef = Reflection::Create(&control);
         Reflection fRef = cRef.GetField(descr.field_s->name);
@@ -313,9 +311,9 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         {
             action(control, fRef);
         }
-        break;
     }
-    case ePropertyOwner::COMPONENT:
+    else
+    {
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {
             Reflection cRef = Reflection::Create(&component);
@@ -325,10 +323,6 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
                 action(control, fRef);
             }
         }
-        break;
-    default:
-        DVASSERT(false);
-        break;
     }
 }
 }

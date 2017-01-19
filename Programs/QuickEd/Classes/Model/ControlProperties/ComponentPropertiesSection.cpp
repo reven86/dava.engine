@@ -41,7 +41,7 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
     {
         String name = field.key.Get<String>();
         const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
-        IntrospectionProperty* prop = new IntrospectionProperty(component, name, field.ref, sourceProp, cloneType);
+        IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }
