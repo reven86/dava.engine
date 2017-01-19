@@ -22,6 +22,7 @@ const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
+#include "UI/Components/UIComponent.h"
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(name, ref.GetValueType(), true)
     , object(SafeRetain(anObject))

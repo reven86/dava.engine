@@ -94,7 +94,7 @@ public:
 
 private:
     void AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
-    void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::ReflectedType* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);
+    void MakeControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     void MakeBackgroundPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
     DAVA::uint32 GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const;
     void RefreshComponentIndices();

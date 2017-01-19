@@ -378,7 +378,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection &ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    builder->BeginControlPropertiesSection("UIControl");
+    builder->BeginControlPropertiesSection(control->GetClassName());
     Vector<Reflection::Field> fields = ref.GetFields();
     for (const Reflection::Field &field : fields)
     {

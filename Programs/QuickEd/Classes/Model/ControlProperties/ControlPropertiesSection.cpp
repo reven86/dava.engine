@@ -8,9 +8,9 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, const DAVA::ReflectedType* reflectedType, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
-    : SectionProperty(reflectedType->GetPermanentName())
-    , control(SafeRetain(aControl))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* control_, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+    : SectionProperty(control_->GetClassName())
+    , control(SafeRetain(control_))
 {
     Reflection controlRef = Reflection::Create(&control);
     Vector<Reflection::Field> fields = controlRef.GetFields();

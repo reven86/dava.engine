@@ -29,7 +29,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     , nameProperty(nullptr)
 {
     AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
-    MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetReflectedType(), sourceProperties, cloneType);
+    MakeControlPropertiesSection(node->GetControl(), sourceProperties, cloneType);
     MakeBackgroundPropertiesSection(node->GetControl(), sourceProperties, cloneType);
 
     if (sourceProperties)
@@ -403,7 +403,7 @@ void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootPropert
         prop->SetParent(this);
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::ReflectedType* typeInfo, const RootProperty* sourceProperties, eCloneType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
 {
     // TODO: rewrite code
 //    const InspInfo* baseInfo = typeInfo->BaseInfo();
@@ -422,8 +422,8 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const 
 //    }
 //    if (hasProperties)
     {
-        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->GetPermanentName());
-        ControlPropertiesSection* section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
+        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(control->GetClassName());
+        ControlPropertiesSection* section = new ControlPropertiesSection(control, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
     }

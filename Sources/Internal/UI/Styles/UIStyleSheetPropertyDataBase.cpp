@@ -29,7 +29,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("noInput"), false, ReflectedTypeDB::Get<UIControl>(), "noInput"),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("exclusiveInput"), false, ReflectedTypeDB::Get<UIControl>(), "exclusiveInput"),
 
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("drawType"), UIControlBackground::DRAW_ALIGNED, ReflectedTypeDB::Get<UIControlBackground>(), "drawType"),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("drawType"), static_cast<int32>(UIControlBackground::DRAW_ALIGNED), ReflectedTypeDB::Get<UIControlBackground>(), "drawType"),
                      UIStyleSheetPropertyDescriptor(&bgGroup, FastName("sprite"), FilePath(), ReflectedTypeDB::Get<UIControlBackground>(), "sprite"),
                      UIStyleSheetPropertyDescriptor(&bgGroup, FastName("frame"), 0, ReflectedTypeDB::Get<UIControlBackground>(), "frame"),
                      UIStyleSheetPropertyDescriptor(&bgGroup, FastName("mask"), FilePath(), ReflectedTypeDB::Get<UIControlBackground>(), "mask"),

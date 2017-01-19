@@ -217,8 +217,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
             }
             else
             {
-                int32 e = val.Get<int32>();
-                return QString::fromStdString(enumMeta->GetEnumMap()->ToString(e));
+                return QString::fromStdString(enumMeta->CastToString(val));
             }
         }
     }

@@ -66,7 +66,44 @@ DAVA::uint32 StyleSheetProperty::GetFlags() const
 
 StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
 {
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    if (descr.field_s->meta)
+    {
+        const EnumMeta *meta = descr.field_s->meta->GetMeta<EnumMeta>();
+        if (meta)
+        {
+            if (meta->IsFlags())
+            {
+                return TYPE_FLAGS;
+            }
+            return TYPE_ENUM;
+        }
+    }
     return TYPE_VARIANT;
+}
+
+const EnumMap* StyleSheetProperty::GetEnumMap() const
+{
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    if (descr.field_s->meta)
+    {
+        const EnumMeta *meta = descr.field_s->meta->GetMeta<EnumMeta>();
+        if (meta)
+        {
+            return meta->GetEnumMap();
+        }
+    }
+    return nullptr;
+}
+
+const EnumMeta* StyleSheetProperty::GetEnumMeta() const
+{
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    if (descr.field_s->meta)
+    {
+        return descr.field_s->meta->GetMeta<EnumMeta>();
+    }
+    return nullptr;
 }
 
 Any StyleSheetProperty::GetValue() const

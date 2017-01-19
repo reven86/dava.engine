@@ -252,7 +252,9 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 void QuickEdPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
     currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
+    DVASSERT(currentSection != nullptr);
     currentObject = controlsStack.back().node->GetControl();
+    DVASSERT(currentObject != nullptr);
 }
 
 void QuickEdPackageBuilder::EndControlPropertiesSection()
@@ -317,6 +319,10 @@ void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field &field, cons
 
             property->SetValue(value);
         }
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 
