@@ -51,6 +51,5 @@ DAVA_REFLECTION_IMPL(TextComponentValue)
     .Field("enabled", &TextComponentValue::IsEnabled, nullptr)
     .End();
 }
-
 }
 }

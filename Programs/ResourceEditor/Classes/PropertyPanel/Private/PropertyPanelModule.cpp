@@ -102,8 +102,8 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
 DAVA_REFLECTION_IMPL(PropertyPanelModule)
 {
     DAVA::ReflectionRegistrator<PropertyPanelModule>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
 #if !defined(DEPLOY_BUILD)

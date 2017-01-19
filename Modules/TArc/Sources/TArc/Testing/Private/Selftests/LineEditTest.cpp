@@ -14,7 +14,7 @@
 
 namespace LineEditTestDetails
 {
-DAVA::TArc::WindowKey wndKey = DAVA::FastName("");
+DAVA::TArc::WindowKey wndKey = DAVA::FastName("LineEditTestWnd");
 
 class LineEditTestModule : public DAVA::TArc::ClientModule
 {
