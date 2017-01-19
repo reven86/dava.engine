@@ -116,9 +116,9 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
         return nullptr;
     }
 
-    int64 footerPos = fileSize - sizeof(footerSize);
+    int64 footerPos = fileSize - footerSize;
 
-    if (!f->Seek(footerSize, SEEK_FROM_START))
+    if (!f->Seek(footerPos, SEEK_FROM_START))
     {
         Logger::Error("can't seek to footer: %s", filename.GetAbsolutePathname().c_str());
         return nullptr;
@@ -126,7 +126,7 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
 
     PackFormat::MiniPack::Footer footer;
 
-    if (footerSize != f->Read(&footer, footerSize))
+    if (footerSize != f->Read(&footer, sizeof(footer)))
     {
         Logger::Error("can't read footer: %s", filename.GetAbsolutePathname().c_str());
         return nullptr;
