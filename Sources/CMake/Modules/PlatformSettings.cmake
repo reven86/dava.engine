@@ -4,8 +4,9 @@
 append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__" )
 append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__" )
 append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__" )
-append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__" )
-append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__" )
+append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
+append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
+
 	
 if( APPLE )
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
@@ -122,11 +123,6 @@ elseif ( WIN32 )
         set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi" ) 
     endif ()
 
-    # undef macros min and max defined in windows.h
-    add_definitions ( -DNOMINMAX )
-    add_definitions ( -D_UNICODE )
-    add_definitions ( -DUNICODE )
-    add_definitions ( -D_SCL_SECURE_NO_WARNINGS)
 endif  ()
 
 if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
@@ -288,11 +284,17 @@ elseif ( MACOS )
 
 elseif ( WIN32 )
 
-	if ( X64_MODE )
-		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
-	else ()
-		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
-	endif ()
+    if ( WINDOWS_UAP )
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10/$(Platform)" ) 
+        set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
+
+    elseif ( X64_MODE )
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+    else ()
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+    endif ()
+
+    list( APPEND DAVA_BINARY_WIN32_DIR ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug )
 
 endif  ()
 
