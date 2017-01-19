@@ -1190,6 +1190,8 @@ void _DX9_ResetBlock()
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
+
 #if 1
     #define CHECK_HR(hr) \
     if (FAILED(hr)) \
@@ -1659,12 +1661,12 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 //------------------------------------------------------------------------------
 
-void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceImmediate)
+void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = forceImmediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 
