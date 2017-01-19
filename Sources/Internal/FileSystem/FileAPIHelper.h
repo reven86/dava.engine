@@ -6,10 +6,23 @@ namespace DAVA
 {
 namespace FileAPI
 {
-FILE* OpenFile(const char* fileName, const char* mode);
-int32 RemoveFile(const char* fileName);
-int32 RenameFile(const char* oldFileName, const char* newFileName);
+/**
+	fileName - utf8 string
+*/
+FILE* OpenFile(const String& fileName, const String& mode);
+/**
+	fileName - utf8 string
+*/
+int32 RemoveFile(const String& fileName);
+/**
+	oldfileName - utf8 string
+	newFileName - utf8 string
+*/
+int32 RenameFile(const String& oldFileName, const String& newFileName);
 
-bool IsRegularFile(const char* fileName);
+/**
+	fileName - utf8 string
+*/
+bool IsRegularFile(const String& fileName);
 }
 }

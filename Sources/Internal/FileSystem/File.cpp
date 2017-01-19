@@ -176,7 +176,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     if (!(attributes & (File::WRITE | File::CREATE | File::APPEND)))
     {
         FilePath compressedFile = filename + ".dvpl";
-        if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname().c_str()))
+        if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname()))
         {
             result = CompressedCreate(compressedFile, attributes);
         }
@@ -215,11 +215,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         if (attributes & File::WRITE)
         {
-            file = FileAPI::OpenFile(path.c_str(), "r+b");
+            file = FileAPI::OpenFile(path, "r+b");
         }
         else
         {
-            file = FileAPI::OpenFile(path.c_str(), "rb");
+            file = FileAPI::OpenFile(path, "rb");
         }
 
         if (!file)
@@ -286,13 +286,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), "wb");
+        file = FileAPI::OpenFile(path, "wb");
         if (!file)
             return nullptr;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), "ab");
+        file = FileAPI::OpenFile(path, "ab");
         if (!file)
             return nullptr;
         if (0 != SetFilePos(file, 0, SEEK_END))

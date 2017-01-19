@@ -211,7 +211,7 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
 
     if (overwriteExisting)
     {
-        FileAPI::RemoveFile(toFile.c_str());
+        FileAPI::RemoveFile(toFile);
     }
     else
     {
@@ -220,7 +220,7 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
             return false;
         }
     }
-    int result = FileAPI::RenameFile(fromFile.c_str(), toFile.c_str());
+    int result = FileAPI::RenameFile(fromFile, toFile);
     if (0 != result && EXDEV == errno)
     {
         result = CopyFile(existingFile, newFile);
@@ -276,7 +276,7 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
 
     // function unlink return 0 on success, -1 on error
     const auto& fileName = filePath.GetNativeAbsolutePathname();
-    int res = FileAPI::RemoveFile(fileName.c_str());
+    int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
     {
         return true;
@@ -509,14 +509,14 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     // ~res:/ or c:/... or ~doc:/
     FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
 
-    if (FileAPI::IsRegularFile(nativePath.c_str()))
+    if (FileAPI::IsRegularFile(nativePath))
     {
         return true;
     }
 
     nativePath += ".dvpl";
 
-    if (FileAPI::IsRegularFile(nativePath.c_str()))
+    if (FileAPI::IsRegularFile(nativePath))
     {
         return true;
     }

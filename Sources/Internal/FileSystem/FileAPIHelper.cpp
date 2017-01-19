@@ -23,37 +23,47 @@ struct Stat : stat
 const auto FileStat = stat;
 #endif
 
-FILE* OpenFile(const char* fileName, const char* mode)
+FILE* OpenFile(const String& fileName, const String& mode)
 {
-    DVASSERT(nullptr != fileName);
-    DVASSERT(nullptr != mode);
-    return std::fopen(fileName, mode);
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString f = UTF8Utils::EncodeToWideString(fileName);
+    WideString m = UTF8Utils::EncodeToWideString(mode);
+    return _wfopen(f.c_str(), m.c_str());
+#else
+    return fopen(fileName.c_str(), mode.c_str());
+#endif
 }
 
-int32 RemoveFile(const char* fileName)
+int32 RemoveFile(const String& fileName)
 {
-    DVASSERT(nullptr != fileName);
-    return std::remove(fileName);
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString f = UTF8Utils::EncodeToWideString(fileName);
+    return _wremove(f.c_str());
+#else
+    return remove(fileName.c_str());
+#endif
 }
 
-int32 RenameFile(const char* oldFileName, const char* newFileName)
+int32 RenameFile(const String& oldFileName, const String& newFileName)
 {
-    DVASSERT(nullptr != oldFileName);
-    DVASSERT(nullptr != newFileName);
-    return std::rename(oldFileName, newFileName);
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString old = UTF8Utils::EncodeToWideString(oldFileName);
+    WideString new_ = UTF8Utils::EncodeToWideString(newFileName);
+    return _wrename(old.c_str(), new_.c_str());
+#else
+    return rename(fileName.c_str());
+#endif
 }
 
-bool IsRegularFile(const char* fileName)
+bool IsRegularFile(const String& fileName)
 {
-    DVASSERT(nullptr != fileName);
-
     Stat fileStat;
 
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString p = UTF8Utils::EncodeToWideString(String(fileName));
+    WideString p = UTF8Utils::EncodeToWideString(fileName);
     int32 result = FileStat(p.c_str(), &fileStat);
 #else
-    int32 result = FileStat(fileName, &fileStat);
+    int32 result = FileStat(fileName.c_str(), &fileStat);
 #endif
     if (result == 0)
     {
