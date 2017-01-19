@@ -84,5 +84,36 @@ bool IsRegularFile(const String& fileName)
     }
     return false;
 }
+
+bool IsDirectory(const String& dirName)
+{
+    Stat fileStat;
+
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString p = UTF8Utils::EncodeToWideString(dirName);
+    int32 result = FileStat(p.c_str(), &fileStat);
+#else
+    int32 result = FileStat(fileName.c_str(), &fileStat);
+#endif
+    if (result == 0)
+    {
+        return (0 != (fileStat.st_mode & S_IFDIR));
+    }
+
+    switch (errno)
+    {
+    case ENOENT:
+        // file not found
+        break;
+    case EINVAL:
+        Logger::Error("Invalid parameter to stat.");
+        break;
+    default:
+        /* Should never be reached. */
+        Logger::Error("Unexpected error in %s: errno = (%d)", __FUNCTION__, static_cast<int32>(errno));
+    }
+    return false;
+}
+
 } // end namespace FileAPI
 } // end namespace DAVA

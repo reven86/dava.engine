@@ -24,5 +24,10 @@ int32 RenameFile(const String& oldFileName, const String& newFileName);
 	fileName - utf8 string
 */
 bool IsRegularFile(const String& fileName);
+
+/**
+	dirName - utf8 string
+*/
+bool IsDirectory(const String& dirName);
 }
 }

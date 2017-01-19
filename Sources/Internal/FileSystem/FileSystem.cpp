@@ -542,11 +542,10 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else
 
-    FileAPI::Stat s;
     FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::FileStat(pathToCheckStr.c_str(), &s) == 0)
+    if (FileAPI::IsDirectory(pathToCheckStr))
     {
-        return (0 != (s.st_mode & S_IFDIR));
+        return true;
     }
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -754,7 +753,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
     using ::Windows::Storage::ApplicationData;
 
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
+    String folder = UTF8Utils::EncodeToUTF8(roamingFolder);
+    return FilePath::FromNativeString(folder).MakeDirectoryPathname();
 
 #endif
 }
