@@ -970,6 +970,12 @@ void Core::OnRenderingError(rhi::RenderingError error, void* context)
     GetApplicationCore()->OnRenderingIsNotPossible(error);
 }
 
+void Core::AdjustSystemTimer(int64 adjustMicro)
+{
+    Logger::Info("System timer adjusted by %lld us", adjustMicro);
+    SystemTimer::Adjust(adjustMicro);
+}
+
 } // namespace DAVA
 
 #endif //!__DAVAENGINE_COREV2__
