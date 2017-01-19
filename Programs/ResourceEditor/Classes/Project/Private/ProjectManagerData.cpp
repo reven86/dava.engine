@@ -55,16 +55,6 @@ DAVA::FilePath ProjectManagerData::GetParticlesGfxPath() const
     return projectPath + ProjectManagerDataDetails::PARTICLE_GFX_PATH;
 }
 
-const QVector<ProjectManagerData::AvailableMaterialTemplate>& ProjectManagerData::GetAvailableMaterialTemplates() const
-{
-    return templates;
-}
-
-const QVector<ProjectManagerData::AvailableMaterialQuality>& ProjectManagerData::GetAvailableMaterialQualities() const
-{
-    return qualities;
-}
-
 DAVA::FilePath ProjectManagerData::CreateProjectPathFromPath(const DAVA::FilePath& pathname)
 {
     DAVA::String fullPath = pathname.GetAbsolutePathname();
@@ -85,4 +75,9 @@ const EditorConfig* ProjectManagerData::GetEditorConfig() const
 const SpritesPackerModule* ProjectManagerData::GetSpritesModules() const
 {
     return spritesPacker.get();
+}
+
+const DAVA::Vector<MaterialTemplateInfo>* ProjectManagerData::GetMaterialTemplatesInfo() const
+{
+    return &materialTemplatesInfo;
 }

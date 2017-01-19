@@ -87,9 +87,9 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
         return "";
     }
     QString davaPath = path.left(index + frameworkDirName.length());
-    QString cmakePath = davaPath + "/Tools/Bin" +
+    QString cmakePath = davaPath + "/Bin" +
 #ifdef Q_OS_MAC
-    "/CMake.app" + GetAdditionalCMakePath();
+    "/CMake.app/Contents/bin/cmake";
 #elif defined Q_OS_WIN
     "/cmake/bin/cmake.exe";
 #endif //Q_OS_MAC Q_OS_WIN
@@ -133,13 +133,4 @@ FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const 
         }
     }
     return CAN_NOT_REMOVE;
-}
-
-QString FileSystemHelper::GetAdditionalCMakePath() const
-{
-#ifdef Q_OS_MAC
-    return "/Contents/bin/cmake";
-#else
-    return "";
-#endif //Q_OS_MAC
 }

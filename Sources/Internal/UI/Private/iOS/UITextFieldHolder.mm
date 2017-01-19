@@ -1,4 +1,5 @@
 #include "UI/Private/iOS/UITextFieldHolder.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
