@@ -43,10 +43,7 @@ public:
 class IChildAllocator
 {
 public:
-    virtual ~IChildAllocator()
-    {
-    }
-
+    virtual ~IChildAllocator() = default;
     virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
 };
 

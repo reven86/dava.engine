@@ -5,7 +5,6 @@
 #include "Debug/DVAssert.h"
 
 #include <QPointer>
-#include <QQmlEngine>
 
 namespace DAVA
 {

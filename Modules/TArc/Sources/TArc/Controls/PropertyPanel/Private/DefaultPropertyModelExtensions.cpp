@@ -33,7 +33,7 @@ class DefaultAllocator : public IChildAllocator
 {
 public:
     DefaultAllocator();
-    ~DefaultAllocator();
+    ~DefaultAllocator() override = default;
     std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) override;
 
 private:
@@ -41,11 +41,7 @@ private:
 };
 
 DefaultAllocator::DefaultAllocator()
-    : pool(10000, 10)
-{
-}
-
-DefaultAllocator::~DefaultAllocator()
+    : pool(10000 /*batch size*/, 10 /*initial batches count*/)
 {
 }
 

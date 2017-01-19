@@ -21,16 +21,11 @@ LineEdit::LineEdit(const FieldsDescriptor& fields_, ContextAccessor* accessor, R
 
 void LineEdit::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
-    if (wrapper.HasData() == false)
-    {
-        setText("");
-        return;
-    }
-
+    DVASSERT(wrapper.HasData());
     bool shouldUpdateText = fields.empty();
     for (const Any& fieldName : fields)
     {
-        if (fieldName == fieldsDescr.valueFieldName)
+        if (fieldName.Cast<String>() == fieldsDescr.valueFieldName.Cast<String>())
         {
             shouldUpdateText = true;
             break;
@@ -39,7 +34,7 @@ void LineEdit::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fiel
 
     if (shouldUpdateText == true)
     {
-        DAVA::Reflection fieldValue = model.GetField(Any(fieldsDescr.valueFieldName.Get<FastName>().c_str()));
+        DAVA::Reflection fieldValue = model.GetField(fieldsDescr.valueFieldName);
         DVASSERT(fieldValue.IsValid());
         setText(QString::fromStdString(fieldValue.GetValue().Cast<String>()));
     }
@@ -52,7 +47,7 @@ void LineEdit::SetupControl()
 
 void LineEdit::EditingFinished()
 {
-    wrapper.SetFieldValue(Any(fieldsDescr.valueFieldName.Get<FastName>().c_str()), Any(text().toStdString()));
+    wrapper.SetFieldValue(fieldsDescr.valueFieldName, text().toStdString());
 }
 
 } // namespace TArc

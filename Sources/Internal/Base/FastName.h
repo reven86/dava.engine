@@ -163,9 +163,7 @@ struct AnyCompare<FastName>
 {
     static bool IsEqual(const Any& v1, const Any& v2)
     {
-        const FastName& filePath1 = v1.Get<FastName>();
-        const FastName& filePath2 = v2.Get<FastName>();
-        return filePath1 == filePath2;
+        return v1.Get<FastName>() == v2.Get<FastName>();
     }
 };
 };

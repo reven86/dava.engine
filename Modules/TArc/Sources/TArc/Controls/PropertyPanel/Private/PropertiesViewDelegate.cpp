@@ -105,11 +105,12 @@ void PropertiesViewDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 
 void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    if (!editor)
+    if (editor == nullptr)
+    {
         return;
+    }
 
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
-
     editor->setGeometry(valueComponent->GetInteractiveEditor().GetEditorRect(PropertiesViewDelegateDetail::GetStyle(), option));
 }
 

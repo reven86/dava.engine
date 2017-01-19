@@ -16,6 +16,11 @@
 
 #include <sqlite_modern_cpp/utility/function_traits.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 namespace sqlite {
 
 	class sqlite_exception: public std::runtime_error {
@@ -532,3 +537,7 @@ namespace sqlite {
 	template<typename T> database_binder::chain_type& operator << (database_binder::chain_type&& db, const T& val) { return db << val; }
 
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

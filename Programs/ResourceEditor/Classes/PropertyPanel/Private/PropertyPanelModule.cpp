@@ -17,7 +17,6 @@
 #include <Base/BaseTypes.h>
 
 #include <QPointer>
-#include <QQmlEngine>
 #include <QList>
 #include <QString>
 #include <QTimer>
@@ -41,12 +40,6 @@ public:
 };
 
 const char* PropertyPanelData::selectedEntitiesProperty = "selectedEntities";
-}
-
-PropertyPanelModule::~PropertyPanelModule()
-{
-    int x = 0;
-    x++;
 }
 
 void PropertyPanelModule::PostInit()
@@ -75,7 +68,7 @@ void PropertyPanelModule::PostInit()
 
     // Bind to current selection changed
     binder.reset(new FieldBinder(accessor));
-    DAVA::TArc::FieldDescriptor fieldDescr;
+    FieldDescriptor fieldDescr;
     fieldDescr.fieldName = DAVA::FastName(SelectionData::selectionPropertyName);
     fieldDescr.type = DAVA::ReflectedTypeDB::Get<SelectionData>();
     binder->BindField(fieldDescr, DAVA::MakeFunction(this, &PropertyPanelModule::SceneSelectionChanged));

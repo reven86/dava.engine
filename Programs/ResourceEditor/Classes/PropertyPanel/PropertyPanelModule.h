@@ -14,13 +14,10 @@ class FieldBinder;
 }
 }
 
-class SceneEditor2;
-class SelectableGroup;
 class PropertyPanelModule final : public DAVA::TArc::ClientModule
 {
 public:
     PropertyPanelModule() = default;
-    ~PropertyPanelModule();
     void PostInit() override;
 
 private:

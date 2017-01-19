@@ -6,7 +6,7 @@
 #include "TArc/Utils/ModuleCollection.h"
 
 ImageSplitterTool::ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-imagesplitter")
+    : CommandLineModule(commandLine, "-imagesplitter")
 {
     options.AddOption(OptionName::Split, DAVA::VariantType(false), "Action is splitting image file on channels");
     options.AddOption(OptionName::Merge, DAVA::VariantType(false), "Action is merging channels into one file");
@@ -69,7 +69,7 @@ DAVA::TArc::ConsoleModule::eFrameResult ImageSplitterTool::OnFrameInternal()
 
 void ImageSplitterTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-imagesplitter -split -file /Users/SmokeTest/images/test.png");
