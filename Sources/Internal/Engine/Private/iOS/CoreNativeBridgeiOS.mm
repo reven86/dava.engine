@@ -226,10 +226,12 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
 
     int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
     int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+    Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
     // Do adjustment only if SystemTimer has stopped ticking
     if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
     {
-        EngineBackend::AdjustSystemTimer(timeSpentInBackground1);
+        EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
     }
 }
 

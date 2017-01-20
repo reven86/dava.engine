@@ -214,10 +214,11 @@ DAVA::int64 goBackgroundTime = 0;
     DAVA::int64 timeSpentInBackground1 = DAVA::SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
     DAVA::int64 timeSpentInBackground2 = DAVA::SystemTimer::GetUs() - goBackgroundTime;
 
+    DAVA::Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
     // Do adjustment only if SystemTimer has stopped ticking
     if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
     {
-        DAVA::Core::AdjustSystemTimer(timeSpentInBackground1);
+        DAVA::Core::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
     }
 
     DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
