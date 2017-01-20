@@ -344,8 +344,28 @@ public:
     template <template <typename, typename> class Container, class T, class A>
     void GetChildNodes(Container<T, A>& container);
 
+    /**
+        Puts into `container` all child entities
+        that have component of given `type`.
+        Function may work `recursively`
+    */
     template <template <typename, typename> class Container, class A>
-    void GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type);
+    void GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type, bool recursively = true);
+
+    /**
+        Puts into `container` all child entities
+        that have component of given `type`.
+        Function may work `recursively`
+    */
+    template <template <typename, typename> class Container, class A>
+    void GetChildEntitiesWithComponent(Container<const Entity*, A>& container, Component::eType type, bool recursively = true) const;
+
+    /**
+        Puts into `container` recursively all child entities
+        that satisfy given unary predicate `pred`
+    */
+    template <template <typename, typename> class Container, class A, class Pred>
+    void GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pred pred);
 
     uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
 
@@ -487,7 +507,7 @@ void Entity::GetChildNodes(Container<T, A>& container)
 }
 
 template <template <typename, typename> class Container, class A>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
+void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type, bool recursively)
 {
     for (auto& child : children)
     {
@@ -496,7 +516,41 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Com
             container.push_back(child);
         }
 
-        child->GetChildEntitiesWithComponent(container, type);
+        if (recursively)
+        {
+            child->GetChildEntitiesWithComponent(container, type, recursively);
+        }
+    }
+}
+
+template <template <typename, typename> class Container, class A>
+void Entity::GetChildEntitiesWithComponent(Container<const Entity*, A>& container, Component::eType type, bool recursively) const
+{
+    for (auto& child : children)
+    {
+        if (child->GetComponentCount(type) > 0)
+        {
+            container.push_back(child);
+        }
+
+        if (recursively)
+        {
+            child->GetChildEntitiesWithComponent(container, type, recursively);
+        }
+    }
+}
+
+template <template <typename, typename> class Container, class A, class Pred>
+void Entity::GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pred pred)
+{
+    for (auto& child : children)
+    {
+        if (pred(child) == true)
+        {
+            container.push_back(child);
+        }
+
+        child->GetChildEntitiesWithCondition(container, pred);
     }
 }
 

@@ -11,6 +11,7 @@ namespace DAVA
 AnimationComponent::AnimationComponent()
     : animation(NULL)
     , time(0.0f)
+    , animationTimeScale(1.0f)
     , frameIndex(0)
     , repeatsCount(1)
     , currRepeatsCont(0)
@@ -29,6 +30,7 @@ Component* AnimationComponent::Clone(Entity* toEntity)
     newAnimation->SetEntity(toEntity);
 
     newAnimation->time = time;
+    newAnimation->animationTimeScale = animationTimeScale;
     newAnimation->animation = SafeRetain(animation);
     newAnimation->repeatsCount = repeatsCount;
     newAnimation->currRepeatsCont = 0;
@@ -45,6 +47,7 @@ void AnimationComponent::Serialize(KeyedArchive* archive, SerializationContext* 
     {
         archive->SetVariant("animation", VariantType(animation->GetNodeID()));
         archive->SetUInt32("repeatsCount", repeatsCount);
+        archive->SetFloat("animationTimeScale", animationTimeScale);
     }
 }
 
@@ -59,6 +62,7 @@ void AnimationComponent::Deserialize(KeyedArchive* archive, SerializationContext
             animation = SafeRetain(newAnimation);
         }
         repeatsCount = archive->GetUInt32("repeatsCount", 1);
+        animationTimeScale = archive->GetFloat("animationTimeScale", 1.0f);
     }
 
     Component::Deserialize(archive, sceneFile);
