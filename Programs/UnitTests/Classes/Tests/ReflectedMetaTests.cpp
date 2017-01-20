@@ -2,13 +2,14 @@
 
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectionRegistrator.h>
-#include <Reflection/MetaObjectsDecl.h>
+#include <Reflection/MetaObjects.h>
 
+#include <Base/Any.h>
 #include <Base/GlobalEnum.h>
 
 namespace ReflectedMetaDetails
 {
-DAVA::M::ValidatorResult ValidateY(const Any& value, const Any& prevValue)
+DAVA::M::ValidatorResult ValidateY(const DAVA::Any& value, const DAVA::Any& prevValue)
 {
     using namespace DAVA::M;
 
@@ -56,26 +57,26 @@ DAVA_TESTCLASS (ReflectedMetaTest)
         ReflectedMetaDetails::TestClass cls;
         DAVA::Reflection r = DAVA::Reflection::Create(&cls);
 
-        const DAVA::Metas::File* f = r.GetMeta<DAVA::Metas::File>();
+        const DAVA::M::File* f = r.GetMeta<DAVA::M::File>();
         TEST_VERIFY(f != nullptr);
         TEST_VERIFY(f->shouldExists == false);
 
         DAVA::Reflection fieldX = r.GetField("x");
         TEST_VERIFY(fieldX.IsValid());
-        TEST_VERIFY(fieldX.GetMeta<DAVA::Metas::ReadOnly>() != nullptr);
-        const DAVA::Metas::Range* range = fieldX.GetMeta<DAVA::Metas::Range>();
+        TEST_VERIFY(fieldX.GetMeta<DAVA::M::ReadOnly>() != nullptr);
+        const DAVA::M::Range* range = fieldX.GetMeta<DAVA::M::Range>();
         TEST_VERIFY(range != nullptr);
         TEST_VERIFY(range->minValue.Cast<DAVA::int32>() == 10);
         TEST_VERIFY(range->maxValue.Cast<DAVA::int32>() == 20);
 
         DAVA::Reflection fieldY = r.GetField("y");
         TEST_VERIFY(fieldY.IsValid());
-        TEST_VERIFY(fieldY.GetMeta<DAVA::Metas::ReadOnly>() == nullptr);
-        const DAVA::Metas::Group* group = fieldY.GetMeta<DAVA::Metas::Group>();
+        TEST_VERIFY(fieldY.GetMeta<DAVA::M::ReadOnly>() == nullptr);
+        const DAVA::M::Group* group = fieldY.GetMeta<DAVA::M::Group>();
         TEST_VERIFY(group != nullptr);
         TEST_VERIFY(std::strcmp(group->groupName, "geometry") == 0);
 
-        const DAVA::Metas::Validator* validator = fieldY.GetMeta<DAVA::Metas::Validator>();
+        const DAVA::M::Validator* validator = fieldY.GetMeta<DAVA::M::Validator>();
         TEST_VERIFY(validator != nullptr);
         DAVA::M::ValidatorResult result = validator->Validate(double(30.0), 0);
         TEST_VERIFY(result.state == DAVA::M::ValidatorResult::eState::Valid);
@@ -85,9 +86,9 @@ DAVA_TESTCLASS (ReflectedMetaTest)
 
         DAVA::Reflection fieldE = r.GetField("enum");
         TEST_VERIFY(fieldE.IsValid());
-        TEST_VERIFY(fieldE.GetMeta<DAVA::Metas::ReadOnly>() == nullptr);
+        TEST_VERIFY(fieldE.GetMeta<DAVA::M::ReadOnly>() == nullptr);
 
-        const DAVA::Metas::Enum* enumMeta = fieldE.GetMeta<DAVA::Metas::Enum>();
+        const DAVA::M::Enum* enumMeta = fieldE.GetMeta<DAVA::M::Enum>();
         TEST_VERIFY(enumMeta != nullptr);
         TEST_VERIFY(enumMeta->GetEnumMap() == GlobalEnumMap<ReflectedMetaDetails::TestEnum>::Instance());
     }

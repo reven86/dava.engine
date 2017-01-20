@@ -9,8 +9,9 @@ namespace DAVA
 template <typename T, typename U>
 template <typename... Args>
 Meta<T, U>::Meta(Args&&... args)
-    : ptr(new T(std::forward<Args>(args)...), [](void* p) { delete static_cast<T*>(p); })
+    : T(std::forward<Args>(args)...)
 {
+    static_assert(std::is_same<U, T>::value || std::is_base_of<U, T>::value, "T should be derived from U or same as U");
 }
 
 inline ReflectedMeta::ReflectedMeta(ReflectedMeta&& rm)
@@ -33,12 +34,15 @@ bool ReflectedMeta::HasMeta() const
 template <typename T>
 const T* ReflectedMeta::GetMeta() const
 {
-    T* meta = nullptr;
+    const T* meta = nullptr;
 
     auto it = metas.find(Type::Instance<T>());
     if (it != metas.end())
     {
-        meta = static_cast<T*>(it->second.get());
+        // Here we know, that requested type T == Meta<U>, in other situation we will fail on search
+        // As we store value in metas as Any(Meta<T, U>) and we know that Meta derived from T and T derived from U or same as T
+        // we can get raw pointer from Any and cast it to const T*
+        meta = static_cast<const T*>(it->second.GetData());
     }
 
     return meta;
@@ -47,7 +51,7 @@ const T* ReflectedMeta::GetMeta() const
 template <typename T, typename U>
 void ReflectedMeta::Emplace(Meta<T, U>&& meta)
 {
-    metas.emplace(Type::Instance<U>(), std::move(meta.ptr));
+    metas.emplace(Type::Instance<Meta<U>>(), std::move(meta));
 }
 
 template <typename T, typename TS, typename U, typename US>
