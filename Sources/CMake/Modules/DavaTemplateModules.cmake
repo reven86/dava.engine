@@ -292,11 +292,16 @@ macro( dump_module_log  )
 
             get_property( CACHE_LOG_${ITEM}_MODULE_CACHE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_CACHE )
             get_property( CACHE_LOG_${ITEM}_MODULE_MD5   GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_MD5 )
+            get_property( CACHE_LOG_${ITEM}_MODULE_USES_LIST GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_USES_LIST )
+
+            list(LENGTH CACHE_LOG_${ITEM}_MODULE_USES_LIST CACHE_LOG_${ITEM}_MODULE_USES_LIST_LENGTH )
+
             if( ${CACHE_LOG_${ITEM}_MODULE_UNIQUE} )
                 math( EXPR UNIQUE_COMPONENTS_NUMBER "${UNIQUE_COMPONENTS_NUMBER} + 1" )
                 file( APPEND ${MODULES_LOG_FILE} "-> ${UNIQUE_COMPONENTS_NUMBER}\n" )
-                file( APPEND ${MODULES_LOG_FILE} "    NAME_MODULE  - ${ITEM}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    NAME_MODULE  - ${ITEM} [ ${CACHE_LOG_${ITEM}_MODULE_USES_LIST_LENGTH} ]\n" )
                 file( APPEND ${MODULES_LOG_FILE} "    MODULE_CACHE - ${CACHE_LOG_${ITEM}_MODULE_CACHE}\n" )
+                file( APPEND ${MODULES_LOG_FILE} "    USES_LIST    - ${CACHE_LOG_${ITEM}_MODULE_USES_LIST}\n" )
                 file( APPEND ${MODULES_LOG_FILE} "    MD5          - ${CACHE_LOG_${ITEM}_MODULE_MD5}\n" )
                 file( APPEND ${MODULES_LOG_FILE} "\n" )
             endif()
@@ -312,6 +317,7 @@ macro( dump_module_log  )
 
             get_property( CACHE_LOG_${ITEM}_MODULE_CACHE GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_CACHE )
             get_property( CACHE_LOG_${ITEM}_MODULE_MD5   GLOBAL PROPERTY CACHE_LOG_${ITEM}_MODULE_MD5 )
+   
             if( NOT ${CACHE_LOG_${ITEM}_MODULE_UNIQUE} )                
                 math( EXPR USED_UNIQUE_COMPONENTS_NUMBER "${USED_UNIQUE_COMPONENTS_NUMBER} + 1" )
                 file( APPEND ${MODULES_LOG_FILE} "-> ${USED_UNIQUE_COMPONENTS_NUMBER}\n" )
@@ -329,7 +335,6 @@ macro( dump_module_log  )
         file( APPEND ${MODULES_LOG_FILE} "UNIQUE      - ${UNIQUE_COMPONENTS_NUMBER}\n" )
         file( APPEND ${MODULES_LOG_FILE} "USED_UNIQUE - ${USED_UNIQUE_COMPONENTS_NUMBER}\n" )
         file( APPEND ${MODULES_LOG_FILE} "LIST_LENGTH - ${MODULE_CACHE_LOG_LIST_LENGTH}\n" )
-
 
     endif()
 
@@ -432,6 +437,7 @@ macro( setup_main_module )
 
             set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_MD5  ${MODULE_CACHE}  )
             set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  true )
+            set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_USES_LIST  )
 
         endif()
 #####            
@@ -679,6 +685,9 @@ macro( setup_main_module )
                     list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
                     get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
                     set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
+
+                    append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
+
                     set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
 
                 endif()
