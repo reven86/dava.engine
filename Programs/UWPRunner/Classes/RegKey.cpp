@@ -19,7 +19,7 @@ RegKey::RegKey(HKEY scope, const wchar_t* keyName, bool createIfNotExist)
 WideString RegKey::QueryString(const wchar_t* valueName) const
 {
     Array<wchar_t, 1024> arr{};
-    DWORD size = arr.size();
+    DWORD size = static_cast<DWORD>(arr.size());
     DWORD type;
 
     ::RegQueryValueExW(key,
@@ -35,7 +35,7 @@ WideString RegKey::QueryString(const wchar_t* valueName) const
 bool RegKey::SetValue(const WideString& valName, const WideString& val)
 {
     long res = ::RegSetValueExW(key, valName.c_str(), 0, REG_SZ,
-                                (LPBYTE)val.c_str(), val.size() + 1);
+                                (LPBYTE)val.c_str(), static_cast<DWORD>(val.size() + 1));
     return res == ERROR_SUCCESS;
 }
 

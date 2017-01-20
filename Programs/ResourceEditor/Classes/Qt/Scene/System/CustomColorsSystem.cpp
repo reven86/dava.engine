@@ -180,6 +180,14 @@ bool CustomColorsSystem::Input(DAVA::UIEvent* event)
     return false;
 }
 
+void CustomColorsSystem::InputCancelled(DAVA::UIEvent* event)
+{
+    if (IsLandscapeEditingEnabled() && (event->mouseButton == DAVA::eMouseButtons::LEFT))
+    {
+        FinishEditing(true);
+    }
+}
+
 void CustomColorsSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)

@@ -155,7 +155,7 @@ VertexDeclGLES2
         streamCount = layout.StreamCount();
         vattrInited = false;
     }
-    void InitVattr(int gl_prog, bool force_immediate = false)
+    void InitVattr(int gl_prog, bool forceExecute = false)
     {
         GLCommand cmd[16];
 
@@ -166,7 +166,7 @@ VertexDeclGLES2
             cmd[i].arg[1] = uint64_t(elem[i].name);
         }
 
-        ExecGL(cmd, elemCount, force_immediate);
+        ExecGL(cmd, elemCount, forceExecute);
 
         for (unsigned i = 0; i != elemCount; ++i)
             elem[i].index = cmd[i].retval;

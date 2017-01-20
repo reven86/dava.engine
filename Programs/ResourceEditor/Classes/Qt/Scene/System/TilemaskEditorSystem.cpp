@@ -60,8 +60,8 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
         1.f, 1.f, 0.f, 1.f, 1.f,
         1.f, -1.f, 0.f, 1.f, 0.f } };
 
-    quadBuffer = rhi::CreateVertexBuffer(buffer.size() * sizeof(DAVA::float32));
-    rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, buffer.size() * sizeof(DAVA::float32));
+    quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
+    rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
 
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
@@ -265,6 +265,14 @@ bool TilemaskEditorSystem::Input(DAVA::UIEvent* event)
         }
     }
     return false;
+}
+
+void TilemaskEditorSystem::InputCancelled(DAVA::UIEvent* event)
+{
+    if (IsLandscapeEditingEnabled() && (event->mouseButton == DAVA::eMouseButtons::LEFT))
+    {
+        FinishEditing();
+    }
 }
 
 void TilemaskEditorSystem::FinishEditing()

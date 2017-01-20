@@ -46,6 +46,9 @@ public:
     void* GetHandle() const;
     HWND GetHWND() const;
 
+    void SetIcon(const wchar_t* iconResourceName);
+    void SetCursor(HCURSOR hcursor);
+
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
 
@@ -61,10 +64,18 @@ private:
     // Shortcut for eMouseButtons::COUNT
     static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
 
+    // Flags used with DoResizeWindow
+    enum eResizeFlags
+    {
+        CENTER_ON_DISPLAY = 0x01, //!< Resize and place window on the center of display
+        RESIZE_WHOLE_WINDOW = 0x02, //!< Size given for whole window including border and caption
+        NO_TRANSLATE_TO_DIPS = 0x04, //!< Do not translate size to DIPs
+    };
+
     void DoSetSurfaceScale(const float32 scale);
 
     void SetCursorInCenter();
-    void DoResizeWindow(float32 width, float32 height);
+    void DoResizeWindow(float32 width, float32 height, int resizeFlags);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
     void DoSetMinimumSize(float32 width, float32 height);
@@ -74,17 +85,19 @@ private:
     void SetWindowedMode();
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
+    void SwitchToPinning();
     void UpdateClipCursor();
     void HandleWindowFocusChanging(bool hasFocus);
 
-    void AdjustWindowSize(int32* w, int32* h);
-    void HandleSizeChanged(int32 w, int32 h);
+    void HandleSizeChanged(int32 w, int32 h, bool dpiChanged);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int32 resizingType, int32 width, int32 height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
+    LRESULT OnEnterMenuLoop();
+    LRESULT OnExitMenuLoop();
     LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
     LRESULT OnDpiChanged(RECT* suggestedRect);
     LRESULT OnActivate(WPARAM wparam);
@@ -101,6 +114,7 @@ private:
     LRESULT OnCreate();
     LRESULT OnSetCursor(LPARAM lparam);
     bool OnClose();
+    bool OnSysCommand(int sysCommand);
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
@@ -113,17 +127,13 @@ private:
     float32 GetDpi() const;
 
 private:
-    eCursorCapture captureMode = eCursorCapture::OFF;
-    bool mouseVisible = true;
-    HCURSOR defaultCursor = nullptr;
-    POINT lastCursorPosition;
-
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     HWND hwnd = nullptr;
+    HCURSOR hcurCursor = nullptr;
 
     bool isMinimized = false;
     bool hasFocus = false;
@@ -141,12 +151,29 @@ private:
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
     uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
+    int32 mouseMoveSkipCount = 0;
+    const int32 SKIP_N_MOUSE_MOVE_EVENTS = 2;
+
+    bool forceCursorHide = false;
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    bool mouseVisible = true;
+    POINT lastCursorPosition;
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;
+
+    // DIP is device independent pixel.
+    // dipSize is number of physical pixels contained in one DIP.
+    // Here DIPs are used to emulate Win10 behaviour on Win32:
+    //  - window size is always in DIPS
+    //  - surface rendering size in physical pixels
+    //
+    // More info here: https://msdn.microsoft.com/en-us/library/windows/desktop/ff684173(v=vs.85).aspx
+    float32 dipSize = 1.f;
     Vector<TOUCHINPUT> touchInput;
     WINDOWPLACEMENT windowPlacement;
 
+    static HCURSOR defaultCursor;
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;

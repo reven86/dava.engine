@@ -344,7 +344,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         AppVersion* version = getVersion(branchID, appID);
         if (version == nullptr)
         {
-            return true;
+            return;
         }
         QString appDirPath = GetApplicationDirectory(branchID, appID, version->isToolSet, false);
         FileManager::DeleteDirectory(appDirPath);
