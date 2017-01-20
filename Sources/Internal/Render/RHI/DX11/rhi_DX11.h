@@ -113,7 +113,7 @@ void SetupDispatch(Dispatch* dispatch);
 }
 
 void ValidateDX11Device(const char* call);
-void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
+void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool forceExecute = false);
 bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, uint32 line);
 bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const uint32 line);
 void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line);

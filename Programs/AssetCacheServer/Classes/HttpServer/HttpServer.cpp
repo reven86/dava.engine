@@ -190,21 +190,21 @@ void HttpServer::OnDataChunkAdded(ClientSession& session)
         {
             session.data.erase(0, crlfPos + HttpServerDetail::DOUBLE_CRLF.length());
             OnDataChunkAdded(session);
-            return;
+            break;
         }
         case ClientSession::RequestReady:
         {
             OnRequestAssembled(session);
-            return;
+            break;
         }
         case ClientSession::Error:
         default:
         {
             RemoveClient(session.clientID);
-            return;
+            break;
         }
         }
-        break;
+        return;
     }
     case ClientSession::WaitingForContentPart:
     {

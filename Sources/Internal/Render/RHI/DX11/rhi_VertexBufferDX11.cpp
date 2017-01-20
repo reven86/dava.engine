@@ -18,7 +18,7 @@ static Handle dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     return handle;
 }
 
-static void dx11_VertexBuffer_Delete(Handle handle)
+static void dx11_VertexBuffer_Delete(Handle handle, bool)
 {
     if (handle != InvalidHandle)
     {

@@ -262,7 +262,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     return handle;
 }
 
-static void dx11_Texture_Delete(Handle tex)
+static void dx11_Texture_Delete(Handle tex, bool)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 

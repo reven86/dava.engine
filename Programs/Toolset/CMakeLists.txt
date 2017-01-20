@@ -33,7 +33,6 @@ macro ( add_tool TARGET_NAME )
 endmacro ()
 
 ############
-
 set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
 set( DAVA_USE_RENDERSTATS true )
 set( JOIN_PROJECT_NAME 1 )
@@ -42,7 +41,14 @@ set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
 set( DAVA_COREV2 1 )
 
-add_definitions (-D__DAVAENGINE_COREV2__)
+if( NOT DEPLOY_DIR )
+    set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
+    set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
+else()
+    set( DEPLOY_DIR_MACOS             ${DEPLOY_DIR} )
+    set( DEPLOY_DIR_WIN               ${DEPLOY_DIR} )
+endif()
+
 
 find_package ( DavaTools     REQUIRED )
 
@@ -52,35 +58,36 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 ## other
 set( DEFINITIONS           )
+
 set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app_other )
 set( DEPLOY_DIR_EXECUTABLE )
 set( QT_POST_DEPLOY        )
 reset_property ( MIX_APP_DATA )
 
-    add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
-    add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
-    add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
-    add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
-    add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+    if ( NOT ONLY_CONTENT_TOOLS )
+        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
 
-    if ( WIN32 )
-        add_tool ( UWPRunner CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        if ( WIN32 )
+            add_tool ( UWPRunner CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        endif ()
+        processing_mix_data()
     endif ()
-    processing_mix_data()
 
 ## tools
 
 set( POSTPONED_MIX_DATA 1 )
 set( QT_POST_DEPLOY 0 )
 
-set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR_MACOS}/Libs )
 set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR_MACOS} )
 set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR_MACOS} )
 set( ADDED_LD_RUNPATHES           "@executable_path/../../Libs @executable_path/../../../Libs" )
 
 
-set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_WIN          )
 set( DEPLOY_DIR_DATA_WIN          )
 set( DEPLOY_DIR_EXECUTABLE_WIN    )
@@ -103,6 +110,7 @@ reset_property ( MIX_APP_DATA )
     add_tool     ( ImageUnpacker    )
     add_tool     ( AssetCacheClient )
     add_tool     ( AssetCacheServer )
+    add_tool     ( Dep )
 
     processing_mix_data()
 

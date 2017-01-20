@@ -30,8 +30,8 @@ class TextureGLES2_t : public ResourceImpl<TextureGLES2_t, Texture::Descriptor>
 public:
     TextureGLES2_t();
 
-    bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    bool Create(const Texture::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     uint32 uid = 0;
     uint32 uid2 = 0;
@@ -71,7 +71,7 @@ TextureGLES2_t::TextureGLES2_t()
 
 //------------------------------------------------------------------------------
 
-bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediate)
+bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool forceExecute)
 {
     DVASSERT(desc.levelCount);
 
@@ -102,7 +102,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                   { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height, desc.sampleCount } },
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
-                ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
+                ExecGL(d24s8cmd, countof(d24s8cmd), forceExecute);
 
                 // Store depth/stencil buffer index as secondary stencil index for iOS/Android
                 glObjects[1] = glObjects[0];
@@ -126,7 +126,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
-                ExecGL(d16s8cmd, countof(d16s8cmd), force_immediate);
+                ExecGL(d16s8cmd, countof(d16s8cmd), forceExecute);
             }
         }
     }
@@ -138,7 +138,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         GLint int_fmt = GetGLRenderTargetFormat(desc.format);
 
         GLCommand gen = { GLCommand::GEN_RENDERBUFFERS, { 1, reinterpret_cast<uint64>(glObjects) } };
-        ExecGL(&gen, 1, force_immediate);
+        ExecGL(&gen, 1, forceExecute);
 
         is_render_buffer = true;
         GLCommand cmd[] =
@@ -148,7 +148,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
           { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
         };
 
-        ExecGL(cmd, countof(cmd), force_immediate);
+        ExecGL(cmd, countof(cmd), forceExecute);
     }
     else // create plain texture
     {
@@ -227,7 +227,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             ++cmd2_cnt;
         }
 
-        ExecGL(cmd2, cmd2_cnt, force_immediate);
+        ExecGL(cmd2, cmd2_cnt, forceExecute);
     }
 
     if (glObjects[0])
@@ -327,7 +327,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd3[cmd3Count].func = GLCommand::RESTORE_TEXTURE0;
                 ++cmd3Count;
 
-                ExecGL(cmd3, cmd3Count, force_immediate);
+                ExecGL(cmd3, cmd3Count, forceExecute);
             }
             else
             {
@@ -339,7 +339,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                   { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                   { GLCommand::RESTORE_TEXTURE0, {} }
                 };
-                ExecGL(cmd3, countof(cmd3), force_immediate);
+                ExecGL(cmd3, countof(cmd3), forceExecute);
             }
         }
 
@@ -351,7 +351,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 //------------------------------------------------------------------------------
 
-void TextureGLES2_t::Destroy(bool force_immediate)
+void TextureGLES2_t::Destroy(bool forceExecute)
 {
     GLCommand cmd[64] = {};
     size_t cmd_cnt = 1;
@@ -406,7 +406,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
+    ExecGL(cmd, static_cast<uint32>(cmd_cnt), forceExecute);
 
     DVASSERT(!isMapped);
 
@@ -423,10 +423,10 @@ void TextureGLES2_t::Destroy(bool force_immediate)
 
 //------------------------------------------------------------------------------
 
-static void gles2_Texture_Delete(Handle tex)
+static void gles2_Texture_Delete(Handle tex, bool forceExecute)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    self->Destroy();
+    self->Destroy(forceExecute);
     TextureGLES2Pool::Free(tex);
 }
 

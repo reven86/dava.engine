@@ -176,7 +176,7 @@ DX9Command
     long retval;
 };
 
-void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate);
+void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool forceExecute);
 
 //==============================================================================
 }

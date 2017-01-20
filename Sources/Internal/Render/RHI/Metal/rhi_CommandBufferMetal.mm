@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
 #include "rhi_Metal.h"
 
 #include "../rhi_Type.h"

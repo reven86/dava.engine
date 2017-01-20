@@ -9,14 +9,23 @@
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* aControl, DAVA::UIComponent::eType type, int32 _index, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_, DAVA::UIComponent::eType type_, int32 index_, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
     : SectionProperty("")
-    , control(SafeRetain(aControl))
+    , control(SafeRetain(control_))
     , component(nullptr)
-    , index(_index)
+    , index(index_)
     , prototypeSection(nullptr) // weak
 {
-    component = UIComponent::CreateByType(type);
+    component = control->GetComponent(type_, index_);
+    if (component != nullptr)
+    {
+        SafeRetain(component);
+    }
+    else
+    {
+        component = UIComponent::CreateByType(type_);
+        componentWasCreated = true;
+    }
     DVASSERT(component);
 
     if (sourceSection && cloneType == CT_INHERIT)
@@ -102,7 +111,7 @@ void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSecti
 
 bool ComponentPropertiesSection::HasChanges() const
 {
-    return SectionProperty::HasChanges() || (GetFlags() & AbstractProperty::EF_INHERITED) == 0;
+    return SectionProperty::HasChanges() || ((GetFlags() & AbstractProperty::EF_INHERITED) == 0 && componentWasCreated);
 }
 
 uint32 ComponentPropertiesSection::GetFlags() const
@@ -111,30 +120,40 @@ uint32 ComponentPropertiesSection::GetFlags() const
 
     uint32 flags = 0;
 
-    if (!readOnly && prototypeSection == nullptr)
+    if (!readOnly && prototypeSection == nullptr && componentWasCreated)
+    {
         flags |= EF_CAN_REMOVE;
+    }
 
     if (prototypeSection)
+    {
         flags |= EF_INHERITED;
+    }
 
     return flags;
 }
 
 void ComponentPropertiesSection::InstallComponent()
 {
-    if (control->GetComponent(component->GetType(), 0) != component)
+    if (componentWasCreated)
     {
-        control->InsertComponentAt(component, index);
+        if (control->GetComponent(component->GetType(), 0) != component)
+        {
+            control->InsertComponentAt(component, index);
+        }
     }
 }
 
 void ComponentPropertiesSection::UninstallComponent()
 {
-    UIComponent* installedComponent = control->GetComponent(component->GetType(), index);
-    if (installedComponent)
+    if (componentWasCreated)
     {
-        DVASSERT(installedComponent == component);
-        control->RemoveComponent(component);
+        UIComponent* installedComponent = control->GetComponent(component->GetType(), index);
+        if (installedComponent)
+        {
+            DVASSERT(installedComponent == component);
+            control->RemoveComponent(component);
+        }
     }
 }
 

@@ -179,7 +179,7 @@ struct GLCommand
     int status;
 };
 
-void ExecGL(GLCommand* cmd, uint32 cmdCount, bool force_immediate = false);
+void ExecGL(GLCommand* cmd, uint32 cmdCount, bool forceExecute = false);
 
 //==============================================================================
 }
