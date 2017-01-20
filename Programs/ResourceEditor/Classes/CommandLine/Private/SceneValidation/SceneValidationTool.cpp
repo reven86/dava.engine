@@ -2,8 +2,13 @@
 #include "Qt/Scene/Validation/SceneValidation.h"
 #include "Qt/Scene/Validation/ValidationProgressConsumer.h"
 #include "Project/ProjectResources.h"
+#include "Project/ProjectManagerData.h"
 #include "CommandLine/Private/OptionName.h"
 
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/Utils/ModuleCollection.h>
+
+#include <Base/BaseTypes.h>
 #include "Scene3D/Scene.h"
 #include "Utils/StringUtils.h"
 #include "Base/ScopedPtr.h"
