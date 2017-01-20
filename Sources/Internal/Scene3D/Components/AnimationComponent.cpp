@@ -129,5 +129,4 @@ void AnimationComponent::SetPlaybackCompleteCallback(Function<void(AnimationComp
 {
     playbackComplete = callback;
 }
-
 };
