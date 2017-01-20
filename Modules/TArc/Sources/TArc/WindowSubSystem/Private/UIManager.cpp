@@ -1,15 +1,14 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/Any.h"
-#include "Debug/DVAssert.h"
-
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
 #include "TArc/DataProcessing/Private/QtReflectionBridge.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
-#include "Utils/StringFormat.h"
+#include <Base/BaseTypes.h>
+#include <Base/Any.h>
+#include <Debug/DVAssert.h>
+#include <Utils/StringFormat.h>
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -513,7 +512,7 @@ protected:
 
     QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, UIManagerDetail::MainWindowInfo& mainWindowInfo, QMainWindow* mainWindow)
     {
-        DVASSERT_MSG(dockPanelInfo.title.isEmpty() == false, "Provide correct value of DockPanelInfo::title");
+        DVASSERT(dockPanelInfo.title.isEmpty() == false, "Provide correct value of DockPanelInfo::title");
         const QString& text = dockPanelInfo.title;
 
         QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
