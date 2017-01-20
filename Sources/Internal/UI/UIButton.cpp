@@ -436,7 +436,7 @@ void UIButton::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
-void UIButton::SystemDraw(const UIGeometricData& geometricData)
+void UIButton::SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground)
 {
     if (oldControlState != controlState)
     {
@@ -445,7 +445,7 @@ void UIButton::SystemDraw(const UIGeometricData& geometricData)
         UIControl::SetBackground(GetActualBackgroundForState(controlState));
     }
 
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
 }
 
 void UIButton::Draw(const UIGeometricData& geometricData)

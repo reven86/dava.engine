@@ -37,7 +37,8 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
 #endif
 {
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    UIControlBackground* bg = staticText->GetOrCreateComponent<UIControlBackground>();
+    bg->SetAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
     staticText->GetTextBlock()->SetMeasureEnable(true);
     staticText->SetForceBiDiSupportEnabled(true);
@@ -427,7 +428,7 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
     staticGeometric.AddGeometricData(d);
     staticGeometric.position += staticTextOffset * scale;
-    staticText->SystemDraw(staticGeometric);
+    staticText->SystemDraw(staticGeometric, nullptr);
 
     if (showCursor)
     {

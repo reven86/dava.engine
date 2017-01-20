@@ -318,31 +318,6 @@ public:
      */
     UIControlBackground* GetBackground() const;
 
-    virtual void SetLeftAlign(float32 align);
-    virtual float32 GetLeftAlign() const;
-    virtual void SetHCenterAlign(float32 align);
-    virtual float32 GetHCenterAlign() const;
-    virtual void SetRightAlign(float32 align);
-    virtual float32 GetRightAlign() const;
-    virtual void SetTopAlign(float32 align);
-    virtual float32 GetTopAlign() const;
-    virtual void SetVCenterAlign(float32 align);
-    virtual float32 GetVCenterAlign() const;
-    virtual void SetBottomAlign(float32 align);
-    virtual float32 GetBottomAlign() const;
-    virtual void SetLeftAlignEnabled(bool isEnabled);
-    virtual bool GetLeftAlignEnabled() const;
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
-    virtual bool GetHCenterAlignEnabled() const;
-    virtual void SetRightAlignEnabled(bool isEnabled);
-    virtual bool GetRightAlignEnabled() const;
-    virtual void SetTopAlignEnabled(bool isEnabled);
-    virtual bool GetTopAlignEnabled() const;
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
-    virtual bool GetVCenterAlignEnabled() const;
-    virtual void SetBottomAlignEnabled(bool isEnabled);
-    virtual bool GetBottomAlignEnabled() const;
-
     /**
      \brief Returns untransformed control rect.
         To get control metrics that applies all control transformation you need to use
@@ -956,7 +931,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control

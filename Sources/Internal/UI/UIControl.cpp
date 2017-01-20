@@ -65,7 +65,6 @@ UIControl::UIControl(const Rect& rect)
     visible = true;
 
     UpdateFamily();
-    GetOrCreateComponent<UIControlBackground>();
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -314,144 +313,16 @@ void UIControl::SetSpriteAlign(int32 align)
     GetBackground()->SetAlign(align);
 }
 
-void UIControl::SetLeftAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchor(align);
-}
-
-float32 UIControl::GetLeftAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetLeftAnchor() : 0.0f;
-}
-
-void UIControl::SetHCenterAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchor(align);
-}
-
-float32 UIControl::GetHCenterAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetHCenterAnchor() : 0.0f;
-}
-
-void UIControl::SetRightAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchor(align);
-}
-
-float32 UIControl::GetRightAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetRightAnchor() : 0.0f;
-}
-
-void UIControl::SetTopAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchor(align);
-}
-
-float32 UIControl::GetTopAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetTopAnchor() : 0.0f;
-}
-
-void UIControl::SetVCenterAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchor(align);
-}
-
-float32 UIControl::GetVCenterAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetVCenterAnchor() : 0.0f;
-}
-
-void UIControl::SetBottomAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchor(align);
-}
-
-float32 UIControl::GetBottomAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetBottomAnchor() : 0.0f;
-}
-
-void UIControl::SetLeftAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetLeftAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsLeftAnchorEnabled() : false;
-}
-
-void UIControl::SetHCenterAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetHCenterAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsHCenterAnchorEnabled() : false;
-}
-
-void UIControl::SetRightAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetRightAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsRightAnchorEnabled() : false;
-}
-
-void UIControl::SetTopAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetTopAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsTopAnchorEnabled() : false;
-}
-
-void UIControl::SetVCenterAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetVCenterAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsVCenterAnchorEnabled() : false;
-}
-
-void UIControl::SetBottomAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetBottomAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
-}
-
 void UIControl::SetBackground(UIControlBackground* newBg)
 {
     UIControlBackground* currentBg = GetComponent<UIControlBackground>();
     if (currentBg != newBg)
     {
-        RemoveComponent(currentBg);
+        if (currentBg != nullptr)
+        {
+            RemoveComponent(currentBg);
+        }
+
         if (newBg != nullptr)
         {
             AddComponent(newBg);
@@ -1083,7 +954,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     }
 }
 
-void UIControl::SystemDraw(const UIGeometricData& geometricData)
+void UIControl::SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground)
 {
     if (!GetVisibilityFlag())
         return;
@@ -1092,7 +963,7 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData drawData = GetLocalGeometricData();
     drawData.AddGeometricData(geometricData);
 
-    const Color& parentColor = parent && parent->GetBackground() ? parent->GetBackground()->GetDrawColor() : Color::White;
+    const Color& parentColor = parentBackground ? parentBackground->GetDrawColor() : Color::White;
 
     SetParentColor(parentColor);
 
@@ -1111,7 +982,7 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
     List<UIControl*>::iterator itEnd = children.end();
     for (; it != itEnd; ++it)
     {
-        (*it)->SystemDraw(drawData);
+        (*it)->SystemDraw(drawData, GetBackground() ? GetBackground() : parentBackground);
         DVASSERT(!isIteratorCorrupted);
     }
 
