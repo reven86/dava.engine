@@ -131,9 +131,9 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
 #else
 
 // Tricking compiler to think this expr is actually being used without calculating it
-#define DVASSERT_UNUSED(expr) (void)(true ? (void)0 : ((void)(expr)))
+#define DVASSERT_UNUSED(expr, ...) (void)(true ? (void)0 : ((void)(expr, ##__VA_ARGS__)))
 
-#define DVASSERT(expr, ...) DVASSERT_UNUSED(expr)
+#define DVASSERT(expr, ...) DVASSERT_UNUSED(expr, ##__VA_ARGS__)
 
 #endif
 
