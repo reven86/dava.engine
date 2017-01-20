@@ -3,7 +3,7 @@
 
 namespace DAVA
 {
-template <typename T>
+template <typename T, typename U = T>
 struct Meta
 {
     template <typename... Args>
@@ -23,8 +23,8 @@ public:
 
     DAVA_DEPRECATED(ReflectedMeta(ReflectedMeta&& rm)); // visual studio 2013 require this
 
-    template <typename T>
-    ReflectedMeta(Meta<T>&& meta);
+    template <typename T, typename U>
+    ReflectedMeta(Meta<T, U>&& meta);
 
     template <typename T>
     bool HasMeta() const;
@@ -32,17 +32,17 @@ public:
     template <typename T>
     const T* GetMeta() const;
 
-    template <typename T>
-    void Emplace(Meta<T>&& meta);
+    template <typename T, typename U>
+    void Emplace(Meta<T, U>&& meta);
 
 protected:
     UnorderedMap<const Type*, decltype(Meta<void>::ptr)> metas;
 };
 
-template <typename T, typename U>
-ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab);
+template <typename T, typename TS, typename U, typename US>
+ReflectedMeta operator, (Meta<T, TS> && metaa, Meta<US>&& metab);
 
-template <typename T>
-ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta);
+template <typename T, typename U>
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, U>&& meta);
 
 } // namespace DAVA

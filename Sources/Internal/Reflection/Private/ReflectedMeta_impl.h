@@ -6,9 +6,9 @@
 
 namespace DAVA
 {
-template <typename T>
+template <typename T, typename U>
 template <typename... Args>
-Meta<T>::Meta(Args&&... args)
+Meta<T, U>::Meta(Args&&... args)
     : ptr(new T(std::forward<Args>(args)...), [](void* p) { delete static_cast<T*>(p); })
 {
 }
@@ -18,8 +18,8 @@ inline ReflectedMeta::ReflectedMeta(ReflectedMeta&& rm)
 {
 }
 
-template <typename T>
-inline ReflectedMeta::ReflectedMeta(Meta<T>&& meta)
+template <typename T, typename U>
+inline ReflectedMeta::ReflectedMeta(Meta<T, U>&& meta)
 {
     Emplace(std::move(meta));
 }
@@ -44,14 +44,14 @@ const T* ReflectedMeta::GetMeta() const
     return meta;
 }
 
-template <typename T>
-void ReflectedMeta::Emplace(Meta<T>&& meta)
+template <typename T, typename U>
+void ReflectedMeta::Emplace(Meta<T, U>&& meta)
 {
-    metas.emplace(Type::Instance<T>(), std::move(meta.ptr));
+    metas.emplace(Type::Instance<U>(), std::move(meta.ptr));
 }
 
-template <typename T, typename U>
-inline ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab)
+template <typename T, typename TS, typename U, typename US>
+inline ReflectedMeta operator, (Meta<T, TS> && metaa, Meta<U, US>&& metab)
 {
     ReflectedMeta ret;
 
@@ -61,8 +61,8 @@ inline ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab)
     return ret;
 }
 
-template <typename T>
-ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta)
+template <typename T, typename U>
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, U>&& meta)
 {
     rmeta.Emplace(std::move(meta));
     return std::move(rmeta);
