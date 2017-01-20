@@ -49,6 +49,7 @@ public:
     explicit Screenshot(UI3DView* sceneView, const FilePath& path)
         : sceneView(sceneView)
         , savePath(path) {}
+    virtual ~Screenshot() {}
     virtual void MakeScreenshot() = 0;
     virtual void SaveScreenshot(Texture* screenshot) = 0;
 

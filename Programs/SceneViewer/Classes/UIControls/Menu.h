@@ -51,7 +51,6 @@ private:
     bool IsFirstLevelMenu() const;
 
 private:
-    bool toShow = true;
     Menu* parentMenu = nullptr;
     DAVA::UIControl* bearerControl = nullptr;
     DAVA::Font* font = nullptr;
