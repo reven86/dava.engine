@@ -65,6 +65,7 @@ void AnimationComponent::Deserialize(KeyedArchive* archive, SerializationContext
         repeatsCount = archive->GetUInt32("repeatsCount", 1);
         animationTimeScale = archive->GetFloat("animationTimeScale", 1.0f);
     }
+
     Component::Deserialize(archive, sceneFile);
 }
 
