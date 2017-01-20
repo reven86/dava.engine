@@ -143,9 +143,14 @@ void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode* colladaNode, Entity
 
         // Calculate actual transform and bake it into animation keys.
         // NOTE: for now usage of the same animation more than once is bad idea
+        // NOTE: animation->BakeTransform(totalTransform); actually was removed because of poor rotation behavior
+        // when pose baked into keys. So just set correct invPose to animation instead.
         AnimationData* animation = library.GetOrCreateAnimation(colladaNode->animation);
         Matrix4 totalTransform = colladaNode->AccumulateTransformUptoFarParent(colladaNode->scene->rootNode);
-        animation->BakeTransform(totalTransform);
+
+        Matrix4 invPose;
+        totalTransform.GetInverse(invPose);
+        animation->SetInvPose(invPose);
         animationComponent->SetAnimation(animation);
     }
 }

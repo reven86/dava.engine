@@ -189,7 +189,7 @@ void DlcTest::LoadResources()
     staticText = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y, WIDTH - 2 * BUTTON_H, BUTTON_H));
     staticText->SetFont(fontSmall);
     staticText->SetTextColor(Color::White);
-    staticText->SetText(L"Press Start ...");
+    staticText->SetText(L"Press Start!");
     AddControl(staticText);
 
     progressControl = new UIControl(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H, WIDTH - 2 * BUTTON_H, SPACE));
@@ -289,8 +289,11 @@ void DlcTest::UnloadResources()
     SafeRelease(progressStatistics);
     SafeRelease(animControl);
 
-    dlc->Cancel();
-    SafeDelete(dlc);
+    if (nullptr != dlc)
+    {
+        dlc->Cancel();
+        SafeDelete(dlc);
+    }
 
     SafeRelease(startButton);
     SafeRelease(cancelButton);
@@ -314,7 +317,12 @@ void DlcTest::Update(float32 timeElapsed)
 
         uint64 cur = 0;
         uint64 total = 0;
-        dlc->GetProgress(cur, total);
+
+        if (nullptr != dlc)
+        {
+            dlc->GetProgress(cur, total);
+        }
+
         DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
         String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
         progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));

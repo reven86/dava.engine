@@ -161,5 +161,9 @@ if (DAVA_PLATFORM_QT)
 
 endif()
 
+if (NOT DEPLOY)
+    list( APPEND DEFINITIONS -DLOCAL_FRAMEWORK_SOURCE_PATH="${DAVA_ROOT_DIR}" )
+endif()
+
 setup_main_module()
 

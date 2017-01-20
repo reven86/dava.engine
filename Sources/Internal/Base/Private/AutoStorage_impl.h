@@ -94,6 +94,7 @@ inline void AutoStorage<Count>::SetSimple(T&& value)
     static_assert(IsSimpleType<U>::value, "Type should be simple");
 
     Clear();
+
     type = StorageType::Simple;
     new (storage.data()) U(std::forward<T>(value));
 }
