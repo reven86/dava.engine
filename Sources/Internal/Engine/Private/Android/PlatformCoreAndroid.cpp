@@ -100,12 +100,17 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
-    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
-    int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
-    // Do adjustment only if SystemTimer has stopped ticking
-    if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+    if (goBackgroundTimeRelativeToBoot > 0)
     {
-        EngineBackend::AdjustSystemTimer(timeSpentInBackground1);
+        int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+        int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+        DAVA::Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+        // Do adjustment only if SystemTimer has stopped ticking
+        if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+        {
+            EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+        }
     }
 
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
