@@ -94,6 +94,8 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
 #ifdef __DAVAENGINE_RENDERSTATS_ALPHABLEND__
             if (packet.userFlags & NMaterial::USER_FLAG_ALPHABLEND)
                 packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_ALPHABLEND;
+            else if (layerID == RENDER_LAYER_SHADOW_VOLUME_ID)
+                packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_LAYER_SHADOW_VOLUME;
             else
                 packet.queryIndex = DAVA::InvalidIndex;
 #else

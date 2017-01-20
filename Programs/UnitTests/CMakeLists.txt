@@ -33,7 +33,8 @@ endif ()
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 if ( WIN32 OR MACOS )
-	find_package(DavaTools REQUIRED )
+## temporary disabled because DavaTools is not DAVA-module
+#	find_package(DavaTools REQUIRED )
 endif()
 
 include_directories   ( "Classes" )
