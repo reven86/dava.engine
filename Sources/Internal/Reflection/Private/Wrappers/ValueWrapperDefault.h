@@ -45,6 +45,16 @@ public:
         return false;
     }
 
+    inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        if (value.CanCast<T>())
+        {
+            return SetValue(object, value.Cast<T>());
+        }
+
+        return false;
+    }
+
     ReflectedObject GetValueObject(const ReflectedObject& object) const override
     {
         return object;

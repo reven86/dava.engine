@@ -84,7 +84,7 @@ def start_unittests_on_uwp_device():
 
     package_name = name[0]
     arch = sys.argv[2]
-    sub_process = subprocess.Popen(["../../../Tools/Bin/UWPRunner.exe", 
+    sub_process = subprocess.Popen(["../../../Bin/UWPRunner.exe", 
                                     '--package', package_name, 
                                     '--arch', arch,
                                     '--tc_test', '--dava_app'],

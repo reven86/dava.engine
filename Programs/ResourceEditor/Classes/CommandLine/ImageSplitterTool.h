@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
-class ImageSplitterTool : public REConsoleModuleCommon
+class ImageSplitterTool : public CommandLineModule
 {
 public:
     ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine);
@@ -26,7 +26,7 @@ protected:
 
     eAction commandAction = ACTION_NONE;
 
-    DAVA_VIRTUAL_REFLECTION(ImageSplitterTool, REConsoleModuleCommon)
+    DAVA_VIRTUAL_REFLECTION(ImageSplitterTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<ImageSplitterTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
