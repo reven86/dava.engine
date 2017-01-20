@@ -39,9 +39,6 @@ public:
     DAVA::UIComponent* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
-    DAVA::UIControlBackground* BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
-    void EndBgPropertiesSection() override;
-
     void ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value) override;
 
     std::shared_ptr<PackageInformation> GetPackage() const;

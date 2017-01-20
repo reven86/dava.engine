@@ -2,6 +2,7 @@
 #include "SceneViewerApp.h"
 
 #include <Math/MathHelpers.h>
+#include <Render/2D/Sprite.h>
 
 namespace ViewSceneScreenDetails
 {
@@ -161,7 +162,8 @@ void ViewSceneScreen::AddJoypadControl()
     DVASSERT(!moveJoyPAD);
     moveJoyPAD = new DAVA::UIJoypad(DAVA::Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
-    moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad.tex", 0);
+    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/Joypad/Stick.png"));
+    moveJoyPAD->SetStickSprite(stickSprite, 0);
     AddControl(moveJoyPAD);
 }
 
