@@ -170,7 +170,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, reinterpret_cast<pointer_size>(viewMatrix));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, reinterpret_cast<pointer_size>(projectionMatrix));
 
-    RenderStruct renderStructs[4];
+    RenderStruct renderStructs[DRAW_TYPE_COUNT];
     for (uint32 i = 0; i < uint32(DRAW_TYPE_COUNT); ++i)
         renderStructs[i] = AllocateRenderStruct(eDrawType(i));
 
