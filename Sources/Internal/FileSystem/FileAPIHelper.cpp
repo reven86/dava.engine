@@ -12,14 +12,10 @@ namespace DAVA
 namespace FileAPI
 {
 #ifdef __DAVAENGINE_WINDOWS__
-struct Stat : _stat
-{
-};
+using Stat = struct ::_stat;
 const auto FileStat = _wstat;
 #else
-struct Stat : stat
-{
-};
+using Stat = struct ::stat;
 const auto FileStat = stat;
 #endif
 
