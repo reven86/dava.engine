@@ -92,7 +92,7 @@ void UIMovieView::UpdateControlRect()
     movieViewControl->SetRect(rect);
 }
 
-void UIMovieView::SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground)
+void UIMovieView::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     UIControl::SystemDraw(geometricData, parentBackground);
 

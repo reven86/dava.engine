@@ -45,7 +45,7 @@ void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
     fillBorderOrder = fillOrder;
 }
 
-void UIScreen::SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground)
+void UIScreen::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
     {

@@ -951,7 +951,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     }
 }
 
-void UIControl::SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground)
+void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (!GetVisibilityFlag())
         return;
