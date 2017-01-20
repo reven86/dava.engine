@@ -78,17 +78,15 @@ void AnimationSystem::ImmediateEvent(Component* component, uint32 event)
         comp->state = AnimationComponent::STATE_PLAYING;
         comp->currRepeatsCont = 0;
     }
-    else if (event == EventSystem::STOP_ANIMATION)
-        RemoveFromActive(comp);
-    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME)
-    {
-        MoveAnimationToFrame(comp, 0);
-    }
     else if (event == EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME)
     {
         MoveAnimationToFrame(comp, comp->animation->GetKeyCount() - 1);
         comp->Stop();
     }
+    else if (event == EventSystem::STOP_ANIMATION)
+        RemoveFromActive(comp);
+    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME)
+        MoveAnimationToFrame(comp, 0);
 }
 
 void AnimationSystem::MoveAnimationToFrame(AnimationComponent* comp, int frameIndex)
