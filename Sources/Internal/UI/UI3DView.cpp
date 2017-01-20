@@ -204,12 +204,22 @@ void UI3DView::CopyDataFrom(UIControl* srcControl)
 
 void UI3DView::Input(UIEvent* currentInput)
 {
-    if (scene)
+    if (scene != nullptr)
     {
         scene->Input(currentInput);
     }
 
     UIControl::Input(currentInput);
+}
+
+void UI3DView::InputCancelled(UIEvent* currentInput)
+{
+    if (scene != nullptr)
+    {
+        scene->InputCancelled(currentInput);
+    }
+
+    UIControl::InputCancelled(currentInput);
 }
 
 void UI3DView::SetDrawToFrameBuffer(bool enable)
