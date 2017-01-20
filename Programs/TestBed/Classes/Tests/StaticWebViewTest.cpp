@@ -113,7 +113,8 @@ void StaticWebViewTest::LoadResources()
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
     FilePath imgPath("~res:/TestData/UI/Rotation.png");
     ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(imgPath));
-    overlapedImage->SetSprite(sprite, 0);
+    UIControlBackground* overlapedImageBg = overlapedImage->GetOrCreateComponent<UIControlBackground>();
+    overlapedImageBg->SetSprite(sprite, 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 

@@ -1857,6 +1857,7 @@ Animation* UIControl::RemoveControlAnimation(int32 track)
 Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
     UIControlBackground* bg = GetComponent<UIControlBackground>();
+    DVASSERT(bg);
     LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &bg->color, finalColor, time, interpolationFunc);
     animation->Start(track);
     return animation;

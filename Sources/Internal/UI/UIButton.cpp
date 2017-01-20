@@ -461,7 +461,7 @@ void UIButton::Draw(const UIGeometricData& geometricData)
 void UIButton::SetParentColor(const Color& parentColor)
 {
     UIControl::SetParentColor(parentColor);
-    if (selectedTextBlock)
+    if (selectedTextBlock && GetBackground())
         selectedTextBlock->SetParentColor(GetBackground()->GetDrawColor());
 }
 

@@ -18,7 +18,8 @@ void FullscreenTest::LoadResources()
 
     inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
 
-    GetBackground()->SetColor(Color::White);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetColor(Color::White);
 
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 

@@ -44,8 +44,9 @@ void SpeedLoadImagesTest::LoadResources()
     resultText = new UIStaticText(Rect(10, 280, 700, 1400));
     resultText->SetFont(font);
     resultText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
-    resultText->GetBackground()->SetColor(Color(0.0, 0.0, 0.0, 1.0));
-    resultText->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* resultTextBg = resultText->GetOrCreateComponent<UIControlBackground>();
+    resultTextBg->SetColor(Color(0.0, 0.0, 0.0, 1.0));
+    resultTextBg->SetDrawType(UIControlBackground::DRAW_FILL);
     resultText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     resultText->SetMultiline(true);
     AddControl(resultText);
