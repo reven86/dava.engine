@@ -110,4 +110,8 @@ void SceneSystem::SetScene(Scene* scene_)
 {
     scene = scene_;
 }
-};
+
+void SceneSystem::InputCancelled(UIEvent* event)
+{
+}
+}

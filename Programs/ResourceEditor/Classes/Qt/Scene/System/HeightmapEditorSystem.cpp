@@ -169,6 +169,14 @@ bool HeightmapEditorSystem::Input(DAVA::UIEvent* event)
     return false;
 }
 
+void HeightmapEditorSystem::InputCancelled(DAVA::UIEvent* event)
+{
+    if (IsLandscapeEditingEnabled() && (event->mouseButton == DAVA::eMouseButtons::LEFT))
+    {
+        FinishEditing(true);
+    }
+}
+
 void HeightmapEditorSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)
