@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
-set( COVERAGE true )
+if( NOT DAVA_MEGASOLUTION )
+    set( COVERAGE true )
+endif()
+
 project ( UnitTests )
 
 set          ( WARNINGS_AS_ERRORS true )

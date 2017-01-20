@@ -65,7 +65,7 @@ set( QT_POST_DEPLOY        )
 reset_property ( MIX_APP_DATA )
 
     if ( NOT ONLY_CONTENT_TOOLS )
-        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
         add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
