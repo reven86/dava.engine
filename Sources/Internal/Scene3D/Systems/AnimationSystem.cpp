@@ -53,8 +53,8 @@ void AnimationSystem::Process(float32 timeElapsed)
                 comp->animationTransform.Identity();
                 comp->time = 0;
 
-                if (!comp->playbackComplete.IsEmpty())
-                    comp->playbackComplete(comp->GetEntity(), 0);
+                if (comp->playbackComplete)
+                    comp->playbackComplete(static_cast<Component*>(comp));
 
                 continue;
             }

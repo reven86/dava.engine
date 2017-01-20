@@ -121,12 +121,12 @@ void AnimationComponent::MoveAnimationToTheLastFrame()
 
 void AnimationComponent::MoveAnimationToTheFirstFrame()
 {
-    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME);
 }
 
-void AnimationComponent::SetPlaybackCompleteMessage(const Message& msg)
+void AnimationComponent::SetPlaybackCompleteCallback(DAVA::Function<void(Component* const)> callback)
 {
-    playbackComplete = msg;
+    playbackComplete = callback;
 }
 
 };

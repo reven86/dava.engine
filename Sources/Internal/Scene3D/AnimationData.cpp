@@ -62,7 +62,7 @@ SceneNodeAnimationKey AnimationData::Interpolate(float32 t, uint32& startIdxCach
 
 DAVA::SceneNodeAnimationKey AnimationData::GetKeyForFrame(int32 frameIndex) const
 {
-    DVASSERT(frameIndex > 0 && frameIndex < GetKeyCount());
+    DVASSERT(frameIndex >= 0 && frameIndex < GetKeyCount());
 
     SceneNodeAnimationKey result;
     const SceneNodeAnimationKey& key = keys[frameIndex];
