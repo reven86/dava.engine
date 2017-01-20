@@ -33,6 +33,10 @@ add_definitions       (
 -DDISABLE_NATIVE_MOVIEVIEW
 )
 
+if (NOT DEPLOY)
+    add_definitions ( -DLOCAL_FRAMEWORK_SOURCE_PATH="${FRAMEWORK_PATH}" )
+endif()
+
 set ( DAVA_COREV2 1 )
 set ( DAVA_PLATFORM_QT 1 )
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
