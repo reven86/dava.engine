@@ -30,22 +30,68 @@ int64 SystemTimer::adjustmentMillis = 0;
 int64 SystemTimer::adjustmentMicros = 0;
 int64 SystemTimer::adjustmentNanos = 0;
 
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+// Ops, MSVC2013 and earlier uses low resulution clock for std::chrono::high_resolution_clock
+// which has been acknowledged as a bug, see https://web.archive.org/web/20141212192132/https://connect.microsoft.com/VisualStudio/feedback/details/719443/
+// This bug was fixed in MSVC2015.
+struct msvc2013_high_resolution_clock
+{
+    typedef long long rep;
+    typedef std::nano period;
+    typedef std::chrono::nanoseconds duration;
+    typedef std::chrono::time_point<msvc2013_high_resolution_clock> time_point;
+    static const bool is_steady = true;
+
+    static long long GetPerfFrequency()
+    {
+        static long long freq = 0;
+        if (freq == 0)
+        {
+            // The frequency of the performance counter is fixed at system boot
+            LARGE_INTEGER li;
+            ::QueryPerformanceFrequency(&li);
+            freq = li.QuadPart;
+        }
+        return freq;
+    }
+
+    static long long GetPerfCounter()
+    {
+        LARGE_INTEGER counter;
+        ::QueryPerformanceCounter(&counter);
+        return counter.QuadPart;
+    }
+
+    static time_point now()
+    {
+        const long long freq = GetPerfFrequency();
+        const long long cntr = GetPerfCounter();
+        const long long whole = (cntr / freq) * period::den;
+        const long long part = (cntr % freq) * period::den / freq;
+        return time_point(duration(whole + part));
+    }
+};
+using SystemTimerHighResolutionClock = msvc2013_high_resolution_clock;
+#else
+using SystemTimerHighResolutionClock = std::chrono::high_resolution_clock;
+#endif
+
 int64 SystemTimer::GetMs()
 {
     using namespace std::chrono;
-    return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentMillis;
+    return duration_cast<milliseconds>(SystemTimerHighResolutionClock::now().time_since_epoch()).count() + adjustmentMillis;
 }
 
 int64 SystemTimer::GetUs()
 {
     using namespace std::chrono;
-    return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentMicros;
+    return duration_cast<microseconds>(SystemTimerHighResolutionClock::now().time_since_epoch()).count() + adjustmentMicros;
 }
 
 int64 SystemTimer::GetNs()
 {
     using namespace std::chrono;
-    return duration_cast<nanoseconds>(high_resolution_clock::now().time_since_epoch()).count() + adjustmentNanos;
+    return duration_cast<nanoseconds>(SystemTimerHighResolutionClock::now().time_since_epoch()).count() + adjustmentNanos;
 }
 
 int64 SystemTimer::GetSystemUptimeUs()
