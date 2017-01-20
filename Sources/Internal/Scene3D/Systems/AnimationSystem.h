@@ -24,6 +24,8 @@ public:
 
     void ImmediateEvent(Component* component, uint32 event) override;
 
+    void MoveAnimationToFrame(AnimationComponent* comp, int frameIndex);
+
 private:
     Vector<AnimationComponent*> activeComponents;
     void AddToActive(AnimationComponent* comp);

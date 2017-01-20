@@ -35,6 +35,10 @@ public:
     void Start();
     void Stop();
     void StopAfterNRepeats(int32 numberOfRepeats);
+    void MoveAnimationToTheLastFrame();
+    void MoveAnimationToTheFirstFrame();
+
+    void SetPlaybackStoppedMessage(const Message& msg);
 
     enum eState
     {
@@ -54,7 +58,7 @@ private:
     eState state;
 
     /*completion message stuff*/
-    Message playbackComplete;
+    Message playbackStopped;
 
     Matrix4 animationTransform;
 

@@ -20,6 +20,8 @@ AnimationSystem::AnimationSystem(Scene* scene)
     {
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_ANIMATION);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_ANIMATION);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
     }
 }
 
@@ -39,7 +41,7 @@ void AnimationSystem::Process(float32 timeElapsed)
         if (comp->time > comp->animation->duration)
         {
             comp->currRepeatsCont++;
-            if (((comp->repeatsCount == 0) || (comp->currRepeatsCont < comp->repeatsCount)))
+            if ((comp->repeatsCount == 0) || (comp->currRepeatsCont < comp->repeatsCount))
             {
                 comp->time -= comp->animation->duration;
             }
@@ -73,6 +75,24 @@ void AnimationSystem::ImmediateEvent(Component* component, uint32 event)
     }
     else if (event == EventSystem::STOP_ANIMATION)
         RemoveFromActive(comp);
+    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME)
+    {
+        MoveAnimationToFrame(comp, 0);
+    }
+    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME)
+    {
+        MoveAnimationToFrame(comp, comp->animation->GetKeyCount() - 1);
+        comp->Stop();
+    }
+}
+
+void AnimationSystem::MoveAnimationToFrame(AnimationComponent* comp, int frameIndex)
+{
+    comp->time = 0; // NOTE: will be correct only for last and end frames
+    Matrix4 animationMatrix;
+    comp->animation->GetKeyForFrame(frameIndex).GetMatrix(animationMatrix);
+    comp->animationTransform = comp->animation->invPose * animationMatrix;
+    GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 void AnimationSystem::AddToActive(AnimationComponent* comp)
@@ -89,6 +109,9 @@ void AnimationSystem::RemoveFromActive(AnimationComponent* comp)
     DVASSERT(it != activeComponents.end());
     activeComponents.erase(it);
     comp->state = AnimationComponent::STATE_STOPPED;
+
+    if (!comp->playbackStopped.IsEmpty())
+        comp->playbackStopped(comp->GetEntity(), 0);
 }
 
 void AnimationSystem::RemoveEntity(Entity* entity)

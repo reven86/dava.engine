@@ -32,6 +32,7 @@ Component* AnimationComponent::Clone(Entity* toEntity)
     newAnimation->animation = SafeRetain(animation);
     newAnimation->repeatsCount = repeatsCount;
     newAnimation->currRepeatsCont = 0;
+    newAnimation->playbackStopped = playbackStopped;
     newAnimation->state = STATE_STOPPED; //for another state we need add this one to AnimationSystem
 
     return newAnimation;
@@ -60,7 +61,6 @@ void AnimationComponent::Deserialize(KeyedArchive* archive, SerializationContext
         }
         repeatsCount = archive->GetUInt32("repeatsCount", 1);
     }
-
     Component::Deserialize(archive, sceneFile);
 }
 
@@ -109,4 +109,20 @@ void AnimationComponent::Stop()
     GlobalEventSystem::Instance()->Event(this, EventSystem::STOP_ANIMATION);
     animationTransform.Identity();
 }
+
+void AnimationComponent::MoveAnimationToTheLastFrame()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
+}
+
+void AnimationComponent::MoveAnimationToTheFirstFrame()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
+}
+
+void AnimationComponent::SetPlaybackStoppedMessage(const Message& msg)
+{
+    playbackStopped = msg;
+}
+
 };

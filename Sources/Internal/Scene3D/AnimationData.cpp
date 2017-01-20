@@ -60,6 +60,19 @@ SceneNodeAnimationKey AnimationData::Interpolate(float32 t, uint32& startIdxCach
     return result;
 }
 
+DAVA::SceneNodeAnimationKey AnimationData::GetKeyForFrame(int32 frameIndex) const
+{
+    DVASSERT(frameIndex > 0 && frameIndex < GetKeyCount());
+
+    SceneNodeAnimationKey result;
+    const SceneNodeAnimationKey& key = keys[frameIndex];
+    result.time = key.time;
+    result.translation = key.translation;
+    result.rotation = key.rotation;
+    result.scale = key.scale;
+    return result;
+}
+
 void AnimationData::SetDuration(float32 _duration)
 {
     duration = _duration;
