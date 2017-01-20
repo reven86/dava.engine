@@ -83,6 +83,7 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath& packagePath)
 {
     DVASSERT(!package.Valid());
     package = RefPtr<UIPackage>(new UIPackage());
+    currentPackagePath = packagePath;
 }
 
 void DefaultUIPackageBuilder::EndPackage()
@@ -154,6 +155,7 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
         ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
         propertiesTable->SetProperties(properties);
         styleSheet->SetPropertyTable(propertiesTable);
+        styleSheet->SetSourceInfo(UIStyleSheetSourceInfo(currentPackagePath));
 
         package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
     }
@@ -343,29 +345,6 @@ UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 com
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
-{
-    currentObject = nullptr;
-}
-
-UIControlBackground* DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
-{
-    if (sectionHasProperties)
-    {
-        UIControl* control = controlsStack.back()->control.Get();
-        if (!control->GetBackgroundComponent(index))
-        {
-            UIControlBackground* bg = control->CreateBackgroundComponent(index);
-            control->SetBackgroundComponent(index, bg);
-            SafeRelease(bg);
-        }
-        UIControlBackground* res = control->GetBackgroundComponent(index);
-        currentObject = res;
-        return res;
-    }
-    return nullptr;
-}
-
-void DefaultUIPackageBuilder::EndBgPropertiesSection()
 {
     currentObject = nullptr;
 }

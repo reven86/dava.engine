@@ -83,12 +83,10 @@ QSize TextureListDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
     {
     case DRAW_PREVIEW_SMALL:
         return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE_SMALL);
-        break;
 
     case DRAW_PREVIEW_BIG:
     default:
         return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE);
-        break;
     }
 }
 

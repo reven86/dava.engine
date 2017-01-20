@@ -95,7 +95,7 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
 
     auto screen = testScreens.at(index);
 
-    buttonText = (UIStaticText*)c->FindByName(buttonName);
+    buttonText = static_cast<UIStaticText*>(c->FindByName(buttonName));
     if (nullptr != buttonText)
     {
         buttonText->SetText(UTF8Utils::EncodeToWideString(screen->GetName().c_str()));

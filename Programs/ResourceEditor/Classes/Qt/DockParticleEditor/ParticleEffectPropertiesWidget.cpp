@@ -717,19 +717,14 @@ bool ParticleEffectPropertiesWidget::EditEmitterModifiable(DAVA::ParticleEmitter
     {
     case EE_EMISSION_VECTOR:
         return EditModificationLine(emitter->emissionVector, onAdd);
-        break;
     case EE_EMISSION_RANGE:
         return EditModificationLine(emitter->emissionRange, onAdd);
-        break;
     case EE_RADUS:
         return EditModificationLine(emitter->radius, onAdd);
-        break;
     case EE_SIZE:
         return EditModificationLine(emitter->size, onAdd);
-        break;
     case EE_COLOR_OVER_LIFE:
         return EditModificationLine(emitter->colorOverLife, onAdd);
-        break;
     default:
         break;
     }
@@ -741,61 +736,42 @@ bool ParticleEffectPropertiesWidget::EditLayerModifiable(DAVA::ParticleLayer* la
     {
     case EL_LIFE:
         return EditModificationLine(layer->life, onAdd);
-        break;
     case EL_LIFE_VARIATION:
         return EditModificationLine(layer->lifeVariation, onAdd);
-        break;
     case EL_NUMBER:
         return EditModificationLine(layer->number, onAdd);
-        break;
     case EL_NUMBER_VARIATION:
         return EditModificationLine(layer->numberVariation, onAdd);
-        break;
     case EL_SIZE:
         return EditModificationLine(layer->size, onAdd);
-        break;
     case EL_SIZE_VARIATION:
         return EditModificationLine(layer->sizeVariation, onAdd);
-        break;
     case EL_SIZE_OVERLIFE:
         return EditModificationLine(layer->sizeOverLifeXY, onAdd);
-        break;
     case EL_VELOCITY:
         return EditModificationLine(layer->velocity, onAdd);
-        break;
     case EL_VELOCITY_VARIATON:
         return EditModificationLine(layer->velocityVariation, onAdd);
-        break;
     case EL_VELOCITY_OVERLIFE:
         return EditModificationLine(layer->velocityOverLife, onAdd);
-        break;
     case EL_SPIN:
         return EditModificationLine(layer->spin, onAdd);
-        break;
     case EL_SPIN_VARIATION:
         return EditModificationLine(layer->spinVariation, onAdd);
-        break;
     case EL_SPIN_OVERLIFE:
         return EditModificationLine(layer->spinOverLife, onAdd);
-        break;
     case EL_COLOR:
         return EditModificationLine(layer->colorRandom, onAdd);
-        break;
     case EL_ALPHA_OVERLIFE:
         return EditModificationLine(layer->alphaOverLife, onAdd);
-        break;
     case EL_COLOR_OVERLIFE:
         return EditModificationLine(layer->colorOverLife, onAdd);
-        break;
     case EL_ANGLE:
         return EditModificationLine(layer->angle, onAdd);
-        break;
     case EL_ANGLE_VARIATION:
         return EditModificationLine(layer->angleVariation, onAdd);
-        break;
     case EL_ANIM_SPEED_OVERLIFE:
         return EditModificationLine(layer->animSpeedOverLife, onAdd);
-        break;
     default:
         break;
     }
@@ -807,10 +783,8 @@ bool ParticleEffectPropertiesWidget::EditForceModifiable(DAVA::ParticleForce* fo
     {
     case EF_FORCE:
         return EditModificationLine(force->force, onAdd);
-        break;
     case EF_FORCE_OVERLIFE:
         return EditModificationLine(force->forceOverLife, onAdd);
-        break;
     default:
         break;
     }

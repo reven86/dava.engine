@@ -4,8 +4,9 @@
 append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__" )
 append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__" )
 append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__" )
-append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__" )
-append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__" )
+append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
+append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
+
 	
 if( APPLE )
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
@@ -122,11 +123,6 @@ elseif ( WIN32 )
         set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi" ) 
     endif ()
 
-    # undef macros min and max defined in windows.h
-    add_definitions ( -DNOMINMAX )
-    add_definitions ( -D_UNICODE )
-    add_definitions ( -DUNICODE )
-    add_definitions ( -D_SCL_SECURE_NO_WARNINGS)
 endif  ()
 
 if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
@@ -154,68 +150,90 @@ if( WARNING_DISABLE)
 elseif( WARNINGS_AS_ERRORS )
 
 
-    if( ANDROID )
+    if( ANDROID OR MACOS)
         set( LOCAL_DISABLED_WARNINGS "-Werror " ) 
     endif()
 
     set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS}\
--Weverything \
--Wno-c++98-compat-pedantic \
--Wno-newline-eof \
--Wno-gnu-anonymous-struct \
--Wno-nested-anon-types \
--Wno-float-equal \
--Wno-extra-semi \
--Wno-unused-parameter \
--Wno-shadow \
--Wno-exit-time-destructors \
--Wno-documentation \
--Wno-global-constructors \
--Wno-padded \
--Wno-weak-vtables \
--Wno-variadic-macros \
--Wno-deprecated-register \
--Wno-sign-conversion \
--Wno-sign-compare \
--Wno-format-nonliteral \
--Wno-cast-align \
--Wno-conversion \
--Wno-zero-length-array \
--Wno-switch-enum \
--Wno-c99-extensions \
--Wno-missing-prototypes \
--Wno-missing-field-initializers \
--Wno-conditional-uninitialized \
--Wno-covered-switch-default \
--Wno-deprecated \
--Wno-unused-macros \
--Wno-disabled-macro-expansion \
--Wno-undef \
--Wno-char-subscripts \
--Wno-unneeded-internal-declaration \
--Wno-unused-variable \
--Wno-used-but-marked-unused \
--Wno-missing-variable-declarations \
--Wno-gnu-statement-expression \
--Wno-missing-braces \
--Wno-reorder \
--Wno-implicit-fallthrough \
--Wno-ignored-qualifiers \
--Wno-shift-sign-overflow \
--Wno-mismatched-tags \
--Wno-missing-noreturn \
--Wno-consumed \
--Wno-sometimes-uninitialized \
--Wno-delete-non-virtual-dtor \
--Wno-header-hygiene \
--Wno-unknown-warning-option \
--Wno-reserved-id-macro \
--Wno-documentation-pedantic \
--Wno-unused-local-typedef \
--Wno-nullable-to-nonnull-conversion \
--Wno-super-class-method-mismatch \
--Wno-nonnull \
--Wno-gnu-zero-variadic-macro-arguments")
+        -Weverything \
+        -Wno-c++98-compat-pedantic \
+        -Wno-newline-eof \
+        -Wno-gnu-anonymous-struct \
+        -Wno-nested-anon-types \
+        -Wno-float-equal \
+        -Wno-extra-semi \
+        -Wno-unused-parameter \
+        -Wno-shadow \
+        -Wno-exit-time-destructors \
+        -Wno-documentation \
+        -Wno-global-constructors \
+        -Wno-padded \
+        -Wno-weak-vtables \
+        -Wno-variadic-macros \
+        -Wno-deprecated-register \
+        -Wno-sign-conversion \
+        -Wno-sign-compare \
+        -Wno-format-nonliteral \
+        -Wno-cast-align \
+        -Wno-conversion \
+        -Wno-zero-length-array \
+        -Wno-switch-enum \
+        -Wno-c99-extensions \
+        -Wno-missing-prototypes \
+        -Wno-missing-field-initializers \
+        -Wno-conditional-uninitialized \
+        -Wno-covered-switch-default \
+        -Wno-deprecated \
+        -Wno-unused-macros \
+        -Wno-disabled-macro-expansion \
+        -Wno-undef \
+        -Wno-char-subscripts \
+        -Wno-unneeded-internal-declaration \
+        -Wno-unused-variable \
+        -Wno-used-but-marked-unused \
+        -Wno-missing-variable-declarations \
+        -Wno-gnu-statement-expression \
+        -Wno-missing-braces \
+        -Wno-reorder \
+        -Wno-implicit-fallthrough \
+        -Wno-ignored-qualifiers \
+        -Wno-shift-sign-overflow \
+        -Wno-mismatched-tags \
+        -Wno-missing-noreturn \
+        -Wno-consumed \
+        -Wno-sometimes-uninitialized \
+        -Wno-delete-non-virtual-dtor \
+        -Wno-header-hygiene \
+        -Wno-unknown-warning-option \
+        -Wno-reserved-id-macro \
+        -Wno-documentation-pedantic \
+        -Wno-unused-local-typedef \
+        -Wno-nullable-to-nonnull-conversion \
+        -Wno-super-class-method-mismatch \
+        -Wno-nonnull \
+        -Wno-gnu-zero-variadic-macro-arguments")
+
+## temporary disabled warnings for MacOS. They will be fixed and removed from this list in near future
+    if( MACOS )
+        set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
+            -Wno-double-promotion \
+            -Wno-old-style-cast \
+            -Wno-packed \
+            -Wno-pessimizing-move \
+            -Wno-partial-availability \
+            -Wno-#warnings \
+            \
+            -Wno-unused-private-field \
+            -Wno-objc-method-access \
+            -Wno-undefined-reinterpret-cast \
+            -Wno-range-loop-analysis \
+            -Wno-potentially-evaluated-expression \
+            -Wno-overloaded-virtual \
+            -Wno-format-pedantic \
+            -Wno-shift-negative-value \
+            -Wno-return-stack-address \
+        ")
+    endif()
 
 
     if( ANDROID )
@@ -266,11 +284,17 @@ elseif ( MACOS )
 
 elseif ( WIN32 )
 
-	if ( X64_MODE )
-		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
-	else ()
-		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
-	endif ()
+    if ( WINDOWS_UAP )
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10/$(Platform)" ) 
+        set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
+
+    elseif ( X64_MODE )
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+    else ()
+        set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+    endif ()
+
+    list( APPEND DAVA_BINARY_WIN32_DIR ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug )
 
 endif  ()
 

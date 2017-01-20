@@ -1,5 +1,6 @@
 #include "Tests/StaticWebViewTest.h"
 
+#include "Render/2D/Sprite.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "Utils/Utils.h"
@@ -15,9 +16,15 @@ const String htmlCuteCats =
 "          var x = document.getElementById('mydiv');"
 "          x.innerHTML += '<h3>Hello from JS</h3>';"
 "      }"
+"      function pop_it_up(url) {"
+"          newwindow=window.open(url,'name','height=200,width=150');"
+"          if (window.focus) { newwindow.focus() }"
+"          return false;"
+"      }"
 "    </script>"
 "  </head>"
 "  <body text='red'>"
+"      <a href = \"\" onclick = \"return pop_it_up('')\">Goto empty URL</a>"
 "      <h1>Cute cats picture</h1><br/>"
 "      <br/>"
 "      <img src='cute-cat-picture.jpg'/>"
@@ -104,8 +111,9 @@ void StaticWebViewTest::LoadResources()
     const float32 w = 40;
 
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
-    FilePath imgPath("~res:/Gfx/UI/Rotation");
-    overlapedImage->SetSprite(imgPath, 0);
+    FilePath imgPath("~res:/TestData/UI/Rotation.png");
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(imgPath));
+    overlapedImage->SetSprite(sprite, 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 

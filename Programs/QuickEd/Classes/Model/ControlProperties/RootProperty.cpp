@@ -5,8 +5,6 @@
 #include "ControlPropertiesSection.h"
 #include "ComponentPropertiesSection.h"
 
-#include "BackgroundPropertiesSection.h"
-
 #include "PropertyListener.h"
 #include "ValueProperty.h"
 
@@ -30,7 +28,6 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
 {
     AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
     MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetTypeInfo(), sourceProperties, cloneType);
-    MakeBackgroundPropertiesSection(node->GetControl(), sourceProperties, cloneType);
 
     if (sourceProperties)
     {
@@ -64,13 +61,6 @@ RootProperty::~RootProperty()
     }
     controlProperties.clear();
 
-    for (BackgroundPropertiesSection* section : backgroundProperties)
-    {
-        section->SetParent(nullptr);
-        section->Release();
-    }
-    backgroundProperties.clear();
-
     for (ComponentPropertiesSection* section : componentProperties)
     {
         section->SetParent(nullptr);
@@ -83,7 +73,7 @@ RootProperty::~RootProperty()
 
 uint32 RootProperty::GetCount() const
 {
-    return (baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size());
+    return static_cast<uint32>(baseProperties.size() + controlProperties.size() + componentProperties.size());
 }
 
 AbstractProperty* RootProperty::GetProperty(int index) const
@@ -92,18 +82,14 @@ AbstractProperty* RootProperty::GetProperty(int index) const
 
     if (index < static_cast<int>(baseProperties.size()))
         return baseProperties[index];
-    index -= baseProperties.size();
+    index -= static_cast<int>(baseProperties.size());
 
     if (index < static_cast<int>(controlProperties.size()))
         return controlProperties[index];
-    index -= controlProperties.size();
+    index -= static_cast<int>(controlProperties.size());
 
-    if (index < static_cast<int>(componentProperties.size()))
-        return componentProperties[index];
-    index -= componentProperties.size();
-
-    DVASSERT(index < static_cast<int>(backgroundProperties.size()));
-    return backgroundProperties[index];
+    DVASSERT(index < static_cast<int>(componentProperties.size()));
+    return componentProperties[index];
 }
 
 DAVA::int32 RootProperty::GetControlPropertiesSectionsCount() const
@@ -160,11 +146,11 @@ const Vector<ComponentPropertiesSection*>& RootProperty::GetComponents() const
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection* section) const
 {
-    int32 offset = controlProperties.size() + baseProperties.size();
+    int32 offset = static_cast<int32>(controlProperties.size() + baseProperties.size());
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
     if (it != componentProperties.end())
     {
-        return (it - componentProperties.begin()) + offset;
+        return static_cast<int32>(((it - componentProperties.begin()) + offset));
     }
     else
     {
@@ -279,18 +265,6 @@ void RootProperty::AttachPrototypeComponent(ComponentPropertiesSection* section,
 void RootProperty::DetachPrototypeComponent(ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection)
 {
     section->DetachPrototypeSection(prototypeSection);
-}
-
-const Vector<BackgroundPropertiesSection*>& RootProperty::GetBackgroundProperties() const
-{
-    return backgroundProperties;
-}
-
-BackgroundPropertiesSection* RootProperty::GetBackgroundPropertiesSection(int num) const
-{
-    if (0 <= num && num < static_cast<int>(backgroundProperties.size()))
-        return backgroundProperties[num];
-    return nullptr;
 }
 
 void RootProperty::AddListener(PropertyListener* listener)
@@ -420,17 +394,6 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const 
         ControlPropertiesSection* section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
-    }
-}
-
-void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
-{
-    for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
-    {
-        BackgroundPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetBackgroundPropertiesSection(i);
-        BackgroundPropertiesSection* section = new BackgroundPropertiesSection(control, i, sourceSection, copyType);
-        section->SetParent(this);
-        backgroundProperties.push_back(section);
     }
 }
 

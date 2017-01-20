@@ -240,7 +240,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_LIBRARIES_PATH} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -801,7 +801,7 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 endif()
 
 if( DEPLOY )
-    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    message( STATUS "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
     
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
@@ -832,7 +832,7 @@ if( DEPLOY )
         endif(APP_DATA)
 
        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})

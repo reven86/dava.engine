@@ -100,6 +100,8 @@ public:
     }
 #endif
 
+    virtual void InputCancelled(UIEvent* event);
+
     virtual void SetLocked(bool locked);
     bool IsLocked() const;
 

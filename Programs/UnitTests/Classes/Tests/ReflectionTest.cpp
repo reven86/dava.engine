@@ -449,9 +449,13 @@ DAVA_TESTCLASS (ReflectionTest)
 
     DAVA_TEST (TypeNames)
     {
+        DAVA_REFLECTION_REGISTER_PERMANENT_NAME(A);
+        DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SimpleStruct);
+        DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(ReflectionTestClass, "ReflectionTestClassCustom");
+
         DoTypeNameTest<A>("A");
         DoTypeNameTest<SimpleStruct>("SimpleStruct");
-        DoTypeNameTest<ReflectionTestClass>("ReflectionTestClass");
+        DoTypeNameTest<ReflectionTestClass>("ReflectionTestClassCustom");
     }
 
     DAVA_TEST (FieldsAndMethods)

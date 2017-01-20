@@ -12,13 +12,14 @@ namespace DAVA
 {
 class UIControl;
 class UIStyleSheet;
+struct UIStyleSheetSourceInfo;
 class UIStyleSheetPropertyTable;
 }
 
 class StyleSheetSelectorProperty : public ValueProperty
 {
 public:
-    StyleSheetSelectorProperty(const DAVA::UIStyleSheetSelectorChain& chain);
+    StyleSheetSelectorProperty(const DAVA::UIStyleSheetSelectorChain& chain, const DAVA::UIStyleSheetSourceInfo& sourceInfo);
 
 protected:
     virtual ~StyleSheetSelectorProperty();

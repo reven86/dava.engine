@@ -63,13 +63,17 @@
 
 - (void)reshape
 {
-    const NSSize frameSize = [self frame].size;
-    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
+    if (![self inLiveResize])
+    {
+        const NSSize frameSize = [self frame].size;
+        const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
 
-    const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
-    CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
-    CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
-    CGLUpdateContext([[self openGLContext] CGLContextObj]);
+        const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
+
+        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+        CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+        CGLUpdateContext([[self openGLContext] CGLContextObj]);
+    }
 }
 
 - (NSSize)convertSizeToBacking:(NSSize)size
