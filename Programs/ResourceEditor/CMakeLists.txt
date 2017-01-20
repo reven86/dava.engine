@@ -34,6 +34,10 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+if (NOT DEPLOY)
+    add_definitions ( -DLOCAL_FRAMEWORK_SOURCE_PATH="${FRAMEWORK_PATH}" )
+endif()
+
 if (UVR_DEV)
     add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
