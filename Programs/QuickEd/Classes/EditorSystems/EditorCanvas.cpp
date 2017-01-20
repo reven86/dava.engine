@@ -158,7 +158,7 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
 {
-    Function<void(UIEvent*, bool)> setMouseButtonOnInput = [this](UIEvent* currentInput, bool value) {
+    Function<void(UIEvent*, bool)> setMouseButtonOnInput = [this](const UIEvent* currentInput, bool value) {
         if (currentInput->mouseButton == eMouseButtons::LEFT)
         {
             isMouseLeftButtonPressed = value;
