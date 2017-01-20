@@ -245,20 +245,20 @@ if( WIN )
                                      "delayimp.lib"
                                      "dxgi.lib" )
 
-    set( DAVA_DYNAMIC_LIBRARIES_WIN32 "${DAVA_TOOLS_BIN_DIR}/avcodec-57.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/avdevice-57.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/avfilter-6.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/avformat-57.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/avutil-55.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/postproc-54.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" 
-                                      "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
-                                      "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/glew32.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/msvcr120.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/msvcp120.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll")
+    set( DAVA_DYNAMIC_LIBRARIES_WIN32 "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avcodec-57.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avdevice-57.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avfilter-6.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avformat-57.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avutil-55.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/postproc-54.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swresample-2.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swscale-4.dll" 
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/D3DCompiler_43.dll" 
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/d3dx9_43.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glew32.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/msvcr120.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/msvcp120.dll"
+                                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/TextureConverter.dll")
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
 
