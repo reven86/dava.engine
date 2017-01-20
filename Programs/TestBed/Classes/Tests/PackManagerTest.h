@@ -48,7 +48,6 @@ private:
     DAVA::UIButton* startServerButton = nullptr;
     DAVA::UIButton* stopServerButton = nullptr;
 
-    DAVA::UIControl* progressBar = nullptr;
     DAVA::UITextField* packInput = nullptr;
     DAVA::UITextField* packNextInput = nullptr;
     DAVA::UIControl* redControl = nullptr;

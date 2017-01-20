@@ -128,6 +128,13 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_EnableSounds, DAVA::VariantType(true));
     CreateValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(true));
 
+    CreateValue(Settings::Internal_Validate_Matrices, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_SameNames, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_CollisionProperties, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_TexturesRelevance, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_MaterialGroups, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_Validate_ShowConsole, DAVA::VariantType(true));
+
     const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
     DAVA::uint32 colors[nColors]; // Init from Qt::GlobalColor
     for (int i = 0; i < nColors; i++)
@@ -137,8 +144,6 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType(reinterpret_cast<DAVA::uint8*>(colors), nColors * sizeof(*colors)));
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType(static_cast<DAVA::float32>(2.0)));
     CreateValue(Settings::Internal_LogWidget, DAVA::VariantType(nullptr, 0));
-
-    CreateValue(Settings::Debug_DataWithMaterialsPathname, DAVA::VariantType(DAVA::String())); //use string because we cannot right now set filter for file dialog
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

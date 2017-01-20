@@ -95,7 +95,7 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 //------------------------------------------------------------------------------
 
 static void
-metal_VertexBuffer_Delete(Handle vb)
+metal_VertexBuffer_Delete(Handle vb, bool)
 {
     VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
 

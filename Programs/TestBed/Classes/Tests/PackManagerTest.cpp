@@ -2,9 +2,9 @@
 #include "Infrastructure/TestBed.h"
 
 #include <Engine/Engine.h>
-#include <UI/Focus/UIFocusComponent.h>
-#include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
+#include <PackManager/PackManager.h>
+#include <UI/Focus/UIFocusComponent.h>
 #include <typeinfo>
 
 using namespace DAVA;
@@ -428,7 +428,7 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
 
     ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
     // if we read file from pack - it will be DynamicMemoryFile
-    if (f && typeid(*f) == typeid(DynamicMemoryFile))
+    if (nullptr != dynamic_cast<DynamicMemoryFile*>(f.get()))
     {
         packNameLoading->SetUtf8Text("file loaded successfully");
     }

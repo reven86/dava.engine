@@ -41,6 +41,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
+    case BACKGROUND_COMPONENT:
+        return new UIControlBackground();
+
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -89,8 +92,18 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     }
 }
 
+RefPtr<UIComponent> UIComponent::SafeCreateByType(uint32 componentType)
+{
+    return RefPtr<UIComponent>(CreateByType(componentType));
+}
+
 bool UIComponent::IsMultiple(uint32 componentType)
 {
     return false;
+}
+
+RefPtr<UIComponent> UIComponent::SafeClone() const
+{
+    return RefPtr<UIComponent>(Clone());
 }
 }

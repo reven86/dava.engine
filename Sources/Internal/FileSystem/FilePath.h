@@ -78,12 +78,7 @@ public:
         */
     String GetAbsolutePathname() const;
 
-#ifdef __DAVAENGINE_WINDOWS__
-    using NativeStringType = WideString;
-#else
     using NativeStringType = String;
-#endif // __DAVAENGINE_WINDOWS__
-
     /**
         \brief Function to retrieve pathname
         \returns pathname value in native string type
@@ -93,8 +88,9 @@ public:
     /**
         \brief Function to create an object from native string
         \returns FilePath object
+		deprecated - always use String with utf8 on all platforms
         */
-    static FilePath FromNativeString(const NativeStringType& path);
+    DAVA_DEPRECATED(static FilePath FromNativeString(const NativeStringType& path));
 
     /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
