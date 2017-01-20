@@ -15,6 +15,7 @@ namespace rhi
 struct FramebufferGLES2_t
 {
     Handle color[MAX_RENDER_TARGET_COUNT];
+    GLuint colorUID[MAX_RENDER_TARGET_COUNT];
     TextureFace colorFace[MAX_RENDER_TARGET_COUNT];
     unsigned colorLevel[MAX_RENDER_TARGET_COUNT];
     uint32 colorCount = 0;
@@ -374,7 +375,7 @@ void TextureGLES2_t::Destroy(bool forceExecute)
         {
             bool do_delete = false;
 
-            for (const Handle *t = f->color, *t_end = f->color + f->colorCount; t != t_end; ++t)
+            for (const GLuint *t = f->colorUID, *t_end = f->colorUID + f->colorCount; t != t_end; ++t)
             {
                 if (*t == uid)
                 {
@@ -1011,6 +1012,8 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             for (unsigned i = 0; i != colorCount; ++i)
             {
                 TextureGLES2_t* tex = TextureGLES2Pool::Get(color[i]);
+
+                f.colorUID[i] = tex->uid;
 
                 if (tex->fbo == 0)
                     tex->fbo = fb;
