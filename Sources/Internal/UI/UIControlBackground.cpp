@@ -118,6 +118,11 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 void UIControlBackground::SetSprite(Sprite* drawSprite)
 {
     spr = drawSprite;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetSprite(const FilePath& path)
@@ -149,11 +154,20 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
 }
+
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     if (type != drawType)
+    {
         ReleaseDrawData();
+    }
+
     type = drawType;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetModification(int32 modification)

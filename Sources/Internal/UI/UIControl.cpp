@@ -283,13 +283,11 @@ int32 UIControl::GetSpriteAlign() const
 void UIControl::SetSprite(const FilePath& spriteName, int32 spriteFrame)
 {
     GetBackground()->SetSprite(spriteName, spriteFrame);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSprite(Sprite* newSprite, int32 spriteFrame)
 {
     GetBackground()->SetSprite(newSprite, spriteFrame);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSpriteFrame(int32 spriteFrame)
@@ -305,7 +303,6 @@ void UIControl::SetSpriteFrame(const FastName& frameName)
 void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
 {
     GetBackground()->SetDrawType(drawType);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSpriteAlign(int32 align)
