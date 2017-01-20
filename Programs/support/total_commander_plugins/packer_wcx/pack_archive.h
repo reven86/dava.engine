@@ -1,25 +1,13 @@
 #pragma once
 
 #include <fstream>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 #include "pack_format.h"
-
-struct FileInfo
-{
-    FileInfo() = default;
-
-    FileInfo(const char* relativePath, uint32_t originalSize,
-             uint32_t compressedSize, uint32_t compressionType);
-
-    std::string relativeFilePath;
-    uint32_t originalSize = 0;
-    uint32_t compressedSize = 0;
-    uint32_t compressionType = 0;
-    uint32_t hash = 0; // crc32
-};
+#include "pack_meta_data.h"
 
 class PackArchive final
 {
@@ -35,6 +23,12 @@ public:
     bool
     LoadFile(const std::string& relativeFilePath, std::vector<uint8_t>& output);
 
+    bool HasMeta() const;
+
+    const PackMetaData& GetMeta() const;
+
+    std::string PrintMeta() const;
+
     int32_t fileIndex = 0;
     std::string arcName;
     std::string lastFileName;
@@ -42,6 +36,7 @@ public:
 private:
     std::ifstream file;
     PackFormat::PackFile packFile;
+    std::unique_ptr<PackMetaData> packMeta;
     std::unordered_map<std::string, PackFormat::FileTableEntry*> mapFileData;
     std::vector<FileInfo> filesInfo;
 };

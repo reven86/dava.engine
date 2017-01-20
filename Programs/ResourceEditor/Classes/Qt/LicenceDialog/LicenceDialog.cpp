@@ -30,14 +30,14 @@ LicenceDialog::~LicenceDialog()
 bool LicenceDialog::process()
 {
     return true; // ;)
-
-    accepted = SettingsManager::GetValue(Settings::Internal_LicenceAccepted).AsBool();
-    if (!accepted)
-    {
-        exec();
-    }
-
-    return accepted;
+    //  Disabled funny license
+    //    accepted = SettingsManager::GetValue(Settings::Internal_LicenceAccepted).AsBool();
+    //    if (!accepted)
+    //    {
+    //        exec();
+    //    }
+    //
+    //    return accepted;
 }
 
 void LicenceDialog::setHtmlText(const QString& text)

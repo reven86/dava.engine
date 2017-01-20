@@ -829,13 +829,6 @@ macro( convert_graphics )
         set( ARG_PARAM_PACKER  "-teamcity" )
     endif()
 
-    execute_process( COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
-                                    --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource 
-                                    --pathDava=${DAVA_ROOT_DIR} 
-                                    --clearData=${ARG_CLEAR}
-                                    --paramPacker=${ARG_PARAM_PACKER}
-                                   )
-
 endmacro()
 
 function (ASSERT VAR_NAME MESSAGE)
