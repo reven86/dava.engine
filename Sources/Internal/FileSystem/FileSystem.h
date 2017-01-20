@@ -6,18 +6,6 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/ResourceArchive.h"
 
-#ifdef DeleteFile
-#undef DeleteFile
-#endif
-
-#ifdef CreateDirectory
-#undef CreateDirectory
-#endif
-
-#ifdef MoveFile
-#undef MoveFile
-#endif
-
 /**
 	\defgroup filesystem File System
  */

@@ -2,20 +2,20 @@
 
 #include "Engine/Engine.h"
 
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/ResourceArchive.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
-#include "Logger/Logger.h"
-#include "Utils/StringFormat.h"
-#include "Concurrency/Mutex.h"
+#include "Compression/LZ4Compressor.h"
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
-#include "Compression/LZ4Compressor.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -23,8 +23,8 @@
 #include <unistd.h>
 #endif
 
-#include <sys/stat.h>
 #include <ctime>
+#include <sys/stat.h>
 
 namespace DAVA
 {
@@ -225,14 +225,7 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         if (!file)
         {
 #ifdef __DAVAENGINE_ANDROID__
-            bool isFileExistOnRealFS = false;
-
-            FileAPI::Stat fileStat;
-            int result = FileAPI::FileStat(path.c_str(), &fileStat);
-            if (result == 0)
-            {
-                isFileExistOnRealFS = (0 != (fileStat.st_mode & S_IFREG));
-            }
+            bool isFileExistOnRealFS = FileAPI::IsRegularFile(path);
 
             if (isFileExistOnRealFS)
             {
@@ -241,11 +234,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
                 {
                     if (attributes & File::WRITE)
                     {
-                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+                        file = FileAPI::OpenFile(path, "r+b");
                     }
                     else
                     {
-                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
+                        file = FileAPI::OpenFile(path, "rb");
                     }
 
                     if (!file)
