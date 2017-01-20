@@ -13,6 +13,7 @@ class ContextAccessor;
 /**
 class is responsible at reading some project-related resources
 */
+class ProjectManagerData;
 class ProjectResources final
 {
 public:
