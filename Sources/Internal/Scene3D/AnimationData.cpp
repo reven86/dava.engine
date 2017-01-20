@@ -64,13 +64,7 @@ SceneNodeAnimationKey AnimationData::GetKeyForFrame(int32 frameIndex) const
 {
     DVASSERT(frameIndex >= 0 && frameIndex < GetKeyCount());
 
-    SceneNodeAnimationKey result;
-    const SceneNodeAnimationKey& key = keys[frameIndex];
-    result.time = key.time;
-    result.translation = key.translation;
-    result.rotation = key.rotation;
-    result.scale = key.scale;
-    return result;
+    return keys[frameIndex];
 }
 
 void AnimationData::SetDuration(float32 _duration)
