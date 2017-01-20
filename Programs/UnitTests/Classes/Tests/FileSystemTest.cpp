@@ -488,7 +488,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
             file->Write(&compressedBuff[0], static_cast<uint32>(compressedBuff.size()));
 
-            PackFormat::MiniPack::Footer footer;
+            PackFormat::LitePack::Footer footer;
             footer.sizeCompressed = static_cast<uint32>(compressedBuff.size());
             footer.sizeUncompressed = static_cast<uint32>(buff.size());
             footer.type = Compressor::Type::Lz4HC;

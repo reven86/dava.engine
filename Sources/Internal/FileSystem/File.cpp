@@ -108,7 +108,7 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
     }
 
     uint32 fileSize = static_cast<uint32>(f->GetSize());
-    uint32 footerSize = static_cast<uint32>(sizeof(PackFormat::MiniPack::Footer));
+    uint32 footerSize = static_cast<uint32>(sizeof(PackFormat::LitePack::Footer));
 
     if (fileSize < footerSize)
     {
@@ -124,7 +124,7 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
         return nullptr;
     }
 
-    PackFormat::MiniPack::Footer footer;
+    PackFormat::LitePack::Footer footer;
 
     if (footerSize != f->Read(&footer, sizeof(footer)))
     {

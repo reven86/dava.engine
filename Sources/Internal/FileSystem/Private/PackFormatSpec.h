@@ -75,7 +75,7 @@ using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 	We will use it later in our new IDLCManager to download game
 	content file by file to reduce size
 */
-struct MiniPack
+struct LitePack
 {
     struct CompressedBytes
     {
@@ -91,7 +91,7 @@ struct MiniPack
     };
 };
 
-static_assert(sizeof(MiniPack::Footer) == 20, "footer block size changed");
+static_assert(sizeof(LitePack::Footer) == 20, "footer block size changed");
 static_assert(sizeof(PackFile::FooterBlock) == 44, "header block size changed");
 static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed");
 
