@@ -17,14 +17,15 @@ public:
     void Accept(PropertyVisitor* visitor) override;
 
     ePropertyType GetType() const override;
-    DAVA::VariantType GetValue() const override;
+    const DAVA::Type* GetValueType() const override;
+    DAVA::Any GetValue() const override;
     bool IsReadOnly() const override;
     DAVA::String GetPrototypeName() const;
 
     ControlNode* GetControl() const;
 
 protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
+    void ApplyValue(const DAVA::Any& value) override;
 
 private:
     ControlNode* node; // weak

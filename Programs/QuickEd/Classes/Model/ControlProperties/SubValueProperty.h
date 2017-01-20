@@ -20,11 +20,11 @@ public:
 
     const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
-    DAVA::VariantType::eVariantType GetValueType() const override;
-    DAVA::VariantType GetValue() const override;
-    void SetValue(const DAVA::VariantType& newValue) override;
-    DAVA::VariantType GetDefaultValue() const override;
-    void SetDefaultValue(const DAVA::VariantType& newValue) override;
+    const DAVA::Type *GetValueType() const override;
+    DAVA::Any GetValue() const override;
+    void SetValue(const DAVA::Any& newValue) override;
+    DAVA::Any GetDefaultValue() const override;
+    void SetDefaultValue(const DAVA::Any& newValue) override;
     void ResetValue() override;
     bool IsOverriddenLocally() const override;
 

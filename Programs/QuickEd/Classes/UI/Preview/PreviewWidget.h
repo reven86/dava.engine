@@ -101,7 +101,7 @@ public:
     void OnKeyReleased(QKeyEvent* event) override;
 
     void OnTransformStateChanged(bool inTransformState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
+    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::Any newValue);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;

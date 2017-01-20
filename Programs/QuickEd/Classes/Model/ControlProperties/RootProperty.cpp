@@ -27,7 +27,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     , nameProperty(nullptr)
 {
     AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
-    MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetTypeInfo(), sourceProperties, cloneType);
+    MakeControlPropertiesSection(node->GetControl(), sourceProperties, cloneType);
 
     if (sourceProperties)
     {
@@ -39,7 +39,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
             AddComponentPropertiesSection(newSection);
         }
     }
-    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("Visible"));
+    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("visible"));
 }
 
 RootProperty::~RootProperty()
@@ -285,7 +285,7 @@ void RootProperty::RemoveListener(PropertyListener* listener)
     }
 }
 
-void RootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void RootProperty::SetProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetValue(newValue);
 
@@ -293,7 +293,7 @@ void RootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantTy
         listener->PropertyChanged(property);
 }
 
-void RootProperty::SetDefaultProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void RootProperty::SetDefaultProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetDefaultValue(newValue);
 
@@ -341,6 +341,11 @@ const DAVA::String& RootProperty::GetName() const
     return rootName;
 }
 
+const DAVA::Type *RootProperty::GetValueType() const
+{
+    return nullptr;
+}
+
 AbstractProperty::ePropertyType RootProperty::GetType() const
 {
     return TYPE_HEADER;
@@ -372,26 +377,27 @@ void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootPropert
         prop->SetParent(this);
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
 {
-    const InspInfo* baseInfo = typeInfo->BaseInfo();
-    if (baseInfo)
-        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
-
-    bool hasProperties = false;
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    // TODO: rewrite code
+//    const InspInfo* baseInfo = typeInfo->BaseInfo();
+//    if (baseInfo)
+//        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
+//
+//    bool hasProperties = false;
+//    for (int i = 0; i < typeInfo->MembersCount(); i++)
+//    {
+//        const InspMember* member = typeInfo->Member(i);
+//        if ((member->Flags() & I_EDIT) != 0)
+//        {
+//            hasProperties = true;
+//            break;
+//        }
+//    }
+//    if (hasProperties)
     {
-        const InspMember* member = typeInfo->Member(i);
-        if ((member->Flags() & I_EDIT) != 0)
-        {
-            hasProperties = true;
-            break;
-        }
-    }
-    if (hasProperties)
-    {
-        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name().c_str());
-        ControlPropertiesSection* section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
+        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(control->GetClassName());
+        ControlPropertiesSection* section = new ControlPropertiesSection(control, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
     }

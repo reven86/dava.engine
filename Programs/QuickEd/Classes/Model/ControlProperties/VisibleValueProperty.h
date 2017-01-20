@@ -6,16 +6,16 @@
 class VisibleValueProperty : public IntrospectionProperty
 {
 public:
-    VisibleValueProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    VisibleValueProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
     ~VisibleValueProperty() override = default;
 
     void SetVisibleInEditor(bool visible);
     bool GetVisibleInEditor() const;
 
-    DAVA::VariantType GetValue() const override;
+    DAVA::Any GetValue() const override;
 
 protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
+    void ApplyValue(const DAVA::Any& value) override;
 
 protected:
     bool visibleInEditor = true;

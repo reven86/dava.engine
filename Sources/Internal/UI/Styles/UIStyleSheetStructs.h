@@ -11,22 +11,16 @@
 
 namespace DAVA
 {
-enum class ePropertyOwner
-{
-    CONTROL,
-    COMPONENT,
-};
-
 struct UIStyleSheetPropertyGroup
 {
     String prefix;
-    ePropertyOwner propertyOwner;
-    uint32 componentType;
+    uint32 componentType; // -1 for UIControl
+    const ReflectedType* refType;
 
-    UIStyleSheetPropertyGroup(const String& prefix_, ePropertyOwner owner_, uint32 componentType_)
+    UIStyleSheetPropertyGroup(const String& prefix_, uint32 componentType_, const ReflectedType* refType_)
         : prefix(prefix_)
-        , propertyOwner(owner_)
         , componentType(componentType_)
+        , refType(refType_)
     {
     }
 };
@@ -40,12 +34,13 @@ struct UIStyleSheetPropertyDescriptor
     String fieldName;
     const ReflectedStructure::Field* field_s = nullptr;
 
-    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const Any& defaultValue_, const ReflectedType* reftype_, const String& fieldname_)
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const char* name_, const Any& defaultValue_)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
     {
-        const ReflectedStructure* s = reftype_->GetStrucutre();
+        String fieldname_ = name_;
+        const ReflectedStructure* s = group->refType->GetStrucutre();
         auto it = std::find_if(s->fields.begin(), s->fields.end(), [&fieldname_](const std::unique_ptr<ReflectedStructure::Field>& field) {
             return field->name == fieldname_;
         });

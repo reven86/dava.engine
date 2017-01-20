@@ -8,8 +8,8 @@
 
 using namespace DAVA;
 
-VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, VariantType& vt)
-    : ValueProperty(name, vt.GetType(), true, desc)
+VariantTypeProperty::VariantTypeProperty(const String& name, Any& vt)
+    : ValueProperty(name, vt.GetType(), true)
     , value(vt)
 {
     SetOverridden(true);
@@ -29,12 +29,17 @@ bool VariantTypeProperty::IsReadOnly() const
     return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
 }
 
-VariantType VariantTypeProperty::GetValue() const
+VariantTypeProperty::ePropertyType VariantTypeProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
+Any VariantTypeProperty::GetValue() const
 {
     return value;
 }
 
-void VariantTypeProperty::ApplyValue(const DAVA::VariantType& newValue)
+void VariantTypeProperty::ApplyValue(const DAVA::Any& newValue)
 {
     value = newValue;
 }

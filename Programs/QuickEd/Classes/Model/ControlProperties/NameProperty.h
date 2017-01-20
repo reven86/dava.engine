@@ -21,14 +21,15 @@ public:
 
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
-    DAVA::VariantType GetValue() const override;
+    
+    DAVA::Any GetValue() const override;
 
     bool IsOverriddenLocally() const override;
 
     ControlNode* GetControlNode() const;
 
 protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
+    void ApplyValue(const DAVA::Any& value) override;
 
 protected:
     ControlNode* control; // weak

@@ -8,12 +8,12 @@
 using namespace DAVA;
 
 NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourceProperty, eCloneType cloneType)
-    : ValueProperty("Name", VariantType::TYPE_STRING)
+    : ValueProperty("Name", Type::Instance<String>())
     , control(anControl) // weak ptr
 {
     if (sourceProperty)
     {
-        control->GetControl()->SetName(FastName(sourceProperty->GetValue().AsString()));
+        control->GetControl()->SetName(FastName(sourceProperty->GetValue().Get<String>()));
 
         if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
@@ -55,9 +55,9 @@ DAVA::uint32 NameProperty::GetFlags() const
     return EF_AFFECTS_STYLES;
 }
 
-VariantType NameProperty::GetValue() const
+Any NameProperty::GetValue() const
 {
-    return VariantType(control->GetName());
+    return Any(control->GetName());
 }
 
 bool NameProperty::IsOverriddenLocally() const
@@ -70,11 +70,11 @@ ControlNode* NameProperty::GetControlNode() const
     return control;
 }
 
-void NameProperty::ApplyValue(const DAVA::VariantType& value)
+void NameProperty::ApplyValue(const DAVA::Any& value)
 {
-    if (value.GetType() == VariantType::TYPE_STRING)
+    if (value.CanGet<String>())
     {
-        control->GetControl()->SetName(FastName(value.AsString()));
+        control->GetControl()->SetName(FastName(value.Get<String>()));
     }
     else
     {

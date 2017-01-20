@@ -152,6 +152,7 @@ public:
     // Remove node value from map
     void RemoveNodeFromMap(const String& name);
     eStringRepresentation GetStringRepresentation() const;
+    void SetStringRepresentation(eStringRepresentation rep);
     eArrayRepresentation GetArrayRepresentation() const;
     eMapRepresentation GetMapRepresentation() const;
     eStringRepresentation GetMapKeyRepresentation() const;

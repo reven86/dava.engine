@@ -11,11 +11,11 @@ class UIControl;
 
 class UIComponent : public BaseObject
 {
+public:
     DAVA_VIRTUAL_REFLECTION(UIComponent, BaseObject)
     {
     }
-
-public:
+    
     enum eType
     {
         BACKGROUND_COMPONENT,

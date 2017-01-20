@@ -2,7 +2,7 @@
 #define __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
 
 #include "Command/Command.h"
-#include "FileSystem/VariantType.h"
+#include "Base/Any.h"
 
 class PackageNode;
 class StyleSheetNode;
@@ -11,7 +11,7 @@ class AbstractProperty;
 class ChangeStylePropertyCommand : public DAVA::Command
 {
 public:
-    ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);
+    ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::Any& newValue);
     virtual ~ChangeStylePropertyCommand();
 
     void Redo() override;
@@ -21,8 +21,8 @@ private:
     PackageNode* root;
     StyleSheetNode* node;
     AbstractProperty* property;
-    DAVA::VariantType oldValue;
-    DAVA::VariantType newValue;
+    DAVA::Any oldValue;
+    DAVA::Any newValue;
 };
 
 #endif // __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__

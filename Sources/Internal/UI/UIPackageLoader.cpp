@@ -348,7 +348,8 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
     if (control != nullptr)
     {
-        LoadControlPropertiesFromYamlNode(control, Reflection::Create(&control), node, builder);
+        Reflection ref = Reflection::Create(&control);
+        LoadControlPropertiesFromYamlNode(control, ref, node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
@@ -374,14 +375,13 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection &ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    builder->BeginControlPropertiesSection(ref.GetValueType()->GetName());
-    const auto& fields = ref.GetFields();
-    for (auto& field : fields)
+    builder->BeginControlPropertiesSection(control->GetClassName());
+    Vector<Reflection::Field> fields = ref.GetFields();
+    for (const Reflection::Field &field : fields)
     {
-        String name(field.key.Cast<String>());
-
+        String name = field.key.Get<String>();
         if (name == "components" || name == "background")
         {
             // TODO: Make loading components by reflection here
@@ -390,7 +390,9 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 
         Any res;
         if (node)
-            res = ReadVariantTypeFromYamlNode(field.ref, node, name);
+        {
+            res = ReadAnyFromYamlNode(field.ref, node, name);
+        }
         builder->ProcessProperty(field, res);
     }
     builder->EndControlPropertiesSection();
@@ -409,16 +411,17 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
-            const Reflection& componentRef = Reflection::Create(&component);
-            const auto& fields = componentRef.GetFields();
-            for (auto& field : fields)
+            const ReflectedStructure *structure = component->GetReflectedType()->GetStrucutre();
+            Reflection componentRef = Reflection::Create(&component);
+            Vector<Reflection::Field> fields = componentRef.GetFields();
+            for (Reflection::Field &field : fields)
             {
                 Any res;
                 if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    static const FastName propertyName("orientation");
-                    FastName name(field.key.Cast<String>());
-                    if (name == propertyName)                    {
+                    FastName name(field.key.Get<String>());
+                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && name == FastName("orientation"))
+                    {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
                         if (valueNode)
                         {
@@ -453,7 +456,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
 
                 if (res.IsEmpty())
                 {
-                    res = ReadVariantTypeFromYamlNode(field.ref, nodeDescr.node, field.key.Cast<String>());
+                    res = ReadAnyFromYamlNode(field.ref, nodeDescr.node, field.key.Get<String>());
                 }
 
                 builder->ProcessProperty(field, res);
@@ -486,11 +489,12 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
         UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
         if (component)
         {
-            const Reflection& componentRef = Reflection::Create(&component);
-            const auto& fields = componentRef.GetFields();
-            for (auto& field : fields)
+            Reflection componentRef = Reflection::Create(&component);
+            Vector<Reflection::Field> fields = componentRef.GetFields();
+            for (const Reflection::Field &field : fields)
             {
-                Any res = ReadVariantTypeFromYamlNode(field.ref, node, legacyAlignsMap[field.key.Cast<String>()]);
+                String name = field.key.Get<String>();
+                Any res = ReadAnyFromYamlNode(field.ref, node, legacyAlignsMap[name]);
                 builder->ProcessProperty(field, res);
             }
         }
@@ -541,13 +545,13 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-Any UIPackageLoader::ReadVariantTypeFromYamlNode(const Reflection& reflection, const YamlNode* node, const String& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const Reflection &ref, const YamlNode* node, const String& name)
 {
     const YamlNode* valueNode = node->Get(name);
 
     if (valueNode)
     {
-        return valueNode->AsAny(reflection);
+        return valueNode->AsAny(ref);
     }
     return Any();
 }

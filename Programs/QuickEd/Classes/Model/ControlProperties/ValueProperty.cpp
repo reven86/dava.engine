@@ -2,6 +2,7 @@
 
 #include "SubValueProperty.h"
 #include <Base/BaseMath.h>
+#include "Reflection/ReflectionRegistrator.h"
 
 using namespace DAVA;
 
@@ -12,11 +13,16 @@ static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "A
 static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
 }
 
-ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType type, bool builtinSubProps, const InspDesc* desc)
+DAVA_REFLECTION_IMPL(ValueProperty)
+{
+    ReflectionRegistrator<ValueProperty>::Begin()
+    .End();
+}
+
+
+ValueProperty::ValueProperty(const String& propName, const DAVA::Type *type_, bool builtinSubProps)
     : name(propName)
-    , valueType(type)
-    , defaultValue(VariantType::FromType(type))
-    , inspDesc(desc)
+    , valueType(type_ != nullptr ? type_->Decay() : nullptr)
 {
     if (builtinSubProps)
     {
@@ -102,57 +108,30 @@ const String& ValueProperty::GetName() const
     return name;
 }
 
-ValueProperty::ePropertyType ValueProperty::GetType() const
-{
-    auto type = inspDesc ? inspDesc->type : InspDesc::T_UNDEFINED;
-    if (type == InspDesc::T_ENUM)
-        return TYPE_ENUM;
-    else if (type == InspDesc::T_FLAGS)
-        return TYPE_FLAGS;
-
-    return TYPE_VARIANT;
-}
-
-DAVA::VariantType::eVariantType ValueProperty::GetValueType() const
+const DAVA::Type *ValueProperty::GetValueType() const
 {
     return valueType;
 }
 
-VariantType ValueProperty::GetValue() const
-{
-    return VariantType::FromType(GetValueType());
-}
-
-void ValueProperty::SetValue(const VariantType& newValue)
+void ValueProperty::SetValue(const Any& newValue)
 {
     overridden = true;
     ApplyValue(newValue);
 }
 
-VariantType ValueProperty::GetDefaultValue() const
+Any ValueProperty::GetDefaultValue() const
 {
     return defaultValue;
 }
 
-void ValueProperty::SetDefaultValue(const VariantType& newValue)
+void ValueProperty::SetDefaultValue(const Any& newValue)
 {
-    VariantType::eVariantType valueType = GetValueType();
+    const Type *valueType = GetValueType();
     DVASSERT(newValue.GetType() == valueType);
 
     defaultValue = newValue;
     if (!overridden)
         ApplyValue(newValue);
-}
-
-const EnumMap* ValueProperty::GetEnumMap() const
-{
-    auto type = inspDesc ? inspDesc->type : InspDesc::T_UNDEFINED;
-
-    if (type == InspDesc::T_ENUM ||
-        type == InspDesc::T_FLAGS)
-        return inspDesc->enumMap;
-
-    return nullptr;
 }
 
 void ValueProperty::ResetValue()
@@ -175,27 +154,27 @@ bool ValueProperty::IsOverriddenLocally() const
     return overridden;
 }
 
-VariantType::eVariantType ValueProperty::GetSubValueType(int32 index) const
+const Type *ValueProperty::GetSubValueType(int32 index) const
 {
     return GetValueTypeComponent(index);
 }
 
-VariantType ValueProperty::GetSubValue(int32 index) const
+Any ValueProperty::GetSubValue(int32 index) const
 {
     return GetValueComponent(GetValue(), index);
 }
 
-void ValueProperty::SetSubValue(int32 index, const VariantType& newValue)
+void ValueProperty::SetSubValue(int32 index, const Any& newValue)
 {
     SetValue(ChangeValueComponent(GetValue(), newValue, index));
 }
 
-VariantType ValueProperty::GetDefaultSubValue(int32 index) const
+Any ValueProperty::GetDefaultSubValue(int32 index) const
 {
     return GetValueComponent(defaultValue, index);
 }
 
-void ValueProperty::SetDefaultSubValue(int32 index, const VariantType& newValue)
+void ValueProperty::SetDefaultSubValue(int32 index, const Any& newValue)
 {
     SetDefaultValue(ChangeValueComponent(defaultValue, newValue, index));
 }
@@ -205,7 +184,7 @@ int32 ValueProperty::GetStylePropertyIndex() const
     return stylePropertyIndex;
 }
 
-void ValueProperty::ApplyValue(const VariantType& value)
+void ValueProperty::ApplyValue(const Any& value)
 {
 }
 
@@ -229,192 +208,169 @@ void ValueProperty::AddSubValueProperty(AbstractProperty* prop)
     children.push_back(RefPtr<AbstractProperty>(SafeRetain(prop)));
 }
 
-VariantType ValueProperty::ChangeValueComponent(const VariantType& value, const VariantType& component, int32 index) const
+Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, int32 index) const
 {
-    VariantType::eVariantType valueType = GetValueType();
+    const Type *valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
-    switch (valueType)
+    if (valueType == Type::Instance<Vector2>())
     {
-    case VariantType::TYPE_VECTOR2:
-    {
-        Vector2 val = value.AsVector2();
+        Vector2 val = value.Get<Vector2>();
         if (index == 0)
-            val.x = component.AsFloat();
+            val.x = component.Get<float32>();
         else
-            val.y = component.AsFloat();
+            val.y = component.Get<float32>();
 
-        return VariantType(val);
+        return val;
     }
 
-    case VariantType::TYPE_COLOR:
+    if (valueType == Type::Instance<Color>())
     {
-        Color val = value.AsColor();
+        Color val = value.Get<Color>();
         if (0 <= index && index < 4)
         {
-            val.color[index] = component.AsFloat();
+            val.color[index] = component.Get<float32>();
         }
         else
         {
             DVASSERT(false);
         }
 
-        return VariantType(val);
+        return val;
     }
 
-    case VariantType::TYPE_VECTOR4:
+    if (valueType == Type::Instance<Vector4>())
     {
-        Vector4 val = value.AsVector4();
+        Vector4 val = value.Get<Vector4>();
         if (0 <= index && index < 4)
         {
-            val.data[index] = component.AsFloat();
+            val.data[index] = component.Get<float32>();
         }
         else
         {
             DVASSERT(false);
         }
-        return VariantType(val);
+        return Any(val);
     }
 
-    case VariantType::TYPE_INT32:
-        if (GetType() == TYPE_FLAGS)
-        {
-            const EnumMap* map = GetEnumMap();
-            int32 intValue = value.AsInt32();
-
-            int val = 0;
-            map->GetValue(index, val);
-            if (component.AsBool())
-                return VariantType(intValue | val);
-            else
-                return VariantType(intValue & (~val));
-        }
+    if (GetType() == TYPE_FLAGS)
+    {
+        const EnumMap* map = GetEnumMap();
+        int32 intValue = value.Get<int32>();
+        
+        int val = 0;
+        map->GetValue(index, val);
+        if (component.Get<bool>())
+            return Any(intValue | val);
         else
-        {
-            DVASSERT(false);
-        }
-        break;
-
-    default:
-        DVASSERT(false);
-        break;
+            return Any(intValue & (~val));
     }
-    return VariantType();
+
+    DVASSERT(false);
+    return Any();
 }
 
-VariantType::eVariantType ValueProperty::GetValueTypeComponent(int32 index) const
+const Type *ValueProperty::GetValueTypeComponent(int32 index) const
 {
-    VariantType::eVariantType valueType = GetValueType();
+    const Type *valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
-    switch (valueType)
-    {
-    case VariantType::TYPE_VECTOR2:
+    if (valueType == Type::Instance<Vector2>())
     {
         DVASSERT(index >= 0 && index < 2);
-        return VariantType::TYPE_FLOAT;
+        return Type::Instance<float32>();
     }
 
-    case VariantType::TYPE_COLOR:
+    if (valueType == Type::Instance<Color>())
     {
         DVASSERT(index >= 0 && index < 4);
-        return VariantType::TYPE_FLOAT;
+        return Type::Instance<float32>();
     }
 
-    case VariantType::TYPE_VECTOR4:
+    if (valueType == Type::Instance<Vector4>())
     {
         DVASSERT(index >= 0 && index < 4);
-        return VariantType::TYPE_FLOAT;
+        return Type::Instance<float32>();
     }
 
-    case VariantType::TYPE_INT32:
-        if (GetType() == TYPE_FLAGS)
-        {
-            return VariantType::TYPE_BOOLEAN;
-        }
-        else
-        {
-            DVASSERT(false);
-            return VariantType::TYPE_NONE;
-        }
-
-    default:
-        DVASSERT(false);
-        return VariantType::TYPE_NONE;
+    if (GetType() == TYPE_FLAGS)
+    {
+        return Type::Instance<bool>();
     }
+
+    DVASSERT(false);
+    return nullptr;
 }
 
-VariantType ValueProperty::GetValueComponent(const VariantType& value, int32 index) const
+Any ValueProperty::GetValueComponent(const Any& value, int32 index) const
 {
-    VariantType::eVariantType valueType = GetValueType();
+    const Type *valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
-    switch (valueType)
-    {
-    case VariantType::TYPE_VECTOR2:
+    if (valueType == Type::Instance<Vector2>())
     {
         DVASSERT(index >= 0 && index < 2);
-        return VariantType(value.AsVector2().data[index]);
+        return Any(value.Get<Vector2>().data[index]);
     }
 
-    case VariantType::TYPE_COLOR:
+    if (valueType == Type::Instance<Color>())
     {
         DVASSERT(index >= 0 && index < 4);
-        return VariantType(value.AsColor().color[index]);
+        return Any(value.Get<Color>().color[index]);
     }
 
-    case VariantType::TYPE_VECTOR4:
+    if (valueType == Type::Instance<Vector4>())
     {
         DVASSERT(index >= 0 && index < 4);
-        return VariantType(value.AsVector4().data[index]);
+        return Any(value.Get<Vector4>().data[index]);
     }
 
-    case VariantType::TYPE_INT32:
-        if (GetType() == TYPE_FLAGS)
-        {
-            const EnumMap* map = GetEnumMap();
-            int val = 0;
-            map->GetValue(index, val);
-            return VariantType((value.AsInt32() & val) != 0);
-        }
-        else
-        {
-            DVASSERT(false);
-            return VariantType();
-        }
-
-    default:
+    if (GetType() == TYPE_FLAGS)
+    {
+        const EnumMap* map = GetEnumMap();
+        int val = 0;
+        map->GetValue(index, val);
+        return Any((value.Get<int32>() & val) != 0);
+    }
+    else
+    {
         DVASSERT(false);
-        return VariantType();
+        return Any();
     }
+
+    DVASSERT(false);
+    return Any();
 }
 
 void ValueProperty::GenerateBuiltInSubProperties()
 {
     const Vector<String>* componentNames = nullptr;
     Vector<SubValueProperty*> subProperties;
-    VariantType::eVariantType valueType = GetValueType();
-    if (valueType == VariantType::TYPE_VECTOR2)
+    const Type *valueType = GetValueType();
+    if (valueType == Type::Instance<Vector2>())
     {
         componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;
     }
-    else if (valueType == VariantType::TYPE_COLOR)
+    else if (valueType == Type::Instance<Color>())
     {
         componentNames = &SValueProperty::COLOR_COMPONENT_NAMES;
     }
-    else if (valueType == VariantType::TYPE_VECTOR4)
+    else if (valueType == Type::Instance<Vector4>())
     {
         componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
     }
-    else if (valueType == VariantType::TYPE_INT32 && inspDesc && inspDesc->type == InspDesc::T_FLAGS)
+    else
     {
-        const EnumMap* map = inspDesc->enumMap;
-        for (size_type i = 0; i < map->GetCount(); ++i)
+        const EnumMap* map = GetEnumMap();
+        if (map != nullptr)
         {
-            int val = 0;
-            const bool getSucceeded = map->GetValue(i, val);
-            DVASSERT(getSucceeded);
-            subProperties.push_back(new SubValueProperty(static_cast<int32>(i), map->ToString(val)));
+            for (size_type i = 0; i < map->GetCount(); ++i)
+            {
+                int val = 0;
+                const bool getSucceeded = map->GetValue(i, val);
+                DVASSERT(getSucceeded);
+                subProperties.push_back(new SubValueProperty(static_cast<int32>(i), map->ToString(val)));
+            }
         }
     }
 

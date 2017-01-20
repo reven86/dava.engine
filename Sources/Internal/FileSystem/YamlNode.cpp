@@ -732,6 +732,12 @@ YamlNode::eStringRepresentation YamlNode::GetStringRepresentation() const
     return objectString->style;
 }
 
+void YamlNode::SetStringRepresentation(eStringRepresentation rep)
+{
+    DVASSERT(GetType() == TYPE_STRING);
+    objectString->style = rep;
+}
+
 YamlNode::eArrayRepresentation YamlNode::GetArrayRepresentation() const
 {
     DVASSERT(GetType() == TYPE_ARRAY);

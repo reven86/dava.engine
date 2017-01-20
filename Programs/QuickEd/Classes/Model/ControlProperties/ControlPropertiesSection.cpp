@@ -8,20 +8,20 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, const DAVA::InspInfo* typeInfo, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
-    : SectionProperty(typeInfo->Name().c_str())
-    , control(SafeRetain(aControl))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* control_, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+    : SectionProperty(control_->GetClassName())
+    , control(SafeRetain(control_))
 {
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    Reflection controlRef = Reflection::Create(&control);
+    Vector<Reflection::Field> fields = controlRef.GetFields();
+    
+    for (const Reflection::Field &field : fields)
     {
-        const InspMember* member = typeInfo->Member(i);
-        if ((member->Flags() & I_EDIT) != 0)
-        {
-            IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
-            IntrospectionProperty* prop = IntrospectionProperty::Create(control, member, sourceProperty, cloneType);
-            AddProperty(prop);
-            SafeRelease(prop);
-        }
+        String name = field.key.Get<String>();
+        IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
+        IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
+        AddProperty(prop);
+        SafeRelease(prop);
     }
 }
 

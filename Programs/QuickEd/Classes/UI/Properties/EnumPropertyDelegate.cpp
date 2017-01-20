@@ -23,6 +23,7 @@ QWidget* EnumPropertyDelegate::createEditor(QWidget* parent, const PropertiesCon
 
     AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
     const EnumMap* enumMap = property->GetEnumMap();
+    const EnumMeta* meta = property->GetEnumMeta();
     DVASSERT(enumMap);
 
     comboBox->blockSignals(true);
@@ -32,7 +33,14 @@ QWidget* EnumPropertyDelegate::createEditor(QWidget* parent, const PropertiesCon
         if (enumMap->GetValue(i, value))
         {
             QVariant variantValue;
-            variantValue.setValue<DAVA::VariantType>(DAVA::VariantType(value));
+            if (meta)
+            {
+                variantValue.setValue<DAVA::Any>(meta->Cast(value));
+            }
+            else
+            {
+                variantValue.setValue<DAVA::Any>(DAVA::Any(value));
+            }
             comboBox->addItem(QString(enumMap->ToString(value)), variantValue);
         }
     }
