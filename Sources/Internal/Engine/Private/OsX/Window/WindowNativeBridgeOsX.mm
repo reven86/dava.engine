@@ -41,18 +41,28 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                        NSResizableWindowMask;
     // clang-format on
 
+    // create window
     NSRect viewRect = NSMakeRect(x, y, width, height);
-    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
-    renderView = [[RenderView alloc] initWithFrame:viewRect andBridge:this];
-
     nswindow = [[NSWindow alloc] initWithContentRect:viewRect
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
+    // set some window params
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-    [nswindow setContentView:renderView];
-    [nswindow setDelegate:windowDelegate];
     [nswindow setContentMinSize:NSMakeSize(128, 128)];
+
+    // add window delegate
+    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
+    [nswindow setDelegate:windowDelegate];
+
+    // create render view and add it into window
+    renderView = [[RenderView alloc] initWithBridge:this];
+    [nswindow setContentView:renderView];
+
+    // we need to call this hack because native controls
+    // will be drawn below render view (will be invisible).
+    // See hack implementation for more description
+    ForceBackbufferSizeUpdate();
 
     {
         float32 dpi = GetDpi();
@@ -597,10 +607,15 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 
 void WindowNativeBridge::ForceBackbufferSizeUpdate()
 {
-    // Workaround to force change backbuffer size
-    [nswindow setContentView:nil];
-    [nswindow setContentView:renderView];
-    [nswindow makeFirstResponder:renderView];
+    // Workaround #1: to force change backbuffer size
+    // after resizing or change scaling
+    // Workaround #2: to ensure that native controls
+    // will be added above renderView
+    [nswindow setContentView:nil]; // #1
+    [renderView setWantsLayer:YES]; // #2
+    [nswindow setContentView:renderView]; // #1
+    [renderView setWantsLayer:NO]; // #2
+    [nswindow makeFirstResponder:renderView]; // #1
 }
 
 } // namespace Private
