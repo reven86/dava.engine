@@ -67,7 +67,7 @@ private:
     eState state;
 
     /*completion callback stuff*/
-    DAVA::Function<void(Component* const)> playbackComplete;
+    Function<void(Component* const)> playbackComplete;
 
     Matrix4 animationTransform;
 
