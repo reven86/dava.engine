@@ -5,14 +5,18 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Actions/DAEConverter.h"
 
-#include "TArc/Core/FieldBinder.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/QtAction.h"
+#include "Classes/Qt/Settings/Settings.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
 
-#include "FileSystem/FilePath.h"
-#include "Functional/Function.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include <TArc/Utils/ModuleCollection.h>
+#include <TArc/Core/FieldBinder.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/QtAction.h>
+
+#include <FileSystem/FilePath.h>
+#include <Functional/Function.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 LibraryModule::~LibraryModule()
 {
