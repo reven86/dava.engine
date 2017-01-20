@@ -46,7 +46,7 @@ public:
     */
     void MoveAnimationToTheFirstFrame();
 
-    void SetPlaybackCompleteCallback(Function<void(AnimationComponent* const)> callback);
+    void SetPlaybackCompleteCallback(Function<void(const AnimationComponent* const)> callback);
 
     enum eState
     {
@@ -67,7 +67,7 @@ private:
     eState state;
 
     /*completion callback stuff*/
-    Function<void(AnimationComponent* const)> playbackComplete;
+    Function<void(const AnimationComponent* const)> playbackComplete;
 
     Matrix4 animationTransform;
 
