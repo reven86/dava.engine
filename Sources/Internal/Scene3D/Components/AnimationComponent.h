@@ -38,7 +38,7 @@ public:
     void MoveAnimationToTheLastFrame();
     void MoveAnimationToTheFirstFrame();
 
-    void SetPlaybackStoppedMessage(const Message& msg);
+    void SetPlaybackCompleteMessage(const Message& msg);
 
     enum eState
     {
@@ -59,7 +59,7 @@ private:
     eState state;
 
     /*completion message stuff*/
-    Message playbackStopped;
+    Message playbackComplete;
 
     Matrix4 animationTransform;
 

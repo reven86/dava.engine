@@ -34,7 +34,7 @@ Component* AnimationComponent::Clone(Entity* toEntity)
     newAnimation->animation = SafeRetain(animation);
     newAnimation->repeatsCount = repeatsCount;
     newAnimation->currRepeatsCont = 0;
-    newAnimation->playbackStopped = playbackStopped;
+    newAnimation->playbackComplete = playbackComplete;
     newAnimation->state = STATE_STOPPED; //for another state we need add this one to AnimationSystem
 
     return newAnimation;
@@ -124,9 +124,9 @@ void AnimationComponent::MoveAnimationToTheFirstFrame()
     GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
 }
 
-void AnimationComponent::SetPlaybackStoppedMessage(const Message& msg)
+void AnimationComponent::SetPlaybackCompleteMessage(const Message& msg)
 {
-    playbackStopped = msg;
+    playbackComplete = msg;
 }
 
 };

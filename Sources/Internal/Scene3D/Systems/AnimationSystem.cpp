@@ -52,6 +52,10 @@ void AnimationSystem::Process(float32 timeElapsed)
                 i--;
                 comp->animationTransform.Identity();
                 comp->time = 0;
+
+                if (!comp->playbackComplete.IsEmpty())
+                    comp->playbackComplete(comp->GetEntity(), 0);
+
                 continue;
             }
         }
@@ -110,9 +114,6 @@ void AnimationSystem::RemoveFromActive(AnimationComponent* comp)
     DVASSERT(it != activeComponents.end());
     activeComponents.erase(it);
     comp->state = AnimationComponent::STATE_STOPPED;
-
-    if (!comp->playbackStopped.IsEmpty())
-        comp->playbackStopped(comp->GetEntity(), 0);
 }
 
 void AnimationSystem::RemoveEntity(Entity* entity)
