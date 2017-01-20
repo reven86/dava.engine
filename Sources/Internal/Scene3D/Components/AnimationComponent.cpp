@@ -125,7 +125,7 @@ void AnimationComponent::MoveAnimationToTheFirstFrame()
     GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME);
 }
 
-void AnimationComponent::SetPlaybackCompleteCallback(Function<void(Component* const)> callback)
+void AnimationComponent::SetPlaybackCompleteCallback(Function<void(AnimationComponent* const)> callback)
 {
     playbackComplete = callback;
 }

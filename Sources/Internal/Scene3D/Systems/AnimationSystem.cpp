@@ -54,7 +54,7 @@ void AnimationSystem::Process(float32 timeElapsed)
                 comp->time = 0;
 
                 if (comp->playbackComplete)
-                    comp->playbackComplete(static_cast<Component*>(comp));
+                    comp->playbackComplete(comp);
 
                 continue;
             }
