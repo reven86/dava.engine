@@ -69,6 +69,12 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
+/**
+	One file packed with our custom compression + 20 bytes footer
+	in the end of file with info to decompress content.
+	We will use it later in our new IDLCManager to download game
+	content file by file to reduce size
+*/
 struct MiniPack
 {
     struct CompressedBytes
