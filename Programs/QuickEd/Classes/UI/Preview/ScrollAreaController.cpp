@@ -9,8 +9,9 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
 {
     backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
-    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    UIControlBackground* bg = davaUIScreen->GetOrCreateComponent<UIControlBackground>();
+    bg->SetDrawType(UIControlBackground::DRAW_FILL);
+    bg->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
     UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(0);
 

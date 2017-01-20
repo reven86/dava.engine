@@ -26,7 +26,7 @@ public:
     explicit HUDContainer(ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
-    void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
+    void SystemDraw(const DAVA::UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
 
 private:
     ~HUDContainer() override = default;

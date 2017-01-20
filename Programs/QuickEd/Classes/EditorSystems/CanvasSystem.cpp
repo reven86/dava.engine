@@ -71,8 +71,9 @@ private:
 GridControl::GridControl()
     : colorControl(new ColorControl)
 {
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/GrayGrid", 0);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
+    background->SetSprite("~res:/QuickEd/Gfx/GrayGrid", 0);
     colorControl->SetName("Color control");
 
     UIControl::AddControl(colorControl);
@@ -99,7 +100,8 @@ void GridControl::Draw(const UIGeometricData& geometricData)
 
 ColorControl::ColorControl()
 {
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetDrawType(UIControlBackground::DRAW_FILL);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 

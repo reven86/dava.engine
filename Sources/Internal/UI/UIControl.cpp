@@ -481,18 +481,19 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
 Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 {
-    if (GetBackground() != nullptr && GetBackground()->GetSprite() != nullptr)
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg != nullptr && bg->GetSprite() != nullptr)
     {
         if (constraints.dx > 0)
         {
             Vector2 size;
             size.dx = constraints.dx;
-            size.dy = GetBackground()->GetSprite()->GetHeight() * size.dx / GetBackground()->GetSprite()->GetWidth();
+            size.dy = bg->GetSprite()->GetHeight() * size.dx / bg->GetSprite()->GetWidth();
             return size;
         }
         else
         {
-            return GetBackground()->GetSprite()->GetSize();
+            return bg->GetSprite()->GetSize();
         }
     }
     return Vector2(0.0f, 0.0f);
@@ -500,12 +501,13 @@ Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 
 bool UIControl::IsHeightDependsOnWidth() const
 {
-    if (GetBackground() == nullptr || GetBackground()->GetSprite() == nullptr)
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg == nullptr || bg->GetSprite() == nullptr)
     {
         return false;
     }
 
-    UIControlBackground::eDrawType dt = GetBackground()->GetDrawType();
+    UIControlBackground::eDrawType dt = bg->GetDrawType();
     return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
 }
 
@@ -974,12 +976,12 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControl
 
     Draw(drawData);
 
+    const UIControlBackground* bg = GetComponent<UIControlBackground>();
+    const UIControlBackground* parentBgForChild = bg ? bg : parentBackground;
     isIteratorCorrupted = false;
-    List<UIControl*>::iterator it = children.begin();
-    List<UIControl*>::iterator itEnd = children.end();
-    for (; it != itEnd; ++it)
+    for (UIControl* child : children)
     {
-        (*it)->SystemDraw(drawData, GetBackground() ? GetBackground() : parentBackground);
+        child->SystemDraw(drawData, parentBgForChild);
         DVASSERT(!isIteratorCorrupted);
     }
 
@@ -1002,9 +1004,10 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControl
 
 void UIControl::SetParentColor(const Color& parentColor)
 {
-    if (GetBackground())
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg)
     {
-        GetBackground()->SetParentColor(parentColor);
+        bg->SetParentColor(parentColor);
     }
 }
 
@@ -1438,9 +1441,10 @@ void UIControl::Update(float32 timeElapsed)
 
 void UIControl::Draw(const UIGeometricData& geometricData)
 {
-    if (GetBackground())
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg)
     {
-        GetBackground()->Draw(geometricData);
+        bg->Draw(geometricData);
     }
 }
 
@@ -1852,7 +1856,8 @@ Animation* UIControl::RemoveControlAnimation(int32 track)
 
 Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
-    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &GetBackground()->color, finalColor, time, interpolationFunc);
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &bg->color, finalColor, time, interpolationFunc);
     animation->Start(track);
     return animation;
 }
@@ -1926,7 +1931,12 @@ void UIControl::OnTouchOutsideFocus()
 
 void UIControl::SetSizeFromBg(bool pivotToCenter)
 {
-    SetSize(GetBackground()->GetSprite()->GetSize());
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    DVASSERT(bg);
+    if (bg)
+    {
+        SetSize(bg->GetSprite()->GetSize());
+    }
 
     if (pivotToCenter)
     {

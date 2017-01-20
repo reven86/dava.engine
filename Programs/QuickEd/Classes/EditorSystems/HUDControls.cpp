@@ -135,11 +135,11 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     }
 }
 
-void HUDContainer::SystemDraw(const UIGeometricData& gd)
+void HUDContainer::SystemDraw(const UIGeometricData& gd, const UIControlBackground* parentBackground)
 {
     auto controlGD = control->GetGeometricData();
     InitFromGD(controlGD);
-    UIControl::SystemDraw(gd);
+    ControlContainer::SystemDraw(gd, parentBackground);
 }
 
 FrameControl::FrameControl(eType type_)
@@ -152,7 +152,7 @@ FrameControl::FrameControl(eType type_)
         FrameControl::eBorder border = static_cast<FrameControl::eBorder>(i);
         RefPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
         control->SetName(FastName(String("border of ") + GetName().c_str()));
-        UIControlBackground* background = control->GetBackground();
+        UIControlBackground* background = control->GetOrCreateComponent<UIControlBackground>();
         if (type == CHECKERED)
         {
             background->SetSprite("~res:/QuickEd/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
@@ -175,9 +175,10 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
     SetName(FastName("Frame Rect Control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rect", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rect", 0);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void FrameRectControl::InitFromGD(const UIGeometricData& gd)
@@ -218,9 +219,10 @@ PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
     SetName(FastName("pivot point control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Pivot", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Pivot", 0);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void PivotPointControl::InitFromGD(const UIGeometricData& gd)
@@ -234,9 +236,10 @@ RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
     SetName(FastName("rotate control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rotate", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rotate", 0);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void RotateControl::InitFromGD(const UIGeometricData& gd)
@@ -252,9 +255,10 @@ void RotateControl::InitFromGD(const UIGeometricData& gd)
 
 void SetupHUDMagnetLineControl(UIControl* control)
 {
-    control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
-    control->GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
-    control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    UIControlBackground* background = control->GetOrCreateComponent<UIControlBackground>();
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    background->SetSprite("~res:/QuickEd/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
     control->SetName("Magnet line");
 }
 
