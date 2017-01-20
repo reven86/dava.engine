@@ -6,6 +6,9 @@
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
+
 #include <QCloseEvent>
 
 PUSH_QT_WARNING_SUPRESSOR
