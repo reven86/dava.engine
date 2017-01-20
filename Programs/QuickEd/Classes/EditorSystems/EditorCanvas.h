@@ -17,7 +17,6 @@ public:
     ~EditorCanvas() override;
 
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
-
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
 

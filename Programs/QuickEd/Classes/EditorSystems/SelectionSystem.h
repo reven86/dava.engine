@@ -34,8 +34,9 @@ public:
     ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point) const;
 
 private:
-    void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+
+    void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnPackageChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;

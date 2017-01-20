@@ -14,8 +14,9 @@ public:
     ~CursorSystem() override = default;
 
 private:
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
+
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState);
 
     QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
     QPixmap CreatePixmap(const QString& address) const;

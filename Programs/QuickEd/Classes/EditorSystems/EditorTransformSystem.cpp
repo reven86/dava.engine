@@ -190,7 +190,7 @@ void EditorTransformSystem::ProcessInput(UIEvent* currentInput)
     }
 }
 
-void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState)
+void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)
 {
     if (dragState == EditorSystemsManager::Transform)
     {

@@ -35,11 +35,11 @@ private:
 
     struct MoveInfo;
 
-    EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput);
+    EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
-    void OnDragStateChanged(EditorSystemsManager::eDragState dragState);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 

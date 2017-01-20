@@ -19,10 +19,11 @@ public:
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
 
 private:
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
+
     void Layout();
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
     void OnPackageChanged(PackageNode* node);
-    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
