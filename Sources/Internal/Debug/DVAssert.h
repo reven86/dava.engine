@@ -130,10 +130,13 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
 
 #else
 
-// Tricking compiler to think this expr is actually being used without calculating it
-#define DVASSERT_UNUSED(expr, ...) (void)(true ? (void)0 : ((void)(expr, ##__VA_ARGS__)))
+// Variadic "unused macro" implementation
+// Tricking compiler to think these expressions are actually being used without calculating it
+#define DVASSERT_UNUSED(arg) (void)(true ? (void)0 : ((void)(arg)))
+#define DVASSERT_UNUSED2(arg1, arg2) do { DVASSERT_UNUSED(arg1); DVASSERT_UNUSED(arg2); } while (false)
+#define DVASSERT_GET_UNUSED_MACRO_NAME(_0, _1, NAME, ...) NAME
 
-#define DVASSERT(expr, ...) DVASSERT_UNUSED(expr, ##__VA_ARGS__)
+#define DVASSERT(...) DVASSERT_GET_UNUSED_MACRO_NAME(__VA_ARGS__, DVASSERT_UNUSED2, DVASSERT_UNUSED)(__VA_ARGS__)
 
 #endif
 
