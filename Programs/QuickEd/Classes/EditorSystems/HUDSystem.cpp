@@ -166,14 +166,6 @@ void HUDSystem::ProcessInput(UIEvent* currentInput)
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
-    if (phase == UIEvent::Phase::MOVE
-        || phase == UIEvent::Phase::WHEEL
-        || phase == UIEvent::Phase::ENDED
-        )
-    {
-        ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
-        OnHighlightNode(node);
-    }
 
     switch (phase)
     {
@@ -203,6 +195,22 @@ void HUDSystem::ProcessInput(UIEvent* currentInput)
         break;
     default:
         break;
+    }
+    if (phase == UIEvent::Phase::MOVE
+        || phase == UIEvent::Phase::WHEEL
+        || phase == UIEvent::Phase::ENDED
+        )
+    {
+        HUDAreaInfo::eArea activeArea = activeAreaInfo.area;
+        ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
+        if (activeArea == HUDAreaInfo::NO_AREA || (activeArea == HUDAreaInfo::FRAME_AREA && node != activeAreaInfo.owner))
+        {
+            OnHighlightNode(node);
+        }
+        else
+        {
+            OnHighlightNode(nullptr);
+        }
     }
 }
 
