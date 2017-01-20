@@ -24,5 +24,12 @@ public:
     bool IsValidValue(const Any& value) const override;
 };
 
+class BoolValueCompositor : public ValueCompositor
+{
+public:
+    Any Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const override;
+    bool IsValidValue(const Any& value) const override;
+};
+
 } // namespace TArc
 } // namespace DAVA

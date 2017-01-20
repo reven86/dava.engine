@@ -1,49 +1,55 @@
-#pragma once
-
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "TArc/Controls/CheckBox.h"
+#include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
+#include "TArc/DataProcessing/DataWrappersProcessor.h"
 
-#include <QUrl>
+#include <Reflection/ReflectionRegistrator.h>
+#include <Base/FastName.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-//int BoolComponentValue::GetValue() const
-//{
-//    Any value = nodes.front()->cachedValue;
-//    for (const std::shared_ptr<const PropertyNode>& node : nodes)
-//    {
-//        if (value != node->cachedValue)
-//        {
-//            return Qt::PartiallyChecked;
-//        }
-//    }
-//
-//    return value.Cast<bool>() == true ? Qt::Checked : Qt::Unchecked;
-//}
-//
-//void BoolComponentValue::SetValue(int v)
-//{
-//    if (v == Qt::PartiallyChecked)
-//    {
-//        return;
-//    }
-//
-//    GetModifyInterface()->ModifyPropertyValue(nodes, Any(v == Qt::Checked));
-//}
-//
-//bool BoolComponentValue::IsReadOnly() const
-//{
-//    return nodes.front()->field.ref.IsReadonly();
-//}
-//
-//DAVA_REFLECTION_IMPL(BoolComponentValue)
-//{
-//    ReflectionRegistrator<BoolComponentValue>::Begin()
-//    .Field("value", &BoolComponentValue::GetValue, &BoolComponentValue::SetValue)
-//    .Field("readOnly", &BoolComponentValue::IsReadOnly, nullptr)
-//    .End();
-//}
+Qt::CheckState BoolComponentValue::GetCheckState() const
+{
+    return GetValue().Cast<Qt::CheckState>();
+}
+
+void BoolComponentValue::SetCheckState(Qt::CheckState checkState)
+{
+    SetValue(checkState);
+}
+
+QWidget* BoolComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
+{
+    CheckBox::FieldsDescriptor descr;
+    descr.valueFieldName = FastName("bool");
+
+    return (new CheckBox(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
+}
+
+void BoolComponentValue::ReleaseEditorWidget(QWidget* editor)
+{
+    editor->deleteLater();
+}
+
+bool BoolComponentValue::IsReadOnly() const
+{
+    return nodes.front()->field.ref.IsReadonly();
+}
+
+bool BoolComponentValue::IsEnabled() const
+{
+    return true;
+}
+
+DAVA_REFLECTION_IMPL(BoolComponentValue)
+{
+    ReflectionRegistrator<BoolComponentValue>::Begin()
+    .Field("bool", &BoolComponentValue::GetCheckState, &BoolComponentValue::SetCheckState)
+    .Field("readOnly", &BoolComponentValue::IsReadOnly, nullptr)
+    .Field("enabled", &BoolComponentValue::IsEnabled, nullptr)
+    .End();
+}
 }
 }
