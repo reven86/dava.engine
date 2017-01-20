@@ -96,8 +96,7 @@ RenderHelper::RenderHelper()
     for (NMaterial* material : materials)
         material->PreBuildMaterial(PASS_FORWARD);
 
-    Memset(vBuffersElemCount, 0, sizeof(vBuffersElemCount));
-    Memset(iBuffersElemCount, 0, sizeof(iBuffersElemCount));
+    Clear();
 }
 
 void RenderHelper::InvalidateMaterials()
@@ -228,6 +227,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_POLYGON:
         {
+            DVASSERT(command.extraParams.size() >= 4);
             const uint32 pointCount = static_cast<uint32>((command.extraParams.size() - 4) / 3);
 
             const Vector3* const polygonPoints = reinterpret_cast<const Vector3*>(command.extraParams.data() + 4);
@@ -322,11 +322,8 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 void RenderHelper::Clear()
 {
     commandQueue.clear();
-    for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-    {
-        vBuffersElemCount[i] = 0;
-        iBuffersElemCount[i] = 0;
-    }
+    Memset(vBuffersElemCount, 0, sizeof(vBuffersElemCount));
+    Memset(iBuffersElemCount, 0, sizeof(iBuffersElemCount));
 }
 
 bool RenderHelper::IsEmpty()
