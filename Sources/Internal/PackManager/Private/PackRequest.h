@@ -1,17 +1,16 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "PackManager/PackManager.h"
-#include "FileSystem/Private/PackFormatSpec.h"
 
 namespace DAVA
 {
-class DCLManagerImpl;
+class DLCManagerImpl;
 
 class PackRequest : public IDLCManager::IRequest
 {
 public:
-    PackRequest(DCLManagerImpl& packManager_, const String& packName, const Vector<uint32> fileIndexes);
+    PackRequest(DLCManagerImpl& packManager_, const String& packName, const Vector<uint32> fileIndexes);
+    PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     void Start();
     void Update();
@@ -67,7 +66,7 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    DCLManagerImpl& packManagerImpl;
+    DLCManagerImpl& packManagerImpl;
 
     String requestedPackName;
     FileRequest currentFileRequest;

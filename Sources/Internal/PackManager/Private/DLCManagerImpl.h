@@ -12,7 +12,7 @@
 
 namespace DAVA
 {
-class DCLManagerImpl final : public IDLCManager
+class DLCManagerImpl final : public IDLCManager
 {
 public:
     enum class InitState : uint32
@@ -50,13 +50,13 @@ public:
     static const String& ToString(InitError state);
 
 #ifdef __DAVAENGINE_COREV2__
-    explicit DCLManagerImpl(Engine* engine_);
-    ~DCLManagerImpl();
+    explicit DLCManagerImpl(Engine* engine_);
+    ~DLCManagerImpl();
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
 #else
-    DCLManagerImpl() = default;
-    ~DCLManagerImpl() = default;
+    DLCManagerImpl() = default;
+    ~DLCManagerImpl() = default;
 #endif
 
     void Initialize(const FilePath& dirToDownloadPacks_,
@@ -121,6 +121,8 @@ private:
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
+    PackRequest* AddDeleyedRequest(const String& requestedPackName);
+    PackRequest* CreateNewRequest(const String& requestedPackName);
 
     mutable Mutex protectPM;
 

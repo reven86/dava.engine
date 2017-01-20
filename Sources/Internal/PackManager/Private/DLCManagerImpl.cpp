@@ -1,4 +1,4 @@
-#include "PackManager/Private/DCLManagerImpl.h"
+#include "PackManager/Private/DLCManagerImpl.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/PackMetaData.h"
@@ -19,7 +19,7 @@ namespace DAVA
 IDLCManager::~IDLCManager() = default;
 IDLCManager::IRequest::~IRequest() = default;
 
-const String& DCLManagerImpl::ToString(DCLManagerImpl::InitState state)
+const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
 {
     static Vector<String> states{
         "Starting",
@@ -41,7 +41,7 @@ const String& DCLManagerImpl::ToString(DCLManagerImpl::InitState state)
     return states.at(static_cast<size_t>(state));
 }
 
-const String& DCLManagerImpl::ToString(DCLManagerImpl::InitError state)
+const String& DLCManagerImpl::ToString(DLCManagerImpl::InitError state)
 {
     static Vector<String> states{
         "AllGood",
@@ -73,14 +73,14 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 }
 
 #ifdef __DAVAENGINE_COREV2__
-DCLManagerImpl::DCLManagerImpl(Engine* engine_)
+DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    sigConnectionUpdate = engine.update.Connect(this, &DCLManagerImpl::Update);
+    sigConnectionUpdate = engine.update.Connect(this, &DLCManagerImpl::Update);
 }
 
-DCLManagerImpl::~DCLManagerImpl()
+DLCManagerImpl::~DLCManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Disconnect(sigConnectionUpdate);
@@ -97,7 +97,7 @@ DCLManagerImpl::~DCLManagerImpl()
 }
 #endif
 
-void DCLManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
+void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                                 const String& urlToServerSuperpack_,
                                 const Hints& hints_)
 {
@@ -130,7 +130,7 @@ void DCLManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     initState = InitState::LoadingRequestAskFooter;
 }
 
-bool DCLManagerImpl::IsInitialized() const
+bool DLCManagerImpl::IsInitialized() const
 {
     // current inputState can be in differect states becouse of
     // offline mode
@@ -142,25 +142,25 @@ bool DCLManagerImpl::IsInitialized() const
 }
 
 // start ISync //////////////////////////////////////
-DCLManagerImpl::InitState DCLManagerImpl::GetInitState() const
+DLCManagerImpl::InitState DLCManagerImpl::GetInitState() const
 {
     DVASSERT(Thread::IsMainThread());
     return initState;
 }
 
-DCLManagerImpl::InitError DCLManagerImpl::GetInitError() const
+DLCManagerImpl::InitError DLCManagerImpl::GetInitError() const
 {
     DVASSERT(Thread::IsMainThread());
     return initError;
 }
 
-const String& DCLManagerImpl::GetLastErrorMessage() const
+const String& DLCManagerImpl::GetLastErrorMessage() const
 {
     DVASSERT(Thread::IsMainThread());
     return initErrorMsg;
 }
 
-void DCLManagerImpl::RetryInit()
+void DLCManagerImpl::RetryInit()
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -175,7 +175,7 @@ void DCLManagerImpl::RetryInit()
 
 // end Initialization ////////////////////////////////////////
 
-void DCLManagerImpl::Update(float frameDelta)
+void DLCManagerImpl::Update(float frameDelta)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -203,7 +203,7 @@ void DCLManagerImpl::Update(float frameDelta)
     }
 }
 
-void DCLManagerImpl::ContinueInitialization(float frameDelta)
+void DLCManagerImpl::ContinueInitialization(float frameDelta)
 {
     if (timeWaitingNextInitializationAttempt > 0.f)
     {
@@ -290,7 +290,37 @@ void DCLManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-void DCLManagerImpl::AskFooter()
+PackRequest* DLCManagerImpl::AddDeleyedRequest(const String& requestedPackName)
+{
+    for (auto* request : delayedRequests)
+    {
+        if (request->GetRequestedPackName() == requestedPackName)
+        {
+            return request;
+        }
+    }
+
+    delayedRequests.push_back(new PackRequest(*this, requestedPackName));
+    return delayedRequests.back();
+}
+
+PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
+{
+    for (auto* request : requests)
+    {
+        if (request->GetRequestedPackName() == requestedPackName)
+        {
+            return request;
+        }
+    }
+
+    Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
+
+    PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
+    return request;
+}
+
+void DLCManagerImpl::AskFooter()
 {
     //Logger::FrameworkDebug("pack manager ask_footer");
 
@@ -339,7 +369,7 @@ void DCLManagerImpl::AskFooter()
     }
 }
 
-void DCLManagerImpl::GetFooter()
+void DLCManagerImpl::GetFooter()
 {
     //Logger::FrameworkDebug("pack manager get_footer");
 
@@ -374,7 +404,7 @@ void DCLManagerImpl::GetFooter()
     }
 }
 
-void DCLManagerImpl::AskFileTable()
+void DLCManagerImpl::AskFileTable()
 {
     //Logger::FrameworkDebug("pack manager ask_file_table");
 
@@ -391,7 +421,7 @@ void DCLManagerImpl::AskFileTable()
     initState = InitState::LoadingRequestGetFileTable;
 }
 
-void DCLManagerImpl::GetFileTable()
+void DLCManagerImpl::GetFileTable()
 {
     //Logger::FrameworkDebug("pack manager get_file_table");
 
@@ -432,7 +462,7 @@ void DCLManagerImpl::GetFileTable()
     }
 }
 
-void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
+void DLCManagerImpl::CompareLocalMetaWitnRemoteHash()
 {
     //Logger::FrameworkDebug("pack manager calc_local_db_with_remote_crc32");
 
@@ -461,7 +491,7 @@ void DCLManagerImpl::CompareLocalMetaWitnRemoteHash()
     }
 }
 
-void DCLManagerImpl::AskMeta()
+void DLCManagerImpl::AskMeta()
 {
     //Logger::FrameworkDebug("pack manager ask_db");
 
@@ -483,7 +513,7 @@ void DCLManagerImpl::AskMeta()
     initState = InitState::LoadingRequestGetMeta;
 }
 
-void DCLManagerImpl::GetMeta()
+void DLCManagerImpl::GetMeta()
 {
     //Logger::FrameworkDebug("pack manager get_db");
 
@@ -512,7 +542,7 @@ void DCLManagerImpl::GetMeta()
     }
 }
 
-void DCLManagerImpl::ParseMeta()
+void DLCManagerImpl::ParseMeta()
 {
     //Logger::FrameworkDebug("pack manager unpacking_db");
 
@@ -531,11 +561,11 @@ void DCLManagerImpl::ParseMeta()
     initState = InitState::DeleteDownloadedPacksIfNotMatchHash;
 }
 
-void DCLManagerImpl::StoreAllMountedPackNames()
+void DLCManagerImpl::StoreAllMountedPackNames()
 {
 }
 
-void DCLManagerImpl::DeleteOldPacks()
+void DLCManagerImpl::DeleteOldPacks()
 {
     //Logger::FrameworkDebug("pack manager delete_old_packs");
 
@@ -544,7 +574,7 @@ void DCLManagerImpl::DeleteOldPacks()
     initState = InitState::LoadingPacksDataFromLocalMeta;
 }
 
-void DCLManagerImpl::LoadPacksDataFromMeta()
+void DLCManagerImpl::LoadPacksDataFromMeta()
 {
     //Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
@@ -585,20 +615,20 @@ void DCLManagerImpl::LoadPacksDataFromMeta()
     initState = InitState::MountingDownloadedPacks;
 }
 
-void DCLManagerImpl::MountDownloadedPacks()
+void DLCManagerImpl::MountDownloadedPacks()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
 
     initState = InitState::Ready;
 }
 
-void DCLManagerImpl::DeleteLocalMetaFiles()
+void DLCManagerImpl::DeleteLocalMetaFiles()
 {
     FileSystem* fs = FileSystem::Instance();
     fs->DeleteFile(metaLocalCache);
 }
 
-const IDLCManager::IRequest* DCLManagerImpl::RequestPack(const String& packName)
+const IDLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -616,7 +646,7 @@ const IDLCManager::IRequest* DCLManagerImpl::RequestPack(const String& packName)
     return request;
 }
 
-void DCLManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
+void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -628,13 +658,13 @@ void DCLManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
     }
 }
 
-bool DCLManagerImpl::IsRequestingEnabled() const
+bool DLCManagerImpl::IsRequestingEnabled() const
 {
     DVASSERT(Thread::IsMainThread());
     return isProcessingEnabled;
 }
 
-void DCLManagerImpl::SetRequestingEnabled(bool value)
+void DLCManagerImpl::SetRequestingEnabled(bool value)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -664,13 +694,13 @@ void DCLManagerImpl::SetRequestingEnabled(bool value)
     }
 }
 
-const IDLCManager::IRequest* DCLManagerImpl::FindRequest(const String& requestedPackName) const
+const IDLCManager::IRequest* DLCManagerImpl::FindRequest(const String& requestedPackName) const
 {
     DVASSERT(Thread::IsMainThread());
 
     for (auto request : requests)
     {
-        if (request->GetRootPack() == requestedPackName)
+        if (request->GetRequestedPackName() == requestedPackName)
         {
             return request;
         }
@@ -678,7 +708,7 @@ const IDLCManager::IRequest* DCLManagerImpl::FindRequest(const String& requested
 
     for (auto request : delayedRequests)
     {
-        if (request->GetRootPack() == requestedPackName)
+        if (request->GetRequestedPackName() == requestedPackName)
         {
             return request;
         }
@@ -687,13 +717,13 @@ const IDLCManager::IRequest* DCLManagerImpl::FindRequest(const String& requested
     return nullptr;
 }
 
-const FilePath& DCLManagerImpl::GetLocalPacksDirectory() const
+const FilePath& DLCManagerImpl::GetLocalPacksDirectory() const
 {
     DVASSERT(Thread::IsMainThread());
     return dirToDownloadedPacks;
 }
 
-const String& DCLManagerImpl::GetSuperPackUrl() const
+const String& DLCManagerImpl::GetSuperPackUrl() const
 {
     DVASSERT(Thread::IsMainThread());
     return urlToSuperPack;

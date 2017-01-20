@@ -3,7 +3,7 @@
 #include "Utils/CRC32.h"
 #include "Utils/StringFormat.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "PackManager/Private/DCLManagerImpl.h"
+#include "PackManager/Private/DLCManagerImpl.h"
 #include "Base/Exception.h"
 
 namespace DAVA

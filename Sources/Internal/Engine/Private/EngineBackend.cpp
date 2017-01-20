@@ -33,7 +33,7 @@
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
-#include "PackManager/Private/DCLManagerImpl.h"
+#include "PackManager/Private/DLCManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
@@ -762,7 +762,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new DCLManagerImpl(engine);
+                context->packManager = new DLCManagerImpl(engine);
             }
         }
     }
