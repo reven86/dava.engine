@@ -63,7 +63,7 @@ public:
     StaticOcclusion();
     ~StaticOcclusion();
 
-    void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape);
+    void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape, int32 occlusionPixelThreshold);
     bool ProccessBlock(); // returns true if finished building
     void AdvanceToNextBlock();
 
@@ -118,6 +118,7 @@ private:
     uint32 currentFrameX = 0;
     uint32 currentFrameY = 0;
     uint32 currentFrameZ = 0;
+    int32 occlusionPixelThreshold = 0;
 };
 };
 

@@ -39,6 +39,7 @@ void StaticOcclusionComponent::Serialize(KeyedArchive* archive, SerializationCon
         archive->SetUInt32("soc.ysub", ySubdivisions);
         archive->SetUInt32("soc.zsub", zSubdivisions);
         archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
+        archive->SetUInt32("soc.occlusionPixelThreshold", occlusionPixelThreshold);
         if (placeOnLandscape)
             archive->SetByteArray("soc.cellHeightOffset", reinterpret_cast<uint8*>(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
     }
@@ -52,6 +53,7 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
         xSubdivisions = archive->GetUInt32("soc.xsub", 1);
         ySubdivisions = archive->GetUInt32("soc.ysub", 1);
         zSubdivisions = archive->GetUInt32("soc.zsub", 1);
+        occlusionPixelThreshold = archive->GetUInt32("soc.occlusionPixelThreshold", 0);
         placeOnLandscape = archive->GetBool("soc.placeOnLandscape", false);
         if (placeOnLandscape)
         {
@@ -62,6 +64,17 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
     }
 
     Component::Deserialize(archive, serializationContext);
+}
+
+void StaticOcclusionComponent::SetOcclusionPixelThreshold(int32 pixelThreshold)
+{
+    DVASSERT(pixelThreshold >= 0);
+    occlusionPixelThreshold = pixelThreshold;
+}
+
+int32 StaticOcclusionComponent::GetOcclusionPixelThreshold() const
+{
+    return occlusionPixelThreshold;
 }
 
 StaticOcclusionDataComponent::StaticOcclusionDataComponent()

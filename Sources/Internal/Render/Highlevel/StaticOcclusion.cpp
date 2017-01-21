@@ -31,7 +31,7 @@ StaticOcclusion::~StaticOcclusion()
     SafeDelete(staticOcclusionRenderPass);
 }
 
-void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape)
+void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape, int32 _occlusionPixelThreshold)
 {
     lastInfoMessage = "Preparing to build static occlusion...";
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD);
@@ -54,6 +54,8 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
 
     renderSystem = _renderSystem;
     landscape = _landscape;
+
+    occlusionPixelThreshold = _occlusionPixelThreshold;
 }
 
 AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
@@ -330,7 +332,7 @@ bool StaticOcclusion::ProcessRecorderQueries()
 
             if (rhi::QueryIsReady(fr->queryBuffer, index))
             {
-                if (rhi::QueryValue(fr->queryBuffer, index))
+                if (rhi::QueryValue(fr->queryBuffer, index) > occlusionPixelThreshold)
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);
