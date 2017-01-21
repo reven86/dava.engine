@@ -20,6 +20,24 @@ public:
 template <class T>
 class MessageBaseClassFunctionImpl : public MessageBase
 {
+    template <bool, class T>
+    struct GetBaseObjectImpl
+    {
+        BaseObject* Get(T* obj)
+        {
+            return nullptr;
+        }
+    };
+
+    template <class T>
+    struct GetBaseObjectImpl<true, T>
+    {
+        BaseObject* Get(T* obj)
+        {
+            return static_cast<BaseObject*>(obj);
+        }
+    };
+
     T* targetObject;
     void (T::*targetFunction)(BaseObject*, void*, void*);
 
@@ -58,14 +76,7 @@ public:
 
     virtual BaseObject* GetBaseObject() const
     {
-        if (SUPERSUBCLASS(BaseObject, T))
-        {
-            return static_cast<BaseObject*>(targetObject);
-        }
-        else
-        {
-            return 0;
-        }
+        return GetBaseObjectImpl<std::is_base_of<BaseObject, T>::value, T>().Get(targetObject);
     }
 };
 
