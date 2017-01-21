@@ -6,15 +6,15 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
-#include "TArc/DataProcessing/Private/QtReflectionBridge.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
+#include "Engine/Engine.h"
+#include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
 
+#include <QPointer>
 #include <QMainWindow>
 #include <QDockWidget>
-#include <QQmlEngine>
-#include <QQmlContext>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -22,11 +22,10 @@
 #include <QUrlQuery>
 #include <QLayout>
 #include <QFrame>
+#include <QEvent>
 
 #include <QFileDialog>
 #include <QMessageBox>
-
-#include <QQuickWidget>
 
 namespace DAVA
 {
@@ -109,7 +108,7 @@ struct StatusBarWidget
 
 struct MainWindowInfo
 {
-    QMainWindow* window = nullptr;
+    QPointer<QMainWindow> window = nullptr;
     QMenuBar* menuBar = nullptr;
     Vector<StatusBarWidget> nonPermanentStatusBarWidgets;
     Vector<StatusBarWidget> permanentStatusBarWidgets;
@@ -421,8 +420,6 @@ struct UIManager::Impl : public QObject
     UIManager::Delegate* managerDelegate = nullptr;
     Array<Function<void(const PanelKey&, const WindowKey&, QWidget*)>, PanelKey::TypesCount> addFunctions;
     UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
-    std::unique_ptr<QQmlEngine> qmlEngine;
-    QtReflectionBridge reflectionBridge;
     PropertiesItem propertiesHolder;
     bool initializationFinished = false;
     DAVA::Set<WaitHandle*> activeWaitDialogues;
@@ -437,6 +434,10 @@ struct UIManager::Impl : public QObject
 
     ~Impl()
     {
+        for (auto& wnd : windows)
+        {
+            delete wnd.second.window.data();
+        }
     }
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
@@ -535,8 +536,10 @@ protected:
         QMainWindow* mainWindow = mainWindowInfo.window;
         DVASSERT(mainWindow != nullptr);
         QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
+        newDockWidget->layout()->setContentsMargins(0, 0, 0, 0);
         newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
         newDockWidget->setWidget(widget);
+        newDockWidget->show();
 
         if (info.tabbed == true)
         {
@@ -602,9 +605,6 @@ protected:
 UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
     : impl(new Impl(delegate, std::move(holder)))
 {
-    impl->qmlEngine.reset(new QQmlEngine());
-    impl->qmlEngine->addImportPath("qrc:/");
-    impl->qmlEngine->addImportPath(":/");
 }
 
 UIManager::~UIManager() = default;
@@ -637,11 +637,6 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
     }
 }
 
-void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data)
-{
-    AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, std::move(data)));
-}
-
 void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
@@ -652,37 +647,6 @@ void UIManager::RemoveAction(const WindowKey& windowKey, const ActionPlacementIn
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     UIManagerDetail::RemoveAction(windowInfo, placement);
-}
-
-QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper&& data)
-{
-    QPointer<QQuickWidget> view = new QQuickWidget(impl->qmlEngine.get(), nullptr);
-    view->setObjectName(name);
-    view->setResizeMode(QQuickWidget::SizeRootObjectToView);
-
-    QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(std::move(data), view);
-    qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
-                                           {
-                                               if (qtReflected != nullptr && view != nullptr)
-                                               {
-                                                   view->rootContext()->setContextProperty("context", qtReflected);
-                                                   view->setSource(QUrl(resourceName));
-
-                                                   if (view->status() != QQuickWidget::Ready)
-                                                   {
-                                                       Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
-                                                       foreach (QQmlError error, view->errors())
-                                                       {
-                                                           Logger::Error("Error : %s", error.toString().toStdString().c_str());
-                                                       }
-                                                   }
-                                               }
-
-                                               qtReflected->metaObjectCreated.DisconnectAll();
-                                           });
-    qtReflected->Init();
-
-    return view;
 }
 
 void UIManager::ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration)
@@ -793,6 +757,5 @@ void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)
     impl->InitNewWindow(windowKey, window);
     impl->windows.emplace(windowKey, windowInfo);
 }
-
 } // namespace TArc
 } // namespace DAVA

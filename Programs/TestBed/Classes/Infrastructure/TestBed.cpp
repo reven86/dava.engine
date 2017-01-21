@@ -51,6 +51,9 @@
 #include "Infrastructure/NativeDelegateMac.h"
 #include "Infrastructure/NativeDelegateIos.h"
 #include "Infrastructure/NativeDelegateWin10.h"
+#ifdef __DAVAENGINE_WIN_UAP__
+#include <Platform/TemplateWin32/UAPNetworkHelper.h>
+#endif
 
 void CheckDeviceInfoValid();
 
@@ -426,6 +429,11 @@ void TestBed::InitNetwork()
 
     eNetworkRole role = SERVER_ROLE;
     Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
+
+#ifdef __DAVAENGINE_WIN_UAP__
+    role = UAPNetworkHelper::GetCurrentNetworkRole();
+    endpoint = UAPNetworkHelper::GetCurrentEndPoint();
+#endif
 
     NetConfig config(role);
     config.AddTransport(TRANSPORT_TCP, endpoint);

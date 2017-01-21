@@ -44,7 +44,7 @@ public:
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
-        using UnrefSetT = typename std::remove_reference<SetT>::type;
+        using UnrefSetT = typename std::decay<SetT>::type;
 
         if (!IsReadonly(object))
         {
@@ -61,7 +61,7 @@ public:
 
     inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
     {
-        using UnrefSetT = typename std::remove_reference<SetT>::type;
+        using UnrefSetT = typename std::decay<SetT>::type;
 
         if (value.CanCast<UnrefSetT>())
         {
