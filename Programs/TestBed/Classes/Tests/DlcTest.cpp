@@ -48,8 +48,14 @@ const float32 START_CANCEL_Y = INFO_Y + BUTTON_H + 6 * SPACE;
 DlcTest::DlcTest(TestBed& app)
     : BaseScreen(app, "DlcTest")
     , options(new KeyedArchive)
+    , crashTest(new DLCCrashTest)
     , dlc(nullptr)
 {
+}
+
+DlcTest::~DlcTest()
+{
+    SafeRelease(crashTest);
 }
 
 void DlcTest::LoadResources()
@@ -242,7 +248,7 @@ void DlcTest::LoadResources()
     DAVA::FilePath::AddResourcesFolder(destinationDir);
 
 #ifdef DLC_TEST
-    crashTest.Init(workingDir, destinationDir);
+    crashTest->Init(workingDir, destinationDir);
 #endif
 
     lastDLCState = DLC::DS_DONE;
@@ -454,7 +460,7 @@ void DlcTest::Update(float32 timeElapsed)
     }
 
 #ifdef DLC_TEST
-    crashTest.Update(timeElapsed, dlc);
+    crashTest->Update(timeElapsed, dlc);
 #endif
 }
 

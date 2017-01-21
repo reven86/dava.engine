@@ -345,9 +345,9 @@ void CurlDownloader::CleanupDownload()
     multiHandle = NULL;
 }
 
-void CurlDownloader::SaveChunkHandler(BaseObject* caller, void* callerData, void* userData)
+void CurlDownloader::SaveChunkHandler()
 {
-    Thread* thisThread = static_cast<Thread*>(caller);
+    Thread* thisThread = Thread::Current();
     bool hasChunksToSave;
 
     do
@@ -511,7 +511,7 @@ DownloadError CurlDownloader::Download(const String& url, uint64 downloadOffset,
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize = fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount * fileChunkSize);
 
-    saveThread = Thread::Create(Message(this, &CurlDownloader::SaveChunkHandler));
+    saveThread = Thread::Create(MakeFunction(this, &CurlDownloader::SaveChunkHandler));
     saveThread->Start();
 
     uint32 chunksInList = 0;

@@ -36,6 +36,24 @@ bool Thread::IsMainThread()
     return currentId == mainThreadId;
 }
 
+Thread* Thread::Current()
+{
+    const Id currentId = GetCurrentId();
+
+    auto threadListAccessor = GetThreadList().GetAccessor();
+    for (Thread* t : *threadListAccessor)
+    {
+        if (t->GetId() == currentId)
+        {
+            return t;
+        }
+    }
+
+    DVASSERT(false);
+
+    return nullptr;
+}
+
 Thread* Thread::Create(const Message& msg)
 {
     return new Thread(msg);

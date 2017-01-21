@@ -60,7 +60,7 @@ public:
     {
         if (SUPERSUBCLASS(BaseObject, T))
         {
-            return reinterpret_cast<BaseObject*>(targetObject);
+            return static_cast<BaseObject*>(targetObject);
         }
         else
         {

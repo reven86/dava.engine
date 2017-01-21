@@ -9,7 +9,7 @@ using namespace DAVA;
 
 class TestBed;
 
-struct DLCCrashTest
+struct DLCCrashTest : public BaseObject
 {
     uint64 cancelTimeout;
     uint64 exitTimeout;
@@ -35,7 +35,7 @@ public:
     DlcTest(TestBed& app);
 
 protected:
-    ~DlcTest() = default;
+    ~DlcTest();
 
 public:
     void LoadResources() override;
@@ -93,7 +93,7 @@ protected:
     uint32 lastDLCState = 0;
 
     DLC* dlc = nullptr;
-    DLCCrashTest crashTest;
+    DLCCrashTest* crashTest;
 };
 
 #endif

@@ -60,7 +60,7 @@ private:
     /**
      \brief Method for save downloaded data in a separate thread
      */
-    void SaveChunkHandler(BaseObject* caller, void* callerData, void* userData);
+    void SaveChunkHandler();
     /**
      \brief Downloads a part of file using a number of download threads
      \param[in] seek - position inside remote file to download from
