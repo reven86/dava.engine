@@ -5,6 +5,8 @@
 #include "Utils/SceneExporter/SceneExporter.h"
 #include "TArc/Utils/ModuleCollection.h"
 
+#include <Tools/AssetCache/AssetCache.h>
+
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
@@ -13,8 +15,6 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Utils/UTF8Utils.h"
-
-#include "AssetCache/AssetCache.h"
 
 namespace SceneExporterToolDetail
 {

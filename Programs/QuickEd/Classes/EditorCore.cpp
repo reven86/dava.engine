@@ -4,7 +4,7 @@
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
 
-#include "version.h"
+#include <Tools/version.h>
 #include "FileSystem/FileSystem.h"
 #include "Base/Result.h"
 #include "DAVAVersion.h"

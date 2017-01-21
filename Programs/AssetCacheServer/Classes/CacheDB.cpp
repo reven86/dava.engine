@@ -1,4 +1,7 @@
 #include "CacheDB.h"
+#include "ServerCacheEntry.h"
+
+#include <Tools/AssetCache/CachedItemValue.h>
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -7,9 +10,6 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
-
-#include "AssetCache/CachedItemValue.h"
-#include "ServerCacheEntry.h"
 
 const DAVA::String CacheDB::DB_FILE_NAME = "cache.dat";
 const DAVA::uint32 CacheDB::VERSION = 1;

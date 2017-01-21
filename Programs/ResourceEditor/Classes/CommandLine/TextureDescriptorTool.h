@@ -1,7 +1,8 @@
 #pragma once
 
+#include <Tools/TextureCompression/TextureConverter.h>
+
 #include "Render/TextureDescriptor.h"
-#include "TextureCompression/TextureConverter.h"
 #include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 

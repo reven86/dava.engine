@@ -1,7 +1,9 @@
 #include "Utils/SceneExporter/SceneExporter.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
 
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
+#include <Tools/TextureCompression/TextureConverter.h>
+
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
@@ -21,7 +23,6 @@
 #include "Utils/MD5.h"
 #include "Logger/Logger.h"
 
-#include "TextureCompression/TextureConverter.h"
 
 #include "StringConstants.h"
 #include "Scene/SceneHelper.h"

@@ -33,13 +33,9 @@ macro ( add_tool TARGET_NAME )
 endmacro ()
 
 ############
-set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-set( DAVA_USE_RENDERSTATS true )
 set( JOIN_PROJECT_NAME 1 )
-set( DAVA_DISABLE_AUTOTESTS true )
 set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
-set( DAVA_COREV2 1 )
 
 if( NOT DEPLOY_DIR )
     set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
@@ -48,9 +44,6 @@ else()
     set( DEPLOY_DIR_MACOS             ${DEPLOY_DIR} )
     set( DEPLOY_DIR_WIN               ${DEPLOY_DIR} )
 endif()
-
-
-find_package ( DavaTools     REQUIRED )
 
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )

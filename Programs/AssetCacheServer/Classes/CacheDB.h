@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+#include <Tools/AssetCache/CacheItemKey.h>
 
-#include "AssetCache/CacheItemKey.h"
+#include <Base/BaseTypes.h>
+#include <FileSystem/FilePath.h>
 
 #include <atomic>
 
