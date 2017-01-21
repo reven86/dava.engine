@@ -3,6 +3,7 @@
 #include "Base/Any.h"
 #include "Base/BaseTypes.h"
 #include "Base/EnumMap.h"
+#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
