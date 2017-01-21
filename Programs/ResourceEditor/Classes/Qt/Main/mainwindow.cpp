@@ -24,7 +24,6 @@
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
 #include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
@@ -211,9 +210,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , addSwitchEntityDialog(nullptr)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
-#if defined(NEW_PROPERTY_PANEL)
-    , propertyPanel(new PropertyPanel())
-#endif
 #if defined(__DAVAENGINE_MACOS__)
     , shortcutChecker(this)
 #endif
@@ -267,27 +263,10 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     EnableSceneActions(false);
 
     SynchronizeStateWithUI();
-
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
-    wgt::IUIFramework* uiFramework = ngtContext.queryInterface<wgt::IUIFramework>();
-    DVASSERT(uiApplication != nullptr);
-    DVASSERT(uiFramework != nullptr);
-    propertyPanel->Initialize(*uiFramework, *uiApplication);
-    DVASSERT(false); //TODO: should rewrite work with selection
-//QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
-#endif
 }
 
 QtMainWindow::~QtMainWindow()
 {
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
-    DVASSERT(uiApplication != nullptr);
-    propertyPanel->Finalize(*uiApplication);
-    propertyPanel.reset();
-#endif
-
     errorLoggerOutput->Disable();
     errorLoggerOutput = nullptr; // will be deleted by DAVA::Logger;
 
