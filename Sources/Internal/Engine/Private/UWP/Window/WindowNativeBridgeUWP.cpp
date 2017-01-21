@@ -336,7 +336,7 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
         CorePhysicalKeyStatus status = arg->KeyStatus;
         uint32 key = static_cast<uint32>(arg->VirtualKey);
 
-        // Ups, UWP does not support MapVirtualKey function to distinguish left and right shift
+        // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
         if (status.IsExtendedKey)
         {
             key |= 0x100;

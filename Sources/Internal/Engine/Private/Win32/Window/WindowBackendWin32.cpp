@@ -879,8 +879,7 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
         return 0;
     }
 
-    // How to distinguish left and right shift, control and alt
-    // http://stackoverflow.com/a/15977613
+    // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
     if (isExtended)
     {
         key |= 0x100;
