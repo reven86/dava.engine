@@ -721,11 +721,11 @@ macro( setup_main_module )
 
                 if( WIN32 )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
-                endif()            
+                endif()
 
-                set_target_properties( ${NAME_MODULE} PROPERTIES PREFIX  "" 
+                set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX Debug   )             
+                                                                 DEBUG_POSTFIX "Debug")
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

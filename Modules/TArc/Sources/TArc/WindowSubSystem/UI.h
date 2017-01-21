@@ -10,13 +10,16 @@
 #include <QString>
 #include <QFlags>
 #include <QFileDialog>
+#include <QPointer>
 
 class QWidget;
 class QAction;
+
 namespace DAVA
 {
 namespace TArc
 {
+class QtReflectionBridge;
 class WindowKey
 {
 public:
@@ -161,7 +164,6 @@ public:
     }
 
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
-    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
     virtual void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) = 0;
 

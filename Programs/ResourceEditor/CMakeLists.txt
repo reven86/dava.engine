@@ -29,12 +29,6 @@ find_package( DavaTools REQUIRED )
 find_package( GMock REQUIRED )
 find_package( QtHelpers REQUIRED )
 
-
-if (UVR_DEV)
-    dava_add_definitions (-DNEW_PROPERTY_PANEL )
-endif()
-
-
 find_package( DavaFramework REQUIRED COMPONENTS ALL
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
@@ -89,13 +83,15 @@ if (NOT PUBLIC_BUILD)
     dava_add_definitions(-D__DAVAENGINE_SPEEDTREE__)
 endif()
 
+if (DEPLOY)
+    dava_add_definitions(-DDEPLOY_BUILD)
+endif()
+
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
-
-file              ( GLOB QML_LIST "DataQt/*.qml")
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)

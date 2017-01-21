@@ -99,7 +99,7 @@ void DataWrapper::ClearListener(DataListener* listenerForCheck)
 
 bool DataWrapper::HasData() const
 {
-    if (impl == nullptr || impl->activeContext == nullptr)
+    if (impl == nullptr)
     {
         return false;
     }
@@ -134,13 +134,20 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
     Reflection data = GetData();
     Reflection field = data.GetField(fieldKey);
     DVASSERT(field.IsValid() == true);
-    field.SetValue(value);
+    bool result = field.SetValueWithCast(value);
+    DVASSERT(result);
     Sync(false);
 }
 
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();
+}
+
+void DataWrapper::UpdateCachedValue(int32 id, const Any& value)
+{
+    DVASSERT(id < impl->cachedValues.size());
+    impl->cachedValues[id] = value;
 }
 
 void DataWrapper::Sync(bool notifyListener)
