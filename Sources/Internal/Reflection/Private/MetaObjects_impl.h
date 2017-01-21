@@ -51,6 +51,7 @@ private:
 class Enum
 {
 public:
+    virtual ~Enum() = default;
     virtual const EnumMap* GetEnumMap() const = 0;
 };
 
@@ -70,6 +71,7 @@ inline const EnumMap* EnumT<T>::GetEnumMap() const
 class Flags
 {
 public:
+    virtual ~Flags() = default;
     virtual const EnumMap* GetFlagsMap() const = 0;
 };
 
