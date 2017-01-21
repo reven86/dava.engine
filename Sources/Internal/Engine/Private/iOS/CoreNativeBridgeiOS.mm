@@ -301,6 +301,17 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         listenersCopy = [appDelegateListeners copy];
     }
 
+    // some notification types require ret value
+    // to be initialized with "NO"
+    switch (type)
+    {
+    case ON_OPEN_URL:
+        ret = NO;
+        break;
+    default:
+        break;
+    }
+
     for (id<DVEApplicationListener> listener in listenersCopy)
     {
         switch (type)
@@ -387,7 +398,7 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_OPEN_URL:
             if ([listener respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)])
             {
-                ret &= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
+                ret |= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
             }
             break;
 
