@@ -1,4 +1,4 @@
-tup.davainclude("../../../Tools/Bin/lua/Tupdava.lua")
+tup.davainclude("../../../Bin/lua/Tupdava.lua")
 
 tupState = TupState.New({
     outputDir = "../.Assets",

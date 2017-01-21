@@ -3,13 +3,16 @@
 
 namespace DAVA
 {
-template <typename T>
-struct Meta
+/**
+ template T - Base of Meta
+ template U - Find helper type. In ReflectedMeta we store search index by Meta<U, U> and value as Any(Meta<T, U>)
+ T should be the same as U, of should be derived from U
+*/
+template <typename T, typename U = T>
+struct Meta : public T
 {
     template <typename... Args>
     Meta(Args&&... args);
-
-    std::unique_ptr<void, void (*)(void*)> ptr;
 };
 
 class Type;
@@ -23,8 +26,8 @@ public:
 
     DAVA_DEPRECATED(ReflectedMeta(ReflectedMeta&& rm)); // visual studio 2013 require this
 
-    template <typename T>
-    ReflectedMeta(Meta<T>&& meta);
+    template <typename T, typename U>
+    ReflectedMeta(Meta<T, U>&& meta);
 
     template <typename T>
     bool HasMeta() const;
@@ -32,17 +35,17 @@ public:
     template <typename T>
     const T* GetMeta() const;
 
-    template <typename T>
-    void Emplace(Meta<T>&& meta);
+    template <typename T, typename U>
+    void Emplace(Meta<T, U>&& meta);
 
 protected:
-    UnorderedMap<const Type*, decltype(Meta<void>::ptr)> metas;
+    UnorderedMap<const Type*, Any> metas;
 };
 
-template <typename T, typename U>
-ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab);
+template <typename T, typename TS, typename U, typename US>
+ReflectedMeta operator, (Meta<T, TS> && metaa, Meta<US>&& metab);
 
-template <typename T>
-ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta);
+template <typename T, typename U>
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, U>&& meta);
 
 } // namespace DAVA
