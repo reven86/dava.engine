@@ -119,6 +119,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName(FastName("hudControl"));
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+    systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
 }
 
@@ -477,4 +478,9 @@ void HUDSystem::ClearMagnetLines()
 {
     static const Vector<MagnetLineInfo> emptyVector;
     OnMagnetLinesChanged(emptyVector);
+}
+
+void HUDSystem::OnPackageChanged(PackageNode* package)
+{
+    OnHighlightNode(nullptr);
 }

@@ -35,6 +35,8 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void UpdateAreasVisibility();
+    void OnPackageChanged(PackageNode* package);
+
     HUDAreaInfo activeAreaInfo;
 
     DAVA::RefPtr<DAVA::UIControl> hudControl;
