@@ -49,7 +49,7 @@ Thread* Thread::Current()
         }
     }
 
-    DVASSERT(false);
+    DVASSERT(false, "Couldn't get current thread");
 
     return nullptr;
 }
