@@ -20,7 +20,7 @@ public:
 template <class T>
 class MessageBaseClassFunctionImpl : public MessageBase
 {
-    template <bool, class T>
+    template <bool>
     struct GetBaseObjectImpl
     {
         BaseObject* Get(T* obj)
@@ -29,8 +29,8 @@ class MessageBaseClassFunctionImpl : public MessageBase
         }
     };
 
-    template <class T>
-    struct GetBaseObjectImpl<true, T>
+	template<>
+    struct GetBaseObjectImpl<true>
     {
         BaseObject* Get(T* obj)
         {
@@ -76,7 +76,7 @@ public:
 
     virtual BaseObject* GetBaseObject() const
     {
-        return GetBaseObjectImpl<std::is_base_of<BaseObject, T>::value, T>().Get(targetObject);
+        return GetBaseObjectImpl<std::is_base_of<BaseObject, T>::value>().Get(targetObject);
     }
 };
 
