@@ -37,7 +37,6 @@ public:
     void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-    void OnWindowCreated();
 
 signals:
     void DeleteRequested();
@@ -82,6 +81,8 @@ private:
 
     void LoadContext();
     void SaveContext();
+
+    void InitEditorSystems();
 
 private:
     void CreateActions();

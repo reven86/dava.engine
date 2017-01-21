@@ -47,7 +47,6 @@ public:
     void SetEditorTitle(const QString& editorTitle);
     void SetRecentProjects(const QStringList& lastProjectsPathes);
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-    void OnWindowCreated();
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 

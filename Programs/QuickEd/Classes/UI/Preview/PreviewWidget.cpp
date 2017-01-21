@@ -127,6 +127,10 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
     DVASSERT(renderWidget_ != nullptr);
     renderWidget = renderWidget_;
+    InitEditorSystems();
+
+    connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
+
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
     CreateActions();
@@ -395,7 +399,7 @@ void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
     UpdateScrollArea();
 }
 
-void PreviewWidget::OnWindowCreated()
+void PreviewWidget::InitEditorSystems()
 {
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));
@@ -408,11 +412,11 @@ void PreviewWidget::OnWindowCreated()
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
     editorCanvas = systemsManager->GetEditorCanvas();
-    connect(renderWidget, &RenderWidget::Resized, this, &PreviewWidget::OnResized);
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->ositionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
+    //fastest way to apply displayed scale to the editorCanvas
     OnScaleByComboText();
 }
 

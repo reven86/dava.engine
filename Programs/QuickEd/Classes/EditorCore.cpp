@@ -202,7 +202,6 @@ EditorCore::~EditorCore()
 
 void EditorCore::OnRenderingInitialized()
 {
-    mainWindow->OnWindowCreated();
     QString lastProjectPath = GetLastProject();
     if (!lastProjectPath.isEmpty())
     {

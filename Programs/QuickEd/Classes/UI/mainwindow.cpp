@@ -264,11 +264,6 @@ void MainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
     ui->previewWidget->InjectRenderWidget(renderWidget);
 }
 
-void MainWindow::OnWindowCreated()
-{
-    ui->previewWidget->OnWindowCreated();
-}
-
 void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
 {
     QStringList errors;
