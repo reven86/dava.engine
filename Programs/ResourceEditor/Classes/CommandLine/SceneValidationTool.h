@@ -3,6 +3,9 @@
 #include "CommandLine/CommandLineModule.h"
 #include "Qt/Scene/Validation/ValidationProgress.h"
 
+#include <Reflection/ReflectionRegistrator.h>
+
+class ProjectManagerData;
 class SceneValidationTool : public CommandLineModule
 {
 public:
