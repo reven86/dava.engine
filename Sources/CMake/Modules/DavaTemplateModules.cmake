@@ -264,7 +264,7 @@ macro( generated_initialization_module_code )
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} GLOABAL_DEFINITIONS )
+    foreach( VALUE ${GLOBAL_PROPERTY_VALUES} GLOBAL_DEFINITIONS )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -413,7 +413,7 @@ macro( setup_main_module )
 #####
         if( ${MODULE_TYPE} STREQUAL "STATIC" )
 
-            get_property( GLOBAL_DEFINITIONS_PROP GLOBAL PROPERTY GLOABAL_DEFINITIONS )
+            get_property( GLOBAL_DEFINITIONS_PROP GLOBAL PROPERTY GLOBAL_DEFINITIONS )
             get_property( DEFINITIONS_PROP GLOBAL PROPERTY DEFINITIONS )
             get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 
@@ -634,7 +634,7 @@ macro( setup_main_module )
         load_property( PROPERTY_LIST 
                 DEFINITIONS
                 DEFINITIONS_${DAVA_PLATFORM_CURENT}
-                GLOABAL_DEFINITIONS                
+                GLOBAL_DEFINITIONS                
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
@@ -643,7 +643,7 @@ macro( setup_main_module )
                 INCLUDES_PRIVATE
                 )
 
-        list( APPEND DEFINITIONS ${GLOABAL_DEFINITIONS} )
+        list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
         #"DEFINITIONS"
         if( DEFINITIONS )

@@ -16,14 +16,14 @@ include ( CMake-common )
 load_property( PROPERTY_LIST 
                DEFINITIONS
                DEFINITIONS_${DAVA_PLATFORM_CURENT} 
-               GLOABAL_DEFINITIONS )
+               GLOBAL_DEFINITIONS )
 
 
 include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 
-add_definitions ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ${GLOABAL_DEFINITIONS} )
+add_definitions ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ${GLOBAL_DEFINITIONS} )
 
 
 set( ADDED_CPP_PATTERNS  AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp ResourceArchiver/*.cpp )

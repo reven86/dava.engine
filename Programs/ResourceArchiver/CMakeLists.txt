@@ -5,14 +5,10 @@ project      ( ResourceArchiver )
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
-
 include      ( CMake-common )
 
-
 set (DAVA_COREV2 1)
-#dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
-#dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
-#dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+
 dava_add_definitions ( -D__DAVAENGINE_COREV2__ 
                        -DCONSOLE)
 

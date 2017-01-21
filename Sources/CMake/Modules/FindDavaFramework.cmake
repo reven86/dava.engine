@@ -1,44 +1,25 @@
+macro ( dava_find_set_option OPTION )
+    list (FIND DAVA_COMPONENTS ${OPTION} _index)
+    if ( ${_index} GREATER -1 )
+        set( ${OPTION} true )
+    endif()
+endmacro ()
+
 set( DAVA_LIBRARY    "DavaFramework" )
+
 if( DavaFramework_FIND_COMPONENTS )
     set( DAVA_COMPONENTS "${DAVA_LIBRARY};${DavaFramework_FIND_COMPONENTS}" )
-
 else()
     set( DAVA_COMPONENTS "ALL" )
-
 endif()
 
-#####
-list (FIND DAVA_COMPONENTS "DAVA_DISABLE_AUTOTESTS" _index)
-if ( ${_index} GREATER -1 )
-    set( DAVA_DISABLE_AUTOTESTS true )
-endif()
 
-list (FIND DAVA_COMPONENTS "DAVA_USE_RENDERSTATS" _index)
-if ( ${_index} GREATER -1 )
-    set( DAVA_USE_RENDERSTATS true )
-endif()
-
-list (FIND DAVA_COMPONENTS "DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME" _index)
-if ( ${_index} GREATER -1 )
-    set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-endif()
-
-list (FIND DAVA_COMPONENTS "DENY_RUN_MULTIPLE_APP_INSTANCES" _index)
-if ( ${_index} GREATER -1 )
-    set( DENY_RUN_MULTIPLE_APP_INSTANCES true )
-endif()
-
-list (FIND DAVA_COMPONENTS "ANDROID_USE_LOCAL_RESOURCES" _index)
-if ( ${_index} GREATER -1 )
-    set( ANDROID_USE_LOCAL_RESOURCES true )
-endif()
-
-list (FIND DAVA_COMPONENTS "DAVA_PLATFORM_QT" _index)
-if ( ${_index} GREATER -1 )
-    set( DAVA_PLATFORM_QT true )
-endif()
-
-#####
+dava_find_set_option( DAVA_DISABLE_AUTOTESTS )
+dava_find_set_option( DAVA_USE_RENDERSTATS )
+dava_find_set_option( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+dava_find_set_option( DENY_RUN_MULTIPLE_APP_INSTANCES )
+dava_find_set_option( ANDROID_USE_LOCAL_RESOURCES )
+dava_find_set_option( DAVA_PLATFORM_QT )
 
 set ( DAVA_FOUND 1 )
 

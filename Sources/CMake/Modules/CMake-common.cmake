@@ -48,7 +48,7 @@ include ( ModuleHelper         )
 
 #
 macro ( dava_add_definitions DAVA_DEFINITIONS )
-    append_property( GLOABAL_DEFINITIONS "${DAVA_DEFINITIONS};${ARGN}" )
+    append_property( GLOBAL_DEFINITIONS "${DAVA_DEFINITIONS};${ARGN}" )
 endmacro ()
 
 #
