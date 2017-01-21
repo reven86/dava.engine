@@ -38,8 +38,6 @@ struct GetBaseObjectImpl<true, T>
 template <class T>
 class MessageBaseClassFunctionImpl : public MessageBase
 {
-    
-
     T* targetObject;
     void (T::*targetFunction)(BaseObject*, void*, void*);
 
