@@ -5,7 +5,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/PlatformApiIos.h"
+#include "Engine/Ios/PlatformApi.h"
 
 #import <Foundation/NSObject.h>
 

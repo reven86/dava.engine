@@ -202,17 +202,22 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
     float resW = 1024.0f;
     float resH = 768.0f;
     float resDPI = 240.0;
+    float virtualSizeScale = 1.0f;
 
-    float winDpi = w->GetDPI();
-    float dpiScale = 1.0f;
-
-    if (winDpi > resDPI)
+    // For devices with very high dpi ( > resDPI) we will scale virtual size
+    // to make it slightly smaller that for the regular devices.
+    // In this way on very high dpi devices (usualy phones) all UI-contols
+    // will be slightly larger.
     {
-        dpiScale = std::max(0.7f, (resDPI / winDpi));
+        float winDpi = w->GetDPI();
+        if (winDpi > resDPI)
+        {
+            virtualSizeScale = std::max(0.75f, (resDPI / winDpi));
+        }
     }
 
-    float vw = resW * dpiScale;
-    float vh = resH * dpiScale;
+    float vw = resW * virtualSizeScale;
+    float vh = resH * virtualSizeScale;
 
     w->SetVirtualSize(vw, vh);
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");

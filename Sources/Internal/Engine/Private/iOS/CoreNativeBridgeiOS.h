@@ -41,8 +41,8 @@ struct CoreNativeBridge final
     void OnFrameTimer();
 
     // Callbacks from AppDelegateiOS
-    bool ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions);
-    bool ApplicationDidFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions);
+    BOOL ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions);
+    BOOL ApplicationDidFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions);
     void ApplicationDidBecomeActive(UIApplication* app);
     void ApplicationWillResignActive(UIApplication* app);
     void ApplicationDidEnterBackground(UIApplication* app);
@@ -55,7 +55,7 @@ struct CoreNativeBridge final
     void DidFailToRegisterForRemoteNotificationsWithError(UIApplication* app, NSError* error);
     void DidReceiveLocalNotification(UIApplication* app, UILocalNotification* notification);
     void HandleActionWithIdentifier(UIApplication* app, NSString* identifier, NSDictionary* userInfo, id completionHandler);
-    bool OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation);
+    BOOL OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation);
 
     void GameControllerDidConnected();
     void GameControllerDidDisconnected();

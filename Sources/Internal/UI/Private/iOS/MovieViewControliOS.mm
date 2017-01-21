@@ -9,7 +9,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/PlatformApiIos.h"
+#include "Engine/Ios/PlatformApi.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
 #endif

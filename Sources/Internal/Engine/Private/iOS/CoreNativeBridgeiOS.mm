@@ -4,7 +4,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Engine.h"
-#include "Engine/PlatformApiIos.h"
+#include "Engine/Ios/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -159,14 +159,14 @@ void CoreNativeBridge::OnFrameTimer()
     [objcInterop setDisplayLinkInterval:interval];
 }
 
-bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
+BOOL CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationWillFinishLaunchingWithOptions");
 
     return NotifyListeners(ON_WILL_FINISH_LAUNCHING, app, launchOptions);
 }
 
-bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
+BOOL CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
@@ -258,7 +258,7 @@ void CoreNativeBridge::HandleActionWithIdentifier(UIApplication* app, NSString* 
     NotifyListeners(ON_HANDLE_ACTION_WITH_IDENTIFIER, app, identifier, userInfo, completionHandler);
 }
 
-bool CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation)
+BOOL CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation)
 {
     return NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
 }
@@ -290,9 +290,9 @@ void CoreNativeBridge::UnregisterDVEApplicationListener(id<DVEApplicationListene
     [appDelegateListeners removeObject:listener];
 }
 
-bool CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3, id arg4)
+BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3, id arg4)
 {
-    bool ret = false;
+    BOOL ret = YES;
 
     NSArray* listenersCopy = nil;
     {
@@ -308,14 +308,14 @@ bool CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_WILL_FINISH_LAUNCHING:
             if ([listener respondsToSelector:@selector(application:willFinishLaunchingWithOptions:)])
             {
-                ret |= [listener application:static_cast<UIApplication*>(arg1) willFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
+                ret &= [listener application:static_cast<UIApplication*>(arg1) willFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
             }
             break;
 
         case ON_DID_FINISH_LAUNCHING:
             if ([listener respondsToSelector:@selector(application:didFinishLaunchingWithOptions:)])
             {
-                ret |= [listener application:static_cast<UIApplication*>(arg1) didFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
+                ret &= [listener application:static_cast<UIApplication*>(arg1) didFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
             }
             break;
         case ON_DID_BECOME_ACTIVE:
@@ -387,7 +387,7 @@ bool CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_OPEN_URL:
             if ([listener respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)])
             {
-                [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
+                ret &= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
             }
             break;
 

@@ -105,7 +105,7 @@ void UnregisterXamlApplicationListener(XamlApplicationListener* listener);
 
 #elif defined(__DAVAENGINE_IPHONE__)
 
-// PlatformApiIos.h
+// Ios/PlatformApi.h
 
 #elif defined(__DAVAENGINE_ANDROID__)
 

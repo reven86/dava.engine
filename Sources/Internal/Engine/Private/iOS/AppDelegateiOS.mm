@@ -18,12 +18,12 @@ extern CoreNativeBridge* coreNativeBridge;
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     bridge = DAVA::Private::coreNativeBridge;
-    return bridge->ApplicationWillFinishLaunchingWithOptions(application, launchOptions) ? YES : NO;
+    return bridge->ApplicationWillFinishLaunchingWithOptions(application, launchOptions);
 }
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
