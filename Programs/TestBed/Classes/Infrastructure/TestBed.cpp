@@ -216,8 +216,8 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
         }
     }
 
-    float vw = resW * virtualSizeScale;
-    float vh = resH * virtualSizeScale;
+    DAVA::int32 vw = static_cast<DAVA::int32>(resW * virtualSizeScale);
+    DAVA::int32 vh = static_cast<DAVA::int32>(resH * virtualSizeScale);
 
     w->SetVirtualSize(vw, vh);
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");

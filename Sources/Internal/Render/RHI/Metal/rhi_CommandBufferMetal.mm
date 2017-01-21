@@ -575,7 +575,6 @@ bool RenderPassMetal_t::Initialize()
 
             _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
             _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
-
         }
     }
 

@@ -10,12 +10,12 @@
 
 @interface NativeDelegateIos : NSObject<DVEApplicationListener>
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
-- (void)applicationDidBecomeActive:(UIApplication *)application;
-- (void)applicationWillResignActive:(UIApplication *)application;
-- (void)applicationDidEnterBackground:(UIApplication *)application;
-- (void)applicationWillEnterForeground:(UIApplication *)application;
-- (void)applicationWillTerminate:(UIApplication *)application;
+- (void)applicationDidReceiveMemoryWarning:(UIApplication*)application;
+- (void)applicationDidBecomeActive:(UIApplication*)application;
+- (void)applicationWillResignActive:(UIApplication*)application;
+- (void)applicationDidEnterBackground:(UIApplication*)application;
+- (void)applicationWillEnterForeground:(UIApplication*)application;
+- (void)applicationWillTerminate:(UIApplication*)application;
 @end
 
 @implementation NativeDelegateIos
@@ -36,32 +36,32 @@
     return YES;
 }
 
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
+- (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidReceiveMemoryWarning");
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application;
+- (void)applicationDidBecomeActive:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidBecomeActive");
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application;
+- (void)applicationWillResignActive:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillResignActive");
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application;
+- (void)applicationWillEnterForeground:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillEnterForeground");
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application;
+- (void)applicationDidEnterBackground:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidEnterBackground");
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application;
+- (void)applicationWillTerminate:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillTerminate");
 }
