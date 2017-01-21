@@ -153,8 +153,10 @@ inline void DynamicBindings::UpdateGlobalTimeIfRequired()
 #endif
     if (dynamicParameters[PARAM_GLOBAL_TIME].updateSemantic != globalFrameIndex)
     {
-        // SystemTimer::GetGlobalTime is deprecated so use frame timestamp translated to seconds
-        frameGlobalTime = SystemTimer::GetFrameTimestamp();
+        // Use SystemTimer::GetGlobalTime although it is deprecated.
+        // SystemTimer::GetFrameTimestamp usually returns number of seconds elapsed from system start and
+        // this value can be big enough to lose some precision later.
+        frameGlobalTime = SystemTimer::GetGlobalTime();
         SetDynamicParam(PARAM_GLOBAL_TIME, &frameGlobalTime, globalFrameIndex);
     }
 }
