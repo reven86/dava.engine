@@ -157,25 +157,25 @@ void PreviewWidget::CreateActions()
 {
     QAction* importPackageAction = new QAction(tr("Import package"), this);
     importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
+    importPackageAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
     renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WidgetShortcut);
+    cutAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
     renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WidgetShortcut);
+    copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
     renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WidgetShortcut);
+    pasteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
     renderWidget->addAction(pasteAction);
 
@@ -186,23 +186,23 @@ void PreviewWidget::CreateActions()
     deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
 #endif // platform
 
-    deleteAction->setShortcutContext(Qt::WidgetShortcut);
+    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
     renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setShortcutContext(Qt::WidgetShortcut);
+    selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
-    focusNextChildAction->setShortcutContext(Qt::WidgetShortcut);
+    focusNextChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
-    focusPreviousChildAction->setShortcutContext(Qt::WidgetShortcut);
+    focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     renderWidget->addAction(focusPreviousChildAction);
 }
 

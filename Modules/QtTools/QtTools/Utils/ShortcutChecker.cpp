@@ -1,8 +1,9 @@
 #include "ShortcutChecker.h"
 
-#include "Logger/Logger.h"
-
 #include "QtTools/Utils/DavaQtKeyboard.h"
+
+#include <Logger/Logger.h>
+#include <Engine/PlatformApi.h>
 
 #include <QObject>
 #include <QKeyEvent>
@@ -67,33 +68,55 @@ void CallShortcut(QAction* action)
     action->trigger();
 }
 
+bool CheckWidgetWithChildrenPolicy(QList<QWidget*> associatedWidgets)
+{
+    QWidget* w = DAVA::PlatformApi::Qt::GetApplication()->focusWidget();
+    QSet<QWidget*> focusHierarcy;
+    while (w != nullptr)
+    {
+        focusHierarcy.insert(w);
+        w = w->parentWidget();
+    }
+
+    foreach(QWidget* shortcutWidget, associatedWidgets)
+    {
+        if (focusHierarcy.find(shortcutWidget) != focusHierarcy.end())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool CheckContext(QShortcut* shortcut)
 {
     Qt::ShortcutContext context = shortcut->context();
-    if (context != Qt::WidgetShortcut)
+    if (context == Qt::WidgetWithChildrenShortcut)
     {
-        return true;
+        return CheckWidgetWithChildrenPolicy(QList<QWidget*>() << shortcut->parentWidget());
     }
-    return shortcut->parentWidget()->hasFocus();
+    if (context == Qt::WidgetShortcut)
+    {
+        return shortcut->parentWidget()->hasFocus();
+    }
+    return true;
 }
 
 bool CheckContext(QAction* action)
 {
     Qt::ShortcutContext context = action->shortcutContext();
+    if (context == Qt::WidgetWithChildrenShortcut)
+    {
+        return CheckWidgetWithChildrenPolicy(action->associatedWidgets());
+    }
     if (context != Qt::WidgetShortcut)
     {
-        return true;
+        QList<QWidget*> associatedWidgets = action->associatedWidgets();
+        auto iter = qFind(associatedWidgets.begin(), associatedWidgets.end(), DAVA::PlatformApi::Qt::GetApplication()->focusWidget());
+        return iter != associatedWidgets.end();
     }
-
-    QList<QWidget*> associatedWidgets = action->associatedWidgets();
-    for (QWidget* widget : associatedWidgets)
-    {
-        if (widget->hasFocus())
-        {
-            return true;
-        }
-    }
-    return false;
+    return true;
 }
 }
 
