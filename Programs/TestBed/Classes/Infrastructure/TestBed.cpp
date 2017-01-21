@@ -202,8 +202,9 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
-    float resW = 1024.0f;
-    float resH = 768.0f;
+    DAVA::int32 resW = 1024;
+    DAVA::int32 resH = 768;
+
     float resDPI = 240.0;
     float virtualSizeScale = 1.0f;
 
@@ -219,8 +220,8 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
         }
     }
 
-    DAVA::int32 vw = static_cast<DAVA::int32>(resW * virtualSizeScale);
-    DAVA::int32 vh = static_cast<DAVA::int32>(resH * virtualSizeScale);
+    float vw = static_cast<float>(resW * virtualSizeScale);
+    float vh = static_cast<float>(resH * virtualSizeScale);
 
     w->SetVirtualSize(vw, vh);
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
