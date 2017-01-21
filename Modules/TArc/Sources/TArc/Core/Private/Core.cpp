@@ -10,6 +10,7 @@
 #include "TArc/Utils/RhiEmptyFrame.h"
 #include "TArc/Utils/Private/CrashDumpHandler.h"
 #include "TArc/Utils/QtMessageHandler.h"
+#include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
@@ -32,7 +33,6 @@
 #include <QApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
-#include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 namespace DAVA
 {
@@ -435,7 +435,6 @@ public:
     void OnLoopStarted() override
     {
         qInstallMessageHandler(&DAVAMessageHandler);
-        ToolsAssertGuard::Instance()->Init();
         Impl::OnLoopStarted();
 
         PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
