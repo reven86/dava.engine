@@ -104,6 +104,11 @@ public:
         return *meta;
     }
 
+    const PackFormat::PackFile& GetPack() const
+    {
+        return usedPackFile;
+    }
+
 private:
     // initialization state functions
     void AskFooter();
@@ -111,8 +116,8 @@ private:
     void AskFileTable();
     void GetFileTable();
     void CompareLocalMetaWitnRemoteHash();
-    void AskMeta();
-    void GetMeta();
+    void AskServerMeta();
+    void GetServerMeta();
     void ParseMeta();
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
@@ -143,8 +148,8 @@ private:
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
     // first - relative file name in archive, second - file properties
-    UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
-    Vector<ResourceArchive::FileInfo> initfilesInfo;
+    // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
+    // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 

@@ -49,11 +49,13 @@ public:
         /** return requested pack name */
         virtual const String& GetRequestedPackName() const = 0;
         /** recalculate full size with all dependencies */
-        virtual uint64 GetFullSizeWithDependencies() const = 0;
-        /** recalculate current downloaded size */
+        virtual Vector<const IRequest*> GetDependencies() const = 0;
+        /** return size of files within this request without dependencies */
+        virtual uint64 GetSize() const = 0;
+        /** recalculate current downloaded size without dependencies */
         virtual uint64 GetDownloadedSize() const = 0;
         /** return true when all files loaded and ready */
-        virtual bool IsDowndloaded() const = 0;
+        virtual bool IsDownloaded() const = 0;
     };
 
     /** you have to subscribe to this signal before call `Initialize` */

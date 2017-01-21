@@ -102,6 +102,18 @@ const std::tuple<String, String>& PackMetaData::GetPackInfo(const uint32 packInd
     return packDependencies.at(packIndex);
 }
 
+const std::tuple<String, String>& PackMetaData::GetPackInfo(const String& packName) const
+{
+    for (const auto& packInfo : packDependencies)
+    {
+        if (std::get<0>(packInfo) == packName)
+        {
+            return packInfo;
+        }
+    }
+    DAVA_THROW(Exception, "no such packName: " + packName);
+}
+
 Vector<uint8> PackMetaData::Serialize() const
 {
     DVASSERT(packDependencies.size() > 0);

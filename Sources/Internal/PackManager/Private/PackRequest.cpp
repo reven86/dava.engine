@@ -1,6 +1,7 @@
 #include "PackManager/Private/PackRequest.h"
 #include "PackManager/Private/RequestManager.h"
 #include "PackManager/Private/DLCManagerImpl.h"
+#include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
@@ -17,6 +18,18 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
 {
 }
 
+PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
+    : packManagerImpl(packManager_)
+    , fileIndexes{ std::move(fileIndexes_) }
+    , requestedPackName(pack_)
+{
+}
+
+PackRequest::~PackRequest()
+{
+    Stop();
+}
+
 void PackRequest::Start()
 {
     // TODO
@@ -27,81 +40,65 @@ void PackRequest::Stop()
     // TODO
 }
 
-void PackRequest::Restart()
+const String& PackRequest::GetRequestedPackName() const
 {
-    // TODO
+    return requestedPackName;
 }
+
+Vector<const IDLCManager::IRequest*> PackRequest::GetDependencies() const
+{
+    Vector<const IRequest*> result;
+
+    const PackMetaData& meta = packManagerImpl.GetMeta();
+    const auto& packInfo = meta.GetPackInfo(requestedPackName);
+    String dependencies = std::get<1>(packInfo);
+    String delimiter(", ");
+
+    Vector<String> requestNames;
+    Split(dependencies, delimiter, requestNames);
+
+    for (const String& requestName : requestNames)
+    {
+        const IRequest* request = packManagerImpl.FindRequest(requestName);
+        if (request != nullptr)
+        {
+            result.push_back(request);
+        }
+    }
+
+    return result;
+}
+/** return size of files within this request without dependencies */
+uint64 PackRequest::GetSize() const
+{
+    uint64 allFilesSize = 0;
+    for (uint32 fileIndex : fileIndexes)
+    {
+        const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
+        allFilesSize += fileInfo.compressedSize;
+    }
+    return allFilesSize;
+}
+/** recalculate current downloaded size without dependencies */
+uint64 PackRequest::GetDownloadedSize() const
+{
+    uint64 allFilesSize = 0;
+    for (uint32 fileIndex : fileIndexes)
+    {
+        const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
+        // TODO allFilesSize += fileInfo.;
+    }
+    return allFilesSize;
+}
+/** return true when all files loaded and ready */
+bool IsDownloaded() const override;
 
 void PackRequest::Update()
 {
     DVASSERT(Thread::IsMainThread());
     DVASSERT(packManagerImpl.IsInitialized());
 
-    if (!IsDone() && !IsError())
-    {
-        FileRequest& subRequest = dependencies.at(0);
-
-        switch (subRequest.status)
-        {
-        case FileRequest::Wait:
-            Restart();
-            break;
-        case FileRequest::AskFooter:
-            AskFooter(); // continue ask footer
-            break;
-        case FileRequest::GetFooter:
-            GetFooter();
-            break;
-        case FileRequest::LoadingPackFile:
-            if (IsLoadingPackFileFinished())
-            {
-                StartCheckHash();
-            }
-            break;
-        case FileRequest::CheckHash:
-            if (IsCheckingHashFinished())
-            {
-                MountPack();
-            }
-            break;
-        case FileRequest::Mounted:
-            GoToNextSubRequest();
-            break;
-        default:
-            break;
-        } // end switch status
-    }
-}
-
-void PackRequest::ChangePriority(float32 newPriority)
-{
-    requestedPackName->priority = newPriority;
-    for (FileRequest& subRequest : dependencies)
-    {
-        IDLCManager::Pack& pack = *subRequest.pack;
-        pack.priority = newPriority;
-    }
-}
-
-bool PackRequest::IsDone() const
-{
-    return dependencies.empty();
-}
-
-bool PackRequest::IsError() const
-{
-    if (!dependencies.empty())
-    {
-        const FileRequest& subRequest = GetCurrentSubRequest();
-        return subRequest.status == FileRequest::Error;
-    }
-    return false;
-}
-
-const PackRequest::FileRequest& PackRequest::GetCurrentSubRequest() const
-{
-    DVASSERT(!dependencies.empty());
-    return dependencies.at(0); // at check index
+    // TODO
 }
 
 uint64 PackRequest::GetFullSizeWithDependencies() const
@@ -111,26 +108,7 @@ uint64 PackRequest::GetFullSizeWithDependencies() const
 
 uint64 PackRequest::GetDownloadedSize() const
 {
-    uint64 result = 0ULL;
-
-    for (auto pack : dependencyPacks)
-    {
-        result += pack->downloadedSize;
-    }
-
-    result += requestedPackName->downloadedSize;
-    return result;
-}
-
-const IDLCManager::Pack& PackRequest::GetErrorPack() const
-{
-    auto& subRequest = GetCurrentSubRequest();
-    return *subRequest.pack;
-}
-
-const String& PackRequest::GetErrorMessage() const
-{
-    return requestedPackName->otherErrorMsg;
+    return downloadedSize;
 }
 
 } // end namespace DAVA

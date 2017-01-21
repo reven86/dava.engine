@@ -247,11 +247,11 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::LoadingRequestAskMeta == initState)
     {
-        AskMeta();
+        AskServerMeta();
     }
     else if (InitState::LoadingRequestGetMeta == initState)
     {
-        GetMeta();
+        GetServerMeta();
     }
     else if (InitState::UnpakingDB == initState)
     {
@@ -491,7 +491,7 @@ void DLCManagerImpl::CompareLocalMetaWitnRemoteHash()
     }
 }
 
-void DLCManagerImpl::AskMeta()
+void DLCManagerImpl::AskServerMeta()
 {
     //Logger::FrameworkDebug("pack manager ask_db");
 
@@ -513,7 +513,7 @@ void DLCManagerImpl::AskMeta()
     initState = InitState::LoadingRequestGetMeta;
 }
 
-void DLCManagerImpl::GetMeta()
+void DLCManagerImpl::GetServerMeta()
 {
     //Logger::FrameworkDebug("pack manager get_db");
 
