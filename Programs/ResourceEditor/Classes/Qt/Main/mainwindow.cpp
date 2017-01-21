@@ -17,13 +17,13 @@
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
+#include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
 #include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
@@ -210,9 +210,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     , addSwitchEntityDialog(nullptr)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
-#if defined(NEW_PROPERTY_PANEL)
-    , propertyPanel(new PropertyPanel())
-#endif
 #if defined(__DAVAENGINE_MACOS__)
     , shortcutChecker(this)
 #endif
@@ -266,27 +263,10 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     EnableSceneActions(false);
 
     SynchronizeStateWithUI();
-
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
-    wgt::IUIFramework* uiFramework = ngtContext.queryInterface<wgt::IUIFramework>();
-    DVASSERT(uiApplication != nullptr);
-    DVASSERT(uiFramework != nullptr);
-    propertyPanel->Initialize(*uiFramework, *uiApplication);
-    DVASSERT(false); //TODO: should rewrite work with selection
-//QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
-#endif
 }
 
 QtMainWindow::~QtMainWindow()
 {
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
-    DVASSERT(uiApplication != nullptr);
-    propertyPanel->Finalize(*uiApplication);
-    propertyPanel.reset();
-#endif
-
     errorLoggerOutput->Disable();
     errorLoggerOutput = nullptr; // will be deleted by DAVA::Logger;
 
@@ -728,6 +708,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
 
     QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
+
+    QObject::connect(ui->actionValidateScene, SIGNAL(triggered()), this, SLOT(OnValidateScene()));
 }
 
 // ###################################################################################################
@@ -844,6 +826,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionSnapCameraToLandscape->setEnabled(enable);
     ui->actionHeightmap_Delta_Tool->setEnabled(enable);
+
+    ui->actionValidateScene->setEnabled(enable);
 
     // Fix for menuBar rendering
     const auto isMenuBarEnabled = ui->menuBar->isEnabled();
@@ -2540,4 +2524,13 @@ void QtMainWindow::UpdateRedoActionText(const DAVA::String& text)
     QString actionText = text.empty() ? "Redo" : "Redo: " + QString::fromStdString(text);
     ui->actionRedo->setText(actionText);
     ui->actionRedo->setToolTip(actionText);
+}
+
+void QtMainWindow::OnValidateScene()
+{
+    DAVA::RefPtr<SceneEditor2> currentScene = MainWindowDetails::GetCurrentScene();
+    DVASSERT(currentScene.Get() != nullptr);
+
+    SceneValidationDialog dlg(currentScene.Get());
+    dlg.exec();
 }

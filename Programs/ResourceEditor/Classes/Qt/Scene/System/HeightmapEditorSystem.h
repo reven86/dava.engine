@@ -31,6 +31,7 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
     bool Input(DAVA::UIEvent* event) override;
+    void InputCancelled(DAVA::UIEvent* event) override;
 
     void SetBrushSize(DAVA::int32 brushSize);
     DAVA::int32 GetBrushSize();

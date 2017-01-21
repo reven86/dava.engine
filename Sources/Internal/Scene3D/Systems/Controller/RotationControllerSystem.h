@@ -52,7 +52,7 @@ private:
     float32 rotationSpeed;
 
 #if defined(__DAVAENGINE_COREV2__)
-    uint32 inputHandlerToken = 0;
+//uint32 inputHandlerToken = 0;
 #else
     InputCallback* inputCallback = nullptr;
 #endif

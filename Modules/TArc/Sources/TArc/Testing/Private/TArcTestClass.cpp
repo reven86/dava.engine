@@ -103,6 +103,12 @@ TestClass::~TestClass()
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 
+    QWidget* focusWidget = PlatformApi::Qt::GetApplication()->focusWidget();
+    if (focusWidget != nullptr)
+    {
+        focusWidget->clearFocus();
+    }
+
     coreChanged.Emit(nullptr);
     Core* c = core.release();
     c->SetInvokeListener(nullptr);
@@ -239,6 +245,11 @@ void TestClass::CreateTestedModules()
 }
 
 Signal<Core*> TestClass::coreChanged;
+
+// ContextAccessor* TestClass::GetAccessor()
+// {
+//     return core->GetAccessor();
+// }
 
 } // namespace TArc
 } // namespace DAVA
