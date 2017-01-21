@@ -17,26 +17,28 @@ public:
     virtual BaseObject* GetBaseObject() const = 0;
 };
 
+template <bool, class T>
+struct GetBaseObjectImpl
+{
+	BaseObject* Get(T* obj)
+	{
+		return nullptr;
+	}
+};
+
+template<class T>
+struct GetBaseObjectImpl<true, T>
+{
+	BaseObject* Get(T* obj)
+	{
+		return static_cast<BaseObject*>(obj);
+	}
+};
+
 template <class T>
 class MessageBaseClassFunctionImpl : public MessageBase
 {
-    template <bool>
-    struct GetBaseObjectImpl
-    {
-        BaseObject* Get(T* obj)
-        {
-            return nullptr;
-        }
-    };
-
-	template<>
-    struct GetBaseObjectImpl<true>
-    {
-        BaseObject* Get(T* obj)
-        {
-            return static_cast<BaseObject*>(obj);
-        }
-    };
+    
 
     T* targetObject;
     void (T::*targetFunction)(BaseObject*, void*, void*);
@@ -76,7 +78,7 @@ public:
 
     virtual BaseObject* GetBaseObject() const
     {
-        return GetBaseObjectImpl<std::is_base_of<BaseObject, T>::value>().Get(targetObject);
+        return GetBaseObjectImpl<std::is_base_of<BaseObject, T>::value, T>().Get(targetObject);
     }
 };
 
