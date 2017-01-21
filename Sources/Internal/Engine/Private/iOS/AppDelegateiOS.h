@@ -6,8 +6,8 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <UIKit/UIApplication.h>
-#import "Engine/Private/EnginePrivateFwd.h"
-#import "Concurrency/Mutex.h"
+#include "Engine/Private/EnginePrivateFwd.h"
+#include "Concurrency/Mutex.h"
 
 @protocol DVEApplicationListener;
 
