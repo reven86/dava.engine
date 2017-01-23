@@ -1,16 +1,21 @@
 #pragma once
 
-#include "Classes/Qt/Scene/ActiveSceneHolder.h"
-
-#include "TArc/DataProcessing/DataListener.h"
-#include "TArc/DataProcessing/DataWrapper.h"
-
-#include "Render/RenderBase.h"
+#include "TArc/Core/FieldBinder.h"
 
 #include <QWidget>
 #include <QTreeView>
 #include <QItemSelection>
 #include <QStringList>
+
+#include <memory>
+
+namespace DAVA
+{
+namespace TArc
+{
+class ContextAccessor;
+}
+}
 
 class QVBoxLayout;
 class QToolBar;
@@ -44,8 +49,7 @@ protected:
     }
 };
 
-class GlobalOperations;
-class LibraryWidget : public QWidget, private DAVA::TArc::DataListener
+class LibraryWidget : public QWidget
 {
     Q_OBJECT
 
@@ -56,10 +60,15 @@ class LibraryWidget : public QWidget, private DAVA::TArc::DataListener
     };
 
 public:
-    LibraryWidget(QWidget* parent = 0);
-    ~LibraryWidget();
+    LibraryWidget(DAVA::TArc::ContextAccessor* contextAccessor, QWidget* parent = 0);
 
-    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
+signals:
+
+    void AddSceneRequested(const DAVA::FilePath& scenePathname);
+    void EditSceneRequested(const DAVA::FilePath& scenePathname);
+    void DAEConvertionRequested(const DAVA::FilePath& daePathname);
+    void DoubleClicked(const DAVA::FilePath& scenePathname);
+    void DragStarted();
 
 protected slots:
     void ViewAsList();
@@ -76,9 +85,9 @@ protected slots:
     void OnConvertDae();
     void OnRevealAtFolder();
 
-    void OnTreeDragStarted();
-
 private:
+    void OnProjectChanged(const DAVA::Any& projectFieldValue);
+
     void SetupFileTypes();
     void SetupToolbar();
     void SetupView();
@@ -86,29 +95,23 @@ private:
 
     void HideDetailedColumnsAtFilesView(bool show);
 
-    void HidePreview() const;
-    void ShowPreview(const QString& pathname) const;
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
-
-    QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
-
 private:
-    QVBoxLayout* layout;
+    QVBoxLayout* layout = nullptr;
 
-    QToolBar* toolbar;
-    QTreeView* filesView;
+    QToolBar* toolbar = nullptr;
+    QTreeView* filesView = nullptr;
 
-    QComboBox* filesTypeFilter;
+    QComboBox* filesTypeFilter = nullptr;
 
-    QAction* actionViewAsList;
-    QAction* actionViewDetailed;
+    QAction* actionViewAsList = nullptr;
+    QAction* actionViewDetailed = nullptr;
 
     QString rootPathname;
-    LibraryFileSystemModel* filesModel;
+    LibraryFileSystemModel* filesModel = nullptr;
 
     eViewMode viewMode;
-    int curTypeIndex;
-    ActiveSceneHolder sceneHolder;
-    std::shared_ptr<GlobalOperations> globalOperations = nullptr;
-    DAVA::TArc::DataWrapper projectDataWrapper;
+    int curTypeIndex = -1;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    DAVA::TArc::ContextAccessor* contextAccessor = nullptr;
 };

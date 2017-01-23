@@ -1,5 +1,5 @@
-#include "ControlsFactory.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Library/Private/ControlsFactory.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
 
 DAVA::Font* ControlsFactory::font12 = NULL;
 DAVA::Font* ControlsFactory::font20 = NULL;

@@ -1,5 +1,5 @@
-#include "ExtendedDialog.h"
-#include "ControlsFactory.h"
+#include "Classes/Library/Private/ExtendedDialog.h"
+#include "Classes/Library/Private/ControlsFactory.h"
 
 ExtendedDialog::ExtendedDialog()
     : UIControl(DAVA::UIScreenManager::Instance()->GetScreen()->GetRect())
