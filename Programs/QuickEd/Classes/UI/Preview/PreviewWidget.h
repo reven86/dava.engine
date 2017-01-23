@@ -99,7 +99,7 @@ private:
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
 
-    void OnTransformStateChanged(bool inTransformState);
+    void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     float GetScaleFromWheelEvent(int ticksCount) const;

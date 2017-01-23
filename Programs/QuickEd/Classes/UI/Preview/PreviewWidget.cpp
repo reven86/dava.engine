@@ -407,6 +407,7 @@ void PreviewWidget::InitEditorSystems()
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
+    systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
 
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
@@ -846,20 +847,22 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
     }
 }
 
-void PreviewWidget::OnTransformStateChanged(bool inTransformState)
+void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)
 {
     if (document == nullptr)
     {
         return;
     }
-    document->SetCanClose(!inTransformState);
     QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
-    if (inTransformState)
+
+    if (dragState == EditorSystemsManager::Transform)
     {
+        document->SetCanClose(false);
         executor->BeginMacro("transformations");
     }
-    else
+    else if (previousState == EditorSystemsManager::Transform)
     {
+        document->SetCanClose(true);
         executor->EndMacro();
     }
 }
