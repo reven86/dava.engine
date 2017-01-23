@@ -36,13 +36,9 @@ void RequestManager::Update()
     {
         PackRequest* request = Top();
         request->Update();
-        if (request->IsDone())
+        if (request->IsDownloaded())
         {
             Pop();
-        }
-        else if (request->IsError())
-        {
-            request->Start();
         }
     }
 }
@@ -57,20 +53,20 @@ size_t RequestManager::GetNumRequests() const
     return requests.size();
 }
 
-PackRequest* RequestManager::Top()
+PackRequest* RequestManager::Top() const
 {
     if (requests.empty())
     {
         return nullptr;
     }
-    return &requests[0];
+    return requests.front();
 }
 
-PackRequest* RequestManager::Find(const String& requestedPackName)
+PackRequest* RequestManager::Find(const String& requestedPackName) const
 {
     auto it = std::find_if(begin(requests), end(requests), [&requestedPackName](const PackRequest& r) -> bool
                            {
-                               return r.GetRootPack().name == requestedPackName;
+                               return r.GetRequestedPackName() == requestedPackName;
                            });
     if (it == end(requests))
     {
@@ -79,20 +75,17 @@ PackRequest* RequestManager::Find(const String& requestedPackName)
     return (*it);
 }
 
-PackRequest* RequestManager::Push(const String& requestedPackName)
+void RequestManager::Push(PackRequest* request_)
 {
-    PackRequest* request = Find(requestedPackName);
-    if (request != nullptr)
+    for (PackRequest* r : requests)
     {
-        Logger::Error("second time push same pack in queue, pack: %s", requestedPackName.c_str());
-        return;
+        if (r == request_)
+        {
+            return;
+        }
     }
 
-    PackRequest* newRequest = new PackRequest(packManager, requestedPackName);
-
-    requests.push_back(newRequest);
-
-    return newRequest;
+    requests.push_back(request_);
 }
 
 void RequestManager::UpdateOrder(PackRequest* request, uint32 orderIndex)
