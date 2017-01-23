@@ -50,6 +50,7 @@ private:
     SceneViewerData& data;
 
     DAVA::Rect infoColumnRect;
+    DAVA::Rect panoramaRect;
 
     DAVA::Vector<DAVA::ScopedPtr<Sector>> sectors;
     DAVA::UnorderedMap<Sector*, DAVA::uint32> sectorToSample;

@@ -159,13 +159,13 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
         abort();
     }
 
-    cmdargs = GetCommandArgs(cmdline);
-    engineBackend = new EngineBackend(cmdargs);
-
     externalDocumentsDir = std::move(externalFilesDir);
     internalDocumentsDir = std::move(internalFilesDir);
     appPath = std::move(sourceDir);
     packageName = std::move(apkName);
+
+    cmdargs = GetCommandArgs(cmdline);
+    engineBackend = new EngineBackend(cmdargs);
 
     Logger::FrameworkDebug("=========== externalDocumentsDir='%s'", externalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== internalDocumentsDir='%s'", internalDocumentsDir.c_str());

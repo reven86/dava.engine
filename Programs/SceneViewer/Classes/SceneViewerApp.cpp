@@ -34,12 +34,15 @@ void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 {
     data.engine.PrimaryWindow()->draw.Connect(this, &SceneViewerApp::Draw);
 
+    const Size2i& physicalSize = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
+    float32 aspect = static_cast<float32>(physicalSize.dx) / static_cast<float32>(physicalSize.dy);
+
     w->SetTitleAsync("Scene Viewer");
-    w->SetSizeAsync({ 1024, 768 });
-    w->SetVirtualSize(1024, 768);
+    w->SetSizeAsync({ 1024.f, 1024.f / aspect });
+    w->SetVirtualSize(1024.f, 1024.f / aspect);
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
-    vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    vcs->RegisterAvailableResourceSize(1024, 1024 / aspect, "Gfx");
 
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;

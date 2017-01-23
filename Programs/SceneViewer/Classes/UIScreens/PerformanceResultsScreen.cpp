@@ -10,18 +10,14 @@ using namespace DAVA;
 const float32 SECTOR_AXIFUGAL_OFFSET_IN_PIXELS = 2.f;
 const float32 SECTOR_MARGIN_IN_PIXELS = 2.f;
 
-const float32 MAP_RECT_SIDE = 750.f;
-const float32 MAP_RECT_MARGIN = 10.f;
-const Rect MAP_RECT = { MAP_RECT_MARGIN, MAP_RECT_MARGIN, MAP_RECT_SIDE, MAP_RECT_SIDE };
-
+const float32 PANORAMA_RECT_MARGIN = 10.f;
 const float32 INFO_RECT_MARGIN = 10.f;
-const float32 INFO_RECT_X0 = MAP_RECT_SIDE + MAP_RECT_MARGIN + MAP_RECT_MARGIN;
 
 const float32 BUTTON_HEIGHT = 60.f;
 
 const float32 INFO_COLOR_BOXES_Y0 = INFO_RECT_MARGIN;
-const float32 INFO_RESULTS_Y0 = 120.f;
-const float32 INFO_PREVIEW_Y0 = 320.f;
+const float32 INFO_FPS_RESULTS_Y0 = 120.f;
+const float32 INFO_PREVIEW_Y0 = 240.f;
 
 const float32 LOW_FPS_THRESHOLD = 40.0f;
 const float32 MEDIUM_FPS_THRESHOLD = 50.0f;
@@ -31,7 +27,11 @@ PerformanceResultsScreen::PerformanceResultsScreen(SceneViewerData& data)
     : data(data)
 {
     using namespace PerformanceResultsScreenDetails;
-    infoColumnRect.x = INFO_RECT_X0;
+
+    DAVA::float32 panoramaSide = GetSize().dy - 2 * PANORAMA_RECT_MARGIN;
+    panoramaRect = { PANORAMA_RECT_MARGIN, PANORAMA_RECT_MARGIN, panoramaSide, panoramaSide };
+
+    infoColumnRect.x = PANORAMA_RECT_MARGIN + panoramaRect.dx + PANORAMA_RECT_MARGIN;
     infoColumnRect.y = INFO_RECT_MARGIN;
     infoColumnRect.dx = GetSize().dx - infoColumnRect.x - INFO_RECT_MARGIN;
     infoColumnRect.dy = GetSize().dy - INFO_RECT_MARGIN - INFO_RECT_MARGIN;
@@ -84,10 +84,10 @@ void PerformanceResultsScreen::AddBackgroundMap()
     panoramaBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     panoramaBackground->SetAlign(eAlign::ALIGN_LEFT | eAlign::ALIGN_TOP);
     UIControlBackground::UIMargins panoramaMargins;
-    panoramaMargins.left = MAP_RECT.x;
-    panoramaMargins.top = MAP_RECT.y;
-    panoramaMargins.bottom = GetSize().dy - MAP_RECT.y - MAP_RECT.dy;
-    panoramaMargins.right = GetSize().dx - MAP_RECT.x - MAP_RECT.dx;
+    panoramaMargins.left = panoramaRect.x;
+    panoramaMargins.top = panoramaRect.y;
+    panoramaMargins.bottom = GetSize().dy - panoramaRect.y - panoramaRect.dy;
+    panoramaMargins.right = GetSize().dx - panoramaRect.x - panoramaRect.dx;
     panoramaBackground->SetMargins(&panoramaMargins);
     SetBackground(panoramaBackground);
 }
@@ -200,7 +200,7 @@ void PerformanceResultsScreen::AddResultsText()
     using namespace PerformanceResultsScreenDetails;
     using namespace DAVA;
 
-    fpsResultsText = new UIStaticText(Rect(infoColumnRect.x, INFO_RESULTS_Y0, infoColumnRect.dx, 200.f));
+    fpsResultsText = new UIStaticText(Rect(infoColumnRect.x, INFO_FPS_RESULTS_Y0, infoColumnRect.dx, 200.f));
     fpsResultsText->SetFont(font);
     fpsResultsText->SetTextColor(Color::White);
     fpsResultsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
@@ -254,20 +254,18 @@ SectorColor PerformanceResultsScreen::EvaluateSectorType(DAVA::float32 fps)
 
 DAVA::float32 PerformanceResultsScreen::SceneDistanceToScreenDistance(DAVA::float32 sceneDist)
 {
-    return (sceneDist / data.gridTestResult.sceneSize) * PerformanceResultsScreenDetails::MAP_RECT.dx;
+    return (sceneDist / data.gridTestResult.sceneSize) * panoramaRect.dx;
 }
 
 DAVA::Vector2 PerformanceResultsScreen::ScenePointToScreenPoint(DAVA::Vector3 scenePoint)
 {
-    using namespace PerformanceResultsScreenDetails;
-
     DAVA::float32& sceneSize = data.gridTestResult.sceneSize;
     DAVA::float32& sceneMin = data.gridTestResult.sceneMin;
     DAVA::float32& sceneMax = data.gridTestResult.sceneMax;
 
     DAVA::Vector2 screenPoint;
-    screenPoint.x = (scenePoint.x - sceneMin) / sceneSize * MAP_RECT.dx + MAP_RECT.x;
-    screenPoint.y = (sceneMax - scenePoint.y) / sceneSize * MAP_RECT.dy + MAP_RECT.y;
+    screenPoint.x = (scenePoint.x - sceneMin) / sceneSize * panoramaRect.dx + panoramaRect.x;
+    screenPoint.y = (sceneMax - scenePoint.y) / sceneSize * panoramaRect.dy + panoramaRect.y;
 
     return screenPoint;
 }

@@ -162,7 +162,7 @@ void ViewSceneScreen::AddJoypadControl()
     DVASSERT(!moveJoyPAD);
     moveJoyPAD = new DAVA::UIJoypad(DAVA::Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
-    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/Joypad/Stick.png"));
+    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/Joypad/Stick.png", true));
     moveJoyPAD->SetStickSprite(stickSprite, 0);
     AddControl(moveJoyPAD);
 }

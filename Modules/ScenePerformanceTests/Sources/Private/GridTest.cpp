@@ -24,11 +24,11 @@ namespace GridTestDetails
 {
 using namespace DAVA;
 
-const float32 LOW_FPS_THRESHOLD = 50.f;
+const float32 LOW_FPS_THRESHOLD = 40.f;
 
 const uint32 GRID_SIZE = 8;
 const uint32 ANGLE_COUNT = 8;
-const float32 EXPOSURE_DURATION_SEC = 3.f;
+const float32 EXPOSURE_DURATION_SEC = 0.3f;
 const float32 ELEVATION_ABOVE_LANDSCAPE = 10.f;
 
 const uint32 PANORAMA_IMAGE_SIZE = 512;
@@ -428,10 +428,9 @@ void GridTestImpl::Update(DAVA::float32 timeElapsed)
     {
         if (!screenshotsToStart.empty())
         {
-            if (framesSinceLastSave++ == 5) // making screenshots only on every 5th frame. It's a hack to avoid out of memory errors.
+            if (framesSinceLastSave++ == 2) // making screenshots only on every 2th frame, to avoid out of memory errors.
             {
                 framesSinceLastSave = 0;
-
                 // move first element from screenshotsToStart to the end of screenshotsToSave
                 screenshotsToSave.splice(screenshotsToSave.end(), screenshotsToStart, screenshotsToStart.begin());
                 screenshotsToSave.back()->MakeScreenshot();
