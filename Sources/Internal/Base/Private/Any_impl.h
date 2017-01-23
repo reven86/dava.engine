@@ -138,6 +138,24 @@ inline const T& Any::Get(const T& defaultValue) const
     return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
 }
 
+template <>
+inline bool Any::CanGet<Any>() const
+{
+    return true;
+}
+
+template <>
+inline const Any& Any::Get<Any>() const
+{
+    return *this;
+}
+
+template <>
+inline const Any& Any::Get<Any>(const Any& defaultValue) const
+{
+    return Get<Any>();
+}
+
 inline const void* Any::GetData() const
 {
     return anyStorage.GetData();
@@ -198,6 +216,24 @@ T Any::Cast(const T& defaultValue) const
         return anyStorage.GetAuto<T>();
 
     return AnyDetail::AnyCastImpl<T>::template Cast<T>(*this, defaultValue);
+}
+
+template <>
+inline bool Any::CanCast<Any>() const
+{
+    return true;
+}
+
+template <>
+inline Any Any::Cast<Any>() const
+{
+    return *this;
+}
+
+template <>
+inline Any Any::Cast<Any>(const Any& defaultValue) const
+{
+    return *this;
 }
 
 } // namespace DAVA
