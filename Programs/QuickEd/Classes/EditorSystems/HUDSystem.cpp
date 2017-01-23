@@ -387,6 +387,23 @@ void HUDSystem::UpdateAreasVisibility()
 
 void HUDSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState)
 {
+    switch (currentState)
+    {
+    case EditorSystemsManager::SelectByRect:
+        DVASSERT(selectionRectControl.Valid() == false);
+        selectionRectControl.Set(new FrameControl());
+        hudControl->AddControl(selectionRectControl.Get());
+        break;
+    case EditorSystemsManager::Transform:
+        OnHighlightNode(nullptr);
+        break;
+    case EditorSystemsManager::DragScreen:
+        SetHUDEnabled(false);
+        break;
+    default:
+        break;
+    }
+
     switch (previousState)
     {
     case EditorSystemsManager::SelectByRect:
@@ -397,20 +414,8 @@ void HUDSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState
     case EditorSystemsManager::Transform:
         ClearMagnetLines();
         break;
-    default:
-        break;
-    }
-
-    switch (currentState)
-    {
-    case EditorSystemsManager::SelectByRect:
-        DVASSERT(selectionRectControl.Valid() == false);
-        selectionRectControl.Set(new FrameControl());
-        hudControl->AddControl(selectionRectControl.Get());
-        break;
-    case EditorSystemsManager::Transform:
     case EditorSystemsManager::DragScreen:
-        OnHighlightNode(nullptr);
+        SetHUDEnabled(true);
         break;
     default:
         break;
@@ -421,16 +426,20 @@ void HUDSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState curren
 {
     if (currentState == EditorSystemsManager::Emulation)
     {
-        systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
+        SetHUDEnabled(false);
     }
     else if (previousState == EditorSystemsManager::Emulation)
     {
-        systemsManager->GetRootControl()->AddControl(hudControl.Get());
+        SetHUDEnabled(true);
     }
 }
 
 bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
+    if (hudControl->GetParent() == nullptr)
+    {
+        return false;
+    }
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     return (displayState == EditorSystemsManager::Edit || displayState == EditorSystemsManager::Preview)
@@ -483,4 +492,16 @@ void HUDSystem::ClearMagnetLines()
 void HUDSystem::OnPackageChanged(PackageNode* package)
 {
     OnHighlightNode(nullptr);
+}
+
+void HUDSystem::SetHUDEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        systemsManager->GetRootControl()->AddControl(hudControl.Get());
+    }
+    else
+    {
+        systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
+    }
 }

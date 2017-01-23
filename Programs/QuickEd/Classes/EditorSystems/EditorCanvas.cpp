@@ -147,7 +147,9 @@ void EditorCanvas::UpdatePosition()
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen && currentInput->device == eInputDevices::MOUSE;
+    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen
+    && currentInput->device == eInputDevices::MOUSE
+    && (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE);
 }
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
@@ -159,11 +161,7 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
 {
     Function<void(UIEvent*, bool)> setMouseButtonOnInput = [this](const UIEvent* currentInput, bool value) {
-        if (currentInput->mouseButton == eMouseButtons::LEFT)
-        {
-            isMouseLeftButtonPressed = value;
-        }
-        else if (currentInput->mouseButton == eMouseButtons::MIDDLE)
+        if (currentInput->mouseButton == eMouseButtons::MIDDLE)
         {
             isMouseMidButtonPressed = value;
         }
@@ -192,7 +190,7 @@ EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentI
             isSpacePressed = false;
         }
     }
-    bool inDragScreenState = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    bool inDragScreenState = isMouseMidButtonPressed || isSpacePressed;
     return inDragScreenState ? EditorSystemsManager::DragScreen : EditorSystemsManager::NoDrag;
 }
 
