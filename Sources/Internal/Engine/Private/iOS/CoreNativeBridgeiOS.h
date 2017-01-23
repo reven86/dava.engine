@@ -5,6 +5,8 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include <Foundation/Foundation.h>
+
 #include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -81,7 +83,7 @@ struct CoreNativeBridge final
         ON_OPEN_URL
     };
 
-    bool NotifyListeners(eNotificationType type, NSObject* arg1 = nullptr, NSObject* arg2 = nullptr, NSObject* arg3 = nullptr, id arg4 = nullptr);
+    BOOL NotifyListeners(eNotificationType type, NSObject* arg1 = nullptr, NSObject* arg2 = nullptr, NSObject* arg3 = nullptr, id arg4 = nullptr);
 
     PlatformCore* core = nullptr;
     EngineBackend* engineBackend = nullptr;

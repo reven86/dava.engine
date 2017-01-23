@@ -85,7 +85,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (BOOL)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
 {
-    return bridge->OpenURL(application, url, sourceApplication, annotation) ? YES : NO;
+    return bridge->OpenURL(application, url, sourceApplication, annotation);
 }
 
 @end
