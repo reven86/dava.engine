@@ -147,13 +147,13 @@ void EditorCanvas::UpdatePosition()
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen;
+    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen && currentInput->device == eInputDevices::MOUSE;
 }
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
     Vector2 delta = systemsManager->GetMouseDelta();
-    SetPosition(position + delta);
+    SetPosition(position - delta);
 }
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
