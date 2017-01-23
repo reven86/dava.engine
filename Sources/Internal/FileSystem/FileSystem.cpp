@@ -542,7 +542,7 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else
 
-    FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
+    String pathToCheckStr = pathToCheck.GetAbsolutePathname();
     if (FileAPI::IsDirectory(pathToCheckStr))
     {
         return true;
