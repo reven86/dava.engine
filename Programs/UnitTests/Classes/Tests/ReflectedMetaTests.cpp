@@ -2,7 +2,7 @@
 
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectionRegistrator.h>
-#include <Reflection/MetaObjects.h>
+#include <Reflection/ReflectedMeta.h>
 
 #include <Base/Any.h>
 #include <Base/GlobalEnum.h>

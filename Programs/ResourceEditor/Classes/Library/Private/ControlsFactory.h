@@ -1,5 +1,4 @@
-#ifndef __CONTROLS_FACTORY_H__
-#define __CONTROLS_FACTORY_H__
+#pragma once
 
 #include "DAVAEngine.h"
 
@@ -57,7 +56,3 @@ public:
     static DAVA::Font* font12;
     static DAVA::Font* font20;
 };
-
-
-
-#endif // __CONTROLS_FACTORY_H__

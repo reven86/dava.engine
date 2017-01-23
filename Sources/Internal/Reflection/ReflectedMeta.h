@@ -1,15 +1,16 @@
 #pragma once
-#include "Base/Type.h"
 #include "Base/Any.h"
+#include "Base/Type.h"
+#include "Reflection/Private/Metas.h"
 
 namespace DAVA
 {
 /**
  template T - Base of Meta
- template U - Find helper type. In ReflectedMeta we store search index by Meta<U, U> and value as Any(Meta<T, U>)
- T should be the same as U, of should be derived from U
+ template IndexT - Find helper type. In ReflectedMeta we store search index by Meta<IndexT, IndexT> and value as Any(Meta<T, IndexT>)
+ T should be the same as IndexT, of should be derived from IndexT
 */
-template <typename T, typename U = T>
+template <typename T, typename IndexT = T>
 struct Meta : public T
 {
     template <typename... Args>
@@ -27,8 +28,8 @@ public:
 
     DAVA_DEPRECATED(ReflectedMeta(ReflectedMeta&& rm)); // visual studio 2013 require this
 
-    template <typename T, typename U>
-    ReflectedMeta(Meta<T, U>&& meta);
+    template <typename T, typename IndexT>
+    ReflectedMeta(Meta<T, IndexT>&& meta);
 
     template <typename T>
     bool HasMeta() const;
@@ -36,17 +37,40 @@ public:
     template <typename T>
     const T* GetMeta() const;
 
-    template <typename T, typename U>
-    void Emplace(Meta<T, U>&& meta);
+    template <typename T, typename IndexT>
+    void Emplace(Meta<T, IndexT>&& meta);
 
 protected:
     UnorderedMap<const Type*, Any> metas;
 };
 
-template <typename T, typename TS, typename U, typename US>
-ReflectedMeta operator, (Meta<T, TS> && metaa, Meta<US>&& metab);
+template <typename T, typename IndexT, typename U, typename IndexU>
+ReflectedMeta operator, (Meta<T, IndexT> && metaa, Meta<IndexU>&& metab);
 
-template <typename T, typename U>
-ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, U>&& meta);
+template <typename T, typename IndexT>
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, IndexT>&& meta);
+
+namespace M
+{
+using ReadOnly = Meta<Metas::ReadOnly>;
+using Range = Meta<Metas::Range>;
+
+using ValidatorResult = Metas::ValidationResult;
+using TValidationFn = Metas::TValidationFn;
+using Validator = Meta<Metas::Validator>;
+
+using Enum = Meta<Metas::Enum>;
+template <typename T>
+using EnumT = Meta<Metas::EnumT<T>, Metas::Enum>;
+
+using Flags = Meta<Metas::Flags>;
+template <typename T>
+using FlagsT = Meta<Metas::FlagsT<T>, Metas::Flags>;
+
+using File = Meta<Metas::File>;
+using Directory = Meta<Metas::Directory>;
+using Group = Meta<Metas::Group>;
+using ValueDescription = Meta<Metas::ValueDescription>;
+}
 
 } // namespace DAVA
