@@ -42,7 +42,7 @@ public:
     bool IsActive() const;
 
 private:
-    friend class Core;
+    friend class DataWrappersProcessor;
     friend class QtReflected;
     friend class DataListener;
     template <typename T>
@@ -55,6 +55,7 @@ private:
     void SetContext(DataContext* context);
     void ClearListener(DataListener* listenerForCheck);
 
+    void UpdateCachedValue(int32 id, const Any& value);
     void Sync(bool notifyListener);
     void SyncWithEditor(const Reflection& etalonData);
     void NotifyListener(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
