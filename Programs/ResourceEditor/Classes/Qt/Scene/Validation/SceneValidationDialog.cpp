@@ -1,10 +1,15 @@
-#include "Qt/Scene/Validation/SceneValidationDialog.h"
-#include "Qt/Scene/Validation/SceneValidation.h"
-#include "Qt/Scene/Validation/ValidationProgressConsumer.h"
-#include "Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
+#include "Classes/Qt/Scene/Validation/SceneValidation.h"
+#include "Classes/Qt/Scene/Validation/ValidationProgressConsumer.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
-#include "QtTools/WarningGuard/QtWarningsHandler.h"
-#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include <QtTools/WarningGuard/QtWarningsHandler.h>
+#include <QtTools/ConsoleWidget/LoggerOutputObject.h>
+
+#include "Classes/Application/REGlobal.h"
+#include "Classes/Project/ProjectManagerData.h"
 
 #include <QCloseEvent>
 
