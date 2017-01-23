@@ -4,7 +4,7 @@
 #include "Base/Introspection.h"
 #include "Base/EnumMap.h"
 
-#include "QtTools/Utils/QtConnections.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include "../QtPropertyData.h"
 
@@ -121,7 +121,7 @@ protected:
     QString defaultOpenDialogPath;
     bool isSettingMeFromChilds;
 
-    mutable QtConnections connections;
+    mutable DAVA::TArc::QtConnections connections;
 };
 
 class QtPropertyDataDavaVariantSubValue

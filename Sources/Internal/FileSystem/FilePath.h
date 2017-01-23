@@ -78,12 +78,16 @@ public:
         */
     String GetAbsolutePathname() const;
 
+#if defined(__DAVAENGINE_WINDOWS__)
+    using NativeStringType = WideString;
+#else
     using NativeStringType = String;
+#endif
     /**
         \brief Function to retrieve pathname
         \returns pathname value in native string type
         */
-    NativeStringType GetNativeAbsolutePathname() const;
+    DAVA_DEPRECATED(NativeStringType GetNativeAbsolutePathname() const);
 
     /**
         \brief Function to create an object from native string
