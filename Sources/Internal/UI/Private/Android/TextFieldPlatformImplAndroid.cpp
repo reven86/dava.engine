@@ -398,9 +398,8 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(w),
                       static_cast<float32>(h));
 
-    Rect keyboardVirtualRect = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardRect);
-
-    RunOnMainThreadAsync([this, keyboardVirtualRect]() {
+    RunOnMainThreadAsync([this, keyboardRect]() {
+        const Rect keyboardVirtualRect = window->GetUIControlSystem()->vcs->ConvertInputToVirtual(keyboardRect);
         OnKeyboardShown(keyboardVirtualRect);
     });
 }
@@ -442,25 +441,56 @@ void TextFieldPlatformImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jb
 
 void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, jint w, jint h)
 {
-    RefPtr<Sprite> sprite;
+    RefPtr<Image> image;
     if (pixels != nullptr)
     {
         jint* arrayElements = env->GetIntArrayElements(pixels, nullptr);
 
-        ScopedPtr<Image> image(Image::CreateFromData(w, h, FORMAT_RGBA8888, reinterpret_cast<const uint8*>(arrayElements)));
-        ImageConvert::SwapRedBlueChannels(image);
-        sprite.Set(Sprite::CreateFromImage(image, true, false));
+        uint8* imageBytes = reinterpret_cast<uint8*>(arrayElements);
+        image.Set(Image::CreateFromData(w, h, FORMAT_RGBA8888, imageBytes));
+        ImageConvert::SwapRedBlueChannels(image.Get());
 
         // JNI_ABORT tells to free the buffer without copying back the possible changes
         env->ReleaseIntArrayElements(pixels, arrayElements, JNI_ABORT);
     }
 
-    RunOnMainThreadAsync([this, sprite]() {
+    RunOnMainThreadAsync([this, image]() {
         if (uiTextField != nullptr)
         {
-            uiTextField->SetSprite(sprite.Get(), 0);
+            // We cannot create Sprite from texture if renderer is suspended (since it requires to execute OpenGL commands)
+            // So if this is the case, wait until app is resumed and proceed
+
+            if (!Engine::Instance()->IsSuspended())
+            {
+                SetSpriteFromImage(image.Get());
+            }
+            else
+            {
+                std::shared_ptr<SigConnectionID> connectionIdPtr = std::make_shared<SigConnectionID>();
+                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
+                    Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
+                    SetSpriteFromImage(image.Get());
+                });
+            }
         }
     });
+}
+
+void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
+{
+    if (uiTextField != nullptr)
+    {
+        Sprite* sprite = nullptr;
+
+        if (image != nullptr)
+        {
+            const Rect textFieldRect = uiTextField->GetRect();
+            RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, image->GetData(), image->GetWidth(), image->GetHeight(), false));
+            sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
+        }
+
+        uiTextField->SetSprite(sprite, 0);
+    }
 }
 
 void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)

@@ -184,17 +184,10 @@ public final class DeviceManager
         {
             display.getMetrics(metrics);
         }
-        
-        // Get size of the display (consider it's independent of orientation)
+
+
         int width = metrics.widthPixels;
         int height = metrics.heightPixels;
-        final int rotation = display.getRotation();
-        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
-        {
-            final int temp = width;
-            width = height;
-            height = temp;
-        }
         
         final int id = display.getDisplayId();
         final String name = runningOnPostJellyBeanMR1() ? display.getName() : ("Unnamed-" + id);

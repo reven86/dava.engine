@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <Type Name="DAVA::Type">
-    <DisplayString>{{{name, s}}}</DisplayString>
+    <DisplayString>{name, s}, {*flags._Array, h}</DisplayString>
   </Type>
   <Type Name="DAVA::AutoStorage&lt;*&gt;">
     <DisplayString Condition="type==1">{*storage._Elems}</DisplayString>

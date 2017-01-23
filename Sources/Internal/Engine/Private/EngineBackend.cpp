@@ -151,6 +151,11 @@ const KeyedArchive* EngineBackend::GetOptions() const
     return options.Get();
 }
 
+bool EngineBackend::IsSuspended() const
+{
+    return appIsSuspended;
+}
+
 Vector<char*> EngineBackend::GetCommandLineAsArgv()
 {
     Vector<char*> argv;
@@ -201,10 +206,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     RegisterDAVAClasses();
 
     isInitialized = true;
-
-#if defined(__DAVAENGINE_ANDROID__)
-    AndroidBridge::HideSplashView();
-#endif
 }
 
 int EngineBackend::Run()

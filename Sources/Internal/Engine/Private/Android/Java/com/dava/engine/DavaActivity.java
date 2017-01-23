@@ -38,11 +38,19 @@ import java.util.LinkedList;
     Application usually has its own set of java classes and native shared libraries which should be instantiated/loaded on program start.
     Application can list them in `AndroidManifest.xml` under special `meta-data` tag. In the following sample dava.engine will try to load
     `libcrystax.so`, `libc++_shared.so` and `libTestBed.so` and try to instantiate java class `com.dava.testbed.TestBed`:
-
     ~~~~~~{.xml}
     <application>
-        <meta-data android:name="boot_modules" android:value="crystax;c++_shared;TestBed"/>
-        <meta-data android:name="boot_classes" android:value="com.dava.testbed.TestBed"/>
+        ...
+        <meta-data android:name="com.dava.engine.BootModules" android:value="crystax;c++_shared;TestBed"/>
+        <meta-data android:name="com.dava.engine.BootClasses" android:value="com.dava.testbed.TestBed"/>
+    <application>
+    ~~~~~~
+
+    To show a splash image client application should have a `meta-data` tag inside of AndroidManifest.xml which specifies what resource to use:
+    ~~~~~~{.xml}
+    <application>
+        ...
+        <meta-data android:name="com.dava.engine.SplashImageId" android:resource="@drawable/splash_picture"/>
     <application>
     ~~~~~~
 
@@ -108,6 +116,10 @@ public final class DavaActivity extends Activity
 
     public static final String LOG_TAG = "DAVA"; //!< Tag used by dava.engine java classes for internal log outputs
 
+    private static final String META_TAG_SPLASH_IMAGE = "com.dava.engine.SplashViewImageId";
+    private static final String META_TAG_BOOT_MODULES = "com.dava.engine.BootModules";
+    private static final String META_TAG_BOOT_CLASSES = "com.dava.engine.BootClasses";
+
     private static DavaActivity activitySingleton;
     private static Thread nativeThread; // Thread where native C++ code is running
 
@@ -125,14 +137,13 @@ public final class DavaActivity extends Activity
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
     protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
 
-    // List of class instances loaded from boot_classes files on startup
+    // List of class instances created during bootstrap (using meta-tag in AndroidManifest)
     protected LinkedList<Object> bootstrapObjects = new LinkedList<Object>();
 
     private DavaSurfaceView primarySurfaceView;
     private DavaSplashView splashView;
     private ViewGroup layout;
     private ArrayList<ActivityListener> activityListeners = new ArrayList<ActivityListener>();
-    private Bundle savedInstanceStateBundle;
 
     private static final int ON_ACTIVITY_CREATE = 0;
     private static final int ON_ACTIVITY_START = 1;
@@ -210,10 +221,8 @@ public final class DavaActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");
-        super.onCreate(savedInstanceState);
-        
+
         activitySingleton = this;
-        savedInstanceStateBundle = savedInstanceState;
         
         Application app = getApplication();
         externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -232,14 +241,31 @@ public final class DavaActivity extends Activity
         hideNavigationBar();
 
         // Load & show splash view
-        ApplicationInfo appMetaDataInfo = null;
+        Bitmap splashViewBitmap =  loadSplashViewBitmap();
+        splashView = new DavaSplashView(this, splashViewBitmap);
+
+        layout = new FrameLayout(this);
+        layout.addView(splashView);
+        setContentView(layout);
+
+        // Load library modules and create class instances specified under meta-data tag in AndroidManifest.xml
+        bootstrap();
+
+        notifyListeners(ON_ACTIVITY_CREATE, savedInstanceState);
+
+        super.onCreate(savedInstanceState);
+    }
+
+    private Bitmap loadSplashViewBitmap()
+    {
         Bitmap splashViewBitmap = null;
+
         try
         {
-            appMetaDataInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            ApplicationInfo appMetaDataInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             if (appMetaDataInfo != null)
             {
-                int splashViewImageId = appMetaDataInfo.metaData.getInt("com.dava.engine.SplashViewImageId", 0);
+                int splashViewImageId = appMetaDataInfo.metaData.getInt(META_TAG_SPLASH_IMAGE, 0);
                 if (splashViewImageId != 0)
                 {
                     splashViewBitmap = BitmapFactory.decodeResource(getResources(), splashViewImageId);
@@ -251,27 +277,15 @@ public final class DavaActivity extends Activity
             Log.e(LOG_TAG, String.format("DavaActivity: loading splash image failed: %s. Splash view will be empty", e.toString()));
         }
 
-        splashView = new DavaSplashView(this, splashViewBitmap);
-
-        layout = new FrameLayout(this);
-        layout.addView(splashView);
-        setContentView(layout);
+        return splashViewBitmap;
     }
     
     private void startNativeInitialization() {
-        // Load library modules and create class instances specified under meta-data tag
-        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
-        bootstrap();
-        
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
         long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         layout.addView(primarySurfaceView);
-
-        notifyListeners(ON_ACTIVITY_CREATE, savedInstanceStateBundle);
-        notifyListeners(ON_ACTIVITY_START, null);
-        savedInstanceStateBundle = null;
 
         registerActivityListener(gamepadManager);
         registerActivityListener(keyboardState);
@@ -507,7 +521,7 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
-    // Will be invoked from C++ thread when DAVA::Engine finishes initialization
+    // Will be invoked from C++ thread right before game loop is started
     private void hideSplashView()
     {
         runOnUiThread(new Runnable()
@@ -597,11 +611,9 @@ public final class DavaActivity extends Activity
 
     private void bootstrap()
     {
-        // TODO: rename boot_module & boot_classes
-
         // Read and load bootstrap library modules
         int nloaded = 0;
-        String[] modules = getBootMetadata("boot_modules");
+        String[] modules = getBootMetadata(META_TAG_BOOT_MODULES);
         if (modules != null)
         {
             for (String m : modules)
@@ -627,7 +639,7 @@ public final class DavaActivity extends Activity
 
         // Read and create instances of bootstrap classes
         // Do not issue warning if no classes instantiated as application may not require own java part
-        String[] classes = getBootMetadata("boot_classes");
+        String[] classes = getBootMetadata(META_TAG_BOOT_CLASSES);
         if (classes != null)
         {
             for (String c : classes)

@@ -1,8 +1,6 @@
-﻿#include "CommandLine/Private/REConsoleModuleTestUtils.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+﻿#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
-#include "Utils/StringFormat.h"
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
@@ -24,9 +22,9 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 
-#include <memory>
-
-namespace RECMTUDetail
+namespace CommandLineModuleTestUtils
+{
+namespace Detail
 {
 using namespace DAVA;
 
@@ -119,12 +117,14 @@ void CreateR2OCustomProperty(Entity* entity, const FilePath& scenePathname)
     referencePathname.ReplaceBasename(entityName);
     FilePath folderPathname = scenePathname.GetDirectory();
 
+    ScopedPtr<Scene> referenceScene(new Scene);
+    ScopedPtr<Entity> referenceEntity(entity->Clone());
+    referenceScene->AddNode(referenceEntity);
+    referenceScene->SaveScene(referencePathname, false);
+
     CustomPropertiesComponent* cp = new CustomPropertiesComponent();
     cp->GetArchive()->SetString("editor.referenceToOwner", referencePathname.GetAbsolutePathname());
     entity->AddComponent(cp);
-
-    ScopedPtr<Scene> referenceScene(new Scene());
-    referenceScene->SaveScene(referencePathname, false);
 }
 
 Entity* CreateLandscapeEnity(const FilePath& scenePathname)
@@ -175,7 +175,6 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     RenderComponent* rc = new RenderComponent(landscape);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -193,7 +192,6 @@ Entity* CreateWaterEntity(const FilePath& scenePathname)
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -210,7 +208,6 @@ Entity* CreateSkyEntity(const FilePath& scenePathname)
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -265,7 +262,6 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     entity->AddComponent(new LodComponent());
     entity->AddComponent(new SwitchComponent());
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -332,7 +328,6 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -350,7 +345,6 @@ Entity* CreateCameraEntity(const FilePath& scenePathname)
 
     entity->AddComponent(new CameraComponent(camera));
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -401,7 +395,6 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
     setLightProperties(GetOrCreateCustomProperties(skyLightEntity), true);
     entity->AddNode(skyLightEntity);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
 
@@ -413,12 +406,11 @@ Entity* CreateStaticOcclusionEntity(const FilePath& scenePathname)
     StaticOcclusionComponent* so = new StaticOcclusionComponent();
     entity->AddComponent(so);
 
-    CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
-}
+} // namespace Detail
 
-class REConsoleModuleTestUtils::TextureLoadingGuard::Impl final
+class TextureLoadingGuard::Impl final
 {
 public:
     Impl(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
@@ -436,55 +428,25 @@ private:
     DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
 };
 
-REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
-    : impl(new REConsoleModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
+TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+    : impl(new TextureLoadingGuard::Impl(newLoadingOrder))
 {
 }
 
-REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
+TextureLoadingGuard::~TextureLoadingGuard() = default;
 
-std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
     return std::make_unique<TextureLoadingGuard>(newLoadingOrder);
 }
 
-void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
-{
-    DVASSERT(module != nullptr);
-
-    InitModule(module);
-
-    while (ProcessModule(module) == false)
-    {
-        //module loop
-    }
-
-    FinalizeModule(module);
-}
-
-void REConsoleModuleTestUtils::InitModule(REConsoleModuleCommon* module)
-{
-    module->PostInit();
-}
-
-bool REConsoleModuleTestUtils::ProcessModule(REConsoleModuleCommon* module)
-{
-    bool completed = (module->OnFrame() == REConsoleModuleCommon::eFrameResult::FINISHED);
-    return completed;
-}
-
-void REConsoleModuleTestUtils::FinalizeModule(REConsoleModuleCommon* module)
-{
-    module->BeforeDestroyed();
-}
-
-void REConsoleModuleTestUtils::CreateTestFolder(const DAVA::FilePath& folder)
+void CreateTestFolder(const DAVA::FilePath& folder)
 {
     ClearTestFolder(folder); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
     DAVA::FileSystem::Instance()->CreateDirectory(folder, true);
 }
 
-void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
+void ClearTestFolder(const DAVA::FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -492,7 +454,7 @@ void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
     DAVA::FileSystem::Instance()->DeleteDirectory(folder, true);
 }
 
-void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
+void CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
 {
     ClearTestFolder(projectPathname); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
 
@@ -504,41 +466,141 @@ void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath&
     DAVA::FileSystem::Instance()->CopyFile("~res:/ResourceEditor/quality.template.yaml", qulityPath, true);
 }
 
-void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
+void SceneBuilder::CreateFullScene(const DAVA::FilePath& scenePathname)
 {
-    using namespace DAVA;
+    SceneBuilder builder(scenePathname);
+    builder.AddCamera(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddBox(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddLandscape(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddWater(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddSky(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddVegetation(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddLights(SceneBuilder::WITH_REF_TO_OWNER);
+    builder.AddStaticOcclusion(SceneBuilder::WITH_REF_TO_OWNER);
+}
 
+SceneBuilder::SceneBuilder(const FilePath& scenePathname)
+    : scenePathname(scenePathname)
+    , scene(nullptr)
+{
     FileSystem::Instance()->CreateDirectory(scenePathname.GetDirectory(), false);
+    scene.reset(new Scene);
+}
 
-    ScopedPtr<Scene> scene(new Scene());
+SceneBuilder::~SceneBuilder()
+{
+    scene->Update(0.1f);
+    scene->SaveScene(scenePathname, false);
+}
 
-    ScopedPtr<Entity> cameraEntity(RECMTUDetail::CreateCameraEntity(scenePathname));
+Entity* SceneBuilder::AddCamera(R2OMode mode)
+{
+    ScopedPtr<Entity> cameraEntity(Detail::CreateCameraEntity(scenePathname));
     scene->AddNode(cameraEntity);
     Camera* camera = GetCamera(cameraEntity);
     scene->SetCurrentCamera(camera);
 
-    ScopedPtr<Entity> landscape(RECMTUDetail::CreateLandscapeEnity(scenePathname));
-    scene->AddNode(landscape);
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(cameraEntity);
+    }
 
-    ScopedPtr<Entity> water(RECMTUDetail::CreateWaterEntity(scenePathname));
-    scene->AddNode(water);
+    return cameraEntity;
+}
 
-    ScopedPtr<Entity> sky(RECMTUDetail::CreateSkyEntity(scenePathname));
-    scene->AddNode(sky);
-
-    ScopedPtr<Entity> box(RECMTUDetail::CreateBoxEntity(scenePathname));
+Entity* SceneBuilder::AddBox(R2OMode mode)
+{
+    ScopedPtr<Entity> box(Detail::CreateBoxEntity(scenePathname));
     scene->AddNode(box);
 
-    ScopedPtr<Entity> vegetation(RECMTUDetail::CreateVegetationEntity(scenePathname));
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(box);
+    }
+
+    return box;
+}
+
+Entity* SceneBuilder::AddLandscape(R2OMode mode)
+{
+    ScopedPtr<Entity> landscape(Detail::CreateLandscapeEnity(scenePathname));
+    scene->AddNode(landscape);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(landscape);
+    }
+
+    return landscape;
+}
+
+Entity* SceneBuilder::AddWater(R2OMode mode)
+{
+    ScopedPtr<Entity> water(Detail::CreateWaterEntity(scenePathname));
+    scene->AddNode(water);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(water);
+    }
+
+    return water;
+}
+
+Entity* SceneBuilder::AddSky(R2OMode mode)
+{
+    ScopedPtr<Entity> sky(Detail::CreateSkyEntity(scenePathname));
+    scene->AddNode(sky);
+
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(sky);
+    }
+
+    return sky;
+}
+
+Entity* SceneBuilder::AddVegetation(R2OMode mode)
+{
+    ScopedPtr<Entity> vegetation(Detail::CreateVegetationEntity(scenePathname));
     scene->AddNode(vegetation);
 
-    ScopedPtr<Entity> lights(RECMTUDetail::CreateLightsEntity(scenePathname));
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(vegetation);
+    }
+
+    return vegetation;
+}
+
+Entity* SceneBuilder::AddLights(R2OMode mode)
+{
+    ScopedPtr<Entity> lights(Detail::CreateLightsEntity(scenePathname));
     scene->AddNode(lights);
 
-    ScopedPtr<Entity> occlusion(RECMTUDetail::CreateStaticOcclusionEntity(scenePathname));
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(lights);
+    }
+
+    return lights;
+}
+
+Entity* SceneBuilder::AddStaticOcclusion(R2OMode mode)
+{
+    ScopedPtr<Entity> occlusion(Detail::CreateStaticOcclusionEntity(scenePathname));
     scene->AddNode(occlusion);
 
-    scene->Update(0.1f);
+    if (mode == WITH_REF_TO_OWNER)
+    {
+        AddR2O(occlusion);
+    }
 
-    scene->SaveScene(scenePathname, false);
+    return occlusion;
+}
+
+void SceneBuilder::AddR2O(Entity* entity)
+{
+    Detail::CreateR2OCustomProperty(entity, scenePathname);
+}
 }

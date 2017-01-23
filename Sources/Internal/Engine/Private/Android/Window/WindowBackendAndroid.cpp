@@ -315,7 +315,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     {
         // If surface size has changed, post sizeChanged event
         // Otherwise we should reset renderer since surface has been recreated
-        
+
         if (!FLOAT_EQUAL(previousWindowWidth, windowWidth) || !FLOAT_EQUAL(previousWindowHeight, windowHeight))
         {
             // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
@@ -327,7 +327,6 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
                 engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
             }));
-            
         }
     }
 }
