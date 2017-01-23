@@ -8,7 +8,6 @@
 #include <QDir>
 #include <QDirIterator>
 
-
 using namespace DAVA;
 
 SpritesPacker::SpritesPacker(QObject* parent)
