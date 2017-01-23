@@ -52,6 +52,7 @@ private:
 
     void OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ coreWindow, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg);
     void OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ dispatcher, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg);
+    void OnShiftKeyActivated();
 
     void OnSizeChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg);
     void OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ panel, ::Platform::Object ^ obj);
