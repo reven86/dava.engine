@@ -107,11 +107,14 @@ protected:
     */
     int32 GetFileErrno() const;
 
-    int32 GetImplErr() const;
+    /**
+    \brief return error specified for downloader implementation. Useful for debugging/tracing download errors. 
+    */
+    int32 GetImplError() const;
 
 protected:
     int32 fileErrno;
-    mutable int32 implErr;
+    int32 implError;
     Function<void(uint64)> notifyProgress;
 
 private:
