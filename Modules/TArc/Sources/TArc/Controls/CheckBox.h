@@ -4,6 +4,7 @@
 #include "TArc/Core/ContextAccessor.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/Controls/ControlDescriptor.h"
 
 #include <QCheckBox>
 
@@ -14,16 +15,17 @@ namespace TArc
 class CheckBox final : public ControlProxy<QCheckBox>
 {
 public:
-    struct FieldsDescriptor
+    enum Fields
     {
-        Any valueFieldName;
+        Checked,
+        FieldCount
     };
 
-    CheckBox(const FieldsDescriptor& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    CheckBox(const FieldsDescriptor& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    CheckBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
-    void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields) override;
+    void UpdateControl(const ControlDescriptor& changedfields) override;
 
     void SetupControl();
     void StateChanged(int newState);
@@ -36,8 +38,6 @@ private:
     };
 
     eContainedDataType dataType = eContainedDataType::TYPE_NONE;
-
-    FieldsDescriptor fieldsDescr;
     QtConnections connections;
 };
 } // namespace TArc

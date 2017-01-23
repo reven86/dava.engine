@@ -27,8 +27,9 @@ public:
     void PostInit() override
     {
         model.emplace("text", DAVA::String("Line edit text"));
-        DAVA::TArc::LineEdit::FieldsDescriptor descr;
-        descr.valueFieldName = DAVA::FastName("text");
+
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descr;
+        descr[DAVA::TArc::LineEdit::Text] = "text";
         DAVA::TArc::LineEdit* edit = new DAVA::TArc::LineEdit(descr, GetAccessor(), DAVA::Reflection::Create(&model));
 
         DAVA::TArc::PanelKey key("LineEdit", DAVA::TArc::CentralPanelInfo());

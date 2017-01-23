@@ -1,43 +1,22 @@
 #include "TArc/Controls/LineEdit.h"
 #include "Base/FastName.h"
 
+#include <Reflection/MetaObjects.h>
+
 namespace DAVA
 {
 namespace TArc
 {
-LineEdit::LineEdit(const FieldsDescriptor& fields_, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QLineEdit>(wrappersProcessor, model, parent)
-    , fieldsDescr(fields_)
+LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxy<QLineEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-LineEdit::LineEdit(const FieldsDescriptor& fields_, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QLineEdit>(accessor, model, parent)
-    , fieldsDescr(fields_)
+LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxy<QLineEdit>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
-}
-
-void LineEdit::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
-{
-    DVASSERT(wrapper.HasData());
-    bool shouldUpdateText = fields.empty();
-    for (const Any& fieldName : fields)
-    {
-        if (fieldName.Cast<String>() == fieldsDescr.valueFieldName.Cast<String>())
-        {
-            shouldUpdateText = true;
-            break;
-        }
-    }
-
-    if (shouldUpdateText == true)
-    {
-        DAVA::Reflection fieldValue = model.GetField(fieldsDescr.valueFieldName);
-        DVASSERT(fieldValue.IsValid());
-        setText(QString::fromStdString(fieldValue.GetValue().Cast<String>()));
-    }
 }
 
 void LineEdit::SetupControl()
@@ -47,7 +26,61 @@ void LineEdit::SetupControl()
 
 void LineEdit::EditingFinished()
 {
-    wrapper.SetFieldValue(fieldsDescr.valueFieldName, text().toStdString());
+    if (!isReadOnly())
+    {
+        wrapper.SetFieldValue(GetFieldName(Text), text().toStdString());
+    }
+}
+
+void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
+{
+    bool readOnlyChanged = descriptor.IsChanged(IsReadOnly);
+    bool textChanged = descriptor.IsChanged(Text);
+    if (readOnlyChanged || textChanged)
+    {
+        DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Text));
+        DVASSERT(fieldValue.IsValid());
+
+        if (readOnlyChanged)
+        {
+            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(IsReadOnly));
+            bool readOnlyFieldValue = false;
+            if (fieldReadOnly.IsValid())
+            {
+                readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
+            }
+            setReadOnly(fieldValue.IsReadonly() || fieldValue.GetMeta<DAVA::M::ReadOnly>() || readOnlyFieldValue);
+        }
+
+        if (textChanged)
+        {
+            setText(QString::fromStdString(fieldValue.GetValue().Cast<String>()));
+        }
+    }
+
+    if (descriptor.IsChanged(IsEnabled))
+    {
+        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(IsEnabled));
+        bool isEnabled = true;
+        if (fieldEnabled.IsValid())
+        {
+            isEnabled = fieldEnabled.GetValue().Cast<bool>();
+        }
+
+        setEnabled(isEnabled);
+    }
+
+    if (descriptor.IsChanged(PlaceHolder))
+    {
+        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(PlaceHolder));
+        String placeHolder;
+        if (fieldPlaceholder.IsValid())
+        {
+            placeHolder = fieldPlaceholder.GetValue().Cast<String>();
+        }
+
+        setPlaceholderText(QString::fromStdString(placeHolder));
+    }
 }
 
 } // namespace TArc

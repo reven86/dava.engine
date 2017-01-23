@@ -33,14 +33,14 @@ public:
 
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&model);
 
-        DAVA::TArc::CheckBox::FieldsDescriptor descrBool;
-        descrBool.valueFieldName = DAVA::FastName("bool");
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrBool;
+        descrBool[DAVA::TArc::CheckBox::Checked] = "bool";
         DAVA::TArc::CheckBox* checkBool = new DAVA::TArc::CheckBox(descrBool, GetAccessor(), reflectedModel);
         DAVA::TArc::PanelKey keyBool("CheckBox_bool", DAVA::TArc::CentralPanelInfo());
         GetUI()->AddView(wndKey, keyBool, checkBool->ToWidgetCast());
 
-        DAVA::TArc::CheckBox::FieldsDescriptor descrState;
-        descrState.valueFieldName = DAVA::FastName("checkState");
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrState;
+        descrState[DAVA::TArc::CheckBox::Checked] = "checkState";
         DAVA::TArc::CheckBox* checkState = new DAVA::TArc::CheckBox(descrState, GetAccessor(), reflectedModel);
         DAVA::TArc::PanelKey keyState("CheckBox_state", DAVA::TArc::CentralPanelInfo());
         GetUI()->AddView(wndKey, keyState, checkState->ToWidgetCast());

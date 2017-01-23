@@ -22,9 +22,8 @@ void TextComponentValue::SetText(const DAVA::String& text)
 
 QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
-    LineEdit::FieldsDescriptor descr;
-    descr.valueFieldName = FastName("text");
-
+    ControlDescriptorBuilder<LineEdit::Fields> descr;
+    descr[LineEdit::Text] = "text";
     return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 

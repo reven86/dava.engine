@@ -57,12 +57,6 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
     if (!fieldsCache.empty())
     {
         String name = key.Cast<String>(String());
-
-        if (name.empty())
-        {
-            name = key.Cast<const char*>("");
-        }
-
         if (!name.empty())
         {
             auto it = fieldsNameIndexes.find(name);

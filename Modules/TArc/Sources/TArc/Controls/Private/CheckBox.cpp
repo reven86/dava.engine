@@ -5,16 +5,14 @@ namespace DAVA
 {
 namespace TArc
 {
-CheckBox::CheckBox(const FieldsDescriptor& fields_, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QCheckBox>(wrappersProcessor, model, parent)
-    , fieldsDescr(fields_)
+CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxy<QCheckBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-CheckBox::CheckBox(const FieldsDescriptor& fields_, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QCheckBox>(accessor, model, parent)
-    , fieldsDescr(fields_)
+CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxy<QCheckBox>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -24,23 +22,11 @@ void CheckBox::SetupControl()
     connections.AddConnection(static_cast<QCheckBox*>(this), &QCheckBox::stateChanged, MakeFunction(this, &CheckBox::StateChanged));
 }
 
-void CheckBox::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
+void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
 {
-    DVASSERT(wrapper.HasData());
-
-    bool shouldUpdateState = fields.empty();
-    for (const Any& fieldName : fields)
+    if (changedFields.IsChanged(Checked))
     {
-        if (fieldName.Cast<FastName>() == fieldsDescr.valueFieldName.Get<FastName>())
-        {
-            shouldUpdateState = true;
-            break;
-        }
-    }
-
-    if (shouldUpdateState == true)
-    {
-        DAVA::Reflection fieldValue = model.GetField(fieldsDescr.valueFieldName);
+        DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Checked));
         DVASSERT(fieldValue.IsValid());
 
         if (fieldValue.GetValue().CanGet<Qt::CheckState>())
@@ -72,11 +58,11 @@ void CheckBox::StateChanged(int newState)
         setTristate(false);
         if (dataType == eContainedDataType::TYPE_CHECK_STATE)
         {
-            wrapper.SetFieldValue(fieldsDescr.valueFieldName, Any(checkState()));
+            wrapper.SetFieldValue(GetFieldName(Checked), Any(checkState()));
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            wrapper.SetFieldValue(fieldsDescr.valueFieldName, Any(checkState() == Qt::Checked));
+            wrapper.SetFieldValue(GetFieldName(Checked), Any(checkState() == Qt::Checked));
         }
         else
         {

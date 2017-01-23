@@ -4,8 +4,13 @@
 #include "TArc/Core/ContextAccessor.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/Controls/ControlDescriptor.h"
+
+#include <Base/BaseTypes.h>
+#include <Base/FastName.h>
 
 #include <QLineEdit>
+#include <QFlags>
 
 namespace DAVA
 {
@@ -14,22 +19,25 @@ namespace TArc
 class LineEdit final : public ControlProxy<QLineEdit>
 {
 public:
-    struct FieldsDescriptor
+    enum Fields : uint32
     {
-        Any valueFieldName;
+        Text,
+        PlaceHolder,
+        IsReadOnly,
+        IsEnabled,
+        FieldCount
     };
 
-    LineEdit(const FieldsDescriptor& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    LineEdit(const FieldsDescriptor& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    LineEdit(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    LineEdit(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
-    void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields) override;
+    void UpdateControl(const ControlDescriptor& changedFields) override;
 
     void SetupControl();
     void EditingFinished();
 
 private:
-    FieldsDescriptor fieldsDescr;
     QtConnections connections;
 };
 } // namespace TArc
