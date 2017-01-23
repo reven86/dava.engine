@@ -399,7 +399,7 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(h));
 
     RunOnMainThreadAsync([this, keyboardRect]() {
-        const Rect keyboardVirtualRect = GetPrimaryWindow()->GetUIControlSystem()->vcs->ConvertInputToVirtual(keyboardRect);
+        const Rect keyboardVirtualRect = window->GetUIControlSystem()->vcs->ConvertInputToVirtual(keyboardRect);
         OnKeyboardShown(keyboardVirtualRect);
     });
 }
@@ -466,7 +466,7 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
             }
             else
             {
-                std::shared_ptr<int> connectionIdPtr = std::make_shared<int>(0);
+                std::shared_ptr<SigConnectionID> connectionIdPtr = std::make_shared<SigConnectionID>();
                 *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
                     Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
                     SetSpriteFromImage(image.Get());
