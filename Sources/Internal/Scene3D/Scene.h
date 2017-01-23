@@ -216,6 +216,7 @@ public:
     void OnSceneReady(Entity* rootNode);
 
     void Input(UIEvent* event);
+    void InputCancelled(UIEvent* event);
 
     /**
         \brief This functions activate and deactivate scene systems

@@ -1,7 +1,7 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#if (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)) && defined(__DAVAENGINE_COREV2__)
 
 #include "ResourceArchiver/ResourceArchiver.h"
 

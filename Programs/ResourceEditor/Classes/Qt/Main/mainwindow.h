@@ -26,9 +26,6 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-#if defined(NEW_PROPERTY_PANEL)
-class PropertyPanel;
-#endif
 class DeviceListController;
 class SpritesPackerModule;
 class ErrorDialogOutput;
@@ -174,6 +171,8 @@ public slots:
     bool SetVisibilityToolEnabledIfPossible(bool);
     void UpdateLandscapeRenderMode();
 
+    void OnValidateScene();
+
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
     void SetupWidget();
@@ -250,11 +249,6 @@ private:
     QPointer<VersionInfoWidget> versionInfoWidget;
 
     QPointer<DeviceListController> deviceListController;
-
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IComponentContext& ngtContext;
-    std::unique_ptr<PropertyPanel> propertyPanel;
-#endif
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
 

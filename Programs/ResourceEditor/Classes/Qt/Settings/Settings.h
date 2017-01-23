@@ -83,8 +83,6 @@ public:
     static const DAVA::FastName General_Mouse_WheelMoveCamera;
     static const DAVA::FastName General_Mouse_WheelMoveIntensity;
 
-    static const DAVA::FastName Debug_DataWithMaterialsPathname;
-
     // this settings won't be shown in settings dialog
     // and are used only by application
     static const DAVA::FastName InternalGroup;
@@ -110,6 +108,13 @@ public:
     static const DAVA::FastName Internal_LogWidget;
     static const DAVA::FastName Internal_EnableSounds;
     static const DAVA::FastName Internal_GizmoEnabled;
+
+    static const DAVA::FastName Internal_Validate_Matrices;
+    static const DAVA::FastName Internal_Validate_SameNames;
+    static const DAVA::FastName Internal_Validate_CollisionProperties;
+    static const DAVA::FastName Internal_Validate_TexturesRelevance;
+    static const DAVA::FastName Internal_Validate_MaterialGroups;
+    static const DAVA::FastName Internal_Validate_ShowConsole;
 
     static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings
