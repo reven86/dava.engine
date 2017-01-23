@@ -8,7 +8,7 @@
 #include <QtGlobal>
 
 VersionTool::VersionTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-version")
+    : CommandLineModule(commandLine, "-version")
 {
 }
 

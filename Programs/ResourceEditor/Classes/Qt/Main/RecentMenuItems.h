@@ -3,8 +3,7 @@
 #include "TArc/WindowSubSystem/UI.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/DataProcessing/Common.h"
-
-#include "QtTools/Utils/QtConnections.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include "Functional/Function.h"
 #include "Functional/Signal.h"
@@ -55,6 +54,6 @@ private:
 
     DAVA::Vector<DAVA::String> Get() const;
 
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
     Params params;
 };

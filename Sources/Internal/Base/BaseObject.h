@@ -130,6 +130,12 @@ public:
     INTROSPECTION(BaseObject,
                   MEMBER(referenceCount, "referenceCount", I_SAVE)
                   )
+
+    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase)
+    {
+        ReflectionRegistrator<BaseObject>::Begin()
+        .End();
+    }
 };
 
 template <typename T>

@@ -257,7 +257,7 @@
      <addaction name="actionDiffuse"/>
      <addaction name="actionSpecular"/>
     </widget>
-    <widget class="QMenu" name="menuDockWindows">
+    <widget class="QMenu" name="Dock">
      <property name="title">
       <string>Dock Windows</string>
      </property>
@@ -266,7 +266,7 @@
     <addaction name="separator"/>
     <addaction name="menuTheme"/>
     <addaction name="menuToolbars"/>
-    <addaction name="menuDockWindows"/>
+    <addaction name="Dock"/>
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
@@ -362,6 +362,8 @@
     <addaction name="actionSwitchesWithDifferentLODs"/>
     <addaction name="separator"/>
     <addaction name="actionSnapCameraToLandscape"/>
+    <addaction name="separator"/>
+    <addaction name="actionValidateScene"/>
    </widget>
    <widget class="QMenu" name="Quality">
     <property name="title">
@@ -632,7 +634,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>76</height>
+          <height>98</height>
          </rect>
         </property>
        </widget>
@@ -682,15 +684,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionConvertModifiedTextures"/>
-  </widget>
-  <widget class="QDockWidget" name="dockLibrary">
-   <property name="windowTitle">
-    <string>Library</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="LibraryWidget" name="libraryWidget"/>
   </widget>
   <widget class="QToolBar" name="testingToolBar">
    <property name="windowTitle">
@@ -751,7 +744,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>76</height>
+          <height>98</height>
          </rect>
         </property>
        </widget>
@@ -1937,6 +1930,14 @@
     <string>Mute scene sounds</string>
    </property>
   </action>
+  <action name="actionValidateScene">
+   <property name="text">
+    <string>Validate scene</string>
+   </property>
+   <property name="toolTip">
+    <string>Perform some routine checks under scene objects</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1988,12 +1989,6 @@
    <class>DockProperties</class>
    <extends>QDockWidget</extends>
    <header>DockProperties/DockProperties.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>LibraryWidget</class>
-   <extends>QWidget</extends>
-   <header>DockLibrary/LibraryWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

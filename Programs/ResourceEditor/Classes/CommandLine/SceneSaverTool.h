@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
-class SceneSaverTool : public REConsoleModuleCommon
+class SceneSaverTool : public CommandLineModule
 {
 public:
     SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine);
@@ -30,7 +30,7 @@ private:
 
     bool copyConverted = false;
 
-    DAVA_VIRTUAL_REFLECTION(SceneSaverTool, REConsoleModuleCommon)
+    DAVA_VIRTUAL_REFLECTION(SceneSaverTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneSaverTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

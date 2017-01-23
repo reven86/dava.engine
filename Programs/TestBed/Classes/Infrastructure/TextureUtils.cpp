@@ -8,7 +8,9 @@ Sprite* TextureUtils::CreateSpriteFromTexture(const String& texturePathname)
     Texture* texture = Texture::CreateFromFile(texturePathname);
     if (texture)
     {
-        createdSprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
+        createdSprite = Sprite::CreateFromTexture(texture, 0, 0,
+                                                  static_cast<float32>(texture->GetWidth()),
+                                                  static_cast<float32>(texture->GetHeight()));
         texture->Release();
     }
 

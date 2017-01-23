@@ -1,5 +1,4 @@
 #include "Classes/SceneManager/SceneData.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
 
 DAVA::RefPtr<SceneEditor2> SceneData::GetScene()
 {
