@@ -21,7 +21,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
-#include "Utils/StringFormat.h"
+#include <Utils/StringFormat.h>
 
 namespace CommandLineModuleTestUtils
 {

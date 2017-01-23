@@ -2,6 +2,7 @@
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestCore.h"
 #include "TArc/DataProcessing/TArcAnyCasts.h"
+#include "TArc/Utils/AssertGuard.h"
 #include "QtHelpers/RunGuard.h"
 
 #include "Engine/Engine.h"
@@ -41,6 +42,7 @@ int BaseApplication::RunImpl()
     {
         isTestEnv = true;
 
+        SetupToolsAssertHandlers(eApplicationMode::TEST_MODE);
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();
@@ -54,6 +56,7 @@ int BaseApplication::RunImpl()
     }
     else
     {
+        SetupToolsAssertHandlers(initInfo.runMode == eEngineRunMode::CONSOLE_MODE ? eApplicationMode::CONSOLE_MODE : eApplicationMode::GUI_MODE);
         e.Init(initInfo.runMode, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();

@@ -8,9 +8,10 @@
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Utils/ModuleCollection.h>
 
+#include <Base/BaseTypes.h>
+#include <Base/ScopedPtr.h>
 #include <Scene3D/Scene.h>
 #include <Utils/StringUtils.h>
-#include <Base/ScopedPtr.h>
 #include <FileSystem/File.h>
 #include <Logger/Logger.h>
 
