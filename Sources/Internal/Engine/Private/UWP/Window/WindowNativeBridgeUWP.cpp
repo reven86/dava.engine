@@ -304,21 +304,23 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
         if (arg->VirtualKey == VirtualKey::Shift)
         {
             OnShiftKeyActivated();
-            break;
         }
-
-        eModifierKeys modifierKeys = GetModifierKeys();
-        CorePhysicalKeyStatus status = arg->KeyStatus;
-        uint32 key = static_cast<uint32>(arg->VirtualKey);
-
-        // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
-        if (status.IsExtendedKey)
+        else
         {
-            key |= 0x100;
+            eModifierKeys modifierKeys = GetModifierKeys();
+            CorePhysicalKeyStatus status = arg->KeyStatus;
+            uint32 key = static_cast<uint32>(arg->VirtualKey);
+
+            // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
+            if (status.IsExtendedKey)
+            {
+                key |= 0x100;
+            }
+
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, status.WasKeyDown));
         }
 
-        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, status.WasKeyDown));
         break;
     }
     default:

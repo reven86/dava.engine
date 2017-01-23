@@ -852,17 +852,19 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
     {
         return OnShiftKeyEvent();
     }
-
-    // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
-    if (isExtended)
+    else
     {
-        key |= 0x100;
-    }
+        // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
+        if (isExtended)
+        {
+            key |= 0x100;
+        }
 
-    eModifierKeys modifierKeys = GetModifierKeys();
-    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
-    return 0;
+        eModifierKeys modifierKeys = GetModifierKeys();
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
+        return 0;
+    }
 }
 
 LRESULT WindowBackend::OnShiftKeyEvent()
