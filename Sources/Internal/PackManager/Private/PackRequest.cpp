@@ -91,7 +91,11 @@ uint64 PackRequest::GetDownloadedSize() const
     return allFilesSize;
 }
 /** return true when all files loaded and ready */
-bool IsDownloaded() const override;
+bool PackRequest::IsDownloaded() const
+{
+    // TODO checkit out
+    return GetDownloadedSize() == GetSize();
+}
 
 void PackRequest::Update()
 {
@@ -101,14 +105,125 @@ void PackRequest::Update()
     // TODO
 }
 
-uint64 PackRequest::GetFullSizeWithDependencies() const
+void PackRequest::FileRequest::Initialize(const uint32 fileIndex_,
+                                          const FilePath& fileName_,
+                                          const uint32 hash_,
+                                          const uint64 startLoadingPos_,
+                                          const uint64 fileComressedSize_,
+                                          const uint64 fileUncompressedSize_,
+                                          const String& url_)
 {
-    return totalAllPacksSize;
+    localFile = fileName_;
+    hashFromMeta = hash_;
+    startLoadingPos = startLoadingPos;
+    sizeOfCompressedFile = fileComressedSize_;
+    sizeOfUncompressedFile = fileUncompressedSize_;
+    fileIndex = fileIndex_;
+    status = Wait;
+    taskId = 0;
+    url = url_;
 }
 
-uint64 PackRequest::GetDownloadedSize() const
+void PackRequest::FileRequest::Update()
 {
-    return downloadedSize;
+    switch (status)
+    {
+    case Wait:
+        status = CheckLocalFile;
+        break;
+    case CheckLocalFile:
+    {
+        FileSystem* fs = FileSystem::Instance();
+        if (fs->IsFile(localFile))
+        {
+            uint32 size = 0;
+            fs->GetFileSize(localFile, size);
+            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack)))
+            {
+                status = CheckHash;
+            }
+            else
+            {
+                fs->DeleteFile(localFile);
+                status = LoadingPackFile;
+            }
+        }
+        else
+        {
+            status = LoadingPackFile;
+        }
+    }
+    break;
+    case LoadingPackFile:
+    {
+        DownloadManager* dm = DownloadManager::Instance();
+        if (taskId == 0)
+        {
+            taskId = dm->DownloadRange(url, localFile, startLoadingPos, sizeOfCompressedFile);
+        }
+        else
+        {
+            DownloadStatus downloadStatus;
+            if (dm->GetStatus(taskId, downloadStatus))
+            {
+                switch (downloadStatus)
+                {
+                case DL_PENDING:
+                    break;
+                case DL_IN_PROGRESS:
+                    break;
+                case DL_FINISHED:
+                    taskId = 0;
+                    status = CheckHash;
+                    break;
+                case DL_UNKNOWN:
+                    break;
+                }
+            }
+            else
+            {
+                taskId = 0;
+                status = CheckLocalFile;
+            }
+        }
+    }
+    break;
+    case CheckHash:
+    {
+        uint32 fileCrc32 = CRC32::ForFile(localFile);
+        if (fileCrc32 == hashFromMeta)
+        {
+            // write 20 bytes LitePack footer
+            PackFormat::LitePack::Footer footer;
+            footer.type = Compressor::Type::Lz4HC;
+            footer.crc32Compressed = hashFromMeta;
+            footer.sizeUncompressed = sizeOfUncompressedFile;
+            footer.sizeCompressed = sizeOfCompressedFile;
+
+            ScopedPtr<File> f(File::Create(localFile, File::WRITE | File::APPEND | File::OPEN));
+            f->Write(&footer, sizeof(footer));
+
+            status = Ready;
+        }
+        else
+        {
+            // try download again
+            FileSystem::Instance()->DeleteFile(localFile);
+            status = LoadingPackFile;
+        }
+    }
+
+    break;
+    case Ready:
+        break;
+    case Error:
+        break;
+    }
+}
+
+bool PackRequest::FileRequest::IsDownloaded()
+{
+    return status == Ready;
 }
 
 } // end namespace DAVA

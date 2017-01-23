@@ -36,8 +36,8 @@ public:
 private:
     struct FileRequest
     {
-        FileRequest();
-        ~FileRequest();
+        FileRequest() = default;
+        ~FileRequest() = default;
 
         enum Status : uint32
         {
@@ -51,20 +51,24 @@ private:
         };
 
         void Initialize(const uint32 fileIndex,
-                        const String& fileName,
+                        const FilePath& file,
                         const uint32 hash,
                         const uint64 startLoadingPos,
-                        const uint64 fileSize);
+                        const uint64 fileCompressedSize,
+                        const uint64 fileUncompressedSize,
+                        const String& url);
         void Update();
 
         bool IsDownloaded();
 
         FilePath localFile;
-        String fileName;
         String errorMsg;
+        String url;
+        uint32 fileIndex = 0;
         uint32 hashFromMeta = 0;
         uint64 startLoadingPos = 0;
-        uint64 sizeOfFile = 0;
+        uint64 sizeOfCompressedFile = 0;
+        uint64 sizeOfUncompressedFile = 0;
         uint32 taskId = 0;
         Status status = Wait;
     };
