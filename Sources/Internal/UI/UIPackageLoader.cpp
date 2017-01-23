@@ -223,24 +223,22 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
     for (YamlNode* styleSheetNode : styleSheetMap)
     {
-        const UnorderedMap<String, YamlNode*>& styleSheet = styleSheetNode->AsMap();
+        const YamlNode* properties = styleSheetNode->Get("properties");
 
-        auto propertiesSectionIter = styleSheet.find("properties");
-
-        if (propertiesSectionIter != styleSheet.end())
+        if (properties != nullptr)
         {
             Vector<UIStyleSheetProperty> propertiesToSet;
 
-            for (const auto& propertyIter : propertiesSectionIter->second->AsMap())
+            for (uint32 propertyIndex = 0; propertyIndex < properties->GetCount(); propertyIndex++)
             {
-                FastName propertyName(propertyIter.first);
+                FastName propertyName(properties->GetItemKeyName(propertyIndex));
                 if (propertyDB->IsValidStyleSheetProperty(propertyName))
                 {
-                    uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                    uint32 index = propertyDB->GetStyleSheetPropertyIndex(propertyName);
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
                     if (propertyDescr.memberInfo != nullptr)
                     {
-                        const YamlNode* propertyNode = propertyIter.second;
+                        const YamlNode* propertyNode = properties->Get(propertyIndex);
                         const YamlNode* valueNode = propertyNode;
                         if (propertyNode->GetType() == YamlNode::TYPE_MAP)
                             valueNode = propertyNode->Get("value");
@@ -285,7 +283,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
             }
 
             Vector<String> selectorList;
-            Split(styleSheet.find("selector")->second->AsString(), ",", selectorList);
+            Split(styleSheetNode->Get("selector")->AsString(), ",", selectorList);
             Vector<UIStyleSheetSelectorChain> selectorChains;
             selectorChains.reserve(selectorList.size());
 
@@ -350,7 +348,6 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     {
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
-        LoadBgPropertiesFromYamlNode(control, node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
@@ -397,8 +394,13 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
+    bool bgProcessed = false;
     for (ComponentNode& nodeDescr : components)
     {
+        if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT)
+        {
+            bgProcessed = true;
+        }
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
@@ -407,9 +409,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             {
                 const InspMember* member = insp->Member(j);
                 VariantType res;
-                if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && member->Name() == FastName("orientation"))
+                    static const FastName propertyName("orientation");
+                    if (member->Name() == propertyName)
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
                         if (valueNode)
@@ -429,6 +432,18 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                         }
                     }
                 }
+                if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                {
+                    static const FastName propertyName("spriteModification");
+                    if (member->Name() == propertyName)
+                    {
+                        const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            res.SetInt32(valueNode->AsInt32());
+                        }
+                    }
+                }
 
                 if (res.GetType() == VariantType::TYPE_NONE)
                 {
@@ -439,6 +454,11 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             }
         }
 
+        builder->EndComponentPropertiesSection();
+    }
+    if (!bgProcessed)
+    {
+        builder->BeginComponentPropertiesSection(UIComponent::BACKGROUND_COMPONENT, 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -508,56 +528,11 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             }
         }
 
-        std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
+        std::stable_sort(components.begin(), components.end(), [](const ComponentNode& l, const ComponentNode& r) {
             return l.type == r.type ? l.index < r.index : l.type < r.type;
         });
     }
     return components;
-}
-
-void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
-{
-    const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
-
-    for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
-    {
-        const YamlNode* componentNode = nullptr;
-
-        if (componentsNode)
-            componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
-
-        UIControlBackground* bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
-        if (bg)
-        {
-            const InspInfo* insp = bg->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
-            {
-                const InspMember* member = insp->Member(j);
-                VariantType res;
-                if (componentNode)
-                {
-                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
-                    {
-                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
-                        if (valueNode)
-                        {
-                            if (member->Name() == FastName("spriteModification"))
-                            {
-                                res.SetInt32(valueNode->AsInt32());
-                            }
-                        }
-                    }
-
-                    if (res.GetType() == VariantType::TYPE_NONE)
-                    {
-                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
-                    }
-                }
-                builder->ProcessProperty(member, res);
-            }
-        }
-        builder->EndBgPropertiesSection();
-    }
 }
 
 VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const String& propertyName)

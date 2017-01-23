@@ -111,9 +111,15 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath& pathname)
 {
     Sprite* ret = NULL;
 
+    FilePath path = pathname;
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+    }
+
     spriteMapMutex.Lock();
 
-    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(pathname));
+    SpriteMap::iterator it = spriteMap.find(FILEPATH_MAP_KEY(path));
     if (it != spriteMap.end())
     {
         Sprite* spr = it->second;

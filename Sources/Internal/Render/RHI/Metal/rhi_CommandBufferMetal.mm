@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
 #include "rhi_Metal.h"
 
 #include "../rhi_Type.h"
@@ -82,6 +83,10 @@ RHI_IMPL_POOL(RenderPassMetal_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
 static DAVA::Mutex _Metal_SyncObjectsSync;
+
+static ResetParam _Metal_ResetParam;
+static DAVA::Mutex _Metal_ResetSync;
+static bool _Metal_ResetPending = false;
 
 id<CAMetalDrawable> _Metal_currentDrawable = nil;
 
@@ -522,6 +527,37 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
     }
 }
 
+void CheckDefaultDepthStencilBuffer()
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_ResetSync);
+
+    if (_Metal_ResetPending)
+    {
+        if (_Metal_DefDepthBuf)
+        {
+            [_Metal_DefDepthBuf release];
+            _Metal_DefDepthBuf = nil;
+        }
+
+        if (_Metal_DefStencilBuf)
+        {
+            [_Metal_DefStencilBuf release];
+            _Metal_DefStencilBuf = nil;
+        }
+
+        NSUInteger width = _Metal_ResetParam.width;
+        NSUInteger height = _Metal_ResetParam.height;
+
+        MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:width height:height mipmapped:NO];
+        MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:width height:height mipmapped:NO];
+
+        _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
+        _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
+
+        _Metal_ResetPending = false;
+    }
+}
+    
 #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 
 bool RenderPassMetal_t::Initialize()
@@ -537,6 +573,8 @@ bool RenderPassMetal_t::Initialize()
             _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
             //            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
             _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
+
+            CheckDefaultDepthStencilBuffer();
         }
     }
 
@@ -630,6 +668,8 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
             [_Metal_currentDrawable retain];
             _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
             MTL_TRACE(" next.drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
+
+            CheckDefaultDepthStencilBuffer();
         }
     }
 
@@ -1672,6 +1712,14 @@ static void Metal_Suspend()
     Logger::Debug(" ***** Metal_Suspend");
 }
 
+static void metal_Reset(const ResetParam& param)
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(_Metal_ResetSync);
+
+    _Metal_ResetParam = param;
+    _Metal_ResetPending = true;
+}
+
 namespace CommandBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -1708,6 +1756,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PresentBuffer = &Metal_PresentBuffer;
     dispatch->impl_FinishFrame = &Metal_InvalidateFrameCache;
     dispatch->impl_FinishRendering = &Metal_Suspend;
+    dispatch->impl_Reset = &metal_Reset;
 }
 }
 

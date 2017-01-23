@@ -4,6 +4,7 @@
 #include "Base/IntrospectionBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
 #include "FileSystem/VariantType.h"
 #include "Animation/Interpolation.h"
 
@@ -12,7 +13,6 @@ namespace DAVA
 enum class ePropertyOwner
 {
     CONTROL,
-    BACKGROUND,
     COMPONENT,
 };
 
@@ -127,6 +127,18 @@ public:
 
 private:
     Vector<UIStyleSheetClass> classes;
+};
+
+struct UIStyleSheetSourceInfo
+{
+    UIStyleSheetSourceInfo() = default;
+
+    UIStyleSheetSourceInfo(const FilePath& file_)
+        : file(file_)
+    {
+    }
+
+    FilePath file;
 };
 };
 

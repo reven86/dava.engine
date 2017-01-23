@@ -191,7 +191,7 @@ private:
 typedef ResourceHandle<RESOURCE_VERTEX_BUFFER> HVertexBuffer;
 
 HVertexBuffer CreateVertexBuffer(const VertexBuffer::Descriptor& desc);
-void DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate = false);
+void DeleteVertexBuffer(HVertexBuffer vb, bool scheduleDeletion = true);
 
 void* MapVertexBuffer(HVertexBuffer vb, uint32 offset, uint32 size);
 void UnmapVertexBuffer(HVertexBuffer vb);
@@ -206,7 +206,7 @@ bool NeedRestoreVertexBuffer(HVertexBuffer vb);
 typedef ResourceHandle<RESOURCE_INDEX_BUFFER> HIndexBuffer;
 
 HIndexBuffer CreateIndexBuffer(const IndexBuffer::Descriptor& desc);
-void DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate = false);
+void DeleteIndexBuffer(HIndexBuffer ib, bool scheduleDeletion = true);
 
 void* MapIndexBuffer(HIndexBuffer ib, uint32 offset, uint32 size);
 void UnmapIndexBuffer(HIndexBuffer ib);
@@ -222,7 +222,7 @@ typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
 
 HQueryBuffer CreateQueryBuffer(uint32 maxObjectCount);
 void ResetQueryBuffer(HQueryBuffer buf);
-void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
+void DeleteQueryBuffer(HQueryBuffer buf, bool scheduleDeletion = true);
 
 bool QueryBufferIsReady(HQueryBuffer buf);
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
@@ -234,7 +234,7 @@ int QueryValue(HQueryBuffer buf, uint32 objectIndex);
 typedef ResourceHandle<RESOURCE_PERFQUERY> HPerfQuery;
 
 HPerfQuery CreatePerfQuery();
-void DeletePerfQuery(HPerfQuery handle, bool forceImmediate = false);
+void DeletePerfQuery(HPerfQuery handle, bool scheduleDeletion = true);
 void ResetPerfQuery(HPerfQuery handle);
 
 bool PerfQueryIsReady(HPerfQuery);
@@ -249,7 +249,7 @@ typedef ResourceHandle<RESOURCE_PIPELINE_STATE> HPipelineState;
 typedef ResourceHandle<RESOURCE_CONST_BUFFER> HConstBuffer;
 
 HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc);
-void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate = false);
+void ReleaseRenderPipelineState(HPipelineState rps, bool scheduleDeletion = true);
 
 HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex);
 void CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
@@ -259,7 +259,7 @@ void CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffe
 
 bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount);
 bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount);
-void DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate = false);
+void DeleteConstBuffer(HConstBuffer constBuf, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 // texture-set
@@ -268,7 +268,7 @@ typedef ResourceHandle<RESOURCE_TEXTURE> HTexture;
 typedef ResourceHandle<RESOURCE_TEXTURE_SET> HTextureSet;
 
 HTexture CreateTexture(const Texture::Descriptor& desc);
-void DeleteTexture(HTexture tex, bool forceImmediate = false);
+void DeleteTexture(HTexture tex, bool scheduleDeletion = true);
 
 void* MapTexture(HTexture tex, uint32 level = 0);
 void UnmapTexture(HTexture tex);
@@ -287,7 +287,7 @@ struct TextureSetDescriptor
 
 HTextureSet AcquireTextureSet(const TextureSetDescriptor& desc);
 HTextureSet CopyTextureSet(HTextureSet ts);
-void ReleaseTextureSet(HTextureSet ts, bool forceImmediate = false);
+void ReleaseTextureSet(HTextureSet ts, bool scheduleDeletion = true);
 void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -297,7 +297,7 @@ typedef ResourceHandle<RESOURCE_DEPTHSTENCIL_STATE> HDepthStencilState;
 
 HDepthStencilState AcquireDepthStencilState(const DepthStencilState::Descriptor& desc);
 HDepthStencilState CopyDepthStencilState(HDepthStencilState ds);
-void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate = false);
+void ReleaseDepthStencilState(HDepthStencilState ds, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 //  sampler-state
@@ -306,7 +306,7 @@ typedef ResourceHandle<RESOURCE_SAMPLER_STATE> HSamplerState;
 
 HSamplerState AcquireSamplerState(const SamplerState::Descriptor& desc);
 HSamplerState CopySamplerState(HSamplerState ss);
-void ReleaseSamplerState(HSamplerState ss, bool forceImmediate = false);
+void ReleaseSamplerState(HSamplerState ss, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 // sync-object

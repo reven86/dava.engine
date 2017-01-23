@@ -8,6 +8,7 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
+set                   ( WARNINGS_AS_ERRORS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
@@ -30,11 +31,10 @@ add_definitions       (
 -DDISABLE_NATIVE_WEBVIEW
 -DDISABLE_NATIVE_TEXTFIELD
 -DDISABLE_NATIVE_MOVIEVIEW
--DQT_QML_DEBUG_NO_WARNING
 )
 
-if (UVR_DEV)
-    add_definitions (-DNEW_PROPERTY_PANEL )
+if (NOT DEPLOY)
+    add_definitions ( -DLOCAL_FRAMEWORK_SOURCE_PATH="${FRAMEWORK_PATH}" )
 endif()
 
 set ( DAVA_COREV2 1 )
@@ -92,13 +92,15 @@ if (NOT PUBLIC_BUILD)
     add_definitions(-D__DAVAENGINE_SPEEDTREE__)
 endif()
 
+if (DEPLOY)
+    add_definitions(-DDEPLOY_BUILD)
+endif()
+
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
-
-file              ( GLOB QML_LIST "DataQt/*.qml")
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)
