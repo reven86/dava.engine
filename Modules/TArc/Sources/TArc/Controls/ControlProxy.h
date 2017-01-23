@@ -87,7 +87,7 @@ protected:
         return model;
     }
 
-    FastName GetFieldName(uint32 fieldMark)
+    FastName GetFieldName(uint32 fieldMark) const
     {
         return descriptor.fieldNames[fieldMark].name;
     }

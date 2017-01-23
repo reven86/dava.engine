@@ -5,6 +5,7 @@
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Utils/QtConnections.h"
 #include "TArc/Controls/ControlDescriptor.h"
+#include "TArc/Controls/Private/ValidatorDelegate.h"
 
 #include <Base/BaseTypes.h>
 #include <Base/FastName.h>
@@ -16,7 +17,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class LineEdit final : public ControlProxy<QLineEdit>
+class LineEdit final : public ControlProxy<QLineEdit>, private ValidatorDelegate
 {
 public:
     enum Fields : uint32
@@ -36,6 +37,9 @@ private:
 
     void SetupControl();
     void EditingFinished();
+
+    M::ValidatorResult Validate(const Any& value) const override;
+    void ShowHint(const QString& message) override;
 
 private:
     QtConnections connections;

@@ -92,6 +92,24 @@ struct LineEditTestData : public ReflectionBase
         text = t;
     }
 
+    static M::ValidatorResult ValidateText(const Any& value, const Any& prevValue)
+    {
+        String v = value.Cast<String>();
+        String pv = prevValue.Cast<String>();
+        M::ValidatorResult r;
+        r.state = M::ValidatorResult::eState::Valid;
+
+        if (v.size() > 20)
+        {
+            r.state = M::ValidatorResult::eState::Valid;
+            r.message = "Too long text!";
+            std::replace(v.begin(), v.end(), '1', '2');
+            r.fixedValue = v;
+        }
+
+        return r;
+    }
+
     DAVA_VIRTUAL_REFLECTION(LineEditTestData, ReflectionBase)
     {
         using namespace DAVA::M;
@@ -99,7 +117,7 @@ struct LineEditTestData : public ReflectionBase
         ReflectionRegistrator<LineEditTestData>::Begin()
         .Field("readOnlyMetaText", &LineEditTestData::text)[ReadOnly()]
         .Field("readOnlyText", &LineEditTestData::GetText, nullptr)
-        .Field("text", &LineEditTestData::GetText, &LineEditTestData::SetText)
+        .Field("text", &LineEditTestData::GetText, &LineEditTestData::SetText)[Validator(&LineEditTestData::ValidateText)]
         .Field("isTextReadOnly", &LineEditTestData::isReadOnly)
         .Field("isTextEnabled", &LineEditTestData::isEnabled)
         .Field("placeholder", &LineEditTestData::placeHolder)

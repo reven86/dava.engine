@@ -1,7 +1,10 @@
 #include "TArc/Controls/LineEdit.h"
-#include "Base/FastName.h"
+#include "TArc/Controls/Private/TextValidator.h"
 
+#include <Base/FastName.h>
 #include <Reflection/MetaObjects.h>
+
+#include <QToolTip>
 
 namespace DAVA
 {
@@ -22,6 +25,8 @@ LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, Con
 void LineEdit::SetupControl()
 {
     connections.AddConnection(static_cast<QLineEdit*>(this), &QLineEdit::editingFinished, MakeFunction(this, &LineEdit::EditingFinished));
+    TextValidator* validator = new TextValidator(this, this);
+    setValidator(validator);
 }
 
 void LineEdit::EditingFinished()
@@ -41,16 +46,16 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
         DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Text));
         DVASSERT(fieldValue.IsValid());
 
+        bool readOnlyFieldValue = false;
         if (readOnlyChanged)
         {
             DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(IsReadOnly));
-            bool readOnlyFieldValue = false;
             if (fieldReadOnly.IsValid())
             {
                 readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
             }
-            setReadOnly(fieldValue.IsReadonly() || fieldValue.GetMeta<DAVA::M::ReadOnly>() || readOnlyFieldValue);
         }
+        setReadOnly(fieldValue.IsReadonly() == true || fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr || readOnlyFieldValue == true);
 
         if (textChanged)
         {
@@ -81,6 +86,28 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 
         setPlaceholderText(QString::fromStdString(placeHolder));
     }
+}
+
+M::ValidatorResult LineEdit::Validate(const Any& value) const
+{
+    Reflection field = model.GetField(GetFieldName(Text));
+    DVASSERT(field.IsValid());
+
+    const M::Validator* validator = field.GetMeta<M::Validator>();
+    if (validator != nullptr)
+    {
+        return validator->Validate(value, field.GetValue());
+    }
+
+    M::ValidatorResult r;
+    r.state = M::ValidatorResult::eState::Valid;
+    return r;
+}
+
+void LineEdit::ShowHint(const QString& message)
+{
+    QPoint pos = mapToGlobal(QPoint(0, 0));
+    QToolTip::showText(pos, message, this);
 }
 
 } // namespace TArc
