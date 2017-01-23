@@ -117,7 +117,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
         return DIRECTORY_EXISTS;
 
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString path = UTF8Utils::EncodeToWideString(filePath.GetNativeAbsolutePathname());
+    WideString path = UTF8Utils::EncodeToWideString(filePath.GetAbsolutePathname());
     BOOL res = ::CreateDirectoryW(path.c_str(), 0);
     return (res == 0) ? DIRECTORY_CANT_CREATE : DIRECTORY_CREATED;
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -131,8 +131,8 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetNativeAbsolutePathname());
-    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetNativeAbsolutePathname());
+    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
+    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
 #endif
 
 #ifdef __DAVAENGINE_WIN32__
@@ -206,8 +206,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-    FilePath::NativeStringType toFile = newFile.GetNativeAbsolutePathname();
-    FilePath::NativeStringType fromFile = existingFile.GetNativeAbsolutePathname();
+    String toFile = newFile.GetAbsolutePathname();
+    String fromFile = existingFile.GetAbsolutePathname();
 
     if (overwriteExisting)
     {
@@ -275,7 +275,7 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    const auto& fileName = filePath.GetNativeAbsolutePathname();
+    const auto& fileName = filePath.GetAbsolutePathname();
     int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
     {
@@ -327,7 +327,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
     }
     SafeRelease(fileList);
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString sysPath = UTF8Utils::EncodeToWideString(path.GetNativeAbsolutePathname());
+    WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
     int32 res = _wrmdir(sysPath.c_str());
     return (res == 0);
@@ -429,7 +429,7 @@ const FilePath& FileSystem::GetCurrentWorkingDirectory()
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
     String path = UTF8Utils::EncodeToUTF8(tempDir.data());
-    currentWorkingDirectory = FilePath::FromNativeString(path);
+    currentWorkingDirectory = FilePath(path);
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
@@ -451,7 +451,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
     String data = UTF8Utils::EncodeToUTF8(tempDir.data());
-    FilePath path = FilePath::FromNativeString(data);
+    FilePath path(data);
     currentExecuteDirectory = path.GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
@@ -492,7 +492,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetNativeAbsolutePathname());
+    WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
     return (res != 0);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -507,7 +507,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
     // ~res:/ or c:/... or ~doc:/
-    FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
+    String nativePath = pathToCheck.GetAbsolutePathname();
 
     if (FileAPI::IsRegularFile(nativePath))
     {
@@ -537,7 +537,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_WIN32__)
-    WideString path = UTF8Utils::EncodeToWideString(pathToCheck.GetNativeAbsolutePathname());
+    WideString path = UTF8Utils::EncodeToWideString(pathToCheck.GetAbsolutePathname());
     DWORD stats = GetFileAttributesW(path.c_str());
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else
@@ -591,7 +591,7 @@ bool FileSystem::IsHidden(const FilePath& pathToCheck) const
 HANDLE CreateFileWin(const String& path, bool shareRead = false)
 {
     int share = shareRead ? FILE_SHARE_READ : 0;
-    WideString pathWide = UTF8Utils::EncodeToWideString(FilePath(path).GetNativeAbsolutePathname());
+    WideString pathWide = UTF8Utils::EncodeToWideString(FilePath(path).GetAbsolutePathname());
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -745,7 +745,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
     String p = UTF8Utils::EncodeToUTF8(szPath);
 
-    return FilePath::FromNativeString(p).MakeDirectoryPathname();
+    return FilePath(p).MakeDirectoryPathname();
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
@@ -754,7 +754,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     String folder = UTF8Utils::EncodeToUTF8(roamingFolder);
-    return FilePath::FromNativeString(folder).MakeDirectoryPathname();
+    return FilePath(folder).MakeDirectoryPathname();
 
 #endif
 }
@@ -771,7 +771,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
     String p = UTF8Utils::EncodeToUTF8(szPath);
 
-    return FilePath::FromNativeString(p).MakeDirectoryPathname();
+    return FilePath(p).MakeDirectoryPathname();
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 

@@ -375,6 +375,19 @@ String FilePath::GetAbsolutePathname() const
     return absolutePathname;
 }
 
+#if defined(__DAVAENGINE_WINDOWS__)
+FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
+{
+    String str = GetAbsolutePathname();
+    return UTF8Utils::EncodeToWideString(str);
+}
+
+FilePath FilePath::FromNativeString(const NativeStringType& path)
+{
+    String str = UTF8Utils::EncodeToUTF8(path);
+    return FilePath(str);
+}
+#else
 FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 {
     return GetAbsolutePathname();
@@ -384,6 +397,7 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
     return FilePath(path);
 }
+#endif
 
 String FilePath::ResolveResourcesPath() const
 {

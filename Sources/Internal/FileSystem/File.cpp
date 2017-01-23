@@ -209,7 +209,7 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
     FILE* file = nullptr;
     uint64 size = 0;
-    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
+    String path = filePath.GetAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
     {
