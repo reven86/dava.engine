@@ -33,13 +33,13 @@ void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     }
 }
 
-void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState /*previousState*/)
+void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState)
 {
     if (currentState == EditorSystemsManager::DragScreen)
     {
         renderWidget->setCursor(Qt::OpenHandCursor);
     }
-    else
+    else if (previousState == EditorSystemsManager::DragScreen)
     {
         renderWidget->unsetCursor();
     }

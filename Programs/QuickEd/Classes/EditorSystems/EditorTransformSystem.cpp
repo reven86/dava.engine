@@ -146,9 +146,25 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 
 EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(DAVA::UIEvent* currentInput)
 {
+    EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+    if (dragState == EditorSystemsManager::Transform)
+    {
+        if (currentInput->device == eInputDevices::MOUSE
+            && currentInput->phase == UIEvent::Phase::ENDED
+            && currentInput->mouseButton == eMouseButtons::LEFT)
+        {
+            return EditorSystemsManager::NoDrag;
+        }
+        else
+        {
+            return EditorSystemsManager::Transform;
+        }
+    }
     HUDAreaInfo areaInfo = systemsManager->GetCurrentHUDArea();
     if (areaInfo.area != HUDAreaInfo::NO_AREA && currentInput->phase == UIEvent::Phase::DRAG)
     {
+        //initialize start mouse position for correct rotation
+        previousMousePos = currentInput->point;
         return EditorSystemsManager::Transform;
     }
     return EditorSystemsManager::NoDrag;
@@ -814,10 +830,9 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
 
 bool EditorTransformSystem::RotateControl(const Vector2& pos)
 {
-    Vector2 prevPos = systemsManager->GetLastMousePos();
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
-    Vector2 l1(prevPos - rotatePoint);
+    Vector2 l1(previousMousePos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
 
     if (l2.Length() < 15.0f)
@@ -835,6 +850,7 @@ bool EditorTransformSystem::RotateControl(const Vector2& pos)
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
+    previousMousePos = pos;
     return true;
 }
 
