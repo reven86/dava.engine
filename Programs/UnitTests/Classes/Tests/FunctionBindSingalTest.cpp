@@ -2,11 +2,13 @@
 #include "Functional/Signal.h"
 #include "UnitTests/UnitTests.h"
 
-using namespace DAVA;
+// =======================================================================================================================================
+// =======================================================================================================================================
+// =======================================================================================================================================
 
-// =======================================================================================================================================
-// =======================================================================================================================================
-// =======================================================================================================================================
+namespace FunctionBindDetails
+{
+using namespace DAVA;
 
 static String functionBindSignalResultString;
 
@@ -111,7 +113,7 @@ struct B : public A
     }
 };
 
-struct M
+struct P
 {
     char c_[128];
     int getV()
@@ -127,7 +129,7 @@ struct V
     char c_[2];
 };
 
-struct C : public M, virtual public V, virtual public A
+struct C : public P, virtual public V, virtual public A
 {
     virtual ~C() = default;
     virtual void f2()
@@ -165,6 +167,7 @@ struct MindChangingClass
     Signal<>& signal;
     SigConnectionID id;
 };
+} // namespace FunctionBindDetails
 
 // =======================================================================================================================================
 // =======================================================================================================================================
@@ -174,6 +177,8 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 {
     DAVA_TEST (TestFunction)
     {
+        using namespace DAVA;
+        using namespace FunctionBindDetails;
         // ==================================================================================
         // common functions testing
         // ==================================================================================
@@ -352,6 +357,9 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
     DAVA_TEST (TestFunctionExtended)
     {
+        using namespace DAVA;
+        using namespace FunctionBindDetails;
+
         B b;
         A* a_pt = nullptr;
         void* void_test = nullptr;
@@ -378,7 +386,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         TEST_VERIFY(cla3(&b, const_cast<const A**>(&a_pt)) == b.exClassFn3(const_cast<const A**>(&a_pt)));
     }
 
-    class TestObjA : public TrackedObject
+    class TestObjA : public DAVA::TrackedObject
     {
     public:
         int v1 = 0;
@@ -405,12 +413,14 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         virtual ~TestObjB(){};
     };
 
-    class TestObjC : public TestObjB, public TrackedObject
+    class TestObjC : public TestObjB, public DAVA::TrackedObject
     {
     };
 
     DAVA_TEST (TestSignals)
     {
+        using namespace DAVA;
+        using namespace FunctionBindDetails;
         // ==================================================================================
         // signals
         // ==================================================================================
