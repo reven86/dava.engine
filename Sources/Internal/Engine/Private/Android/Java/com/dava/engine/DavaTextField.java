@@ -670,6 +670,9 @@ final class DavaTextField implements TextWatcher,
                 // Close keyboard delayed (to avoid reopening it when switching between textfields)
                 // If another textfield gets focus until that happens, it will cancel this action
 
+                // Store windowToken in case textField will be detached from window
+                final IBinder windowToken = nativeTextField.getWindowToken();
+
                 DavaActivity.commandHandler().postDelayed(new Runnable()
                 {
                     @Override
@@ -681,10 +684,12 @@ final class DavaTextField implements TextWatcher,
                         }
 
                         InputMethodManager imm = (InputMethodManager) DavaActivity.instance().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        IBinder windowToken = nativeTextField.getWindowToken();
                         imm.hideSoftInputFromWindow(windowToken, 0);
 
-                        nativeOnKeyboardHidden(textfieldBackendPointer);
+                        if (textfieldBackendPointer != 0)
+                        {
+                            nativeOnKeyboardHidden(textfieldBackendPointer);
+                        }
 
                         pendingKeyboardClose = false;
                     }
