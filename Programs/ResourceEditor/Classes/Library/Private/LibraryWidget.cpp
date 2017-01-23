@@ -1,19 +1,22 @@
-#include "LibraryWidget.h"
-#include "LibraryFileSystemModel.h"
+#include "Classes/Library/Private/LibraryWidget.h"
+#include "Classes/Library/Private/LibraryFileSystemModel.h"
+#include "Classes/Library/Private/LIbraryData.h"
+
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
-#include "GlobalOperations.h"
 
 #include "Main/QtUtils.h"
-#include "Scene/SceneEditor2.h"
 
-#include "Actions/DAEConverter.h"
+#include "TArc/Core/FieldBinder.h"
+#include "TArc/Core/ContextAccessor.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include "QtTools/Utils/Utils.h"
 #include "QtHelpers/HelperFunctions.h"
 
-#include "Render/Image/ImageFormatInterface.h"
 #include "Reflection/ReflectedType.h"
+#include "Render/Image/ImageFormatInterface.h"
+#include "Render/RenderBase.h"
 
 #include <QToolBar>
 #include <QLineEdit>
@@ -27,6 +30,20 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileInfo>
+
+namespace LibraryWidgetDetail
+{
+QStringList GetExtensions(DAVA::ImageFormat imageFormat)
+{
+    QStringList extList;
+    auto extensions = DAVA::ImageSystem::GetExtensionsFor(imageFormat);
+    for (auto& ex : extensions)
+    {
+        extList << QString("*") + ex.c_str();
+    }
+
+    return extList;
+}
 
 struct FileType
 {
@@ -56,11 +73,14 @@ struct FileType
 };
 
 QVector<FileType> fileTypeValues;
+}
 
-LibraryWidget::LibraryWidget(QWidget* parent /* = 0 */)
+LibraryWidget::LibraryWidget(DAVA::TArc::ContextAccessor* contextAccessor_, QWidget* parent)
     : QWidget(parent)
-    , curTypeIndex(-1)
+    , contextAccessor(contextAccessor_)
 {
+    DVASSERT(contextAccessor != nullptr);
+
     SetupFileTypes();
     SetupToolbar();
     SetupView();
@@ -68,10 +88,14 @@ LibraryWidget::LibraryWidget(QWidget* parent /* = 0 */)
 
     ViewAsList();
     OnFilesTypeChanged(0);
-}
 
-LibraryWidget::~LibraryWidget()
-{
+    QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
+    QObject::connect(filesView, &QTreeView::customContextMenuRequested, this, &LibraryWidget::ShowContextMenu);
+    QObject::connect(filesView, &QTreeView::doubleClicked, this, &LibraryWidget::fileDoubleClicked);
+
+    fieldBinder.reset(new DAVA::TArc::FieldBinder(contextAccessor));
+    DAVA::TArc::FieldDescriptor projectFieldDescriptor(DAVA::ReflectedTypeDB::Get<ProjectManagerData>(), DAVA::FastName(ProjectManagerData::ProjectPathProperty));
+    fieldBinder->BindField(projectFieldDescriptor, DAVA::MakeFunction(this, &LibraryWidget::OnProjectChanged));
 }
 
 void LibraryWidget::SetupFileTypes()
@@ -109,55 +133,31 @@ void LibraryWidget::SetupFileTypes()
         compressedImagesList << (QString("*") + cf.c_str());
     }
 
-    FileType allFiles("All files");
+    LibraryWidgetDetail::FileType allFiles("All files");
     allFiles.filter << "*.dae";
     allFiles.filter << "*.sc2";
     allFiles.filter << sourceImagesList;
 
-    fileTypeValues.reserve(10);
+    LibraryWidgetDetail::fileTypeValues.reserve(10);
 
-    fileTypeValues.push_back(allFiles);
+    LibraryWidgetDetail::fileTypeValues.push_back(allFiles);
     QStringList models;
     models << "*.dae"
            << "*.sc2";
-    fileTypeValues.push_back(FileType("Models", models));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("Models", models));
 
-    fileTypeValues.push_back(FileType("Source Textures", sourceImagesList));
-    fileTypeValues.push_back(FileType("Compressed Textures", compressedImagesList));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("Source Textures", sourceImagesList));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("Compressed Textures", compressedImagesList));
 
-    fileTypeValues.push_back(FileType("DAE", "*.dae"));
-    fileTypeValues.push_back(FileType("SC2", "*.sc2"));
-    fileTypeValues.push_back(FileType("TEX", QString("*") + DAVA::TextureDescriptor::GetDescriptorExtension().c_str()));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("DAE", "*.dae"));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("SC2", "*.sc2"));
+    LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType("TEX", QString("*") + DAVA::TextureDescriptor::GetDescriptorExtension().c_str()));
 
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
         DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::GetImageFormatInterface(formatType);
-        fileTypeValues.push_back(FileType(QString::fromStdString(formatHelper->GetName()), GetExtensions(formatType)));
+        LibraryWidgetDetail::fileTypeValues.push_back(LibraryWidgetDetail::FileType(QString::fromStdString(formatHelper->GetName()), LibraryWidgetDetail::GetExtensions(formatType)));
     }
-}
-
-QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
-{
-    QStringList extList;
-    auto extensions = DAVA::ImageSystem::GetExtensionsFor(imageFormat);
-    for (auto& ex : extensions)
-    {
-        extList << QString("*") + ex.c_str();
-    }
-
-    return extList;
-}
-
-void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
-{
-    globalOperations = globalOperations_;
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
-    projectDataWrapper.SetListener(this);
-
-    QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
-
-    QObject::connect(filesView, &QTreeView::customContextMenuRequested, this, &LibraryWidget::ShowContextMenu);
-    QObject::connect(filesView, &QTreeView::doubleClicked, this, &LibraryWidget::fileDoubleClicked);
 }
 
 void LibraryWidget::SetupToolbar()
@@ -171,9 +171,9 @@ void LibraryWidget::SetupToolbar()
     filesTypeFilter->setEditable(false);
     filesTypeFilter->setMinimumWidth(100);
     filesTypeFilter->setMaximumWidth(100);
-    for (int i = 0; i < fileTypeValues.size(); ++i)
+    for (int i = 0; i < LibraryWidgetDetail::fileTypeValues.size(); ++i)
     {
-        filesTypeFilter->addItem(fileTypeValues[i].name);
+        filesTypeFilter->addItem(LibraryWidgetDetail::fileTypeValues[i].name);
     }
     filesTypeFilter->setCurrentIndex(0);
 
@@ -209,7 +209,7 @@ void LibraryWidget::SetupView()
 
     filesView->setModel(filesModel);
 
-    QObject::connect(filesView, SIGNAL(DragStarted()), this, SLOT(OnTreeDragStarted()));
+    QObject::connect(static_cast<LibraryTreeView*>(filesView), &LibraryTreeView::DragStarted, this, &LibraryWidget::DragStarted);
 }
 
 void LibraryWidget::SetupLayout()
@@ -267,41 +267,29 @@ void LibraryWidget::HideDetailedColumnsAtFilesView(bool hide)
 
 void LibraryWidget::SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
+    LibraryData* libraryData = contextAccessor->GetGlobalContext()->GetData<LibraryData>();
+    DVASSERT(libraryData != nullptr);
+
     if (0 == selected.count())
+    {
+        libraryData->selectedPath = DAVA::FilePath();
         return;
+    }
 
     const QModelIndex index = selected.indexes().first();
-
     QFileInfo fileInfo = filesModel->fileInfo(index);
-
-    if (0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
-    {
-        ShowPreview(fileInfo.filePath());
-    }
-    else
-    {
-        HidePreview();
-    }
+    libraryData->selectedPath = fileInfo.filePath().toStdString();
 }
 
 void LibraryWidget::fileDoubleClicked(const QModelIndex& index)
 {
-    if (SettingsManager::GetValue(Settings::General_OpenByDBClick).AsBool())
-    {
-        HidePreview();
-        QFileInfo fileInfo = filesModel->fileInfo(index);
-        if (0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
-        {
-            DVASSERT(globalOperations != nullptr);
-            globalOperations->CallAction(GlobalOperations::OpenScene, fileInfo.absoluteFilePath().toStdString());
-        }
-    }
+    QFileInfo fileInfo = filesModel->fileInfo(index);
+    DAVA::FilePath path = fileInfo.absoluteFilePath().toStdString();
+    emit DoubleClicked(path);
 }
 
 void LibraryWidget::ShowContextMenu(const QPoint& point)
 {
-    HidePreview();
-
     const QModelIndex index = filesView->indexAt(point);
 
     if (!index.isValid())
@@ -343,7 +331,7 @@ void LibraryWidget::OnFilesTypeChanged(int typeIndex)
 
     curTypeIndex = typeIndex;
 
-    filesModel->SetExtensionFilter(fileTypeValues[curTypeIndex].filter);
+    filesModel->SetExtensionFilter(LibraryWidgetDetail::fileTypeValues[curTypeIndex].filter);
     filesView->setRootIndex(filesModel->index(rootPathname));
 }
 
@@ -352,12 +340,7 @@ void LibraryWidget::OnAddModel()
     QVariant indexAsVariant = qobject_cast<QAction*>(sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    SceneEditor2* scene = sceneHolder.GetScene();
-    if (nullptr != scene)
-    {
-        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString(), 0, 0);
-        scene->structureSystem->Add(fileInfo.absoluteFilePath().toStdString());
-    }
+    emit AddSceneRequested(fileInfo.absoluteFilePath().toStdString());
 }
 
 void LibraryWidget::OnEditModel()
@@ -365,8 +348,7 @@ void LibraryWidget::OnEditModel()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    DVASSERT(globalOperations != nullptr);
-    globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(fileInfo.absoluteFilePath().toStdString()));
+    emit EditSceneRequested(fileInfo.absoluteFilePath().toStdString());
 }
 
 void LibraryWidget::OnConvertDae()
@@ -374,8 +356,7 @@ void LibraryWidget::OnConvertDae()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString(), 0, 0);
-    DAEConverter::Convert(fileInfo.absoluteFilePath().toStdString());
+    emit DAEConvertionRequested(fileInfo.absoluteFilePath().toStdString());
 }
 
 void LibraryWidget::OnRevealAtFolder()
@@ -386,39 +367,24 @@ void LibraryWidget::OnRevealAtFolder()
     QtHelpers::ShowInOSFileManager(fileInfo.absoluteFilePath());
 }
 
-void LibraryWidget::HidePreview() const
+void LibraryWidget::OnProjectChanged(const DAVA::Any& projectFieldValue)
 {
-    REGlobal::GetInvoker()->Invoke(REGlobal::HideScenePreviewOperation.ID);
-}
-
-void LibraryWidget::ShowPreview(const QString& pathname) const
-{
-    REGlobal::GetInvoker()->Invoke(REGlobal::ShowScenePreviewOperation.ID, DAVA::FilePath(pathname.toStdString()));
-}
-
-void LibraryWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    DVASSERT(projectDataWrapper == wrapper);
-    ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-    if (data)
+    ProjectManagerData* projectData = contextAccessor->GetGlobalContext()->GetData<ProjectManagerData>();
+    if (projectData->GetProjectPath().IsEmpty())
     {
-        DAVA::FilePath projectPath = data->GetProjectPath();
-        if (!projectPath.IsEmpty())
-        {
-            rootPathname = QString::fromStdString((projectPath + "/DataSource/3d/").GetAbsolutePathname());
+        setEnabled(false);
 
-            filesModel->Load(rootPathname);
-            filesView->setRootIndex(filesModel->index(rootPathname));
-            return;
-        }
+        rootPathname = QDir::rootPath();
+        filesView->setRootIndex(filesModel->index(rootPathname));
+        filesView->collapseAll();
     }
+    else
+    {
+        setEnabled(true);
 
-    rootPathname = QDir::rootPath();
-    filesView->setRootIndex(filesModel->index(rootPathname));
-    filesView->collapseAll();
-}
+        rootPathname = QString::fromStdString(projectData->GetDataSource3DPath().GetAbsolutePathname());
 
-void LibraryWidget::OnTreeDragStarted()
-{
-    HidePreview();
+        filesModel->Load(rootPathname);
+        filesView->setRootIndex(filesModel->index(rootPathname));
+    }
 }

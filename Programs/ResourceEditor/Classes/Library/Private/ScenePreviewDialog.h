@@ -1,9 +1,9 @@
-#ifndef __SCENE_PREVIEW_DIALOG_H__
-#define __SCENE_PREVIEW_DIALOG_H__
+#pragma once
+
+#include "Classes/Library/Private/ExtendedDialog.h"
+#include "Classes/Library/Private/ScenePreviewControl.h"
 
 #include "DAVAEngine.h"
-#include "Deprecated/ExtendedDialog.h"
-#include "Deprecated/ScenePreviewControl.h"
 
 class ScenePreviewDialog : public ExtendedDialog
 {
@@ -24,7 +24,3 @@ protected:
     DAVA::ScopedPtr<DAVA::UIStaticText> errorMessage;
     DAVA::ScopedPtr<DAVA::UIControl> clickableBackgound;
 };
-
-
-
-#endif // __SCENE_PREVIEW_DIALOG_H__

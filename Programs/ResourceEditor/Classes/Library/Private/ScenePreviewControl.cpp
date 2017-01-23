@@ -1,7 +1,7 @@
 #include "ScenePreviewControl.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
-#include "Deprecated/ControlsFactory.h"
+#include "Classes/Library/Private/ControlsFactory.h"
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/CameraComponent.h"
 
