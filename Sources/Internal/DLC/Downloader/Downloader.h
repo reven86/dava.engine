@@ -102,14 +102,10 @@ protected:
      */
     virtual void SetDownloadSpeedLimit(const uint64 limit) = 0;
 
-    /**
-        \brief return errno occurred during work with destination file
-    */
+    /** Returns errno occurred during work with destination file. */
     int32 GetFileErrno() const;
 
-    /**
-    \brief return error specified for downloader implementation. Useful for debugging/tracing download errors. 
-    */
+    /** Return error specified for downloader implementation. Useful for debugging/tracing download errors. */
     int32 GetImplError() const;
 
 protected:
