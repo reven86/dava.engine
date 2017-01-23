@@ -13,6 +13,7 @@ StaticOcclusionComponent::StaticOcclusionComponent()
     zSubdivisions = 2;
     boundingBox = AABBox3(Vector3(0.0f, 0.0f, 0.0f), Vector3(20.0f, 20.0f, 20.0f));
     placeOnLandscape = false;
+    occlusionPixelThreshold = 0;
 }
 
 Component* StaticOcclusionComponent::Clone(Entity* toEntity)
