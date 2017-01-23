@@ -41,13 +41,25 @@ struct CheckBoxTestData : public ReflectionBase
         Logger::Info("++++ newValue: %d", !v);
         value = !v;
     }
+
+    String GetInvertedDescription()
+    {
+        return value == true ? "False" : "True";
+    }
     bool value = false;
+
+    static String ValueDescription(const Any& v)
+    {
+        bool value = v.Cast<bool>();
+        return value == true ? "True" : "False";
+    }
 
     DAVA_VIRTUAL_REFLECTION(CheckBoxTestData, ReflectionBase)
     {
         ReflectionRegistrator<CheckBoxTestData>::Begin()
-        .Field("value", &CheckBoxTestData::value)
+        .Field("value", &CheckBoxTestData::value)[DAVA::M::ValueDescription(&CheckBoxTestData::ValueDescription)]
         .Field("invertedValue", &CheckBoxTestData::GetInvertedValue, &CheckBoxTestData::SetInvertedValue)
+        .Field("valueDescription", &CheckBoxTestData::GetInvertedDescription, nullptr)
         .End();
     }
 
@@ -68,6 +80,8 @@ struct CheckBoxTestData : public ReflectionBase
 
         ControlDescriptorBuilder<CheckBox::Fields> valueInvertedDescr;
         valueInvertedDescr[CheckBox::Checked] = "invertedValue";
+        valueInvertedDescr[CheckBox::TextHint] = "valueDescription";
+        valueInvertedDescr[CheckBox::IsReadOnly] = "value";
         CheckBox* valueInvertedBox = new CheckBox(valueInvertedDescr, accessor, reflection, parent); //->ToWidgetCast();
         r.layout->addWidget(valueInvertedBox->ToWidgetCast());
 
@@ -92,6 +106,18 @@ struct LineEditTestData : public ReflectionBase
         text = t;
     }
 
+    static String GetReadOnlyDescription(const Any& v)
+    {
+        bool value = v.Cast<bool>();
+        return value == true ? "Read only" : "Writable";
+    }
+
+    static String GetEnableDescription(const Any& v)
+    {
+        bool value = v.Cast<bool>();
+        return value == true ? "Enabled" : "Disabled";
+    }
+
     static M::ValidatorResult ValidateText(const Any& value, const Any& prevValue)
     {
         String v = value.Cast<String>();
@@ -101,10 +127,8 @@ struct LineEditTestData : public ReflectionBase
 
         if (v.size() > 20)
         {
-            r.state = M::ValidatorResult::eState::Valid;
+            r.state = M::ValidatorResult::eState::Invalid;
             r.message = "Too long text!";
-            std::replace(v.begin(), v.end(), '1', '2');
-            r.fixedValue = v;
         }
 
         return r;
@@ -118,8 +142,8 @@ struct LineEditTestData : public ReflectionBase
         .Field("readOnlyMetaText", &LineEditTestData::text)[ReadOnly()]
         .Field("readOnlyText", &LineEditTestData::GetText, nullptr)
         .Field("text", &LineEditTestData::GetText, &LineEditTestData::SetText)[Validator(&LineEditTestData::ValidateText)]
-        .Field("isTextReadOnly", &LineEditTestData::isReadOnly)
-        .Field("isTextEnabled", &LineEditTestData::isEnabled)
+        .Field("isTextReadOnly", &LineEditTestData::isReadOnly)[DAVA::M::ValueDescription(&LineEditTestData::GetReadOnlyDescription)]
+        .Field("isTextEnabled", &LineEditTestData::isEnabled)[DAVA::M::ValueDescription(&LineEditTestData::GetEnableDescription)]
         .Field("placeholder", &LineEditTestData::placeHolder)
         .End();
     }

@@ -1,5 +1,7 @@
 #include "TArc/Controls/CheckBox.h"
-#include "Base/FastName.h"
+
+#include <Base/FastName.h>
+#include <Reflection/MetaObjects.h>
 
 namespace DAVA
 {
@@ -24,11 +26,35 @@ void CheckBox::SetupControl()
 
 void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
 {
-    if (changedFields.IsChanged(Checked))
-    {
-        DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Checked));
-        DVASSERT(fieldValue.IsValid());
+    DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Checked));
+    DVASSERT(fieldValue.IsValid());
 
+    bool readOnly = fieldValue.IsReadonly();
+    readOnly |= fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr;
+    if (changedFields.IsChanged(IsReadOnly) == true)
+    {
+        DAVA::Reflection readOnlyField = model.GetField(changedFields.GetName(IsReadOnly));
+        DVASSERT(readOnlyField.IsValid());
+        readOnly |= readOnlyField.GetValue().Cast<bool>();
+    }
+
+    setEnabled(!readOnly);
+
+    const DAVA::M::ValueDescription* valueDescriptor = fieldValue.GetMeta<DAVA::M::ValueDescription>();
+    if (valueDescriptor != nullptr)
+    {
+        setText(QString::fromStdString(valueDescriptor->GetDescription(fieldValue.GetValue())));
+    }
+    else if (changedFields.IsChanged(TextHint) == true)
+    {
+        DAVA::Reflection hintField = model.GetField(changedFields.GetName(TextHint));
+        DVASSERT(hintField.IsValid());
+
+        setText(QString::fromStdString(hintField.GetValue().Cast<String>()));
+    }
+
+    if (changedFields.IsChanged(Checked) == true)
+    {
         if (fieldValue.GetValue().CanGet<Qt::CheckState>())
         {
             dataType = eContainedDataType::TYPE_CHECK_STATE;
@@ -67,6 +93,13 @@ void CheckBox::StateChanged(int newState)
         else
         {
             DVASSERT(false);
+        }
+
+        DAVA::Reflection fieldValue = model.GetField(GetFieldName(Checked));
+        const DAVA::M::ValueDescription* valueDescriptor = fieldValue.GetMeta<DAVA::M::ValueDescription>();
+        if (valueDescriptor != nullptr)
+        {
+            setText(QString::fromStdString(valueDescriptor->GetDescription(fieldValue.GetValue())));
         }
     }
 }

@@ -18,8 +18,8 @@ public:
     enum Fields
     {
         Checked,
-        ReadOnly,
-        Enabled,
+        IsReadOnly,
+        TextHint,
         FieldCount
     };
 
