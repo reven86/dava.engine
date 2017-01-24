@@ -1,13 +1,13 @@
 #include "FindWidget.h"
 
-#include <QtConcurrent>
-
 #include "Document/Document.h"
 #include "Project/Project.h"
 #include "UI/Find/Finder.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
 
 #include "UI/UIControl.h"
+#include <QtConcurrent>
+#include <QKeyEvent>
 
 using namespace DAVA;
 
@@ -24,9 +24,7 @@ FindWidget::FindWidget(QWidget* parent)
     ui.treeView->installEventFilter(this);
 }
 
-FindWidget::~FindWidget()
-{
-}
+FindWidget::~FindWidget() = default;
 
 void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {

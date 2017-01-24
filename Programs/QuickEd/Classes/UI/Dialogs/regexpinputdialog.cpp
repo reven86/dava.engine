@@ -1,14 +1,13 @@
-#include <QtGui>
 #include "regexpinputdialog.h"
 #include <QBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QRegExpValidator>
 
 RegExpInputDialog::RegExpInputDialog(QWidget* parent, int flags)
-    :
-    QDialog(parent)
+    : QDialog(parent)
 {
     if (flags != 0)
     {
