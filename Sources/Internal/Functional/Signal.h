@@ -1,51 +1,56 @@
 #pragma once
 
-// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 #include "Functional/SignalBase.h"
 
-#ifdef ENABLE_MULTITHREADED_SIGNALS
-#include "Concurrency/Mutex.h"
-#include "Concurrency/Thread.h"
-#include "Concurrency/Atomic.h"
-#include "Concurrency/LockGuard.h"
-#endif
-
 namespace DAVA
 {
-namespace Sig11
+template <typename... Args>
+class Signal final
 {
+public:
+    Signal() = default;
+    Signal(const Signal&) = delete;
+    Signal& operator=(const Signal&) = delete;
 
-#ifdef ENABLE_MULTITHREADED_SIGNALS
+    ~Signal();
 
-template <typename T>
-using LockGuard = DAVA::LockGuard<T>;
+    template <typename Fn>
+    SigConnectionID Connect(const Fn& fn);
 
-#else
+    template <typename Obj, typename Fn>
+    SigConnectionID Connect(Obj* obj, const Fn& fn);
 
-struct DummyMutex
-{
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...));
+
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const)
+
+    void Disconnect(SigConnectionID id);
+
+    template <typename Obj>
+    void DisconnectObject(Obj* obj);
+
+    void DisconnectAll();
+
+    template <typename Obj>
+    void BlockObject(Obj* obj, bool block);
+
+    void Block(SigConnectionID id, bool block);
+
+    bool IsBlocked(SigConnectionID id) const;
+
+    void Emit(Args... args);
+
+private:
 };
 
-template <typename T>
-struct DummyLockGuard
-{
-    DummyLockGuard(const T&)
-    {
-    }
-};
 
-struct DymmyThreadID
-{
-};
 
-template <typename T>
-using LockGuard = DummyLockGuard<T>;
-
-#endif
-
+#if 0
 template <typename MutexType, typename ThreadIDType, typename... Args>
 class SignalImpl : public SignalBase
 {
@@ -217,7 +222,8 @@ protected:
         }
 
         Func fn;
-        TrackedObject* obj;
+        void* obj;
+
         ThreadIDType tid;
         bool blocked;
         bool deleted;
@@ -274,44 +280,6 @@ public:
                 }
 
                 iter++;
-            }
-        }
-    }
-};
-
-#ifdef ENABLE_MULTITHREADED_SIGNALS
-
-template <typename... Args>
-class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
-{
-    using Base = Sig11::SignalImpl<Mutex, Thread::Id, Args...>;
-
-    SignalMt() = default;
-    SignalMt(const SignalMt&) = delete;
-    SignalMt& operator=(const SignalMt&) = delete;
-
-    void Emit(Args... args) override
-    {
-        Thread::Id thisTid = Thread::GetCurrentId();
-
-        Sig11::LockGuard<Mutex> guard(Base::mutex);
-        for (auto&& con : Base::connections)
-        {
-            if (!con.second.blocked)
-            {
-                if (con.second.tid == thisTid)
-                {
-                    con.second.fn(args...);
-                }
-                else
-                {
-                    Function<void()> fn = Bind(con.second.fn, args...);
-
-                    // TODO:
-                    // add implementation
-                    // new to send fn variable directly into thread with given id = con.second.tid
-                    // ...
-                }
             }
         }
     }
