@@ -81,7 +81,7 @@ public:
 
     const IRequest* RequestPack(const String& requestedPackName) override;
 
-    const IRequest* FindRequest(const String& requestedPackName) const;
+    PackRequest* FindRequest(const String& requestedPackName) const;
 
     void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
 
@@ -93,6 +93,8 @@ public:
     {
         return initFooterOnServer.infoCrc32;
     }
+
+    String GetRelativeFilePath(uint32 fileIndex);
 
     const Hints& GetHints() const
     {
@@ -147,6 +149,8 @@ private:
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
+    String uncompressedFileNames;
+    Vector<uint32> startFileNameIndexes;
     // first - relative file name in archive, second - file properties
     // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;

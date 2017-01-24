@@ -262,7 +262,7 @@ void PackManagerTest::UnloadResources()
 void PackManagerTest::OnRequestUpdated(const DAVA::IDLCManager::IRequest& request)
 {
     // change total download progress
-    uint64 total = request.GetFullSizeWithDependencies();
+    uint64 total = request.GetSize();
     uint64 current = request.GetDownloadedSize();
     float32 progress = static_cast<float32>(current) / total;
 
@@ -364,7 +364,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetUtf8Text("loading: " + packName);
         const IDLCManager::IRequest* p = pm.RequestPack(packName);
-        if (!p->IsDowndloaded())
+        if (!p->IsDownloaded())
         {
             pm.SetRequestOrder(p, 0);
         }

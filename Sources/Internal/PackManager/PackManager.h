@@ -66,6 +66,7 @@ public:
     struct Hints
     {
         uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
+        uint32 checkLocalFileExistPerUpdate = 100; //!< how many file to check per Update call
     };
 
     /**

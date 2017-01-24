@@ -107,6 +107,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     if (!IsInitialized())
     {
         dirToDownloadedPacks = dirToDownloadPacks_;
+        metaLocalCache = dirToDownloadPacks_ + "local_copy_server_meta.meta";
 
         FileSystem* fs = FileSystem::Instance();
         if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
@@ -317,6 +318,8 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
     PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
+    requests.push_back(request);
+
     return request;
 }
 
@@ -441,11 +444,24 @@ void DLCManagerImpl::GetFileTable()
                     DAVA_THROW(DAVA::Exception, "on server bad superpack!!! FileTable not match crc32");
                 }
 
-                String fileNames;
-                PackArchive::ExtractFileTableData(initFooterOnServer, buffer, fileNames, usedPackFile.filesTable);
-                initFileData.clear(); // in case of second initialize
-                initfilesInfo.clear(); // in case of second initialize
-                PackArchive::FillFilesInfo(usedPackFile, fileNames, initFileData, initfilesInfo);
+                uncompressedFileNames.clear();
+                PackArchive::ExtractFileTableData(initFooterOnServer,
+                                                  buffer,
+                                                  uncompressedFileNames,
+                                                  usedPackFile.filesTable);
+
+                // fill fileNamesIndexes
+                startFileNameIndexes.clear();
+                startFileNameIndexes.reserve(usedPackFile.filesTable.data.files.size());
+                startFileNameIndexes.push_back(0); // first name, and skip last '\0' char
+                for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
+                     index < last; ++index)
+                {
+                    if (uncompressedFileNames[index] == '\0')
+                    {
+                        startFileNameIndexes.push_back(index + 1);
+                    }
+                }
 
                 initState = InitState::CalculateLocalDBHashAndCompare;
             }
@@ -499,8 +515,7 @@ void DLCManagerImpl::AskServerMeta()
 
     uint64 internalDataSize = initFooterOnServer.metaDataSize +
     initFooterOnServer.info.filesTableSize +
-    initFooterOnServer.info.namesSizeCompressed +
-    sizeof(initFooterOnServer);
+    sizeof(PackFormat::PackFile::FooterBlock);
 
     uint64 downloadOffset = fullSizeServerData - internalDataSize;
     uint64 downloadSize = initFooterOnServer.metaDataSize;
@@ -607,6 +622,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     }
     catch (std::exception& ex)
     {
+        Logger::Error("can't load pack data from meta: %s", ex.what());
         FileSystem::Instance()->DeleteFile(metaLocalCache);
         RetryInit();
         return;
@@ -634,14 +650,15 @@ const IDLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 
     if (!IsInitialized())
     {
-        IRequest* request = AddDeleyedRequest(packName);
+        PackRequest* request = AddDeleyedRequest(packName);
         return request;
     }
 
-    const IRequest* request = FindRequest(packName);
+    const PackRequest* request = FindRequest(packName);
     if (request == nullptr)
     {
         request = CreateNewRequest(packName);
+        requestManager->Push(const_cast<PackRequest*>(request));
     }
     return request;
 }
@@ -694,7 +711,7 @@ void DLCManagerImpl::SetRequestingEnabled(bool value)
     }
 }
 
-const IDLCManager::IRequest* DLCManagerImpl::FindRequest(const String& requestedPackName) const
+PackRequest* DLCManagerImpl::FindRequest(const String& requestedPackName) const
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -727,6 +744,12 @@ const String& DLCManagerImpl::GetSuperPackUrl() const
 {
     DVASSERT(Thread::IsMainThread());
     return urlToSuperPack;
+}
+
+String DLCManagerImpl::GetRelativeFilePath(uint32 fileIndex)
+{
+    uint32 startOfFilePath = startFileNameIndexes.at(fileIndex);
+    return &uncompressedFileNames.at(startOfFilePath);
 }
 
 } // end namespace DAVA

@@ -20,7 +20,7 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
 
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
     : packManagerImpl(packManager_)
-    , fileIndexes{ std::move(fileIndexes_) }
+    , fileIndexes(std::move(fileIndexes_))
     , requestedPackName(pack_)
 {
 }
@@ -75,26 +75,34 @@ uint64 PackRequest::GetSize() const
     for (uint32 fileIndex : fileIndexes)
     {
         const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
-        allFilesSize += fileInfo.compressedSize;
+        allFilesSize += fileInfo.compressedSize + sizeof(PackFormat::LitePack::Footer);
     }
     return allFilesSize;
 }
 /** recalculate current downloaded size without dependencies */
 uint64 PackRequest::GetDownloadedSize() const
 {
-    uint64 allFilesSize = 0;
-    for (uint32 fileIndex : fileIndexes)
-    {
-        const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
-        // TODO allFilesSize += fileInfo.;
-    }
-    return allFilesSize;
+    return downloadedSize + prevDownloadedSize;
 }
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
-    // TODO checkit out
-    return GetDownloadedSize() == GetSize();
+    return currentFileIndex == fileIndexes.size();
+}
+
+void PackRequest::InitializeCurrentFileRequest()
+{
+    const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(currentFileIndex);
+    String relativePath = packManagerImpl.GetRelativeFilePath(currentFileIndex);
+    FilePath localPath = packManagerImpl.GetLocalPacksDirectory() + relativePath;
+
+    InitializeFileRequest(currentFileIndex,
+                          localPath,
+                          fileInfo.compressedCrc32,
+                          fileInfo.startPosition,
+                          fileInfo.compressedSize,
+                          fileInfo.originalSize,
+                          packManagerImpl.GetSuperPackUrl());
 }
 
 void PackRequest::Update()
@@ -102,29 +110,65 @@ void PackRequest::Update()
     DVASSERT(Thread::IsMainThread());
     DVASSERT(packManagerImpl.IsInitialized());
 
-    // TODO
+    uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
+
+    if (currentFileIndex < fileIndexes.size() && countChecksPerUpdate > 0)
+    {
+        if (localFile.IsEmpty())
+        {
+            InitializeCurrentFileRequest();
+            UpdateFileRequest();
+        }
+
+        if (IsDownloadedFileRequest())
+        {
+            packManagerImpl.requestUpdated.Emit(*this);
+            do
+            {
+                currentFileIndex++;
+                if (currentFileIndex < fileIndexes.size())
+                {
+                    // go to next file
+                    InitializeCurrentFileRequest();
+                    // start loading as soon as posible
+                    UpdateFileRequest();
+                }
+                else
+                {
+                    // all downloaded
+                    break;
+                }
+                countChecksPerUpdate++;
+            } while (IsDownloadedFileRequest() && countChecksPerUpdate > 0);
+        }
+        else
+        {
+            UpdateFileRequest();
+        }
+    }
 }
 
-void PackRequest::FileRequest::Initialize(const uint32 fileIndex_,
-                                          const FilePath& fileName_,
-                                          const uint32 hash_,
-                                          const uint64 startLoadingPos_,
-                                          const uint64 fileComressedSize_,
-                                          const uint64 fileUncompressedSize_,
-                                          const String& url_)
+void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
+                                        const FilePath& fileName_,
+                                        const uint32 hash_,
+                                        const uint64 startLoadingPos_,
+                                        const uint64 fileComressedSize_,
+                                        const uint64 fileUncompressedSize_,
+                                        const String& url_)
 {
     localFile = fileName_;
     hashFromMeta = hash_;
-    startLoadingPos = startLoadingPos;
+    startLoadingPos = startLoadingPos_;
     sizeOfCompressedFile = fileComressedSize_;
     sizeOfUncompressedFile = fileUncompressedSize_;
     fileIndex = fileIndex_;
     status = Wait;
     taskId = 0;
     url = url_;
+    prevDownloadedSize = 0;
 }
 
-void PackRequest::FileRequest::Update()
+void PackRequest::UpdateFileRequest()
 {
     switch (status)
     {
@@ -171,6 +215,17 @@ void PackRequest::FileRequest::Update()
                 case DL_PENDING:
                     break;
                 case DL_IN_PROGRESS:
+                {
+                    uint64 progress = 0;
+                    if (dm->GetProgress(taskId, progress))
+                    {
+                        if (prevDownloadedSize < progress)
+                        {
+                            packManagerImpl.requestUpdated.Emit(*this);
+                            prevDownloadedSize = progress;
+                        }
+                    }
+                }
                     break;
                 case DL_FINISHED:
                     taskId = 0;
@@ -190,6 +245,20 @@ void PackRequest::FileRequest::Update()
     break;
     case CheckHash:
     {
+        if (FileSystem::Instance()->IsFile(localFile + ".dvpl"))
+        {
+            uint64 size = 0;
+            FileSystem::Instance()->GetFileSize(localFile + ".dvpl", size);
+            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer)))
+            {
+                downloadedSize += (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
+                status = Ready;
+                break;
+            }
+
+            FileSystem::Instance()->DeleteFile(localFile + ".dvpl");
+        }
+
         uint32 fileCrc32 = CRC32::ForFile(localFile);
         if (fileCrc32 == hashFromMeta)
         {
@@ -197,11 +266,17 @@ void PackRequest::FileRequest::Update()
             PackFormat::LitePack::Footer footer;
             footer.type = Compressor::Type::Lz4HC;
             footer.crc32Compressed = hashFromMeta;
-            footer.sizeUncompressed = sizeOfUncompressedFile;
-            footer.sizeCompressed = sizeOfCompressedFile;
+            footer.sizeUncompressed = static_cast<uint32>(sizeOfUncompressedFile);
+            footer.sizeCompressed = static_cast<uint32>(sizeOfCompressedFile);
 
-            ScopedPtr<File> f(File::Create(localFile, File::WRITE | File::APPEND | File::OPEN));
-            f->Write(&footer, sizeof(footer));
+            {
+                ScopedPtr<File> f(File::Create(localFile, File::WRITE | File::APPEND | File::OPEN));
+                f->Write(&footer, sizeof(footer));
+            }
+
+            FileSystem::Instance()->MoveFile(localFile, localFile + ".dvpl", true);
+
+            downloadedSize += (sizeOfCompressedFile + sizeof(footer));
 
             status = Ready;
         }
@@ -221,7 +296,7 @@ void PackRequest::FileRequest::Update()
     }
 }
 
-bool PackRequest::FileRequest::IsDownloaded()
+bool PackRequest::IsDownloadedFileRequest() const
 {
     return status == Ready;
 }

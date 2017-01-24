@@ -58,41 +58,6 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     }
 #endif
 
-    if (nullptr != pm && pm->IsInitialized())
-    {
-        if (filepath.GetType() == FilePath::PATH_IN_RESOURCES)
-        {
-            auto listFiles = [&](const FilePath& path, const String& pack)
-            {
-                FileEntry entry;
-                entry.path = path;
-                entry.name = path.IsDirectoryPathname() ? path.GetLastDirectoryName() : path.GetFilename();
-
-                entry.isHidden = false;
-                entry.isDirectory = entry.path.IsDirectoryPathname();
-
-                uint64 fileSize = 0;
-                if (!entry.isDirectory)
-                {
-                    FileSystem::Instance()->GetFileSize(path, fileSize);
-                    ++fileCount;
-                }
-                else
-                {
-                    ++directoryCount;
-                }
-                entry.size = static_cast<uint32>(fileSize);
-
-                fileList.push_back(entry);
-            };
-            pm->ListFilesInPacks(filepath, listFiles);
-        }
-        if (!fileList.empty())
-        {
-            return;
-        }
-    }
-
 // now check native FS for files
 #if defined(__DAVAENGINE_WINDOWS__)
 

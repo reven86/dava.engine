@@ -64,9 +64,9 @@ PackRequest* RequestManager::Top() const
 
 PackRequest* RequestManager::Find(const String& requestedPackName) const
 {
-    auto it = std::find_if(begin(requests), end(requests), [&requestedPackName](const PackRequest& r) -> bool
+    auto it = std::find_if(begin(requests), end(requests), [&requestedPackName](const PackRequest* r) -> bool
                            {
-                               return r.GetRequestedPackName() == requestedPackName;
+                               return r->GetRequestedPackName() == requestedPackName;
                            });
     if (it == end(requests))
     {
