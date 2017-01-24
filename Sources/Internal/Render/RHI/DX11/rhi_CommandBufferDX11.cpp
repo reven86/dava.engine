@@ -253,9 +253,9 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
         if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle)
         {
             if (passCfg.UsingMSAA())
-                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, context, rt_view + i);
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
             else
-                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].texture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, context, rt_view + i);
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].texture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
 
             ++rt_count;
         }
@@ -271,7 +271,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
         }
     }
 
-    context->OMSetRenderTargets(rt_count, rt_view, ds_view);
+    inContext->OMSetRenderTargets(rt_count, rt_view, ds_view);
 
     if (passCfg.colorBuffer[0].texture != rhi::InvalidHandle)
     {
@@ -281,7 +281,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
         def_viewport.Height = static_cast<float>(sz.dy);
     }
 
-    context->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
+    inContext->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
 
     for (unsigned i = 0; i != countof(rt_view); ++i)
     {
@@ -299,11 +299,11 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
                     def_viewport.Height = float(desc.Height);
                 }
 
-                context->RSSetViewports(1, &(def_viewport));
+                inContext->RSSetViewports(1, &(def_viewport));
             }
 
             if (clear_color)
-                context->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[i].clearColor);
+                inContext->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[i].clearColor);
 
             rt_view[i]->Release();
         }
@@ -312,12 +312,12 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
     if (ds_view)
     {
         if (clear_depth)
-            context->ClearDepthStencilView(ds_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, passCfg.depthStencilBuffer.clearDepth, passCfg.depthStencilBuffer.clearStencil);
+            inContext->ClearDepthStencilView(ds_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, passCfg.depthStencilBuffer.clearDepth, passCfg.depthStencilBuffer.clearStencil);
 
         ds_view->Release();
     }
 
-    context->IASetPrimitiveTopology(cur_topo);
+    inContext->IASetPrimitiveTopology(cur_topo);
 
     DVASSERT(!isFirstInPass || cur_query_buf == InvalidHandle || !QueryBufferDX11::QueryIsCompleted(cur_query_buf));
 }
