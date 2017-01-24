@@ -63,12 +63,14 @@ public:
     inline void SetSubdivisionsZ(uint32 _sizeZ);
     inline void SetPlaceOnLandscape(bool place);
     inline void SetOcclusionPixelThreshold(int32 pixelThreshold);
+    inline void SetOcclusionPixelThresholdForSpeedtree(int32 pixelThreshold);
 
     inline uint32 GetSubdivisionsX() const;
     inline uint32 GetSubdivisionsY() const;
     inline uint32 GetSubdivisionsZ() const;
     inline bool GetPlaceOnLandscape() const;
     inline int32 GetOcclusionPixelThreshold() const;
+    inline int32 GetOcclusionPixelThresholdForSpeedtree() const;
     inline const float32* GetCellHeightOffsets() const;
 
     //Vector<Vector3> renderPositions;
@@ -79,6 +81,7 @@ private:
     uint32 ySubdivisions;
     uint32 zSubdivisions;
     int32 occlusionPixelThreshold;
+    int32 occlusionPixelThresholdForSpeedtree;
     bool placeOnLandscape;
     Vector<float32> cellHeightOffset; //x*y
 
@@ -92,6 +95,7 @@ public:
                          PROPERTY("Subdivisions Z", "Number of subdivisions on Z axis", GetSubdivisionsZ, SetSubdivisionsZ, I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Place lowest occlusion cubes at landscape height", GetPlaceOnLandscape, SetPlaceOnLandscape, I_VIEW | I_EDIT)
                          PROPERTY("Occlusion Pixel Threshold", "Occlusion Pixel Threshold", GetOcclusionPixelThreshold, SetOcclusionPixelThreshold, I_VIEW | I_EDIT)
+                         PROPERTY("Occlusion Pixel Threshold For Speedtree", "Occlusion Pixel Threshold For Speedtree", GetOcclusionPixelThresholdForSpeedtree, SetOcclusionPixelThresholdForSpeedtree, I_VIEW | I_EDIT)
                          );
 };
 

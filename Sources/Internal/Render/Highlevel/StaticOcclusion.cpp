@@ -31,7 +31,7 @@ StaticOcclusion::~StaticOcclusion()
     SafeDelete(staticOcclusionRenderPass);
 }
 
-void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape, int32 _occlusionPixelThreshold)
+void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape, int32 _occlusionPixelThreshold, int32 _occlusionPixelThresholdForSpeedtree)
 {
     lastInfoMessage = "Preparing to build static occlusion...";
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD);
@@ -56,6 +56,7 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
     landscape = _landscape;
 
     occlusionPixelThreshold = _occlusionPixelThreshold;
+    occlusionPixelThresholdForSpeedtree = _occlusionPixelThresholdForSpeedtree;
 }
 
 AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
@@ -337,7 +338,11 @@ bool StaticOcclusion::ProcessRecorderQueries()
                 int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
                 samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
 
-                if (samplesPassed > occlusionPixelThreshold)
+                int32 thershold = req->GetType() != RenderObject::TYPE_SPEED_TREE 
+                    ? occlusionPixelThreshold 
+                    : occlusionPixelThresholdForSpeedtree;
+
+                if (samplesPassed > thershold)
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);

@@ -41,6 +41,7 @@ void StaticOcclusionComponent::Serialize(KeyedArchive* archive, SerializationCon
         archive->SetUInt32("soc.zsub", zSubdivisions);
         archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
         archive->SetUInt32("soc.occlusionPixelThreshold", occlusionPixelThreshold);
+        archive->SetUInt32("soc.occlusionPixelThresholdForSpeedtree", occlusionPixelThresholdForSpeedtree);
         if (placeOnLandscape)
             archive->SetByteArray("soc.cellHeightOffset", reinterpret_cast<uint8*>(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
     }
@@ -55,6 +56,7 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
         ySubdivisions = archive->GetUInt32("soc.ysub", 1);
         zSubdivisions = archive->GetUInt32("soc.zsub", 1);
         occlusionPixelThreshold = archive->GetUInt32("soc.occlusionPixelThreshold", 0);
+        occlusionPixelThresholdForSpeedtree = archive->GetUInt32("soc.occlusionPixelThresholdForSpeedtree", 0);
         placeOnLandscape = archive->GetBool("soc.placeOnLandscape", false);
         if (placeOnLandscape)
         {
@@ -73,9 +75,20 @@ void StaticOcclusionComponent::SetOcclusionPixelThreshold(int32 pixelThreshold)
     occlusionPixelThreshold = pixelThreshold;
 }
 
+void StaticOcclusionComponent::SetOcclusionPixelThresholdForSpeedtree(int32 pixelThreshold)
+{
+    pixelThreshold = Max(0, pixelThreshold);
+    occlusionPixelThresholdForSpeedtree = pixelThreshold;
+}
+
 int32 StaticOcclusionComponent::GetOcclusionPixelThreshold() const
 {
     return occlusionPixelThreshold;
+}
+
+int32 StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree() const
+{
+    return occlusionPixelThresholdForSpeedtree;
 }
 
 StaticOcclusionDataComponent::StaticOcclusionDataComponent()
