@@ -20,6 +20,8 @@ AnimationSystem::AnimationSystem(Scene* scene)
     {
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_ANIMATION);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_ANIMATION);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
     }
 }
 
@@ -35,11 +37,11 @@ void AnimationSystem::Process(float32 timeElapsed)
     for (int i = 0; i < componentsCount; i++)
     {
         AnimationComponent* comp = activeComponents[i];
-        comp->time += timeElapsed;
+        comp->time += timeElapsed * comp->animationTimeScale;
         if (comp->time > comp->animation->duration)
         {
             comp->currRepeatsCont++;
-            if (((comp->repeatsCount == 0) || (comp->currRepeatsCont < comp->repeatsCount)))
+            if ((comp->repeatsCount == 0) || (comp->currRepeatsCont < comp->repeatsCount))
             {
                 comp->time -= comp->animation->duration;
             }
@@ -49,6 +51,11 @@ void AnimationSystem::Process(float32 timeElapsed)
                 componentsCount--;
                 i--;
                 comp->animationTransform.Identity();
+                comp->time = 0;
+
+                if (comp->playbackComplete)
+                    comp->playbackComplete(comp);
+
                 continue;
             }
         }
@@ -71,8 +78,24 @@ void AnimationSystem::ImmediateEvent(Component* component, uint32 event)
         comp->state = AnimationComponent::STATE_PLAYING;
         comp->currRepeatsCont = 0;
     }
+    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME)
+    {
+        MoveAnimationToFrame(comp, comp->animation->GetKeyCount() - 1);
+        comp->Stop();
+    }
     else if (event == EventSystem::STOP_ANIMATION)
         RemoveFromActive(comp);
+    else if (event == EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME)
+        MoveAnimationToFrame(comp, 0);
+}
+
+void AnimationSystem::MoveAnimationToFrame(AnimationComponent* comp, int frameIndex)
+{
+    comp->time = 0; // NOTE: will be correct only for last and end frames
+    Matrix4 animationMatrix;
+    comp->animation->GetKeyForFrame(frameIndex).GetMatrix(animationMatrix);
+    comp->animationTransform = comp->animation->invPose * animationMatrix;
+    GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 void AnimationSystem::AddToActive(AnimationComponent* comp)

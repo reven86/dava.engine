@@ -2,6 +2,8 @@
 
 #include "Classes/Qt/GlobalOperations.h"
 
+#include "TArc/Utils/AssertGuard.h"
+
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringFormat.h"
 
@@ -32,6 +34,12 @@ public:
         {
             return true;
         }
+
+        if (DAVA::TArc::IsInsideAssertHandler())
+        {
+            return true;
+        }
+
         return HasIgnoredWords(textMessage);
     }
 
@@ -48,11 +56,6 @@ private:
         }
 
         if (callstackPrinting == true)
-        {
-            return true;
-        }
-
-        if (testedString.find(DAVA::Assert::AssertMessageTag) != DAVA::String::npos)
         {
             return true;
         }
