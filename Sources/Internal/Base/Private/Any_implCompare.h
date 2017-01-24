@@ -23,4 +23,28 @@ struct AnyCompare<String>
     }
 };
 
+template <typename K, typename V, typename Eq>
+struct AnyCompare<Map<K, V, Eq>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        using MapType = Map<K, V, Eq>;
+        const MapType& m1 = v1.Get<MapType>();
+        const MapType& m2 = v2.Get<MapType>();
+        return m1 == m2;
+    }
+};
+
+template <typename K, typename V, typename Hash, typename Eq>
+struct AnyCompare<UnorderedMap<K, V, Hash, Eq>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        using MapType = UnorderedMap<K, V, Hash, Eq>;
+        const MapType& m1 = v1.Get<MapType>();
+        const MapType& m2 = v2.Get<MapType>();
+        return m1 == m2;
+    }
+};
+
 } // namespace DAVA

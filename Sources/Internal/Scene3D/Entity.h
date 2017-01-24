@@ -259,7 +259,7 @@ public:
     virtual Entity* Clone(Entity* dstNode = NULL);
 
     // Do we need enum, or we can use virtual functions?
-    enum
+    enum eEvent
     {
         EVENT_CREATE_ENTITY = 1,
         EVENT_DELETE_ENTITY,
@@ -406,6 +406,10 @@ protected:
     uint32 flags;
     uint32 id;
     uint32 sceneId;
+
+    //TODO: remove it!!!!
+    int testEnum = EVENT_CREATE_ENTITY;
+    //END_OF_TODO
 
 private:
     Vector<Component*> components;

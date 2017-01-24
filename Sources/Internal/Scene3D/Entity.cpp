@@ -22,7 +22,20 @@
 #include "Reflection/ReflectionRegistrator.h"
 #include <functional>
 
+
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
+
+//TODO: remove it!!!!
+#include "Base/GlobalEnum.h"
+ENUM_DECLARE(DAVA::Entity::eEvent)
+{
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Entity::eEvent::EVENT_CREATE_ENTITY), "Create Entity");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Entity::eEvent::EVENT_DELETE_ENTITY), "Delete Entity");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Entity::eEvent::EVENT_ADD_COMPONENT), "Add Component");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Entity::eEvent::EVENT_DELETE_COMPONENT), "Delete Component");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Entity::eEvent::EVENT_NOTIFY_UPDATE), "Notify Update");
+}
+//END_OF_TODO
 
 namespace DAVA
 {
@@ -45,6 +58,9 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
     .Field("Flags", &Entity::flags)
     .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
     .Field("Components", &Entity::components)
+    //TODO: remove it!!!!
+    .Field("testEnum", &Entity::testEnum)[M::EnumT<Entity::eEvent>()]
+    //END_OF_TODO
     .End();
 }
 
