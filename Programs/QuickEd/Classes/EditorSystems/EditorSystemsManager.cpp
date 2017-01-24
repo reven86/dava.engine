@@ -204,17 +204,9 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
         return;
     }
 
-    if (displayState == Emulation)
-    {
-        // go to previous state when emulation flag will be cleared
-        previousDisplayState = newDisplayState;
-    }
-    else
-    {
-        previousDisplayState = displayState;
-        displayState = newDisplayState;
-        displayStateChanged.Emit(displayState, previousDisplayState);
-    }
+    previousDisplayState = displayState;
+    displayState = newDisplayState;
+    displayStateChanged.Emit(displayState, previousDisplayState);
 }
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
