@@ -60,6 +60,13 @@ SceneNodeAnimationKey AnimationData::Interpolate(float32 t, uint32& startIdxCach
     return result;
 }
 
+SceneNodeAnimationKey AnimationData::GetKeyForFrame(int32 frameIndex) const
+{
+    DVASSERT(frameIndex >= 0 && frameIndex < GetKeyCount());
+
+    return keys[frameIndex];
+}
+
 void AnimationData::SetDuration(float32 _duration)
 {
     duration = _duration;
