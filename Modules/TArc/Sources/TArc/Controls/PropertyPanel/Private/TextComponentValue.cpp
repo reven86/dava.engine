@@ -23,7 +23,7 @@ void TextComponentValue::SetText(const DAVA::String& text)
 QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     ControlDescriptorBuilder<LineEdit::Fields> descr;
-    descr[LineEdit::Text] = "text";
+    descr[LineEdit::Fields::Text] = "text";
     return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 

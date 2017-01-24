@@ -23,7 +23,7 @@ void BoolComponentValue::SetCheckState(Qt::CheckState checkState)
 QWidget* BoolComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     ControlDescriptorBuilder<CheckBox::Fields> descr;
-    descr[CheckBox::Checked] = "bool";
+    descr[CheckBox::Fields::Checked] = "bool";
     return (new CheckBox(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 

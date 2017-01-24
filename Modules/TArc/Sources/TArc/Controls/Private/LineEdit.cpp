@@ -2,7 +2,7 @@
 #include "TArc/Controls/Private/TextValidator.h"
 
 #include <Base/FastName.h>
-#include <Reflection/MetaObjects.h>
+#include <Reflection/ReflectedMeta.h>
 
 #include <QToolTip>
 
@@ -33,23 +33,23 @@ void LineEdit::EditingFinished()
 {
     if (!isReadOnly())
     {
-        wrapper.SetFieldValue(GetFieldName(Text), text().toStdString());
+        wrapper.SetFieldValue(GetFieldName(Fields::Text), text().toStdString());
     }
 }
 
 void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 {
-    bool readOnlyChanged = descriptor.IsChanged(IsReadOnly);
-    bool textChanged = descriptor.IsChanged(Text);
+    bool readOnlyChanged = descriptor.IsChanged(Fields::IsReadOnly);
+    bool textChanged = descriptor.IsChanged(Fields::Text);
     if (readOnlyChanged || textChanged)
     {
-        DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Text));
+        DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Text));
         DVASSERT(fieldValue.IsValid());
 
         bool readOnlyFieldValue = false;
         if (readOnlyChanged)
         {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(IsReadOnly));
+            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(Fields::IsReadOnly));
             if (fieldReadOnly.IsValid())
             {
                 readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
@@ -63,9 +63,9 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
         }
     }
 
-    if (descriptor.IsChanged(IsEnabled))
+    if (descriptor.IsChanged(Fields::IsEnabled))
     {
-        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(IsEnabled));
+        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(Fields::IsEnabled));
         bool isEnabled = true;
         if (fieldEnabled.IsValid())
         {
@@ -75,9 +75,9 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
         setEnabled(isEnabled);
     }
 
-    if (descriptor.IsChanged(PlaceHolder))
+    if (descriptor.IsChanged(Fields::PlaceHolder))
     {
-        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(PlaceHolder));
+        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(Fields::PlaceHolder));
         String placeHolder;
         if (fieldPlaceholder.IsValid())
         {
@@ -90,7 +90,7 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 
 M::ValidatorResult LineEdit::Validate(const Any& value) const
 {
-    Reflection field = model.GetField(GetFieldName(Text));
+    Reflection field = model.GetField(GetFieldName(Fields::Text));
     DVASSERT(field.IsValid());
 
     const M::Validator* validator = field.GetMeta<M::Validator>();

@@ -20,7 +20,7 @@ namespace TArc
 class LineEdit final : public ControlProxy<QLineEdit>, private ValidatorDelegate
 {
 public:
-    enum Fields : uint32
+    enum class Fields : uint32
     {
         Text,
         PlaceHolder,

@@ -87,9 +87,10 @@ protected:
         return model;
     }
 
-    FastName GetFieldName(uint32 fieldMark) const
+    template <typename Enum>
+    FastName GetFieldName(Enum fieldMark) const
     {
-        return descriptor.fieldNames[fieldMark].name;
+        return descriptor.fieldNames[static_cast<size_t>(fieldMark)].name;
     }
 
     virtual void UpdateControl(const ControlDescriptor& descriptor) = 0;

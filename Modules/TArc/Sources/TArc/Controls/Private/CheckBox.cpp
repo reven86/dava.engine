@@ -1,7 +1,7 @@
 #include "TArc/Controls/CheckBox.h"
 
 #include <Base/FastName.h>
-#include <Reflection/MetaObjects.h>
+#include <Reflection/ReflectedMeta.h>
 
 namespace DAVA
 {
@@ -26,14 +26,14 @@ void CheckBox::SetupControl()
 
 void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
 {
-    DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Checked));
+    DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Fields::Checked));
     DVASSERT(fieldValue.IsValid());
 
     bool readOnly = fieldValue.IsReadonly();
     readOnly |= fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr;
-    if (changedFields.IsChanged(IsReadOnly) == true)
+    if (changedFields.IsChanged(Fields::IsReadOnly) == true)
     {
-        DAVA::Reflection readOnlyField = model.GetField(changedFields.GetName(IsReadOnly));
+        DAVA::Reflection readOnlyField = model.GetField(changedFields.GetName(Fields::IsReadOnly));
         DVASSERT(readOnlyField.IsValid());
         readOnly |= readOnlyField.GetValue().Cast<bool>();
     }
@@ -45,15 +45,15 @@ void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
     {
         setText(QString::fromStdString(valueDescriptor->GetDescription(fieldValue.GetValue())));
     }
-    else if (changedFields.IsChanged(TextHint) == true)
+    else if (changedFields.IsChanged(Fields::TextHint) == true)
     {
-        DAVA::Reflection hintField = model.GetField(changedFields.GetName(TextHint));
+        DAVA::Reflection hintField = model.GetField(changedFields.GetName(Fields::TextHint));
         DVASSERT(hintField.IsValid());
 
         setText(QString::fromStdString(hintField.GetValue().Cast<String>()));
     }
 
-    if (changedFields.IsChanged(Checked) == true)
+    if (changedFields.IsChanged(Fields::Checked) == true)
     {
         if (fieldValue.GetValue().CanGet<Qt::CheckState>())
         {
@@ -84,18 +84,18 @@ void CheckBox::StateChanged(int newState)
         setTristate(false);
         if (dataType == eContainedDataType::TYPE_CHECK_STATE)
         {
-            wrapper.SetFieldValue(GetFieldName(Checked), Any(checkState()));
+            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState()));
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            wrapper.SetFieldValue(GetFieldName(Checked), Any(checkState() == Qt::Checked));
+            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState() == Qt::Checked));
         }
         else
         {
             DVASSERT(false);
         }
 
-        DAVA::Reflection fieldValue = model.GetField(GetFieldName(Checked));
+        DAVA::Reflection fieldValue = model.GetField(GetFieldName(Fields::Checked));
         const DAVA::M::ValueDescription* valueDescriptor = fieldValue.GetMeta<DAVA::M::ValueDescription>();
         if (valueDescriptor != nullptr)
         {

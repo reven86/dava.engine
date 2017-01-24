@@ -58,7 +58,7 @@ DescriptorNode& ControlDescriptorBuilder<Enum>::operator[](Enum value)
 template <typename Enum>
 uint32 ControlDescriptorBuilder<Enum>::GetMaxValue() const
 {
-    return Enum::FieldCount;
+    return static_cast<uint32>(Enum::FieldCount);
 }
 
 class ControlDescriptor
@@ -91,7 +91,7 @@ ControlDescriptor::ControlDescriptor(const ControlDescriptorBuilder<Enum>& descr
 
     for (const auto& iter : descriptor.nodes)
     {
-        Field& f = fieldNames[iter.first];
+        Field& f = fieldNames[static_cast<size_t>(iter.first)];
         f.name = iter.second.GetName();
     }
 }

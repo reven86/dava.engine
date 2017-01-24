@@ -15,7 +15,7 @@ namespace TArc
 class CheckBox final : public ControlProxy<QCheckBox>
 {
 public:
-    enum Fields
+    enum class Fields : uint32
     {
         Checked,
         IsReadOnly,

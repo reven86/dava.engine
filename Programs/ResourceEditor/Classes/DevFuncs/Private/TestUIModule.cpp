@@ -8,7 +8,7 @@
 #include <TArc/Controls/LineEdit.h>
 
 #include <Reflection/ReflectionRegistrator.h>
-#include <Reflection/MetaObjects.h>
+#include <Reflection/ReflectedMeta.h>
 
 #include <Logger/Logger.h>
 
@@ -74,14 +74,14 @@ struct CheckBoxTestData : public ReflectionBase
         Reflection reflection = Reflection::Create(data);
 
         ControlDescriptorBuilder<CheckBox::Fields> descr;
-        descr[CheckBox::Checked] = "value";
+        descr[CheckBox::Fields::Checked] = "value";
         CheckBox* valueBox = new CheckBox(descr, accessor, reflection, parent); //->ToWidgetCast();
         r.layout->addWidget(valueBox->ToWidgetCast());
 
         ControlDescriptorBuilder<CheckBox::Fields> valueInvertedDescr;
-        valueInvertedDescr[CheckBox::Checked] = "invertedValue";
-        valueInvertedDescr[CheckBox::TextHint] = "valueDescription";
-        valueInvertedDescr[CheckBox::IsReadOnly] = "value";
+        valueInvertedDescr[CheckBox::Fields::Checked] = "invertedValue";
+        valueInvertedDescr[CheckBox::Fields::TextHint] = "valueDescription";
+        valueInvertedDescr[CheckBox::Fields::IsReadOnly] = "value";
         CheckBox* valueInvertedBox = new CheckBox(valueInvertedDescr, accessor, reflection, parent); //->ToWidgetCast();
         r.layout->addWidget(valueInvertedBox->ToWidgetCast());
 
@@ -159,7 +159,7 @@ struct LineEditTestData : public ReflectionBase
             lineLayout->addWidget(new QLabel("Meta read only : ", parent));
 
             ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Text] = "readOnlyMetaText";
+            desr[LineEdit::Fields::Text] = "readOnlyMetaText";
             LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
@@ -170,7 +170,7 @@ struct LineEditTestData : public ReflectionBase
             lineLayout->addWidget(new QLabel("Read only : ", parent));
 
             ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Text] = "readOnlyText";
+            desr[LineEdit::Fields::Text] = "readOnlyText";
             LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
@@ -181,10 +181,10 @@ struct LineEditTestData : public ReflectionBase
             lineLayout->addWidget(new QLabel("Editable : ", parent));
 
             ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Text] = "text";
-            desr[LineEdit::PlaceHolder] = "placeholder";
-            desr[LineEdit::IsReadOnly] = "isTextReadOnly";
-            desr[LineEdit::IsEnabled] = "isTextEnabled";
+            desr[LineEdit::Fields::Text] = "text";
+            desr[LineEdit::Fields::PlaceHolder] = "placeholder";
+            desr[LineEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            desr[LineEdit::Fields::IsEnabled] = "isTextEnabled";
             LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
@@ -192,7 +192,7 @@ struct LineEditTestData : public ReflectionBase
             {
                 // Read only check box
                 ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Checked] = "isTextReadOnly";
+                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
                 CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
@@ -200,7 +200,7 @@ struct LineEditTestData : public ReflectionBase
             {
                 // Is enabled
                 ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Checked] = "isTextEnabled";
+                descr[CheckBox::Fields::Checked] = "isTextEnabled";
                 CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
 
                 QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
