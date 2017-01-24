@@ -14,6 +14,7 @@
 #include "Render/TextureDescriptor.h"
 #include <Render/Texture.h>
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/Texture.h"
 #include "FileSystem/FileSystem.h"
 #include <FileSystem/FilePath.h>
 #include <Utils/StringFormat.h>
@@ -45,11 +46,11 @@ void CompareCustomProperties(const Entity* entity1, const Entity* entity2, Valid
 
     if (entity1HasCustomProperties != entity2HasCustomProperties)
     {
-        validationProgress.Alerted(Format("Entity '%s' (id=%u) %s custom properties while entity '%s' (id=%u) %s",
-                                          entity1->GetName().c_str(), entity1->GetID(),
-                                          (entity1HasCustomProperties ? "has" : "hasn't"),
-                                          entity2->GetName().c_str(), entity2->GetID(),
-                                          (entity2HasCustomProperties ? "has" : "hasn't")));
+        validationProgress.Alerted(DAVA::Format("Entity '%s' (id=%u) %s custom properties while entity '%s' (id=%u) %s",
+                                                entity1->GetName().c_str(), entity1->GetID(),
+                                                (entity1HasCustomProperties ? "has" : "hasn't"),
+                                                entity2->GetName().c_str(), entity2->GetID(),
+                                                (entity2HasCustomProperties ? "has" : "hasn't")));
     }
     else if (entity1HasCustomProperties && entity2HasCustomProperties)
     {
@@ -442,21 +443,21 @@ void SceneValidation::ValidateTexturesRelevance(DAVA::Scene* scene, ValidationPr
 
     SceneHelper::TextureCollector collector;
     SceneHelper::EnumerateSceneTextures(scene, collector);
-    TexturesMap& texturesMap = collector.GetTextures();
+    DAVA::TexturesMap& texturesMap = collector.GetTextures();
 
-    for (const std::pair<FilePath, Texture*>& entry : texturesMap)
+    for (const std::pair<DAVA::FilePath, DAVA::Texture*>& entry : texturesMap)
     {
-        TextureDescriptor* descriptor = entry.second->texDescriptor;
-        if (nullptr != descriptor && FileSystem::Instance()->Exists(descriptor->pathname))
+        DAVA::TextureDescriptor* descriptor = entry.second->texDescriptor;
+        if (nullptr != descriptor && DAVA::FileSystem::Instance()->Exists(descriptor->pathname))
         {
-            for (uint32 i = 0; i < eGPUFamily::GPU_DEVICE_COUNT; ++i)
+            for (DAVA::uint32 i = 0; i < DAVA::eGPUFamily::GPU_DEVICE_COUNT; ++i)
             {
-                eGPUFamily gpu = static_cast<eGPUFamily>(i);
+                DAVA::eGPUFamily gpu = static_cast<DAVA::eGPUFamily>(i);
                 if (descriptor->HasCompressionFor(gpu) && !descriptor->IsCompressedTextureActual(gpu))
                 {
-                    validationProgress.Alerted(Format("Texture '%s' compression is not relevant for gpu %s",
-                                                      descriptor->GetSourceTexturePathname().GetFilename().c_str(),
-                                                      GPUFamilyDescriptor::GetGPUName(gpu).c_str()));
+                    validationProgress.Alerted(DAVA::Format("Texture '%s' compression is not relevant for gpu %s",
+                                                            descriptor->GetSourceTexturePathname().GetFilename().c_str(),
+                                                            DAVA::GPUFamilyDescriptor::GetGPUName(gpu).c_str()));
                 }
             }
         }
