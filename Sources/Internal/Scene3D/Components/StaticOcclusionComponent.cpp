@@ -69,7 +69,7 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
 
 void StaticOcclusionComponent::SetOcclusionPixelThreshold(int32 pixelThreshold)
 {
-    DVASSERT(pixelThreshold >= 0);
+    pixelThreshold = Max(0, pixelThreshold);
     occlusionPixelThreshold = pixelThreshold;
 }
 

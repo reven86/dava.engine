@@ -332,7 +332,12 @@ bool StaticOcclusion::ProcessRecorderQueries()
 
             if (rhi::QueryIsReady(fr->queryBuffer, index))
             {
-                if (rhi::QueryValue(fr->queryBuffer, index) > occlusionPixelThreshold)
+                DVASSERT(fr->samplesPassed.find(req->GetStaticOcclusionIndex()) != fr->samplesPassed.end());
+
+                int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
+                samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
+
+                if (samplesPassed > occlusionPixelThreshold)
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);
