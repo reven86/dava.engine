@@ -333,8 +333,6 @@ bool StaticOcclusion::ProcessRecorderQueries()
 
             if (rhi::QueryIsReady(fr->queryBuffer, index))
             {
-                DVASSERT(fr->samplesPassed.find(req->GetStaticOcclusionIndex()) != fr->samplesPassed.end());
-
                 int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
                 samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
 
