@@ -1,6 +1,4 @@
-#ifndef __Dava_ReflectedTypeDB__
-#define __Dava_ReflectedTypeDB__
-
+#pragma once
 #include "Base/BaseTypes.h"
 
 namespace DAVA
@@ -44,15 +42,11 @@ protected:
     template <typename T>
     static ReflectedType* Edit();
 
+    static void RegisterDBType(ReflectedType* reflectedType, const Type* type, StructureWrapper* sw);
+
     static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
     static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> typeNameToReflectedTypeMap;
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
-
-#endif // __Dava_ReflectedTypeDB__
-
-#ifndef __Dava_ReflectedTypeDB_Fwd__
-#include "Reflection/Private/ReflectedTypeDB_impl.h"
-#endif // __Dava_ReflectedTypeDB_Fwd__

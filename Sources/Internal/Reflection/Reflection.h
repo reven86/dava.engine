@@ -8,10 +8,11 @@
 
 #include "Debug/DVAssert.h"
 
+#include "Reflection/ReflectedMeta.h"
 #include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/ReflectedStructure.h"
 #include "Reflection/ReflectedObject.h"
-#include "Reflection/ReflectedMeta.h"
 
 /** \defgroup reflection Reflection
     TODO: detailed description 
@@ -240,4 +241,5 @@ struct StructureWrapperCreator;
 #include "Reflection/Private/Reflection_impl.h"
 #include "Reflection/Private/ReflectedMeta_impl.h"
 #include "Reflection/Private/ReflectedType_impl.h"
+#include "Reflection/Private/ReflectedTypeDB_impl.h"
 #include "Reflection/Private/ReflectedObject_impl.h"

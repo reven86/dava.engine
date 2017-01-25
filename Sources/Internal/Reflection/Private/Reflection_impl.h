@@ -6,10 +6,6 @@
 
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
-#define __Dava_ReflectedTypeDB_Fwd__
-#include "Reflection/ReflectedTypeDB.h"
-#undef __Dava_ReflectedTypeDB_Fwd__
-
 #define IMPL__DAVA_REFLECTION(Cls) \
     template <typename FT__> \
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \

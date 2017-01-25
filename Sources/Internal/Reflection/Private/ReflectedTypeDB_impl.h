@@ -54,12 +54,7 @@ ReflectedType* ReflectedTypeDB::Edit()
 
     if (nullptr == ret->type)
     {
-        ret->type = Type::Instance<DecayT>();
-        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
-
-        typeToReflectedTypeMap[ret->type] = ret;
-        typeNameToReflectedTypeMap[String(ret->type->GetName())] = ret;
-
+        RegisterDBType(ret, Type::Instance<DecayT>(), StructureWrapperCreator<DecayT>::Create());
         ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 
