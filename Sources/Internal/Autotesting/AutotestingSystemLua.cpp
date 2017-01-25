@@ -134,7 +134,7 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
     }
 
     FilePath automationAPIStrPath = AutotestingSystem::Instance()->GetPathTo("/Scripts/autotesting_api.lua");
-    if (!automationAPIStrPath.Exists() || !RunScriptFromFile(automationAPIStrPath))
+    if (!FileSystem::Instance()->Exists(automationAPIStrPath) || !RunScriptFromFile(automationAPIStrPath))
     {
         AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
     }

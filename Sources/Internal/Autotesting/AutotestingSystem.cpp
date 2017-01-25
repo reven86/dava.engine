@@ -79,17 +79,16 @@ bool AutotestingSystem::ResolvePathToAutomation()
 {
     Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
     pathToAutomation = "~doc:/atpath.txt";
-    if (pathToAutomation.Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        File* file = File::Create(pathToAutomation, File::OPEN | File::READ);
+        ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
         if (file)
         {
-            char* data = new char[static_cast<size_t>(file->GetSize())];
-            file->Read(data, static_cast<uint32>(file->GetSize()));
+            Vector<char> data(file->GetSize(), 0);
+            file->Read(&data, static_cast<uint32>(file->GetSize()));
             file->Release();
-            pathToAutomation = data;
-            delete[] data;
-            if (pathToAutomation.Exists())
+            pathToAutomation = data.data();
+            if (FileSystem::Instance()->Exists(pathToAutomation))
             {
                 Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
                 return true;
@@ -98,12 +97,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
     }
 
     // Try to find automation data in Documents
-    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
-    {
-        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-        pathToAutomation = "d:/Autotesting/";
-    }
-    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
         pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autoteting/";
     }
@@ -112,7 +106,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
         pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (pathToAutomation.Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -120,7 +114,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
 
     // If there are no automation data in documents, try to find it in Data
     pathToAutomation = "~res:/Autotesting/";
-    if (pathToAutomation.Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -130,7 +124,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
 
 FilePath AutotestingSystem::GetPathTo(const String& path)
 {
-    return FilePath(pathToAutomation.GetAbsolutePathname() + path);
+    return pathToAutomation + path;
 }
 
 // This method is called on application started and it handle autotest initialisation
@@ -154,7 +148,7 @@ void AutotestingSystem::OnAppStarted()
 
     const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
     FilePath testFileStrPath = GetPathTo(testFileLocation);
-    if (!testFileStrPath.Exists())
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         return;
@@ -222,7 +216,7 @@ RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
     FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (!idYamlStrPath.Exists() || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
         ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
@@ -262,7 +256,7 @@ void AutotestingSystem::SetUpConnectionToDB()
 {
     FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (!dbConfigStrPath.Exists() || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
         ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
