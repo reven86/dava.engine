@@ -42,8 +42,9 @@ public:
 #endif
 
 private:
-    struct DeviceInfoObjcBridge;
-    std::unique_ptr<DeviceInfoObjcBridge> bridge;
+    // Use void* to avoid mentioning obj-c classes in this header
+    void* telephonyNetworkInfo = nullptr;
+    void* lastCarrierName = nullptr;
 };
 
 }; // namespace DAVA
