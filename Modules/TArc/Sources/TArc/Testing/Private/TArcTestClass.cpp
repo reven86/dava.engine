@@ -79,6 +79,7 @@ TestClass::~TestClass()
 
     coreChanged.Emit(nullptr);
     Core* c = core.release();
+    c->syncSignal.DisconnectAll();
     c->SetInvokeListener(nullptr);
     mockInvoker.reset();
     QTimer::singleShot(0, [c]()
@@ -90,6 +91,7 @@ TestClass::~TestClass()
 
 void TestClass::SetUp(const String& testName)
 {
+    updateForCurrentTestCalled = false;
     if (core == nullptr)
     {
         using namespace std::chrono;
@@ -126,6 +128,7 @@ void TestClass::SetUp(const String& testName)
         Window* w = e->PrimaryWindow();
         DVASSERT(w);
         core->OnWindowCreated(w);
+        core->syncSignal.Connect(this, &TestClass::AfterWrappersSync);
         coreChanged.Emit(core.get());
     }
 
@@ -136,6 +139,7 @@ void TestClass::Update(float32 timeElapsed, const String& testName)
 {
     DVASSERT(core != nullptr);
     core->OnFrame(timeElapsed);
+    updateForCurrentTestCalled = true;
 }
 
 bool TestClass::TestComplete(const String& testName) const
@@ -162,7 +166,7 @@ bool TestClass::TestComplete(const String& testName) const
     {
         TEST_VERIFY(::testing::Mock::VerifyAndClear());
     }
-    return !hasNotSatisfied;
+    return !hasNotSatisfied && updateForCurrentTestCalled;
 }
 
 MockInvoker* TestClass::GetMockInvoker()

@@ -39,9 +39,14 @@ public:
     static Signal<Core*> coreChanged;
 
 protected:
+    virtual void AfterWrappersSync()
+    {
+    }
+
     std::unique_ptr<Core> core;
     std::unique_ptr<MockInvoker> mockInvoker;
     QtConnections connections;
+    bool updateForCurrentTestCalled = false;
 };
 
 } // namespace TArc
