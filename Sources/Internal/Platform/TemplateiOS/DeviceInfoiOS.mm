@@ -60,8 +60,8 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfoPrivate::~DeviceInfoPrivate()
 {
-    [static_cast<CTTelephonyNetworkInfo*>(telephonyNetworkInfo) release];
-    [static_cast<NSString*>(lastCarrierName) release];
+    [telephonyNetworkInfo release];
+    [lastCarrierName release];
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
