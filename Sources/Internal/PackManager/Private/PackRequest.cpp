@@ -87,7 +87,12 @@ uint64 PackRequest::GetDownloadedSize() const
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
-    return currentFileIndex == fileIndexes.size();
+    return status == Ready;
+}
+
+void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
+{
+    fileIndexes_ = std::move(fileIndexes_);
 }
 
 void PackRequest::InitializeCurrentFileRequest()
@@ -221,15 +226,18 @@ void PackRequest::UpdateFileRequest()
                     {
                         if (prevDownloadedSize < progress)
                         {
-                            packManagerImpl.requestUpdated.Emit(*this);
                             prevDownloadedSize = progress;
+                            packManagerImpl.requestUpdated.Emit(*this);
                         }
                     }
                 }
                     break;
                 case DL_FINISHED:
+                {
+                    dm->GetTotal(taskId, prevDownloadedSize);
                     taskId = 0;
                     status = CheckHash;
+                }
                     break;
                 case DL_UNKNOWN:
                     break;
@@ -245,6 +253,7 @@ void PackRequest::UpdateFileRequest()
     break;
     case CheckHash:
     {
+        prevDownloadedSize = 0;
         if (FileSystem::Instance()->IsFile(localFile + ".dvpl"))
         {
             uint64 size = 0;

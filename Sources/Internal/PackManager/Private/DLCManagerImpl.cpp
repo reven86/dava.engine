@@ -1,5 +1,6 @@
 #include "PackManager/Private/DLCManagerImpl.h"
 #include "FileSystem/FileList.h"
+#include "FileSystem/File.h"
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
@@ -33,7 +34,7 @@ const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
         "UnpakingDB",
         "DeleteDownloadedPacksIfNotMatchHash",
         "LoadingPacksDataFromLocalMeta",
-        "MountingDownloadedPacks",
+        "MoveDeleyedRequestsToQueue",
         "Ready",
         "Offline"
     };
@@ -107,12 +108,15 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     if (!IsInitialized())
     {
         dirToDownloadedPacks = dirToDownloadPacks_;
-        metaLocalCache = dirToDownloadPacks_ + "local_copy_server_meta.meta";
+        localCacheMeta = dirToDownloadPacks_ + "local_copy_server_meta.meta";
+        localCacheFileTable = dirToDownloadPacks_ + "local_copy_server_file_table.block";
 
         FileSystem* fs = FileSystem::Instance();
         if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
         {
-            DAVA_THROW(DAVA::Exception, "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue());
+            String err = "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue();
+            Logger::Error("%s", err.c_str());
+            DAVA_THROW(DAVA::Exception, err);
         }
 
         urlToSuperPack = urlToServerSuperpack_;
@@ -266,9 +270,9 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     {
         LoadPacksDataFromMeta();
     }
-    else if (InitState::MountingDownloadedPacks == initState)
+    else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        MountDownloadedPacks();
+        StartDeleyedRequests();
     }
     else if (InitState::Ready == initState)
     {
@@ -411,12 +415,24 @@ void DLCManagerImpl::AskFileTable()
 {
     //Logger::FrameworkDebug("pack manager ask_file_table");
 
+    FileSystem* fs = FileSystem::Instance();
+    if (fs->IsFile(localCacheFileTable))
+    {
+        uint32 crc = CRC32::ForFile(localCacheFileTable);
+        if (crc == initFooterOnServer.info.filesTableCrc32)
+        {
+            initState = InitState::LoadingRequestGetFileTable;
+            return;
+        }
+        fs->DeleteFile(localCacheFileTable);
+    }
+
     DownloadManager* dm = DownloadManager::Instance();
     buffer.resize(initFooterOnServer.info.filesTableSize);
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(initFooterOnServer) + initFooterOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadIntoBuffer(urlToSuperPack, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, buffer.size());
+    downloadTaskId = dm->DownloadRange(urlToSuperPack, localCacheFileTable, downloadOffset, buffer.size());
     if (0 == downloadTaskId)
     {
         DAVA_THROW(DAVA::Exception, "can't start downloading into buffer");
@@ -438,10 +454,24 @@ void DLCManagerImpl::GetFileTable()
             dm->GetError(downloadTaskId, error);
             if (DLE_NO_ERROR == error)
             {
-                uint32 crc32 = CRC32::ForBuffer(buffer.data(), buffer.size());
+                uint64 fileSize = 0;
+                FileSystem* fs = FileSystem::Instance();
+
+                fs->GetFileSize(localCacheFileTable, fileSize);
+
+                buffer.resize(static_cast<size_t>(fileSize));
+
+                {
+                    ScopedPtr<File> f(File::Create(localCacheFileTable, File::OPEN | File::READ));
+                    f->Read(&buffer[0], static_cast<uint32>(buffer.size()));
+                }
+
+                uint32 crc32 = CRC32::ForBuffer(&buffer[0], buffer.size());
                 if (crc32 != initFooterOnServer.info.filesTableCrc32)
                 {
-                    DAVA_THROW(DAVA::Exception, "on server bad superpack!!! FileTable not match crc32");
+                    const char* err = "FileTable not match crc32";
+                    Logger::Error("%s", err);
+                    DAVA_THROW(DAVA::Exception, err);
                 }
 
                 uncompressedFileNames.clear();
@@ -474,7 +504,9 @@ void DLCManagerImpl::GetFileTable()
     }
     else
     {
-        DAVA_THROW(DAVA::Exception, "can't get status for download task");
+        const char* err = "can't get status for download task";
+        Logger::Error("%s", err);
+        DAVA_THROW(DAVA::Exception, err);
     }
 }
 
@@ -484,9 +516,9 @@ void DLCManagerImpl::CompareLocalMetaWitnRemoteHash()
 
     FileSystem* fs = FileSystem::Instance();
 
-    if (fs->IsFile(metaLocalCache))
+    if (fs->IsFile(localCacheMeta))
     {
-        const uint32 localCrc32 = CRC32::ForFile(metaLocalCache);
+        const uint32 localCrc32 = CRC32::ForFile(localCacheMeta);
         if (localCrc32 != initFooterOnServer.metaDataCrc32)
         {
             DeleteLocalMetaFiles();
@@ -568,7 +600,7 @@ void DLCManagerImpl::ParseMeta()
         DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer meta not match crc32");
     }
 
-    WriteBufferToFile(buffer, metaLocalCache);
+    WriteBufferToFile(buffer, localCacheMeta);
 
     buffer.clear();
     buffer.shrink_to_fit();
@@ -595,7 +627,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
     try
     {
-        ScopedPtr<File> f(File::Create(metaLocalCache, File::OPEN | File::READ));
+        ScopedPtr<File> f(File::Create(localCacheMeta, File::OPEN | File::READ));
 
         uint32 size = static_cast<uint32>(f->GetSize());
 
@@ -605,14 +637,14 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
         if (size != readSize)
         {
-            DAVA_THROW(Exception, "can't read metaLocalCache size not match");
+            DAVA_THROW(Exception, "can't read localCacheMeta size not match");
         }
 
         uint32 buffHash = CRC32::ForBuffer(&buffer[0], size);
 
         if (initFooterOnServer.metaDataCrc32 != buffHash)
         {
-            DAVA_THROW(Exception, "can't read metaLocalCache hash not match");
+            DAVA_THROW(Exception, "can't read localCacheMeta hash not match");
         }
 
         meta.reset(new PackMetaData(&buffer[0], buffer.size()));
@@ -623,17 +655,29 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     catch (std::exception& ex)
     {
         Logger::Error("can't load pack data from meta: %s", ex.what());
-        FileSystem::Instance()->DeleteFile(metaLocalCache);
+        FileSystem::Instance()->DeleteFile(localCacheMeta);
         RetryInit();
         return;
     }
 
-    initState = InitState::MountingDownloadedPacks;
+    initState = InitState::MoveDeleyedRequestsToQueue;
 }
 
-void DLCManagerImpl::MountDownloadedPacks()
+void DLCManagerImpl::StartDeleyedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
+
+    for (auto request : delayedRequests)
+    {
+        const String& packName = request->GetRequestedPackName();
+        Vector<uint32> fileIndexes = meta->GetFileIndexes(packName);
+        request->SetFileIndexes(std::move(fileIndexes));
+
+        requests.push_back(request);
+        requestManager->Push(request);
+    }
+
+    delayedRequests.clear();
 
     initState = InitState::Ready;
 }
@@ -641,7 +685,7 @@ void DLCManagerImpl::MountDownloadedPacks()
 void DLCManagerImpl::DeleteLocalMetaFiles()
 {
     FileSystem* fs = FileSystem::Instance();
-    fs->DeleteFile(metaLocalCache);
+    fs->DeleteFile(localCacheMeta);
 }
 
 const IDLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
@@ -671,7 +715,26 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
     {
         const PackRequest* r = dynamic_cast<const PackRequest*>(request);
         PackRequest* req = const_cast<PackRequest*>(r);
-        requestManager->UpdateOrder(req, orderIndex);
+        if (IsInitialized())
+        {
+            requestManager->UpdateOrder(req, orderIndex);
+        }
+        else
+        {
+            auto it = std::find(begin(delayedRequests), end(delayedRequests), request);
+            if (it != end(delayedRequests))
+            {
+                delayedRequests.erase(it);
+                if (delayedRequests.size() < orderIndex)
+                {
+                    delayedRequests.insert(delayedRequests.begin() + orderIndex, req);
+                }
+                else
+                {
+                    delayedRequests.push_back(req);
+                }
+            }
+        }
     }
 }
 

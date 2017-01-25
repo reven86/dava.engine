@@ -67,7 +67,7 @@ void PackManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"allpacks");
+    packInput->SetText(L"group_0");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -79,7 +79,7 @@ void PackManagerTest::LoadResources()
 
     packNextInput = new UITextField(Rect(5, 40, 400, 20));
     packNextInput->SetFont(font);
-    packNextInput->SetText(L"pack2");
+    packNextInput->SetText(L"group_1");
     packNextInput->SetFontSize(14);
     packNextInput->SetDebugDraw(true);
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -261,10 +261,16 @@ void PackManagerTest::UnloadResources()
 
 void PackManagerTest::OnRequestUpdated(const DAVA::IDLCManager::IRequest& request)
 {
+    const String& packName = request.GetRequestedPackName();
     // change total download progress
     uint64 total = request.GetSize();
     uint64 current = request.GetDownloadedSize();
     float32 progress = static_cast<float32>(current) / total;
+
+    std::stringstream ss;
+    ss << "downloading: " << packName << " : " << current << "/" << total << " (" << (progress * 100) << ")%";
+
+    packNameLoading->SetUtf8Text(ss.str());
 
     auto rect = redControl->GetRect();
     rect.dx = rect.dx * progress;

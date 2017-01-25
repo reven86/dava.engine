@@ -28,7 +28,7 @@ public:
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
         LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
-        MountingDownloadedPacks, //!< mount all local packs downloaded and not mounted later
+        MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
         Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
     };
@@ -124,7 +124,7 @@ private:
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
     void LoadPacksDataFromMeta();
-    void MountDownloadedPacks();
+    void StartDeleyedRequests();
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
@@ -133,7 +133,8 @@ private:
 
     mutable Mutex protectPM;
 
-    FilePath metaLocalCache;
+    FilePath localCacheMeta;
+    FilePath localCacheFileTable;
     FilePath dirToDownloadedPacks;
     String urlToSuperPack;
     bool isProcessingEnabled = false;

@@ -32,6 +32,9 @@ public:
     uint64 GetDownloadedSize() const override;
     /** return true when all files loaded and ready */
     bool IsDownloaded() const override;
+
+    void SetFileIndexes(Vector<uint32> fileIndexes_);
+
 private:
     void InitializeCurrentFileRequest();
 
