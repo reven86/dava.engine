@@ -4,6 +4,8 @@
 #include "Concurrency/Atomic.h"
 #include "Engine/Engine.h"
 
+#include "Debug/MessageBox.h"
+
 namespace DAVA
 {
 namespace DVAssertMessage
@@ -33,12 +35,17 @@ bool ShowMessage(eModalType modalType, const char8* text, ...)
     // sizeof(tmp) - 2  - We need two characters for appending "\n" if the number of characters exceeds the size of buffer.
     vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
     strcat(tmp, "\n");
+#if defined(__DAVAENGINE_COREV2__)
+    int r = Debug::MessageBox("Assert", tmp, { "Break", "Continue" });
+    userClickBreak = r == 0;
+#else
     messageDisplayed.Increment();
     if (innerShowOverride)
         userClickBreak = innerShowOverride(modalType, tmp);
     else
         userClickBreak = InnerShow(modalType, tmp);
     messageDisplayed.Decrement();
+#endif
     va_end(vl);
 
     return userClickBreak;
