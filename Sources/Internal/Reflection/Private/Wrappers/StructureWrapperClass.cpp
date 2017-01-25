@@ -57,6 +57,12 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
     if (!fieldsCache.empty())
     {
         String name = key.Cast<String>(String());
+#if !defined(__DAVAENGINE_COREV2__)
+        if (name.empty())
+        {
+            name = key.Cast<const char*>();
+        }
+#endif
         if (!name.empty())
         {
             auto it = fieldsNameIndexes.find(name);
