@@ -105,7 +105,7 @@ int MessageBoxHook::Show(HWND hwndParent, WideString caption, WideString message
         if (choice == i.id)
             return i.index;
     }
-    return choice;
+    return 0;
 }
 
 void MessageBoxHook::PrepareButtons(HWND hwnd)

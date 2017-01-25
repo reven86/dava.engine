@@ -36,6 +36,8 @@ private:
 
     void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
 
+    void OnMessageBox(DAVA::BaseObject* obj, void* data, void* callerData);
+
     void OnWindowCreated(DAVA::Window* w);
     bool OnWindowWantsToClose(DAVA::Window* w);
     void OnWindowDestroyed(DAVA::Window* w);
@@ -64,6 +66,8 @@ private:
 
     DAVA::UIButton* buttonDisableClose = nullptr;
     DAVA::UIButton* buttonEnableClose = nullptr;
+
+    DAVA::UIButton* buttonMessageBox = nullptr;
 
     size_t tokenOnWindowCreated = 0;
     size_t tokenOnWindowDestroyed = 0;
