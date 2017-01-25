@@ -34,6 +34,8 @@ WindowNativeBridge::~WindowNativeBridge() = default;
 
 bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float32 height)
 {
+    windowBackend->uiDispatcher.LinkToCurrentThread();
+
     // clang-format off
     NSUInteger style = NSTitledWindowMask |
                        NSMiniaturizableWindowMask |

@@ -149,13 +149,13 @@ void CoreV2Test::OnMessageBox(DAVA::BaseObject* obj, void* data, void* callerDat
             switch (num)
             {
             case 0:
-                r = Debug::MessageBox("Message box", msg, { "Close me" });
+                r = Debug::MessageBox("Message box", msg, { "Close me" }, 0);
                 break;
             case 1:
-                r = Debug::MessageBox("Message box", msg, { "Button 1", "Button 2" });
+                r = Debug::MessageBox("Message box", msg, { "Button 1", "Button 2" }, 1);
                 break;
             case 2:
-                r = Debug::MessageBox("Message box", msg, { "Ping", "Pong", "Kaboom" });
+                r = Debug::MessageBox("Message box", msg, { "Ping", "Pong", "Kaboom" }, 2);
                 break;
             }
             Logger::Debug("You choose button %d", r);
