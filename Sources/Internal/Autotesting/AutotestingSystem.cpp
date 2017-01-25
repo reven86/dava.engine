@@ -84,10 +84,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
         ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
         if (file)
         {
-            Vector<char> data(file->GetSize(), 0);
-            file->Read(&data, static_cast<uint32>(file->GetSize()));
-            file->Release();
-            pathToAutomation = data.data();
+            pathToAutomation = file->ReadLine();
             if (FileSystem::Instance()->Exists(pathToAutomation))
             {
                 Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
