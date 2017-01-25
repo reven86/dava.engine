@@ -12,6 +12,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QPointer>
+#include <QApplication>
 
 namespace ShortcutCheckerDetail
 {
