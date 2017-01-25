@@ -182,7 +182,12 @@ void WindowBackend::SetCursorInCenter()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    uiDispatcher.ProcessEvents();
+    // Window becomes disabled when modal dialog is shown but handles all messages except input.
+    // Prevent processing UI dispatcher events to exclude cases when WM_TRIGGER_EVENTS is delivered when modal dialog is open.
+    if (::IsWindowEnabled(hwnd))
+    {
+        uiDispatcher.ProcessEvents();
+    }
 }
 
 void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
@@ -876,6 +881,7 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
+    uiDispatcher.LinkToCurrentThread();
     hcurCursor = defaultCursor;
 
     // If new pointer input is available then do not handle legacy WM_TOUCH message
