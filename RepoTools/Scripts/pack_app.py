@@ -26,6 +26,26 @@ def GetGitVersion( pathToFramework ):
     gitVersion = re.sub('[:]','-', gitVersion ).rstrip()
     return gitVersion
 
+def ArchiveName( app_name, dava_path, build_number ):
+
+    archiveName = []
+
+    if app_name :
+        archiveName  = [ app_name ]
+
+    if dava_path :
+        if app_name :
+            versionDava  = GetDavaVersion( dava_path )
+            archiveName += [ versionDava ]
+
+        versionGit   = GetGitVersion( dava_path )
+        archiveName += [ versionGit ]
+
+    if build_number :
+        archiveName  += [ build_number ]
+
+    return '_'.join( archiveName )
+    
 def main():
     parser = argparse.ArgumentParser()
 
