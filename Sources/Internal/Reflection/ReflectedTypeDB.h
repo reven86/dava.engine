@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __Dava_ReflectedTypeDB__
+#define __Dava_ReflectedTypeDB__
 
 #include "Base/BaseTypes.h"
 
@@ -49,3 +50,9 @@ protected:
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
+
+#endif // __Dava_ReflectedTypeDB__
+
+#ifndef __Dava_ReflectedTypeDB_Fwd__
+#include "Reflection/Private/ReflectedTypeDB_impl.h"
+#endif // __Dava_ReflectedTypeDB_Fwd__

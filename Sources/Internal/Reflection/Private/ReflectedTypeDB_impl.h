@@ -37,50 +37,6 @@ const ReflectedType* GetVirtualReflectedType(const T* ptr)
     static const bool isRefBase = std::is_base_of<ReflectionBase, T>::value;
     return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isRefBase>());
 }
-
-template <typename T>
-const ReflectedType* GetByThisPointer(const T* this_)
-{
-    return ReflectedTypeDB::Get<T>();
-}
-
-template <typename T>
-struct ReflectionInitializerRunner
-{
-protected:
-    template <typename U, void (*)()>
-    struct SFINAE
-    {
-    };
-
-    template <typename U>
-    static char Test(SFINAE<U, &U::__ReflectionInitializer>*);
-
-    template <typename U>
-    static int Test(...);
-
-    static const bool value = std::is_same<decltype(Test<T>(0)), char>::value;
-
-    inline static void RunImpl(std::true_type)
-    {
-        // T has TypeInitializer function,
-        // so we should run it
-        T::__ReflectionInitializer();
-    }
-
-    inline static void RunImpl(std::false_type)
-    {
-        // T don't have TypeInitializer function,
-        // so nothing to do here
-    }
-
-public:
-    static void Run()
-    {
-        using CheckType = typename std::conditional<std::is_class<T>::value, ReflectionInitializerRunner<T>, std::false_type>::type;
-        RunImpl(std::integral_constant<bool, CheckType::value>());
-    }
-};
 } // namespace ReflectedTypeDBDetail
 
 template <typename T>
@@ -104,7 +60,7 @@ ReflectedType* ReflectedTypeDB::Edit()
         typeToReflectedTypeMap[ret->type] = ret;
         typeNameToReflectedTypeMap[String(ret->type->GetName())] = ret;
 
-        ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
+        ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 
     return ret;
