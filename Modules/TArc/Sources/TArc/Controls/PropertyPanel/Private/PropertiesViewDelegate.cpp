@@ -14,10 +14,6 @@ namespace TArc
 {
 namespace PropertiesViewDelegateDetail
 {
-QStyle* GetStyle()
-{
-    return PlatformApi::Qt::GetApplication()->style();
-}
 
 void FixFont(QFont& font)
 {
@@ -50,7 +46,7 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     QStyleOptionViewItem opt = option;
     PropertiesViewDelegateDetail::InitStyleOptions(opt);
 
-    QStyle* style = PropertiesViewDelegateDetail::GetStyle();
+    QStyle* style = option.widget->style();
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
     DVASSERT(valueComponent != nullptr);
     if (index.column() == 0)
@@ -67,7 +63,7 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QStyleOptionViewItem opt = option;
-    QStyle* style = PropertiesViewDelegateDetail::GetStyle();
+    QStyle* style = opt.widget->style();
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
     DVASSERT(valueComponent != nullptr);
     if (index.column() == 0)
@@ -111,12 +107,18 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
     }
 
     BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
-    editor->setGeometry(valueComponent->GetInteractiveEditor().GetEditorRect(PropertiesViewDelegateDetail::GetStyle(), option));
+    editor->setGeometry(valueComponent->GetInteractiveEditor().GetEditorRect(option.widget->style(), option));
 }
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    return false;
+    if (index.column() == 0)
+    {
+        return false;
+    }
+
+    BaseComponentValue* valueComponent = PropertiesViewDelegateDetail::GetComponentValue(index);
+    return valueComponent->EditorEvent(event, option);
 }
 
 bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)

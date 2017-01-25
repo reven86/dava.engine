@@ -14,6 +14,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Private/EntityHelpers.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -432,11 +433,11 @@ public:
                              {
                                  DAVA::SafeRelease(e);
                              })
-        .Field("ID", &Entity::GetID, &Entity::SetID)
+        .Field("ID", &Entity::GetID, &Entity::SetID)[M::ReadOnly()]
         .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
         .Field("Tag", &Entity::tag)
         .Field("Flags", &Entity::flags)
-        .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)
+        .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
         .Field("Components", &Entity::components)
         .End();
     }

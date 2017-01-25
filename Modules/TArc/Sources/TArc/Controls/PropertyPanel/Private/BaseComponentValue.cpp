@@ -21,12 +21,22 @@ StaticEditorProxy::StaticEditorProxy(BaseComponentValue* valueComponent, const S
 
 uint32 StaticEditorProxy::GetHeight(QStyle* style, const QStyleOptionViewItem& options) const
 {
-    return drawer->GetHeight(style, options, value->GetValue());
+    StaticEditorDrawer::Params params;
+    params.options = options;
+    params.style = style;
+    params.value = value->GetValue();
+    params.nodes = &value->nodes;
+    return drawer->GetHeight(params);
 }
 
 void StaticEditorProxy::Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options) const
 {
-    drawer->Draw(style, painter, options, value->GetValue());
+    StaticEditorDrawer::Params params;
+    params.options = options;
+    params.style = style;
+    params.value = value->GetValue();
+    params.nodes = &value->nodes;
+    drawer->Draw(painter, params);
 }
 
 InteractiveEditorProxy::InteractiveEditorProxy(BaseComponentValue* valueComponent)
@@ -78,6 +88,11 @@ StaticEditorProxy BaseComponentValue::GetStaticEditor()
 InteractiveEditorProxy BaseComponentValue::GetInteractiveEditor()
 {
     return InteractiveEditorProxy(this);
+}
+
+bool BaseComponentValue::EditorEvent(QEvent* event, const QStyleOptionViewItem& option)
+{
+    return false;
 }
 
 QString BaseComponentValue::GetPropertyName() const
@@ -140,7 +155,7 @@ void BaseComponentValue::ClearCachedValue()
 
 void BaseComponentValue::CommitData()
 {
-    if (IsValidValueToSet(cachedValue))
+    if (IsValidValueToSet(cachedValue, GetValue()))
     {
         GetModifyInterface()->ModifyPropertyValue(nodes, cachedValue);
     }

@@ -10,23 +10,29 @@ class EmptyEditorDrawer : public StaticEditorDrawer
 {
 public:
     ~EmptyEditorDrawer() override = default;
-    uint32 GetHeight(QStyle* style, const QStyleOptionViewItem& options, const Any& value) const override;
-    void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options, const Any& value) const override;
+    void InitStyleOptions(Params& params) const override;
+    uint32 GetHeight(Params params) const override;
+    void Draw(QPainter* painter, Params params) const override;
 };
 
 class TextEditorDrawer : public StaticEditorDrawer
 {
 public:
     ~TextEditorDrawer() override = default;
-    uint32 GetHeight(QStyle* style, const QStyleOptionViewItem& options, const Any& value) const override;
-    void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options, const Any& value) const override;
+    void InitStyleOptions(Params& params) const override;
+    uint32 GetHeight(Params params) const override;
+    void Draw(QPainter* painter, Params params) const override;
 };
 
 class BoolEditorDrawer : public StaticEditorDrawer
 {
 public:
-    uint32 GetHeight(QStyle* style, const QStyleOptionViewItem& options, const Any& value) const override;
-    void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options, const Any& value) const override;
+    ~BoolEditorDrawer() override = default;
+    void InitStyleOptions(Params& params) const override;
+    uint32 GetHeight(Params params) const override;
+    void Draw(QPainter* painter, Params params) const override;
+
+    QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const;
 };
 
 } // namespace TArc

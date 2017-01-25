@@ -93,7 +93,11 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
 {
     if (parent.isValid())
     {
-        return createIndex(row, column, MapItem(parent));
+        ReflectedPropertyItem* item = MapItem(parent);
+        if (row < item->GetChildCount())
+            return createIndex(row, column, item);
+
+        return QModelIndex();
     }
 
     return createIndex(row, column, nullptr);
