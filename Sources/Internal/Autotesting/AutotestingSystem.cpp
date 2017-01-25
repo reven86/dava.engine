@@ -200,8 +200,8 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    bool isLocalBuild = option->GetBool("LocalBuild", false);
-    if (isLocalBuild)
+    //bool isLocalBuild = ;
+    if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
         testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
