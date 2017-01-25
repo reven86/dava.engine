@@ -15,7 +15,7 @@ namespace TArc
 bool IsDebuggerPresent()
 {
 #if defined(__DAVAENGINE_WIN32__)
-    return ::IsDebuggerPresent();
+    return ::IsDebuggerPresent() == TRUE;
 #elif defined(__DAVAENGINE_MACOS__)
     int mib[4];
     struct kinfo_proc info;
