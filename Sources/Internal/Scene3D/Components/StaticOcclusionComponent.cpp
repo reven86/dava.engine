@@ -26,6 +26,8 @@ Component* StaticOcclusionComponent::Clone(Entity* toEntity)
     newComponent->SetBoundingBox(boundingBox);
     newComponent->SetPlaceOnLandscape(placeOnLandscape);
     newComponent->cellHeightOffset = cellHeightOffset;
+    newComponent->SetOcclusionPixelThreshold(occlusionPixelThreshold);
+    newComponent->SetOcclusionPixelThresholdForSpeedtree(occlusionPixelThresholdForSpeedtree);
     return newComponent;
 }
 
