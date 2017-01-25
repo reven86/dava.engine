@@ -38,6 +38,11 @@ public:
         wrapper.SetListener(nullptr);
     }
 
+    void SetObjectName(const QString& objName)
+    {
+        setObjectName(objName);
+    }
+
     QWidget* ToWidgetCast()
     {
         return this;

@@ -33,8 +33,8 @@ public:
     ContextAccessor* GetAccessor();
     ContextManager* GetContextManager();
 
-    QWidget* GetWindow(const WindowKey& wndKey);
-    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
+    QWidget* GetWindow(const WindowKey& wndKey) const;
+    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName) const;
 
     static Signal<Core*> coreChanged;
 
