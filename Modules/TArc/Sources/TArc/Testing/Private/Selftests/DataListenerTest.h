@@ -85,6 +85,17 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         secondWrapper.CreateEditor<DataListenerNode>()->dummyIntField = 10;
     }
 
+    DAVA_TEST (SetFieldValueTest)
+    {
+        using namespace ::testing;
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyFloatField")) }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
+
+        GetActiveContext()->GetData<DataListenerNode>()->dummyFloatField = -100.0f;
+        activeWrapper.SetFieldValue("dummyIntField", -10);
+    }
+
     DAVA_TEST (DataNodeDeletingTest)
     {
         using namespace ::testing;

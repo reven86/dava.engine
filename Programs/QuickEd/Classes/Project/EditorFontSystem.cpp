@@ -2,6 +2,7 @@
 #include "QtTools/Utils/Utils.h"
 
 #include "UI/UIYamlLoader.h"
+#include "Engine/Engine.h"
 
 #include "DavaEngine.h"
 
@@ -60,9 +61,11 @@ void EditorFontSystem::SetFont(const String& presetName, const String& locale, F
     it->second->Retain();
     if (locale == currentFontLocale)
     {
-        FontManager::Instance()->UnregisterFont(oldFont);
-        FontManager::Instance()->RegisterFont(font);
-        FontManager::Instance()->SetFontName(font, presetName);
+        const EngineContext* engineContext = GetEngineContext();
+        FontManager* fontManager = engineContext->fontManager;
+        fontManager->UnregisterFont(oldFont);
+        fontManager->RegisterFont(font);
+        fontManager->SetFontName(font, presetName);
         emit FontPresetChanged(presetName);
     }
     font->Release();
@@ -72,18 +75,20 @@ void EditorFontSystem::LoadLocalizedFonts()
 {
     ClearAllFonts();
     RefreshAvailableFontLocales();
-    FontManager::Instance()->UnregisterFonts();
+    const EngineContext* engineContext = GetEngineContext();
+    FontManager* fontManager = engineContext->fontManager;
+    fontManager->UnregisterFonts();
     for (auto& locale : availableFontLocales)
     {
         UIYamlLoader::LoadFonts(GetLocalizedFontsPath(locale.toStdString()));
-        for (auto& pair : FontManager::Instance()->GetRegisteredFonts())
+        for (auto& pair : fontManager->GetRegisteredFonts())
         {
             localizedFonts[locale.toStdString()][pair.second] = SafeRetain(pair.first);
         }
-        FontManager::Instance()->UnregisterFonts();
+        fontManager->UnregisterFonts();
     }
     UIYamlLoader::LoadFonts(GetDefaultFontsPath());
-    for (auto& pair : FontManager::Instance()->GetRegisteredFonts())
+    for (auto& pair : fontManager->GetRegisteredFonts())
     {
         defaultPresetNames.append(QString::fromStdString(pair.second));
         localizedFonts[defaultFontLocale][pair.second] = SafeRetain(pair.first);
@@ -103,14 +108,17 @@ void EditorFontSystem::LoadLocalizedFonts()
 
 void EditorFontSystem::SaveLocalizedFonts()
 {
+    const EngineContext* engineContext = GetEngineContext();
+    FontManager* fontManager = engineContext->fontManager;
+    FileSystem* fileSystem = engineContext->fileSystem;
     for (auto& localizedFontsIt : localizedFonts)
     {
-        FontManager::Instance()->RegisterFonts(localizedFontsIt.second);
+        fontManager->RegisterFonts(localizedFontsIt.second);
         //load localized fonts into FontManager
         const FilePath& localizedFontsPath = GetLocalizedFontsPath(localizedFontsIt.first);
-        if (!FileSystem::Instance()->IsDirectory(localizedFontsPath.GetDirectory()))
+        if (!fileSystem->IsDirectory(localizedFontsPath.GetDirectory()))
         {
-            FileSystem::Instance()->CreateDirectory(localizedFontsPath.GetDirectory());
+            fileSystem->CreateDirectory(localizedFontsPath.GetDirectory());
         }
         UIYamlLoader::SaveFonts(localizedFontsPath);
     }
@@ -129,11 +137,12 @@ void EditorFontSystem::ClearAllFonts()
 
 void EditorFontSystem::RegisterCurrentLocaleFonts()
 {
-    const auto& locale = LocalizationSystem::Instance()->GetCurrentLocale();
+    const EngineContext* engineContext = GetEngineContext();
+    const auto& locale = engineContext->localizationSystem->GetCurrentLocale();
     currentFontLocale = availableFontLocales.contains(QString::fromStdString(locale)) ? locale : defaultFontLocale;
     auto it = localizedFonts.find(currentFontLocale);
     const auto& fonts = it != localizedFonts.end() ? it->second : localizedFonts.at(defaultFontLocale);
-    FontManager::Instance()->RegisterFonts(fonts);
+    engineContext->fontManager->RegisterFonts(fonts);
     emit FontPresetChanged(String());
 }
 
