@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "TArc/DataProcessing/DataNode.h"
 
 #include "Reflection/ReflectionRegistrator.h"
@@ -7,7 +9,6 @@
 
 #include <QString>
 
-class SceneEditor2;
 class SceneData : public DAVA::TArc::DataNode
 {
 public:

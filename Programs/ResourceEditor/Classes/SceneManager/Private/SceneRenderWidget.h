@@ -29,7 +29,6 @@ class ContextAccessor;
 
 class SceneEditor2;
 class SelectableGroup;
-class ScenePreviewDialog;
 class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener,
                           private DAVA::RenderWidget::IClientDelegate,
                           public DAVA::TrackedObject
@@ -48,9 +47,6 @@ public:
 
     SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, IWidgetDelegate* widgetDelegate);
     ~SceneRenderWidget();
-
-    void ShowPreview(const DAVA::FilePath& scenePath);
-    void HidePreview();
 
 private:
     void InitDavaUI();
@@ -77,7 +73,6 @@ private:
 
     DAVA::TArc::QtConnections connections;
     DAVA::RenderWidget* renderWidget = nullptr;
-    DAVA::RefPtr<ScenePreviewDialog> previewDialog;
 
     IWidgetDelegate* widgetDelegate = nullptr;
 };
