@@ -38,28 +38,24 @@ static NSString* CarrierToCarrierName(CTCarrier* carrier)
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
-    // Use local variable of type CTTelephonyNetworkInfo* instead of void* to avoid static_casts in this function
-    // Will be copied to telephonyNetworkInfo at the end
-    CTTelephonyNetworkInfo* telephonyNetworkInfoLocal = [[CTTelephonyNetworkInfo alloc] init];
+    telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
 
-    CTCarrier* phoneCarrier = [telephonyNetworkInfoLocal subscriberCellularProvider];
+    CTCarrier* phoneCarrier = [telephonyNetworkInfo subscriberCellularProvider];
 
     lastCarrierName = [CarrierToCarrierName(phoneCarrier) retain];
 
-    telephonyNetworkInfoLocal.subscriberCellularProviderDidUpdateNotifier =
+    telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier =
     ^(CTCarrier* carrier)
     {
       NSString* newCarrierName = CarrierToCarrierName(carrier);
-      if (![static_cast<NSString*>(lastCarrierName) isEqualToString:newCarrierName])
+      if (![lastCarrierName isEqualToString:newCarrierName])
       {
-          [static_cast<NSString*>(lastCarrierName) release];
+          [lastCarrierName release];
           lastCarrierName = [newCarrierName retain];
 
-          DeviceInfo::carrierNameChanged.Emit(StringFromNSString(static_cast<NSString*>(lastCarrierName)));
+          DeviceInfo::carrierNameChanged.Emit(StringFromNSString(lastCarrierName));
       }
     };
-
-    telephonyNetworkInfo = telephonyNetworkInfoLocal;
 }
 
 DeviceInfoPrivate::~DeviceInfoPrivate()
@@ -436,7 +432,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return StringFromNSString(static_cast<NSString*>(lastCarrierName));
+    return StringFromNSString(lastCarrierName);
 }
 }
 #endif

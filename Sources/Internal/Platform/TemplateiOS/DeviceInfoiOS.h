@@ -7,6 +7,9 @@
 
 #include "Platform/DeviceInfoPrivateBase.h"
 
+DAVA_FORWARD_DECLARE_OBJC_CLASS(NSString);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(CTTelephonyNetworkInfo);
+
 namespace DAVA
 {
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
@@ -42,9 +45,8 @@ public:
 #endif
 
 private:
-    // Use void* to avoid mentioning obj-c classes in this header
-    void* telephonyNetworkInfo = nullptr;
-    void* lastCarrierName = nullptr;
+    CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
+    NSString* lastCarrierName = nullptr;
 };
 
 }; // namespace DAVA

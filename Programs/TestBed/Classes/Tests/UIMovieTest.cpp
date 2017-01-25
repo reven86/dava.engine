@@ -1,4 +1,5 @@
 #include "Tests/UIMovieTest.h"
+#include "Engine/Engine.h"
 
 namespace
 {
