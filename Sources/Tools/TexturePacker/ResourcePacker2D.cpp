@@ -2,19 +2,21 @@
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/TexturePacker.h"
 #include "CommandLine/CommandLineParser.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Utils/StringUtils.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Engine/EngineModule.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -60,6 +62,13 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
     if (FileSystem::Instance()->Exists(inputGfxDirectory) == false)
     {
         AddError(Format("Input folder is not exist: '%s'", inputGfxDirectory.GetStringValue().c_str()));
+        SetRunning(false);
+        return;
+    }
+
+    if (StringUtils::HasWhitespace(texturePostfix))
+    {
+        AddError(Format("Texture name postfix '%s' has whitespaces", texturePostfix.c_str()).c_str());
         SetRunning(false);
         return;
     }
@@ -467,6 +476,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     packer.SetTwoSideMargin(useTwoSideMargin);
                     packer.SetTexturesMargin(marginInPixels);
                     packer.SetAlgorithms(packAlgorithms);
+                    packer.SetTexturePostfix(texturePostfix);
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {
@@ -541,12 +551,17 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
 {
     cacheClient = cacheClient_;
 
-    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+    cacheItemDescription.machineName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
 
     DateTime timeNow = DateTime::Now();
-    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    cacheItemDescription.creationDate = UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
 
     cacheItemDescription.comment = comment;
+}
+
+void ResourcePacker2D::SetTexturePostfix(const String& postfix)
+{
+    texturePostfix = postfix;
 }
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)

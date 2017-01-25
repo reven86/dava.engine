@@ -3,9 +3,10 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/TextureDescriptor.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
+#include "Engine/Win32/PlatformApi.h"
 
 namespace DAVA
 {
@@ -27,16 +28,17 @@ struct CEFColor
 };
 
 #if defined(__DAVAENGINE_COREV2__)
-CEFWebPageRender::CEFWebPageRender(Window* w)
+CEFWebPageRender::CEFWebPageRender(Window* w, float32 k)
     : contentBackground(new UIControlBackground)
     , window(w)
+    , scale(k)
 {
     ConnectToSignals();
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
 
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -147,9 +149,9 @@ void CEFWebPageRender::SetBackgroundTransparency(bool value)
     transparency = value;
 }
 
-void CEFWebPageRender::SetViewSize(Vector2 size)
+void CEFWebPageRender::SetViewRect(const Rect& rect)
 {
-    logicalViewSize = size;
+    logicalViewRect = rect;
 }
 
 void CEFWebPageRender::ShutDown()
@@ -166,33 +168,57 @@ void CEFWebPageRender::ShutDown()
     imageData.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void CEFWebPageRender::SetScale(float32 k)
+{
+    scale = k;
+}
+#endif
+
 void CEFWebPageRender::ResetCursor()
 {
     if (currentCursorType != CursorType::CT_POINTER)
     {
         currentCursorType = CursorType::CT_POINTER;
+#if defined(__DAVAENGINE_COREV2__)
+        SetCursor(nullptr);
+#else
         SetCursor(GetDefaultCursor());
+#endif
     }
 }
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    rect = CefRect(0, 0, static_cast<int>(logicalViewSize.dx), static_cast<int>(logicalViewSize.dy));
+#if defined(__DAVAENGINE_COREV2__)
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
+    phrect.dx /= scale;
+    phrect.dy /= scale;
+    rect = CefRect(0, 0, static_cast<int>(phrect.dx), static_cast<int>(phrect.dy));
+#else
+    rect = CefRect(0, 0, static_cast<int>(logicalViewRect.dx), static_cast<int>(logicalViewRect.dy));
+#endif
     return true;
 }
 
 bool CEFWebPageRender::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info)
 {
-    const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+    Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
 
-    screen_info.device_scale_factor = screenInfo.scale;
+#if defined(__DAVAENGINE_COREV2__)
+    screen_info.device_scale_factor = scale;
+#else
+    screen_info.device_scale_factor = phrect.dx / logicalViewRect.dx;
+#endif
     screen_info.depth = 32;
     screen_info.depth_per_component = 8;
     screen_info.is_monochrome = 0;
     screen_info.rect.x = 0;
     screen_info.rect.y = 0;
-    screen_info.rect.width = screenInfo.width;
-    screen_info.rect.height = screenInfo.height;
+    screen_info.rect.width = 0;
+    screen_info.rect.height = 0;
     screen_info.available_rect = screen_info.rect;
 
     return true;
@@ -284,14 +310,17 @@ void CEFWebPageRender::OnCursorChange(CefRefPtr<CefBrowser> browser,
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#if !defined(__DAVAENGINE_COREV2__)
 CefCursorHandle CEFWebPageRender::GetDefaultCursor()
 {
     return LoadCursor(NULL, IDC_ARROW);
 }
+#endif
 
 void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 {
 #if defined(__DAVAENGINE_COREV2__)
+    PlatformApi::Win32::SetWindowCursor(window, cursor);
 #else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     SetClassLongPtr(wnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));

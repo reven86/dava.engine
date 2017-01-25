@@ -1,4 +1,5 @@
 #include "ICloudKeyValue.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_STEAM__)
 

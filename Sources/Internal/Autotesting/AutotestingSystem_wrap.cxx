@@ -1216,7 +1216,7 @@ typedef struct
 #define SWIG_isptrtype(L, I) (lua_isuserdata(L, I) || lua_isnil(L, I))
 
 #ifdef __cplusplus
-/* Special helper for member function pointers 
+/* Special helper for member function pointers
 it gets the address, casts it, then dereferences it */
 /*#define SWIG_mem_fn_as_voidptr(a)  (*((char**)&(a))) */
 #endif
@@ -1651,7 +1651,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State* L, swig_type_info* SWIGUNUSED s
         {
 /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-            lua_rawgeti(L, bases_table, i + 1);
+            lua_rawgeti(L, bases_table, static_cast<int>(i + 1));
             base_swig_type = 0;
             if (lua_isnil(L, -1))
             {
@@ -2076,7 +2076,7 @@ SWIGINTERN void SWIG_Lua_get_class_metatable(lua_State* L, const char* cname)
 Each class structure has a list of pointers to the base class structures.
 This function fills them.
 It cannot be done at compile time, as this will not work with hireachies
-spread over more than one swig file. 
+spread over more than one swig file.
 Therefore it must be done at runtime, querying the SWIG type system.
 */
 SWIGINTERN void SWIG_Lua_init_base_class(lua_State* L, swig_lua_class* clss)
@@ -2797,18 +2797,18 @@ SWIG_Lua_InstallConstants(lua_State* L, swig_lua_const_info constants[])
         {
         case SWIG_LUA_INT:
             lua_pushstring(L, constants[i].name);
-            lua_pushinteger(L, (lua_Number)constants[i].lvalue);
+            lua_pushinteger(L, static_cast<lua_Integer>(constants[i].lvalue));
             lua_rawset(L, -3);
             break;
         case SWIG_LUA_FLOAT:
             lua_pushstring(L, constants[i].name);
-            lua_pushnumber(L, (lua_Number)constants[i].dvalue);
+            lua_pushnumber(L, static_cast<lua_Number>(constants[i].dvalue));
             lua_rawset(L, -3);
             break;
         case SWIG_LUA_CHAR:
             lua_pushstring(L, constants[i].name);
             {
-                char c = constants[i].lvalue;
+                char c = static_cast<char>(constants[i].lvalue);
                 lua_pushlstring(L, &c, 1);
             }
             lua_rawset(L, -3);
@@ -2865,7 +2865,7 @@ SWIG_Lua_dostring(lua_State* L, const char* str)
     }
     lua_settop(L, top); /* restore the stack */
     return ok;
-}    
+}
 
 #ifdef __cplusplus
 }
@@ -6868,6 +6868,32 @@ fail:
     return SWIG_arg;
 }
 
+
+static int _wrap_AutotestingSystemLua_PressEscape(lua_State* L)
+{
+    int SWIG_arg = 0;
+    DAVA::AutotestingSystemLua* arg1 = (DAVA::AutotestingSystemLua*)0;
+
+    SWIG_check_num_args("DAVA::AutotestingSystemLua::PressEscape", 1, 1)
+    if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::PressEscape", 1, "DAVA::AutotestingSystemLua *");
+
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L, 1, (void**)&arg1, SWIGTYPE_p_DAVA__AutotestingSystemLua, 0)))
+    {
+        SWIG_fail_ptr("AutotestingSystemLua_PressEscape", 1, SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    }
+
+    (arg1)->PressEscape();
+
+    return SWIG_arg;
+
+    if (0)
+        SWIG_fail;
+
+fail:
+    lua_error(L);
+    return SWIG_arg;
+}
+
 static int _wrap_AutotestingSystemLua_SetText(lua_State* L)
 {
     int SWIG_arg = 0;
@@ -6988,6 +7014,47 @@ fail:
     lua_error(L);
     return SWIG_arg;
 }
+    
+    static int _wrap_AutotestingSystemLua_GetTaggedClass(lua_State* L)
+    {
+        int SWIG_arg = 0;
+        DAVA::AutotestingSystemLua* arg1 = (DAVA::AutotestingSystemLua*)0;
+        DAVA::UIControl* arg2 = (DAVA::UIControl*)0;
+        DAVA::String* arg3 = 0;
+        DAVA::String temp3;
+        DAVA::String result;
+        
+        SWIG_check_num_args("DAVA::AutotestingSystemLua::GetTaggedClass", 3, 3)
+        if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 1, "DAVA::AutotestingSystemLua *");
+        if (!SWIG_isptrtype(L, 2))
+            SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 2, "DAVA::UIControl *");
+        if (!lua_isstring(L, 3))
+            SWIG_fail_arg("DAVA::AutotestingSystemLua::GetTaggedClass", 3, "DAVA::String const &");
+        
+        if (!SWIG_IsOK(SWIG_ConvertPtr(L, 1, (void**)&arg1, SWIGTYPE_p_DAVA__AutotestingSystemLua, 0)))
+        {
+            SWIG_fail_ptr("AutotestingSystemLua_GetTaggedClass", 1, SWIGTYPE_p_DAVA__AutotestingSystemLua);
+        }
+        
+        if (!SWIG_IsOK(SWIG_ConvertPtr(L, 2, (void**)&arg2, SWIGTYPE_p_DAVA__UIControl, 0)))
+        {
+            SWIG_fail_ptr("AutotestingSystemLua_GetTaggedClass", 2, SWIGTYPE_p_DAVA__UIControl);
+        }
+        
+        temp3.assign(lua_tostring(L, 3), lua_rawlen(L, 3));
+        arg3 = &temp3;
+        result = (arg1)->GetTaggedClass(arg2, (DAVA::String const&)*arg3);
+        lua_pushlstring(L, (&result)->data(), (&result)->size());
+        SWIG_arg++;
+        return SWIG_arg;
+        
+        if (0)
+            SWIG_fail;
+        
+    fail:
+        lua_error(L);
+        return SWIG_arg;
+    }
 
 static int _wrap_AutotestingSystemLua_GetText(lua_State* L)
 {
@@ -7492,8 +7559,10 @@ static swig_lua_method swig_AutotestingSystemLua_methods[] = {
     { "KeyPress", _wrap_AutotestingSystemLua_KeyPress },
     { "ProcessInput", _wrap_AutotestingSystemLua_ProcessInput },
     { "ClickSystemBack", _wrap_AutotestingSystemLua_ClickSystemBack },
+    { "PressEscape", _wrap_AutotestingSystemLua_PressEscape },
     { "SetText", _wrap_AutotestingSystemLua_SetText },
     { "CheckText", _wrap_AutotestingSystemLua_CheckText },
+    { "GetTaggedClass", _wrap_AutotestingSystemLua_GetTaggedClass },
     { "CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText },
     { "GetText", _wrap_AutotestingSystemLua_GetText },
     { "GetTextColor", _wrap_AutotestingSystemLua_GetTextColor },
@@ -7959,7 +8028,7 @@ SWIG_PropagateClientData(void)
 
 /* Forward declaration of where the user's %init{} gets inserted */
 void SWIG_init_user(lua_State* L);
-    
+
 #ifdef __cplusplus
 extern "C" {
 #endif

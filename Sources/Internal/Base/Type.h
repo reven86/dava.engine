@@ -9,10 +9,19 @@
 
 namespace DAVA
 {
+namespace TypeDetail
+{
+template <typename T>
+struct TypeHolder;
+}
+
 class TypeInheritance;
 class Type final
 {
     friend class TypeInheritance;
+
+    template <typename T>
+    friend struct TypeDetail::TypeHolder;
 
 public:
     template <typename T>
@@ -30,13 +39,18 @@ public:
 
     size_t GetSize() const;
     const char* GetName() const;
+    std::type_index GetTypeIndex() const;
     const TypeInheritance* GetInheritance() const;
+    unsigned long GetTypeFlags() const;
 
     bool IsConst() const;
     bool IsPointer() const;
     bool IsReference() const;
     bool IsFundamental() const;
     bool IsTrivial() const;
+    bool IsIntegral() const;
+    bool IsFloatingPoint() const;
+    bool IsEnum() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -50,56 +64,31 @@ private:
     {
         isConst,
         isPointer,
+        isPointerToConst,
         isReference,
+        isReferenceToConst,
         isFundamental,
         isTrivial,
+        isIntegral,
+        isFloatingPoint,
+        isEnum
     };
 
     size_t size = 0;
     const char* name = nullptr;
+    const std::type_info* stdTypeInfo = &typeid(void);
 
-    const Type* derefType = nullptr;
-    const Type* decayType = nullptr;
-    const Type* pointerType = nullptr;
+    Type* const* derefType = nullptr;
+    Type* const* decayType = nullptr;
+    Type* const* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    mutable std::unique_ptr<TypeInheritance> inheritance;
-
-    Type() = default;
+    mutable std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
 
     template <typename T>
-    static void Init(Type** ptype);
-};
+    static Type* Init();
 
-class TypeInheritance final
-{
-public:
-    using CastOP = void* (*)(void*);
-    using InheritanceMap = UnorderedMap<const Type*, CastOP>;
-
-    const InheritanceMap& GetBaseTypes() const;
-    const InheritanceMap& GetDerivedTypes() const;
-
-    template <typename T, typename... Bases>
-    static void RegisterBases();
-
-    static bool CanUpCast(const Type* from, const Type* to);
-    static bool CanDownCast(const Type* from, const Type* to);
-    static bool CanCast(const Type* from, const Type* to);
-
-    static bool UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
-    static bool DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
-    static bool Cast(const Type* from, void* inPtr, const Type* to, void** outPtr);
-
-private:
-    InheritanceMap baseTypes;
-    InheritanceMap derivedTypes;
-
-    template <typename T, typename B>
-    static bool AddBaseType();
-
-    template <typename T, typename D>
-    static bool AddDerivedType();
+    Type();
 };
 
 } // namespace DAVA

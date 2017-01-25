@@ -4,8 +4,9 @@
 #include "Platform/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
-#include "Job/JobManager.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -18,13 +19,9 @@ InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::Type
                                                                                         });
 };
 
-AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
+AssetCacheClient::AssetCacheClient()
     : isActive(false)
-    , isJobStarted(false)
-    , emulateNetworkLoop(emulateNetworkLoop_)
 {
-    DVASSERT(JobManager::Instance() != nullptr);
-
     client.AddListener(this);
 }
 
@@ -33,18 +30,14 @@ AssetCacheClient::~AssetCacheClient()
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);
-    DVASSERT(isJobStarted == false);
 }
 
 AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
-    timeoutms = connectionParams.timeoutms;
-
     isActive = true;
-    if (emulateNetworkLoop)
-    {
-        JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
-    }
+    lightRequestTimeoutMs = connectionParams.timeoutms;
+    heavyRequestTimeoutMs = lightRequestTimeoutMs + (100u * 1000u);
+    currentTimeoutMs = lightRequestTimeoutMs;
 
     bool connectCalled = client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
     if (!connectCalled)
@@ -59,15 +52,16 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         while (client.ChannelIsOpened() == false)
         {
+            PollNetworkIfSuitable();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
             }
 
             uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-            if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+            if (((currentTimeoutMs > 0) && (deltaTime > currentTimeoutMs)) && (client.ChannelIsOpened() == false))
             {
-                Logger::Error("Timeout on connecting to asset cache %s:%hu (%lld ms)", connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+                Logger::Error("Timeout on connecting to asset cache %s (%lld ms)", connectionParams.ip.c_str(), currentTimeoutMs);
                 isActive = false;
                 return AssetCache::Error::OPERATION_TIMEOUT;
             }
@@ -86,11 +80,6 @@ void AssetCacheClient::Disconnect()
     }
 
     client.Disconnect();
-
-    while (isJobStarted)
-    {
-        //wait for finishing of networking
-    }
 }
 
 AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
@@ -106,7 +95,7 @@ AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
     bool requestSent = client.RequestServerStatus();
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -129,7 +118,7 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
     bool requestSent = client.RequestAddData(key, value);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(heavyRequestTimeoutMs);
     }
 
     {
@@ -154,7 +143,7 @@ AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCac
     bool requestSent = client.RequestData(key);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(heavyRequestTimeoutMs);
     }
 
     {
@@ -177,7 +166,7 @@ AssetCache::Error AssetCacheClient::RemoveFromCacheSynchronously(const AssetCach
     bool requestSent = client.RequestRemoveData(key);
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -200,7 +189,7 @@ AssetCache::Error AssetCacheClient::ClearCacheSynchronously()
     bool requestSent = client.RequestClearCache();
     if (requestSent)
     {
-        resultCode = WaitRequest();
+        resultCode = WaitRequest(lightRequestTimeoutMs);
     }
 
     {
@@ -211,8 +200,10 @@ AssetCache::Error AssetCacheClient::ClearCacheSynchronously()
     return resultCode;
 }
 
-AssetCache::Error AssetCacheClient::WaitRequest()
+AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 {
+    currentTimeoutMs = timeoutMs;
+
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
     Request currentRequest;
@@ -223,14 +214,17 @@ AssetCache::Error AssetCacheClient::WaitRequest()
 
     while (currentRequest.recieved == false)
     {
+        PollNetworkIfSuitable();
+
         {
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
 
-        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
+        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        if (((timeoutMs > 0) && (deltaTime > timeoutMs)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
         {
+            Logger::Debug("Operation timeout: (%lld ms)", timeoutMs);
             return AssetCache::Error::OPERATION_TIMEOUT;
         }
     }
@@ -239,6 +233,7 @@ AssetCache::Error AssetCacheClient::WaitRequest()
     {
         while (currentRequest.processingRequest)
         {
+            PollNetworkIfSuitable();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -321,7 +316,7 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
                 request.recieved = true;
                 request.processingRequest = true;
 
-                DVASSERT_MSG(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
+                DVASSERT(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
                 *(request.value) = value;
 
                 DumpInfo(key, value);
@@ -368,7 +363,7 @@ void AssetCacheClient::OnCacheCleared(bool cleared)
 void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType type)
 {
     LockGuard<Mutex> guard(requestLocker);
-    request.recieved = false;
+    request.recieved = true;
     request.processingRequest = false;
 
     switch (type)
@@ -383,22 +378,10 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
         request.result = AssetCache::Error::UNEXPECTED_PACKET;
         break;
     default:
-        DVASSERT_MSG(false, Format("Unexpected incorrect packet type: %d", type).c_str());
+        DVASSERT(false, Format("Unexpected incorrect packet type: %d", type).c_str());
         request.result = AssetCache::Error::CORRUPTED_DATA;
         break;
     }
-}
-
-void AssetCacheClient::ProcessNetwork()
-{
-    isJobStarted = true;
-
-    while (isActive)
-    {
-        Net::NetCore::Instance()->Poll();
-    }
-
-    isJobStarted = false;
 }
 
 void AssetCacheClient::OnClientProxyStateChanged()
@@ -406,12 +389,25 @@ void AssetCacheClient::OnClientProxyStateChanged()
     if (client.ChannelIsOpened() == false)
     {
         isActive = false;
+
+        LockGuard<Mutex> guard(requestLocker);
+        request.recieved = true;
+        request.processingRequest = false;
+        request.result = AssetCache::Error::CANNOT_CONNECT;
     }
 }
 
 bool AssetCacheClient::IsConnected() const
 {
     return client.ChannelIsOpened();
+}
+
+void AssetCacheClient::PollNetworkIfSuitable()
+{
+    if (Thread::IsMainThread())
+    {
+        Net::NetCore::Instance()->Poll();
+    }
 }
 
 AssetCacheClient::ConnectionParams::ConnectionParams()

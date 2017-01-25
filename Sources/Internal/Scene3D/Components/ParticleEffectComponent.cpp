@@ -296,6 +296,8 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
 
     if (loadedVersion == 1) //new effect - load everything here
     {
+        const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+
         stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
         effectDuration = archive->GetFloat("pe.effectDuration");
         repeatsCount = archive->GetUInt32("pe.repeatsCount");
@@ -313,7 +315,6 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
             {
                 emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
                 FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
-                const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
                 if (filepathSelector)
                 {
                     qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i]->GetFilePath());

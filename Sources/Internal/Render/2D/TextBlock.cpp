@@ -1,5 +1,5 @@
 #include "Render/2D/TextBlock.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicRender.h"
 #include "Render/2D/TextLayout.h"
@@ -7,6 +7,10 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/TextBox.h"
 #include "Utils/StringUtils.h"
+#include "Logger/Logger.h"
+
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include <numeric>
 
@@ -427,6 +431,8 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_RECALC_PARAMS);
+
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -731,7 +737,7 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        DVASSERT_MSG(textBox->GetLinesCount() > 0, "Empty lines information");
+        DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -946,10 +952,10 @@ void TextBlock::CalculateCacheParams()
     }
 
     //calculate texture size
-    int32 dx = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
-    int32 dy = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
-    int32 ox = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
-    int32 oy = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
+    int32 dx = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
+    int32 dy = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
+    int32 ox = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
+    int32 oy = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
 
     cacheUseJustify = useJustify;
     cacheDx = dx;
@@ -1015,6 +1021,7 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
+        DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_PREPARE);
         PrepareInternal();
     }
 

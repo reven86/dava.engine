@@ -15,7 +15,6 @@ macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
     endif ()
-
     set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
     set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
 
@@ -30,7 +29,7 @@ macro ( qt_deploy )
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}")
         foreach(ITEM ${BINARY_ITEMS})
             string(TOLOWER ${ITEM} ITEM)
             if (EXISTS ${QT_ACTUAL_PATH}/bin/Qt5${ITEM}.dll)
@@ -46,18 +45,36 @@ macro ( qt_deploy )
 
         set(DEPLOY_PLATFORM "MAC")
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
+
         set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
-
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND "python"
-                    ${DEPLOY_SCRIPT_PATH}
-                    "-p" "${DEPLOY_PLATFORM}"
-                    "-q" "${DEPLOY_QT_FOLDER}"
-                    "-d" "${DEPLOY_ROOT_FOLDER}"
-                    "-a" "${DEPLOY_ARGUMENTS}"
-        )
+    
+    if( QT_POST_DEPLOY AND NOT MACOS )
+        ADD_CUSTOM_TARGET ( QT_DEPLOY ALL
+                COMMAND "python"
+                        ${DEPLOY_SCRIPT_PATH}
+                        "-p" "${DEPLOY_PLATFORM}"
+                        "-q" "${DEPLOY_QT_FOLDER}"
+                        "-d" "${DEPLOY_ROOT_FOLDER}"
+                        "-a" "${DEPLOY_ARGUMENTS}"
+                        "-t" "${TARGETS_LIST}"
+            )
+            
+        foreach( ITEM ${TARGETS_LIST} )
+            add_dependencies( QT_DEPLOY ${ITEM} )           
+        endforeach()
+    else()
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+                COMMAND "python"
+                        ${DEPLOY_SCRIPT_PATH}
+                        "-p" "${DEPLOY_PLATFORM}"
+                        "-q" "${DEPLOY_QT_FOLDER}"
+                        "-d" "${DEPLOY_ROOT_FOLDER}"
+                        "-a" "${DEPLOY_ARGUMENTS}"
+                        "-n" "${PROJECT_NAME}"
+            )    
+    endif()
 
 endmacro()
 
@@ -68,7 +85,7 @@ set ( CMAKE_INCLUDE_CURRENT_DIR ON )
 # Instruct CMake to run moc automatically when needed.
 set ( CMAKE_AUTOMOC ON )
 
-list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick QuickWidgets Network)
+list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick QuickWidgets Network Test)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
 set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
@@ -96,6 +113,8 @@ set_linkage_qt5_modules(LINKAGE_LIST)
 set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
 set(QT5_FOUND 1)
+
+set_property( GLOBAL PROPERTY QT5_FOUND 1 )
 
 if( NOT QT5_FOUND )
     message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  )

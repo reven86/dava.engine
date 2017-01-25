@@ -5,6 +5,7 @@
 
 #include "Platform/TemplateWin32/MovieViewControlWin32.h"
 
+#include "Render/Image/Image.h"
 #include "Platform/TemplateWin32/FfmpegPlayer.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "UI/UIControl.h"
@@ -77,7 +78,7 @@ void MovieViewControl::Play()
     Vector2 res = ffmpegPlayer->GetResolution();
     textureWidth = NextPowerOf2(static_cast<uint32>(res.dx));
     textureHeight = NextPowerOf2(static_cast<uint32>(res.dy));
-    uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(ffmpegPlayer->GetPixelFormat());
+    uint32 size = ImageUtils::GetSizeInBytes(textureWidth, textureHeight, ffmpegPlayer->GetPixelFormat());
 
     videoTextureBuffer.resize(size);
     Memset(videoTextureBuffer.data(), 0, size);

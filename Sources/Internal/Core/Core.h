@@ -12,7 +12,6 @@
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
 #include "ModuleManager/ModuleManager.h"
-
 /**
 	\defgroup core Core
 	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and
@@ -258,7 +257,6 @@ public:
 
     IPackManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
-    const ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -266,6 +264,8 @@ protected:
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
+
+    static void OnRenderingError(rhi::RenderingError error, void* context);
 
 private:
     KeyedArchive* options;
@@ -292,7 +292,6 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
     std::unique_ptr<Analytics::Core> analyticsCore;

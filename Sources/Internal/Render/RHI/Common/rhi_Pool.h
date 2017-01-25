@@ -3,6 +3,7 @@
 #define RHI_RESOURCE_INCLUDE_BACKTRACE 0
 
 #include "../rhi_Type.h"
+#include "Utils/StringFormat.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
@@ -163,8 +164,7 @@ ResourcePool<T, RT, DT, nr>::Reserve(unsigned maxCount)
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, class DT, bool nr>
-inline Handle
-ResourcePool<T, RT, DT, nr>::Alloc()
+inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
@@ -204,16 +204,13 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
     ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
 
-    DVASSERT(handle != InvalidHandle);
-
     return handle;
 }
 
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
-inline void
-ResourcePool<T, RT, DT, nr>::Free(Handle h)
+inline void ResourcePool<T, RT, DT, nr>::Free(Handle h)
 {
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
     uint32 type = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
@@ -231,17 +228,18 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
 }
 
 //------------------------------------------------------------------------------
+#define HANDLE_DECOMPOSE(h) ((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT), ((h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT), ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT)
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
 {
-    DVASSERT(h != InvalidHandle);
-    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+    DVASSERT(h != InvalidHandle, DAVA::Format("Pool<%d>::Get - InvalidHandle", RT).c_str());
+    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
-    DVASSERT(index < ObjectCount);
+    DVASSERT(index < ObjectCount, DAVA::Format("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     Entry* e = Object + index;
-    DVASSERT(e->allocated);
-    DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
+    DVASSERT(e->allocated, DAVA::Format("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
+    DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT), DAVA::Format("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) current valid generation is %d", int32(RT), HANDLE_DECOMPOSE(h), e->generation).c_str());
 
     return &(e->object);
 }

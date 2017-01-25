@@ -1,8 +1,8 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/RenderCallbacks.h"
+#include "UI/UIControlSystem.h"
 #include "Core/Core.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -40,7 +40,7 @@ void TextBlockSoftwareRender::Prepare()
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
-	
+
 #if defined(LOCALIZATION_DEBUG)
     bufHeight = height;
     bufWidth = width;
@@ -58,13 +58,13 @@ void TextBlockSoftwareRender::Prepare()
     String addInfo;
     if (!textBlock->isMultilineEnabled)
     {
-        addInfo = WStringToString(textBlock->visualText.c_str());
+        addInfo = UTF8Utils::EncodeToUTF8(textBlock->visualText.c_str());
     }
     else
     {
         if (textBlock->multilineStrings.size() >= 1)
         {
-            addInfo = WStringToString(textBlock->multilineStrings[0].c_str());
+            addInfo = UTF8Utils::EncodeToUTF8(textBlock->multilineStrings[0].c_str());
         }
         else
         {
@@ -109,18 +109,18 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
     if (textBlock->cacheUseJustify)
     {
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
-                                             -textBlock->cacheOx + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(xOffset))),
-                                             -textBlock->cacheOy + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(yOffset))),
-                                             int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(w)))),
-                                             int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(lineSize)))),
+                                             -textBlock->cacheOx + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(xOffset))),
+                                             -textBlock->cacheOy + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(yOffset))),
+                                             int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))),
+                                             int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(lineSize)))),
                                              drawText,
                                              true);
     }
     else
     {
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
-                                             -textBlock->cacheOx + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(xOffset))),
-                                             -textBlock->cacheOy + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(yOffset))),
+                                             -textBlock->cacheOx + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(xOffset))),
+                                             -textBlock->cacheOy + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(yOffset))),
                                              0,
                                              0,
                                              drawText,

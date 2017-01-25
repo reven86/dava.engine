@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_DELAYED_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_DELAYED_H__
+#pragma once
 
 #include "Notification/LocalNotification.h"
 
@@ -25,6 +24,4 @@ private:
 private:
     int delaySeconds;
 };
-}
-
-#endif // __NOTIFICATION_H__
+} // namespace DAVA

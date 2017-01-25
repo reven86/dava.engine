@@ -4,6 +4,7 @@
 #include "UI/UIScreenManager.h"
 #include "Debug/Replay.h"
 #include "Job/JobManager.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {

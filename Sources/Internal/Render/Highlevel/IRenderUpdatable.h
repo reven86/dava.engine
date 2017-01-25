@@ -10,6 +10,7 @@ class Camera;
 class IRenderUpdatable
 {
 public:
+    virtual ~IRenderUpdatable() = default;
     virtual void RenderUpdate(Camera* camera, float32 timeElapsed) = 0;
 };
 };

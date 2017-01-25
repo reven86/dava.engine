@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-static DAVA::String androidLogTag = "";
+static DAVA::String androidLogTag = "DAVA";
 
 int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 {
@@ -38,7 +38,7 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
     return androidLL;
 }
 
-void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
     size_t len = strlen(text);
     // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages

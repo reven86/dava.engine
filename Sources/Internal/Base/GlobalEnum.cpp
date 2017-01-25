@@ -1,4 +1,5 @@
 #include "Base/GlobalEnum.h"
+#include "Engine/EngineTypes.h"
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/Entity.h"
@@ -320,6 +321,7 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
 
 ENUM_DECLARE(UIComponent::eType)
 {
+    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
@@ -333,6 +335,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
+    ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
@@ -361,6 +364,15 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+ENUM_DECLARE(eModifierKeys)
+{
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::SHIFT), "SHIFT");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::CONTROL), "CTRL");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::ALT), "ALT");
+    ENUM_ADD_DESCR(static_cast<int>(eModifierKeys::COMMAND), "CMD");
+};
+#else
 ENUM_DECLARE(UIEvent::Modifier)
 {
     ENUM_ADD_DESCR(UIEvent::Modifier::SHIFT_DOWN, "SHIFT");
@@ -368,6 +380,7 @@ ENUM_DECLARE(UIEvent::Modifier)
     ENUM_ADD_DESCR(UIEvent::Modifier::ALT_DOWN, "ALT");
     ENUM_ADD_DESCR(UIEvent::Modifier::COMMAND_DOWN, "CMD");
 };
+#endif
 
 ENUM_DECLARE(rhi::TextureAddrMode)
 {

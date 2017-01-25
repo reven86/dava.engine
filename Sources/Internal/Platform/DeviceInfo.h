@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
@@ -13,6 +14,7 @@ class DeviceInfo
 public:
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
 
+#if !defined(__DAVAENGINE_COREV2__)
     struct ScreenInfo
     {
         int32 width;
@@ -33,6 +35,7 @@ public:
             scale = _scale;
         }
     };
+#endif
 
     enum ePlatform
     {
@@ -134,18 +137,21 @@ public:
     static String GetHTTPProxyHost();
     static String GetHTTPNonProxyHosts();
     static int32 GetHTTPProxyPort();
-    static ScreenInfo& GetScreenInfo();
     static int32 GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
-    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
     static String GetCarrierName();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
+
+#if !defined(__DAVAENGINE_COREV2__)
+    static ScreenInfo& GetScreenInfo();
+    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
+#endif
 
     // Override real gpu family
     static void SetOverridenGPU(eGPUFamily newGPU);

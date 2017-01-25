@@ -1,13 +1,18 @@
 #ifndef __RHI_SHADERSOURCE_H__
 #define __RHI_SHADERSOURCE_H__
 
-    #include "rhi_Type.h"
-    #include "Base/BaseTypes.h"    
-    #include "Base/FastName.h"
+#include "rhi_Type.h"
+#include "Base/BaseTypes.h"    
+#include "Base/FastName.h"
 
 namespace DAVA
 {
 class File;
+}
+
+namespace sl
+{
+class HLSLTree;
 }
 
 namespace rhi
@@ -32,19 +37,17 @@ ShaderProp
         PRECISION_HALF,
         PRECISION_LOW
     };
-    //    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
-    enum Storage
+    enum Source
     {
-        STORAGE_STATIC,
-        STORAGE_DYNAMIC
+        SOURCE_AUTO,
+        SOURCE_MATERIAL
     };
 
     FastName uid;
     Type type;
     Precision precision;
     uint32 arraySize;
-    //    Scope       scope;
-    Storage storage;
+    Source source;
     FastName tag;
     uint32 bufferindex;
     uint32 bufferReg;
@@ -72,43 +75,44 @@ public:
     ~ShaderSource();
 
     bool Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines);
+    void InlineFunctions();
     bool Construct(ProgType progType, const char* srcText);
-    bool Load(DAVA::File* in);
-    bool Save(DAVA::File* out) const;
+    bool Load(Api api, DAVA::File* in);
+    bool Save(Api api, DAVA::File* out) const;
 
-    const char* SourceCode() const;
+    const DAVA::String& GetSourceCode(Api targetApi) const;
     const ShaderPropList& Properties() const;
     const ShaderSamplerList& Samplers() const;
     const VertexLayout& ShaderVertexLayout() const;
     uint32 ConstBufferCount() const;
     uint32 ConstBufferSize(uint32 bufIndex) const;
-    //    ShaderProp::Scope       ConstBufferScope( uint32 bufIndex ) const;
-    ShaderProp::Storage ConstBufferStorage(uint32 bufIndex) const;
+    ShaderProp::Source ConstBufferSource(uint32 bufIndex) const;
     BlendState Blending() const;
 
     void Dump() const;
 
 private:
-    void _Reset();
-    void _AppendLine(const char* line, size_t lineLen);
+    void Reset();
+    bool ProcessMetaData(sl::HLSLTree* ast);
 
     struct
     buf_t
     {
-        //        ShaderProp::Scope   scope;
-        ShaderProp::Storage storage;
+        ShaderProp::Source source;
         FastName tag;
         uint32 regCount;
         std::vector<int> avlRegIndex;
+        bool isArray;
     };
 
-    std::string fileName;
+    DAVA::String fileName;
+    sl::HLSLTree* ast;
+    mutable DAVA::String code[RHI_API_COUNT];
 
     ProgType type;
-    std::string code;
     uint32 codeLineCount;
-    VertexLayout vdecl;
-    std::vector<ShaderProp> prop;
+    VertexLayout vertexLayout;
+    std::vector<ShaderProp> property;
     std::vector<buf_t> buf;
     std::vector<ShaderSampler> sampler;
     BlendState blending;
@@ -119,7 +123,7 @@ ShaderSourceCache
 {
 public:
     static const ShaderSource* Get(FastName uid, uint32 srcHash);
-    static void Update(FastName uid, uint32 srcHash, const ShaderSource& source);
+    static const ShaderSource* Add(const char* filename, FastName uid, ProgType progType, const char* srcText, const std::vector<std::string>& defines);
 
     static void Clear();
     static void Save(const char* fileName);
@@ -130,6 +134,7 @@ private:
     entry_t
     {
         FastName uid;
+        uint32 api;
         uint32 srcHash;
         ShaderSource* src;
     };

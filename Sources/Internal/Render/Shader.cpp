@@ -1,6 +1,7 @@
 #include "Render/Shader.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RenderBase.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -160,10 +161,24 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     for (auto& prop : vSource->Properties())
     {
+        if (prop.bufferindex >= vertexConstBuffersCount)
+        {
+            Logger::Error("[UpdateConfigFromSource] Invalid vertex const-buffer index. Index: %u, Count: %u", prop.bufferindex, vertexConstBuffersCount);
+            Logger::Error("Shader source code:");
+            Logger::Error("%s", vSource->GetSourceCode(rhi::HostApi()).c_str());
+        }
+
         bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
     }
     for (auto& prop : fSource->Properties())
     {
+        if (prop.bufferindex >= fragmentConstBuffersCount)
+        {
+            Logger::Error("[UpdateConfigFromSource] Invalid fragment const-buffer index. Index: %u, Count: %u", prop.bufferindex, fragmentConstBuffersCount);
+            Logger::Error("Shader source code:");
+            Logger::Error("%s", fSource->GetSourceCode(rhi::HostApi()).c_str());
+        }
+
         bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
     }
     for (uint32 i = 0, sz = static_cast<uint32>(constBuffers.size()); i < sz; ++i)
@@ -172,13 +187,13 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;
             constBuffers[i].targetSlot = i;
-            constBuffers[i].updateType = vSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = vSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
         else
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Fragment;
             constBuffers[i].targetSlot = i - vertexConstBuffersCount;
-            constBuffers[i].updateType = fSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = fSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
 
         constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
@@ -186,7 +201,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
     {
-        if (constBuffers[i].updateType == rhi::ShaderProp::STORAGE_DYNAMIC)
+        if (constBuffers[i].updateType == rhi::ShaderProp::SOURCE_AUTO)
         {
             rhi::HConstBuffer dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)

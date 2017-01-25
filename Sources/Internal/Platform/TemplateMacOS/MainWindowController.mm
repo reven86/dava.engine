@@ -1,6 +1,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #import "Platform/TemplateMacOS/MainWindowController.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -15,101 +16,6 @@ using namespace DAVA;
 @end
 
 @implementation DavaApp
-- (void)sendEvent:(NSEvent*)theEvent
-{
-    // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
-    if ([theEvent type] == NSKeyDown)
-    {
-        int cmdOrCmdWithCaps = ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
-        if ((cmdOrCmdWithCaps == NSCommandKeyMask) || (cmdOrCmdWithCaps == (NSCommandKeyMask | NSAlphaShiftKeyMask)))
-        {
-            if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"x"])
-            {
-                if ([self sendAction:@selector(cut:) to:nil from:self])
-                    return;
-            }
-            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"c"])
-            {
-                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
-                    return;
-            }
-            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"])
-            {
-                // HACK if user trying to paste text into textfield
-                // we have to check room for it
-                // and if no more room skip paste operation here
-                // because some time NSFormatter not called
-                NSResponder* view = [[NSApp keyWindow] firstResponder];
-                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
-                if (focused != nullptr)
-                {
-                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
-                    if (tf)
-                    {
-                        DAVA::WideString text = tf->GetText();
-                        int size = tf->GetMaxLength();
-                        int textSize = static_cast<int>(text.length());
-                        if (size > 0 && size > (textSize + 1))
-                        {
-                            if ([self sendAction:@selector(paste:) to:view from:self])
-                                return;
-                        }
-                        else
-                        {
-                            // skip paste into no room textfield
-                        }
-                    }
-                }
-                else
-                {
-                    if ([self sendAction:@selector(paste:) to:view from:self])
-                        return;
-                }
-            }
-            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"z"])
-            {
-                if ([self sendAction:@selector(undo:) to:nil from:self])
-                    return;
-            }
-            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"a"])
-            {
-                if ([self sendAction:@selector(selectAll:) to:nil from:self])
-                    return;
-            }
-        }
-    }
-
-    // HACK first part if any textfield(native) is focused send keyUp and keyDown events to
-    // openGLView manualy but only if current event not change focus control
-    // need for client battle chat work and other textfield without modifications
-    DAVA::UIControl* focusedCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
-
-    // http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
-    [super sendEvent:theEvent];
-    if (theEvent.modifierFlags & NSCommandKeyMask)
-    {
-        if (theEvent.type == NSKeyUp)
-        {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
-        }
-    }
-
-    // HACK second part
-    DAVA::UIControl* focusedAfterCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
-
-    if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
-    {
-        DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
-        if (tf && tf->IsEditing())
-        {
-            if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
-            {
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKey" object:theEvent];
-            }
-        }
-    }
-}
-
 @end
 
 extern void FrameworkDidLaunched();
@@ -119,6 +25,8 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    Assert::SetupDefaultHandlers();
+
     NSAutoreleasePool* globalPool = 0;
     globalPool = [[NSAutoreleasePool alloc] init];
     CoreMacOSPlatform* core = new CoreMacOSPlatform();
@@ -133,7 +41,7 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
         delegateClass = NSClassFromString(@"HelperAppDelegate");
     }
 
-    DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
+    DVASSERT(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
 
     HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
 
@@ -191,8 +99,6 @@ int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
 - (void)windowWillMiniaturize:(NSNotification*)notification;
 - (void)windowDidMiniaturize:(NSNotification*)notification;
 - (void)windowDidDeminiaturize:(NSNotification*)notification;
-- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
-- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification;
 
 - (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
@@ -235,15 +141,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         assertionID = kIOPMNullAssertionID;
         willQuit = false;
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(OnKeyUpDuringCMDHold:)
-                                                     name:@"DavaKeyUp"
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(OnKeyDuringTextFieldInFocus:)
-                                                     name:@"DavaKey"
-                                                   object:nil];
-
         [self allowDisplaySleep:false];
     }
     return self;
@@ -282,7 +179,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
     if (result != kIOReturnSuccess)
     {
-        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        DVASSERT(false, "IOPM Assertion manipulation failed");
         return;
     }
 }
@@ -419,25 +316,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     Core::Instance()->GetApplicationCore()->OnExitFullscreen();
 }
 
-- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
-{
-    [self keyUp:static_cast<NSEvent*>([notification object])];
-}
-
-- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
-{
-    NSEvent* theEvent = static_cast<NSEvent*>([notification object]);
-
-    if (theEvent.type == NSKeyDown)
-    {
-        [self keyDown:theEvent];
-    }
-    else if (theEvent.type == NSKeyUp)
-    {
-        [self keyUp:theEvent];
-    }
-}
-
 - (bool)isFullScreen
 {
     return fullScreen;
@@ -454,12 +332,21 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
             [mainWindowController->mainWindow toggleFullScreen:nil];
+
+            if (_fullScreen)
+            {
+                // If we're entering fullscreen we want our app to also become focused
+                // To handle cases when app is being opened with fullscreen mode,
+                // but another app gets focus before our app's window is created, thus ignoring any input afterwards
+                [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+            }
+
             return YES;
         }
         else
         {
             // fullscreen for older macOS isn't supperted
-            DVASSERT_MSG(false, "Fullscreen isn't supported for this MacOS version");
+            DVASSERT(false, "Fullscreen isn't supported for this MacOS version");
             return NO;
         }
     }

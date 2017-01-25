@@ -38,15 +38,23 @@ public class DataConnectionStateListener extends PhoneStateListener {
 
     public String GetCarrierName()
     {
-        TelephonyManager manager;
+        String carrierName = "unknown";
+
+        TelephonyManager tm;
         if (JNIActivity.GetActivity() != null)
         {
-            manager = (TelephonyManager)JNIActivity.GetActivity().getSystemService(Context.TELEPHONY_SERVICE);
+            tm = (TelephonyManager)JNIActivity.GetActivity().getSystemService(Context.TELEPHONY_SERVICE);
         }
         else
         {
-            manager = (TelephonyManager)DavaActivity.instance().getSystemService(Context.TELEPHONY_SERVICE);
+            tm = (TelephonyManager)DavaActivity.instance().getSystemService(Context.TELEPHONY_SERVICE);
         }
-        return manager.getSimOperatorName();
+
+        if (tm != null && tm.getSimOperatorName() != null)
+        {
+            carrierName = tm.getSimOperatorName();
+        }
+
+        return carrierName;
     }
 }

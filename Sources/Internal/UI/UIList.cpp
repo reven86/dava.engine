@@ -33,7 +33,6 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , orientation(requiredOrientation)
     , scrollContainer(NULL)
     , scroll(NULL)
-    , aggregatorPath(FilePath())
 {
     InitAfterYaml();
 }
@@ -128,8 +127,8 @@ UIListDelegate* UIList::GetDelegate()
 
 void UIList::ScrollToElement(int32 index)
 {
-    DVASSERT(delegate)
-    DVASSERT(0 <= index && index < delegate->ElementsCount(this))
+    DVASSERT(delegate);
+    DVASSERT(0 <= index && index < delegate->ElementsCount(this));
     float32 newScrollPos = 0.0f;
     if (orientation == ORIENTATION_HORIZONTAL)
     {
@@ -459,11 +458,19 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        if (UIEvent::Device::MOUSE == currentInput->device)
+        if (eInputDevices::MOUSE == currentInput->device)
         {
-            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            // In horizontal list also work horizontal wheel
+            if (!FLOAT_EQUAL(currentInput->wheelDelta.x, 0.f) && ORIENTATION_HORIZONTAL == orientation)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
         }
-        else // UIEvent::Phase::TOUCH_PAD
+        else // eInputDevices::TOUCH_PAD
         {
             if (ORIENTATION_HORIZONTAL == orientation)
             {
@@ -501,6 +508,7 @@ void UIList::Input(UIEvent* currentInput)
     }
     break;
     case UIEvent::Phase::ENDED:
+    case UIEvent::Phase::CANCELLED:
     {
         lockTouch = false;
         mainTouch = -1;
@@ -559,7 +567,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
                 }
             }
         }
-        else if (currentInput->touchId == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
+        else if (currentInput->touchId == mainTouch && (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED))
         {
             mainTouch = -1;
             lockTouch = false;
@@ -568,6 +576,14 @@ bool UIList::SystemInput(UIEvent* currentInput)
     }
 
     return UIControl::SystemInput(currentInput);
+}
+
+void UIList::InputCancelled(UIEvent* currentInput)
+{
+    lockTouch = false;
+    mainTouch = -1;
+
+    UIControl::InputCancelled(currentInput);
 }
 
 void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerData)
@@ -704,18 +720,7 @@ void UIList::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
-    aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
-}
-
-const FilePath& UIList::GetAggregatorPath()
-{
-    return aggregatorPath;
-}
-
-void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
-{
-    this->aggregatorPath = aggregatorPath;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)
@@ -741,10 +746,5 @@ void UIList::OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition
 void UIList::ScrollToPosition(float32 position, float32 timeSec /*= 0.3f*/)
 {
     scroll->ScrollToPosition(-position);
-}
-
-const String UIList::GetDelegateControlPath(const UIControl* rootControl) const
-{
-    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 };

@@ -1,32 +1,8 @@
-#include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_DX11.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_dx11.h"
+#include "rhi_DX11.h"
+#include "../Common/rhi_FormatConversion.h"
 
 namespace rhi
 {
-//==============================================================================
-
-struct RenderTargetViewDX11_t
-{
-    ID3D11RenderTargetView* view = nullptr;
-    uint32 level = 0;
-    TextureFace face = TEXTURE_FACE_NEGATIVE_X;
-
-    RenderTargetViewDX11_t(ID3D11RenderTargetView* v, uint32 l, TextureFace f)
-        : view(v)
-        , level(l)
-        , face(f)
-    {
-    }
-};
-
 struct TextureDX11_t
 {
     Texture::Descriptor descriptor;
@@ -40,85 +16,82 @@ struct TextureDX11_t
     ID3D11DepthStencilView* tex2d_dsv = nullptr;
     ID3D11Texture2D* tex2d_copy = nullptr;
     void* mappedData = nullptr;
-    std::vector<RenderTargetViewDX11_t> rt_view;
-
     bool isMapped = false;
 
+    struct RTView
+    {
+        ID3D11RenderTargetView* view = nullptr;
+        uint32 level = 0;
+        TextureFace face = TEXTURE_FACE_NEGATIVE_X;
+        RTView(ID3D11RenderTargetView* v, uint32 l, TextureFace f);
+    };
+    std::vector<RTView> rt_view;
     ID3D11RenderTargetView* getRenderTargetView(uint32 level, TextureFace face);
 };
+using TextureDX11Pool = ResourcePool<TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true>;
+RHI_IMPL_POOL(TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
+
+TextureDX11_t::RTView::RTView(ID3D11RenderTargetView* v, uint32 l, TextureFace f)
+    : view(v)
+    , level(l)
+    , face(f)
+{
+}
 
 ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, TextureFace face)
 {
-    ID3D11RenderTargetView* rtv = nullptr;
-
-    for (const RenderTargetViewDX11_t& v : rt_view)
+    for (const RTView& v : rt_view)
     {
         if (v.level == level && v.face == face)
+            return v.view;
+    }
+
+    D3D11_RENDER_TARGET_VIEW_DESC desc = {};
+    desc.Format = DX11_TextureFormat(descriptor.format);
+
+    if (arraySize == 6)
+    {
+        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+        desc.Texture2DArray.MipSlice = level;
+        desc.Texture2DArray.ArraySize = 1;
+
+        switch (face)
         {
-            rtv = v.view;
+        case TEXTURE_FACE_POSITIVE_X:
+            desc.Texture2DArray.FirstArraySlice = 0;
+            break;
+        case TEXTURE_FACE_NEGATIVE_X:
+            desc.Texture2DArray.FirstArraySlice = 1;
+            break;
+        case TEXTURE_FACE_POSITIVE_Y:
+            desc.Texture2DArray.FirstArraySlice = 2;
+            break;
+        case TEXTURE_FACE_NEGATIVE_Y:
+            desc.Texture2DArray.FirstArraySlice = 3;
+            break;
+        case TEXTURE_FACE_POSITIVE_Z:
+            desc.Texture2DArray.FirstArraySlice = 4;
+            break;
+        case TEXTURE_FACE_NEGATIVE_Z:
+            desc.Texture2DArray.FirstArraySlice = 5;
             break;
         }
     }
-
-    if (rtv == nullptr)
+    else
     {
-        D3D11_RENDER_TARGET_VIEW_DESC desc = {};
+        desc.ViewDimension = (descriptor.sampleCount > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+        if (descriptor.sampleCount == 1)
+            desc.Texture2D.MipSlice = level;
+    }
 
-        desc.Format = DX11_TextureFormat(descriptor.format);
-
-        if (arraySize == 6)
-        {
-            desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-            desc.Texture2DArray.MipSlice = level;
-            desc.Texture2DArray.ArraySize = 1;
-
-            switch (face)
-            {
-            case TEXTURE_FACE_POSITIVE_X:
-                desc.Texture2DArray.FirstArraySlice = 0;
-                break;
-            case TEXTURE_FACE_NEGATIVE_X:
-                desc.Texture2DArray.FirstArraySlice = 1;
-                break;
-            case TEXTURE_FACE_POSITIVE_Y:
-                desc.Texture2DArray.FirstArraySlice = 2;
-                break;
-            case TEXTURE_FACE_NEGATIVE_Y:
-                desc.Texture2DArray.FirstArraySlice = 3;
-                break;
-            case TEXTURE_FACE_POSITIVE_Z:
-                desc.Texture2DArray.FirstArraySlice = 4;
-                break;
-            case TEXTURE_FACE_NEGATIVE_Z:
-                desc.Texture2DArray.FirstArraySlice = 5;
-                break;
-            }
-        }
-        else
-        {
-            desc.ViewDimension = (descriptor.sampleCount > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-            if (descriptor.sampleCount == 1)
-            {
-                desc.Texture2D.MipSlice = level;
-            }
-        }
-
-        HRESULT hr = _D3D11_Device->CreateRenderTargetView(tex2d, &desc, &rtv);
-        CHECK_HR(hr)
-
-        if (SUCCEEDED(hr))
-        {
-            rt_view.emplace_back(rtv, level, face);
-        }
+    ID3D11RenderTargetView* rtv = nullptr;
+    if (DX11DeviceCommand(DX11Command::CREATE_RENDER_TARGET_VIEW, tex2d, &desc, &rtv))
+    {
+        rt_view.emplace_back(rtv, level, face);
     }
 
     return rtv;
 }
-
-typedef ResourcePool<TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX11Pool;
-RHI_IMPL_POOL(TextureDX11_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
-
-//------------------------------------------------------------------------------
 
 static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 {
@@ -138,8 +111,6 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     desc2d.SampleDesc.Quality = 0;
     desc2d.Usage = D3D11_USAGE_DEFAULT;
     desc2d.BindFlags = (desc.sampleCount > 1) ? D3D11_BIND_RENDER_TARGET : D3D11_BIND_SHADER_RESOURCE;
-    desc2d.CPUAccessFlags = 0; //D3D11_CPU_ACCESS_WRITE;
-    desc2d.MiscFlags = 0;
 
     DVASSERT(desc2d.Format != DXGI_FORMAT_UNKNOWN);
 
@@ -180,9 +151,9 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     D3D11_SUBRESOURCE_DATA data[128] = {};
     DVASSERT(countof(data) <= countof(desc.initialData));
 
-    for (unsigned s = 0; s != desc2d.ArraySize; ++s)
+    for (uint32 s = 0; s != desc2d.ArraySize; ++s)
     {
-        for (unsigned m = 0; m != desc.levelCount; ++m)
+        for (uint32 m = 0; m != desc.levelCount; ++m)
         {
             uint32 di = s * desc.levelCount + m;
             if (desc.initialData[di])
@@ -215,12 +186,9 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
         }
     }
 
-    ID3D11Texture2D* tex2d = nullptr;
-    HRESULT hr = _D3D11_Device->CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d);
-    CHECK_HR(hr)
-
     Handle handle = InvalidHandle;
-    if (SUCCEEDED(hr))
+    ID3D11Texture2D* tex2d = nullptr;
+    if (DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &desc2d, (useInitialData) ? data : nullptr, &tex2d))
     {
         handle = TextureDX11Pool::Alloc();
         TextureDX11_t* tex = TextureDX11Pool::Get(handle);
@@ -257,10 +225,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             }
 
             ID3D11ShaderResourceView* srv = nullptr;
-            hr = _D3D11_Device->CreateShaderResourceView(tex2d, &srv_desc, &srv);
-            CHECK_HR(hr)
-
-            if (SUCCEEDED(hr))
+            if (DX11DeviceCommand(DX11Command::CREATE_SHADER_RESOURCE_VIEW, tex2d, &srv_desc, &srv))
             {
                 tex->tex2d_srv = srv;
             }
@@ -269,15 +234,10 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
         if (need_copy)
         {
             ID3D11Texture2D* copy = nullptr;
-
             desc2d.Usage = D3D11_USAGE_STAGING;
             desc2d.BindFlags = 0;
             desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-
-            hr = _D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy);
-            CHECK_HR(hr)
-
-            if (SUCCEEDED(hr))
+            if (DX11DeviceCommand(DX11Command::CREATE_TEXTURE_2D, &desc2d, NULL, &copy))
             {
                 tex->tex2d_copy = copy;
             }
@@ -292,10 +252,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             dsv_desc.ViewDimension = (desc.sampleCount > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
             ID3D11DepthStencilView* dsv = nullptr;
-            hr = _D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv);
-            CHECK_HR(hr)
-
-            if (SUCCEEDED(hr))
+            if (DX11DeviceCommand(DX11Command::CREATE_DEPTH_STENCIL_VIEW, tex2d, &dsv_desc, &dsv))
             {
                 tex->tex2d_dsv = dsv;
             }
@@ -305,52 +262,31 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     return handle;
 }
 
-//------------------------------------------------------------------------------
-
-static void dx11_Texture_Delete(Handle tex)
+static void dx11_Texture_Delete(Handle tex, bool)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
-    if (self->tex2d_srv)
-    {
-        self->tex2d_srv->Release();
-        self->tex2d_srv = nullptr;
-    }
-
-    if (self->tex2d_dsv)
-    {
-        self->tex2d_dsv->Release();
-        self->tex2d_dsv = nullptr;
-    }
-
-    self->tex2d->Release();
-    self->tex2d = nullptr;
-
-    if (self->tex2d_copy)
-    {
-        self->tex2d_copy->Release();
-        self->tex2d_copy = nullptr;
-    }
-
-    for (const RenderTargetViewDX11_t& v : self->rt_view)
-    {
+    for (const TextureDX11_t::RTView& v : self->rt_view)
         v.view->Release();
-    }
-    self->rt_view.clear();
 
     if (self->mappedData)
-    {
-        ::free(self->mappedData);
-        self->mappedData = nullptr;
-    }
+        free(self->mappedData);
+
+    DAVA::SafeRelease(self->tex2d_srv);
+    DAVA::SafeRelease(self->tex2d_dsv);
+    DAVA::SafeRelease(self->tex2d);
+    DAVA::SafeRelease(self->tex2d_copy);
+    self->tex2d_srv = nullptr;
+    self->tex2d_dsv = nullptr;
+    self->tex2d = nullptr;
+    self->tex2d_copy = nullptr;
+    self->mappedData = nullptr;
+    self->rt_view.clear();
 
     TextureDX11Pool::Free(tex);
 }
 
-//------------------------------------------------------------------------------
-
-static void*
-dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
+static void* dx11_Texture_Map(Handle tex, uint32 level, TextureFace face)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
@@ -364,14 +300,14 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
     {
         DVASSERT(self->tex2d_copy);
 
-        D3D11_MAPPED_SUBRESOURCE res = { 0 };
+        D3D11_MAPPED_SUBRESOURCE res = {};
         DX11Command cmd[] =
         {
-          { DX11Command::COPY_RESOURCE, { uint64(self->tex2d_copy), uint64(self->tex2d) } },
-          { DX11Command::MAP, { uint64(self->tex2d_copy), 0, D3D11_MAP_READ, 0, uint64(&res) } }
+          { DX11Command::COPY_RESOURCE, self->tex2d_copy, self->tex2d },
+          { DX11Command::MAP, self->tex2d_copy, 0, D3D11_MAP_READ, 0, &res }
         };
         ExecDX11(cmd, countof(cmd));
-        CHECK_HR(cmd[1].retval);
+        DX11Check(cmd[1].retval);
 
         self->mappedData = res.pData;
         self->mappedLevel = level;
@@ -401,10 +337,7 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
     return self->mappedData;
 }
 
-//------------------------------------------------------------------------------
-
-static void
-dx11_Texture_Unmap(Handle tex)
+static void dx11_Texture_Unmap(Handle tex)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
@@ -418,12 +351,9 @@ dx11_Texture_Unmap(Handle tex)
     {
         DVASSERT(self->tex2d_copy);
 
-        D3D11_MAPPED_SUBRESOURCE res = { 0 };
-        DX11Command cmd[] =
-        {
-          { DX11Command::UNMAP, { uint64(self->tex2d_copy), 0 } }
-        };
-        ExecDX11(cmd, countof(cmd));
+        D3D11_MAPPED_SUBRESOURCE res = {};
+        DX11Command cmd(DX11Command::UNMAP, self->tex2d_copy, 0);
+        ExecDX11(&cmd, 1);
 
         self->isMapped = false;
         self->mappedData = nullptr;
@@ -477,7 +407,7 @@ dx11_Texture_Unmap(Handle tex)
             rc_i = self->mappedLevel;
         }
 
-        DX11Command cmd = { DX11Command::UPDATE_SUBRESOURCE, { uint64(self->tex2d), rc_i, NULL, uint64(self->mappedData), TextureStride(fmt, Size2i(w, h), self->mappedLevel), 0 } };
+        DX11Command cmd(DX11Command::UPDATE_SUBRESOURCE, self->tex2d, rc_i, NULL, self->mappedData, TextureStride(fmt, Size2i(w, h), self->mappedLevel), 0);
         ExecDX11(&cmd, 1);
         self->isMapped = false;
 
@@ -485,8 +415,6 @@ dx11_Texture_Unmap(Handle tex)
         self->mappedData = nullptr;
     }
 }
-
-//------------------------------------------------------------------------------
 
 void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 {
@@ -498,7 +426,10 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
     dx11_Texture_Unmap(tex);
 }
 
-//==============================================================================
+bool dx11_Texture_NeedRestore(Handle tex)
+{
+    return false;
+}
 
 namespace TextureDX11
 {
@@ -514,6 +445,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Map = &dx11_Texture_Map;
     dispatch->impl_Texture_Unmap = &dx11_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx11_Texture_Update;
+    dispatch->impl_Texture_NeedRestore = &dx11_Texture_NeedRestore;
 }
 
 void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
@@ -541,13 +473,15 @@ void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFac
 
     if (rt->lastUnit != DAVA::InvalidIndex)
     {
-        ID3D11ShaderResourceView* srv[1] = {};
-        context->PSSetShaderResources(rt->lastUnit, 1, srv);
+        ID3D11ShaderResourceView* srv[] = { nullptr };
+        context->PSSetShaderResources(rt->lastUnit, countof(srv), srv);
         rt->lastUnit = DAVA::InvalidIndex;
     }
 
-    ID3D11RenderTargetView* rtv = rt->getRenderTargetView(level, face);
-    context->OMSetRenderTargets(1, &rtv, (ds) ? ds->tex2d_dsv : (usesOwnDepthStencil ? nullptr : _D3D11_DepthStencilView));
+    ID3D11RenderTargetView* rtv[] = { rt->getRenderTargetView(level, face) };
+    ID3D11DepthStencilView* dsv = (ds == nullptr) ? (usesOwnDepthStencil ? nullptr : dx11.depthStencilView.Get()) : ds->tex2d_dsv;
+
+    context->OMSetRenderTargets(countof(rtv), rtv, dsv);
 }
 
 void SetAsDepthStencil(Handle tex)
@@ -572,10 +506,10 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     ID3D11Resource* toResource = nullptr;
     if (to == InvalidHandle)
     {
-        _D3D11_RenderTargetView->GetResource(&toResource);
+        dx11.renderTargetView->GetResource(&toResource);
 
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
-        _D3D11_RenderTargetView->GetDesc(&desc);
+        dx11.renderTargetView->GetDesc(&desc);
         DVASSERT(desc.Format = fromFormat);
     }
     else
@@ -591,7 +525,6 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     UINT fromIndex = D3D11CalcSubresource(0, 0, 1);
     context->ResolveSubresource(toResource, toIndex, fromResource, fromIndex, fromFormat);
 
-    fromResource->Release();
     toResource->Release();
 }
 }

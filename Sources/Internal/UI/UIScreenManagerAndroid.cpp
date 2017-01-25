@@ -21,14 +21,14 @@ UIScreenManager::~UIScreenManager()
     {
         if (it->second.type == Screen::TYPE_SCREEN)
         {
-            ((UIScreen*)it->second.value)->UnloadGroup();
+            (static_cast<UIScreen*>(it->second.value)->UnloadGroup());
             //			it->second.type == Screen::TYPE_NULL;
             releaseBuf.push_back(it->second);
         }
     }
     for (Vector<Screen>::const_iterator it = releaseBuf.begin(); it != releaseBuf.end(); it++)
     {
-        ((UIScreen*)it->value)->Release();
+        (static_cast<UIScreen*>(it->value)->Release());
     }
 }
 
@@ -40,7 +40,7 @@ void UIScreenManager::SetFirst(int screenId)
     if (screen.type == Screen::TYPE_SCREEN)
     {
         activeScreenId = screenId;
-        UIControlSystem::Instance()->SetScreen((UIScreen*)screen.value);
+        UIControlSystem::Instance()->SetScreen(static_cast<UIScreen*>(screen.value));
     }
     else
     {
@@ -57,7 +57,7 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
     if (screen.type == Screen::TYPE_SCREEN)
     {
         activeScreenId = screenId;
-        UIControlSystem::Instance()->SetScreen((UIScreen*)screen.value, transition);
+        UIControlSystem::Instance()->SetScreen(static_cast<UIScreen*>(screen.value), transition);
     }
 
     Logger::Debug("[ScreenManager::SetScreen] done");
@@ -79,7 +79,7 @@ UIScreen* UIScreenManager::GetScreen(int screenId)
     Screen& screen = screens[screenId];
     if (screen.type == Screen::TYPE_SCREEN)
     {
-        return (UIScreen*)screen.value;
+        return static_cast<UIScreen*>(screen.value);
     }
     return NULL;
 }

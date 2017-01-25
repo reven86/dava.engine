@@ -404,7 +404,7 @@ Entity* Entity::Clone(Entity* dstNode)
 {
     if (!dstNode)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
+        DVASSERT(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
         dstNode = new Entity();
     }
 
@@ -618,9 +618,6 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
 
     const Matrix4& localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
     SetLocalTransform(localTransform);
-
-    /// InvalidateLocalTransform();
-    //    debugFlags = archive->GetUInt32("debugFlags", 0);
 
     KeyedArchive* compsArch = archive->GetArchive("components");
 

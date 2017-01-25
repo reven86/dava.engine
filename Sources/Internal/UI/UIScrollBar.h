@@ -19,10 +19,6 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar* forScrollBar) = 0;
     virtual float32 ViewPosition(UIScrollBar* forScrollBar) = 0;
     virtual void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) = 0;
-    virtual const String GetDelegateControlPath(const UIControl* rootControl) const
-    {
-        return String();
-    }; // TODO!! TEMP SOLUTION, CHECK WITH AUTHOR!
 };
 
 class UIScrollBar : public UIControl
@@ -42,7 +38,6 @@ public:
     UIScrollBar(const Rect& rect = Rect(), eScrollOrientation requiredOrientation = ORIENTATION_VERTICAL);
 
     void SetDelegate(UIScrollBarDelegate* newDelegate);
-    const String GetDelegatePath(const UIControl* rootControl) const;
     UIControl* GetSlider();
 
     void Draw(const UIGeometricData& geometricData) override;

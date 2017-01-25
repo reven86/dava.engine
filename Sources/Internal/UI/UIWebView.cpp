@@ -1,7 +1,6 @@
 #include "UIWebView.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 #include "Engine/Engine.h"
 
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
@@ -55,7 +54,7 @@ void UIWebView::OpenFile(const FilePath& path)
     // the reference type file:// is not supported in Windows 10
     // for security reasons
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
-    DVASSERT_MSG(file, "[UIWebView] Failed to open file");
+    DVASSERT(file, "[UIWebView] Failed to open file");
     String data;
     if (file && file->ReadString(data) > 0)
     {

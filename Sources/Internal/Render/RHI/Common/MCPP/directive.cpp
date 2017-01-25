@@ -51,8 +51,6 @@
 
 static int do_if(int hash, const char* directive_name);
 /* #if, #elif, #ifdef, #ifndef      */
-static void sync_linenum(void);
-/* Synchronize number of newlines   */
 static long do_line(void);
 /* Process #line directive          */
 static int get_parm(void);
@@ -289,11 +287,6 @@ void directive(void)
         hash = L_if;
     ifdo:
         c = do_if(hash, tp);
-        if (mcpp_debug & IF)
-        {
-            mcpp_fprintf(MCPP_DBG, "#if (#elif, #ifdef, #ifndef) evaluate to %s.\n", compiling ? "TRUE" : "FALSE");
-            mcpp_fprintf(MCPP_DBG, "line %ld: %s", src_line, infile->buffer);
-        }
         if (c == FALSE)
         { /* Error                */
             compiling = FALSE; /* Skip this group      */
@@ -322,11 +315,6 @@ void directive(void)
             else
                 compiling = TRUE;
         }
-        if ((mcpp_debug & MACRO_CALL) && (ifptr->stat & WAS_COMPILING))
-        {
-            sync_linenum();
-            mcpp_fprintf(MCPP_OUT, "/*else %ld:%c*/\n", src_line, compiling ? 'T' : 'F'); /* Show that #else is seen  */
-        }
         break;
 
     case L_endif:
@@ -342,12 +330,6 @@ void directive(void)
         if (!compiling && (ifptr->stat & WAS_COMPILING))
             wrong_line = TRUE;
         compiling = (ifptr->stat & WAS_COMPILING);
-        if ((mcpp_debug & MACRO_CALL) && compiling)
-        {
-            sync_linenum();
-            mcpp_fprintf(MCPP_OUT, "/*endif %ld*/\n", src_line);
-            /* Show that #if block has ended    */
-        }
         --ifptr;
         break;
 
@@ -500,17 +482,10 @@ static int do_if(int hash, const char* directive_name)
         cerror(no_arg, NULL, 0L, NULL);
         return FALSE;
     }
-    if (mcpp_debug & MACRO_CALL)
-    {
-        sync_linenum();
-        mcpp_fprintf(MCPP_OUT, "/*%s %ld*/", directive_name, src_line);
-    }
     if (hash == L_if)
     { /* #if or #elif             */
         unget_ch();
         found = (eval_if() != 0L); /* Evaluate expression      */
-        if (mcpp_debug & MACRO_CALL)
-            in_if = FALSE; /* 'in_if' is dynamically set in eval_lex() */
         hash = L_ifdef; /* #if is now like #ifdef   */
     }
     else
@@ -521,11 +496,6 @@ static int do_if(int hash, const char* directive_name)
             return FALSE; /* Next token is not an identifier  */
         }
         found = ((defp = look_id(identifier)) != NULL); /* Look in table*/
-        if (mcpp_debug & MACRO_CALL)
-        {
-            if (found)
-                mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
-        }
     }
     if (found == (hash == L_ifdef))
     {
@@ -536,30 +506,7 @@ static int do_if(int hash, const char* directive_name)
     {
         compiling = FALSE;
     }
-    if (mcpp_debug & MACRO_CALL)
-    {
-        mcpp_fprintf(MCPP_OUT, "/*i %c*/\n", compiling ? 'T' : 'F');
-        /* Report wheather the directive is evaluated TRUE or FALSE */
-    }
     return TRUE;
-}
-
-static void sync_linenum(void)
-/*
- * Put out newlines or #line line to synchronize line number with the
- * annotations about #if, #elif, #ifdef, #ifndef, #else or #endif on -K option.
- */
-{
-    if (wrong_line || newlines > 10)
-    {
-        sharp(NULL, 0);
-    }
-    else
-    {
-        while (newlines-- > 0)
-            mcpp_fputc('\n', MCPP_OUT);
-    }
-    newlines = -1;
 }
 
 static long do_line(void)
@@ -807,13 +754,10 @@ int predefine /* Predefine compiler-specific name */
     int redefined; /* TRUE if redefined    */
     int dnargs = 0; /* defp->nargs          */
     int cmp; /* Result of name comparison    */
-    size_t def_start, def_end; /* Column of macro definition   */
 
     repl_base = repl_list;
     repl_end = &repl_list[NMACWORK];
     c = skip_ws();
-    if ((mcpp_debug & MACRO_CALL) && src_line) /* Start of definition  */
-        def_start = infile->bptr - infile->buffer - 1;
     if (c == '\n')
     {
         cerror(no_ident, NULL, 0L, NULL);
@@ -888,16 +832,6 @@ int predefine /* Predefine compiler-specific name */
         in_define = FALSE;
         return NULL; /* Syntax error         */
     }
-    if ((mcpp_debug & MACRO_CALL) && src_line)
-    {
-        /* Remember location on source  */
-        char* cp;
-        cp = infile->bptr - 1; /* Before '\n'          */
-        while (char_type[*cp & UCHARMAX] & HSP)
-            cp--; /* Trailing space       */
-        cp++; /* Just after the last token    */
-        def_end = cp - infile->buffer; /* End of definition    */
-    }
 
     in_define = FALSE;
     if (redefined)
@@ -918,21 +852,6 @@ int predefine /* Predefine compiler-specific name */
         }
     } /* Else new or re-definition*/
     defp = install_macro(macroname, nargs, work_buf, repl_list, prevp, cmp, predefine);
-    if ((mcpp_debug & MACRO_CALL) && src_line)
-    {
-        /* Get location on source file  */
-        LINE_COL s_line_col, e_line_col;
-        s_line_col.line = src_line;
-        s_line_col.col = def_start;
-        get_src_location(&s_line_col);
-        /* Convert to pre-line-splicing data    */
-        e_line_col.line = src_line;
-        e_line_col.col = def_end;
-        get_src_location(&e_line_col);
-        /* Putout the macro definition information embedded in comment  */
-        mcpp_fprintf(MCPP_OUT, "/*m%s %ld:%d-%ld:%d*/\n", defp->name, s_line_col.line, s_line_col.col, e_line_col.line, e_line_col.col);
-        wrong_line = TRUE; /* Need #line later */
-    }
     if (mcpp_mode == STD && cplus_val && id_operator(macroname) && (warn_level & 1))
         /* These are operators, not identifiers, in C++98   */
         cwarn("\"%s\" is defined as macro", macroname /* _W1_ */
@@ -1652,12 +1571,6 @@ const char* name /* Name of the macro    */
     if (standard && dp->push)
         return FALSE; /* 'Pushed' macro           */
     *prevp = dp->link; /* Link the previous and the next   */
-    if ((mcpp_debug & MACRO_CALL) && dp->mline)
-    {
-        /* Notice this directive unless the macro is predefined     */
-        mcpp_fprintf(MCPP_OUT, "/*undef %ld*//*%s*/\n", src_line, dp->name);
-        wrong_line = TRUE;
-    }
     xfree(dp); /* Delete the definition    */
     if (standard)
         num_of_macro--;

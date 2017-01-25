@@ -92,7 +92,7 @@ private:
     struct CustomGeometryEntityData
     {
         Vector<CustomGeometryLayerData> lods;
-        NMaterial* material;
+        NMaterial* material = nullptr;
 
         CustomGeometryEntityData();
         CustomGeometryEntityData(const CustomGeometryEntityData& src);

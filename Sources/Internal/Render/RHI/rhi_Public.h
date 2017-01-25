@@ -1,7 +1,7 @@
 #ifndef __RHI_PUBLIC_H__
 #define __RHI_PUBLIC_H__
 
-    #include "rhi_Type.h"
+#include "rhi_Type.h"
 
 namespace DAVA
 {
@@ -13,19 +13,18 @@ namespace rhi
 ////////////////////////////////////////////////////////////////////////////////
 // base operation
 
-struct
-InitParam
+struct InitParam
 {
     uint32 width;
     uint32 height;
     float32 scaleX;
     float32 scaleY;
     void* window;
+    void* defaultFrameBuffer;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
     uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
-    DAVA::Mutex* FrameCommandExecutionSync;
 
     uint32 maxIndexBufferCount;
     uint32 maxVertexBufferCount;
@@ -42,8 +41,11 @@ InitParam
 
     uint32 shaderConstRingBufferSize;
 
-    void (*acquireContextFunc)();
-    void (*releaseContextFunc)();
+    void (*acquireContextFunc)() = nullptr;
+    void (*releaseContextFunc)() = nullptr;
+
+    void* renderingErrorCallbackContext = nullptr;
+    void (*renderingErrorCallback)(RenderingError, void*) = nullptr;
 
     InitParam()
         : width(0)
@@ -51,11 +53,11 @@ InitParam
         , scaleX(1.f)
         , scaleY(1.f)
         , window(nullptr)
+        , defaultFrameBuffer(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
         , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
-        , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
         , maxVertexBufferCount(0)
         , maxConstBufferCount(0)
@@ -68,14 +70,11 @@ InitParam
         , maxCommandBuffer(0)
         , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
-        , acquireContextFunc(nullptr)
-        , releaseContextFunc(nullptr)
     {
     }
 };
 
-struct
-ResetParam
+struct ResetParam
 {
     uint32 width;
     uint32 height;
@@ -110,6 +109,7 @@ struct RenderDeviceCaps
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
     bool isInstancingSupported = false;
+    bool isPerfQuerySupported = false;
 
     RenderDeviceCaps()
     {
@@ -152,14 +152,16 @@ const RenderDeviceCaps& DeviceCaps();
 void SuspendRendering();
 void ResumeRendering();
 
+//notify rendering backend that some explicit code can do some rendering not using rhi and thus leave rendering api in different state
+//eg: QT in RE/QuickEd do some opengl calls itself, thus values cached in rhi backend not correspond with actual state of opengl and should be invalidated
 void InvalidateCache();
+void SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
 
 template <ResourceType T>
-class
-ResourceHandle
+class ResourceHandle
 {
 public:
     ResourceHandle()
@@ -189,7 +191,7 @@ private:
 typedef ResourceHandle<RESOURCE_VERTEX_BUFFER> HVertexBuffer;
 
 HVertexBuffer CreateVertexBuffer(const VertexBuffer::Descriptor& desc);
-void DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate = false);
+void DeleteVertexBuffer(HVertexBuffer vb, bool scheduleDeletion = true);
 
 void* MapVertexBuffer(HVertexBuffer vb, uint32 offset, uint32 size);
 void UnmapVertexBuffer(HVertexBuffer vb);
@@ -204,7 +206,7 @@ bool NeedRestoreVertexBuffer(HVertexBuffer vb);
 typedef ResourceHandle<RESOURCE_INDEX_BUFFER> HIndexBuffer;
 
 HIndexBuffer CreateIndexBuffer(const IndexBuffer::Descriptor& desc);
-void DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate = false);
+void DeleteIndexBuffer(HIndexBuffer ib, bool scheduleDeletion = true);
 
 void* MapIndexBuffer(HIndexBuffer ib, uint32 offset, uint32 size);
 void UnmapIndexBuffer(HIndexBuffer ib);
@@ -218,29 +220,27 @@ bool NeedRestoreIndexBuffer(HIndexBuffer vb);
 
 typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
 
-HQueryBuffer CreateQueryBuffer(unsigned maxObjectCount);
+HQueryBuffer CreateQueryBuffer(uint32 maxObjectCount);
 void ResetQueryBuffer(HQueryBuffer buf);
-void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
+void DeleteQueryBuffer(HQueryBuffer buf, bool scheduleDeletion = true);
 
 bool QueryBufferIsReady(HQueryBuffer buf);
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
 
 ////////////////////////////////////////////////////////////////////////////////
-// perfquery-set
+// perf-query
 
-typedef ResourceHandle<RESOURCE_PERFQUERY_SET> HPerfQuerySet;
+typedef ResourceHandle<RESOURCE_PERFQUERY> HPerfQuery;
 
-HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount);
-void DeletePerfQuerySet(HPerfQuerySet hset, bool forceImmediate = false);
+HPerfQuery CreatePerfQuery();
+void DeletePerfQuery(HPerfQuery handle, bool scheduleDeletion = true);
+void ResetPerfQuery(HPerfQuery handle);
 
-void ResetPerfQuerySet(HPerfQuerySet hset);
-void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid);
+bool PerfQueryIsReady(HPerfQuery);
+uint64 PerfQueryTimeStamp(HPerfQuery);
 
-bool PerfQuerySetIsValid(HPerfQuerySet hset);
-bool GetPerfQuerySetFreq(HPerfQuerySet hset, uint64* freq);
-bool GetPerfQuerySetTimestamp(HPerfQuerySet hset, uint32 timestampIndex, uint64* timestamp);
-bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1);
+void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery);
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
@@ -249,17 +249,17 @@ typedef ResourceHandle<RESOURCE_PIPELINE_STATE> HPipelineState;
 typedef ResourceHandle<RESOURCE_CONST_BUFFER> HConstBuffer;
 
 HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc);
-void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate = false);
+void ReleaseRenderPipelineState(HPipelineState rps, bool scheduleDeletion = true);
 
 HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 HConstBuffer CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount);
 bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount);
-void DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate = false);
+void DeleteConstBuffer(HConstBuffer constBuf, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 // texture-set
@@ -268,7 +268,7 @@ typedef ResourceHandle<RESOURCE_TEXTURE> HTexture;
 typedef ResourceHandle<RESOURCE_TEXTURE_SET> HTextureSet;
 
 HTexture CreateTexture(const Texture::Descriptor& desc);
-void DeleteTexture(HTexture tex, bool forceImmediate = false);
+void DeleteTexture(HTexture tex, bool scheduleDeletion = true);
 
 void* MapTexture(HTexture tex, uint32 level = 0);
 void UnmapTexture(HTexture tex);
@@ -277,24 +277,17 @@ void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace fac
 
 bool NeedRestoreTexture(HTexture tex);
 
-struct
-TextureSetDescriptor
+struct TextureSetDescriptor
 {
-    uint32 fragmentTextureCount;
+    uint32 fragmentTextureCount = 0;
+    uint32 vertexTextureCount = 0;
     HTexture fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    uint32 vertexTextureCount;
     HTexture vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
-
-    TextureSetDescriptor()
-        : fragmentTextureCount(0)
-        , vertexTextureCount(0)
-    {
-    }
 };
 
 HTextureSet AcquireTextureSet(const TextureSetDescriptor& desc);
 HTextureSet CopyTextureSet(HTextureSet ts);
-void ReleaseTextureSet(HTextureSet ts, bool forceImmediate = false);
+void ReleaseTextureSet(HTextureSet ts, bool scheduleDeletion = true);
 void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,7 +297,7 @@ typedef ResourceHandle<RESOURCE_DEPTHSTENCIL_STATE> HDepthStencilState;
 
 HDepthStencilState AcquireDepthStencilState(const DepthStencilState::Descriptor& desc);
 HDepthStencilState CopyDepthStencilState(HDepthStencilState ds);
-void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate = false);
+void ReleaseDepthStencilState(HDepthStencilState ds, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 //  sampler-state
@@ -313,7 +306,7 @@ typedef ResourceHandle<RESOURCE_SAMPLER_STATE> HSamplerState;
 
 HSamplerState AcquireSamplerState(const SamplerState::Descriptor& desc);
 HSamplerState CopySamplerState(HSamplerState ss);
-void ReleaseSamplerState(HSamplerState ss, bool forceImmediate = false);
+void ReleaseSamplerState(HSamplerState ss, bool scheduleDeletion = true);
 
 ////////////////////////////////////////////////////////////////////////////////
 // sync-object
@@ -332,8 +325,6 @@ HSyncObject GetCurrentFrameSyncObject();
 typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
 typedef ResourceHandle<RESOURCE_PACKET_LIST> HPacketList;
 
-void SetFramePerfQuerySet(HPerfQuerySet hset);
-
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
@@ -342,8 +333,7 @@ bool NeedInvertProjection(const RenderPassConfig& passDesc);
 ////////////////////////////////////////////////////////////////////////////////
 // rendering
 
-struct
-Packet
+struct Packet
 {
     enum
     {
@@ -373,7 +363,10 @@ Packet
     uint32 instanceCount;
     uint32 baseInstance;
     uint32 queryIndex;
+    HPerfQuery perfQueryStart;
+    HPerfQuery perfQueryEnd;
     uint32 options;
+    uint32 userFlags; //ignored by RHI
     const char* debugMarker;
 
     Packet()
@@ -387,12 +380,13 @@ Packet
         , cullMode(CULL_CCW)
         , vertexConstCount(0)
         , fragmentConstCount(0)
-        , primitiveCount(0)
         , primitiveType(PRIMITIVE_TRIANGLELIST)
+        , primitiveCount(0)
         , instanceCount(0)
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)
         , options(0)
+        , userFlags(0)
         , debugMarker(nullptr)
     {
     }
@@ -402,6 +396,9 @@ void BeginPacketList(HPacketList packetList);
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount);
 void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
+
+uint32 NativeColorRGBA(float r, float g, float b, float a = 1.0f);
+uint32 NativeColorRGBA(uint32 color); //0xAABBGGRR to api-native;
 
 } // namespace rhi
 

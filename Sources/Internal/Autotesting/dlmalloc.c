@@ -1,8 +1,12 @@
 #include "dlmalloc.h"
 
-/*------------------------------ internal #includes ---------------------- */
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code-break"
+#pragma clang diagnostic ignored "-Wunreachable-code-return"
+#endif
 
-#include "Base/Platform.h"
+/*------------------------------ internal #includes ---------------------- */
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4146) /* no "unsigned" warnings */
@@ -1733,7 +1737,7 @@ static int init_mparams(void)
 
 #ifndef WIN32
         psize = malloc_getpagesize;
-        gsize = ((DEFAULT_GRANULARITY != 0) ? DEFAULT_GRANULARITY : psize);
+        gsize = ((DEFAULT_GRANULARITY != /* DISABLES CODE */ (0)) ? DEFAULT_GRANULARITY : psize);
 #else /* WIN32 */
         {
             SYSTEM_INFO system_info;
@@ -4983,6 +4987,10 @@ int mspace_mallopt(int param_number, int value)
 }
 
 #endif /* MSPACES */
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 /* -------------------- Alternative MORECORE functions ------------------- */
 

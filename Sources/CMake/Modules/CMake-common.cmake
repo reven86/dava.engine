@@ -1,7 +1,15 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
+
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
 
 include ( GlobalVariables      )
 
@@ -36,6 +44,16 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 include ( Coverage             )
+include ( ModuleHelper         )
+
+#
+macro ( set_subsystem_console )
+    if( WIN32 )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE" )
+    endif()
+endmacro ()
 
 #
 macro ( set_project_files_properties FILES_LIST )
@@ -67,7 +85,75 @@ macro (enable_pch)
         endforeach ()
     endif ()
 endmacro ()
+#
+macro( processing_mix_data )
+    cmake_parse_arguments ( ARG "NOT_DATA_COPY"  "" "" ${ARGN} )
 
+    load_property( PROPERTY_LIST MIX_APP_DATA )
+    if( DEPLOY )
+        if( NOT DEPLOY_DIR_DATA )
+            if( MACOS AND NOT MAC_DISABLE_BUNDLE)
+                set( DEPLOY_DIR_DATA ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/Resources )
+            else()
+                set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
+            endif()
+        endif()
+
+        set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )        
+    else()
+        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
+    endif()
+    get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
+
+    foreach( ITEM ${MIX_APP_DATA} )
+        string( REGEX REPLACE " " "" ITEM ${ITEM} )
+        string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
+        list(GET ITEM 0 GROUP_PATH )
+        list(GET ITEM 1 DATA_PATH )
+        get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
+        if( NOT ARG_NOT_DATA_COPY )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+        endif()
+    endforeach()
+
+    if( NOT DEPLOY )
+        file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
+        foreach( ITEM ${LIST_FOLDER_ITEM} )
+            if( IS_DIRECTORY ${ITEM} )
+
+                if( MAC_DISABLE_BUNDLE AND MACOS)                    
+                    get_filename_component( FOLDER_NAME ${ITEM}  NAME     )
+                    foreach( CONFIGURATION ${CMAKE_CONFIGURATION_TYPES} )
+                        foreach( TMP_DATA_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CONFIGURATION} ${CMAKE_CURRENT_BINARY_DIR}/${CONFIGURATION}/Contents/Resources )
+                            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory  ${TMP_DATA_DIR} )
+                            if( NOT EXISTS ${TMP_DATA_DIR}/${FOLDER_NAME} )
+                                execute_process( COMMAND ln -s ${MIX_APP_DIR}/${FOLDER_NAME} ${TMP_DATA_DIR}/${FOLDER_NAME}  )
+                            endif()
+                        endforeach()
+                    endforeach()
+                else()
+                    list( APPEND RESOURCES_LIST  ${ITEM}  )
+                endif()
+            endif()
+        endforeach()
+    endif()
+
+endmacro ()
+
+macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
+    set(OUTPUT_LIST "")
+    foreach (LIB_FILE ${LIB_LIST})
+        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
+        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
+        if (${LIB_INDEX} EQUAL -1)
+            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
+        endif()
+    endforeach()
+    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
+    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
+endmacro()
 
 ##
 #in
@@ -130,7 +216,7 @@ macro (define_source)
         get_filename_component( ITEM_ARG_SOURCE ${ITEM_ARG_SOURCE} ABSOLUTE )
         get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  NAME_WE     )
         
-        if( IS_DIRECTORY ${ITEM_ARG_SOURCE} )                     
+        if( IS_DIRECTORY ${ITEM_ARG_SOURCE} )
             file( GLOB FIND_CMAKELIST "${ITEM_ARG_SOURCE}/CMakeLists.txt")
             if( FIND_CMAKELIST AND ARG_RECURSIVE_CALL )
                 set (${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP )
@@ -144,7 +230,13 @@ macro (define_source)
                 define_source( SOURCE ${LIST_SOURCE} IGNORE_ITEMS ${ARG_IGNORE_ITEMS} RECURSIVE_CALL true GROUP_SOURCE ${ARG_GROUP_SOURCE} )
             endif()
         else()
-            file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            string(FIND ${ITEM_ARG_SOURCE} "*" MASK_SYMBOL_FOUND)
+            if (${MASK_SYMBOL_FOUND} MATCHES -1)
+                set( LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            else()
+                file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            endif()
+
             foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
                 get_filename_component( ITEM_EXT ${ITEM_LIST_SOURCE} EXT )
                 set( IGNORE_FLAG )
@@ -168,7 +260,7 @@ macro (define_source)
             endforeach ()
         endif()
     endforeach ()
-    
+
     source_group( "" FILES ${PROJECT_SOURCE_FILES} )
     
     get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
@@ -230,11 +322,15 @@ macro (define_source)
                     endif()
                 endif()
 
-                list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
-                if (${_index} MATCHES -1)
-                    set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
-                    list( APPEND PROJECT_HEADER_FILE_ONLY ${ITEM_LIST_SOURCE} )
-                endif() 
+                string(FIND ${ITEM_LIST_SOURCE} ${CMAKE_BINARY_DIR} BINARY_DIR_FOUND)
+                if(${BINARY_DIR_FOUND} MATCHES -1)
+                    list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
+                    if (${_index} MATCHES -1 )
+                        set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
+                        list( APPEND PROJECT_HEADER_FILE_ONLY ${ITEM_LIST_SOURCE} )
+                    endif() 
+                endif()
+
             endforeach ()
             #message( " ")  
         endforeach ()  
@@ -522,13 +618,6 @@ macro(add_target_properties _target _name)
 endmacro()
 
 #
-function (append_property KEY_PROP  VALUE)
-    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
-    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
-    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
-endfunction()
-
 
 function (reset_property KEY_PROP )
     SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )
@@ -739,13 +828,6 @@ macro( convert_graphics )
     if( NOT ARG_PARAM_PACKER AND DEPLOY )
         set( ARG_PARAM_PACKER  "-teamcity" )
     endif()
-
-    execute_process( COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
-                                    --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource 
-                                    --pathDava=${DAVA_ROOT_DIR} 
-                                    --clearData=${ARG_CLEAR}
-                                    --paramPacker=${ARG_PARAM_PACKER}
-                                   )
 
 endmacro()
 

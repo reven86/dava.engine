@@ -29,15 +29,19 @@ public:
     String GetHTTPProxyHost();
     String GetHTTPNonProxyHosts();
     int32 GetHTTPProxyPort();
-    DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
     eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
     String GetCarrierName();
+
+#if !defined(__DAVAENGINE_COREV2__)
+    DeviceInfo::ScreenInfo screenInfo;
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    void InitializeScreenInfo();
+#endif
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
@@ -67,11 +71,7 @@ private:
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
     Function<jstring()> getCarrierName;
-    Function<jint()> getDefaultDisplayWidth;
-    Function<jint()> getDefaultDisplayHeight;
     Function<jbyte()> getGpuFamily;
-
-    DeviceInfo::ScreenInfo screenInfo;
 };
 };
 

@@ -20,8 +20,10 @@ using RGBA16161616 = RGBA_PIXEL(uint16, r, g, b, a);
 using ABGR16161616 = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32323232 = RGBA_PIXEL(uint32, r, g, b, a);
 using ABGR32323232 = RGBA_PIXEL(uint32, a, b, g, r);
-using RGBA16161616F = RGBA_PIXEL(uint16, r, g, b, a);
-using RGBA32323232F = RGBA_PIXEL(float32, r, g, b, a);
+using RGBA16F = RGBA_PIXEL(uint16, r, g, b, a);
+using ABGR16F = RGBA_PIXEL(uint16, a, b, g, r);
+using RGBA32F = RGBA_PIXEL(float32, r, g, b, a);
+using ABGR32F = RGBA_PIXEL(float32, a, b, g, r);
 
 #pragma pack(pop)
 
@@ -163,11 +165,35 @@ struct ConvertABGR16161616toRGBA16161616
     }
 };
 
+struct ConvertABGR16FtoRGBA16F
+{
+    inline void operator()(const ABGR16F* input, RGBA16F* output)
+    {
+        ABGR16F inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
 struct ConvertABGR32323232toRGBA32323232
 {
     inline void operator()(const ABGR32323232* input, RGBA32323232* output)
     {
         ABGR32323232 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
+struct ConvertABGR32FtoRGBA32F
+{
+    inline void operator()(const ABGR32F* input, RGBA32F* output)
+    {
+        ABGR32F inp = *input;
         output->r = inp.r;
         output->g = inp.g;
         output->b = inp.b;
@@ -440,11 +466,11 @@ struct ConvertBGRA32323232toRGBA32323232
 uint32 ChannelFloatToInt(float32 ch);
 float32 ChannelIntToFloat(uint32 ch);
 
-struct ConvertRGBA32323232FtoRGBA8888
+struct ConvertRGBA32FtoRGBA8888
 {
-    inline void operator()(const RGBA32323232F* input, uint32* output)
+    inline void operator()(const RGBA32F* input, uint32* output)
     {
-        RGBA32323232F inp = *input;
+        RGBA32F inp = *input;
         uint32 r = ChannelFloatToInt(inp.r);
         uint32 g = ChannelFloatToInt(inp.g);
         uint32 b = ChannelFloatToInt(inp.b);
@@ -453,17 +479,51 @@ struct ConvertRGBA32323232FtoRGBA8888
     }
 };
 
-struct ConvertRGBA16161616FtoRGBA8888
+struct ConvertRGBA8888toRGBA32F
 {
-    inline void operator()(const RGBA16161616F* input, uint32* output)
+    inline void operator()(const uint32* input, RGBA32F* output)
     {
-        RGBA32323232F input32;
+        uint32 pixel = *input;
+        uint32 a = (pixel >> 24) & 0xFF;
+        uint32 b = (pixel >> 16) & 0xFF;
+        uint32 g = (pixel >> 8) & 0xFF;
+        uint32 r = (pixel & 0xFF);
+
+        output->r = ChannelIntToFloat(r);
+        output->g = ChannelIntToFloat(g);
+        output->b = ChannelIntToFloat(b);
+        output->a = ChannelIntToFloat(a);
+    }
+};
+
+struct ConvertRGBA16FtoRGBA8888
+{
+    inline void operator()(const RGBA16F* input, uint32* output)
+    {
+        RGBA32F input32;
         input32.r = Float16Compressor::Decompress(input->r);
         input32.g = Float16Compressor::Decompress(input->g);
         input32.b = Float16Compressor::Decompress(input->b);
         input32.a = Float16Compressor::Decompress(input->a);
-        ConvertRGBA32323232FtoRGBA8888 convert32;
+        ConvertRGBA32FtoRGBA8888 convert32;
         convert32(&input32, output);
+    }
+};
+
+struct ConvertRGBA8888toRGBA16F
+{
+    inline void operator()(const uint32* input, RGBA16F* output)
+    {
+        uint32 pixel = *input;
+        uint32 a = (pixel >> 24) & 0xFF;
+        uint32 b = (pixel >> 16) & 0xFF;
+        uint32 g = (pixel >> 8) & 0xFF;
+        uint32 r = (pixel & 0xFF);
+
+        output->r = Float16Compressor::Compress(ChannelIntToFloat(r));
+        output->g = Float16Compressor::Compress(ChannelIntToFloat(g));
+        output->b = Float16Compressor::Compress(ChannelIntToFloat(b));
+        output->a = Float16Compressor::Compress(ChannelIntToFloat(a));
     }
 };
 
@@ -602,9 +662,9 @@ struct UnpackRGBA5551
     }
 };
 
-struct PackRGBA16161616F
+struct PackRGBA16F
 {
-    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA16161616F* out)
+    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA16F* out)
     {
         out->r = Float16Compressor::Compress(r);
         out->g = Float16Compressor::Compress(g);
@@ -613,9 +673,9 @@ struct PackRGBA16161616F
     }
 };
 
-struct UnpackRGBA16161616F
+struct UnpackRGBA16F
 {
-    inline void operator()(const RGBA16161616F* input, float32& r, float32& g, float32& b, float32& a)
+    inline void operator()(const RGBA16F* input, float32& r, float32& g, float32& b, float32& a)
     {
         r = Float16Compressor::Decompress(input->r);
         g = Float16Compressor::Decompress(input->g);
@@ -624,9 +684,9 @@ struct UnpackRGBA16161616F
     }
 };
 
-struct PackRGBA32323232F
+struct PackRGBA32F
 {
-    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA32323232F* out)
+    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA32F* out)
     {
         out->r = r;
         out->g = g;
@@ -635,9 +695,9 @@ struct PackRGBA32323232F
     }
 };
 
-struct UnpackRGBA32323232F
+struct UnpackRGBA32F
 {
-    inline void operator()(const RGBA32323232F* input, float32& r, float32& g, float32& b, float32& a)
+    inline void operator()(const RGBA32F* input, float32& r, float32& g, float32& b, float32& a)
     {
         r = input->r;
         g = input->g;
@@ -760,6 +820,9 @@ public:
         const uint8* readPtr = reinterpret_cast<const uint8*>(inData);
         uint8* writePtr = reinterpret_cast<uint8*>(outData);
 
+        const uint32 lineStride = (inHeight > outHeight) ? inWidth : 0;
+        const uint32 pixelStride = (inWidth > outWidth) ? 1 : 0;
+
         for (uint32 y = 0; y < outHeight; ++y)
         {
             const TYPE_IN* readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
@@ -773,9 +836,9 @@ public:
                 CHANNEL_TYPE a00, a01, a10, a11;
 
                 unpackFunc(readPtrLine, r00, g00, b00, a00);
-                unpackFunc(readPtrLine + 1, r01, g01, b01, a01);
-                unpackFunc(readPtrLine + inWidth, r10, g10, b10, a10);
-                unpackFunc(readPtrLine + inWidth + 1, r11, g11, b11, a11);
+                unpackFunc(readPtrLine + pixelStride, r01, g01, b01, a01);
+                unpackFunc(readPtrLine + lineStride, r10, g10, b10, a10);
+                unpackFunc(readPtrLine + lineStride + pixelStride, r11, g11, b11, a11);
 
                 CHANNEL_TYPE r = (r00 + r01 + r10 + r11) / 4;
                 CHANNEL_TYPE g = (g00 + g01 + g10 + g11) / 4;

@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #include "Engine/Engine.h"
 
@@ -17,8 +18,6 @@
 #include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/Private/UWP/TextFieldPlatformImplUWP.h"
-#elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
-#include "UI/Private/OSX/TextFieldPlatformImplMacOs.h"
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
@@ -28,27 +27,16 @@ class TextFieldPlatformImpl : public TextFieldStbImpl
 {
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    TextFieldPlatformImpl(Window* /*w*/, UITextField* uiTextField)
-        : TextFieldStbImpl(uiTextField)
-    {
-    }
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
+        : TextFieldStbImpl(w, uiTextField)
 #else
-    TextFieldPlatformImpl(UITextField* control)
-        : TextFieldStbImpl(control)
-    {
-    }
+    TextFieldPlatformImpl(UITextField* uiTextField)
+        : TextFieldStbImpl(uiTextField)
 #endif
-    void Initialize()
-    {
-    }
-    void OwnerIsDying()
-    {
-    }
-    void SetDelegate(UITextFieldDelegate*)
     {
     }
 };
-} // namespace DAVA
+}
 #endif
 
 namespace DAVA

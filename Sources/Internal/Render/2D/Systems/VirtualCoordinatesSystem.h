@@ -7,7 +7,12 @@
 
 namespace DAVA
 {
+
+#if !defined(__DAVAENGINE_COREV2__)
 class VirtualCoordinatesSystem : public Singleton<VirtualCoordinatesSystem>
+#else
+class VirtualCoordinatesSystem final
+#endif
 {
     struct ResourceSpaceSize
     {
@@ -36,6 +41,7 @@ public:
     inline const Size2i& GetVirtualScreenSize() const;
     inline const Size2i& GetRequestedVirtualScreenSize() const;
     inline const Size2i& GetPhysicalScreenSize() const;
+    inline const Size2i& GetInputScreenSize() const;
     inline const Rect& GetFullScreenVirtualRect() const;
 
     inline float32 AlignVirtualToPhysicalX(float32) const;
@@ -68,18 +74,21 @@ public:
     inline Rect ConvertInputToVirtual(const Rect& rect) const;
     inline Rect ConvertVirtualToInput(const Rect& rect) const;
 
-    inline const String& GetResourceFolder(int32 resourceIndex) const;
-    inline int32 GetDesirableResourceIndex() const;
-    inline void SetDesirableResourceIndex(int32 resourceIndex);
-    inline int32 GetBaseResourceIndex() const;
+    DAVA_DEPRECATED(inline const String& GetResourceFolder(int32 resourceIndex) const);
+    DAVA_DEPRECATED(inline int32 GetDesirableResourceIndex() const);
+    DAVA_DEPRECATED(inline void SetDesirableResourceIndex(int32 resourceIndex));
+    DAVA_DEPRECATED(inline int32 GetBaseResourceIndex() const);
 
     inline bool WasScreenSizeChanged() const;
     void ScreenSizeChanged();
-    void EnableReloadResourceOnResize(bool enable);
+
+    DAVA_DEPRECATED(void EnableReloadResourceOnResize(bool enable));
+    DAVA_DEPRECATED(bool GetReloadResourceOnResize() const);
 
     void SetProportionsIsFixed(bool needFixed);
-    void RegisterAvailableResourceSize(int32 width, int32 height, const String& resourcesFolderName);
-    void UnregisterAllAvailableResourceSizes();
+
+    DAVA_DEPRECATED(void RegisterAvailableResourceSize(int32 width, int32 height, const String& resourcesFolderName));
+    DAVA_DEPRECATED(void UnregisterAllAvailableResourceSizes());
 
     inline const Vector2& GetPhysicalDrawOffset() const;
 
@@ -120,6 +129,11 @@ inline const Size2i& VirtualCoordinatesSystem::GetVirtualScreenSize() const
 inline const Size2i& VirtualCoordinatesSystem::GetRequestedVirtualScreenSize() const
 {
     return requestedVirtualScreenSize;
+}
+
+inline const Size2i& VirtualCoordinatesSystem::GetInputScreenSize() const
+{
+    return inputAreaSize;
 }
 
 inline const Size2i& VirtualCoordinatesSystem::GetPhysicalScreenSize() const
@@ -279,12 +293,12 @@ inline Vector2 VirtualCoordinatesSystem::ConvertInputToVirtual(const Vector2& po
 
 inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect& rect) const
 {
-    return Rect(ConvertInputToVirtual(rect.GetPosition()) + inputOffset, ConvertInputToVirtual(rect.GetSize()));
+    return Rect(ConvertInputToVirtual(rect.GetPosition()), ConvertInputToVirtual(rect.GetSize()) - inputOffset);
 }
 
 inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect& rect) const
 {
-    return Rect(ConvertVirtualToInput(rect.GetPosition() - inputOffset), ConvertVirtualToInput(rect.GetSize()));
+    return Rect(ConvertVirtualToInput(rect.GetPosition()), ConvertVirtualToInput(rect.GetSize() + inputOffset));
 }
 
 inline const String& VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const

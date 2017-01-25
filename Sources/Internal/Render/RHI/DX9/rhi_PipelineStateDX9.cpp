@@ -1,20 +1,21 @@
-#include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../rhi_ShaderCache.h"
-    #include "rhi_DX9.h"
+    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_DX9.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
 using DAVA::uint8;
 
-    #include "_dx9.h"
-    #include <D3DX9Shader.h>
+#include "_dx9.h"
+#include <D3DX9Shader.h>
 
-    #include <vector>
+#include <vector>
 
 namespace rhi
 {
@@ -24,7 +25,7 @@ VDeclDX9
     VertexLayout layout;
     IDirect3DVertexDeclaration9* vdecl9;
 
-    static IDirect3DVertexDeclaration9* Get(const VertexLayout& layout, bool force_immediate = false);
+    static IDirect3DVertexDeclaration9* Get(const VertexLayout& layout, bool forceExecute = false);
 
 private:
     static std::vector<VDeclDX9> _VDecl;
@@ -33,8 +34,7 @@ std::vector<VDeclDX9> VDeclDX9::_VDecl;
 
 static RingBuffer _DX9_DefConstRingBuf;
 
-static void
-DumpShaderTextDX9(const char* code, unsigned code_sz)
+static void DumpShaderTextDX9(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -89,8 +89,7 @@ DumpShaderTextDX9(const char* code, unsigned code_sz)
 
 //------------------------------------------------------------------------------
 
-IDirect3DVertexDeclaration9*
-VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
+IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool forceExecute)
 {
     IDirect3DVertexDeclaration9* vdecl = nullptr;
 
@@ -187,7 +186,7 @@ VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
 
         DX9Command cmd = { DX9Command::CREATE_VERTEX_DECLARATION, { uint64_t(elem), uint64_t(&vd9) } };
 
-        ExecDX9(&cmd, 1, force_immediate);
+        ExecDX9(&cmd, 1, forceExecute);
 
         if (SUCCEEDED(cmd.retval))
         {
@@ -211,8 +210,7 @@ VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
 
 //==============================================================================
 
-class
-PipelineStateDX9_t
+class PipelineStateDX9_t
 {
 public:
     PipelineStateDX9_t()
@@ -264,7 +262,7 @@ public:
 
         bool Construct(const void* code, unsigned code_sz, const VertexLayout& vdecl);
         Handle CreateConstBuffer(unsigned buf_i);
-        void SetToRHI(uint32 layoutUID, bool force_immediate = false);
+        void SetToRHI(uint32 layoutUID, bool forceExecute = false);
         void SetupVertexStreams(uint32 layoutUID, unsigned instCount);
 
         struct
@@ -578,7 +576,7 @@ PipelineStateDX9_t::VertexProgDX9::CreateConstBuffer(unsigned buf_i)
 
 //------------------------------------------------------------------------------
 
-void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool force_immediate)
+void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool forceExecute)
 {
     HRESULT hr = _D3D9_Device->SetVertexShader(vs9);
 
@@ -618,7 +616,7 @@ this->vertexLayout.Dump();
 Logger::Info("compatible-layout:");
 layout.Dump();
 */
-                    info.vdecl = VDeclDX9::Get(layout, force_immediate);
+                    info.vdecl = VDeclDX9::Get(layout, forceExecute);
                     info.layoutUID = layoutUID;
                     info.layout = layout;
 
@@ -835,15 +833,13 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
     PipelineStateDX9_t* ps = PipelineStateDX9Pool::Get(handle);
     bool vprog_valid = false;
     bool fprog_valid = false;
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     //Logger::Info("create PS");
     //Logger::Info("  vprog= %s",desc.vprogUid.c_str());
     //Logger::Info("  fprog= %s",desc.vprogUid.c_str());
     //desc.vertexLayout.Dump();
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
     ps->vprog.uid = desc.vprogUid;
     ps->fprog.uid = desc.fprogUid;
@@ -1050,8 +1046,7 @@ void InitializeRingBuffer(uint32 size)
     _DX9_DefConstRingBuf.Initialize(size);
 }
 
-const void*
-InstData(Handle cb)
+const void* Instance(Handle cb)
 {
     PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get(cb);
 

@@ -16,7 +16,8 @@ enum eBlending
     BLENDING_ALPHA_ADDITIVE,
     BLENDING_SOFT_ADDITIVE,
     BLENDING_MULTIPLICATIVE,
-    BLENDING_STRONG_MULTIPLICATIVE
+    BLENDING_STRONG_MULTIPLICATIVE,
+    BLENDING_PREMULTIPLIED_ALPHA,
 };
 
 enum eGradientBlendMode
@@ -273,7 +274,7 @@ inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveT
     case rhi::PRIMITIVE_TRIANGLESTRIP:
         return indexCount - 2;
     default:
-        DVASSERT_MSG(false, "Unknown primitive type");
+        DVASSERT(false, "Unknown primitive type");
     }
     return 0;
 }
@@ -282,20 +283,6 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
-
-enum eBasePerfQuery
-{
-    PERFQUERY__2D_PASS_T0 = 0,
-    PERFQUERY__2D_PASS_T1,
-
-    PERFQUERY__CLEAR_PASS_T0,
-    PERFQUERY__CLEAR_PASS_T1,
-
-    PERFQUERY__MAIN_PASS_T0,
-    PERFQUERY__MAIN_PASS_T1,
-
-    PERFQUERY__USER
-};
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

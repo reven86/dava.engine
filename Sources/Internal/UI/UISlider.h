@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-class UIButton;
 class UISlider : public UIControl
 {
 protected:
@@ -24,8 +23,6 @@ public:
     void AddControl(UIControl* control) override;
     void RemoveControl(UIControl* control) override;
 
-    void Draw(const UIGeometricData& geometricData) override;
-
     inline bool IsEventsContinuos() const;
     inline void SetEventsContinuos(bool isEventsContinuos);
     inline float32 GetValue() const;
@@ -36,9 +33,6 @@ public:
 
     void SetThumb(UIControl* newThumb);
     inline UIControl* GetThumb() const;
-
-    inline UIControlBackground* GetBgMin() const;
-    inline UIControlBackground* GetBgMax() const;
 
     void LoadFromYamlNodeCompleted() override;
 
@@ -63,8 +57,6 @@ protected:
 
     void RecalcButtonPos();
 
-    UIControlBackground* minBackground;
-    UIControlBackground* maxBackground;
     UIControl* thumbButton;
 
     Vector2 relTouchPoint;
@@ -75,12 +67,6 @@ protected:
     void InitInactiveParts(Sprite* spr);
 
 public:
-    int32 GetBackgroundComponentsCount() const override;
-    UIControlBackground* GetBackgroundComponent(int32 index) const override;
-    UIControlBackground* CreateBackgroundComponent(int32 index) const override;
-    void SetBackgroundComponent(int32 index, UIControlBackground* bg) override;
-    String GetBackgroundComponentName(int32 index) const override;
-
     INTROSPECTION_EXTEND(UISlider, UIControl,
                          PROPERTY("minValue", "Min Value", GetMinValue, SetMinValue, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
@@ -94,16 +80,6 @@ private:
 inline UIControl* UISlider::GetThumb() const
 {
     return thumbButton;
-}
-
-inline UIControlBackground* UISlider::GetBgMin() const
-{
-    return minBackground;
-}
-
-inline UIControlBackground* UISlider::GetBgMax() const
-{
-    return maxBackground;
 }
 
 inline bool UISlider::IsEventsContinuos() const

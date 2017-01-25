@@ -2,8 +2,11 @@
 
 #if defined(__DAVAENGINE_STEAM__)
 
+#include "Engine/Engine.h"
 #include "Logger/Logger.h"
 #include "Core/Core.h"
+#include "FileSystem/KeyedArchive.h"
+#include "FileSystem/LocalizationSystem.h"
 
 #include "steam/steam_api.h"
 
@@ -11,12 +14,27 @@
 
 namespace DAVA
 {
+struct SteamCallbacks
+{
+    STEAM_CALLBACK(SteamCallbacks, GameOverlayActivated, GameOverlayActivated_t)
+    {
+        Steam::GameOverlayActivated.Emit(pParam->m_bActive != 0);
+    }
+    // Place other Steam callbacks here
+};
+static SteamCallbacks* steamCallbacks = nullptr;
+
 const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
+Signal<bool> Steam::GameOverlayActivated;
 
 void Steam::Init()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    uint32 useAppId = Engine::Instance()->GetOptions()->GetUInt32(appIdPropertyKey, k_uAppIdInvalid);
+#else
     uint32 useAppId = Core::Instance()->GetOptions()->GetUInt32(appIdPropertyKey, k_uAppIdInvalid);
+#endif
 
     if (SteamAPI_RestartAppIfNecessary(useAppId))
     {
@@ -49,10 +67,19 @@ void Steam::Init()
     }
 
     isInited = true;
+    steamCallbacks = new SteamCallbacks();
+#if defined(__DAVAENGINE_COREV2__)
+    GetEngineContext()->localizationSystem->OverrideDeviceLocale(GetLanguage());
+    Engine::Instance()->update.Connect([](float) { SteamAPI_RunCallbacks(); });
+#else
+    LocalizationSystem::Instance()->OverrideDeviceLocale(GetLanguage());
+#endif
 }
 
 void Steam::Deinit()
 {
+    SafeDelete(steamCallbacks);
+
     // Shutdown the SteamAPI
     SteamAPI_Shutdown();
     isInited = false;
@@ -63,9 +90,69 @@ bool Steam::IsInited()
     return isInited;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void Steam::Update()
 {
     SteamAPI_RunCallbacks();
+}
+#endif
+
+String Steam::GetLanguage()
+{
+    if (!IsInited())
+    {
+        return "";
+    }
+
+    ISteamApps* apps = SteamApps();
+    if (apps == nullptr)
+    {
+        return "";
+    }
+
+    // Try to get a set language for game
+    String language = apps->GetCurrentGameLanguage();
+    if (language.empty())
+    {
+        // If it fails, use steam app language
+        ISteamUtils* steamUtils = SteamUtils();
+        language = steamUtils != nullptr ? steamUtils->GetSteamUILanguage() : "";
+    }
+
+    const UnorderedMap<String, String> steamLanguages =
+    {
+      { "arabic", "ar" },
+      { "brazilian", "pt" },
+      { "bulgarian", "bg" },
+      { "czech", "cs" },
+      { "danish", "da" },
+      { "dutch", "nl" },
+      { "english", "en" },
+      { "finnish", "fi" },
+      { "french", "fr" },
+      { "german", "de" },
+      { "greek", "el" },
+      { "hungarian", "hu" },
+      { "italian", "it" },
+      { "japanese", "ja" },
+      { "koreana", "ko" },
+      { "norwegian", "no" },
+      { "polish", "pl" },
+      { "portuguese", "pt" },
+      { "romanian", "ro" },
+      { "russian", "ru" },
+      { "schinese", "zh-Hans" },
+      { "spanish", "es" },
+      { "swedish", "sv" },
+      { "tchinese", "zh-Hant" },
+      { "thai", "th" },
+      { "turkish", "tr" },
+      { "ukrainian", "uk" },
+      { "vietnamese", "vi" }
+    };
+
+    auto iter = steamLanguages.find(language);
+    return iter != steamLanguages.end() ? iter->second : "";
 }
 
 ISteamRemoteStorage* Steam::CreateStorage()

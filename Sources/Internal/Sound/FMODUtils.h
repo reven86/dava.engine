@@ -11,6 +11,8 @@
 #include "fmod_event.hpp"
 #include "fmod_errors.h"
 
+#include "Logger/Logger.h"
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

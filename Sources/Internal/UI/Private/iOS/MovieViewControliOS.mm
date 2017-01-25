@@ -3,13 +3,12 @@
 #if defined(__DAVAENGINE_IPHONE__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 #import <MediaPlayer/MediaPlayer.h>
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
 #endif
@@ -42,7 +41,7 @@ MovieViewControl::MovieViewControl()
     }
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddUIView([bridge->moviePlayer view]);
+    PlatformApi::Ios::AddUIView(window, [bridge->moviePlayer view]);
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     [[appDelegate renderViewController].backgroundView addSubview:[bridge->moviePlayer view]];
@@ -52,7 +51,7 @@ MovieViewControl::MovieViewControl()
 MovieViewControl::~MovieViewControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveUIView([bridge->moviePlayer view]);
+    PlatformApi::Ios::RemoveUIView(window, [bridge->moviePlayer view]);
 #else
     [[bridge->moviePlayer view] removeFromSuperview];
 #endif
@@ -93,31 +92,8 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-    CGRect playerViewRect = [[bridge->moviePlayer view] frame];
-
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
-    playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
-    playerViewRect.size.width = physicalRect.dx;
-    playerViewRect.size.height = physicalRect.dy;
-
-#if defined(__DAVAENGINE_COREV2__)
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = window->GetScaleX();
-#else
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
-#endif
-    playerViewRect.origin.x /= scaleDivider;
-    playerViewRect.origin.y /= scaleDivider;
-    playerViewRect.size.height /= scaleDivider;
-    playerViewRect.size.width /= scaleDivider;
-
-    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
-    playerViewRect.size.width = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.width);
-    playerViewRect.size.height = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.height);
-
-    [[bridge->moviePlayer view] setFrame:playerViewRect];
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
+    [[bridge->moviePlayer view] setFrame:CGRectMake(r.x, r.y, r.dx, r.dy)];
 }
 
 void MovieViewControl::SetVisible(bool isVisible)

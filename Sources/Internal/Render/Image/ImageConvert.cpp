@@ -8,7 +8,7 @@ namespace DAVA
 {
 uint32 ChannelFloatToInt(float32 ch)
 {
-    return static_cast<uint32>(ch / (ch + 1) * std::numeric_limits<uint8>::max());
+    return static_cast<uint32>(Min(ch, 1.0f) * std::numeric_limits<uint8>::max());
 }
 
 float32 ChannelIntToFloat(uint32 ch)
@@ -102,9 +102,9 @@ bool ConvertImageDirect(const Image* srcImage, Image* dstImage)
 {
     return ConvertImageDirect(srcImage->format, dstImage->format,
                               srcImage->data, srcImage->width, srcImage->height,
-                              srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBits(srcImage->format) / 8,
+                              ImageUtils::GetPitchInBytes(srcImage->width, srcImage->format),
                               dstImage->data, dstImage->width, dstImage->height,
-                              dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBits(dstImage->format) / 8);
+                              ImageUtils::GetPitchInBytes(dstImage->width, dstImage->format));
 }
 
 bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
@@ -185,13 +185,25 @@ bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if (inFormat == FORMAT_RGBA16F && outFormat == FORMAT_RGBA8888)
     {
-        ConvertDirect<RGBA16161616F, uint32, ConvertRGBA16161616FtoRGBA8888> convert;
+        ConvertDirect<RGBA16F, uint32, ConvertRGBA16FtoRGBA8888> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
     else if (inFormat == FORMAT_RGBA32F && outFormat == FORMAT_RGBA8888)
     {
-        ConvertDirect<RGBA32323232F, uint32, ConvertRGBA32323232FtoRGBA8888> convert;
+        ConvertDirect<RGBA32F, uint32, ConvertRGBA32FtoRGBA8888> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA16F)
+    {
+        ConvertDirect<uint32, RGBA16F, ConvertRGBA8888toRGBA16F> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGBA32F)
+    {
+        ConvertDirect<uint32, RGBA32F, ConvertRGBA8888toRGBA32F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
@@ -234,16 +246,15 @@ void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage /* = nullp
 {
     DVASSERT(srcImage);
 
-    auto srcPixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format);
     if (dstImage)
     {
-        DVASSERT(PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format) == srcPixelSize);
+        DVASSERT(PixelFormatDescriptor::GetPixelFormatSizeInBits(dstImage->format) == PixelFormatDescriptor::GetPixelFormatSizeInBits(srcImage->format));
         DVASSERT(srcImage->width == dstImage->width);
         DVASSERT(srcImage->height == dstImage->height);
     }
 
     SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height,
-                        srcImage->width * srcPixelSize,
+                        ImageUtils::GetPitchInBytes(srcImage->width, srcImage->format),
                         dstImage ? dstImage->data : nullptr);
 }
 
@@ -358,12 +369,12 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if ((inFormat == FORMAT_RGBA16F) && (outFormat == FORMAT_RGBA16F))
     {
-        ConvertDownscaleTwiceBillinear<RGBA16161616F, RGBA16161616F, float32, UnpackRGBA16161616F, PackRGBA16161616F> convert;
+        ConvertDownscaleTwiceBillinear<RGBA16F, RGBA16F, float32, UnpackRGBA16F, PackRGBA16F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA32F) && (outFormat == FORMAT_RGBA32F))
     {
-        ConvertDownscaleTwiceBillinear<RGBA32323232F, RGBA32323232F, float32, UnpackRGBA32323232F, PackRGBA32323232F> convert;
+        ConvertDownscaleTwiceBillinear<RGBA32F, RGBA32F, float32, UnpackRGBA32F, PackRGBA32F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else
@@ -402,16 +413,16 @@ Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap /*= false*/
 void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2)
 {
     int32 a, b, c, d, x, y, index;
-    float32 x_ratio = ((float32)(w - 1)) / w2;
-    float32 y_ratio = ((float32)(h - 1)) / h2;
+    float32 x_ratio = (static_cast<float32>(w - 1)) / w2;
+    float32 y_ratio = (static_cast<float32>(h - 1)) / h2;
     float32 x_diff, y_diff, blue, red, green, alpha;
     uint32 offset = 0;
     for (uint32 i = 0; i < h2; i++)
     {
         for (uint32 j = 0; j < w2; j++)
         {
-            x = (int32)(x_ratio * j);
-            y = (int32)(y_ratio * i);
+            x = static_cast<int32>(x_ratio * j);
+            y = static_cast<int32>(y_ratio * i);
             x_diff = (x_ratio * j) - x;
             y_diff = (y_ratio * i) - y;
             index = (y * w + x);
@@ -433,10 +444,10 @@ void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* ou
             ((c >> 24) & 0xff) * (y_diff) * (1 - x_diff) + ((d >> 24) & 0xff) * (x_diff * y_diff);
 
             outPixels[offset++] =
-            ((((uint32)alpha) << 24) & 0xff000000) |
-            ((((uint32)red) << 16) & 0xff0000) |
-            ((((uint32)green) << 8) & 0xff00) |
-            ((uint32)blue);
+            (((static_cast<uint32>(alpha)) << 24) & 0xff000000) |
+            (((static_cast<uint32>(red)) << 16) & 0xff0000) |
+            (((static_cast<uint32>(green)) << 8) & 0xff00) |
+            (static_cast<uint32>(blue));
         }
     }
 }

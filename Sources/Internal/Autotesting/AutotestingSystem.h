@@ -72,6 +72,7 @@ public:
     void MakeScreenShot();
     bool GetIsScreenShotSaving() const;
     void ClickSystemBack();
+    void PressEscape();
 
     // DB Master-Helper relations
 
@@ -101,6 +102,10 @@ public:
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
+    void OnWindowSizeChanged(Window*, Size2f windowSize, Size2f surfaceSize);
+
+    void ResetScreenshotTexture(Size2i size);
+
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
@@ -158,6 +163,8 @@ public:
     Texture* screenshotTexture = nullptr;
     rhi::HSyncObject screenshotSync;
     bool screenshotRequested = false;
+
+    TrackedObject localTrackedObject;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const

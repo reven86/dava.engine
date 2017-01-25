@@ -41,11 +41,11 @@ void UIHoleTransition::Update(float32 timeElapsed)
     for (int k = 0; k < clipPoly.pointCount; ++k)
     {
         realPoly.points[k] = clipPoly.points[k];
-        realPoly.points[k] -= Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
-                                      VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
+        realPoly.points[k] -= Vector2(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx / 2.0f,
+                                      UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 2.0f);
         realPoly.points[k] *= scaleCoef;
-        realPoly.points[k] += Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
-                                      VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
+        realPoly.points[k] += Vector2(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx / 2.0f,
+                                      UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 2.0f);
     }
 }
 
@@ -69,7 +69,7 @@ void UIHoleTransition::Draw(const UIGeometricData& geometricData)
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
-    auto rect = Rect(0.0f, 0.0f, static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx), static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy));
+    auto rect = Rect(0.0f, 0.0f, static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx), static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy));
 
     RenderSystem2D::Instance()->FillRect(rect, Color::Black);
 

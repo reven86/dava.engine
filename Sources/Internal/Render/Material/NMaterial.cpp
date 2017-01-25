@@ -13,6 +13,8 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 const float32 NMaterial::DEFAULT_LIGHTMAP_SIZE = 16.0f;
@@ -147,10 +149,21 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
+
     if (activeVariantInstance->wireFrame)
         target.options |= rhi::Packet::OPT_WIREFRAME;
     else
         target.options &= ~rhi::Packet::OPT_WIREFRAME;
+
+    if (activeVariantInstance->alphablend)
+        target.userFlags |= USER_FLAG_ALPHABLEND;
+    else
+        target.userFlags &= ~USER_FLAG_ALPHABLEND;
+
+    if (activeVariantInstance->alphatest)
+        target.userFlags |= USER_FLAG_ALPHATEST;
+    else
+        target.userFlags &= ~USER_FLAG_ALPHATEST;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -161,7 +174,7 @@ void NMaterial::BindParams(rhi::Packet& target)
         //assume that if we have no property - we bind default value on buffer allocation step - no binding is created in that case
         for (auto& materialBinding : materialBufferBinding->propBindings)
         {
-            DVASSERT(materialBinding.source)
+            DVASSERT(materialBinding.source);
             if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
             {
                 //Logger::Info( " upd-prop " );
@@ -200,7 +213,7 @@ uint32 NMaterial::GetRequiredVertexFormat()
     for (auto& variant : renderVariants)
     {
         bool shaderValid = (nullptr != variant.second) && (variant.second->shader->IsValid());
-        DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
+        DVASSERT(shaderValid, "Shader is invalid. Check log for details.");
 
         if (shaderValid)
         {
@@ -531,9 +544,19 @@ void NMaterial::SetParent(NMaterial* _parent)
     InvalidateRenderVariants();
 }
 
-NMaterial* NMaterial::GetParent()
+NMaterial* NMaterial::GetParent() const
 {
     return parent;
+}
+
+NMaterial* NMaterial::GetTopLevelParent()
+{
+    NMaterial* result = this;
+    while (result->GetParent() != nullptr)
+    {
+        result = result->GetParent();
+    }
+    return result;
 }
 
 const Vector<NMaterial*>& NMaterial::GetChildren() const
@@ -559,12 +582,12 @@ uint32 NMaterial::GetConfigCount() const
     return static_cast<uint32>(materialConfigs.size());
 }
 
-const DAVA::FastName& NMaterial::GetCurrentConfigName() const
+const FastName& NMaterial::GetCurrentConfigName() const
 {
     return GetCurrentConfig().name;
 }
 
-void NMaterial::SetCurrentConfigName(const DAVA::FastName& newName)
+void NMaterial::SetCurrentConfigName(const FastName& newName)
 {
     GetMutableCurrentConfig().name = newName;
 }
@@ -591,7 +614,7 @@ void NMaterial::ReleaseConfigTextures(uint32 index)
         InvalidateTextureBindings();
 }
 
-const DAVA::FastName& NMaterial::GetConfigName(uint32 index) const
+const FastName& NMaterial::GetConfigName(uint32 index) const
 {
     return GetConfig(index).name;
 }
@@ -629,7 +652,7 @@ void NMaterial::RemoveConfig(uint32 index)
         InvalidateRenderVariants();
     }
 
-    currentConfig = DAVA::Min(currentConfig, static_cast<DAVA::uint32>(materialConfigs.size()) - 1);
+    currentConfig = Min(currentConfig, static_cast<uint32>(materialConfigs.size()) - 1);
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
@@ -707,8 +730,28 @@ void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, 
     FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
 }
 
+void NMaterial::PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags)
+{
+    uint32 flagsCount = static_cast<uint32>(flags.size());
+    uint32 variations = 1u << flagsCount;
+    for (const FastName& fxName : fxNames)
+    {
+        for (uint32 i = 0; i < variations; ++i)
+        {
+            HashMap<FastName, int32> enabledFlags;
+            for (uint32 f = 0; f < flagsCount; ++f)
+            {
+                enabledFlags[flags[f]] = static_cast<int32>((i & (1 << f)) != 0);
+            }
+            PreCacheFXWithFlags(enabledFlags, fxName);
+        }
+    }
+}
+
 void NMaterial::RebuildRenderVariants()
 {
+    InvalidateBufferBindings();
+
     HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
     flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
@@ -739,10 +782,11 @@ void NMaterial::RebuildRenderVariants()
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
         variant->wireFrame = variantDescr.wireframe;
+        variant->alphablend = variantDescr.hasBlend;
+        variant->alphatest = (variantDescr.templateDefines.count(FastName("ALPHATEST")) != 0);
         renderVariants[variantDescr.passName] = variant;
     }
 
-    ClearLocalBuffers();
     activeVariantName = FastName();
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
@@ -777,7 +821,8 @@ void NMaterial::CollectConfigTextures(const MaterialConfig& config, Set<Material
 
 void NMaterial::RebuildBindings()
 {
-    ClearLocalBuffers();
+    InvalidateBufferBindings();
+
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
@@ -792,7 +837,7 @@ void NMaterial::RebuildBindings()
             rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
             //for static buffers resolve sharing and bindings
-            if (bufferDescr.updateType == rhi::ShaderProp::STORAGE_STATIC)
+            if (bufferDescr.updateType == rhi::ShaderProp::SOURCE_MATERIAL)
             {
                 bufferBinding = GetConstBufferBinding(bufferDescr.propertyLayoutId);
                 bool needLocalOverride = NeedLocalOverride(bufferDescr.propertyLayoutId);
@@ -879,6 +924,8 @@ void NMaterial::RebuildBindings()
 
 void NMaterial::RebuildTextureBindings()
 {
+    InvalidateTextureBindings();
+
     const AnisotropyQuality* anisotropicQuality =
     QualitySettingsSystem::Instance()->GetAnisotropyQuality(QualitySettingsSystem::Instance()->GetCurAnisotropyQuality());
 

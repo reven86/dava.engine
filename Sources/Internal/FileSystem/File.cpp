@@ -8,6 +8,7 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -98,7 +99,10 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
+    if (filename.IsDirectoryPathname())
+    {
+        return nullptr;
+    }
 
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
@@ -111,12 +115,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 #ifdef __DAVAENGINE_COREV2__
         // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
         // access Engine object after it has beem destroyed
-        IPackManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
-        EngineContext* context = e->GetContext();
+        const EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
-        pm = context->packManager;
+        IPackManager* pm = context->packManager;
 #else
         IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif
@@ -146,7 +149,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     LockGuard<Mutex> guard(mutex);
 
     AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
-    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+    DVASSERT(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     Vector<uint8> data;
     if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))
@@ -520,7 +523,8 @@ String File::GetModificationDate(const FilePath& filePathname)
 #if defined(__DAVAENGINE_WINDOWS__)
         tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined(__DAVAENGINE_ANDROID__)
-        tm* utcTime = gmtime((const time_t*)&fileInfo.st_mtime);
+        time_t st_mtime = static_cast<time_t>(fileInfo.st_mtime);
+        tm* utcTime = gmtime(&st_mtime);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         tm* utcTime = gmtime(&fileInfo.st_mtimespec.tv_sec);
 #endif

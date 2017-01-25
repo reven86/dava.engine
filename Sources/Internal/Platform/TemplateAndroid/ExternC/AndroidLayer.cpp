@@ -133,7 +133,7 @@ JavaVM* GetJVM()
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     JNIEnv* env;
-    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         LOGE("Failed get java environment");
         return -1;
@@ -282,7 +282,7 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject cl
 
 void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z)
 {
-    DAVA::AccelerometerAndroidImpl* accelerometer = (DAVA::AccelerometerAndroidImpl*)DAVA::Accelerometer::Instance();
+    DAVA::AccelerometerAndroidImpl* accelerometer = static_cast<DAVA::AccelerometerAndroidImpl*>(DAVA::Accelerometer::Instance());
     if (accelerometer)
     {
         accelerometer->SetAccelerationData(x, y, z);
@@ -363,15 +363,15 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
     {
-        event.device = DAVA::UIEvent::Device::GAMEPAD;
+        event.device = DAVA::eInputDevices::GAMEPAD;
     }
     else if (event.phase >= DAVA::UIEvent::Phase::CHAR && event.phase <= DAVA::UIEvent::Phase::KEY_UP)
     {
-        event.device = DAVA::UIEvent::Device::KEYBOARD;
+        event.device = DAVA::eInputDevices::KEYBOARD;
     }
     else
     {
-        event.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
+        event.device = DAVA::eInputDevices::TOUCH_SURFACE;
     }
 
     return event;

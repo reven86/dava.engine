@@ -2,6 +2,7 @@
 
 #include "FileSystem/FileSystem.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
@@ -21,10 +22,6 @@ void ProgramOptions::Option::SetValue(const VariantType& value)
 ProgramOptions::ProgramOptions(const String& _commandName)
     : commandName(_commandName)
 {
-#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
-    AddOption("-NSDocumentRevisionsDebugMode", VariantType(false), "-dummy-");
-    AddOption("YES", VariantType(false), "-dummy-");
-#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
 }
 
 void ProgramOptions::AddOption(const String& optionName, const VariantType& defaultValue, const String& description, bool canBeMultiple)

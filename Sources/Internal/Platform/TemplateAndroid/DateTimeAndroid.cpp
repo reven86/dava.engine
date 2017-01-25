@@ -24,7 +24,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
     jstring jFormat = env->NewStringUTF(UTF8Utils::EncodeToUTF8(format).c_str());
     jstring jCountryCode = env->NewStringUTF(countryCode.c_str());
 
-    jstring obj = getTimeAsString(jFormat, jCountryCode, (long long)timeStamp, tzOffset);
+    jstring obj = getTimeAsString(jFormat, jCountryCode, static_cast<long long>(timeStamp), tzOffset);
 
     env->DeleteLocalRef(jFormat);
     env->DeleteLocalRef(jCountryCode);

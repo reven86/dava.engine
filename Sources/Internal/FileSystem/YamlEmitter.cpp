@@ -1,6 +1,7 @@
 #include "YamlEmitter.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 #include "yaml/yaml.h"
 
 namespace DAVA
@@ -85,7 +86,7 @@ bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* no
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
     if (!outFile)
     {
-        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
+        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output %s", outFileName.GetStringValue().c_str(), strerror(errno));
         return false;
     }
 
@@ -102,7 +103,8 @@ bool YamlEmitter::Emit(const YamlNode* node, File* outFile)
 {
     yaml_emitter_t emitter;
 
-    DVVERIFY(yaml_emitter_initialize(&emitter));
+    const int initializeResult = yaml_emitter_initialize(&emitter);
+    DVASSERT(initializeResult);
     yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
     yaml_emitter_set_break(&emitter, YAML_ANY_BREAK);
     yaml_emitter_set_unicode(&emitter, UNESCAPED_UNICODE_CHARACTERS_ALLOWED);
@@ -155,7 +157,8 @@ bool YamlEmitter::Emit(const YamlNode* node, File* outFile)
         break;
     }
 
-    DVVERIFY(yaml_emitter_flush(&emitter));
+    const int flushResult = yaml_emitter_flush(&emitter);
+    DVASSERT(flushResult);
     yaml_emitter_delete(&emitter);
 
     return true;
@@ -313,9 +316,8 @@ bool YamlEmitter::EmitUnorderedMap(yaml_emitter_t* emitter, const YamlNode* mapN
 
 bool YamlEmitter::EmitOrderedMap(yaml_emitter_t* emitter, const YamlNode* mapNode)
 {
-    const MultiMap<String, YamlNode*>& map = mapNode->AsMap();
-    MultiMap<String, YamlNode*>::const_iterator iter = map.begin();
-    MultiMap<String, YamlNode*>::const_iterator end = map.end();
+    const UnorderedMap<String, YamlNode*>& map = mapNode->AsMap();
+    auto iter = map.begin(), end = map.end();
     for (; iter != end; ++iter)
     {
         if (!EmitScalar(emitter, iter->first, GetYamlScalarStyle(mapNode->GetMapKeyRepresentation())))

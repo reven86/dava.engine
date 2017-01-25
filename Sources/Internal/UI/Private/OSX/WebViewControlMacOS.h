@@ -63,6 +63,12 @@ private:
     SigConnectionID appMinimizedRestoredConnectionId;
 #endif
 
+#if defined(__DAVAENGINE_STEAM__)
+    SigConnectionID overlayConnectionId = 0;
+    bool overlayVisible = false;
+    void OnSteamOverlayChanged(bool overlayActivated);
+#endif
+
 private:
     UIWebView& uiWebViewControl;
     

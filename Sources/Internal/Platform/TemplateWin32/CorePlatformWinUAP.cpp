@@ -4,7 +4,9 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -14,6 +16,8 @@ namespace DAVA
 {
 int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 {
+    Assert::SetupDefaultHandlers();
+
     std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
     core->InitArgs();
     core->Run();
@@ -23,7 +27,7 @@ int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 //////////////////////////////////////////////////////////////////////////
 void CorePlatformWinUAP::InitArgs()
 {
-    SetCommandLine(WStringToString(::GetCommandLineW()));
+    SetCommandLine(UTF8Utils::EncodeToUTF8(::GetCommandLineW()));
 }
 
 void CorePlatformWinUAP::Run()
@@ -78,7 +82,7 @@ bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
         RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
         return true;
     default:
-        DVASSERT_MSG(false, "Unknown screen mode");
+        DVASSERT(false, "Unknown screen mode");
         return false;
     }
 }

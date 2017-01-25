@@ -32,6 +32,8 @@ public:
                     const String& urlToServerSuperpack_,
                     const Hints& hints_) override;
 
+    void RetryInit();
+
     bool IsInitialized() const override;
 
     InitState GetInitState() const override;
@@ -40,19 +42,13 @@ public:
 
     const String& GetInitErrorMessage() const override;
 
-    void RetryInit() override;
-
-    bool IsPausedInit() const override;
-
-    void PauseInit() override;
-
     bool IsRequestingEnabled() const override;
 
     void EnableRequesting() override;
 
     void DisableRequesting() override;
 
-    void Update(float);
+    void Update(float frameDelta);
 
     const String& FindPackName(const FilePath& relativePathInPack) const override;
 
@@ -63,7 +59,7 @@ public:
     const IRequest* FindRequest(const String& pack) const override;
 
     void SetRequestOrder(const String& packName, float newPriority) override;
-
+    void MountOnePack(const FilePath& filePath);
     uint32 GetPackIndex(const String& packName) const;
     Pack& GetPack(const String& packName);
 
@@ -81,9 +77,9 @@ public:
 
     const String& GetSuperPackUrl() const override;
 
-    const PackFormat::PackFile::FooterBlock& GetInitFooter() const
+    uint32 GetServerFooterCrc32() const
     {
-        return initFooterOnServer;
+        return initFooterOnServer.infoCrc32;
     }
 
     const Hints& GetHints() const
@@ -103,13 +99,16 @@ private:
     void AskDB();
     void GetDB();
     void UnpackingDB();
+    void StoreAllMountedPackNames();
     void DeleteOldPacks();
+    void ReloadState();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
     // helper functions
     void DeleteLocalDBFiles();
-    void ContinueInitialization();
-    void InitializePacksAndBuildIndex();
+    void ContinueInitialization(float frameDelta);
+    static void InitializePacksFromDB(const PacksDB& db_, Vector<Pack>& packs_);
+    static void BuildPackIndex(UnorderedMap<String, uint32>& index_, Vector<Pack>& packs_);
     void UnmountAllPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
@@ -140,9 +139,12 @@ private:
     Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
-    bool initPaused = false;
 
     Hints hints;
+
+    float32 timeWaitingNextInitializationAttempt = 0;
+    uint32 retryCount = 0; // count every initialization error during session
+    Vector<String> tmpOldMountedPackNames;
 };
 
 } // end namespace DAVA

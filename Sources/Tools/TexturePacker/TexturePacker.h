@@ -58,6 +58,7 @@ public:
     void SetMaxTextureSize(uint32 maxTextureSize);
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
     void SetAlgorithms(const Vector<PackingAlgorithm>& algorithms);
+    void SetTexturePostfix(const String& postfix);
 
     // set visible 1 pixel border for each texture
     void SetTwoSideMargin(bool val = true)
@@ -97,10 +98,12 @@ private:
     int32 TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
 
     bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& sheet, const FilePath& outputPath, const String& textureName, const DefinitionFile& defFile);
-    bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const String& _textureName, const DefinitionFile& defFile);
+    bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const char* textureBasename, const DefinitionFile& defFile);
     void WriteDefinitionString(FILE* fp, const Rect2i& writeRect, const Rect2i& originRect, int textureIndex, const String& frameName);
 
     void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const SpriteBoundsRect& drawRect, const Rect2i& frameRect);
+
+    String MakeTextureName(const char* basename, uint32 textureIndex) const;
 
     uint32 maxTextureSize;
 
@@ -112,6 +115,8 @@ private:
     bool useTwoSideMargin;
     uint32 texturesMargin;
     Vector<PackingAlgorithm> packAlgorithms;
+
+    String texturePostfix;
 
     Set<String> errors;
     void AddError(const String& errorMsg);

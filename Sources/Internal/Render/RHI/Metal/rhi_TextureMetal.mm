@@ -1,13 +1,14 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "rhi_Metal.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_metal.h"
+#include "_metal.h"
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
@@ -416,7 +417,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 //------------------------------------------------------------------------------
 
 static void
-metal_Texture_Delete(Handle tex)
+metal_Texture_Delete(Handle tex, bool)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
@@ -662,7 +663,7 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     {
         MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
 
-        DVASSERT(s != MTLPurgeableStateKeepCurrent)
+        DVASSERT(s != MTLPurgeableStateKeepCurrent);
         if (s == MTLPurgeableStateEmpty)
         {
             if (!self->NeedRestore())

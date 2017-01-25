@@ -3,6 +3,7 @@
 #include "Compression/LZ4Compressor.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Logger/Logger.h"
 #include "Base/Exception.h"
 
 #include <mutex>
@@ -157,6 +158,23 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
 
         FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
     }
+
+    if (footerBlock.metaDataSize > 0)
+    {
+        // parse metadata block
+        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.metaDataSize);
+        std::vector<uint8> metaBlock(footerBlock.metaDataSize);
+        if (!file->Seek(startMetaBlock, File::SEEK_FROM_START))
+        {
+            DAVA_THROW(Exception, "can't seek meta");
+        }
+        uint32 metaSize = static_cast<uint32>(metaBlock.size());
+        if (file->Read(&metaBlock[0], metaSize) != metaSize)
+        {
+            DAVA_THROW(Exception, "can't read meta");
+        }
+        packMeta.reset(new PackMetaData(&metaBlock[0], metaBlock.size()));
+    }
 }
 
 const Vector<ResourceArchive::FileInfo>& PackArchive::GetFilesInfo() const
@@ -267,6 +285,29 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     }
 
     return true;
+}
+
+uint32 PackArchive::GetFileIndex(const String& releativeFilePath) const
+{
+    uint32 result = std::numeric_limits<uint32>::max();
+
+    const ResourceArchive::FileInfo* info = GetFileInfo(releativeFilePath);
+    if (info != nullptr)
+    {
+        ptrdiff_t index = std::distance(&filesInfo[0], info);
+        result = static_cast<uint32>(index);
+    }
+    return result;
+}
+
+bool PackArchive::HasMeta() const
+{
+    return packMeta.get() != nullptr;
+}
+
+const PackMetaData& PackArchive::GetMeta() const
+{
+    return *packMeta;
 }
 
 } // end namespace DAVA

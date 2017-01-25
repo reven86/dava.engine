@@ -4,14 +4,45 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Type.h"
+#include "Base/TypeInheritance.h"
 #include "Base/Exception.h"
 #include "Base/Private/AutoStorage.h"
 
 namespace DAVA
 {
-/// \brief  The class Any is a type-safe container for single values of any type. Implementations is encouraged to
-///         avoid dynamic allocations for small objects, but such an optimization may only be applied to types that
-///         for which std::is_nothrow_move_constructible returns true. This class cannot be inherited.
+/** 
+    \ingroup Base
+    The class Any is a type-safe container for single value of any type.
+    Stored value is always copied into internal storage. Implementations is encouraged to 
+    avoid dynamic allocations for small objects, but such an optimization may only
+    be applied to types for which std::is_nothrow_move_constructible returns true.
+    \remark This class cannot be inherited.
+
+    Any can be copied.
+    - Internal storage with trivial value will also be copied.
+    - Internal storage with complex type will be shared the same way as `std::shared_ptr` do.
+
+    Typical usage:
+    ```
+    void foo()
+    {
+        int i = 1;
+        const char* s = "Hello world";
+
+        Any a;
+        a.Set(i);
+        std::count << a.Get<int>(); // prints "1"
+
+        a.Set(s);
+        std::count << a.Get<const char*>(); // prints "Hello world"
+
+
+    }
+    ```
+
+    TODO: more description
+    ...
+*/
 class Any final
 {
 public:
@@ -26,52 +57,52 @@ public:
 
     Any(Any&& any);
 
-    /// \brief Constructor.
-    /// \param [in,out] value   The value.
-    /// \param          notAny  (Optional) Used to prevent creating Any from other Any. Shouldn't be specified by user.
+    /** 
+        Constructor. 
+        \remark `notAny` is used to prevent creating Any from the other Any. Shouldn't be specified by user.
+    */
     template <typename T>
     Any(T&& value, NotAny<T> notAny = true);
 
-    /// \brief Swaps this with the given Any.
-    /// \param [in,out] any Any to swap with.
+    /** Swaps this Any value with the given `any`. */
     void Swap(Any& any);
 
-    /// \brief Checks if Any is empty.
-    /// \return true if empty, false if not.
+    /** Return `true` if Any is empty or `false` if isn't. */
     bool IsEmpty() const;
 
-    /// \brief Clears Any to its empty state.
+    /** Clears Any to its empty state. */
     void Clear();
 
-    /// \brief Gets the type of contained value.
-    /// \return null if it Any is empty, else the contained value type.
+    /** Gets the type of contained value. `null` will be returned if Any is empty. */
     const Type* GetType() const;
 
-    /// \brief Determine if value with specified type T can get be from Any.
-    /// \return true if we can be get, false if not.
+    /** Returns `true` if value with specified type T can get be from Any. */
     template <typename T>
     bool CanGet() const;
 
-    /// \brief Gets the value with specified type T.
-    /// \exception  DAVA::Exception value with specified T can't be get due to type mismatch with contained value.
-    /// \return A reference to a const T.
+    /** 
+        Gets value with specified type T from internal storage. 
+        If specified T can't be get due to type mismatch `DAVA::Exception` will be raised. 
+    */
     template <typename T>
     const T& Get() const;
 
-    /// \brief Gets the value with specified type T. If such value can't be get defaultValue will be returned.
-    /// \param  defaultValue    The value to return if getting value with specified T can't be done.
-    /// \return A reference to a const T.
+    /** 
+        Gets value with specified type T from internal storage.
+        If specified T can't be get due to type mismatch then `defaultValue` will be returned.
+    */
     template <typename T>
     const T& Get(const T& defaultValue) const;
-
-    void Set(Any&& any);
-    void Set(const Any& any);
 
     /// \brief Sets the value. It will be copied|moved into Any depending on lvalue|rvalue.
     /// \param [in,out] value   The value to set.
     /// \param          notAny  (Optional) Used to prevent creating Any from other Any. Shouldn't be specified by user.
     template <typename T>
     void Set(T&& value, NotAny<T> notAny = true);
+
+    void Set(Any&& any);
+
+    void Set(const Any& any);
 
     /// \brief Determine if contained value can be cast to specified T.
     /// \return true if we can be casted, false if not.
@@ -86,17 +117,23 @@ public:
     template <typename T>
     T Cast() const;
 
+    template <typename T>
+    T Cast(const T& defaultValue) const;
+
     /// \brief  Loads value into Any from specified memory location with specified Type. Loading can be done only from
     ///         types for which Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on source memory, from where value should be loaded.
     /// \param          type    The type of the loading value.
-    bool LoadValue(void* data, const Type* type);
+    bool LoadData(void* data, const Type* type);
 
     /// \brief  Stores contained value into specified memory location. Storing can
     ///          be done only for values whose type Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on destination memory, where contained value should be stored.
     /// \param          size    The size of the destination memory.
-    bool StoreValue(void* data, size_t size) const;
+    bool StoreData(void* data, size_t size) const;
+
+    /** Returns pointer on internal data. If Any is empty internal data is unspecified. */
+    const void* GetData() const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
@@ -127,6 +164,7 @@ struct AnyCompare
     static bool IsEqual(const Any&, const Any&);
 };
 
+/*
 /// \brief any cast.
 template <typename T>
 struct AnyCast
@@ -134,14 +172,19 @@ struct AnyCast
     static bool CanCast(const Any&);
     static T Cast(const Any&);
 };
+*/
+
+/// \brief any cast.
+template <typename From, typename To>
+struct AnyCast
+{
+    static void Register(To (*)(const Any&));
+    static void RegisterDefault();
+};
 
 } // namespace DAVA
 
 #define __Dava_Any__
-#include "Base/Private/Any_impl.h"
 #include "Base/Private/Any_implCompare.h"
 #include "Base/Private/Any_implCast.h"
-
-// TODO
-// ...
-// #include "Base/Private/AnyCast_impl.h"
+#include "Base/Private/Any_impl.h"

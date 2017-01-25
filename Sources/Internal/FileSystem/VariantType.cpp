@@ -2,6 +2,7 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
@@ -9,6 +10,7 @@
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Base/Meta.h"
 #include "Math/Color.h"
 #include "Base/FastName.h"
@@ -147,7 +149,7 @@ VariantType::VariantType(const String& value)
 VariantType::VariantType(const WideString& value)
     : pointerValue(nullptr)
 {
-    SetWideString(value);
+    SetString(UTF8Utils::EncodeToUTF8(value));
 }
 
 VariantType::VariantType(const uint8* _array, int32 arraySizeInBytes)
@@ -316,8 +318,8 @@ void VariantType::SetString(const String& value)
 void VariantType::SetWideString(const WideString& value)
 {
     ReleasePointer();
-    type = TYPE_WIDE_STRING;
-    wideStringValue = new WideString(value);
+    type = TYPE_STRING;
+    stringValue = new String(UTF8Utils::EncodeToUTF8(value));
 }
 
 void VariantType::SetByteArray(const uint8* array, int32 arraySizeInBytes)
@@ -434,6 +436,7 @@ void VariantType::SetVariant(const VariantType& var)
         return;
     }
 
+    ReleasePointer();
     type = TYPE_NONE;
 
     switch (var.type)
@@ -632,10 +635,14 @@ const String& VariantType::AsString() const
     return *stringValue;
 }
 
-const WideString& VariantType::AsWideString() const
+WideString VariantType::AsWideString() const
 {
-    DVASSERT(type == TYPE_WIDE_STRING);
-    return *wideStringValue;
+    DVASSERT(type == TYPE_STRING);
+    if (type == TYPE_STRING)
+    {
+        return UTF8Utils::EncodeToWideString(*stringValue);
+    }
+    return L""; // no warning
 }
 
 const uint8* VariantType::AsByteArray() const
@@ -738,7 +745,7 @@ const FilePath& VariantType::AsFilePath() const
 
 bool VariantType::Write(File* fp) const
 {
-    DVASSERT(type != TYPE_NONE)
+    DVASSERT(type != TYPE_NONE);
     int32 written = fp->Write(&type, 1);
     if (written != 1)
     {
@@ -1025,7 +1032,7 @@ bool VariantType::Write(File* fp) const
     break;
     default:
     {
-        DVASSERT_MSG(false, "Writing wrong variant type");
+        DVASSERT(false, "Writing wrong variant type");
         return true;
     }
     }
@@ -1133,17 +1140,11 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        stringValue = new String(buf);
-        delete[] buf;
-        if (read != len)
-        {
-            return false;
-        }
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        stringValue = new String(buf.data());
+        return (read == len);
     }
-    break;
     case TYPE_WIDE_STRING:
     {
         int32 len;
@@ -1165,6 +1166,11 @@ bool VariantType::Read(File* fp)
             }
             (*wideStringValue)[k] = c;
         }
+        // convert into utf8 string
+        String* str = new String(UTF8Utils::EncodeToUTF8(*wideStringValue));
+        delete wideStringValue;
+        stringValue = str;
+        type = TYPE_STRING;
     }
     break;
     case TYPE_BYTE_ARRAY:
@@ -1197,17 +1203,15 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        uint8* pData = new uint8[len];
-        read = fp->Read(pData, len);
+        Vector<uint8> pData(len);
+        read = fp->Read(pData.data(), len);
         if (read != len)
         {
             return false;
         }
-        DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
+        ScopedPtr<UnmanagedMemoryFile> pF(new UnmanagedMemoryFile(pData.data(), len));
         pointerValue = new KeyedArchive();
         static_cast<KeyedArchive*>(pointerValue)->Load(pF);
-        SafeRelease(pF);
-        SafeDeleteArray(pData);
     }
     break;
     case TYPE_INT64:
@@ -1308,11 +1312,9 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        fastnameValue = new FastName(buf);
-        delete[] buf;
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        fastnameValue = new FastName(buf.data());
         if (read != len)
         {
             return false;
@@ -1339,17 +1341,11 @@ bool VariantType::Read(File* fp)
             return false;
         }
 
-        char* buf = new char[len + 1];
-        read = fp->Read(buf, len);
-        buf[len] = 0;
-        filepathValue = new FilePath(buf);
-        delete[] buf;
-        if (read != len)
-        {
-            return false;
-        }
+        Vector<char> buf(len + 1, 0);
+        read = fp->Read(buf.data(), len);
+        filepathValue = new FilePath(buf.data());
+        return (read == len);
     }
-    break;
     default:
     {
         return false;
@@ -1611,7 +1607,7 @@ bool VariantType::operator==(const VariantType& other) const
     //TypE_NONE and TYPES_COUNT
     default:
     {
-        DVASSERT_MSG(false, "wrong variant type passed to IsEqual");
+        DVASSERT(false, "wrong variant type passed to IsEqual");
         return true;
     }
     }
@@ -1814,7 +1810,7 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
         }
         else
         {
-            printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
+            printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), static_cast<const void*>(meta->GetIntrospection()));
             if (nullptr != meta->GetIntrospection())
             {
                 printf("Introspection: %s\n", meta->GetIntrospection()->Name().c_str());
@@ -1841,13 +1837,13 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
         }
     }
 
-    DVASSERT(nullptr != valMeta)
+    DVASSERT(nullptr != valMeta);
 
     // Destination meta type differ from source meta type
     // this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
     if (meta != valMeta)
     {
-        DVASSERT_MSG(false, "Destination type differ from source type");
+        DVASSERT(false, "Destination type differ from source type");
         return;
     }
     switch (val.type)

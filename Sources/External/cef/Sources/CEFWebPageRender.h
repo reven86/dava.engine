@@ -16,7 +16,7 @@ class CEFWebPageRender : public CefRenderHandler
 
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    CEFWebPageRender(Window* w);
+    CEFWebPageRender(Window* w, float32 k);
 #else
     CEFWebPageRender();
 #endif
@@ -28,8 +28,12 @@ public:
     void SetVisible(bool visibility);
     bool IsVisible() const;
     void SetBackgroundTransparency(bool value);
-    void SetViewSize(Vector2 size);
+    void SetViewRect(const Rect& rect);
     void ShutDown();
+
+#if defined(__DAVAENGINE_COREV2__)
+    void SetScale(float32 k);
+#endif
 
 private:
     void ConnectToSignals();
@@ -51,14 +55,16 @@ private:
     void AppyTexture();
     void RestoreTexture();
 
+#if !defined(__DAVAENGINE_COREV2__)
     CefCursorHandle GetDefaultCursor();
+#endif
     void SetCursor(CefCursorHandle cursor);
     void ResetCursor();
 
     int imageWidth = 0;
     int imageHeight = 0;
     Vector<uint8> imageData;
-    Vector2 logicalViewSize;
+    Rect logicalViewRect;
     RefPtr<UIControlBackground> contentBackground;
     bool transparency = true;
     bool isActive = true;
@@ -67,6 +73,7 @@ private:
     SigConnectionID focusConnection = SigConnectionID();
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
+    float32 scale = 1.f;
     SigConnectionID windowDestroyedConnection = SigConnectionID();
 #endif
     unsigned webViewID = 0;

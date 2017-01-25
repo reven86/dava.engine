@@ -1,15 +1,18 @@
+#include "Logger/Logger.h"
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/dbg_StatSet.h"
-    #include "../rhi_Public.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/dbg_StatSet.h"
+#include "../rhi_Public.h"
+#include "rhi_Metal.h"
 
-    #include "_metal.h"
+#include "_metal.h"
 
 #import <UIKit/UIKit.h>
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
+namespace rhi
+{
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
 id<MTLTexture> _Metal_DefFrameBuf = nil;
@@ -17,25 +20,27 @@ id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
+DAVA::Semaphore* _Metal_DrawableDispatchSemaphore = nullptr; //used to prevent building command buffers
+const uint32 _Metal_DrawableDispatchSemaphoreFrameCount = 4;
 
-DAVA::Atomic<bool> _Metal_Suspended(false);
+//We provide consts-data for metal directly from buffer, so we have to store consts-data for 3 frames.
+//Also now metal can work in render-thread and we have to store one more frame data.
+static const DAVA::uint32 METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER = 4;
 
-namespace rhi
-{
+InitParam _Metal_InitParam;
+
 Dispatch DispatchMetal = { 0 };
 
 //------------------------------------------------------------------------------
 
-static Api
-metal_HostApi()
+static Api metal_HostApi()
 {
     return RHI_METAL;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-metal_TextureFormatSupported(TextureFormat format, ProgType)
+static bool metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -74,22 +79,15 @@ metal_TextureFormatSupported(TextureFormat format, ProgType)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Uninitialize()
+static void metal_Uninitialize()
 {
+    if (_Metal_DrawableDispatchSemaphore != nullptr)
+        _Metal_DrawableDispatchSemaphore->Post(_Metal_DrawableDispatchSemaphoreFrameCount); //resume render thread if parked there
 }
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Reset(const ResetParam& param)
-{
-}
-
-//------------------------------------------------------------------------------
-
-static bool
-metal_NeedRestoreResources()
+static bool metal_NeedRestoreResources()
 {
     static bool lastNeedRestore = false;
     bool needRestore = TextureMetal::NeedRestoreCount();
@@ -107,28 +105,13 @@ metal_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Suspend()
+static void metal_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
 {
-    _Metal_Suspended.Set(true);
-    DAVA::Logger::Info("mtl.render-suspended");
 }
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Resume()
-{
-    //    TextureMetal::MarkAllNeedRestore();
-    //TextureMetal::ReCreateAll();
-    _Metal_Suspended.Set(false);
-    DAVA::Logger::Info("mtl.render-resumed");
-}
-
-//------------------------------------------------------------------------------
-
-bool
-rhi_MetalIsSupported()
+bool rhi_MetalIsSupported()
 {
     if (!_Metal_Device)
     {
@@ -144,11 +127,9 @@ rhi_MetalIsSupported()
     //    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
 }
 
-//------------------------------------------------------------------------------
-
-void metal_Initialize(const InitParam& param)
+void Metal_InitContext()
 {
-    _Metal_Layer = (CAMetalLayer*)param.window;
+    _Metal_Layer = static_cast<CAMetalLayer*>(_Metal_InitParam.window);
     [_Metal_Layer retain];
 
     if (!_Metal_Device)
@@ -160,16 +141,15 @@ void metal_Initialize(const InitParam& param)
     _Metal_Layer.device = _Metal_Device;
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _Metal_Layer.framebufferOnly = YES;
-    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
+    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)_Metal_InitParam.width, (CGFloat)_Metal_InitParam.height);
 
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer
 
-    int w = param.width;
-    int h = param.height;
+    int w = _Metal_InitParam.width;
+    int h = _Metal_InitParam.height;
 
-    MTLTextureDescriptor* colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
@@ -185,10 +165,32 @@ void metal_Initialize(const InitParam& param)
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
 
-    int ringBufferSize = 4 * 1024 * 1024;
+    NSString* reqSysVer = @"10.0";
+    NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
+    BOOL iosVersion10 = FALSE;
+    if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
+        iosVersion10 = TRUE;
+
+    if (iosVersion10 && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
+    {
+        DAVA::Logger::Error("A7 ios 10 detected");
+        _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
+    }
+}
+bool Metal_CheckSurface()
+{
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+void metal_Initialize(const InitParam& param)
+{
+    _Metal_InitParam = param;
+    DAVA::uint32 ringBufferSize = 2 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 2); //TODO: 2 is for release 3.1 only, in 3.2 we will decrease this in game configuration and set corresponding multiplier here (supposed 3)
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * METAL_CONSTS_RING_BUFFER_CAPACITY_MULTIPLIER);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -205,7 +207,7 @@ void metal_Initialize(const InitParam& param)
     VertexBufferMetal::SetupDispatch(&DispatchMetal);
     IndexBufferMetal::SetupDispatch(&DispatchMetal);
     QueryBufferMetal::SetupDispatch(&DispatchMetal);
-    PerfQuerySetMetal::SetupDispatch(&DispatchMetal);
+    PerfQueryMetal::SetupDispatch(&DispatchMetal);
     TextureMetal::SetupDispatch(&DispatchMetal);
     PipelineStateMetal::SetupDispatch(&DispatchMetal);
     ConstBufferMetal::SetupDispatch(&DispatchMetal);
@@ -214,14 +216,16 @@ void metal_Initialize(const InitParam& param)
     RenderPassMetal::SetupDispatch(&DispatchMetal);
     CommandBufferMetal::SetupDispatch(&DispatchMetal);
 
-    DispatchMetal.impl_Reset = &metal_Reset;
     DispatchMetal.impl_Uninitialize = &metal_Uninitialize;
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
-    DispatchMetal.impl_ResumeRendering = &metal_Resume;
-    DispatchMetal.impl_SuspendRendering = &metal_Suspend;
+
+    DispatchMetal.impl_InitContext = &Metal_InitContext;
+    DispatchMetal.impl_ValidateSurface = &Metal_CheckSurface;
+
+    DispatchMetal.impl_SyncCPUGPU = &metal_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchMetal);
 

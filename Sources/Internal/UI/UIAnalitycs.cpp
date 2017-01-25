@@ -17,7 +17,7 @@ namespace Analytics
 Analytics::Core& GetCore()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return *Engine::Instance()->GetContext()->analyticsCore;
+    return *GetEngineContext()->analyticsCore;
 #else
     return DAVA::Core::Instance()->GetAnalyticsCore();
 #endif
@@ -40,7 +40,7 @@ bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* u
 
     // Create event record
     AnalyticsEvent event(GetUIControlName(control));
-    event.fields[uiEventTypeTag] = uiEvent->tapCount == 1 ? clickEvent : doubleClickEvent;
+    event.fields[UI_EVENT_TYPE_TAG] = uiEvent->tapCount == 1 ? CLICK_EVENT : DOUBLE_CLICK_EVENT;
 
     // Process
     return core.PostEvent(event);
@@ -56,15 +56,15 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
 
     if (uiEvent->key == Key::ESCAPE)
     {
-        pressedKey = escKeyPressed;
+        pressedKey = ESC_KEY_PRESSED;
     }
     else if (uiEvent->key == Key::ENTER)
     {
-        pressedKey = enterKeyPressed;
+        pressedKey = ENTER_KEY_PRESSED;
     }
     else if (uiEvent->key == Key::BACK)
     {
-        pressedKey = backKeyPressed;
+        pressedKey = BACK_KEY_PRESSED;
     }
     else
     {
@@ -80,8 +80,8 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
 
     // Create event record
     AnalyticsEvent event(GetUIControlName(control));
-    event.fields[uiEventTypeTag] = keyPressEvent;
-    event.fields[pressedKeyTag] = pressedKey;
+    event.fields[UI_EVENT_TYPE_TAG] = KEY_PRESS_EVENT;
+    event.fields[PRESSED_KEY_TAG] = pressedKey;
 
     // Process
     return core.PostEvent(event);
@@ -89,7 +89,7 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
 
 bool IsUIEvent(const AnalyticsEvent& record)
 {
-    return record.GetField(uiEventTypeTag) != nullptr;
+    return record.GetField(UI_EVENT_TYPE_TAG) != nullptr;
 }
 
 String GetUIControlName(UIControl* uiControl)

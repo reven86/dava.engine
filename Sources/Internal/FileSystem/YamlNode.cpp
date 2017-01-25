@@ -3,12 +3,13 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
 static const String EMPTY_STRING = "";
 static const Vector<YamlNode*> EMPTY_VECTOR;
-static const MultiMap<String, YamlNode*> EMPTY_MAP = MultiMap<String, YamlNode*>();
+static const UnorderedMap<String, YamlNode*> EMPTY_MAP = UnorderedMap<String, YamlNode*>();
 
 YamlNode* YamlNode::CreateStringNode()
 {
@@ -76,8 +77,8 @@ YamlNode::~YamlNode()
     break;
     case TYPE_MAP:
     {
-        MultiMap<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
-                                               end = objectMap->ordered.end();
+        UnorderedMap<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
+                                                   end = objectMap->ordered.end();
         for (; iter != end; ++iter)
         {
             SafeRelease(iter->second);
@@ -307,9 +308,9 @@ VariantType YamlNode::AsVariantType() const
 {
     VariantType retValue;
 
-    const MultiMap<String, YamlNode*>& mapFromNode = AsMap();
+    const UnorderedMap<String, YamlNode*>& mapFromNode = AsMap();
 
-    for (MultiMap<String, YamlNode*>::const_iterator it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
+    for (auto it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
     {
         const String& innerTypeName = it->first;
 
@@ -531,7 +532,7 @@ const Vector<YamlNode*>& YamlNode::AsVector() const
     return EMPTY_VECTOR;
 }
 
-const MultiMap<String, YamlNode*>& YamlNode::AsMap() const
+const UnorderedMap<String, YamlNode*>& YamlNode::AsMap() const
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
@@ -568,7 +569,7 @@ const YamlNode* YamlNode::Get(const String& name) const
     //DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
     {
-        MultiMap<String, YamlNode*>::const_iterator iter = objectMap->ordered.find(name);
+        auto iter = objectMap->ordered.find(name);
         if (iter != objectMap->ordered.end())
         {
             return iter->second;
@@ -593,18 +594,12 @@ struct EqualToFirst
 void YamlNode::RemoveNodeFromMap(const String& name)
 {
     DVASSERT(GetType() == TYPE_MAP);
-    MultiMap<String, YamlNode *>::iterator begin = objectMap->ordered.lower_bound(name),
-                                           end = objectMap->ordered.upper_bound(name);
-    if (begin == end)
+    auto iter = objectMap->ordered.find(name);
+    if (iter == objectMap->ordered.end())
         return;
 
-    MultiMap<String, YamlNode*>::iterator it = begin;
-    for (; it != end; ++it)
-    {
-        SafeRelease(it->second);
-    }
-
-    objectMap->ordered.erase(begin, end);
+    SafeRelease(iter->second);
+    objectMap->ordered.erase(iter);
 
     Vector<std::pair<String, YamlNode*>>& array = objectMap->unordered;
     array.erase(std::remove_if(array.begin(), array.end(), EqualToFirst(name)), array.end());
@@ -641,7 +636,8 @@ bool YamlNode::GetMapOrderRepresentation() const
 
 void YamlNode::InternalSetToString(const VariantType& varType)
 {
-    DVVERIFY(InitStringFromVariantType(varType));
+    const bool initResult = InitStringFromVariantType(varType);
+    DVASSERT(initResult);
 }
 
 void YamlNode::InternalSetToString(const String& value)
@@ -689,6 +685,7 @@ void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rew
         RemoveNodeFromMap(name);
     }
 
+    DVASSERT(objectMap->ordered.find(name) == objectMap->ordered.end(), Format("YamlNode::InternalAddNodeToMap: map must have the unique key, \"%s\" is already there!", name.c_str()).c_str());
     objectMap->ordered.insert(std::pair<String, YamlNode*>(name, node));
     objectMap->unordered.push_back(std::pair<String, YamlNode*>(name, node));
 }
@@ -930,19 +927,22 @@ YamlNode* YamlNode::CreateNodeFromVariantType(const VariantType& varType)
     case TYPE_STRING:
     {
         node = CreateStringNode();
-        DVVERIFY(node->InitStringFromVariantType(varType));
+        const bool initResult = node->InitStringFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_ARRAY:
     {
         node = CreateArrayNode();
-        DVVERIFY(node->InitArrayFromVariantType(varType));
+        const bool initResult = node->InitArrayFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_MAP:
     {
         node = CreateMapNode();
-        DVVERIFY(node->InitMapFromVariantType(varType));
+        const bool initResult = node->InitMapFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     }

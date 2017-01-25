@@ -44,7 +44,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
                 const rhi::ShaderPropList& props = ShaderDescriptor::GetProps(buff.propertyLayoutId);
                 for (const auto& prop : props)
                 {
-                    if (prop.storage != rhi::ShaderProp::STORAGE_DYNAMIC)
+                    if (prop.source != rhi::ShaderProp::SOURCE_AUTO)
                     {
                         PropData data;
                         data.size = prop.arraySize;

@@ -4,6 +4,7 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
@@ -64,8 +65,7 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
         return defaultFX;
     }
 
-    Vector<int32> key;
-    ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
+    Vector<int32> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
 
     if (quality.IsValid()) //quality made as part of fx key
         key.push_back(quality.Index());
@@ -90,7 +90,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     }
 
     FilePath fxPath(fxName.c_str());
-    YamlParser* parser = YamlParser::Create(fxPath);
+    ScopedPtr<YamlParser> parser(YamlParser::Create(fxPath));
     YamlNode* rootNode = nullptr;
     if (parser)
     {
@@ -99,7 +99,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     if (!rootNode)
     {
         Logger::Error("Can't load requested old-material-template-into-fx: %s", fxPath.GetAbsolutePathname().c_str());
-        SafeRelease(parser);
         return defaultFX;
     }
 
@@ -126,7 +125,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
             }
             qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount() - 1);
         }
-        YamlParser* parserTechnique = YamlParser::Create(qualityNode->AsString());
+        ScopedPtr<YamlParser> parserTechnique(YamlParser::Create(qualityNode->AsString()));
         if (parserTechnique)
         {
             renderTechniqueNode = parserTechnique->GetRootNode();
@@ -134,11 +133,9 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
         if (!renderTechniqueNode)
         {
             Logger::Error("Can't load technique from template: %s with quality %s", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
-            SafeRelease(parserTechnique);
             return defaultFX;
         }
 
-        SafeRelease(parser);
         parser = parserTechnique;
     }
     else //technique
@@ -148,9 +145,8 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
 
     //now load render technique
     const YamlNode* stateNode = renderTechniqueNode->Get("RenderTechnique");
-    if (!stateNode)
+    if (stateNode == nullptr)
     {
-        SafeRelease(parser);
         return defaultFX;
     }
 
@@ -337,7 +333,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
             target.renderPassDescriptors.push_back(passDescriptor);
         }
     }
-    SafeRelease(parser);
 
     //add render pass for reflection/refraction - hard coded for now
     //TODO: rethink how to modify material template without full copy for all passes

@@ -36,7 +36,7 @@ struct AndroidBridge final
 
     static const String& GetExternalDocumentsDir();
     static const String& GetInternalDocumentsDir();
-    static const String& GetApplicatiionPath();
+    static const String& GetApplicationPath();
     static const String& GetPackageName();
 
     static void AttachPlatformCore(PlatformCore* platformCore);
@@ -70,6 +70,7 @@ struct AndroidBridge final
     String internalDocumentsDir;
     String appPath;
     String packageName;
+    Vector<String> cmdargs;
 };
 
 } // namespace Private

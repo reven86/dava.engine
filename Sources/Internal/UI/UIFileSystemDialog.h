@@ -9,6 +9,7 @@
 namespace DAVA
 {
 class FileList;
+class UIButton;
 class UIStaticText;
 class UITextField;
 class UIFileSystemDialog;
@@ -21,6 +22,8 @@ class UIFileSystemDialog;
 class UIFileSystemDialogDelegate
 {
 public:
+    virtual ~UIFileSystemDialogDelegate() = default;
+
     /**
         \brief This function called when user selected file in UIFileSystemDialog
         \param[in] forDialog pointer to dialog that initiated the operation

@@ -1,0 +1,114 @@
+QTabBar::tab { height: 24px; }
+QDockWidget::title{ background: #d5d5d5; }
+QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }
+QTabBar::close-button { image: url(:/QtTools/Icons/close-16.png); }
+QTabBar::close-button::hover
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #eeeeee;
+    image: url(:/QtTools/Icons/close-16.png);
+}
+QTabBar::close-button::pressed
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #dddddd;
+    image: url(:/QtTools/Icons/close-16.png);
+}
+QScrollBar:vertical
+{
+    background:#B4B4B4;
+    width:15px;
+    margin:14px 0 14px 0;
+}
+QScrollBar::handle:vertical
+{
+    border: 1px solid #B4B4B4;
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop: 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    min-width: 20px;
+}
+QScrollBar::add-line:vertical
+{
+    image: url(:/QtTools/Icons/light-downarrow.png);
+    border: 1px solid #B4B4B4;
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop : 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    height:13px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical
+{
+    image: url(:/QtTools/Icons/light-uparrow.png);
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop : 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    border: 1px solid #B4B4B4;
+    height: 13px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar:horizontal
+{
+     background: #B4B4B4;
+     height: 15px;
+     margin: 0 13px 0 13px;
+}
+QScrollBar::handle:horizontal
+{
+     border: 1px solid #B4B4B4;
+     background:qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                  stop:0 #FCFCFC, stop: 0.6 #F4F4F4 stop:1 #E5E5E5) ;
+     min-width: 20px;
+}
+QScrollBar::add-line:horizontal
+{
+     image: url(:/QtTools/Icons/light-rightarrow.png);
+     border: 1px solid #B4B4B4;
+     width: 13px;
+     subcontrol-position: right;
+     subcontrol-origin: margin;
+}
+QScrollBar::sub-line:horizontal
+{
+     image: url(:/QtTools/Icons/light-leftarrow.png);
+     border: 1px solid #B4B4B4;
+     width: 13px;
+     subcontrol-position: left;
+     subcontrol-origin: margin;
+}
+QToolButton[popupMode="1"]
+{
+    border: 1px solid #ABABAB;
+    border-radius: 3px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fcfcfc, stop: 1 #efefef);
+}
+QToolButton[popupMode="1"]
+{ 
+    padding-right: 20px;
+}
+QToolButton[popupMode="1"]:pressed 
+{
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa);
+}
+QToolButton[popupMode="1"]::menu-button
+{
+    border: 1px solid #ABABAB;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    width: 16px;
+}
+QToolButton[popupMode="1"]::menu-arrow
+{
+    image: url(:/QtTools/Icons/light-downarrow.png);
+}
+QToolButton[popupMode="1"]::menu-arrow:disabled
+{
+    image: url(:/QtTools/Icons/light-downarrow-disabled.png);
+}
+QToolButton[popupMode="1"]::menu-arrow:open
+{
+    top: 1px; left: 1px;
+}

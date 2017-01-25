@@ -1,17 +1,17 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Impl.h"
-    #include "../rhi_ShaderCache.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_RingBufferMetal.h"
+#include "../Common/rhi_BackendImpl.h"
+#include "../rhi_ShaderCache.h"
+#include "../Common/rhi_Pool.h"
+#include "rhi_RingBufferMetal.h"
 
-    #include "Logger/Logger.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
+
 #include "FileSystem/File.h"
 
-    #include "_metal.h"
+#include "_metal.h"
 
-    #define MTL_SHOW_SHADER_WARNINGS 0
+#define MTL_SHOW_SHADER_WARNINGS 0
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
@@ -553,11 +553,8 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
     Handle handle = PipelineStateMetalPool::Alloc();
     PipelineStateMetal_t* ps = PipelineStateMetalPool::Get(handle);
-    static std::vector<uint8> vprog_bin;
-    static std::vector<uint8> fprog_bin;
-
-    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
-    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+    const std::vector<uint8>& vprog_bin = rhi::ShaderCache::GetProg(desc.vprogUid);
+    const std::vector<uint8>& fprog_bin = rhi::ShaderCache::GetProg(desc.fprogUid);
 
     //    Logger::Info("metal_PipelineState_Create");
     //    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());
@@ -584,7 +581,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str());
         Logger::Error("  %s", (vp_err != nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>");
-        //Logger::Info( vp_src.UTF8String );
+        Logger::Info(vp_src.UTF8String);
         DumpShaderText((const char*)(&vprog_bin[0]), vprog_bin.size());
     }
 
@@ -616,7 +613,6 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str());
         Logger::Error("  %s", (fp_err != nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>");
-        DumpShaderText((const char*)(&fprog_bin[0]), fprog_bin.size());
     }
     
     #if MTL_SHOW_SHADER_WARNINGS

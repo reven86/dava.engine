@@ -24,24 +24,18 @@ public:
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
     virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
 
-    virtual UIControl* BeginControlWithClass(const String& className) override;
-    virtual UIControl* BeginControlWithCustomClass(const String& customClassName, const String& className) override;
-    virtual UIControl* BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
+    virtual UIControl* BeginControlWithClass(const FastName& controlName, const String& className) override;
+    virtual UIControl* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
+    virtual UIControl* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
     virtual UIControl* BeginControlWithPath(const String& pathName) override;
-    virtual UIControl* BeginUnknownControl(const YamlNode* node) override;
-    virtual void EndControl(bool isRoot) override;
+    virtual UIControl* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
+    virtual void EndControl(eControlPlace controlPlace) override;
 
     virtual void BeginControlPropertiesSection(const String& name) override;
     virtual void EndControlPropertiesSection() override;
 
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
-
-    virtual UIControlBackground* BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
-    virtual void EndBgPropertiesSection() override;
-
-    virtual UIControl* BeginInternalControlSection(int32 index, bool sectionHasProperties) override;
-    virtual void EndInternalControlSection() override;
 
     virtual void ProcessProperty(const InspMember* member, const VariantType& value) override;
 
@@ -60,6 +54,7 @@ private:
     BaseObject* currentObject;
 
     RefPtr<UIPackage> package;
+    FilePath currentPackagePath;
 
     Vector<UIPackage*> importedPackages;
     Vector<UIPriorityStyleSheet> styleSheets;

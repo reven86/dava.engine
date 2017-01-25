@@ -1,13 +1,13 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Notification/LocalNotificationImpl.h"
 
 namespace DAVA
 {
+class LocalNotificationImpl;
+
 class LocalNotification : public BaseObject
 {
 protected:
@@ -60,11 +60,4 @@ inline bool LocalNotification::IsVisible() const
 {
     return isVisible;
 }
-
-inline const DAVA::String& LocalNotification::GetId() const
-{
-    return impl->GetId();
-}
-}
-
-#endif
+} // namespace DAVA

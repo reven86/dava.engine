@@ -1,25 +1,26 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
 #include "Engine/Window.h"
-#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
 namespace Private
 {
+HCURSOR WindowBackend::defaultCursor = nullptr;
 bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
@@ -27,9 +28,12 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
+    , minWidth(Window::smallestWidth)
+    , minHeight(Window::smallestHeight)
 {
+    ::memset(&windowPlacement, 0, sizeof(windowPlacement));
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
 }
 
 WindowBackend::~WindowBackend()
@@ -45,24 +49,21 @@ bool WindowBackend::Create(float32 width, float32 height)
         return false;
     }
 
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
-    AdjustWindowSize(&w, &h);
-
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
-                                    L"DAVA_WINDOW",
-                                    windowStyle,
+                                    L"",
+                                    windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
-                                    w,
-                                    h,
+                                    CW_USEDEFAULT,
+                                    CW_USEDEFAULT,
                                     nullptr,
                                     nullptr,
                                     PlatformCore::Win32AppInstance(),
                                     this);
     if (handle != nullptr)
     {
+        DoResizeWindow(width, height, CENTER_ON_DISPLAY);
         ::ShowWindow(handle, SW_SHOWNORMAL);
         ::UpdateWindow(handle);
         return true;
@@ -90,9 +91,47 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetMinimumSize(Size2f size)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateMinimumSizeEvent(size.dx, size.dy));
+}
+
+void WindowBackend::SetFullscreen(eFullscreen newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::SetIcon(const wchar_t* iconResourceName)
+{
+    DVASSERT(hwnd != nullptr);
+
+    HICON hicon = reinterpret_cast<HICON>(::LoadImageW(PlatformCore::Win32AppInstance(), iconResourceName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
+    if (hicon != nullptr)
+    {
+        ::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hicon));
+        ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hicon));
+    }
+}
+
+void WindowBackend::SetCursor(HCURSOR hcursor)
+{
+    DVASSERT(hwnd != nullptr);
+
+    hcurCursor = hcursor;
+    if (hcurCursor == nullptr)
+    {
+        hcurCursor = defaultCursor;
+    }
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -108,19 +147,103 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
+}
+
+LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
+{
+    uint16 hittest = LOWORD(lparam);
+    if (hittest == HTCLIENT)
+    {
+        forceCursorHide = false;
+        ::SetCursor(mouseVisible ? hcurCursor : nullptr);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void WindowBackend::SetCursorInCenter()
+{
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    POINT point;
+    point.x = ((clientRect.left + clientRect.right) / 2);
+    point.y = ((clientRect.bottom + clientRect.top) / 2);
+    ::ClientToScreen(hwnd, &point);
+    ::SetCursorPos(point.x, point.y);
+}
+
 void WindowBackend::ProcessPlatformEvents()
 {
     uiDispatcher.ProcessEvents();
 }
 
-void WindowBackend::DoResizeWindow(float32 width, float32 height)
+void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
 {
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
-    AdjustWindowSize(&w, &h);
+    DVASSERT(scale > 0.0f && scale <= 1.0f);
 
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetSurfaceScaleEvent(scale));
+}
+
+void WindowBackend::DoSetSurfaceScale(const float32 scale)
+{
+    if (Renderer::GetAPI() == rhi::RHI_DX9)
+    {
+        surfaceScale = scale;
+        HandleSizeChanged(lastWidth, lastHeight, false);
+    }
+}
+
+void WindowBackend::DoResizeWindow(float32 width, float32 height, int resizeFlags)
+{
+    if ((resizeFlags & NO_TRANSLATE_TO_DIPS) == 0)
+    {
+        width *= dipSize;
+        height *= dipSize;
+    }
+
+    int32 w = static_cast<int32>(std::ceil(width));
+    int32 h = static_cast<int32>(std::ceil(height));
+    if ((resizeFlags & RESIZE_WHOLE_WINDOW) == 0)
+    {
+        RECT rc = { 0, 0, w, h };
+        ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
+
+        w = rc.right - rc.left;
+        h = rc.bottom - rc.top;
+    }
+
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    HMONITOR hmonitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+    ::GetMonitorInfoW(hmonitor, &mi);
+
+    int monitorWidth = mi.rcWork.right - mi.rcWork.left;
+    int monitorHeight = mi.rcWork.bottom - mi.rcWork.top;
+    w = std::min(w, monitorWidth);
+    h = std::min(h, monitorHeight);
+
+    int x = 0;
+    int y = 0;
     UINT flags = SWP_NOMOVE | SWP_NOZORDER;
-    ::SetWindowPos(hwnd, nullptr, 0, 0, w, h, flags);
+
+    if (resizeFlags & CENTER_ON_DISPLAY)
+    {
+        RECT rc;
+        ::GetWindowRect(hwnd, &rc);
+        x = mi.rcWork.left + (monitorWidth - w) / 2;
+        y = mi.rcWork.top + (monitorHeight - h) / 2;
+        flags &= ~SWP_NOMOVE;
+    }
+
+    ::SetWindowPos(hwnd, nullptr, x, y, w, h, flags);
 }
 
 void WindowBackend::DoCloseWindow()
@@ -134,27 +257,162 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-void WindowBackend::AdjustWindowSize(int32* w, int32* h)
+void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
 {
-    RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
-
-    *w = rc.right - rc.left;
-    *h = rc.bottom - rc.top;
+    minWidth = static_cast<int>(width);
+    minHeight = static_cast<int>(height);
 }
 
-void WindowBackend::HandleSizeChanged(int32 w, int32 h)
+void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
-    // Do not send excessive size changed events
-    if (width != w || height != h)
+    // Changing of fullscreen mode leads to size changing, so set mode before it applying
+    if (newMode == eFullscreen::On)
     {
-        width = w;
-        height = h;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                    static_cast<float32>(width),
-                                                                                    static_cast<float32>(height),
-                                                                                    1.0f,
-                                                                                    1.0f));
+        isFullscreen = true;
+        SetFullscreenMode();
+    }
+    else
+    {
+        isFullscreen = false;
+        SetWindowedMode();
+    }
+}
+
+void WindowBackend::SetFullscreenMode()
+{
+    // Get window placement which is needed for back to windowed mode
+    ::GetWindowPlacement(hwnd, &windowPlacement);
+
+    // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+    // If it's not yet visible, the style should not be modified
+    // since ShowWindow(..., SW_SHOW) will occur later
+    uint32 style = fullscreenStyle | (::IsWindowVisible(hwnd) == TRUE ? WS_VISIBLE : 0);
+    ::SetWindowLong(hwnd, GWL_STYLE, style);
+
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+    HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    ::GetMonitorInfo(monitor, &monitorInfo);
+
+    ::SetWindowPos(hwnd,
+                   HWND_TOP,
+                   monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.top,
+                   monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                   monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                   SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void WindowBackend::SetWindowedMode()
+{
+    ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+    ::SetWindowPlacement(hwnd, &windowPlacement);
+
+    UINT flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, flags);
+}
+
+void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
+{
+    if (captureMode != mode)
+    {
+        forceCursorHide = false;
+        captureMode = mode;
+        switch (mode)
+        {
+        case eCursorCapture::FRAME:
+            //not implemented
+            captureMode = mode;
+            break;
+        case eCursorCapture::PINNING:
+        {
+            // Windows 7 does not send WM_SETCURSOR message (which controls cursor visibility) while any mouse button is pressed.
+            // As a result cursor is visible but pinning is on. So if any mouse button is pressed set flag forceCursorHide which
+            // will hide cursor in mouse move events until WM_SETCURSOR will come.
+            // Windows 8 and later send WM_SETCURSOR in any case.
+
+            // clang-format off
+            forceCursorHide =
+                (::GetKeyState(VK_LBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_RBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_MBUTTON) & 0x80) != 0 ||
+                (::GetKeyState(VK_XBUTTON1) & 0x80) != 0 ||
+                (::GetKeyState(VK_XBUTTON2) & 0x80) != 0;
+            // clang-format on
+            SwitchToPinning();
+            break;
+        }
+        case eCursorCapture::OFF:
+        {
+            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+            break;
+        }
+        }
+        UpdateClipCursor();
+    }
+}
+
+void WindowBackend::SwitchToPinning()
+{
+    mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+
+    POINT pt;
+    ::GetCursorPos(&pt);
+    lastCursorPosition.x = pt.x;
+    lastCursorPosition.y = pt.y;
+    SetCursorInCenter();
+}
+
+void WindowBackend::UpdateClipCursor()
+{
+    ::ClipCursor(nullptr);
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        RECT rect;
+        ::GetClientRect(hwnd, &rect);
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect));
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect) + 1);
+        ::ClipCursor(&rect);
+    }
+}
+
+void WindowBackend::HandleWindowFocusChanging(bool hasFocus)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    if (!hasFocus)
+    {
+        if (captureMode != eCursorCapture::OFF)
+        {
+            DoSetCursorCapture(eCursorCapture::OFF);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+        }
+        DoSetCursorVisibility(true);
+    }
+
+    PlatformCore::EnableHighResolutionTimer(hasFocus);
+}
+
+void WindowBackend::DoSetCursorVisibility(bool visible)
+{
+    mouseVisible = visible;
+}
+
+void WindowBackend::HandleSizeChanged(int32 w, int32 h, bool dpiChanged)
+{
+    lastWidth = w;
+    lastHeight = h;
+
+    float32 width = std::ceil(static_cast<float32>(w) / dipSize);
+    float32 height = std::ceil(static_cast<float32>(h) / dipSize);
+
+    float32 surfaceWidth = static_cast<float32>(w) * surfaceScale;
+    float32 surfaceHeight = static_cast<float32>(h) * surfaceScale;
+
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, height, surfaceWidth, surfaceHeight, surfaceScale, dpi, fullscreen));
+    if (dpiChanged)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
     }
 }
 
@@ -163,7 +421,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height, CENTER_ON_DISPLAY);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
@@ -172,19 +430,40 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
+    case UIDispatcherEvent::SET_MINIMUM_SIZE:
+        DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
+        break;
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
+        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        DoSetCursorCapture(e.setCursorCaptureEvent.mode);
+        break;
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
+        DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
+        break;
+    case UIDispatcherEvent::SET_SURFACE_SCALE:
+        DoSetSurfaceScale(e.setSurfaceScaleEvent.scale);
         break;
     default:
         break;
     }
 }
 
-LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
+LRESULT WindowBackend::OnSize(int32 resizingType, int32 width, int32 height)
 {
+    UpdateClipCursor();
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
+        if (hasFocus)
+        {
+            hasFocus = false;
+            HandleWindowFocusChanging(hasFocus);
+        }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
     }
@@ -198,10 +477,9 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
             return 0;
         }
     }
-
     if (!isEnteredSizingModalLoop)
     {
-        HandleSizeChanged(width, height);
+        HandleSizeChanged(width, height, false);
     }
     return 0;
 }
@@ -219,114 +497,377 @@ LRESULT WindowBackend::OnExitSizeMove()
 
     int32 w = rc.right - rc.left;
     int32 h = rc.bottom - rc.top;
-    HandleSizeChanged(w, h);
+    if (w != lastWidth || h != lastHeight)
+    {
+        HandleSizeChanged(w, h, false);
+    }
 
     isEnteredSizingModalLoop = false;
     return 0;
 }
 
-LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
+LRESULT WindowBackend::OnEnterMenuLoop()
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
+    ::ClipCursor(nullptr);
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
+LRESULT WindowBackend::OnExitMenuLoop()
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
-    return 0;
-}
+    UpdateClipCursor();
 
-LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
-{
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
-                                                                               static_cast<float32>(x),
-                                                                               static_cast<float32>(y),
-                                                                               0.f,
-                                                                               static_cast<float32>(delta),
-                                                                               false));
-    return 0;
-}
-
-LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y)
-{
-    uint32 button = 0;
-    MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
-    switch (message)
+    // System menu is usually shown after pressing Alt+Space, window receives Alt up down,
+    // but do not receives Alt key up. So send event to force clearing all inputs.
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCancelInputEvent(window));
+    if (captureMode == eCursorCapture::PINNING)
     {
-    case WM_LBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 1;
-        break;
-    case WM_LBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 1;
-        break;
-    case WM_LBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_RBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 2;
-        break;
-    case WM_RBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 2;
-        break;
-    case WM_RBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_MBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 3;
-        break;
-    case WM_MBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 3;
-        break;
-    case WM_MBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_XBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = xbutton == XBUTTON1 ? 4 : 5;
-        break;
-    case WM_XBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = xbutton == XBUTTON1 ? 4 : 5;
-        break;
-    case WM_XBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    default:
+        // Place cursor in window center to prevent big mouse move delta after menu is closed
+        SetCursorInCenter();
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
+{
+    minMaxInfo->ptMinTrackSize.x = minWidth;
+    minMaxInfo->ptMinTrackSize.y = minHeight;
+    return 0;
+}
+
+LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
+{
+    float32 curDpi = GetDpi();
+    if (dpi != curDpi)
+    {
+        // Ignore suggested size in fullscreen mode
+        if (!isFullscreen)
+        {
+            float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
+            float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
+            DoResizeWindow(w, h, RESIZE_WHOLE_WINDOW | NO_TRANSLATE_TO_DIPS);
+        }
+
+        dpi = curDpi;
+        dipSize = dpi / defaultDpi;
+        HandleSizeChanged(lastWidth, lastHeight, true);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnActivate(WPARAM wparam)
+{
+    bool newFocus = (LOWORD(wparam) != WA_INACTIVE);
+    if (hasFocus != newFocus)
+    {
+        hasFocus = newFocus;
+        if (hasFocus && isMinimized)
+        {
+            isMinimized = false;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        }
+        HandleWindowFocusChanging(hasFocus);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseMoveRelativeEvent(int x, int y)
+{
+    if (mouseMoveSkipCount > 0)
+    {
+        mouseMoveSkipCount -= 1;
         return 0;
     }
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               type,
-                                                                               button,
-                                                                               static_cast<float32>(x),
-                                                                               static_cast<float32>(y),
-                                                                               1,
-                                                                               false));
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    int clientCenterX((clientRect.left + clientRect.right) / 2);
+    int clientCenterY((clientRect.bottom + clientRect.top) / 2);
+    int deltaX = x - clientCenterX;
+    int deltaY = y - clientCenterY;
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (deltaX != 0 || deltaY != 0)
+    {
+        SetCursorInCenter();
+        float32 vdeltaX = static_cast<float32>(deltaX) / dipSize;
+        float32 vdeltaY = static_cast<float32>(deltaY) / dipSize;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vdeltaX, vdeltaY, modifierKeys, true));
+    }
+    else
+    {
+        // skip mouse moveEvent, which generate SetCursorPos
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
+{
+    if (forceCursorHide)
+    {
+        // Hide cursor here untill WM_SETCURSOR message (see comment in DoSetCursorCapture)
+        ::SetCursor(nullptr);
+    }
+
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        return OnMouseMoveRelativeEvent(x, y);
+    }
+    // Windows generates WM_MOUSEMOVE event for primary touch point so check and process
+    // mouse move only from mouse device. Also skip spurious move events as described in:
+    // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
+    eInputDevices source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
+    if (source == eInputDevices::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
+    {
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 vx = static_cast<float32>(x) / dipSize;
+        float32 vy = static_cast<float32>(y) / dipSize;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
+
+        lastMouseMoveX = x;
+        lastMouseMoveY = y;
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y)
+{
+    eModifierKeys modifierKeys = GetModifierKeys();
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
+    float32 vdeltaX = static_cast<float32>(deltaX);
+    float32 vdeltaY = static_cast<float32>(deltaY);
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, vdeltaX, vdeltaY, modifierKeys, isRelative));
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y)
+{
+    // Windows generates WM_xBUTTONDONW/WM_xBUTTONUP event for primary touch point so check and process
+    // mouse clicks only from mouse device.
+    eInputDevices source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
+    if (source == eInputDevices::MOUSE)
+    {
+        uint32 newMouseButtonsState = mouseButtonsState;
+        switch (message)
+        {
+        case WM_LBUTTONDOWN:
+            newMouseButtonsState |= MK_LBUTTON;
+            break;
+        case WM_LBUTTONUP:
+            newMouseButtonsState &= ~MK_LBUTTON;
+            break;
+        case WM_RBUTTONDOWN:
+            newMouseButtonsState |= MK_RBUTTON;
+            break;
+        case WM_RBUTTONUP:
+            newMouseButtonsState &= ~MK_RBUTTON;
+            break;
+        case WM_MBUTTONDOWN:
+            newMouseButtonsState |= MK_MBUTTON;
+            break;
+        case WM_MBUTTONUP:
+            newMouseButtonsState &= ~MK_MBUTTON;
+            break;
+        case WM_XBUTTONDOWN:
+            newMouseButtonsState |= (xbutton == XBUTTON1 ? MK_XBUTTON1 : MK_XBUTTON2);
+            break;
+        case WM_XBUTTONUP:
+            newMouseButtonsState &= ~(xbutton == XBUTTON1 ? MK_XBUTTON1 : MK_XBUTTON2);
+            break;
+        default:
+            return 0;
+        }
+
+        bool isPressed = false;
+        eMouseButtons button = GetMouseButtonLegacy(mouseButtonsState, newMouseButtonsState, &isPressed);
+        if (button != eMouseButtons::NONE)
+        {
+            eModifierKeys modifierKeys = GetModifierKeys();
+            float32 vx = static_cast<float32>(x) / dipSize;
+            float32 vy = static_cast<float32>(y) / dipSize;
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+            bool isRelative = (captureMode == eCursorCapture::PINNING);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
+
+            bool setCapture = newMouseButtonsState != 0 && mouseButtonsState == 0;
+            mouseButtonsState = newMouseButtonsState;
+            if (setCapture)
+            {
+                ::SetCapture(hwnd);
+            }
+            else if (newMouseButtonsState == 0)
+            {
+                ::ReleaseCapture();
+            }
+        }
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnCaptureChanged()
+{
+    if (mouseButtonsState != 0)
+    {
+        POINT pt;
+        ::GetCursorPos(&pt);
+        ::ScreenToClient(hwnd, &pt);
+
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 vx = static_cast<float32>(pt.x);
+        float32 vy = static_cast<float32>(pt.y);
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, vx, vy, 1, modifierKeys, false);
+
+        if (mouseButtonsState & MK_LBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::LEFT;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_RBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::RIGHT;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_MBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::MIDDLE;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_XBUTTON1)
+        {
+            e.mouseEvent.button = eMouseButtons::EXTENDED1;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_XBUTTON2)
+        {
+            e.mouseEvent.button = eMouseButtons::EXTENDED2;
+            mainDispatcher->PostEvent(e);
+        }
+
+        mouseButtonsState = 0;
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
+{
+    touchInput.resize(ntouch);
+    TOUCHINPUT* pinput = touchInput.data();
+    if (::GetTouchInputInfo(htouch, ntouch, pinput, sizeof(TOUCHINPUT)))
+    {
+        eModifierKeys modifierKeys = GetModifierKeys();
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f, modifierKeys);
+        for (TOUCHINPUT& touch : touchInput)
+        {
+            POINT pt = { touch.x / 100, touch.y / 100 };
+            ::ScreenToClient(hwnd, &pt);
+            if (touch.dwFlags & (TOUCHEVENTF_PRIMARY | TOUCHEVENTF_MOVE))
+            {
+                // Remember move position of primary touch point to skip spurious move events as
+                // Windows generates WM_MOUSEMOVE event for primary touch point.
+                lastMouseMoveX = pt.x;
+                lastMouseMoveY = pt.y;
+            }
+
+            if (touch.dwFlags & TOUCHEVENTF_MOVE)
+                e.type = MainDispatcherEvent::TOUCH_MOVE;
+            else if (touch.dwFlags & TOUCHEVENTF_DOWN)
+                e.type = MainDispatcherEvent::TOUCH_DOWN;
+            else if (touch.dwFlags & TOUCHEVENTF_UP)
+                e.type = MainDispatcherEvent::TOUCH_UP;
+            else
+                continue;
+            e.touchEvent.touchId = static_cast<uint32>(touch.dwID);
+            e.touchEvent.x = static_cast<float32>(pt.x) / dipSize;
+            e.touchEvent.y = static_cast<float32>(pt.y) / dipSize;
+            mainDispatcher->PostEvent(e);
+        }
+        ::CloseTouchInputHandle(htouch);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
+{
+    POINTER_INFO pointerInfo;
+    DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
+
+    bool isPressed = false;
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (pointerInfo.pointerType == PT_MOUSE)
+    {
+        eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
+    }
+    else if (pointerInfo.pointerType == PT_TOUCH)
+    {
+        isPressed = (pointerInfo.pointerFlags & POINTER_FLAG_DOWN) == POINTER_FLAG_DOWN;
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::TOUCH_DOWN : MainDispatcherEvent::TOUCH_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, pointerId, vx, vy, modifierKeys));
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
+{
+    POINTER_INFO pointerInfo;
+    DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
+
+    float32 vx = static_cast<float32>(x) / dipSize;
+    float32 vy = static_cast<float32>(y) / dipSize;
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (pointerInfo.pointerType == PT_MOUSE)
+    {
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
+        if (pointerInfo.ButtonChangeType != POINTER_CHANGE_NONE)
+        {
+            // First mouse button down (and last mouse button up) comes with WM_POINTERDOWN/WM_POINTERUP, other mouse clicks come here
+            bool isPressed = false;
+            eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, isRelative));
+        }
+        if (isRelative)
+        {
+            return OnMouseMoveRelativeEvent(x, y);
+        }
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
+    }
+    else if (pointerInfo.pointerType == PT_TOUCH)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, pointerId, vx, vy, modifierKeys));
+    }
     return 0;
 }
 
 LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    if ((key == VK_SHIFT && scanCode == 0x36) || isExtended)
+    // How to distinguish left and right shift, control and alt
+    // http://stackoverflow.com/a/15977613
+    if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
     {
         key |= 0x100;
     }
 
+    eModifierKeys modifierKeys = GetModifierKeys();
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, isRepeated));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, isRepeated));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    // Windows translates some Ctrl key combinations into ASCII control characters.
+    // It seems to me that control character are not wanted by game to handle in character message.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
+    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
+    }
     return 0;
 }
 
@@ -335,11 +876,26 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
-    width = rc.right - rc.left;
-    height = rc.bottom - rc.top;
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f));
+    hcurCursor = defaultCursor;
+
+    // If new pointer input is available then do not handle legacy WM_TOUCH message
+    if (DllImport::fnIsMouseInPointerEnabled == nullptr || !DllImport::fnIsMouseInPointerEnabled())
+    {
+        ::RegisterTouchWindow(hwnd, TWF_FINETOUCH | TWF_WANTPALM);
+    }
+
+    lastWidth = rc.right - rc.left;
+    lastHeight = rc.bottom - rc.top;
+
+    dpi = GetDpi();
+    dipSize = dpi / defaultDpi;
+
+    float32 width = std::ceil(static_cast<float32>(lastWidth) / dipSize);
+    float32 height = std::ceil(static_cast<float32>(lastHeight) / dipSize);
+    float32 surfaceWidth = static_cast<float32>(lastWidth) * surfaceScale;
+    float32 surfaceHeight = static_cast<float32>(lastHeight) * surfaceScale;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi, eFullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
@@ -351,6 +907,13 @@ bool WindowBackend::OnClose()
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
     }
     return closeRequestByApp;
+}
+
+bool WindowBackend::OnSysCommand(int sysCommand)
+{
+    // Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
+    // Window still can be moved and sized by mouse.
+    return sysCommand == SC_MOVE || sysCommand == SC_SIZE;
 }
 
 LRESULT WindowBackend::OnDestroy()
@@ -369,11 +932,15 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
 {
     // Intentionally use 'if' instead of 'switch'
     LRESULT lresult = 0;
-    if (message == WM_SIZE)
+    if (message == WM_ACTIVATE)
     {
-        int w = GET_X_LPARAM(lparam);
-        int h = GET_Y_LPARAM(lparam);
-        lresult = OnSize(static_cast<int>(wparam), w, h);
+        lresult = OnActivate(wparam);
+    }
+    else if (message == WM_SIZE)
+    {
+        int32 w = GET_X_LPARAM(lparam);
+        int32 h = GET_Y_LPARAM(lparam);
+        lresult = OnSize(static_cast<int32>(wparam), w, h);
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -381,10 +948,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_GETMINMAXINFO)
     {
-    }
-    else if (message == WM_SETFOCUS || message == WM_KILLFOCUS)
-    {
-        lresult = OnSetKillFocus(message == WM_SETFOCUS);
+        MINMAXINFO* minMaxInfo = reinterpret_cast<MINMAXINFO*>(lparam);
+        lresult = OnGetMinMaxInfo(minMaxInfo);
     }
     else if (message == WM_ENTERSIZEMOVE)
     {
@@ -394,45 +959,109 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         lresult = OnExitSizeMove();
     }
+    else if (message == WM_SETCURSOR)
+    {
+        lresult = OnSetCursor(lparam);
+        isHandled = false;
+    }
+    else if (message == WM_POINTERDOWN || message == WM_POINTERUP)
+    {
+        uint32 pointerId = GET_POINTERID_WPARAM(wparam);
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnPointerClick(pointerId, pt.x, pt.y);
+    }
+    else if (message == WM_POINTERUPDATE)
+    {
+        uint32 pointerId = GET_POINTERID_WPARAM(wparam);
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnPointerUpdate(pointerId, pt.x, pt.y);
+    }
+    else if (message == WM_POINTERWHEEL || message == WM_POINTERHWHEEL)
+    {
+        int32 deltaX = 0;
+        int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+        if (message == WM_POINTERHWHEEL)
+        {
+            std::swap(deltaX, deltaY);
+        }
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
+    }
     else if (message == WM_MOUSEMOVE)
     {
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseMoveEvent(keyModifiers, x, y);
+        int32 x = GET_X_LPARAM(lparam);
+        int32 y = GET_Y_LPARAM(lparam);
+        lresult = OnMouseMoveEvent(x, y);
     }
-    else if (message == WM_MOUSEWHEEL)
+    else if (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)
     {
-        int32 delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(keyModifiers, delta, x, y);
+        int32 deltaX = 0;
+        int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+        if (message == WM_MOUSEHWHEEL)
+        {
+            std::swap(deltaX, deltaY);
+        }
+
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
         uint16 xbutton = GET_XBUTTON_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseClickEvent(message, keyModifiers, xbutton, x, y);
+        int32 x = GET_X_LPARAM(lparam);
+        int32 y = GET_Y_LPARAM(lparam);
+        lresult = OnMouseClickEvent(message, xbutton, x, y);
+    }
+    else if (message == WM_CAPTURECHANGED)
+    {
+        lresult = OnCaptureChanged();
+    }
+    else if (message == WM_TOUCH)
+    {
+        uint32 ntouch = LOWORD(wparam);
+        HTOUCHINPUT htouch = reinterpret_cast<HTOUCHINPUT>(lparam);
+        lresult = OnTouch(ntouch, htouch);
     }
     else if (message == WM_KEYUP || message == WM_KEYDOWN || message == WM_SYSKEYUP || message == WM_SYSKEYDOWN)
     {
         uint32 key = static_cast<uint32>(wparam);
-        uint32 scanCode = (static_cast<uint32>(lparam) << 16) & 0xFF;
+        uint32 scanCode = (static_cast<uint32>(lparam) >> 16) & 0xFF;
         bool isPressed = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
         bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
-        // Forward WM_SYSKEYUP and WM_SYSKEYDOWN to DefWindowProc to allow system shortcuts: Alt+F4, etc
-        isHandled = (message == WM_KEYUP || message == WM_KEYDOWN);
+        // Mark only WM_SYSKEYUP message as handled to prevent entering modal loop when Alt is released,
+        // but leave WM_SYSKEYDOWN as unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        isHandled = (message == WM_SYSKEYUP);
     }
-    else if (message == WM_CHAR)
+    else if (message == WM_UNICHAR)
+    {
+        uint32 key = static_cast<uint32>(wparam);
+        if (key != UNICODE_NOCHAR)
+        {
+            bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
+            lresult = OnCharEvent(key, isRepeated);
+        }
+        else
+        {
+            lresult = TRUE;
+        }
+    }
+    else if (message == WM_CHAR || message == WM_SYSCHAR)
     {
         uint32 key = static_cast<uint32>(wparam);
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnCharEvent(key, isRepeated);
+        // Leave WM_SYSCHAR unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        isHandled = (message == WM_CHAR);
     }
     else if (message == WM_TRIGGER_EVENTS)
     {
@@ -449,6 +1078,27 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_DESTROY)
     {
         lresult = OnDestroy();
+    }
+    else if (message == WM_DPICHANGED)
+    {
+        RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
+        lresult = OnDpiChanged(suggestedRect);
+    }
+    else if (message == WM_DISPLAYCHANGE)
+    {
+        engineBackend->UpdateDisplayConfig();
+    }
+    else if (message == WM_ENTERMENULOOP)
+    {
+        lresult = OnEnterMenuLoop();
+    }
+    else if (message == WM_EXITMENULOOP)
+    {
+        lresult = OnExitMenuLoop();
+    }
+    else if (message == WM_SYSCOMMAND)
+    {
+        isHandled = OnSysCommand(static_cast<int>(wparam));
     }
     else
     {
@@ -505,15 +1155,136 @@ bool WindowBackend::RegisterWindowClass()
         wcex.cbWndExtra = sizeof(void*); // Reserve room to store 'this' pointer
         wcex.hInstance = PlatformCore::Win32AppInstance();
         wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wcex.hCursor = nullptr;
         wcex.hbrBackground = nullptr;
         wcex.lpszMenuName = nullptr;
         wcex.lpszClassName = windowClassName;
         wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
+
+        defaultCursor = ::LoadCursor(nullptr, IDC_ARROW);
     }
     return windowClassRegistered;
+}
+
+float32 WindowBackend::GetDpi() const
+{
+    float32 result = 0.0f;
+    if (DllImport::fnGetDpiForMonitor != nullptr)
+    {
+        UINT x = 0;
+        UINT y = 0;
+        HMONITOR hmonitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        DllImport::fnGetDpiForMonitor(hmonitor, MDT_EFFECTIVE_DPI, &x, &y);
+        result = static_cast<float32>(x);
+    }
+    else
+    {
+        // default behavior for Windows with version < 8.1
+        HDC hdcScreen = ::GetDC(nullptr);
+        result = static_cast<float32>(::GetDeviceCaps(hdcScreen, LOGPIXELSX));
+        ::ReleaseDC(nullptr, hdcScreen);
+    }
+    return result;
+}
+
+eModifierKeys WindowBackend::GetModifierKeys()
+{
+    eModifierKeys result = eModifierKeys::NONE;
+    BYTE keyState[256];
+    if (::GetKeyboardState(keyState))
+    {
+        if ((keyState[VK_LSHIFT] & 0x80) || (keyState[VK_RSHIFT] & 0x80))
+        {
+            result |= eModifierKeys::SHIFT;
+        }
+        if ((keyState[VK_LCONTROL] & 0x80) || (keyState[VK_RCONTROL] & 0x80))
+        {
+            result |= eModifierKeys::CONTROL;
+        }
+        if ((keyState[VK_LMENU] & 0x80) || (keyState[VK_RMENU] & 0x80))
+        {
+            result |= eModifierKeys::ALT;
+        }
+    }
+    return result;
+}
+
+eInputDevices WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
+{
+    // How to distinguish pen input from mouse and touch
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
+
+    const LPARAM MI_WP_SIGNATURE = 0xFF515700;
+    const LPARAM SIGNATURE_MASK = 0xFFFFFF00;
+
+    if ((messageExtraInfo & SIGNATURE_MASK) == MI_WP_SIGNATURE)
+    {
+        return eInputDevices::TOUCH_SURFACE;
+    }
+    return eInputDevices::MOUSE;
+}
+
+eMouseButtons WindowBackend::GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed)
+{
+    uint32 changed = curState ^ newState;
+    if (changed & MK_LBUTTON)
+    {
+        *isPressed = (newState & MK_LBUTTON) != 0;
+        return eMouseButtons::LEFT;
+    }
+    if (changed & MK_RBUTTON)
+    {
+        *isPressed = (newState & MK_RBUTTON) != 0;
+        return eMouseButtons::RIGHT;
+    }
+    if (changed & MK_MBUTTON)
+    {
+        *isPressed = (newState & MK_MBUTTON) != 0;
+        return eMouseButtons::MIDDLE;
+    }
+    if (changed & MK_XBUTTON1)
+    {
+        *isPressed = (newState & MK_XBUTTON1) != 0;
+        return eMouseButtons::EXTENDED1;
+    }
+    if (changed & MK_XBUTTON2)
+    {
+        *isPressed = (newState & MK_XBUTTON2) != 0;
+        return eMouseButtons::EXTENDED2;
+    }
+    return eMouseButtons::NONE;
+}
+
+eMouseButtons WindowBackend::GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed)
+{
+    *isPressed = false;
+    switch (buttonChangeType)
+    {
+    case POINTER_CHANGE_FIRSTBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FIRSTBUTTON_UP:
+        return eMouseButtons::LEFT;
+    case POINTER_CHANGE_SECONDBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_SECONDBUTTON_UP:
+        return eMouseButtons::RIGHT;
+    case POINTER_CHANGE_THIRDBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_THIRDBUTTON_UP:
+        return eMouseButtons::MIDDLE;
+    case POINTER_CHANGE_FOURTHBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FOURTHBUTTON_UP:
+        return eMouseButtons::EXTENDED1;
+    case POINTER_CHANGE_FIFTHBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FIFTHBUTTON_UP:
+        return eMouseButtons::EXTENDED2;
+    default:
+        return eMouseButtons::NONE;
+    }
 }
 
 } // namespace Private

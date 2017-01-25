@@ -24,17 +24,18 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
     auto packedSize = archieve->Save(nullptr, 0);
     uint8* packedData = new uint8[packedSize];
 
-    DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
+    const uint32 serializedSize = archieve->Save(packedData, packedSize);
+    DVASSERT(packedSize == serializedSize);
 
     uint32 packedId = 0;
     return channel->Send(packedData, packedSize, 0, &packedId);
 }
 
-Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport)
+Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
     : endpoint(_endpoint)
     , listener(_listener)
 {
-    Connect(_role, transport);
+    Connect(_role, transport, timeoutMs);
 }
 
 Connection::~Connection()
@@ -46,7 +47,7 @@ Connection::~Connection()
     }
 }
 
-bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
+bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, uint32 timeoutMs)
 {
     const auto serviceID = NET_SERVICE_ID;
 
@@ -64,7 +65,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
         config.AddTransport(transport, endpoint);
         config.AddService(serviceID);
 
-        controllerId = Net::NetCore::Instance()->CreateController(config, this);
+        controllerId = Net::NetCore::Instance()->CreateController(config, this, timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
             return true;

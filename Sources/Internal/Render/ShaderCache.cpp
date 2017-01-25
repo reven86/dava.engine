@@ -2,6 +2,12 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
+#include "Render/RHI/rhi_ShaderSource.h"
+#include "Render/RHI/Common/PreProcess.h"
+
+#define RHI_TRACE_CACHE_USAGE 0
 
 namespace DAVA
 {
@@ -9,11 +15,14 @@ namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vertexProgText = nullptr;
-    char8* fragmentProgText = nullptr;
+    Vector<char> vertexProgText;
+    Vector<char> fragmentProgText;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
+
+    uint32 vSrcHash = 0;
+    uint32 fSrcHash = 0;
 };
 
 namespace
@@ -21,6 +30,7 @@ namespace
 Map<Vector<int32>, ShaderDescriptor*> shaderDescriptors;
 Map<FastName, ShaderSourceCode> shaderSourceCodes;
 Mutex shaderCacheMutex;
+bool loadingNotifyEnabled = false;
 bool initialized = false;
 }
 
@@ -39,16 +49,8 @@ void Uninitialize()
 
 void Clear()
 {
-    //RHI_COMPLETE - clear shader descriptors here too?
     DVASSERT(initialized);
-
     LockGuard<Mutex> guard(shaderCacheMutex);
-
-    for (auto& it : shaderSourceCodes)
-    {
-        SafeDeleteArray(it.second.vertexProgText);
-        SafeDeleteArray(it.second.fragmentProgText);
-    }
     shaderSourceCodes.clear();
 }
 
@@ -64,23 +66,31 @@ void ClearDynamicBindigs()
     }
 }
 
-void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key)
+Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines)
 {
-    key.clear();
+    Vector<int32> key;
     key.reserve(defines.size() * 2 + 1);
-    for (auto& define : defines)
+    for (const auto& define : defines)
     {
-        key.push_back(define.first.Index());
-        key.push_back(define.second);
+        key.emplace_back(define.first.Index());
+        key.emplace_back(define.second);
     }
+
+    // reinterpret cast to pairs and sort them
+    using Int32Pair = std::pair<int32, int32>;
+    Int32Pair* begin = reinterpret_cast<Int32Pair*>(key.data());
+    std::sort(begin, begin + key.size() / 2, [](const Int32Pair& l, const Int32Pair& r) {
+        return l.first < r.first;
+    });
+
     key.push_back(name.Index());
+    return key;
 }
 
-ShaderSourceCode LoadFromSource(const String& source)
+void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
 {
-    ShaderSourceCode sourceCode;
-    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
-    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
+    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.sl");
+    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.sl");
 
     //later move it into FileSystem
 
@@ -90,14 +100,14 @@ ShaderSourceCode LoadFromSource(const String& source)
     if (fp)
     {
         uint32 fileSize = static_cast<uint32>(fp->GetSize());
-        sourceCode.vertexProgText = new char8[fileSize + 1];
+        sourceCode.vertexProgText.resize(fileSize + 1);
         sourceCode.vertexProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
+        uint32 dataRead = fp->Read(sourceCode.vertexProgText.data(), fileSize);
         if (dataRead != fileSize)
         {
-            SafeDeleteArray(sourceCode.vertexProgText);
-
             loaded = false;
+            sourceCode.vertexProgText.resize(1);
+            sourceCode.vertexProgText.shrink_to_fit();
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
@@ -110,7 +120,7 @@ ShaderSourceCode LoadFromSource(const String& source)
 
     if (!loaded)
     {
-        sourceCode.vertexProgText = new char[1];
+        sourceCode.vertexProgText.resize(1);
         sourceCode.vertexProgText[0] = 0;
     }
 
@@ -120,13 +130,14 @@ ShaderSourceCode LoadFromSource(const String& source)
     if (fp)
     {
         uint32 fileSize = static_cast<uint32>(fp->GetSize());
-        sourceCode.fragmentProgText = new char8[fileSize + 1];
+        sourceCode.fragmentProgText.resize(fileSize + 1);
         sourceCode.fragmentProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
+        uint32 dataRead = fp->Read(sourceCode.fragmentProgText.data(), fileSize);
         if (dataRead != fileSize)
         {
-            SafeDeleteArray(sourceCode.fragmentProgText);
             loaded = false;
+            sourceCode.fragmentProgText.resize(1);
+            sourceCode.fragmentProgText.shrink_to_fit();
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
@@ -139,26 +150,27 @@ ShaderSourceCode LoadFromSource(const String& source)
 
     if (!loaded)
     {
-        sourceCode.fragmentProgText = new char[1];
+        sourceCode.fragmentProgText.resize(1);
         sourceCode.fragmentProgText[0] = 0;
     }
 
-    return sourceCode;
+    sourceCode.vSrcHash = HashValue_N(sourceCode.vertexProgText.data(), static_cast<uint32>(strlen(sourceCode.vertexProgText.data())));
+    sourceCode.fSrcHash = HashValue_N(sourceCode.fragmentProgText.data(), static_cast<uint32>(strlen(sourceCode.fragmentProgText.data())));
 }
 
-ShaderSourceCode GetSourceCode(const FastName& name)
+const ShaderSourceCode& GetSourceCode(const FastName& name)
 {
     auto sourceIt = shaderSourceCodes.find(name);
     if (sourceIt != shaderSourceCodes.end()) //source found
-    {
         return sourceIt->second;
-    }
-    else
-    {
-        ShaderSourceCode sourceCode = LoadFromSource(name.c_str());
-        shaderSourceCodes[name] = sourceCode;
-        return sourceCode;
-    }
+
+    LoadFromSource(name.c_str(), shaderSourceCodes[name]);
+    return shaderSourceCodes.at(name);
+}
+
+void SetLoadingNotifyEnabled(bool enable)
+{
+    loadingNotifyEnabled = enable;
 }
 
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
@@ -167,13 +179,30 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
-    /*key*/
-    Vector<int32> key;
-    BuildFlagsKey(name, defines, key);
+    Vector<int32> key = BuildFlagsKey(name, defines);
 
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
+
+    if (loadingNotifyEnabled)
+    {
+        Vector<String> sortedKeys;
+        sortedKeys.reserve(defines.size());
+        for (const auto& define : defines)
+        {
+            sortedKeys.emplace_back(DAVA::Format("%s=%d,", define.first.c_str(), define.second));
+        }
+        std::sort(sortedKeys.begin(), sortedKeys.end());
+
+        String flags;
+        flags.reserve(16 * defines.size());
+        for (const auto& define : sortedKeys)
+        {
+            flags += define;
+        }
+        Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
+    }
 
     //not found - create new shader
     Vector<String> progDefines;
@@ -189,7 +218,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
             if (strcmp(it.first.c_str(), progDefines[i].c_str()) < 0)
             {
                 progDefines.insert(progDefines.begin() + i, String(it.first.c_str()));
-                progDefines.insert(progDefines.begin() + i + 1, DAVA::Format("%d", it.second));
+                progDefines.insert(progDefines.begin() + i + 1, Format("%d", it.second));
                 doAdd = false;
                 break;
             }
@@ -198,7 +227,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         if (doAdd)
         {
             progDefines.push_back(String(it.first.c_str()));
-            progDefines.push_back(DAVA::Format("%d", it.second));
+            progDefines.push_back(Format("%d", it.second));
         }
     }
 
@@ -210,12 +239,10 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     fProgUid = FastName(String("fSource: ") + resName);
 
     ShaderSourceCode sourceCode = GetSourceCode(name);
-    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
-    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
+    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText.data(), static_cast<uint32>(strlen(sourceCode.vertexProgText.data())));
+    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText.data(), static_cast<uint32>(strlen(sourceCode.fragmentProgText.data())));
     const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
     const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
-    rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
 
 #define TRACE_CACHE_USAGE 0
 
@@ -230,9 +257,13 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", vProgUid.c_str());
 #endif
-        vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-        rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
-        vSource = &vSource2;
+        vSource = rhi::ShaderSourceCache::Add(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str(), vProgUid, rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
+
+        if (!vSource)
+        {
+            Logger::Error("failed to construct \"%s\"", vProgUid.c_str());
+            vSource = nullptr;
+        }
     }
 
     if (fSource)
@@ -246,13 +277,40 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", fProgUid.c_str());
 #endif
-        fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
-        rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
-        fSource = &fSource2;
+        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
+
+        if (!fSource)
+        {
+            Logger::Error("failed to construct \"%s\"", fProgUid.c_str());
+        }
     }
 
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
+    if (!vSource || !fSource)
+    {
+        // don't try to create pipeline-state, return 'not-valid'
+        rhi::PipelineState::Descriptor psDesc;
+        psDesc.vprogUid = vProgUid;
+        psDesc.fprogUid = fProgUid;
+        ShaderDescriptor* res = new ShaderDescriptor(rhi::HPipelineState(rhi::InvalidHandle), vProgUid, fProgUid);
+        res->sourceName = name;
+        res->defines = defines;
+        res->valid = false;
+        shaderDescriptors[key] = res;
+        return res;
+    }
+
+#if 0
+    Logger::Info("\n\n%s", vProgUid.c_str());
+    vSource->Dump();
+#endif
+    const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
+#if 0
+    Logger::Info("\n\n%s", fProgUid.c_str());
+    fSource->Dump();
+#endif
+    const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
 
     //ShaderDescr
     rhi::PipelineState::Descriptor psDesc;
@@ -270,24 +328,25 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }
+    else
+    {
+        DAVA::Logger::Error("failed to get pipeline-state");
+        DAVA::Logger::Info("  vprog-uid = %s", vProgUid.c_str());
+        DAVA::Logger::Info("  fprog-uid = %s", fProgUid.c_str());
+    }
 
     shaderDescriptors[key] = res;
     return res;
 }
 
-void RelaoadShaders()
+void ReloadShaders()
 {
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
-
-    //clear cached source files
-    for (auto& it : shaderSourceCodes)
-    {
-        SafeDeleteArray(it.second.vertexProgText);
-        SafeDeleteArray(it.second.fragmentProgText);
-    }
     shaderSourceCodes.clear();
+
+    ShaderPreprocessScope preprocessScope;
 
     //reload shaders
     for (auto& shaderDescr : shaderDescriptors)
@@ -305,11 +364,13 @@ void RelaoadShaders()
             progDefines.push_back(String(it.first.c_str()));
             progDefines.push_back(DAVA::Format("%d", it.second));
         }
-        vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-        fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+        vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
+        fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vSource.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fSource.SourceCode());
+        const std::string& vpBin = vSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
+        const std::string& fpBin = fSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
 
         //ShaderDescr
         rhi::PipelineState::Descriptor psDesc;

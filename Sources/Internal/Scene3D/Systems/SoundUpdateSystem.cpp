@@ -7,9 +7,9 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "Debug/CPUProfiler.h"
-
-#include "Engine/EngineModule.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -63,14 +63,14 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SoundUpdateSystem::Process")
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
 
     Camera* activeCamera = GetScene()->GetCurrentCamera();
 
     if (activeCamera)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        SoundSystem* ss = Engine::Instance()->GetContext()->soundSystem;
+        SoundSystem* ss = GetEngineContext()->soundSystem;
 #else
         SoundSystem* ss = SoundSystem::Instance();
 #endif

@@ -7,6 +7,7 @@ namespace DAVA
 class DeviceInfoPrivateBase
 {
 public:
+    virtual ~DeviceInfoPrivateBase() = default;
     int32 GetCpuCount();
     DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
 

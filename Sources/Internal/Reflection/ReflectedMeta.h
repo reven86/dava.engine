@@ -1,22 +1,23 @@
 #pragma once
+#include "Base/Any.h"
 #include "Base/Type.h"
+#include "Reflection/Private/Metas.h"
 
 namespace DAVA
 {
-template <typename T>
-struct Meta
+/**
+ template T - Base of Meta
+ template IndexT - Find helper type. In ReflectedMeta we store search index by Meta<IndexT, IndexT> and value as Any(Meta<T, IndexT>)
+ T should be the same as IndexT, of should be derived from IndexT
+*/
+template <typename T, typename IndexT = T>
+struct Meta : public T
 {
-    using Ptr = std::unique_ptr<void, void (*)(void*)>;
-
     template <typename... Args>
-    Meta(Args&&... args)
-        : ptr(new T(std::forward<Args>(args)...), [](void* p) { delete static_cast<T*>(p); })
-    {
-    }
-
-    Ptr ptr;
+    Meta(Args&&... args);
 };
 
+class Type;
 class ReflectedMeta final
 {
 public:
@@ -25,63 +26,51 @@ public:
     ReflectedMeta(const ReflectedMeta&) = delete;
     ReflectedMeta& operator=(const ReflectedMeta&) = delete;
 
-    DAVA_DEPRECATED(ReflectedMeta(ReflectedMeta&& rm)) // visual studio 2013 require this
-    : metas(std::move(rm.metas))
-    {
-    }
+    DAVA_DEPRECATED(ReflectedMeta(ReflectedMeta&& rm)); // visual studio 2013 require this
+
+    template <typename T, typename IndexT>
+    ReflectedMeta(Meta<T, IndexT>&& meta);
 
     template <typename T>
-    ReflectedMeta(Meta<T>&& meta)
-    {
-        Emplace(meta);
-    }
-
-    template <typename Meta>
-    bool HasMeta() const
-    {
-        return metas.count(Type::Instance<Meta>()) > 0;
-    }
+    bool HasMeta() const;
 
     template <typename T>
-    const T* GetMeta() const
-    {
-        T* meta = nullptr;
+    const T* GetMeta() const;
 
-        auto it = metas.find(Type::Instance<T>());
-        if (it != metas.end())
-        {
-            meta = static_cast<T*>(it->second.get());
-        }
-
-        return meta;
-    }
-
-    template <typename T>
-    void Emplace(Meta<T>&& meta)
-    {
-        metas.emplace(Type::Instance<T>(), std::move(meta.ptr));
-    }
+    template <typename T, typename IndexT>
+    void Emplace(Meta<T, IndexT>&& meta);
 
 protected:
-    UnorderedMap<const Type*, Meta<void>::Ptr> metas;
+    UnorderedMap<const Type*, Any> metas;
 };
 
-template <typename T, typename U>
-inline ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab)
+template <typename T, typename IndexT, typename U, typename IndexU>
+ReflectedMeta operator, (Meta<T, IndexT> && metaa, Meta<IndexU>&& metab);
+
+template <typename T, typename IndexT>
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, IndexT>&& meta);
+
+namespace M
 {
-    ReflectedMeta ret;
+using ReadOnly = Meta<Metas::ReadOnly>;
+using Range = Meta<Metas::Range>;
 
-    ret.Emplace(std::move(metaa));
-    ret.Emplace(std::move(metab));
+using ValidatorResult = Metas::ValidationResult;
+using TValidationFn = Metas::TValidationFn;
+using Validator = Meta<Metas::Validator>;
 
-    return ret;
-}
-
+using Enum = Meta<Metas::Enum>;
 template <typename T>
-ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta)
-{
-    rmeta.Emplace(std::move(meta));
-    return std::move(rmeta);
+using EnumT = Meta<Metas::EnumT<T>, Metas::Enum>;
+
+using Flags = Meta<Metas::Flags>;
+template <typename T>
+using FlagsT = Meta<Metas::FlagsT<T>, Metas::Flags>;
+
+using File = Meta<Metas::File>;
+using Directory = Meta<Metas::Directory>;
+using Group = Meta<Metas::Group>;
+using ValueDescription = Meta<Metas::ValueDescription>;
 }
 
 } // namespace DAVA

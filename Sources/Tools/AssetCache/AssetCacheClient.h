@@ -17,7 +17,7 @@ public:
         ~ConnectionParams();
         String ip = AssetCache::GetLocalHost();
         uint16 port = AssetCache::ASSET_SERVER_PORT;
-        uint64 timeoutms = 60 * 1000;
+        uint64 timeoutms = 60u * 1000u;
 
         INTROSPECTION(ConnectionParams,
                       MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_PREFERENCE)
@@ -26,7 +26,7 @@ public:
                       )
     };
 
-    AssetCacheClient(bool emulateNetworkLoop);
+    AssetCacheClient();
     ~AssetCacheClient() override;
 
     AssetCache::Error ConnectSynchronously(const ConnectionParams& connectionParams);
@@ -41,18 +41,17 @@ public:
     bool IsConnected() const;
 
 private:
-    void ProcessNetwork();
-
-    AssetCache::Error WaitRequest();
+    AssetCache::Error WaitRequest(uint64 requestTimeoutMs);
 
     AssetCache::Error CheckStatusSynchronously();
+    void PollNetworkIfSuitable();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;
     void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override;
     void OnRemovedFromCache(const AssetCache::CacheItemKey& key, bool removed) override;
     void OnCacheCleared(bool cleared) override;
-    void OnServerStatusReceived();
+    void OnServerStatusReceived() override;
     void OnIncorrectPacketReceived(AssetCache::IncorrectPacketType) override;
     void OnClientProxyStateChanged() override;
 
@@ -65,9 +64,9 @@ private:
         {
         }
         Request(AssetCache::ePacketID requestID_, const AssetCache::CacheItemKey& key_, AssetCache::CachedItemValue* value_ = nullptr)
-            : requestID(requestID_)
-            , key(key_)
+            : key(key_)
             , value(value_)
+            , requestID(requestID_)
         {
         }
 
@@ -94,21 +93,20 @@ private:
 
     AssetCache::ClientNetProxy client;
 
-    uint64 timeoutms = 60u * 1000u;
+    uint64 lightRequestTimeoutMs = 60u * 1000u;
+    uint64 heavyRequestTimeoutMs = 60u * 1000u;
+    uint64 currentTimeoutMs = 60u * 1000u;
 
     Mutex requestLocker;
     Mutex connectEstablishLocker;
     Request request;
 
     std::atomic<bool> isActive;
-    std::atomic<bool> isJobStarted;
-
-    bool emulateNetworkLoop = false;
 };
 
 inline uint64 AssetCacheClient::GetTimeoutMs() const
 {
-    return timeoutms;
+    return currentTimeoutMs;
 }
 
 } //END of DAVA

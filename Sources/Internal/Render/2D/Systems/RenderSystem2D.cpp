@@ -1,13 +1,19 @@
 #include "RenderSystem2D.h"
-#include "VirtualCoordinatesSystem.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIControlBackground.h"
+#include "UI/UIControlSystem.h"
 
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 
 #include "Render/ShaderCache.h"
+#include "Render/VisibilityQueryResults.h"
+
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -26,6 +32,7 @@ const FastName RenderSystem2D::FLAG_GRADIENT_MODE = FastName("GRADIENT_MODE");
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
@@ -50,6 +57,11 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
+    DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_PREMULTIPLIED_ALPHA);
+    DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
@@ -99,9 +111,6 @@ void RenderSystem2D::Init()
         VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * i + 4;
     }
 
-    currentVertexBuffer = nullptr;
-    currentIndexBuffer = nullptr;
-    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
@@ -115,12 +124,16 @@ void RenderSystem2D::Init()
     lastCustomWorldMatrix = Matrix4::IDENTITY;
     lastCustomMatrixSematic = 1;
     lastClip = Rect(0, 0, -1, -1);
+
+    currentVertexBuffer.reserve(MAX_VERTICES * VBO_STRIDE[1]);
+    currentIndexBuffer.reserve(MAX_INDECES);
 }
 
 RenderSystem2D::~RenderSystem2D()
 {
     SafeRelease(DEFAULT_2D_COLOR_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
@@ -150,8 +163,10 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
-    renderPass2DConfig.PerfQueryIndex0 = PERFQUERY__2D_PASS_T0;
-    renderPass2DConfig.PerfQueryIndex1 = PERFQUERY__2D_PASS_T1;
+    DAVA_PROFILER_GPU_RENDER_PASS(renderPass2DConfig, ProfilerGPUMarkerName::RENDER_PASS_2D);
+#ifdef __DAVAENGINE_RENDERSTATS__
+    renderPass2DConfig.queryBuffer = VisibilityQueryResults::GetQueryBuffer();
+#endif
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
@@ -312,19 +327,39 @@ void RenderSystem2D::Setup2DMatrices()
     //TODO: need to rethink semantic for projection matrix in RenderSystem2D, or maybe need to rethink semantics for DynamicParams
 }
 
+void RenderSystem2D::AddPacket(rhi::Packet& packet)
+{
+    DVASSERT(currentPacketListHandle.IsValid());
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+    ++Renderer::GetRenderStats().packets2d;
+
+#ifdef __DAVAENGINE_RENDERSTATS_ALPHABLEND__
+    if (packet.userFlags & NMaterial::USER_FLAG_ALPHABLEND)
+        packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_ALPHABLEND;
+    else
+        packet.queryIndex = DAVA::InvalidIndex;
+#else
+    packet.queryIndex = VisibilityQueryResults::QUERY_INDEX_UI;
+#endif
+#endif
+
+    rhi::AddPacket(currentPacketListHandle, packet);
+}
+
 void RenderSystem2D::ScreenSizeChanged()
 {
     Matrix4 glTranslate, glScale;
 
-    Vector2 scale = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(Vector2(1.f, 1.f));
-    Vector2 realDrawOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    Vector2 scale = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(Vector2(1.f, 1.f));
+    Vector2 realDrawOffset = UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
 
     glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
     glScale.glScale(scale.x, scale.y, 1.0f);
 
     actualVirtualToPhysicalMatrix = glScale * glTranslate;
-    actualPhysicalToVirtualScale.x = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(1.0f);
-    actualPhysicalToVirtualScale.y = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(1.0f);
+    actualPhysicalToVirtualScale.x = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(1.0f);
+    actualPhysicalToVirtualScale.y = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(1.0f);
     if (GetActiveTargetDescriptor().transformVirtualToPhysical)
     {
         currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
@@ -358,8 +393,8 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
     {
         const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
-                    static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height));
+                    static_cast<float32>(descr.width == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx : descr.width),
+                    static_cast<float32>(descr.height == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy : descr.height));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -419,11 +454,11 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
     const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
     if (int32(clipRect.dx) == -1)
     {
-        clipRect.dx = static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
+        clipRect.dx = static_cast<float32>(descr.width == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx : descr.width);
     }
     if (int32(clipRect.dy) == -1)
     {
-        clipRect.dy = static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
+        clipRect.dy = static_cast<float32>(descr.height == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy : descr.height);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -438,7 +473,7 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 void RenderSystem2D::Flush()
 {
     /*
-    Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw
+    Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw and changing state
     */
 
     if (vertexIndex == 0 && indexIndex == 0)
@@ -446,23 +481,31 @@ void RenderSystem2D::Flush()
         return;
     }
 
+    DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), vertexIndex);
+    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(indexIndex);
+    DVASSERT(vertexBuffer.allocatedVertices == vertexIndex);
+    DVASSERT(indexBuffer.allocatedindices == indexIndex);
+    Memcpy(vertexBuffer.data, currentVertexBuffer.data(), GetVBOStride(currentTexcoordStreamCount) * vertexIndex);
+    Memcpy(indexBuffer.data, currentIndexBuffer.data(), indexIndex * 2);
+
+    currentPacket.vertexStream[0] = vertexBuffer.buffer;
+    currentPacket.vertexCount = vertexBuffer.allocatedVertices;
+    currentPacket.baseVertex = vertexBuffer.baseVertex;
+    currentPacket.indexBuffer = indexBuffer.buffer;
+    currentPacket.startIndex = indexBuffer.baseIndex;
+
     if (currentPacketListHandle != rhi::InvalidHandle && currentPacket.primitiveCount > 0)
     {
-        rhi::AddPacket(currentPacketListHandle, currentPacket);
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-        ++Renderer::GetRenderStats().packets2d;
-#endif
+        AddPacket(currentPacket);
     }
 
-    currentVertexBuffer = nullptr;
-    currentIndexBuffer = nullptr;
+    currentVertexBuffer.clear();
+    currentIndexBuffer.clear();
 
     currentPacket.vertexStream[0] = rhi::HVertexBuffer();
     currentPacket.vertexCount = 0;
     currentPacket.baseVertex = 0;
     currentPacket.indexBuffer = rhi::HIndexBuffer();
-    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
 
     vertexIndex = 0;
@@ -489,24 +532,20 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     }
 
     if (currentPacketListHandle != rhi::InvalidHandle)
-        rhi::AddPacket(currentPacketListHandle, packet);
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-    ++Renderer::GetRenderStats().packets2d;
-#endif
+        AddPacket(packet);
 }
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    DVASSERT_MSG(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
-    DVASSERT_MSG(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
-    DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
-    DVASSERT_MSG((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
-                 (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
-                 "Incorrect textureSet or samplerState handle");
+    DVASSERT(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
+    DVASSERT(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
+    DVASSERT(batchDesc.material != nullptr, "Incorrect material");
+    DVASSERT((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
+             (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
+             "Incorrect textureSet or samplerState handle");
 
-    DVASSERT_MSG(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
-    DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
+    DVASSERT(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
+    DVASSERT(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
 
     if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
     {
@@ -530,6 +569,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         // Buffer overflow or format changed. Switch to next VBO.
         Flush();
         currentTexcoordStreamCount = trimmedTexCoordCount;
+        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
 
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
@@ -540,49 +580,75 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                 Logger::Warning("PushBatch: Too much vertices (%d of %d)! Direct draw.", batchDesc.vertexCount, MAX_VERTICES);
             }
             currFrameErrorsFlags |= BUFFER_OVERFLOW_ERROR;
-
-            // Begin create vertex and index buffers
-            DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
-            if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
-            {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), batchDesc.vertexCount);
-                DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
-                DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
-                DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
-
-                currentVertexBuffer = vertexBuffer.data;
-                currentIndexBuffer = indexBuffer.data;
-
-                currentPacket.vertexStream[0] = vertexBuffer.buffer;
-                currentPacket.vertexCount = vertexBuffer.allocatedVertices;
-                currentPacket.baseVertex = vertexBuffer.baseVertex;
-                currentPacket.indexBuffer = indexBuffer.buffer;
-                currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
-                currentIndexBase = indexBuffer.baseIndex;
-            }
-            // End create vertex and index buffers
         }
     }
 
-    // Begin create vertex and index buffers
-    if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
+    // Begin check world matrix
+    bool needUpdateWorldMatrix = false;
+    bool useCustomWorldMatrix = batchDesc.worldMatrix != nullptr;
+    if (!useCustomWorldMatrix && !lastUsedCustomWorldMatrix) // Equal and False
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), MAX_VERTICES);
-        DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
-        DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
-        DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
-
-        currentVertexBuffer = vertexBuffer.data;
-        currentIndexBuffer = indexBuffer.data;
-
-        currentPacket.vertexStream[0] = vertexBuffer.buffer;
-        currentPacket.vertexCount = vertexBuffer.allocatedVertices;
-        currentPacket.baseVertex = vertexBuffer.baseVertex;
-        currentPacket.indexBuffer = indexBuffer.buffer;
-        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
-        currentIndexBase = indexBuffer.baseIndex;
+        // Skip check world matrices. Use Matrix4::IDENTITY. (the most frequent option)
     }
-    // End create vertex and index buffers
+    else if (useCustomWorldMatrix && lastUsedCustomWorldMatrix) // Equal and True
+    {
+        if (lastCustomWorldMatrix != *batchDesc.worldMatrix) // Update only if matrices not equal
+        {
+            needUpdateWorldMatrix = true;
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    else // Not equal
+    {
+        needUpdateWorldMatrix = true;
+        if (useCustomWorldMatrix)
+        {
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    // End check world matrix
+
+    // Begin new packet
+    if (currentPacket.textureSet != batchDesc.textureSetHandle || currentPacket.primitiveType != batchDesc.primitiveType || lastMaterial != batchDesc.material || lastClip != currentClip || needUpdateWorldMatrix)
+    {
+        Flush();
+        if (useCustomWorldMatrix)
+        {
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &lastCustomWorldMatrix, static_cast<pointer_size>(lastCustomMatrixSematic));
+        }
+        else
+        {
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
+        }
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
+
+        if (currentClip.dx > 0.f && currentClip.dy > 0.f)
+        {
+            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
+            currentPacket.scissorRect.x = static_cast<int16>(std::floor(transformedClipRect.x));
+            currentPacket.scissorRect.y = static_cast<int16>(std::floor(transformedClipRect.y));
+            currentPacket.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
+            currentPacket.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
+            currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
+        }
+        else
+        {
+            currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
+        }
+        lastClip = currentClip;
+
+        currentPacket.primitiveType = batchDesc.primitiveType;
+
+        DVASSERT(batchDesc.material);
+        lastMaterial = batchDesc.material;
+        lastMaterial->BindParams(currentPacket);
+        currentPacket.textureSet = batchDesc.textureSetHandle;
+        currentPacket.samplerState = batchDesc.samplerStateHandle;
+    }
+    // End new packet
 
     // Begin define draw color
     Color useColor = batchDesc.singleColor;
@@ -625,9 +691,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     };
 
     uint32 vertexStride = GetVBOStride(currentTexcoordStreamCount);
+    currentVertexBuffer.resize(vertexStride * (vertexIndex + batchDesc.vertexCount));
+    currentIndexBuffer.resize(indexIndex + batchDesc.indexCount);
+
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer.data(), vertexStride * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
         //TODO: rethink do we still require z in rhi?
@@ -642,7 +711,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
             DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
-            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer.data(), vertexStride * (vertexIndex + i));
             v.uv_ext[texStream - 1].x = batchDesc.texCoordPointer[texStream][i * 2];
             v.uv_ext[texStream - 1].y = batchDesc.texCoordPointer[texStream][i * 2 + 1];
         }
@@ -654,84 +723,6 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentIndexBuffer[ii++] = vertexIndex + batchDesc.indexPointer[i];
     }
     // End fill vertex and index buffers
-
-    // Begin check world matrix
-    bool needUpdateWorldMatrix = false;
-    bool useCustomWorldMatrix = batchDesc.worldMatrix != nullptr;
-    if (!useCustomWorldMatrix && !lastUsedCustomWorldMatrix) // Equal and False
-    {
-        // Skip check world matrices. Use Matrix4::IDENTITY. (the most frequent option)
-    }
-    else if (useCustomWorldMatrix && lastUsedCustomWorldMatrix) // Equal and True
-    {
-        if (lastCustomWorldMatrix != *batchDesc.worldMatrix) // Update only if matrices not equal
-        {
-            needUpdateWorldMatrix = true;
-            lastCustomWorldMatrix = *batchDesc.worldMatrix;
-            lastCustomMatrixSematic++;
-        }
-    }
-    else // Not equal
-    {
-        needUpdateWorldMatrix = true;
-        if (useCustomWorldMatrix)
-        {
-            lastCustomWorldMatrix = *batchDesc.worldMatrix;
-            lastCustomMatrixSematic++;
-        }
-    }
-    // End check world matrix
-
-    // Begin new packet
-    if (currentPacket.textureSet != batchDesc.textureSetHandle || currentPacket.primitiveType != batchDesc.primitiveType || lastMaterial != batchDesc.material || lastClip != currentClip || needUpdateWorldMatrix)
-    {
-        if (currentPacket.primitiveCount > 0)
-        {
-            if (currentPacketListHandle != rhi::InvalidHandle)
-                rhi::AddPacket(currentPacketListHandle, currentPacket);
-            currentPacket.primitiveCount = 0;
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-            ++Renderer::GetRenderStats().packets2d;
-#endif
-        }
-
-        if (useCustomWorldMatrix)
-        {
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &lastCustomWorldMatrix, static_cast<pointer_size>(lastCustomMatrixSematic));
-        }
-        else
-        {
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
-        }
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
-
-        if (currentClip.dx > 0.f && currentClip.dy > 0.f)
-        {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = static_cast<int16>(std::floor(transformedClipRect.x));
-            currentPacket.scissorRect.y = static_cast<int16>(std::floor(transformedClipRect.y));
-            currentPacket.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
-            currentPacket.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
-            currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
-        }
-        else
-        {
-            currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
-        }
-        lastClip = currentClip;
-
-        currentPacket.primitiveType = batchDesc.primitiveType;
-        currentPacket.startIndex = currentIndexBase + indexIndex;
-
-        DVASSERT(batchDesc.material);
-        lastMaterial = batchDesc.material;
-        lastMaterial->BindParams(currentPacket);
-        currentPacket.textureSet = batchDesc.textureSetHandle;
-        currentPacket.samplerState = batchDesc.samplerStateHandle;
-    }
-    // End new packet
 
     switch (currentPacket.primitiveType)
     {
@@ -1008,11 +999,11 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         {
             if (sprite->type == Sprite::SPRITE_FROM_FILE)
             {
-                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+                virtualTexSize = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
             }
             else if (!sprite->textureInVirtualSpace)
             {
-                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
+                virtualTexSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(virtualTexSize);
             }
         }
         float32 adjWidth = 1.f / virtualTexSize.x;
@@ -1127,6 +1118,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         }
         else
         {
+            needGenerateData |= sprite->textures[0] != stretchData->texture;
             needGenerateData |= sprite != stretchData->sprite;
             needGenerateData |= frame != stretchData->frame;
             needGenerateData |= gd.size != stretchData->size;
@@ -1145,6 +1137,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     if (needGenerateData)
     {
         sd.sprite = sprite;
+        sd.texture = sprite->textures[0];
         sd.frame = frame;
         sd.size = gd.size;
         sd.type = type;
@@ -1243,6 +1236,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
             needGenerateData |= stretchCap != tiledData->stretchCap;
             needGenerateData |= frame != tiledData->frame;
             needGenerateData |= sprite != tiledData->sprite;
+            needGenerateData |= sprite->textures[0] != tiledData->texture;
             needGenerateData |= size != tiledData->size;
         }
     }
@@ -1260,6 +1254,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.size = size;
         td.frame = frame;
         td.sprite = sprite;
+        td.texture = sprite->textures[0];
         td.GenerateTileData();
     }
 
@@ -1340,6 +1335,10 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
             needGenerateData |= gradient != tiledData->gradient;
             needGenerateData |= contour != tiledData->contour;
             needGenerateData |= size != tiledData->size;
+            needGenerateData |= mask->textures[0] != tiledData->mask_texture;
+            needGenerateData |= detail->textures[0] != tiledData->detail_texture;
+            needGenerateData |= gradient->textures[0] != tiledData->gradient_texture;
+            needGenerateData |= contour->textures[0] != tiledData->contour_texture;
         }
     }
     else
@@ -1358,6 +1357,11 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.detail = detail;
         td.gradient = gradient;
         td.contour = contour;
+
+        td.mask_texture = mask->textures[0];
+        td.detail_texture = detail->textures[0];
+        td.gradient_texture = gradient->textures[0];
+        td.contour_texture = contour->textures[0];
 
         rhi::TextureSetDescriptor textureSetDescriptor;
         textureSetDescriptor.fragmentTextureCount = 4;
@@ -1762,7 +1766,7 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
         destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
         if (descr.transformVirtualToPhysical)
         {
-            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
+            destRect = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(destRect);
         }
     }
 
@@ -1783,11 +1787,11 @@ void TiledDrawData::GenerateTileData()
 
     Vector<Vector3> cellsWidth;
     GenerateAxisData(size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
-                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(float32(texture->GetWidth()), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
+                     UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(float32(texture->GetWidth()), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
     Vector<Vector3> cellsHeight;
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
-                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
+                     UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
     uint32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
     uint32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
@@ -1894,7 +1898,7 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
     if (sideSize > 0.0f)
         gridSize += 2;
 
-    DVASSERT_MSG(gridSize >= 0, "Incorrect grid size value!")
+    DVASSERT(gridSize >= 0, "Incorrect grid size value!");
 
     axisData.resize(gridSize);
 
@@ -2033,7 +2037,7 @@ void StretchDrawData::GenerateStretchData()
     const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
                         sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
 
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
 
     Vector2 value(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
                   sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
@@ -2239,7 +2243,7 @@ TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(
     SingleStretchData res;
     int32 resoureceSizeIndex = sprite->GetResourceSizeIndex();
 
-    Vector2 origSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)), resoureceSizeIndex);
+    Vector2 origSize = Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
     res.uvBase = Vector2(sprite->GetTextureCoordsForFrame(0)[0], sprite->GetTextureCoordsForFrame(0)[1]);
     res.uvMax = Vector2(sprite->GetTextureCoordsForFrame(0)[2], sprite->GetTextureCoordsForFrame(0)[5]);
     Vector2 uvSize = res.uvMax - res.uvBase;

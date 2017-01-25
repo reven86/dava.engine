@@ -2,6 +2,7 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
+#include "Engine/EngineTypes.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Autotesting/AutotestingDB.h"
 
@@ -296,7 +297,7 @@ String AutotestingSystemLua::GetDeviceName()
     }
     else
     {
-        deviceName = WStringToString(DeviceInfo::GetName());
+        deviceName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
     }
     replace(deviceName.begin(), deviceName.end(), ' ', '_');
     replace(deviceName.begin(), deviceName.end(), '-', '_');
@@ -306,8 +307,8 @@ String AutotestingSystemLua::GetDeviceName()
 bool AutotestingSystemLua::IsPhoneScreen()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
-    float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 xInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 yInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
     return sqrtf(xInch * xInch + yInch * yInch) <= 6.5f;
 #else
     return false;
@@ -507,7 +508,7 @@ bool AutotestingSystemLua::SetText(const String& path, const String& text)
     UITextField* tf = dynamic_cast<UITextField*>(FindControl(path));
     if (tf)
     {
-        tf->SetText(StringToWString(text));
+        tf->SetText(UTF8Utils::EncodeToWideString(text));
         return true;
     }
     return false;
@@ -571,6 +572,12 @@ void AutotestingSystemLua::ClickSystemBack()
     AutotestingSystem::Instance()->ClickSystemBack();
 }
 
+void AutotestingSystemLua::PressEscape()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::PressEscape");
+    AutotestingSystem::Instance()->PressEscape();
+}
+
 String AutotestingSystemLua::GetText(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
@@ -582,6 +589,16 @@ String AutotestingSystemLua::GetText(UIControl* control)
     if (uiTextField != nullptr)
     {
         return UTF8Utils::EncodeToUTF8(uiTextField->GetText());
+    }
+    return "";
+}
+
+String AutotestingSystemLua::GetTaggedClass(UIControl* control, const String& tag)
+{
+    const FastName& value = control->GetTaggedClass(FastName(tag));
+    if (value.IsValid())
+    {
+        return value.c_str();
     }
     return "";
 }
@@ -689,13 +706,13 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
     {
-        String actualText = WStringToString(uiStaticText->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
         return (actualText == expectedText);
     }
     UITextField* uiTextField = dynamic_cast<UITextField*>(control);
     if (uiTextField)
     {
-        String actualText = WStringToString(uiTextField->GetText());
+        String actualText = UTF8Utils::EncodeToUTF8(uiTextField->GetText());
         return (actualText == expectedText);
     }
     return false;
@@ -703,7 +720,7 @@ bool AutotestingSystemLua::CheckText(UIControl* control, const String& expectedT
 
 bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String& key)
 {
-    WideString expectedText = StringToWString(key);
+    WideString expectedText = UTF8Utils::EncodeToWideString(key);
 
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
     if (uiStaticText)
@@ -726,7 +743,7 @@ void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
     touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
 }
@@ -736,7 +753,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     UIEvent touchMove;
     touchMove.touchId = touchId;
     touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchMove.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchMove.point = point;
 
     if (AutotestingSystem::Instance()->IsTouchDown(touchId))
@@ -773,10 +790,10 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 {
     UIEvent clickDown;
     clickDown.phase = UIEvent::Phase::BEGAN;
-    clickDown.mouseButton = UIEvent::MouseButton::LEFT;
-    clickDown.device = UIEvent::Device::MOUSE;
+    clickDown.device = eInputDevices::MOUSE;
+    clickDown.mouseButton = eMouseButtons::LEFT;
     clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickDown.point = point;
     ProcessInput(clickDown);
 }
@@ -784,15 +801,15 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
 void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
 {
     UIEvent clickUp;
-    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
+    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(eMouseButtons::LEFT), clickUp))
     {
         AutotestingSystem::Instance()->OnError("ClickAction::LeftMouseClickUp click down not found");
     }
     clickUp.phase = UIEvent::Phase::ENDED;
-    clickUp.mouseButton = UIEvent::MouseButton::LEFT;
-    clickUp.device = UIEvent::Device::MOUSE;
+    clickUp.device = eInputDevices::MOUSE;
+    clickUp.mouseButton = eMouseButtons::LEFT;
     clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickUp.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickUp.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickUp.point = point;
     ProcessInput(clickUp);
 }
@@ -803,9 +820,9 @@ void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y
     wheel.wheelDelta.x = x;
     wheel.wheelDelta.y = y;
     wheel.phase = UIEvent::Phase::WHEEL;
-    wheel.device = UIEvent::Device::MOUSE;
+    wheel.device = eInputDevices::MOUSE;
     wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     wheel.point = point;
     ProcessInput(wheel);
 }

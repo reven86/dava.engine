@@ -1,4 +1,4 @@
-#include "Utils.h"
+#include "UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <Objbase.h>
@@ -7,6 +7,7 @@
 #include <ShellAPI.h>
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include <ppltasks.h>
+#include "Utils/Utils.h"
 #endif
 
 namespace DAVA
@@ -24,13 +25,13 @@ String GenerateGUID()
     Array<OLECHAR, 64> guidStringRaw{};
     ::StringFromGUID2(guid, guidStringRaw.data(), static_cast<int>(guidStringRaw.size()));
 
-    
+
 #ifndef OLE2ANSI
     // Convert to normal string
     // OLECHAR's type is wchar if OLE2ANSI is not defined, otherwise its type is char
     //
     WideString guidWideStr(guidStringRaw.data());
-    return WStringToString(guidWideStr);
+    return UTF8Utils::EncodeToUTF8(guidWideStr);
 #else
     return String(guidStringRaw.data());
 #endif
@@ -40,18 +41,28 @@ String GenerateGUID()
 
 void OpenURL(const String& url)
 {
-    auto platform_string = ref new Platform::String(StringToWString(url).c_str());
-    auto uri = ref new Windows::Foundation::Uri(platform_string);
-    concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
-    launchUriOperation.get();
+    Windows::Foundation::Uri ^ uri = nullptr;
+
+    try
+    {
+        auto platformString = ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str());
+        uri = ref new Windows::Foundation::Uri(platformString);
+    }
+    catch (Platform::InvalidArgumentException ^ )
+    {
+        // nothing to do if uri is invalid
+        return;
+    }
+
+    WaitAsync(Windows::System::Launcher::LaunchUriAsync(uri));
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
 
 void OpenURL(const String& url)
 {
-    WideString urlWide = StringToWString(url);
-    ShellExecute(NULL, L"open", urlWide.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    WideString urlWide = UTF8Utils::EncodeToWideString(url);
+    ShellExecute(nullptr, L"open", urlWide.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 #endif //  __DAVAENGINE_WIN32__
