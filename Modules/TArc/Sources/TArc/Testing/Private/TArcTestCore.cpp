@@ -1,5 +1,5 @@
 #include "TArc/Testing/TArcTestCore.h"
-#include "TArc/Testing/Private/Selftests/DeadCodeTrick.h"
+#include "TArc/Testing/Private/DeadCodeTrick.h"
 
 #include "Engine/Engine.h"
 
