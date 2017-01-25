@@ -22,6 +22,9 @@
 
 #include "ui_mainwindow.h"
 
+#include <QMessageBox>
+#include <QCheckBox>
+
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(MainWindow,
@@ -259,11 +262,6 @@ void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
 void MainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
 {
     ui->previewWidget->InjectRenderWidget(renderWidget);
-}
-
-void MainWindow::OnWindowCreated()
-{
-    ui->previewWidget->OnWindowCreated();
 }
 
 void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
