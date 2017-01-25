@@ -69,6 +69,7 @@ public:
     /**
         Process events that are currently in queue. For each event in queue dispatcher
         invokes `handler` set in dispatcher constructor.
+        Nested calls are not allowed.
     */
     void ProcessEvents();
 
@@ -78,44 +79,26 @@ public:
     void ViewEventQueue(const Function<void(const T&)>& viewer);
 
 private:
-    struct EventWrapper
-    {
-        EventWrapper(const T& x, AutoResetEvent* sigEvent)
-            : e(x)
-            , signalEvent(sigEvent)
-        {
-        }
-
-        T e;
-        AutoResetEvent* signalEvent = nullptr;
-    };
-    using EventType = EventWrapper;
-
     mutable Mutex mutex; // Mutex to guard event queue
-    Vector<EventType> eventQueue;
-    Vector<EventType> readyEvents;
+    Vector<T> eventQueue;
+    Vector<T> readyEvents;
     Function<void(const T&)> eventHandler;
     Function<void()> sendEventTrigger;
     size_t curEventIndex = 0;
 
-    static const int poolSize = 2;
-
     uint64 linkedThreadId = 0; // Identifier of thread that calls Dispatcher::ProcessEvents method
-    Semaphore semaphore; // Semaphore to guard signal event pool
-    AutoResetEvent signalEventPool[poolSize]; // Pool of events to signal about blocking call completion
-    std::atomic_flag signalEventBusyFlag[poolSize]; // Flags that indicate what signal events are busy
+    Semaphore semaphore; // Semaphore to ensure only one blocking call
+    AutoResetEvent signalEvent; // Event to signal about blocking call completion
+    bool blockingCallInQueue = false; // Flag indicating that queue contains blocking event
+    bool processEventsInProgress = false; // Flag indicating that ProcessEvents in progress to prevent nested event processing
 };
 
 template <typename T>
 Dispatcher<T>::Dispatcher(const Function<void(const T&)>& handler, const Function<void()> trigger)
     : eventHandler(handler)
     , sendEventTrigger(trigger)
-    , semaphore(poolSize)
+    , semaphore(1)
 {
-    for (std::atomic_flag& f : signalEventBusyFlag)
-    {
-        f.clear();
-    }
 }
 
 template <typename T>
@@ -142,7 +125,7 @@ template <typename U>
 void Dispatcher<T>::PostEvent(U&& e)
 {
     LockGuard<Mutex> lock(mutex);
-    eventQueue.emplace_back(std::forward<U>(e), nullptr);
+    eventQueue.emplace_back(std::forward<U>(e));
 }
 
 template <typename T>
@@ -158,41 +141,26 @@ void Dispatcher<T>::SendEvent(U&& e)
         // simply call ProcessEvents
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(std::forward<U>(e), nullptr);
+            eventQueue.emplace_back(std::forward<U>(e));
         }
         ProcessEvents();
     }
     else
     {
-        int signalEventIndex = -1;
-        while (signalEventIndex < 0)
-        {
-            for (int i = 0; i < poolSize; ++i)
-            {
-                if (!signalEventBusyFlag[i].test_and_set(std::memory_order_acquire))
-                {
-                    signalEventIndex = i;
-                    break;
-                }
-            }
-            if (signalEventIndex < 0)
-            {
-                // Wait till any signal event is released
-                semaphore.Wait();
-            }
-        }
+        // Wait till current blocking call completion if any
+        semaphore.Wait();
 
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(std::forward<U>(e), &signalEventPool[signalEventIndex]);
+            eventQueue.emplace_back(std::forward<U>(e));
+            blockingCallInQueue = true;
         }
 
         DAVA_BEGIN_BLOCKING_CALL(linkedThreadId);
 
         sendEventTrigger();
 
-        signalEventPool[signalEventIndex].Wait();
-        signalEventBusyFlag[signalEventIndex].clear(std::memory_order_release);
+        signalEvent.Wait();
         semaphore.Post(1);
 
         DAVA_END_BLOCKING_CALL(linkedThreadId);
@@ -202,22 +170,28 @@ void Dispatcher<T>::SendEvent(U&& e)
 template <typename T>
 void Dispatcher<T>::ProcessEvents()
 {
+    DVASSERT(!processEventsInProgress, "Dispatcher: nested call of ProcessEvents detected");
+
+    bool completeBlockingCall = false;
+    processEventsInProgress = true;
     {
         LockGuard<Mutex> lock(mutex);
         eventQueue.swap(readyEvents);
+        std::swap(blockingCallInQueue, completeBlockingCall);
     }
 
     curEventIndex = 0;
-    for (const EventType& w : readyEvents)
+    for (const T& w : readyEvents)
     {
-        eventHandler(w.e);
-        if (w.signalEvent != nullptr)
-        {
-            w.signalEvent->Signal();
-        }
+        eventHandler(w);
         curEventIndex += 1;
     }
     readyEvents.clear();
+    if (completeBlockingCall)
+    {
+        signalEvent.Signal();
+    }
+    processEventsInProgress = false;
 }
 
 template <typename T>
@@ -225,7 +199,7 @@ void Dispatcher<T>::ViewEventQueue(const Function<void(const T&)>& viewer)
 {
     for (size_t i = curEventIndex + 1, n = readyEvents.size(); i < n; ++i)
     {
-        viewer(readyEvents[i].e);
+        viewer(readyEvents[i]);
     }
 }
 
