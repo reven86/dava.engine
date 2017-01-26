@@ -49,6 +49,16 @@ int32 PlatformCore::OnFrame()
     return engineBackend->OnFrame();
 }
 
+void PlatformCore::PauseDisplayLink()
+{
+    bridge->PauseDisplayLink();
+}
+
+void PlatformCore::ResumeDisplayLink()
+{
+    bridge->ResumeDisplayLink();
+}
+
 } // namespace Private
 } // namespace DAVA
 

@@ -28,6 +28,8 @@
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
 - (void)setDisplayLinkInterval:(DAVA::int32)interval;
+- (void)pauseDisplayLink;
+- (void)resumeDisplayLink;
 - (void)cancelDisplayLink;
 - (void)enableGameControllerObserver:(BOOL)enable;
 
@@ -59,6 +61,16 @@
         [displayLink setFrameInterval:interval];
         curInterval = interval;
     }
+}
+
+- (void)pauseDisplayLink
+{
+    displayLink.paused = YES;
+}
+
+- (void)resumeDisplayLink
+{
+    displayLink.paused = NO;
 }
 
 - (void)cancelDisplayLink
@@ -197,6 +209,8 @@ void CoreNativeBridge::ApplicationDidEnterBackground()
     NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
 
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
+
+    PauseDisplayLink();
 }
 
 void CoreNativeBridge::ApplicationWillEnterForeground()
@@ -204,6 +218,8 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
     NotifyListeners(ON_WILL_ENTER_FOREGROUND, nullptr, nullptr);
+
+    ResumeDisplayLink();
 }
 
 void CoreNativeBridge::ApplicationWillTerminate()
@@ -260,6 +276,16 @@ void CoreNativeBridge::UnregisterUIApplicationDelegateListener(PlatformApi::Ios:
     {
         appDelegateListeners.erase(it);
     }
+}
+
+void CoreNativeBridge::PauseDisplayLink()
+{
+    [objcInterop pauseDisplayLink];
+}
+
+void CoreNativeBridge::ResumeDisplayLink()
+{
+    [objcInterop resumeDisplayLink];
 }
 
 void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)
