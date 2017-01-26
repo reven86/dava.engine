@@ -54,7 +54,10 @@ ReflectedType* ReflectedTypeDB::Edit()
 
     if (nullptr == ret->type)
     {
-        RegisterDBType(ret, Type::Instance<DecayT>(), StructureWrapperCreator<DecayT>::Create());
+        ret->type = Type::Instance<DecayT>();
+        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
+
+        RegisterDBType(ret);
         ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 

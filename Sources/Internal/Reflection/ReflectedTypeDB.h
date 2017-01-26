@@ -42,7 +42,7 @@ protected:
     template <typename T>
     static ReflectedType* Edit();
 
-    static void RegisterDBType(ReflectedType* reflectedType, const Type* type, StructureWrapper* sw);
+    static void RegisterDBType(ReflectedType* reflectedType);
 
     static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
     static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
