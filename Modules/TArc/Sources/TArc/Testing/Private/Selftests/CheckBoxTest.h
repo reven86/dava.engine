@@ -28,19 +28,20 @@ public:
 
     void PostInit() override
     {
+        using namespace DAVA::TArc;
         model.emplace("bool", true);
         model.emplace("checkState", Qt::PartiallyChecked);
 
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&model);
 
-        DAVA::TArc::CheckBox::FieldsDescriptor descrBool;
-        descrBool.valueFieldName = DAVA::FastName("bool");
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrBool;
+        descrBool[CheckBox::Fields::Checked] = "bool";
         DAVA::TArc::CheckBox* checkBool = new DAVA::TArc::CheckBox(descrBool, GetAccessor(), reflectedModel);
         DAVA::TArc::PanelKey keyBool("CheckBox_bool", DAVA::TArc::CentralPanelInfo());
         GetUI()->AddView(wndKey, keyBool, checkBool->ToWidgetCast());
 
-        DAVA::TArc::CheckBox::FieldsDescriptor descrState;
-        descrState.valueFieldName = DAVA::FastName("checkState");
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrState;
+        descrState[CheckBox::Fields::Checked] = "checkState";
         DAVA::TArc::CheckBox* checkState = new DAVA::TArc::CheckBox(descrState, GetAccessor(), reflectedModel);
         DAVA::TArc::PanelKey keyState("CheckBox_state", DAVA::TArc::CentralPanelInfo());
         GetUI()->AddView(wndKey, keyState, checkState->ToWidgetCast());

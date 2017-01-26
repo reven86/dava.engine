@@ -55,7 +55,8 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , spritesPacker(new SpritesPacker())
     , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
-    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    const EngineContext* engineContext = GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
     {
         FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
@@ -238,15 +239,16 @@ EditorFontSystem* Project::GetEditorFontSystem() const
 
 void Project::SetRtl(bool isRtl)
 {
-    UIControlSystem::Instance()->SetRtl(isRtl);
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiControlSystem->SetRtl(isRtl);
 
     documentGroup->RtlChanged();
 }
 
 void Project::SetBiDiSupport(bool support)
 {
-    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
-
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiControlSystem->SetBiDiSupportEnabled(support);
     documentGroup->BiDiSupportChanged();
 }
 
@@ -254,11 +256,12 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
-
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
+    const EngineContext* engineContext = GetEngineContext();
+    UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
+    uiControlSystem->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String& token : tokens)
     {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
+        uiControlSystem->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
     }
 
     documentGroup->GlobalStyleClassesChanged();

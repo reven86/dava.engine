@@ -1,7 +1,7 @@
-#ifndef __QUICKED_CANVAS_SYSTEM_H__
-#define __QUICKED_CANVAS_SYSTEM_H__
+#pragma once
 
 #include "EditorSystems/BaseEditorSystem.h"
+#include "Base/BaseTypes.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "SelectionContainer.h"
 #include "Model/PackageHierarchy/PackageListener.h"
@@ -10,19 +10,20 @@ class EditorSystemsManager;
 class PackageBaseNode;
 class BackgroundController;
 
-class CanvasSystem final : public BaseEditorSystem, PackageListener
+class EditorControlsView final : public BaseEditorSystem, PackageListener
 {
 public:
-    CanvasSystem(EditorSystemsManager* parent);
-    ~CanvasSystem() override;
+    EditorControlsView(DAVA::UIControl* canvasParent, EditorSystemsManager* parent);
+    ~EditorControlsView() override;
 
     DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
-    void LayoutCanvas();
 
 private:
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
+
+    void Layout();
     void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
-    void OnPackageNodeChanged(PackageNode* node);
-    void OnTransformStateChanged(bool inTransformState);
+    void OnPackageChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -34,8 +35,5 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
-    bool inTransformState = false;
-    bool needRecalculate = false;
+    DAVA::UIControl* canvasParent = nullptr;
 };
-
-#endif // __QUICKED_CANVAS_SYSTEM_H__
