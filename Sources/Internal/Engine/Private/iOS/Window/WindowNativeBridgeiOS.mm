@@ -117,6 +117,16 @@ void WindowNativeBridge::LoadView()
 
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
+    // viewWillTransitionToSize can be called when device orientation changes
+    // In some cases this won't lead to actual size changes
+    // (i.e. when rotating from Landscape Left to Landscape Right)
+    // In these cases we don't want to post SizeChanged event
+    const CGSize currentSize = [renderView frame].size;
+    if (FLOAT_EQUAL(currentSize.width, w) && FLOAT_EQUAL(currentSize.height, h))
+    {
+        return;
+    }
+
     CGSize surfaceSize = [renderView surfaceSize];
     float32 surfaceScale = [renderView surfaceScale];
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfaceSize.width, surfaceSize.height, surfaceScale, dpi, eFullscreen::On));
