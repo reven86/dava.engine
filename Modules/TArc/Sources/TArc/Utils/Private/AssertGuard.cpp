@@ -91,15 +91,18 @@ public:
         {
         case eApplicationMode::CONSOLE_MODE:
             behaviour = Assert::DefaultLoggerHandler(assertInfo);
+            break;
         case eApplicationMode::GUI_MODE:
             Assert::DefaultLoggerHandler(assertInfo);
             behaviour = Assert::DefaultDialogBoxHandler(assertInfo);
+            break;
         case eApplicationMode::TEST_MODE:
             behaviour = Assert::DefaultLoggerHandler(assertInfo);
             if (IsDebuggerPresent())
             {
                 behaviour = Assert::FailBehaviour::Halt;
             }
+            break;
         default:
             break;
         }
