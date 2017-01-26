@@ -2,7 +2,7 @@
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 
-#include "CanvasSystem.h"
+#include "EditorControlsView.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "Preferences/PreferencesRegistrator.h"
@@ -17,7 +17,7 @@
 
 using namespace DAVA;
 
-namespace CanvasSystem_namespace
+namespace EditorControlsViewDetails
 {
 class ColorControl : public UIControl
 {
@@ -199,8 +199,8 @@ public:
     void AdjustToNestedControl();
     static bool IsPropertyAffectBackground(AbstractProperty* property);
 
-    Signal<> ContentSizeChanged;
-    Signal<const Vector2&> RootControlPosChanged;
+    Signal<> contentSizeChanged;
+    Signal<const Vector2&> rootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -212,7 +212,7 @@ private:
 };
 
 BackgroundController::BackgroundController(UIControl* nestedControl_)
-    : gridControl(new CanvasSystem_namespace::GridControl())
+    : gridControl(new EditorControlsViewDetails::GridControl())
     , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , nestedControl(nestedControl_)
@@ -319,8 +319,8 @@ void BackgroundController::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
-    ContentSizeChanged.Emit();
-    RootControlPosChanged.Emit(pos);
+    contentSizeChanged.Emit();
+    rootControlPosChanged.Emit(pos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -378,24 +378,24 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
-CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
+EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
+    , canvasParent(canvasParent_)
 {
+    canvasParent->AddControl(controlsCanvas.Get());
     controlsCanvas->SetName(FastName("controls canvas"));
-    systemsManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
-    systemsManager->editingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
-    systemsManager->packageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
-    systemsManager->transformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &EditorControlsView::OnRootContolsChanged);
+    systemsManager->packageChanged.Connect(this, &EditorControlsView::OnPackageChanged);
 }
 
-CanvasSystem::~CanvasSystem()
+EditorControlsView::~EditorControlsView()
 {
-    systemsManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
+    canvasParent->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
+void EditorControlsView::OnPackageChanged(PackageNode* package_)
 {
     if (nullptr != package)
     {
@@ -408,24 +408,19 @@ void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
     }
 }
 
-void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
+void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*currentState*/, EditorSystemsManager::eDragState previousState)
 {
-    inTransformState = inTransformState_;
-    if (!inTransformState)
+    if (previousState == EditorSystemsManager::Transform)
     {
-        if (needRecalculate)
+        for (auto& control : gridControls)
         {
-            for (auto& iter : gridControls)
-            {
-                iter->UpdateCounterpoise();
-                iter->AdjustToNestedControl();
-            }
+            control->UpdateCounterpoise();
+            control->AdjustToNestedControl();
         }
     }
-    needRecalculate = false;
 }
 
-void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -437,7 +432,7 @@ void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* f
     }
 }
 
-void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
+void EditorControlsView::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -449,7 +444,7 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
     }
 }
 
-void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void EditorControlsView::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != property);
@@ -460,11 +455,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
         return;
     }
 
-    if (inTransformState)
-    {
-        needRecalculate = true;
-    }
-    else
+    if (systemsManager->GetDragState() != EditorSystemsManager::Transform)
     {
         if (BackgroundController::IsPropertyAffectBackground(property))
         {
@@ -476,16 +467,16 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
     }
 }
 
-BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* node)
+BackgroundController* EditorControlsView::CreateControlBackground(PackageBaseNode* node)
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
-    backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemsManager->rootControlPositionChanged, &Signal<const Vector2&>::Emit);
+    backgroundController->contentSizeChanged.Connect(this, &EditorControlsView::Layout);
+    backgroundController->rootControlPosChanged.Connect(&systemsManager->rootControlPositionChanged, &Signal<const Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
 
-void CanvasSystem::AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos)
+void EditorControlsView::AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos)
 {
     UIControl* grid = backgroundController->GetGridControl();
     if (pos >= controlsCanvas->GetChildren().size())
@@ -502,7 +493,7 @@ void CanvasSystem::AddBackgroundControllerToCanvas(BackgroundController* backgro
     backgroundController->AdjustToNestedControl();
 }
 
-uint32 CanvasSystem::GetIndexByPos(const Vector2& pos) const
+uint32 EditorControlsView::GetIndexByPos(const Vector2& pos) const
 {
     uint32 index = 0;
     for (auto& iter : gridControls)
@@ -518,7 +509,7 @@ uint32 CanvasSystem::GetIndexByPos(const Vector2& pos) const
     return index;
 }
 
-void CanvasSystem::LayoutCanvas()
+void EditorControlsView::Layout()
 {
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
@@ -545,13 +536,10 @@ void CanvasSystem::LayoutCanvas()
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
-    systemsManager->GetScalableControl()->SetSize(size);
-    systemsManager->GetRootControl()->SetSize(size);
-    systemsManager->GetInputLayerControl()->SetSize(size);
-    systemsManager->canvasSizeChanged.Emit();
+    systemsManager->contentSizeChanged.Emit(size);
 }
 
-void CanvasSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
+void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
 {
     Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
     Set<PackageBaseNode*> newNodes;
@@ -592,5 +580,5 @@ void CanvasSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootCont
         BackgroundController* backgroundController = CreateControlBackground(node);
         AddBackgroundControllerToCanvas(backgroundController, std::distance(rootControls_.begin(), iter));
     }
-    LayoutCanvas();
+    Layout();
 }

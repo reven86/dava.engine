@@ -23,14 +23,14 @@ protected:
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(ControlNode* node);
+    explicit HUDContainer(const ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
 
 private:
     ~HUDContainer() override = default;
-    ControlNode* node = nullptr;
+    const ControlNode* node = nullptr;
     VisibleValueProperty* visibleProperty = nullptr;
     //weak pointer to control to wrap around
     DAVA::UIControl* control = nullptr;
@@ -95,4 +95,4 @@ private:
 void SetupHUDMagnetLineControl(DAVA::UIControl* control);
 void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 
-DAVA::RefPtr<DAVA::UIControl> CreateHUDRect(ControlNode* node);
+DAVA::RefPtr<DAVA::UIControl> CreateHUDRect(const ControlNode* node);
