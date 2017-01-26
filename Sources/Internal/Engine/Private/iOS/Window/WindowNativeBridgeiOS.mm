@@ -62,7 +62,7 @@ bool WindowNativeBridge::CreateWindow()
     [uiwindow setRootViewController:renderViewController];
 
     CGRect viewRect = [renderView bounds];
-    float32 dpi = Private::DeviceManagerImpl::GetIPhoneMainScreenDpi();
+    dpi = Private::DeviceManagerImpl::GetIPhoneMainScreenDpi();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, viewRect.size.width * scale, viewRect.size.height * scale, dpi, eFullscreen::On));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
