@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "PackManager/PackManager.h"
+#include "Compression/Compressor.h"
 
 namespace DAVA
 {
@@ -55,7 +56,8 @@ private:
                                const uint64 startLoadingPos,
                                const uint64 fileCompressedSize,
                                const uint64 fileUncompressedSize,
-                               const String& url);
+                               const String& url,
+                               const Compressor::Type compressionType_);
     void UpdateFileRequest();
 
     bool IsDownloadedFileRequest() const;
@@ -70,6 +72,7 @@ private:
     uint64 sizeOfUncompressedFile = 0;
     uint64 prevDownloadedSize = 0;
     uint32 taskId = 0;
+    Compressor::Type compressionType = Compressor::Type::Lz4HC;
     Status status = Wait;
 
     DLCManagerImpl& packManagerImpl;

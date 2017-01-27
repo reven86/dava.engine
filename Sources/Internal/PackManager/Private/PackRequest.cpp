@@ -102,7 +102,8 @@ void PackRequest::InitializeCurrentFileRequest()
                           fileInfo.startPosition,
                           fileInfo.compressedSize,
                           fileInfo.originalSize,
-                          packManagerImpl.GetSuperPackUrl());
+                          packManagerImpl.GetSuperPackUrl(),
+                          fileInfo.type);
 }
 
 void PackRequest::Update()
@@ -154,7 +155,8 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
                                         const uint64 startLoadingPos_,
                                         const uint64 fileComressedSize_,
                                         const uint64 fileUncompressedSize_,
-                                        const String& url_)
+                                        const String& url_,
+                                        const Compressor::Type compressionType_)
 {
     localFile = fileName_ + ".dvpl";
     hashFromMeta = hash_;
@@ -166,6 +168,7 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
     taskId = 0;
     url = url_;
     prevDownloadedSize = 0;
+    compressionType = compressionType_;
 }
 
 void PackRequest::UpdateFileRequest()
@@ -271,10 +274,11 @@ void PackRequest::UpdateFileRequest()
         {
             // write 20 bytes LitePack footer
             PackFormat::LitePack::Footer footer;
-            footer.type = Compressor::Type::Lz4HC;
+            footer.type = compressionType;
             footer.crc32Compressed = hashFromMeta;
             footer.sizeUncompressed = static_cast<uint32>(sizeOfUncompressedFile);
             footer.sizeCompressed = static_cast<uint32>(sizeOfCompressedFile);
+            footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
 
             {
                 ScopedPtr<File> f(File::Create(localFile, File::WRITE | File::APPEND | File::OPEN));
