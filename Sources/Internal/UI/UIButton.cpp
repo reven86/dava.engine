@@ -17,13 +17,14 @@ UIButton::UIButton(const Rect& rect)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
+    UIControlBackground* bg = GetOrCreateComponent<UIControlBackground>();
     for (int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
         stateBacks[i] = NULL;
         stateTexts[i] = NULL;
     }
 
-    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(GetBackground());
+    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(bg);
 
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
