@@ -93,6 +93,7 @@ private:
     void OnWindowCreated(DAVA::Window* w);
     bool HasControllerModule() const;
     void SetInvokeListener(OperationInvoker* proxyInvoker);
+    DAVA::Signal<> syncSignal;
 
 private:
     class Impl;
