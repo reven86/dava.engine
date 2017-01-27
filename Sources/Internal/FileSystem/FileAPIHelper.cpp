@@ -111,5 +111,22 @@ bool IsDirectory(const String& dirName)
     return false;
 }
 
+uint64 GetFileSize(const String& fileName)
+{
+    Stat fileStat;
+
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString p = UTF8Utils::EncodeToWideString(fileName);
+    int32 result = FileStat(p.c_str(), &fileStat);
+#else
+    int32 result = FileStat(dirName.c_str(), &fileStat);
+#endif
+    if (result == 0)
+    {
+        return static_cast<uint64>(fileStat.st_size);
+    }
+    return std::numeric_limits<uint64>::max();
+}
+
 } // end namespace FileAPI
 } // end namespace DAVA

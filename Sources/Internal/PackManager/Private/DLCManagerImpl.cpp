@@ -322,7 +322,21 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
     PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
+
+    Vector<String> deps = request->GetDependencies();
+
+    for (const String& dependent : deps)
+    {
+        PackRequest* r = FindRequest(dependent);
+        if (nullptr == r)
+        {
+            PackRequest* dependentRequest = CreateNewRequest(dependent);
+            DVASSERT(dependentRequest != nullptr);
+        }
+    }
+
     requests.push_back(request);
+    requestManager->Push(request);
 
     return request;
 }
@@ -702,7 +716,6 @@ const IDLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
     if (request == nullptr)
     {
         request = CreateNewRequest(packName);
-        requestManager->Push(const_cast<PackRequest*>(request));
     }
     return request;
 }
@@ -725,7 +738,7 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
             if (it != end(delayedRequests))
             {
                 delayedRequests.erase(it);
-                if (delayedRequests.size() < orderIndex)
+                if (delayedRequests.size() > orderIndex)
                 {
                     delayedRequests.insert(delayedRequests.begin() + orderIndex, req);
                 }

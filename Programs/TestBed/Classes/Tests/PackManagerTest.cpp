@@ -270,6 +270,11 @@ void PackManagerTest::OnRequestUpdated(const DAVA::IDLCManager::IRequest& reques
     std::stringstream ss;
     ss << "downloading: " << packName << " : " << current << "/" << total << " (" << (progress * 100) << ")%";
 
+    if (request.IsDownloaded())
+    {
+        ss << " DOWNLOADED!!!";
+    }
+
     packNameLoading->SetUtf8Text(ss.str());
 
     auto rect = redControl->GetRect();
@@ -372,7 +377,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
         const IDLCManager::IRequest* p = pm.RequestPack(packName);
         if (!p->IsDownloaded())
         {
-            pm.SetRequestOrder(p, 0);
+            //pm.SetRequestOrder(p, 0);
         }
     }
     catch (std::exception& ex)

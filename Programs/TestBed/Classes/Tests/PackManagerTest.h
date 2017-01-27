@@ -35,7 +35,8 @@ private:
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlToServerSuperpack = "http://127.0.0.1:2424/test_pack.dvpk";
+    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/test_pack.dvpk";
+    //"http://127.0.0.1:2424/test_pack.dvpk";
     //"http://127.0.0.1:2424/superpack.dvpk";
     //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/s000001/superpack.dvpk";
     //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk";
