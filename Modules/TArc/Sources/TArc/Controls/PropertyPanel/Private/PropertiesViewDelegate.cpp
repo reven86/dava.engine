@@ -14,7 +14,6 @@ namespace TArc
 {
 namespace PropertiesViewDelegateDetail
 {
-
 void FixFont(QFont& font)
 {
     font.setFamily(font.family());
