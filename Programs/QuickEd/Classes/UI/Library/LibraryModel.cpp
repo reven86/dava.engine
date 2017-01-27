@@ -107,19 +107,19 @@ void LibraryModel::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<D
 {
     prototypes = prototypes_;
     libraryPackagePaths = libraryPackages_;
-    
+
     for (QStandardItem* item : libraryRootItems)
     {
         removeRow(item->row());
     }
     libraryRootItems.clear();
-    
+
     for (PackageNode* package : libraryPackages)
     {
         package->Release();
     }
     libraryPackages.clear();
-    
+
     int32 index = 0;
     for (const FilePath& path : libraryPackagePaths)
     {
@@ -131,7 +131,7 @@ void LibraryModel::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<D
             package = SafeRetain(libraryPackage.Get());
             libraryPackages.push_back(package);
         }
-        
+
         if (package)
         {
             QStandardItem* libraryRootItem = CreatePackageControlsItem(package, false);
@@ -234,7 +234,7 @@ void LibraryModel::SetPackageNode(PackageNode* package_)
         {
             importedPackageRootItem->appendRow(CreatePackageControlsItem(package, true));
         }
-        
+
         AddPackageControls(package->GetPrototypes(), controlsRootItem, true);
     }
 }

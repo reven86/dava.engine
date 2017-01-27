@@ -31,4 +31,3 @@ void LibraryWidget::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<
 {
     libraryModel->SetProjectLibraries(prototypes, libraryPackages);
 }
-

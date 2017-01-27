@@ -84,7 +84,6 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
         for (const auto& resDir : project->GetLibraryPackages())
         {
             libraryPackages.push_back(resDir.absolute);
-     
         }
         mainWindow->ui->libraryWidget->SetProjectLibraries(project->GetPrototypes(), libraryPackages);
     }
