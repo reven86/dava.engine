@@ -54,7 +54,7 @@ struct CheckBoxTestData : public ReflectionBase
         return value == true ? "True" : "False";
     }
 
-    DAVA_VIRTUAL_REFLECTION(CheckBoxTestData, ReflectionBase)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(CheckBoxTestData, ReflectionBase)
     {
         ReflectionRegistrator<CheckBoxTestData>::Begin()
         .Field("value", &CheckBoxTestData::value)[DAVA::M::ValueDescription(&CheckBoxTestData::ValueDescription)]
@@ -134,7 +134,7 @@ struct LineEditTestData : public ReflectionBase
         return r;
     }
 
-    DAVA_VIRTUAL_REFLECTION(LineEditTestData, ReflectionBase)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(LineEditTestData, ReflectionBase)
     {
         using namespace DAVA::M;
 
@@ -276,7 +276,7 @@ void TestUIModule::ShowDialog()
     }
 }
 
-DAVA_REFLECTION_IMPL(TestUIModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(TestUIModule)
 {
     DAVA::ReflectionRegistrator<TestUIModule>::Begin()
     .ConstructorByPointer()

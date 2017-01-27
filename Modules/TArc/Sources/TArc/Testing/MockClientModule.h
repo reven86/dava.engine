@@ -63,7 +63,7 @@ public:
     {
     }
 
-    DAVA_VIRTUAL_REFLECTION(MockClientModule, ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(MockClientModule, ClientModule)
     {
         ReflectionRegistrator<MockClientModule>::Begin()
         .ConstructorByPointer()

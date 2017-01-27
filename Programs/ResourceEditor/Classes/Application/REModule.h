@@ -15,7 +15,7 @@ public:
 protected:
     void PostInit() override;
 
-    DAVA_VIRTUAL_REFLECTION(REModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(REModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<REModule>::Begin()
         .ConstructorByPointer()

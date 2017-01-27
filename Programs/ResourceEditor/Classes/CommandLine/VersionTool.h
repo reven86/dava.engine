@@ -12,7 +12,7 @@ protected:
     eFrameResult OnFrameInternal() override;
 
 private:
-    DAVA_VIRTUAL_REFLECTION(VersionTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(VersionTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<VersionTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

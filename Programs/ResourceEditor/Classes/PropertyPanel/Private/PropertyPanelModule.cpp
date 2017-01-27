@@ -31,7 +31,7 @@ public:
 
     static const char* selectedEntitiesProperty;
 
-    DAVA_VIRTUAL_REFLECTION(PropertyPanelData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(PropertyPanelData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<PropertyPanelData>::Begin()
         .Field(selectedEntitiesProperty, &PropertyPanelData::propertyPanelObjects)
@@ -99,7 +99,7 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
     }
 }
 
-DAVA_REFLECTION_IMPL(PropertyPanelModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(PropertyPanelModule)
 {
     DAVA::ReflectionRegistrator<PropertyPanelModule>::Begin()
     .ConstructorByPointer()

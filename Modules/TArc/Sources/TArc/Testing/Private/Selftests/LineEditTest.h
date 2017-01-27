@@ -158,7 +158,7 @@ public:
 
     static LineEditTestModule* instance;
 
-    DAVA_VIRTUAL_REFLECTION(LineEditTestModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(LineEditTestModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<LineEditTestModule>::Begin()
         .ConstructorByPointer()

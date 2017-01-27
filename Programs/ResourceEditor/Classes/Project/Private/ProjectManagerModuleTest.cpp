@@ -39,7 +39,7 @@ protected:
     {
     }
 
-    DAVA_VIRTUAL_REFLECTION(SceneManagerMockModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(SceneManagerMockModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<SceneManagerMockModule>::Begin()
         .ConstructorByPointer()

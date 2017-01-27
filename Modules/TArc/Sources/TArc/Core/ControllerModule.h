@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TArc/Core/ClientModule.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 class QCloseEvent;
 
@@ -25,7 +25,7 @@ protected:
     friend class Core;
 
 private:
-    DAVA_VIRTUAL_REFLECTION(ControllerModule, ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ControllerModule, ClientModule)
     {
     }
 };

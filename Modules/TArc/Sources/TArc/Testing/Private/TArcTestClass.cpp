@@ -53,7 +53,7 @@ protected:
         ctxManager->ActivateContext(id);
     }
 
-    DAVA_VIRTUAL_REFLECTION(TestControllerModule, ControllerModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(TestControllerModule, ControllerModule)
     {
         ReflectionRegistrator<TestControllerModule>::Begin()
         .ConstructorByPointer()

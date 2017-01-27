@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TArc/Core/Private/CoreInterface.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -59,7 +59,7 @@ private:
     CoreInterface* coreInterface = nullptr;
     UI* ui = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION(ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ClientModule)
     {
     }
 };

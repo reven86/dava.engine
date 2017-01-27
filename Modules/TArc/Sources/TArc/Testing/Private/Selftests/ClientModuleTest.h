@@ -6,7 +6,7 @@
 
 class CMMockModule : public DAVA::TArc::MockClientModule, public DAVA::Singleton<CMMockModule>
 {
-    DAVA_VIRTUAL_REFLECTION(CMMockModule, DAVA::TArc::MockClientModule, DAVA::Singleton<CMMockModule>)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(CMMockModule, DAVA::TArc::MockClientModule, DAVA::Singleton<CMMockModule>)
     {
         DAVA::ReflectionRegistrator<CMMockModule>::Begin()
         .ConstructorByPointer()

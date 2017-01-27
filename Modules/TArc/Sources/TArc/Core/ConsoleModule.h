@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Debug/DVAssert.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -33,7 +33,7 @@ private:
 private:
     ContextAccessor* contextAccessor = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION(ConsoleModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ConsoleModule)
     {
     }
 };

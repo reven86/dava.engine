@@ -10,7 +10,7 @@ public:
     DAVA::int32 dummyIntField = 0;
     DAVA::float32 dummyFloatField = 0.0f;
 
-    DAVA_VIRTUAL_REFLECTION(DataListenerNode, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(DataListenerNode, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<DataListenerNode>::Begin()
         .Field("dummyIntField", &DataListenerNode::dummyIntField)

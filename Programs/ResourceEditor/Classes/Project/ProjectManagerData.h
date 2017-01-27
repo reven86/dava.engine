@@ -49,7 +49,7 @@ private:
 
     DAVA::FilePath projectPath;
 
-    DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ProjectManagerData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<ProjectManagerData>::Begin()
         .Field(ProjectPathProperty.c_str(), &ProjectManagerData::GetProjectPath, nullptr)

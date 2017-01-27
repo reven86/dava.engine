@@ -13,7 +13,7 @@ protected:
 private:
     DAVA::TArc::QtConnections connections;
 
-    DAVA_VIRTUAL_REFLECTION(MitsubaExporter, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(MitsubaExporter, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<MitsubaExporter>::Begin()
         .ConstructorByPointer()

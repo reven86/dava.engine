@@ -12,7 +12,7 @@ private:
     eFrameResult OnFrameInternal() override;
     void ShowHelpInternal() override;
 
-    DAVA_VIRTUAL_REFLECTION(ConsoleHelpTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ConsoleHelpTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<ConsoleHelpTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

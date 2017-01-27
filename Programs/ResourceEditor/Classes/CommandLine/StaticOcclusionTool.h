@@ -33,7 +33,7 @@ protected:
     };
     eAction commandAction = ACTION_NONE;
 
-    DAVA_VIRTUAL_REFLECTION(StaticOcclusionTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(StaticOcclusionTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<StaticOcclusionTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

@@ -29,7 +29,7 @@ private:
     DAVA::Vector<DAVA::eGPUFamily> compressedGPUs;
     SceneDumper::eMode mode = SceneDumper::eMode::REQUIRED;
 
-    DAVA_VIRTUAL_REFLECTION(DumpTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(DumpTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<DumpTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
