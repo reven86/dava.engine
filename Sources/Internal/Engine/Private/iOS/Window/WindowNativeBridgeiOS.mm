@@ -175,7 +175,7 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setSurfaceScale:scale];
 
-    CGSize size = [renderView frame].size;
+    CGSize size = [renderView bounds].size;
     CGSize surfaceSize = [renderView surfaceSize];
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfaceSize.width, surfaceSize.height, scale, dpi, eFullscreen::On));
 }
