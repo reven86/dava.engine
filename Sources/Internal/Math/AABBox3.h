@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/Any.h"
 #include "Math/Vector.h"
 #include "Math/Ray.h"
 #include "Base/Introspection.h"
@@ -261,7 +260,7 @@ inline Vector3 AABBox3::GetSize() const
 {
     return Vector3(Abs(max.x - min.x), Abs(max.y - min.y), Abs(max.z - min.z));
 }
-
+/*
 template <>
 struct AnyCompare<AABBox3>
 {
@@ -272,4 +271,5 @@ struct AnyCompare<AABBox3>
         return bbox1 == bbox2;
     }
 };
+*/
 }

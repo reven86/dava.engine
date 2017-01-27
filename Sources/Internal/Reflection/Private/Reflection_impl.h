@@ -6,6 +6,8 @@
 
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 
+#if 0
+
 #define IMPL__DAVA_REFLECTION(Cls) \
     template <typename FT__> \
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
@@ -31,6 +33,26 @@
     } \
     static void __ReflectionInitializer_Impl()
 
+#else
+
+#define IMPL__DAVA_REFLECTION(Cls) \
+    template <typename FT__> \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    static void Dava__ReflectionInitializer() { Dava__ReflectionInitializerS(); } \
+    static void Dava__ReflectionInitializerS()
+
+#define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
+    template <typename FT__> \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    using Cls__BaseTypes = std::tuple<##__VA_ARGS__>; \
+    const DAVA::ReflectedType* Dava__GetReflectedType() const override; \
+    static void Dava__ReflectionRegisterBases(); \
+    static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
+    static void Dava__ReflectionInitializerV()
+
+#endif
+
+#if 0
 #define IMPL__DAVA_REFLECTION_IMPL(Cls) \
     void Cls::__ReflectionInitializer_Impl()
 
@@ -39,6 +61,7 @@
 
 #define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
     DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
+#endif
 
 namespace DAVA
 {
@@ -54,7 +77,7 @@ protected:
     };
 
     template <typename U>
-    static char Test(SFINAE<U, &U::__ReflectionInitializer>*);
+    static char Test(SFINAE<U, &U::Dava__ReflectionInitializer>*);
 
     template <typename U>
     static int Test(...);
@@ -65,7 +88,7 @@ protected:
     {
         // T has TypeInitializer function,
         // so we should run it
-        T::__ReflectionInitializer();
+        T::Dava__ReflectionInitializer();
     }
 
     inline static void RunImpl(std::false_type)
@@ -81,13 +104,7 @@ public:
         RunImpl(std::integral_constant<bool, CheckType::value>());
     }
 };
-
-template <typename T>
-const ReflectedType* GetByThisPointer(const T* this_)
-{
-    return ReflectedTypeDB::Get<T>();
-}
-}
+} // ReflectionDetail
 
 inline bool Reflection::IsReadonly() const
 {
@@ -147,7 +164,6 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
-
 template <>
 struct AnyCompare<Reflection>
 {

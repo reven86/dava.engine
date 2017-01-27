@@ -1,18 +1,19 @@
 #pragma once
 
-#include <sstream>
+#include <tuple>
+#include <ostream>
+
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/Type.h"
-#include "Base/TypeInheritance.h"
 
 #include "Debug/DVAssert.h"
-
-#include "Reflection/ReflectedMeta.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/ReflectedTypeDB.h"
-#include "Reflection/ReflectedStructure.h"
 #include "Reflection/ReflectedObject.h"
+
+// #include "Reflection/ReflectedMeta.h"
+// #include "Reflection/ReflectedType.h"
+// #include "Reflection/ReflectedTypeDB.h"
+// #include "Reflection/ReflectedStructure.h"
 
 /** \defgroup reflection Reflection
     TODO: detailed description 
@@ -31,10 +32,22 @@
 #define DAVA_VIRTUAL_REFLECTION(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ##__VA_ARGS__)
 
 /**
-    \ingroup reflection
-    TODO: usage comments
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ##__VA_ARGS__)
+
+/**
+\ingroup reflection
+TODO: usage comments
 */
 #define DAVA_REFLECTION_IMPL(Cls) IMPL__DAVA_REFLECTION_IMPL(Cls)
+
+/**
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_VIRTUAL_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_REFLECTION_IMPL(Cls)
 
 /**
     \ingroup reflection
@@ -50,6 +63,7 @@
 
 namespace DAVA
 {
+class ReflectedMeta;
 class ValueWrapper;
 class StructureWrapper;
 
@@ -68,7 +82,7 @@ class StructureWrapper;
 struct ReflectionBase
 {
     virtual ~ReflectionBase() = default;
-    virtual const ReflectedType* GetReflectedType() const = 0;
+    virtual const ReflectedType* Dava__GetReflectedType() const = 0;
 };
 
 /** 
@@ -237,9 +251,7 @@ struct StructureWrapperCreator;
 
 } // namespace DAVA
 
+#ifndef __DAVA_Reflection__
 #define __DAVA_Reflection__
+#endif
 #include "Reflection/Private/Reflection_impl.h"
-#include "Reflection/Private/ReflectedMeta_impl.h"
-#include "Reflection/Private/ReflectedType_impl.h"
-#include "Reflection/Private/ReflectedTypeDB_impl.h"
-#include "Reflection/Private/ReflectedObject_impl.h"

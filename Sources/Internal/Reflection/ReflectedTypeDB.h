@@ -1,5 +1,12 @@
 #pragma once
-#include "Base/BaseTypes.h"
+
+#include "Base/List.h"
+#include "Base/UnordererMap.h"
+
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectedStructure.h"
 
 namespace DAVA
 {
@@ -50,3 +57,11 @@ protected:
     static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
+
+#ifndef __DAVA_Reflection__
+#define __DAVA_Reflection__
+#endif
+#include "Reflection/Private/ReflectedObject_impl.h"
+#include "Reflection/Private/ReflectedMeta_impl.h"
+#include "Reflection/Private/ReflectedType_impl.h"
+#include "Reflection/Private/ReflectedTypeDB_impl.h"

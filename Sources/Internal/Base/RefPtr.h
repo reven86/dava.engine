@@ -2,7 +2,6 @@
 #define __DAVA_REF_PTR_H__
 
 #include "Base/BaseObject.h"
-#include "Base/Any.h"
 
 namespace DAVA
 {
@@ -180,6 +179,7 @@ private:
     }
 };
 
+/*
 template <typename T>
 struct AnyCompare<RefPtr<T>>
 {
@@ -190,6 +190,7 @@ struct AnyCompare<RefPtr<T>>
         return s1 == s2;
     }
 };
+*/
 
 } // ns
 

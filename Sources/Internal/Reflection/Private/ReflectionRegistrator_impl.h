@@ -4,10 +4,51 @@
 #include "Reflection/ReflectionRegistrator.h"
 #endif
 
+#define IMPL__DAVA_REFLECTION_IMPL(Cls) \
+    void Cls::Dava__ReflectionInitializerS()
+
+#define IMPL__DAVA_VIRTUAL_REFLECTION_IMPL(Cls) \
+    const DAVA::ReflectedType* Cls::Dava__GetReflectedType() const { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
+    void Cls::Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls::Cls__BaseTypes>::Register(); } \
+    void Cls::Dava__ReflectionInitializerV()
+
+#define IMPL__DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ...) \
+    template <typename FT__> \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    using Cls__BaseTypes = std::tuple<##__VA_ARGS__>; \
+    const DAVA::ReflectedType* Dava__GetReflectedType() const override { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
+    static void Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls__BaseTypes>::Register(); } \
+    static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
+    static void Dava__ReflectionInitializerV()
+
+#define IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls)
+
+#define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
+
 namespace DAVA
 {
 namespace ReflectionRegistratorDetail
 {
+template <typename T, typename Bases>
+struct BasesRegistrator;
+
+template <typename T, typename... Bases>
+struct BasesRegistrator<T, std::tuple<Bases...>>
+{
+    static inline void Register()
+    {
+        ReflectedTypeDB::RegisterBases<T, Bases...>();
+    }
+};
+
+template <typename T>
+const ReflectedType* GetByThisPointer(const T* this_)
+{
+    return ReflectedTypeDB::Get<T>();
+}
+
 template <typename T>
 struct FnRetFoReflectionRet
 {

@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA

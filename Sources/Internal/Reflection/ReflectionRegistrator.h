@@ -24,6 +24,8 @@ template <typename C>
 class ReflectionRegistrator final
 {
 public:
+    ~ReflectionRegistrator();
+
     static ReflectionRegistrator Begin();
 
     template <typename... Args>
@@ -59,7 +61,6 @@ public:
 
 private:
     ReflectionRegistrator();
-    ~ReflectionRegistrator();
 
     ReflectedStructure* structure = nullptr;
     std::unique_ptr<ReflectedMeta>* lastMeta;

@@ -84,7 +84,7 @@ struct A : public virtual DAVA::ReflectionBase
         return true;
     }
 
-    DAVA_VIRTUAL_REFLECTION(A)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(A)
     {
         DAVA::ReflectionRegistrator<A>::Begin()
         .Field("a", &A::a)
@@ -96,7 +96,7 @@ struct A : public virtual DAVA::ReflectionBase
 struct B : public virtual DAVA::ReflectionBase
 {
     DAVA::String b = "BBB";
-    DAVA_VIRTUAL_REFLECTION(B)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(B)
     {
         DAVA::ReflectionRegistrator<B>::Begin()
         .Field("b", &B::b)
@@ -108,7 +108,7 @@ struct AB : public A, public B
 {
     DAVA::String ab = "ABABAB";
 
-    DAVA_VIRTUAL_REFLECTION(AB, A, B)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(AB, A, B)
     {
         DAVA::ReflectionRegistrator<AB>::Begin()
         .Field("ab", &AB::ab)
@@ -119,7 +119,7 @@ struct AB : public A, public B
 struct D : public AB
 {
     DAVA::String d = "DDD";
-    DAVA_VIRTUAL_REFLECTION(D, AB)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(D, AB)
     {
         DAVA::ReflectionRegistrator<D>::Begin()
         .Field("d", &D::d)
@@ -132,7 +132,7 @@ struct DHolder : DAVA::ReflectionBase
     int i = 0;
     D d;
 
-    DAVA_VIRTUAL_REFLECTION(DHolder)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(DHolder)
     {
         DAVA::ReflectionRegistrator<DHolder>::Begin()
         .Field("i", &DHolder::i)
@@ -306,7 +306,7 @@ protected:
     A* aptr = nullptr;
     DHolder dholder = DHolder();
 
-    DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(ReflectionTestClass, A)
     {
         DAVA::ReflectionRegistrator<ReflectionTestClass>::Begin()
         .ConstructorByPointer()
@@ -367,7 +367,7 @@ struct BaseOnlyReflection : public A
 
     int aaa = 0;
 
-    DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, A)
+    DAVA_VIRTUAL_REFLECTION_INPLACE(BaseOnlyReflection, A)
     {
         DAVA::ReflectionRegistrator<BaseOnlyReflection>::Begin()
         .ConstructorByPointer(&BaseOnlyReflection::Create)

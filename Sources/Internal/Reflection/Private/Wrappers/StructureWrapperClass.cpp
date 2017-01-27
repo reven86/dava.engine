@@ -1,3 +1,4 @@
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/Private/Wrappers/StructureWrapperClass.h"
 
 namespace DAVA
