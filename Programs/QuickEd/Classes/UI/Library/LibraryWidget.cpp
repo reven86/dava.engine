@@ -27,12 +27,8 @@ void LibraryWidget::OnDocumentChanged(Document* document)
     treeView->collapse(libraryModel->GetDefaultControlsModelIndex());
 }
 
-void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages)
+void LibraryWidget::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes, const DAVA::Vector<DAVA::FilePath>& libraryPackages)
 {
-    libraryModel->SetLibraryPackages(libraryPackages);
+    libraryModel->SetProjectLibraries(prototypes, libraryPackages);
 }
 
-void LibraryWidget::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes)
-{
-    libraryModel->SetPrototypes(prototypes);
-}
