@@ -172,7 +172,8 @@ DAVA::FilePath ProjectProperties::MakeAbsolutePath(const DAVA::String& relPath) 
     if (relPath.empty())
         return FilePath();
 
-    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    const DAVA::EngineContext* engineContext = GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
 
     FilePath pathInResDir = resourceDirectory.absolute + relPath;
     if (fileSystem->Exists(pathInResDir))
