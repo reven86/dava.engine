@@ -6,6 +6,8 @@
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/LineEdit.h>
+#include <TArc/Controls/IntSpinBox.h>
+#include <TArc/Controls/QtBoxLayouts.h>
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -118,16 +120,16 @@ struct LineEditTestData : public ReflectionBase
         return value == true ? "Enabled" : "Disabled";
     }
 
-    static M::ValidatorResult ValidateText(const Any& value, const Any& prevValue)
+    static M::ValidationResult ValidateText(const Any& value, const Any& prevValue)
     {
         String v = value.Cast<String>();
         String pv = prevValue.Cast<String>();
-        M::ValidatorResult r;
-        r.state = M::ValidatorResult::eState::Valid;
+        M::ValidationResult r;
+        r.state = M::ValidationResult::eState::Valid;
 
         if (v.size() > 20)
         {
-            r.state = M::ValidatorResult::eState::Invalid;
+            r.state = M::ValidationResult::eState::Invalid;
             r.message = "Too long text!";
         }
 
@@ -215,6 +217,65 @@ struct LineEditTestData : public ReflectionBase
     }
 };
 
+struct IntSpinBoxTestData : public ReflectionBase
+{
+    int v = 10;
+
+    Any GetValue() const
+    {
+        if (v == 10)
+        {
+            return Any();
+        }
+        return Any(v);
+    }
+
+    void SetValue(const Any& value)
+    {
+        v = value.Cast<int>();
+    }
+
+    String GetTextValue() const
+    {
+        return std::to_string(v);
+    }
+
+    DAVA_VIRTUAL_REFLECTION(IntSpinBoxTestData)
+    {
+        ReflectionRegistrator<IntSpinBoxTestData>::Begin()
+        .Field("value", &IntSpinBoxTestData::GetValue, &IntSpinBoxTestData::SetValue)[M::Range(0, 300, 2)]
+        .Field("text", &IntSpinBoxTestData::GetTextValue, nullptr)
+        .End();
+    }
+
+    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        Result r;
+        IntSpinBoxTestData* data = new IntSpinBoxTestData();
+        r.model = data;
+        QtVBoxLayout* layout = new QtVBoxLayout();
+        r.layout = layout;
+        Reflection reflection = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
+            descr[IntSpinBox::Fields::Value] = "value";
+            IntSpinBox* spinBox = new IntSpinBox(descr, accessor, reflection, parent);
+            layout->AddWidget(spinBox);
+        }
+
+        {
+            ControlDescriptorBuilder<LineEdit::Fields> d;
+            d[LineEdit::Fields::Text] = "text";
+            layout->AddWidget(new LineEdit(d, accessor, reflection, parent));
+        }
+
+        return r;
+    }
+};
+
 struct Node
 {
     TestSpaceCreator creator;
@@ -243,7 +304,8 @@ void TestUIModule::ShowDialog()
     DAVA::Vector<Node> nodes =
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
-      { &LineEditTestData::Create, "LineEdit Test" }
+      { &LineEditTestData::Create, "LineEdit Test" },
+      { &IntSpinBoxTestData::Create, "SpinBoxTest" }
     };
     DAVA::Vector<DAVA::ReflectionBase*> data;
 

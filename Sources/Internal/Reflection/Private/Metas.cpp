@@ -6,9 +6,10 @@ namespace DAVA
 {
 namespace Metas
 {
-Range::Range(const Any& minValue_, const Any& maxValue_)
+Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)
+    , step(step_)
 {
 }
 

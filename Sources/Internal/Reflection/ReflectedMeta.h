@@ -88,7 +88,7 @@ using TValidationFn = Metas::TValidationFn;
     Result of validation function
     To get more information check Metas::ValidationResult documentation
 */
-using ValidatorResult = Metas::ValidationResult;
+using ValidationResult = Metas::ValidationResult;
 
 /**
     \ingroup metas

@@ -11,7 +11,7 @@ namespace TArc
 class ValidatorDelegate
 {
 public:
-    virtual M::ValidatorResult Validate(const Any& value) const = 0;
+    virtual M::ValidationResult Validate(const Any& value) const = 0;
     virtual void ShowHint(const QString& message) = 0;
 };
 

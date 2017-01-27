@@ -27,6 +27,5 @@ set(QT_RES_FILES "Sources/TArc/Controls/*.qrc")
 
 set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)
-set(PACKAGE_QT5_INCLUDES Qt5Core_PRIVATE_INCLUDE_DIRS)
 
 setup_main_module()

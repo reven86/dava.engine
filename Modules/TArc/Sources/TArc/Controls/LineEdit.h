@@ -38,7 +38,7 @@ private:
     void SetupControl();
     void EditingFinished();
 
-    M::ValidatorResult Validate(const Any& value) const override;
+    M::ValidationResult Validate(const Any& value) const override;
     void ShowHint(const QString& message) override;
 
 private:

@@ -32,34 +32,34 @@ struct LineEditDataSource
         return text;
     }
 
-    static M::ValidatorResult Invalidate(const Any& newValue, const Any& currentValue)
+    static M::ValidationResult Invalidate(const Any& newValue, const Any& currentValue)
     {
-        M::ValidatorResult result;
-        result.state = M::ValidatorResult::eState::Valid;
+        M::ValidationResult result;
+        result.state = M::ValidationResult::eState::Valid;
         String v = newValue.Cast<String>();
         if (v.find('+') != String::npos)
         {
-            result.state = M::ValidatorResult::eState::Invalid;
+            result.state = M::ValidationResult::eState::Invalid;
         }
 
         return result;
     }
 
-    static M::ValidatorResult FixupValidator(const Any& newValue, const Any& current)
+    static M::ValidationResult FixupValidator(const Any& newValue, const Any& current)
     {
-        M::ValidatorResult result;
-        result.state = M::ValidatorResult::eState::Valid;
+        M::ValidationResult result;
+        result.state = M::ValidationResult::eState::Valid;
         String v = newValue.Cast<String>();
         if (v.size() > 5)
         {
-            result.state = M::ValidatorResult::eState::Invalid;
+            result.state = M::ValidationResult::eState::Invalid;
         }
 
         String v1 = v;
         std::replace(v.begin(), v.end(), '4', '2');
         if (v1 != v)
         {
-            result.state = M::ValidatorResult::eState::Intermediate;
+            result.state = M::ValidationResult::eState::Intermediate;
             result.fixedValue = v;
         }
 

@@ -24,9 +24,10 @@ class ReadOnly
 class Range
 {
 public:
-    Range(const Any& minValue, const Any& maxValue);
+    Range(const Any& minValue, const Any& maxValue, const Any& step);
     const Any minValue;
     const Any maxValue;
+    const Any step;
 };
 
 /**
