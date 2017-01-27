@@ -39,7 +39,11 @@ lite_archive::lite_archive(const std::string& file)
     info.compressionType = footer.type;
     info.hash = footer.crc32_compressed;
     info.originalSize = footer.size_uncompressed;
-    info.relativeFilePath = file_name;
+
+    std::string relative = file_name.substr(file_name.find_last_of("/\\") + 1, std::string::npos);
+    relative = relative.substr(0, relative.size() - 5); // remove ".dvpl" extension
+
+    info.relativeFilePath = relative;
 
     file_info.push_back(info);
 
@@ -53,7 +57,7 @@ const std::vector<pack_format::file_info>& lite_archive::get_files_info() const
 
 const pack_format::file_info* lite_archive::get_file_info(const std::string& relative) const
 {
-    if (relative == file_name)
+    if (relative == file_info[0].relativeFilePath)
     {
         return &file_info[0];
     }
@@ -62,11 +66,17 @@ const pack_format::file_info* lite_archive::get_file_info(const std::string& rel
 
 bool lite_archive::has_file(const std::string& relative) const
 {
-    return relative == file_name;
+    return relative == file_info[0].relativeFilePath;
 }
 
 bool lite_archive::load_file(const std::string& relative, std::vector<uint8_t>& output)
 {
+    l << "start loading file: " << relative << '\n';
+    if (relative != file_info[0].relativeFilePath)
+    {
+        l << "no such file!\n";
+        return false;
+    }
     output.resize(footer.size_uncompressed);
 
     switch (footer.type)
