@@ -39,7 +39,7 @@
 
 - (CGSize)surfaceSize
 {
-    const CGSize size = [self frame].size;
+    const CGSize size = [self bounds].size;
     const CGFloat scaleFactor = [self contentScaleFactor];
     return CGSizeMake(size.width * scaleFactor, size.height * scaleFactor);
 }
