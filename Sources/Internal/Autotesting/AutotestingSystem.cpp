@@ -75,39 +75,53 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+bool AutotestingSystem::ResolvePathToAutomation()
 {
-    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
-    String automationResolvedStrPath;
-    // Try to find automation data in Documents
-    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
+    pathToAutomation = "~doc:/atpath.txt";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-        automationResolvedStrPath = "d:" + automationPath;
+        ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
+        if (file)
+        {
+            pathToAutomation = file->ReadLine();
+            if (FileSystem::Instance()->Exists(pathToAutomation))
+            {
+                Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
+                return true;
+            }
+        }
     }
-    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autoteting/";
     }
     else
     {
-        automationResolvedStrPath = "~doc:" + automationPath;
+        pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (FilePath(automationResolvedStrPath).Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
 
     // If there are no automation data in documents, try to find it in Data
-    if (FilePath("~res:" + automationPath).Exists())
+    pathToAutomation = "~res:/Autotesting/";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        automationResolvedStrPath = "~res:" + automationPath;
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
-    return "";
+    return false;
+}
+
+FilePath AutotestingSystem::GetPathTo(const String& path)
+{
+    return pathToAutomation + path;
 }
 
 // This method is called on application started and it handle autotest initialisation
@@ -129,9 +143,9 @@ void AutotestingSystem::OnAppStarted()
         FetchParametersFromDB();
     }
 
-    const String testFileLocation = Format("/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
-    String testFileStrPath = ResolvePathToAutomation(testFileLocation);
-    if (testFileStrPath.empty())
+    const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
+    FilePath testFileStrPath = GetPathTo(testFileLocation);
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         return;
@@ -186,8 +200,8 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    bool isLocalBuild = option->GetBool("LocalBuild", false);
-    if (isLocalBuild)
+    //bool isLocalBuild = ;
+    if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
         testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
@@ -197,12 +211,11 @@ void AutotestingSystem::FetchParametersFromIdYaml()
 
 RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
-    const String idYamlStrLocation = "/Autotesting/id.yaml";
-    String idYamlStrPath = ResolvePathToAutomation(idYamlStrLocation);
+    FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (idYamlStrPath.empty() || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
-        ForceQuit("Couldn't open file " + idYamlStrLocation);
+        ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
 
     return option;
@@ -238,12 +251,11 @@ void AutotestingSystem::FetchParametersFromDB()
 // Read DB parameters from config file and set connection to it
 void AutotestingSystem::SetUpConnectionToDB()
 {
-    const String dbConfigLocation = "/Autotesting/dbConfig.yaml";
-    String dbConfigStrPath = ResolvePathToAutomation(dbConfigLocation);
+    FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (dbConfigStrPath.empty() || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
-        ForceQuit("Couldn't open file " + dbConfigLocation);
+        ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
 
     String dbName = option->GetString("name");
