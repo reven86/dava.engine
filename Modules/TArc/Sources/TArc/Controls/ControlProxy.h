@@ -6,6 +6,7 @@
 #include "TArc/Controls/ControlDescriptor.h"
 
 #include <QWidget>
+#include <QObject>
 
 namespace DAVA
 {
@@ -40,7 +41,7 @@ public:
 
     void SetObjectName(const QString& objName)
     {
-        setObjectName(objName);
+        TBase::setObjectName(objName);
     }
 
     QWidget* ToWidgetCast()

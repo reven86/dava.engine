@@ -500,6 +500,11 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
 
 void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 {
+    //we don't support autorepeat key_up
+    if (qtEvent->isAutoRepeat())
+    {
+        return;
+    }
     uint32 key = qtEvent->nativeVirtualKey();
 #if defined(Q_OS_WIN)
     // How to distinguish left and right shift, control and alt: http://stackoverflow.com/a/15977613
