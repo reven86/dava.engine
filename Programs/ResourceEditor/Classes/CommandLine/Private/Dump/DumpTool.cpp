@@ -13,7 +13,7 @@
 #include "FileSystem/FileSystem.h"
 
 DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
-    : REConsoleModuleCommon(commandLine, "-dump")
+    : CommandLineModule(commandLine, "-dump")
 {
     using namespace DAVA;
 
@@ -147,7 +147,7 @@ void DumpTool::BeforeDestroyedInternal()
 
 void DumpTool::ShowHelpInternal()
 {
-    REConsoleModuleCommon::ShowHelpInternal();
+    CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
     DAVA::Logger::Info("\t-dump -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/11-grass/test_scene.sc2 -outfile /Users/Test/dump.txt -links -mode e -gpu all");

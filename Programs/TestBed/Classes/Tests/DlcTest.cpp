@@ -2,10 +2,10 @@
 #include "Base/GlobalEnum.h"
 #include "Database/MongodbClient.h"
 #include "Database/MongodbObject.h"
-#include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationProgress.h"
-#include "Utils/StringUtils.h"
+#include "Notification/LocalNotificationText.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Utils/StringUtils.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -430,7 +430,7 @@ void DlcTest::Update(float32 timeElapsed)
             {
                 DAVA::String errorText = DAVA::Format("Done, error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetError()));
                 DAVA::WideString wErrorText;
-                DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)errorText.c_str(), errorText.size(), wErrorText);
+                DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(errorText.c_str()), errorText.size(), wErrorText);
                 staticText->SetText(wErrorText);
             }
             break;
