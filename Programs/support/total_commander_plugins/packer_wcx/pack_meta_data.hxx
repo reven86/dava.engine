@@ -4,27 +4,13 @@
 #include <string>
 #include <vector>
 
-struct FileInfo
-{
-    FileInfo() = default;
-
-    FileInfo(const char* relativePath, uint32_t originalSize,
-             uint32_t compressedSize, uint32_t compressionType);
-
-    std::string relativeFilePath;
-    uint32_t originalSize = 0;
-    uint32_t compressedSize = 0;
-    uint32_t compressionType = 0;
-    uint32_t hash = 0; // crc32
-};
-
-class PackMetaData
+class pack_meta_data
 {
 public:
     /** Create meta from serialized bytes
 		    Throw exception on error
 		*/
-    PackMetaData(const void* ptr, std::size_t size);
+    pack_meta_data(const void* ptr, std::size_t size);
 
     uint32_t GetNumFiles() const;
     uint32_t GetNumPacks() const;

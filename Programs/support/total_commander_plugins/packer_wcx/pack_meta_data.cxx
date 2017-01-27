@@ -1,4 +1,4 @@
-#include "pack_meta_data.h"
+#include "pack_meta_data.hxx"
 
 #include <algorithm>
 #include <array>
@@ -24,32 +24,32 @@ static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
     return true;
 }
 
-PackMetaData::PackMetaData(const void* ptr, std::size_t size)
+pack_meta_data::pack_meta_data(const void* ptr, std::size_t size)
 {
     Deserialize(ptr, size);
 }
 
-uint32_t PackMetaData::GetNumFiles() const
+uint32_t pack_meta_data::GetNumFiles() const
 {
     return tableFiles.size();
 }
 
-uint32_t PackMetaData::GetNumPacks() const
+uint32_t pack_meta_data::GetNumPacks() const
 {
     return tablePacks.size();
 }
 
-uint32_t PackMetaData::GetPackIndexForFile(const uint32_t fileIndex) const
+uint32_t pack_meta_data::GetPackIndexForFile(const uint32_t fileIndex) const
 {
     return tableFiles.at(fileIndex);
 }
 
-const std::tuple<std::string, std::string>& PackMetaData::GetPackInfo(const uint32_t packIndex) const
+const std::tuple<std::string, std::string>& pack_meta_data::GetPackInfo(const uint32_t packIndex) const
 {
     return tablePacks.at(packIndex);
 }
 
-std::vector<uint8_t> PackMetaData::Serialize() const
+std::vector<uint8_t> pack_meta_data::Serialize() const
 {
     return std::vector<uint8_t>();
 }
@@ -64,7 +64,7 @@ struct membuf : std::streambuf
     }
 };
 
-void PackMetaData::Deserialize(const void* ptr, size_t size)
+void pack_meta_data::Deserialize(const void* ptr, size_t size)
 {
     using namespace std;
     assert(ptr != nullptr);
