@@ -529,7 +529,7 @@ void dx11_DetectUWPWorkaround(const InitParam& param)
     DAVA::Logger::Info("[RHI-DX11] Detecting configuration by creating test device...");
     if (dx11_CreateDeviceWithAdapter(fullScreenParameters, adapter))
     {
-        if (!dx11_CreateSwapChain(dx11.initParameters))
+        if (!dx11_CreateSwapChain(fullScreenParameters))
         {
             DAVA::Logger::Warning("[RHI-DX11] Failed to create SwapChain using default configuration");
             DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
