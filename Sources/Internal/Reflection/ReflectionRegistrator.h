@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
 #include "Reflection/Private/Wrappers/ValueWrapperClass.h"

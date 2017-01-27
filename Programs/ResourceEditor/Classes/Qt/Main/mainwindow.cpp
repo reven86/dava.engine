@@ -38,6 +38,7 @@
 #include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Application/REGlobalOperationsData.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Selection/Selection.h"
 #include "Classes/Selection/SelectionData.h"
@@ -221,6 +222,11 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     ActiveSceneHolder::Init();
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
 
+    DAVA::TArc::DataContext* globalContext = REGlobal::GetGlobalContext();
+    std::unique_ptr<REGlobalOperationsData> globalData = std::make_unique<REGlobalOperationsData>();
+    globalData->SetGlobalOperations(globalOperations);
+    globalContext->CreateData(std::move(globalData));
+
     errorLoggerOutput = new ErrorDialogOutput(globalOperations);
     DAVA::Logger::AddCustomOutput(errorLoggerOutput);
 
@@ -386,17 +392,16 @@ void QtMainWindow::SetupTitle(const DAVA::String& projectPath)
 
 void QtMainWindow::SetupMainMenu()
 {
-    ui->menuDockWindows->addAction(ui->dockSceneInfo->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockLibrary->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockProperties->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockParticleEditor->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockSceneTree->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockLODEditor->toggleViewAction());
-    ui->menuDockWindows->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
+    ui->Dock->addAction(ui->dockSceneInfo->toggleViewAction());
+    ui->Dock->addAction(ui->dockProperties->toggleViewAction());
+    ui->Dock->addAction(ui->dockParticleEditor->toggleViewAction());
+    ui->Dock->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
+    ui->Dock->addAction(ui->dockSceneTree->toggleViewAction());
+    ui->Dock->addAction(ui->dockLODEditor->toggleViewAction());
+    ui->Dock->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
 
-    ui->menuDockWindows->addAction(dockActionEvent->toggleViewAction());
-    ui->menuDockWindows->addAction(dockConsole->toggleViewAction());
+    ui->Dock->addAction(dockActionEvent->toggleViewAction());
+    ui->Dock->addAction(dockConsole->toggleViewAction());
 }
 
 void QtMainWindow::SetupThemeActions()
@@ -524,7 +529,6 @@ void QtMainWindow::SetupDocks()
 
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo, SLOT(UpdateInfoByTimer()));
 
-    ui->libraryWidget->Init(globalOperations);
     // Run Action Event dock
     {
         dockActionEvent = new QDockWidget("Run Action Event", this);
@@ -761,7 +765,6 @@ void QtMainWindow::EnableProjectActions(bool enable)
 {
     ui->actionCubemapEditor->setEnabled(enable);
     ui->actionImageSplitter->setEnabled(enable);
-    ui->dockLibrary->setEnabled(enable);
 }
 
 void QtMainWindow::EnableSceneActions(bool enable)

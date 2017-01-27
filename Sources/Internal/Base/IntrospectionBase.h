@@ -2,7 +2,6 @@
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
@@ -29,11 +28,7 @@ public:
 protected:
     virtual ~InspBase();
 
-    DAVA_VIRTUAL_REFLECTION(InspBase)
-    {
-        ReflectionRegistrator<InspBase>::Begin()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(InspBase);
 };
 
 struct InspDesc

@@ -1,16 +1,13 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/Any.h"
-#include "Debug/DVAssert.h"
-
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
-#include "Engine/Engine.h"
-#include "FileSystem/FileSystem.h"
-#include "Utils/StringFormat.h"
+#include <Base/BaseTypes.h>
+#include <Base/Any.h>
+#include <Debug/DVAssert.h>
+#include <Utils/StringFormat.h>
 
 #include <QPointer>
 #include <QMainWindow>
@@ -514,6 +511,7 @@ protected:
 
     QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, UIManagerDetail::MainWindowInfo& mainWindowInfo, QMainWindow* mainWindow)
     {
+        DVASSERT(dockPanelInfo.title.isEmpty() == false, "Provide correct value of DockPanelInfo::title");
         const QString& text = dockPanelInfo.title;
 
         QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
@@ -538,36 +536,38 @@ protected:
         QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
         newDockWidget->layout()->setContentsMargins(0, 0, 0, 0);
         newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+
+        newDockWidget->setVisible(true);
         newDockWidget->setWidget(widget);
-        newDockWidget->show();
-
-        if (info.tabbed == true)
+        if (!mainWindow->restoreDockWidget(newDockWidget))
         {
-            QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
-            QDockWidget* dockToTabbify = nullptr;
-            foreach (QDockWidget* dock, dockWidgets)
+            if (info.tabbed == true)
             {
-                if (mainWindow->dockWidgetArea(dock) == info.area)
+                QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
+                QDockWidget* dockToTabbify = nullptr;
+                foreach (QDockWidget* dock, dockWidgets)
                 {
-                    dockToTabbify = dock;
-                    break;
+                    if (mainWindow->dockWidgetArea(dock) == info.area)
+                    {
+                        dockToTabbify = dock;
+                        break;
+                    }
                 }
-            }
 
-            if (dockToTabbify != nullptr)
-            {
-                mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
+                if (dockToTabbify != nullptr)
+                {
+                    mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
+                }
+                else
+                {
+                    mainWindow->addDockWidget(info.area, newDockWidget);
+                }
             }
             else
             {
                 mainWindow->addDockWidget(info.area, newDockWidget);
             }
         }
-        else
-        {
-            mainWindow->addDockWidget(info.area, newDockWidget);
-        }
-        mainWindow->restoreDockWidget(newDockWidget);
     }
 
     void AddCentralPanel(const PanelKey& key, const WindowKey& windowKey, QWidget* widget)

@@ -17,7 +17,7 @@
 
 @implementation RenderView
 
-- (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 {
     bridge = nativeBridge;
 
@@ -39,7 +39,7 @@
 
     // Create non-fullscreen pixel format.
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
+    self = [super initWithFrame:NSMakeRect(0, 0, 10.f, 10.f) pixelFormat:pixelFormat];
 
     [self setBackbufferScale:1.0f];
 
