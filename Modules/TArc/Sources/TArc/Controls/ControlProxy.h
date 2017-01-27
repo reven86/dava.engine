@@ -6,6 +6,7 @@
 #include "TArc/Controls/ControlDescriptor.h"
 
 #include <QWidget>
+#include <QObject>
 
 namespace DAVA
 {
@@ -36,6 +37,11 @@ public:
     ~ControlProxy()
     {
         wrapper.SetListener(nullptr);
+    }
+
+    void SetObjectName(const QString& objName)
+    {
+        TBase::setObjectName(objName);
     }
 
     QWidget* ToWidgetCast()
