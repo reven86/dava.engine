@@ -2,6 +2,8 @@
 #include "Tests/AnyPerformanceTest.h"
 #include "UI/Focus/UIFocusComponent.h"
 
+using namespace DAVA;
+
 AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
     : BaseScreen(app, "AnyPerformanceTest")
 {
