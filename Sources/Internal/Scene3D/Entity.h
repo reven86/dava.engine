@@ -13,7 +13,6 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
-#include "Scene3D/Private/EntityHelpers.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
