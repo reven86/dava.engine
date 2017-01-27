@@ -104,7 +104,7 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
 
     if (args->Kind == ActivationKind::Launch)
     {
-        LaunchActivatedEventArgs^ launchArgs = static_cast<LaunchActivatedEventArgs^>(args);
+        LaunchActivatedEventArgs ^ launchArgs = static_cast<LaunchActivatedEventArgs ^>(args);
         appPrelaunched = launchArgs->PrelaunchActivated;
     }
 
