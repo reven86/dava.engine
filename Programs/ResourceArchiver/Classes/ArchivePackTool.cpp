@@ -9,8 +9,6 @@
 #include <Debug/DVAssert.h>
 #include "ResultCodes.h"
 
-using namespace DAVA;
-
 namespace OptionNames
 {
 const DAVA::String Compression = "-compression";
@@ -24,11 +22,13 @@ const DAVA::String Src = "-src";
 const DAVA::String ListFile = "-listfile";
 const DAVA::String BaseDir = "-basedir";
 const DAVA::String MetaDbFile = "-metadb";
+const DAVA::String GenDvpl = "-dvpl";
 };
 
 ArchivePackTool::ArchivePackTool()
     : CommandLineTool("pack")
 {
+    using namespace DAVA;
     static const uint32 defaultPort = static_cast<uint32>(AssetCache::ASSET_SERVER_PORT);
     static const uint64 defaultTimeout = 1000ul;
     options.AddOption(OptionNames::Compression, VariantType(String("lz4hc")), "default compression method, lz4hc - default");
@@ -42,11 +42,13 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::ListFile, VariantType(String("")), "text files containing list of source files", true);
     options.AddOption(OptionNames::BaseDir, VariantType(String("")), "source base directory");
     options.AddOption(OptionNames::MetaDbFile, VariantType(String("")), "sqlite db with metadata");
+    options.AddOption(OptionNames::GenDvpl, VariantType(false), "generate dvpl's into ouput directory");
     options.AddArgument("packfile");
 }
 
 bool ArchivePackTool::ConvertOptionsToParamsInternal()
 {
+    using namespace DAVA;
     compressionStr = options.GetOption(OptionNames::Compression).AsString();
 
     int type;
@@ -120,11 +122,24 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
         return false;
     }
 
+    genDvpl = options.GetArgument(OptionNames::GenDvpl) != "";
+
+    if (genDvpl)
+    {
+        FilePath outputName = packFileName;
+        if (!outputName.IsDirectoryPathname() || !FileSystem::Instance()->IsDirectory(outputName))
+        {
+            Logger::Error("packfile should be directory name if using %s", OptionNames::GenDvpl.c_str());
+            return false;
+        }
+    }
+
     return true;
 }
 
 int ArchivePackTool::ProcessInternal()
 {
+    using namespace DAVA;
     Vector<String> sources;
 
     switch (source)
