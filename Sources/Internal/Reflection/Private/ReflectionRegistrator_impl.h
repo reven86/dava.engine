@@ -486,9 +486,12 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, con
 template <typename C>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::BindMeta(ReflectedMeta&& meta)
 {
+    DVASSERT(nullptr != lastMeta, "Trying to set meta while meta is already set or there is nothing to set it on.");
+
     if (nullptr != lastMeta)
     {
         lastMeta->reset(new ReflectedMeta(std::move(meta)));
+        lastMeta = nullptr;
     }
 
     return *this;
