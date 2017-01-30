@@ -17,7 +17,7 @@
     static void Dava__ReflectionRegisterBases(); \
     static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
     static void Dava__ReflectionInitializerV(); \
-    using Cls__BaseTypes = std::tuple<##__VA_ARGS__>
+    using Cls__BaseTypes = std::tuple<__VA_ARGS__>
 
 namespace DAVA
 {

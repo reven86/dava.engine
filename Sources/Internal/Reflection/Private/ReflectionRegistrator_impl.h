@@ -15,7 +15,7 @@
 #define IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) \
     template <typename FT__> \
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
-    using Cls__BaseTypes = std::tuple<##__VA_ARGS__>; \
+    using Cls__BaseTypes = std::tuple<__VA_ARGS__>; \
     const DAVA::ReflectedType* Dava__GetReflectedType() const override { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
     static void Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls__BaseTypes>::Register(); } \
     static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
