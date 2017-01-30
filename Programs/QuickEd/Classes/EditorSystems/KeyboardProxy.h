@@ -1,5 +1,4 @@
-#ifndef __QUICKED_KEYBOARD_PROXY_H__
-#define __QUICKED_KEYBOARD_PROXY_H__
+#pragma once
 
 #include <Qt>
 
@@ -14,5 +13,3 @@ enum eKeys
 
 bool IsKeyPressed(eKeys key);
 };
-
-#endif // __QUICKED_KEYBOARD_PROXY_H__

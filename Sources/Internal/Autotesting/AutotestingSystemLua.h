@@ -42,7 +42,7 @@ public:
 #if !defined(SWIG)
     void SetDelegate(AutotestingSystemLuaDelegate* _delegate);
 
-    void InitFromFile(const String& luaFilePath);
+    void InitFromFile(const FilePath& luaFilePath);
 
     void StartTest();
 

@@ -8,7 +8,7 @@
 
 #define IMPL__DAVA_REFLECTION(Cls) \
     template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
     static void __ReflectionInitializer() \
     { \
         static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
@@ -18,10 +18,10 @@
 
 #define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
     template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
     const DAVA::ReflectedType* GetReflectedType() const override \
     { \
-        return DAVA::ReflectedTypeDBDetail::GetByThisPointer(this); \
+        return DAVA::ReflectionDetail::GetByThisPointer(this); \
     } \
     static void __ReflectionInitializer() \
     { \
@@ -42,6 +42,53 @@
 
 namespace DAVA
 {
+namespace ReflectionDetail
+{
+template <typename T>
+struct ReflectionInitializerRunner
+{
+protected:
+    template <typename U, void (*)()>
+    struct SFINAE
+    {
+    };
+
+    template <typename U>
+    static char Test(SFINAE<U, &U::__ReflectionInitializer>*);
+
+    template <typename U>
+    static int Test(...);
+
+    static const bool value = std::is_same<decltype(Test<T>(0)), char>::value;
+
+    inline static void RunImpl(std::true_type)
+    {
+        // T has TypeInitializer function,
+        // so we should run it
+        T::__ReflectionInitializer();
+    }
+
+    inline static void RunImpl(std::false_type)
+    {
+        // T don't have TypeInitializer function,
+        // so nothing to do here
+    }
+
+public:
+    static void Run()
+    {
+        using CheckType = typename std::conditional<std::is_class<T>::value, ReflectionInitializerRunner<T>, std::false_type>::type;
+        RunImpl(std::integral_constant<bool, CheckType::value>());
+    }
+};
+
+template <typename T>
+const ReflectedType* GetByThisPointer(const T* this_)
+{
+    return ReflectedTypeDB::Get<T>();
+}
+}
+
 inline bool Reflection::IsReadonly() const
 {
     return valueWrapper->IsReadonly(object);
@@ -100,4 +147,38 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
+
+template <>
+struct AnyCompare<Reflection>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        const Reflection r1 = v1.Get<Reflection>();
+        const Reflection r2 = v2.Get<Reflection>();
+        return r1.GetValueObject() == r2.GetValueObject();
+    }
+};
+
+template <>
+struct AnyCompare<Vector<Reflection>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        const Vector<Reflection> r1 = v1.Get<Vector<Reflection>>();
+        const Vector<Reflection> r2 = v2.Get<Vector<Reflection>>();
+        if (r1.size() != r2.size())
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < r1.size(); ++i)
+        {
+            if (AnyCompare<Reflection>::IsEqual(r1[i], r2[i]) == false)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+};
 } // namespace DAVA
