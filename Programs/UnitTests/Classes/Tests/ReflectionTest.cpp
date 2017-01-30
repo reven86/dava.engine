@@ -47,11 +47,27 @@ struct SimpleStruct
     {
     }
 
+    enum SimpleEnum
+    {
+        ONE,
+        TWO,
+        THREE
+    };
+
+    enum class ClassEnum
+    {
+        C_ONE,
+        C_TWO,
+        C_THREE
+    };
+
     int a = -38;
     int b = 1024;
     int c = 1;
     int d = 888;
     int e = 54321;
+    SimpleEnum e_simple = TWO;
+    ClassEnum e_class = ClassEnum::C_THREE;
 
     bool operator==(const SimpleStruct& s) const
     {
@@ -71,6 +87,8 @@ struct SimpleStruct
         .DestructorByPointer()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
+        .Field("e_simple", &SimpleStruct::e_simple)
+        .Field("e_class", &SimpleStruct::e_class)
         .End();
     }
 };
@@ -660,5 +678,21 @@ DAVA_TESTCLASS (ReflectionTest)
 
         const ReflectionTestClass* tptr = &t;
         DAVA::Reflection t_pref = DAVA::Reflection::Create(tptr);
+    }
+
+    DAVA_TEST (ValueEnum)
+    {
+        SimpleStruct s;
+        DAVA::Reflection r = DAVA::Reflection::Create(&s);
+
+        DAVA::Any value = r.GetField("e_simple").GetValue();
+        TEST_VERIFY(value.CanCast<int>());
+        TEST_VERIFY(!value.CanCast<char>());
+        TEST_VERIFY(value.Cast<int>() == static_cast<int>(s.e_simple));
+
+        value = r.GetField("e_class").GetValue();
+        TEST_VERIFY(value.CanCast<int>());
+        TEST_VERIFY(!value.CanCast<char>());
+        TEST_VERIFY(value.Cast<int>() == static_cast<int>(s.e_class));
     }
 };
