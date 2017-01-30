@@ -119,7 +119,7 @@ uint64 GetFileSize(const String& fileName)
     WideString p = UTF8Utils::EncodeToWideString(fileName);
     int32 result = FileStat(p.c_str(), &fileStat);
 #else
-    int32 result = FileStat(dirName.c_str(), &fileStat);
+    int32 result = FileStat(fileName.c_str(), &fileStat);
 #endif
     if (result == 0)
     {
