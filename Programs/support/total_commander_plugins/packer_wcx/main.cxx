@@ -126,7 +126,7 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
             std::strncpy(HeaderData->ArcName, archive->archive_name.c_str(), MAX_PATH);
             HeaderData->PackSize = 0;
             auto& meta = archive->get_meta();
-            HeaderData->UnpSize = meta.GetNumPacks();
+            HeaderData->UnpSize = meta.get_num_packs();
 
             archive->last_file_name = "meta.meta";
 

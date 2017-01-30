@@ -12,20 +12,20 @@ public:
 		*/
     pack_meta_data(const void* ptr, std::size_t size);
 
-    uint32_t GetNumFiles() const;
-    uint32_t GetNumPacks() const;
-    uint32_t GetPackIndexForFile(const uint32_t fileIndex) const;
-    const std::tuple<std::string, std::string>& GetPackInfo(const uint32_t packIndex) const;
+    uint32_t get_num_files() const;
+    uint32_t get_num_packs() const;
+    uint32_t get_pack_index_for_file(const uint32_t file_index) const;
+    const std::tuple<std::string, std::string>& get_pack_info(const uint32_t packIndex) const;
 
-    std::vector<uint8_t> Serialize() const;
-    void Deserialize(const void* ptr, size_t size);
+    std::vector<uint8_t> serialize() const;
+    void deserialize(const void* ptr, size_t size);
 
 private:
     // fileNames already in DVPK format
     // table 1.
     // fileName -> fileIndex(0-NUM_FILES) -> packIndex(0-NUM_PACKS)
-    std::vector<uint32_t> tableFiles;
+    std::vector<uint32_t> table_files;
     // table 2.
     // packIndex(0-NUM_PACKS) -> packName, dependencies
-    std::vector<std::tuple<std::string, std::string>> tablePacks;
+    std::vector<std::tuple<std::string, std::string>> table_packs;
 };

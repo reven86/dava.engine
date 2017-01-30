@@ -32,8 +32,8 @@ public:
 
 private:
     std::ifstream file;
-    pack_format::pack_file packFile;
-    std::unique_ptr<pack_meta_data> packMeta;
-    std::unordered_map<std::string, pack_format::file_table_entry*> mapFileData;
-    std::vector<pack_format::file_info> filesInfo;
+    pack_format::pack_file pack_file;
+    std::unique_ptr<pack_meta_data> pack_meta;
+    std::unordered_map<std::string, pack_format::file_table_entry*> map_file_data;
+    std::vector<pack_format::file_info> files_info;
 };
