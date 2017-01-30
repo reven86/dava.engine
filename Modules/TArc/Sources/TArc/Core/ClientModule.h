@@ -59,7 +59,7 @@ private:
     CoreInterface* coreInterface = nullptr;
     UI* ui = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ClientModule)
     {
     }
 };

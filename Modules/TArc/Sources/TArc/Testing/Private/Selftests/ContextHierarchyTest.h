@@ -9,7 +9,7 @@ class GlobalContextData : public DAVA::TArc::DataNode
 public:
     DAVA::int32 dummyField;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(GlobalContextData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(GlobalContextData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<GlobalContextData>::Begin()
         .Field("dummyField", &GlobalContextData::dummyField)
@@ -22,7 +22,7 @@ class SharedData : public DAVA::TArc::DataNode
 public:
     DAVA::int32 field;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(SharedData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SharedData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SharedData>::Begin()
         .Field("field", &SharedData::field)

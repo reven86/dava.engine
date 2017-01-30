@@ -355,7 +355,7 @@ Vector<Reflection::Method> Reflection::GetMethods() const
 
 void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 {
-    ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
+    ReflectedTypeDBDetail::Dumper::Dump(out, Reflection::Field(Any("this"), Reflection(*this), nullptr), 0, maxlevel);
 }
 
 Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
@@ -372,4 +372,19 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
+
+Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* owner_)
+    : key(key_)
+    , ref(ref_)
+    , owner(owner_)
+{
+}
+
+Reflection::Method::Method(String&& key_, AnyFn&& fn_, const ReflectedType* owner_)
+    : key(key_)
+    , fn(fn_)
+    , owner(owner_)
+{
+}
+
 } // namespace DAVA

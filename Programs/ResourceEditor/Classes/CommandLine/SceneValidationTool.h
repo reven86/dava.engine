@@ -33,7 +33,7 @@ private:
 
     DAVA::FilePath qualityConfigPath;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(SceneValidationTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneValidationTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneValidationTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

@@ -22,8 +22,20 @@ public:
     Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
 
 private:
-    Vector<const ReflectedStructure::Field*> fieldsCache;
-    Vector<const ReflectedStructure::Method*> methodsCache;
+    struct CachedFieldEntry
+    {
+        const ReflectedStructure::Field* field;
+        const ReflectedType* owner;
+    };
+
+    struct CachedMethodEntry
+    {
+        const ReflectedStructure::Method* method;
+        const ReflectedType* owner;
+    };
+
+    Vector<CachedFieldEntry> fieldsCache;
+    Vector<CachedMethodEntry> methodsCache;
     UnorderedMap<String, size_t> fieldsNameIndexes;
     UnorderedMap<String, size_t> methodsNameIndexes;
 

@@ -36,7 +36,7 @@ private:
     QtDelayedExecutor delayedExecutor;
     std::unique_ptr<ProjectResources> projectResources;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(ProjectManagerModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ProjectManagerModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<ProjectManagerModule>::Begin()
         .ConstructorByPointer()

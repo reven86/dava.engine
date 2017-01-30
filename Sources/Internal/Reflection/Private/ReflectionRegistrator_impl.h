@@ -12,7 +12,7 @@
     void Cls::Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls::Cls__BaseTypes>::Register(); } \
     void Cls::Dava__ReflectionInitializerV()
 
-#define IMPL__DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ...) \
+#define IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) \
     template <typename FT__> \
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
     using Cls__BaseTypes = std::tuple<##__VA_ARGS__>; \
@@ -470,12 +470,12 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::Field(const char* name, GetF
 }
 
 template <typename C>
-template <typename Mt>
-ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const Mt& method)
+template <typename F>
+ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const F& fn)
 {
     ReflectedStructure::Method* m = new ReflectedStructure::Method();
     m->name = name;
-    m->method = AnyFn(method);
+    m->fn = AnyFn(fn);
 
     lastMeta = &m->meta;
     structure->methods.emplace_back(m);

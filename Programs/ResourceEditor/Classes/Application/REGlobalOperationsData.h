@@ -13,7 +13,7 @@ public:
 private:
     std::shared_ptr<GlobalOperations> globalOperations = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(REGlobalOperationsData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(REGlobalOperationsData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<REGlobalOperationsData>::Begin()
         .End();

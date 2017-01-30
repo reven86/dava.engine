@@ -33,7 +33,7 @@ private:
 private:
     ContextAccessor* contextAccessor = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(ConsoleModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ConsoleModule)
     {
     }
 };

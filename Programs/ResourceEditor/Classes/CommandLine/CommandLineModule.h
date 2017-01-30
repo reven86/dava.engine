@@ -32,7 +32,7 @@ protected:
     bool isInitialized = false;
     DAVA::Result result = DAVA::Result::RESULT_SUCCESS;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(CommandLineModule, DAVA::TArc::ConsoleModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(CommandLineModule, DAVA::TArc::ConsoleModule)
     {
     }
 };

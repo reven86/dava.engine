@@ -16,7 +16,7 @@ protected:
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void PostInit() override;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(QEModule, DAVA::TArc::ControllerModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(QEModule, DAVA::TArc::ControllerModule)
     {
         DAVA::ReflectionRegistrator<QEModule>::Begin()
         .ConstructorByPointer()

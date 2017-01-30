@@ -54,7 +54,7 @@ struct CheckBoxTestData : public ReflectionBase
         return value == true ? "True" : "False";
     }
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(CheckBoxTestData, ReflectionBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(CheckBoxTestData, ReflectionBase)
     {
         ReflectionRegistrator<CheckBoxTestData>::Begin()
         .Field("value", &CheckBoxTestData::value)[DAVA::M::ValueDescription(&CheckBoxTestData::ValueDescription)]
@@ -134,7 +134,7 @@ struct LineEditTestData : public ReflectionBase
         return r;
     }
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(LineEditTestData, ReflectionBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LineEditTestData, ReflectionBase)
     {
         using namespace DAVA::M;
 

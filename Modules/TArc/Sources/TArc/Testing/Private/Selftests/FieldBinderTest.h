@@ -16,7 +16,7 @@ class DataNode1 : public DAVA::TArc::DataNode
 public:
     int v1 = 1;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(DataNode1, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DataNode1, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<DataNode1>::Begin()
         .Field("v1", &DataNode1::v1)
@@ -29,7 +29,7 @@ class DataNode2 : public DAVA::TArc::DataNode
 public:
     DAVA::String fv1 = "string";
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(DataNode2, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DataNode2, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<DataNode2>::Begin()
         .Field("fv1", &DataNode2::fv1)

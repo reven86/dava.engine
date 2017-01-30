@@ -15,7 +15,7 @@ private:
 
     DAVA::FilePath selectedPath;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(LibraryData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LibraryData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<LibraryData>::Begin()
         .Field(selectedPathProperty, &LibraryData::GetSelectedPath, nullptr)

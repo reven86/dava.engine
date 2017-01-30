@@ -25,7 +25,7 @@ protected:
     friend class Core;
 
 private:
-    DAVA_VIRTUAL_REFLECTION_INPLACE(ControllerModule, ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ControllerModule, ClientModule)
     {
     }
 };

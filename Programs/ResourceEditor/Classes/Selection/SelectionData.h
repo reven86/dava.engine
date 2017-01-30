@@ -45,7 +45,7 @@ private:
 
     std::unique_ptr<SelectionSystem> selectionSystem;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(SelectionData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SelectionData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SelectionData>::Begin()
         .Field(selectionPropertyName, &SelectionData::GetSelection, nullptr)

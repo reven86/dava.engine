@@ -36,7 +36,7 @@ public:
     TextureCache* textureCache = nullptr;
     QPointer<QtMainWindow> mainWindow;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(REGlobalData)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(REGlobalData)
     {
     };
 };

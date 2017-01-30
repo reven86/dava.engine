@@ -26,7 +26,7 @@ protected:
 
     eAction commandAction = ACTION_NONE;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(ImageSplitterTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ImageSplitterTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<ImageSplitterTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

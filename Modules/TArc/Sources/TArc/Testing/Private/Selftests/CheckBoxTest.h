@@ -124,7 +124,7 @@ public:
 
     static CheckBoxTestModule* instance;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(CheckBoxTestModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(CheckBoxTestModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<CheckBoxTestModule>::Begin()
         .ConstructorByPointer()

@@ -30,7 +30,7 @@ private:
 
     bool copyConverted = false;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(SceneSaverTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneSaverTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneSaverTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

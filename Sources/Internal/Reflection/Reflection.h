@@ -35,7 +35,7 @@
 \ingroup reflection
 TODO: usage comments
 */
-#define DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION_INPLACE(Cls, ##__VA_ARGS__)
+#define DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ##__VA_ARGS__)
 
 /**
 \ingroup reflection
@@ -168,14 +168,22 @@ private:
 
 struct Reflection::Field
 {
+    Field() = default;
+    Field(Any&&, Reflection&&, const ReflectedType*);
+
     Any key;
     Reflection ref;
+    const ReflectedType* owner = nullptr;
 };
 
 struct Reflection::Method
 {
+    Method() = default;
+    Method(String&&, AnyFn&&, const ReflectedType*);
+
     String key;
     AnyFn fn;
+    const ReflectedType* owner = nullptr;
 };
 
 //
@@ -254,4 +262,4 @@ struct StructureWrapperCreator;
 #ifndef __DAVA_Reflection__
 #define __DAVA_Reflection__
 #endif
-#include "Reflection/Private/Reflection_impl.h"
+#include "Reflection/Private/Reflection_pre_impl.h"

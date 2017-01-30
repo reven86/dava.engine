@@ -61,6 +61,7 @@ protected:
 #ifndef __DAVA_Reflection__
 #define __DAVA_Reflection__
 #endif
+#include "Reflection/Private/Reflection_impl.h"
 #include "Reflection/Private/ReflectedObject_impl.h"
 #include "Reflection/Private/ReflectedMeta_impl.h"
 #include "Reflection/Private/ReflectedType_impl.h"

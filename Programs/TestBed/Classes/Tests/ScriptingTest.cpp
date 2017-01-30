@@ -10,7 +10,7 @@ using namespace DAVA;
 
 class SubObj : public ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION_INPLACE(SubObj)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SubObj)
     {
         ReflectionRegistrator<SubObj>::Begin()
         .Field("a", &SubObj::a)
@@ -32,7 +32,7 @@ public:
     String b = "String";
     Color c = Color::White;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(DemoBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DemoBase)
     {
         ReflectionRegistrator<DemoBase>::Begin()
         .Field("a", &DemoBase::a)
@@ -44,7 +44,7 @@ public:
 
 class DemoObj : public DemoBase
 {
-    DAVA_VIRTUAL_REFLECTION_INPLACE(DemoObj, DemoBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DemoObj, DemoBase)
     {
         ReflectionRegistrator<DemoObj>::Begin()
         .Field("d", &DemoObj::d)

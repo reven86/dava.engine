@@ -31,7 +31,7 @@ public:
 
     static const char* selectedEntitiesProperty;
 
-    DAVA_VIRTUAL_REFLECTION_INPLACE(PropertyPanelData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(PropertyPanelData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<PropertyPanelData>::Begin()
         .Field(selectedEntitiesProperty, &PropertyPanelData::propertyPanelObjects)

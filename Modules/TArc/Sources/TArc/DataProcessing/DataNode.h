@@ -9,7 +9,7 @@ namespace TArc
 {
 class DataNode : public ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION_INPLACE(DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DataNode)
     {
     }
 
