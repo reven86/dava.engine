@@ -1,6 +1,6 @@
 #include "LuaBridge.h"
 #include "Scripting/LuaException.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
