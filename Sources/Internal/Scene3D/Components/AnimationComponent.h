@@ -6,6 +6,7 @@
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Base/Message.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -35,6 +36,17 @@ public:
     void Start();
     void Stop();
     void StopAfterNRepeats(int32 numberOfRepeats);
+    /**
+        \brief Move animation to the last frame and stop the animation.
+        \ Will not call the playback complete callback.
+    */
+    void MoveAnimationToTheLastFrame();
+    /**
+        \brief Move animation to the first frame and leave animation in current state (Playing or Stopped).
+    */
+    void MoveAnimationToTheFirstFrame();
+
+    void SetPlaybackCompleteCallback(Function<void(const AnimationComponent* const)> callback);
 
     enum eState
     {
@@ -48,13 +60,14 @@ private:
     friend class TransformSystem;
     AnimationData* animation;
     float32 time;
+    float32 animationTimeScale;
     uint32 frameIndex;
     uint32 repeatsCount;
     uint32 currRepeatsCont;
     eState state;
 
-    /*completion message stuff*/
-    Message playbackComplete;
+    /*completion callback stuff*/
+    Function<void(const AnimationComponent* const)> playbackComplete;
 
     Matrix4 animationTransform;
 
@@ -62,6 +75,7 @@ public:
     INTROSPECTION_EXTEND(AnimationComponent, Component,
                          MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
                          PROPERTY("isPlaying", "isPlaying", GetIsPlaying, SetIsPlaying, I_SAVE | I_EDIT | I_VIEW)
+                         MEMBER(animationTimeScale, "animationTimeScale", I_VIEW | I_EDIT | I_SAVE)
                          );
 };
 

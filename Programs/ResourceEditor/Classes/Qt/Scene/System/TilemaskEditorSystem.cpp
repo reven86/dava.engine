@@ -267,6 +267,14 @@ bool TilemaskEditorSystem::Input(DAVA::UIEvent* event)
     return false;
 }
 
+void TilemaskEditorSystem::InputCancelled(DAVA::UIEvent* event)
+{
+    if (IsLandscapeEditingEnabled() && (event->mouseButton == DAVA::eMouseButtons::LEFT))
+    {
+        FinishEditing();
+    }
+}
+
 void TilemaskEditorSystem::FinishEditing()
 {
     if (editingIsEnabled)

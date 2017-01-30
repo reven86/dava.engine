@@ -26,9 +26,6 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-#if defined(NEW_PROPERTY_PANEL)
-class PropertyPanel;
-#endif
 class DeviceListController;
 class SpritesPackerModule;
 class ErrorDialogOutput;
@@ -252,11 +249,6 @@ private:
     QPointer<VersionInfoWidget> versionInfoWidget;
 
     QPointer<DeviceListController> deviceListController;
-
-#if defined(NEW_PROPERTY_PANEL)
-    wgt::IComponentContext& ngtContext;
-    std::unique_ptr<PropertyPanel> propertyPanel;
-#endif
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
 

@@ -4,6 +4,9 @@
 #include "Model/ControlProperties/VisibleValueProperty.h"
 #include "EditorSystems/EditorTransformSystem.h"
 
+#include <Render/2D/Sprite.h>
+#include <Render/2D/Systems/RenderSystem2D.h>
+
 using namespace DAVA;
 
 namespace HUDControlsDetails
@@ -62,7 +65,7 @@ bool ControlContainer::GetSystemVisible() const
     return systemVisible;
 }
 
-HUDContainer::HUDContainer(ControlNode* node_)
+HUDContainer::HUDContainer(const ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
 {
@@ -155,11 +158,13 @@ FrameControl::FrameControl(eType type_)
         UIControlBackground* background = control->GetBackground();
         if (type == CHECKERED)
         {
-            background->SetSprite("~res:/QuickEd/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
+            ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/BlackGrid/BlackGrid.png"));
+            background->SetSprite(sprite, 0);
         }
         else
         {
-            background->SetSprite("~res:/QuickEd/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+            ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/MagnetLine/MagnetLine.png"));
+            background->SetSprite(sprite, 0);
         }
         background->SetDrawType(UIControlBackground::DRAW_TILED);
         AddControl(control.Get());
@@ -175,7 +180,8 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
     SetName(FastName("Frame Rect Control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rect", 0);
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/Rect.png", true, false));
+    GetBackground()->SetSprite(sprite, 0);
     GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -218,7 +224,8 @@ PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
     SetName(FastName("pivot point control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Pivot", 0);
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/Pivot.png", true, false));
+    GetBackground()->SetSprite(sprite, 0);
     GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -234,7 +241,8 @@ RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
     SetName(FastName("rotate control"));
-    GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/Rotate", 0);
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/Rotate.png", true, false));
+    GetBackground()->SetSprite(sprite, 0);
     GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -253,7 +261,8 @@ void RotateControl::InitFromGD(const UIGeometricData& gd)
 void SetupHUDMagnetLineControl(UIControl* control)
 {
     control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
-    control->GetBackground()->SetSprite("~res:/QuickEd/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile("~res:/QuickEd/UI/HUDControls/MagnetLine/MagnetLine.png"));
+    control->GetBackground()->SetSprite(sprite, 0);
     control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
     control->SetName("Magnet line");
 }
@@ -270,7 +279,7 @@ void SetupHUDMagnetRectControl(UIControl* parentControl)
     }
 }
 
-RefPtr<UIControl> CreateHUDRect(ControlNode* node)
+RefPtr<UIControl> CreateHUDRect(const ControlNode* node)
 {
     RefPtr<HUDContainer> container(new HUDContainer(node));
     container->SetName("HUD rect container");

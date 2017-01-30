@@ -1,5 +1,6 @@
 #include "Project/EditorLocalizationSystem.h"
 #include "FileSystem/LocalizationSystem.h"
+#include "Engine/Engine.h"
 
 #include <QLocale>
 #include <QDirIterator>
@@ -20,8 +21,8 @@ QStringList EditorLocalizationSystem::GetAvailableLocales() const
 void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
 {
     Cleanup();
-
-    LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
+    const EngineContext* engineContext = GetEngineContext();
+    LocalizationSystem* localizationSystem = engineContext->localizationSystem;
     DVASSERT(nullptr != localizationSystem);
 
     FilePath directoryFilePath(directoryPath.absolutePath().toStdString() + "/"); //absolutePath doesn't contains with '/' symbol at end
@@ -45,7 +46,8 @@ void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
 void EditorLocalizationSystem::Cleanup()
 {
     availableLocales.clear();
-    LocalizationSystem::Instance()->Cleanup();
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->localizationSystem->Cleanup();
 }
 
 QString EditorLocalizationSystem::GetCurrentLocale() const
@@ -59,9 +61,10 @@ void EditorLocalizationSystem::SetCurrentLocale(const QString& locale)
     DVASSERT(availableLocales.contains(locale));
 
     currentLocale = locale;
-
-    LocalizationSystem::Instance()->SetCurrentLocale(currentLocale.toStdString());
-    LocalizationSystem::Instance()->Init();
+    const EngineContext* engineContext = GetEngineContext();
+    LocalizationSystem* localizationSystem = engineContext->localizationSystem;
+    localizationSystem->SetCurrentLocale(currentLocale.toStdString());
+    localizationSystem->Init();
 
     emit CurrentLocaleChanged(currentLocale);
 }

@@ -26,7 +26,7 @@
 
 @property DAVA::float32 backbufferScale;
 
-- (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 @end
 
 #endif // __DAVAENGINE_MACOS__

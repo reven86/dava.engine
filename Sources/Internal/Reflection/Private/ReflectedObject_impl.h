@@ -21,6 +21,20 @@ inline ReflectedObject::ReflectedObject(const T* ptr_)
 {
 }
 
+inline bool ReflectedObject::operator==(const ReflectedObject& other) const
+{
+    return ptr == other.ptr &&
+    reflectedType == other.reflectedType &&
+    isConst == other.isConst;
+}
+
+inline bool ReflectedObject::operator!=(const ReflectedObject& other) const
+{
+    return ptr != other.ptr ||
+    reflectedType != other.reflectedType ||
+    isConst != other.isConst;
+}
+
 /*
 inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* reflectedType_)
     : ptr(ptr_)

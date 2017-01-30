@@ -28,6 +28,7 @@ private:
     Vector<AnimationComponent*> activeComponents;
     void AddToActive(AnimationComponent* comp);
     void RemoveFromActive(AnimationComponent* comp);
+    void MoveAnimationToFrame(AnimationComponent* comp, int frameIndex);
 };
 };
 

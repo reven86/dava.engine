@@ -1,13 +1,17 @@
-#include "Project/ProjectResources.h"
+#include "Classes/Project/ProjectResources.h"
+#include "Classes/Project/ProjectManagerData.h"
 
-#include "TArc/Core/ContextAccessor.h"
-#include "Engine/Engine.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/YamlParser.h"
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/FilePath.h"
-#include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Sound/SoundSystem.h"
+#include <TArc/Core/ContextAccessor.h>
+
+#include <Engine/Engine.h>
+#include <FileSystem/FileSystem.h>
+#include <FileSystem/YamlParser.h>
+#include <FileSystem/YamlNode.h>
+#include <FileSystem/FilePath.h>
+#include <Scene3D/Systems/QualitySettingsSystem.h>
+#include <Sound/SoundSystem.h>
+
+#include <QStringList>
 
 namespace ProjectResourcesDetails
 {

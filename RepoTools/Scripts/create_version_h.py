@@ -2,7 +2,7 @@ import os
 import sys
 import string
 import argparse
-import PackApp
+import pack_app
 
 def main():
     parser  = argparse.ArgumentParser()
@@ -16,7 +16,7 @@ def main():
     pathFolderVersion = os.path.join(options.dava_path, 'Sources/Tools')
     pathFileVersion   = os.path.join(pathFolderVersion, 'Version.h')
 
-    titleName         = PackApp.ArchiveName( None, options.dava_path, options.build_number ) 
+    titleName         = pack_app.ArchiveName( None, options.dava_path, options.build_number ) 
 
     os.chdir( pathFolderVersion )
 
