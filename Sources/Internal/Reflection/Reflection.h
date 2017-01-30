@@ -173,17 +173,16 @@ struct Reflection::Field
 
     Any key;
     Reflection ref;
-    const ReflectedType* owner = nullptr;
+    const ReflectedType* inheritFrom = nullptr;
 };
 
 struct Reflection::Method
 {
     Method() = default;
-    Method(String&&, AnyFn&&, const ReflectedType*);
+    Method(String&&, AnyFn&&);
 
     String key;
     AnyFn fn;
-    const ReflectedType* owner = nullptr;
 };
 
 //
@@ -237,6 +236,10 @@ public:
     StructureWrapper() = default;
     StructureWrapper(const StructureWrapper&) = delete;
     virtual ~StructureWrapper() = default;
+
+    virtual void Update()
+    {
+    }
 
     virtual bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;

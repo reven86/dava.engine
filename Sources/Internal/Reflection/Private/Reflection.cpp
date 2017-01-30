@@ -166,24 +166,34 @@ struct Dumper
             // print hierarchy
             PrintHierarhy(line, level, hierarchyColWidth);
 
-            // print key
+            // print key setup
             line << std::setw(nameColWidth - level * hierarchyColWidth) << std::left;
-            if (0 == maxlevel || !hasChildren)
-            {
-                DumpAny(line, field.key);
-            }
-            else
+
+            // print key
             {
                 std::ostringstream name;
+
+                if (field.inheritFrom != nullptr)
+                {
+                    name << std::setw(6) << field.inheritFrom->GetType()->GetName() << "::";
+                }
+
                 DumpAny(name, field.key);
 
-                if ((level + 1) <= maxlevel)
+                if (0 == maxlevel || !hasChildren)
                 {
-                    line << name.str() + "[-]";
+                    line << name.str();
                 }
                 else
                 {
-                    line << name.str() + "[+]";
+                    if ((level + 1) <= maxlevel)
+                    {
+                        line << name.str() + "[-]";
+                    }
+                    else
+                    {
+                        line << name.str() + "[+]";
+                    }
                 }
             }
 
@@ -373,17 +383,16 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
     return Reflection();
 }
 
-Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* owner_)
+Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inheritFrom_)
     : key(key_)
     , ref(ref_)
-    , owner(owner_)
+    , inheritFrom(inheritFrom_)
 {
 }
 
-Reflection::Method::Method(String&& key_, AnyFn&& fn_, const ReflectedType* owner_)
+Reflection::Method::Method(String&& key_, AnyFn&& fn_)
     : key(key_)
     , fn(fn_)
-    , owner(owner_)
 {
 }
 

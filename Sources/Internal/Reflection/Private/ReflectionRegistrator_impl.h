@@ -506,6 +506,12 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::operator[](ReflectedMeta&& m
 template <typename C>
 void ReflectionRegistrator<C>::End()
 {
+    ReflectedType* type = ReflectedTypeDB::Edit<C>();
+    if (nullptr != type->structureWrapper)
+    {
+        type->structureWrapper->Update();
+    }
+
     structure = nullptr;
     lastMeta = nullptr;
 }
