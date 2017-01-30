@@ -131,11 +131,7 @@ public:
                   MEMBER(referenceCount, "referenceCount", I_SAVE)
                   )
 
-    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase)
-    {
-        ReflectionRegistrator<BaseObject>::Begin()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
 };
 
 template <typename T>
