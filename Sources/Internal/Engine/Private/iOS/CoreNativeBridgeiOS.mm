@@ -9,7 +9,6 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "UI/UIScreenManager.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -114,6 +113,8 @@
 
 @end
 
+extern bool showingMessageBox;
+
 namespace DAVA
 {
 namespace Private
@@ -145,22 +146,17 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::OnFrameTimer()
 {
-    // Yuri Coder, 2013/02/06. This flag can be used to block drawView() call
-    // in case if ASSERTion happened. This is introduced to do not stuck on the RenderManager::Lock()
-    // mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
-    // mutex might be already locked so we'll got a deadlock.
-    // Return to this code after RenderManager mutex will be removed.
-    if (GetEngineContext()->uiScreenManager->IsDrawBlocked())
-        return;
-
-    int32 fps = core->OnFrame();
-    if (fps <= 0)
+    if (!showingMessageBox)
     {
-        fps = std::numeric_limits<int32>::max();
-    }
+        int32 fps = core->OnFrame();
+        if (fps <= 0)
+        {
+            fps = std::numeric_limits<int32>::max();
+        }
 
-    int32 interval = static_cast<int32>(60.0 / fps + 0.5);
-    [objcInterop setDisplayLinkInterval:interval];
+        int32 interval = static_cast<int32>(60.0 / fps + 0.5);
+        [objcInterop setDisplayLinkInterval:interval];
+    }
 }
 
 bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
@@ -208,9 +204,21 @@ void CoreNativeBridge::ApplicationDidEnterBackground()
     core->didEnterForegroundBackground.Emit(false);
     NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
 
-    mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
+    if (showingMessageBox)
+    {
+        // TODO: improve dispatcher, make it reentrant
+        // Do this ugly direct call due to current dispatcher limitations: Dispatcher::ProcessEvents method
+        // is not reentrant now.
+        // Message box (e.g. DVASSERT) can occur while dispatcher pumps events and blocking call here
+        // leads to reentering ProcessEvents. Also frame procession is disabled when message box is showing.
+        EngineBackend::DirectCallAppSuspended(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
+    }
+    else
+    {
+        mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
+    }
 
-    PauseDisplayLink();
+    [objcInterop pauseDisplayLink];
 }
 
 void CoreNativeBridge::ApplicationWillEnterForeground()
@@ -219,7 +227,7 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
     core->didEnterForegroundBackground.Emit(true);
     NotifyListeners(ON_WILL_ENTER_FOREGROUND, nullptr, nullptr);
 
-    ResumeDisplayLink();
+    [objcInterop resumeDisplayLink];
 }
 
 void CoreNativeBridge::ApplicationWillTerminate()
@@ -276,16 +284,6 @@ void CoreNativeBridge::UnregisterUIApplicationDelegateListener(PlatformApi::Ios:
     {
         appDelegateListeners.erase(it);
     }
-}
-
-void CoreNativeBridge::PauseDisplayLink()
-{
-    [objcInterop pauseDisplayLink];
-}
-
-void CoreNativeBridge::ResumeDisplayLink()
-{
-    [objcInterop resumeDisplayLink];
 }
 
 void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)

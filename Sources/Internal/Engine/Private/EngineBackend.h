@@ -80,6 +80,11 @@ public:
 
     void UpdateDisplayConfig();
 
+#if defined(__DAVAENGINE_IPHONE__)
+    // To know why this method is introduced see comment in CoreNativeBridge::ApplicationDidEnterBackground
+    static void DirectCallAppSuspended(const MainDispatcherEvent& e);
+#endif
+
 private:
     void RunConsole();
 
@@ -118,7 +123,7 @@ private:
     Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
-    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    // Application-supplied functor which is invoked when user is trying to close window or application
     Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;

@@ -49,9 +49,6 @@ struct CoreNativeBridge final
     void RegisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener);
     void UnregisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener);
 
-    void PauseDisplayLink();
-    void ResumeDisplayLink();
-
     enum eNotificationType
     {
         ON_DID_FINISH_LAUNCHING,

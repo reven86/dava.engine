@@ -110,6 +110,8 @@ void* WindowNativeBridge::GetHandle() const
 
 bool WindowNativeBridge::CreateWindow()
 {
+    windowBackend->uiDispatcher.LinkToCurrentThread();
+
     ::UIScreen* screen = [ ::UIScreen mainScreen];
     CGRect rect = [screen bounds];
     float32 scale = [screen scale];

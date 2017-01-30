@@ -26,9 +26,6 @@ public:
 
     int32 OnFrame();
 
-    void PauseDisplayLink();
-    void ResumeDisplayLink();
-
     // Signals for distribution UIApplicationDelegate's notifications:
     //  - applicationDidBecomeActive/applicationWillResignActive
     //  - applicationWillEnterForeground/applicationDidEnterBackground
