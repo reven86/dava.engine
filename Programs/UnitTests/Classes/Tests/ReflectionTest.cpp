@@ -444,6 +444,8 @@ DAVA_TESTCLASS (ReflectionTest)
         ReflectionTestClass t;
         DAVA::Reflection t_ref = DAVA::Reflection::Create(&t);
 
+        dumpOutput.clear();
+
         t_ref.Dump(dumpOutput);
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
@@ -694,5 +696,26 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(value.CanCast<int>());
         TEST_VERIFY(!value.CanCast<char>());
         TEST_VERIFY(value.Cast<int>() == static_cast<int>(s.e_class));
+    }
+
+    DAVA_TEST (ReflectionAny)
+    {
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
+
+        Any anyByPtr = rtype->CreateObject(ReflectedType::CreatePolicy::ByPointer);
+        Any anyByValue = rtype->CreateObject(ReflectedType::CreatePolicy::ByValue);
+
+        Reflection anyByPtrRef = Reflection::Create(anyByPtr);
+        Reflection anyByValueRef = Reflection::Create(anyByValue);
+
+        std::ostringstream dumpOutput;
+
+        anyByPtrRef.Dump(dumpOutput);
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
+        dumpOutput.clear();
+
+        anyByValueRef.Dump(dumpOutput);
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
 };

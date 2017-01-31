@@ -4,6 +4,7 @@
 
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedTypeDB.h"
+#include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
@@ -370,14 +371,30 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 
 Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 {
+    static ValueWrapperDirect vw;
+
     if (!any.IsEmpty())
     {
-        const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
+        if (any.GetType()->IsPointer())
+        {
+            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType()->Deref());
 
-        // TODO:
-        // ...
+            if (nullptr != objectType)
+            {
+                ReflectedObject object(any.Get<void*>(), objectType);
+                return Reflection(object, &vw, nullptr, objectMeta);
+            }
+        }
+        else
+        {
+            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
 
-        DVASSERT(false);
+            if (nullptr != objectType)
+            {
+                ReflectedObject object(const_cast<void*>(any.GetData()), objectType);
+                return Reflection(object, &vw, nullptr, objectMeta);
+            }
+        }
     }
 
     return Reflection();

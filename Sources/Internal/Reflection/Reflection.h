@@ -142,6 +142,8 @@ public:
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
 
+    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
+
     //
     // Experimental API for fields add/remove/insert create.
     // Is subject of change!
@@ -153,8 +155,6 @@ public:
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
     bool RemoveField(const Any& key) const;
     AnyFn GetFieldCreator() const;
-
-    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
     //
     // <--
     //
@@ -215,7 +215,7 @@ public:
     ValueWrapper(const ValueWrapper&) = delete;
     virtual ~ValueWrapper() = default;
 
-    virtual const Type* GetType() const = 0;
+    virtual const Type* GetType(const ReflectedObject& object) const = 0;
 
     virtual bool IsReadonly(const ReflectedObject& object) const = 0;
     virtual Any GetValue(const ReflectedObject& object) const = 0;

@@ -16,7 +16,7 @@ inline bool Reflection::IsReadonly() const
 
 inline const Type* Reflection::GetValueType() const
 {
-    return valueWrapper->GetType();
+    return valueWrapper->GetType(object);
 }
 
 inline ReflectedObject Reflection::GetValueObject() const
