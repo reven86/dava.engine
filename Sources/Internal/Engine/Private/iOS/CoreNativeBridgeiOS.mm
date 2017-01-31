@@ -222,8 +222,8 @@ void CoreNativeBridge::ApplicationWillTerminate(UIApplication* app)
     [objcInterop cancelDisplayLink];
     [objcInterop enableGameControllerObserver:NO];
 
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnEngineCleanup();
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
+    primaryWindowBackend->Close(true);
 }
 
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning(UIApplication* app)
