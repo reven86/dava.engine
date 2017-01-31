@@ -358,7 +358,7 @@ public:
     int32 GetGradientBlendMode() const;
     void SetGradientBlendMode(int32 mode);
 
-    INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
+    INTROSPECTION_EXTEND(UIControlBackground, UIComponent,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)

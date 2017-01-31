@@ -226,7 +226,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->SetSprite(nullptr, 0);
+                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
             }
         }
     }
@@ -433,7 +433,8 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
     RunOnMainThreadAsync([this, sprite]() {
         if (uiTextField != nullptr)
         {
-            uiTextField->SetSprite(sprite.Get(), 0);
+            UIControlBackground *bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+            bg->SetSprite(sprite.Get(), 0);
         }
     });
 }
@@ -450,7 +451,7 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->SetSprite(nullptr, 0);
+            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         }
         else
         {
