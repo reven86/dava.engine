@@ -465,27 +465,30 @@ void MainWindow::ShowTable(const QString& branchID)
 
 void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
 {
+    if (tasks.isEmpty())
+    {
+        return;
+    }
+    //disable config refresher while update something
+    QSignalBlocker blocker(configRefresher);
+    //self-update
+    if (tasks.front().isSelfUpdate)
+    {
+        FileManager* fileManager = appManager->GetFileManager();
+        SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
+        updater.setWindowModality(Qt::ApplicationModal);
+        updater.exec();
+        if (updater.result() != QDialog::Rejected)
+        {
+            return;
+        }
+        tasks.dequeue();
+    }
     if (!tasks.isEmpty())
     {
-        //self-update
-        if (tasks.front().isSelfUpdate)
-        {
-            FileManager* fileManager = appManager->GetFileManager();
-            SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
-            updater.setWindowModality(Qt::ApplicationModal);
-            updater.exec();
-            if (updater.result() != QDialog::Rejected)
-            {
-                return;
-            }
-            tasks.dequeue();
-        }
-        if (!tasks.isEmpty())
-        {
-            //application update
-            UpdateDialog dialog(tasks, appManager, this);
-            dialog.exec();
-        }
+        //application update
+        UpdateDialog dialog(tasks, appManager, this);
+        dialog.exec();
     }
 }
 
