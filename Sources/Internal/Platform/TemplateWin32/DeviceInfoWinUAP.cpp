@@ -330,7 +330,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String ^ path = removableStorages->GetAt(i)->Path;
-        storage.path = FilePath::FromNativeString(path->Data());
+        storage.path = UTF8Utils::EncodeToUTF8(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
             result.push_back(storage);

@@ -33,15 +33,20 @@ public:
     ContextAccessor* GetAccessor();
     ContextManager* GetContextManager();
 
-    QWidget* GetWindow(const WindowKey& wndKey);
-    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName);
+    QWidget* GetWindow(const WindowKey& wndKey) const;
+    QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName) const;
 
     static Signal<Core*> coreChanged;
 
 protected:
+    virtual void AfterWrappersSync()
+    {
+    }
+
     std::unique_ptr<Core> core;
     std::unique_ptr<MockInvoker> mockInvoker;
     QtConnections connections;
+    bool updateForCurrentTestCalled = false;
 };
 
 } // namespace TArc

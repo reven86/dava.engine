@@ -20,6 +20,8 @@
 
 #include <QFile>
 #include <QDir>
+#include <QDesktopServices>
+#include <QApplication>
 
 using namespace DAVA;
 
@@ -200,7 +202,6 @@ EditorCore::~EditorCore()
 
 void EditorCore::OnRenderingInitialized()
 {
-    mainWindow->OnWindowCreated();
     QString lastProjectPath = GetLastProject();
     if (!lastProjectPath.isEmpty())
     {
@@ -427,8 +428,9 @@ void EditorCore::OnNewProject()
 
 void EditorCore::UnpackHelp()
 {
+    const EngineContext* engineContext = GetEngineContext();
+    FileSystem* fs = engineContext->fileSystem;
     FilePath docsPath(EditorCoreDetails::DOCUMENTATION_DIRECTORY);
-    FileSystem* fs = FileSystem::Instance();
     if (!fs->Exists(docsPath))
     {
         try

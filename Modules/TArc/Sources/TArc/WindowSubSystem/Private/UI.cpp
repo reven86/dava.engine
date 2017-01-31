@@ -2,6 +2,8 @@
 #include "TArc/WindowSubSystem/ActionUtils.h"
 
 #include <QUrl>
+#include <QList>
+#include <QString>
 
 namespace DAVA
 {
@@ -28,7 +30,8 @@ bool WindowKey::operator!=(const WindowKey& other) const
 }
 
 DockPanelInfo::DockPanelInfo()
-    : actionPlacementInfo(CreateMenuPoint("View/Dock"))
+    : actionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
+                                                           << "Dock"))
 {
 }
 
