@@ -267,7 +267,7 @@ void GameCore::ProcessTestCoverage()
     auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
 
     toJson("{ \n");
-    
+
 #if defined(DAVA_UNITY_FOLDER)
     toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
 #endif
@@ -317,7 +317,7 @@ void GameCore::ProcessTestCoverage()
     toJson("     }\n");
 
     toJson("}\n");
-    
+
 #endif // TEST_COVERAGE
 }
 

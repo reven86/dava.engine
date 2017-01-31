@@ -37,8 +37,6 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     ui->treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-    connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
-
     connect(ui->treeView, &QTreeView::doubleClicked, this, &FileSystemDockWidget::onDoubleClicked);
     connect(ui->filterLine, &QLineEdit::textChanged, this, &FileSystemDockWidget::setFilterFixedString);
 
@@ -105,6 +103,8 @@ void FileSystemDockWidget::SetResourceDirectory(const QString& path)
         model->setNameFilterDisables(false);
         model->setReadOnly(false);
         ui->treeView->setModel(model);
+        connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
+
         ui->treeView->hideColumn(1);
         ui->treeView->hideColumn(2);
         ui->treeView->hideColumn(3);

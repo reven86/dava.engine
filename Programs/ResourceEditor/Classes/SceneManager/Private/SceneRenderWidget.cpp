@@ -1,7 +1,6 @@
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
 #include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/SceneManager/SceneData.h"
-#include "Classes/Deprecated/ScenePreviewDialog.h"
 
 #include "Classes/Qt/Scene/SceneSignals.h"
 
@@ -49,7 +48,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
     InitDavaUI();
 
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneRenderWidget::OnRenderWidgetResized);
+    renderWidget->resized.Connect(this, &SceneRenderWidget::OnRenderWidgetResized);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, this, &SceneRenderWidget::OnMouseOverSelection);
 
     tabBar->closeTab.Connect(this, &SceneRenderWidget::OnCloseTab);
@@ -57,35 +56,6 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
 SceneRenderWidget::~SceneRenderWidget()
 {
-    if (previewDialog.Get() != nullptr)
-    {
-        previewDialog->RemoveFromParent();
-    }
-}
-
-void SceneRenderWidget::ShowPreview(const DAVA::FilePath& scenePath)
-{
-    if (previewDialog.Get() == nullptr)
-    {
-        previewDialog.Set(new ScenePreviewDialog());
-    }
-
-    if (scenePath.IsEqualToExtension(".sc2"))
-    {
-        previewDialog->Show(scenePath);
-    }
-    else
-    {
-        previewDialog->Close();
-    }
-}
-
-void SceneRenderWidget::HidePreview()
-{
-    if (previewDialog.Get() != nullptr && previewDialog->GetParent())
-    {
-        previewDialog->Close();
-    }
 }
 
 void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
