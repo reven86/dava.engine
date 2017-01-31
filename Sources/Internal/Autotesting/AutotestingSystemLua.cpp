@@ -103,7 +103,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
     delegate = _delegate;
 }
 
-void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
+void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
 {
     if (luaState)
     {
@@ -111,7 +111,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
         return;
     }
 
-    Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
+    Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.GetAbsolutePathname().c_str());
 
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
@@ -132,14 +132,15 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
     {
         AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
     }
-    String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
-    if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
+
+    FilePath automationAPIStrPath = AutotestingSystem::Instance()->GetPathTo("/Scripts/autotesting_api.lua");
+    if (!FileSystem::Instance()->Exists(automationAPIStrPath) || !RunScriptFromFile(automationAPIStrPath))
     {
         AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
     }
 
     lua_getglobal(luaState, "SetPackagePath");
-    lua_pushstring(luaState, AutotestingSystem::ResolvePathToAutomation("/Autotesting/").c_str());
+    lua_pushstring(luaState, AutotestingSystem::Instance()->GetPathTo("/").GetAbsolutePathname().c_str());
     if (lua_pcall(luaState, 1, 1, 0))
     {
         const char* err = lua_tostring(luaState, -1);
@@ -148,7 +149,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
     if (!LoadScriptFromFile(luaFilePath))
     {
-        AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath + "' was failed failed");
+        AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
     }
 
     lua_getglobal(luaState, "ResumeTest");
