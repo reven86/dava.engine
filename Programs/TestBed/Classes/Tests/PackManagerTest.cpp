@@ -3,7 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <FileSystem/DynamicMemoryFile.h>
-#include <PackManager/PackManager.h>
+#include <PackManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <typeinfo>
 
@@ -259,7 +259,7 @@ void PackManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnRequestUpdated(const DAVA::IDLCManager::IRequest& request)
+void PackManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 {
     const String& packName = request.GetRequestedPackName();
     // change total download progress
@@ -296,16 +296,16 @@ void PackManagerTest::OnNetworkReady(bool isReady)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IDLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: start init");
 
     pm.networkReady.DisconnectAll();
     pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
 
-    pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, IDLCManager::Hints());
+    pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
 
-	pm.SetRequestingEnabled(true);
+    pm.SetRequestingEnabled(true);
 
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
@@ -320,14 +320,14 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-	IDLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-	IDLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
 
     // TODO do I need list loaded packs?
@@ -345,7 +345,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-	IDLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->packManager;
 
     pm.requestUpdated.DisconnectAll();
     pm.requestUpdated.Connect(this, &PackManagerTest::OnRequestUpdated);
@@ -365,7 +365,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-	IDLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->packManager;
     String packName = packNextInput->GetUtf8Text();
 
     pm.requestUpdated.DisconnectAll();
@@ -374,7 +374,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     try
     {
         packNameLoading->SetUtf8Text("loading: " + packName);
-        const IDLCManager::IRequest* p = pm.RequestPack(packName);
+        const DLCManager::IRequest* p = pm.RequestPack(packName);
         if (!p->IsDownloaded())
         {
             //pm.SetRequestOrder(p, 0);

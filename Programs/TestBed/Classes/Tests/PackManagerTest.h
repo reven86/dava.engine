@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
-#include <PackManager/PackManager.h>
+#include <PackManager/DLCManager.h>
 
 class TestBed;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
@@ -27,7 +27,7 @@ private:
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void OnRequestUpdated(const DAVA::IDLCManager::IRequest& request);
+    void OnRequestUpdated(const DAVA::DLCManager::IRequest& request);
     void OnNetworkReady(bool isReady);
 
     DAVA::Engine& engine;

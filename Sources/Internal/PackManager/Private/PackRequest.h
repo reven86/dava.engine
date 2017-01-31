@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/DLCManager.h"
 #include "Compression/Compressor.h"
 
 namespace DAVA
@@ -12,7 +12,7 @@ class DLCManagerImpl;
 	Downdload several files
 */
 
-class PackRequest : public IDLCManager::IRequest
+class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);

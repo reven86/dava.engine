@@ -1,4 +1,4 @@
-#include <PackManager/PackManager.h>
+#include <PackManager/DLCManager.h>
 // we need include private file only to call private api in test case
 #include <PackManager/Private/DLCManagerImpl.h>
 #include <FileSystem/File.h>
@@ -6,22 +6,20 @@
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
 #include <Core/Core.h>
-#include <Platform/DeviceInfo.h>
 #include <Concurrency/Thread.h>
 #include <Logger/Logger.h>
 
 #include "UnitTests/UnitTests.h"
-#include "Engine/Engine.h"
 
 class GameClient
 {
 public:
-    GameClient(DAVA::IDLCManager& packManager_)
+    GameClient(DAVA::DLCManager& packManager_)
         : packManager(packManager_)
     {
         sigConnection = packManager.requestUpdated.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::IDLCManager::IRequest& pack)
+    void OnPackStateChange(const DAVA::DLCManager::IRequest& pack)
     {
         DAVA::StringStream ss;
 
@@ -31,7 +29,7 @@ public:
         DAVA::Logger::Info("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
-    DAVA::IDLCManager& packManager;
+    DAVA::DLCManager& packManager;
 };
 
 DAVA_TESTCLASS (PackManagerTest)
@@ -53,9 +51,9 @@ DAVA_TESTCLASS (PackManagerTest)
         String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
 #if defined(__DAVAENGINE_COREV2__)
-        IDLCManager& packManager = *Engine::Instance()->GetContext()->packManager;
+        DLCManager& packManager = *Engine::Instance()->GetContext()->packManager;
 #else
-        IDLCManager& packManager = Core::Instance()->GetPackManager();
+        DLCManager& packManager = Core::Instance()->GetPackManager();
 #endif
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
@@ -66,7 +64,7 @@ DAVA_TESTCLASS (PackManagerTest)
         {
             Logger::Info("init pack manager");
 
-            packManager.Initialize(downloadedPacksDir, superPackUrl, IDLCManager::Hints());
+            packManager.Initialize(downloadedPacksDir, superPackUrl, DLCManager::Hints());
 
             Logger::Info("create game client");
 
@@ -103,7 +101,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
             Logger::Info("before request pack");
 
-            const IDLCManager::IRequest* pack = packManager.RequestPack(packName);
+            const DLCManager::IRequest* pack = packManager.RequestPack(packName);
             TEST_VERIFY(pack != nullptr);
 
             int32 maxIter = 360;
