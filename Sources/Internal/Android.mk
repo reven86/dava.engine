@@ -344,6 +344,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Analytics/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Analytics/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
@@ -384,6 +385,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
