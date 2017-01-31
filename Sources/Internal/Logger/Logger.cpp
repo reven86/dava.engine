@@ -6,6 +6,7 @@
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
