@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_INTROSPECTION_BASE_H__
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
+#include "Reflection/Reflection.h"
+
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 #include "Base/GlobalEnum.h"
@@ -15,7 +17,7 @@ class KeyedArchive;
 struct MetaInfo;
 
 // абстрактный базовый класс для интроспекции
-class InspBase
+class InspBase : public ReflectionBase
 {
 public:
     InspBase();
@@ -25,6 +27,8 @@ public:
 
 protected:
     virtual ~InspBase();
+
+    DAVA_VIRTUAL_REFLECTION(InspBase);
 };
 
 struct InspDesc

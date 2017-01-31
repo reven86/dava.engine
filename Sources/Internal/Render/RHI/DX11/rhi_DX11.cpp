@@ -196,14 +196,8 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         const char* reason = DX11_GetErrorText(dx11.device->GetDeviceRemovedReason());
 
         DAVA::String info = DAVA::Format("DX11 Device removed/reset\n%s\nat %s [%u]:\n\n%s\n\n%s", call, fileName, line, actualError, reason);
-
-    #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
-        // write to log if asserts are disabled
         DAVA::Logger::Error(info.c_str());
-    #else
-        // assert will automatically write to log
         DVASSERT(0, info.c_str());
-    #endif
 
         ReportError(dx11.initParameters, RenderingError::DriverError);
         dx11.device = nullptr;

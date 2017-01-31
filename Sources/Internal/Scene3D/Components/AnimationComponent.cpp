@@ -34,6 +34,7 @@ Component* AnimationComponent::Clone(Entity* toEntity)
     newAnimation->animation = SafeRetain(animation);
     newAnimation->repeatsCount = repeatsCount;
     newAnimation->currRepeatsCont = 0;
+    newAnimation->playbackComplete = playbackComplete;
     newAnimation->state = STATE_STOPPED; //for another state we need add this one to AnimationSystem
 
     return newAnimation;
@@ -112,5 +113,20 @@ void AnimationComponent::Stop()
         return;
     GlobalEventSystem::Instance()->Event(this, EventSystem::STOP_ANIMATION);
     animationTransform.Identity();
+}
+
+void AnimationComponent::MoveAnimationToTheLastFrame()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_LAST_FRAME);
+}
+
+void AnimationComponent::MoveAnimationToTheFirstFrame()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::MOVE_ANIMATION_TO_THE_FIRST_FRAME);
+}
+
+void AnimationComponent::SetPlaybackCompleteCallback(Function<void(const AnimationComponent* const)> callback)
+{
+    playbackComplete = callback;
 }
 };
