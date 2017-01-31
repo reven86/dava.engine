@@ -80,10 +80,8 @@ private:
     Vector<uint32> fileIndexes;
     String requestedPackName;
 
-    uint32 downloadTaskId = 0;
     uint32 numOfDownloadedFile = 0;
 
-    uint64 totalAllPacksSize = 0;
     uint64 downloadedSize = 0;
 };
 
