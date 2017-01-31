@@ -433,7 +433,7 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
     RunOnMainThreadAsync([this, sprite]() {
         if (uiTextField != nullptr)
         {
-            UIControlBackground *bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+            UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
             bg->SetSprite(sprite.Get(), 0);
         }
     });

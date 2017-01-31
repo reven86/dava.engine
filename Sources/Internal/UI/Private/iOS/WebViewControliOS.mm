@@ -293,7 +293,7 @@ void WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& contro
                 DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
                 DVASSERT(spr);
 
-                UIControlBackground *bg = control.GetOrCreateComponent<UIControlBackground>();
+                UIControlBackground* bg = control.GetOrCreateComponent<UIControlBackground>();
                 bg->SetSprite(spr, 0);
                 DAVA::SafeRelease(spr);
             }

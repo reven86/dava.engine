@@ -204,7 +204,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 
 void TextFieldPlatformImpl::Initialize()
 {
-    UIControlBackground *bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+    UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
     bg->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
 #if defined(__DAVAENGINE_COREV2__)
     bg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);

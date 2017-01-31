@@ -666,7 +666,7 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
                     RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
                     if (sprite != nullptr)
                     {
-                        UIControlBackground *bg = davaTextField.GetOrCreateComponent<UIControlBackground>();
+                        UIControlBackground* bg = davaTextField.GetOrCreateComponent<UIControlBackground>();
                         bg->SetSprite(sprite.Get(), 0);
                     }
                 }

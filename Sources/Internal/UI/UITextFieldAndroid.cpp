@@ -551,7 +551,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
                 SafeRelease(spr);
             };
 
-            UIControlBackground *bg = textField.GetOrCreateComponent<UIControlBackground>();
+            UIControlBackground* bg = textField.GetOrCreateComponent<UIControlBackground>();
             bg->SetSprite(spr, 0);
         }
         else
