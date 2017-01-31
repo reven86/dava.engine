@@ -7,6 +7,7 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "Utils/CRC32.h"
 #include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 #include "Logger/Logger.h"
 #include "DLC/DLC.h"
 #include "Base/Exception.h"

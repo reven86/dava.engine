@@ -1,6 +1,6 @@
 #include <PackManager/PackManager.h>
 // we need include private file only to call private api in test case
-#include <PackManager/Private/PackManagerImpl.h>
+#include <PackManager/Private/DLCManagerImpl.h>
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>
@@ -16,26 +16,22 @@
 class GameClient
 {
 public:
-    GameClient(DAVA::IPackManager& packManager_)
+    GameClient(DAVA::IDLCManager& packManager_)
         : packManager(packManager_)
     {
-        sigConnection = packManager.packStateChanged.Connect(this, &GameClient::OnPackStateChange);
+        sigConnection = packManager.requestUpdated.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::IPackManager::Pack& pack)
+    void OnPackStateChange(const DAVA::IDLCManager::IRequest& pack)
     {
         DAVA::StringStream ss;
 
-        ss << "pack: " << pack.name << " change: ";
-        ss << "new state - " << static_cast<unsigned>(pack.state);
-        if (pack.state == DAVA::IPackManager::Pack::Status::ErrorLoading)
-        {
-            ss << '\n' << pack.otherErrorMsg;
-        }
+        ss << "pack: " << pack.GetRequestedPackName() << " change: ";
+        ss << "is downloaded - " << pack.IsDownloaded();
 
         DAVA::Logger::Info("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
-    DAVA::IPackManager& packManager;
+    DAVA::IDLCManager& packManager;
 };
 
 DAVA_TESTCLASS (PackManagerTest)
@@ -46,9 +42,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
         Logger::Info("before init");
 
-        String dbFileName("db_{gpu}.db.zip");
         FilePath downloadedPacksDir("~doc:/UnitTests/PackManagerTest/packs/");
-        FilePath readOnlyPacksDir("~res:/TestData/PackManagerTest/packs/");
 
         Logger::Info("clear dirs");
 
@@ -58,53 +52,21 @@ DAVA_TESTCLASS (PackManagerTest)
 
         String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
-        String architecture = "noname";
-
-        Logger::Info("get gpu family");
-
-        eGPUFamily gpu = DeviceInfo::GetGPUFamily();
-        switch (gpu)
-        {
-        case GPU_ADRENO:
-            architecture = "adreno";
-            break;
-        case GPU_DX11:
-            architecture = "dx11";
-            break;
-        case GPU_MALI:
-            architecture = "mali";
-            break;
-        case GPU_POWERVR_IOS:
-            architecture = "pvr_ios";
-            break;
-        case GPU_POWERVR_ANDROID:
-            architecture = "pvr_android";
-            break;
-        case GPU_TEGRA:
-            architecture = "tegra";
-            break;
-        default:
-            throw std::runtime_error("unknown gpu family");
-        }
-
 #if defined(__DAVAENGINE_COREV2__)
-        IPackManager& packManager = *Engine::Instance()->GetContext()->packManager;
+        IDLCManager& packManager = *Engine::Instance()->GetContext()->packManager;
 #else
-        IPackManager& packManager = Core::Instance()->GetPackManager();
+        IDLCManager& packManager = Core::Instance()->GetPackManager();
 #endif
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
-
-        dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
 
         Logger::Info("init packManager");
 
         try
         {
             Logger::Info("init pack manager");
-            FileSystem::Instance()->DeleteFile("~doc:/" + dbFileName);
 
-            packManager.Initialize(architecture, downloadedPacksDir, "~res:/TestData/PackManagerTest/packs/" + dbFileName, superPackUrl, IPackManager::Hints());
+            packManager.Initialize(downloadedPacksDir, superPackUrl, IDLCManager::Hints());
 
             Logger::Info("create game client");
 
@@ -124,7 +86,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
                 Logger::Info("updata pack manager");
 
-                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
+                static_cast<DLCManagerImpl*>(&packManager)->Update(0.1f);
             }
 
             if (!packManager.IsInitialized())
@@ -135,44 +97,39 @@ DAVA_TESTCLASS (PackManagerTest)
 
             Logger::Info("before enable requesting");
 
-            packManager.EnableRequesting();
+            packManager.SetRequestingEnabled(true);
 
             String packName = "vpack";
 
             Logger::Info("before request pack");
 
-            const IPackManager::Pack& pack = packManager.RequestPack(packName);
-            if (pack.state != IPackManager::Pack::Status::Mounted)
-            {
-                TEST_VERIFY(pack.state == IPackManager::Pack::Status::Downloading || pack.state == IPackManager::Pack::Status::Requested);
-            }
+            const IDLCManager::IRequest* pack = packManager.RequestPack(packName);
+            TEST_VERIFY(pack != nullptr);
 
-            uint32 maxIter = 360;
+            int32 maxIter = 360;
 
             Logger::Info("wait till pack loading");
 
-            while ((pack.state == IPackManager::Pack::Status::Requested || pack.state == IPackManager::Pack::Status::Downloading) && maxIter-- > 0)
+            while ((pack != nullptr && !pack->IsDownloaded()) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(100);
                 // we have to call Update() for downloadManager and packManager cause we in main thread
                 DownloadManager::Instance()->Update();
-                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
+                static_cast<DLCManagerImpl*>(&packManager)->Update(0.1f);
             }
 
             Logger::Info("finish loading pack");
 
             // disable test for now - on local server newer packs
-            if (pack.state != IPackManager::Pack::Status::Mounted)
+            if (pack == nullptr || !pack->IsDownloaded())
             {
                 return;
             }
 
-            if (pack.state != IPackManager::Pack::Status::OtherError)
+            if (pack->IsDownloaded())
             {
-                Logger::Info("check pack");
-
-                TEST_VERIFY(pack.state == IPackManager::Pack::Status::Mounted);
+                Logger::Info("check pack TODO implement it(need regenerate new test data)");
 
                 ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
                 TEST_VERIFY(file);
@@ -185,15 +142,6 @@ DAVA_TESTCLASS (PackManagerTest)
 
                     TEST_VERIFY(crc32 == 0x4a2039c8); // crc32 for monkey.sc2
                 }
-            }
-            else
-            {
-                Logger::Info("check if no wifi on device");
-
-                // if device without wifi
-                const Vector<IPackManager::Pack>& allPacks = packManager.GetPacks();
-                TEST_VERIFY(allPacks.at(0).name == "pack1");
-                TEST_VERIFY(allPacks.at(0).downloadError == DLE_COULDNT_RESOLVE_HOST);
             }
 
             Logger::Info("done test");

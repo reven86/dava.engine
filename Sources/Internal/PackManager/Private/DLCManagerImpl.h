@@ -5,6 +5,7 @@
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/ResourceArchive.h"
+#include "Concurrency/Mutex.h"
 
 #ifdef __DAVAENGINE_COREV2__
 #include "Engine/Engine.h"
