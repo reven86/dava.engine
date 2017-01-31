@@ -48,7 +48,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
 
     InitDavaUI();
 
-    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, this, &SceneRenderWidget::OnRenderWidgetResized);
+    renderWidget->resized.Connect(this, &SceneRenderWidget::OnRenderWidgetResized);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::MouseOverSelection, this, &SceneRenderWidget::OnMouseOverSelection);
 
     tabBar->closeTab.Connect(this, &SceneRenderWidget::OnCloseTab);
