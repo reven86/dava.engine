@@ -36,8 +36,10 @@ private:
         UpdateBind(UIUpdateComponent* uc, UICustomUpdateDeltaComponent* cdc);
         const UIUpdateComponent* updateComponent = nullptr;
         UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
+        bool updated = false;
     };
 
     List<UpdateBind> binds;
+    bool modified = false;
 };
 }

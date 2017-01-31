@@ -16,6 +16,7 @@ void UIUpdateSystem::RegisterControl(UIControl* control)
     {
         UICustomUpdateDeltaComponent* customDeltaComponent = control->GetComponent<UICustomUpdateDeltaComponent>();
         binds.emplace_back(component, customDeltaComponent);
+        modified = true;
     }
 }
 
@@ -28,6 +29,7 @@ void UIUpdateSystem::UnregisterControl(UIControl* control)
                                    {
                                        return b.updateComponent == component;
                                    }));
+        modified = true;
     }
 }
 
@@ -37,6 +39,7 @@ void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* componen
     {
         UICustomUpdateDeltaComponent* customDeltaComponent = control->GetComponent<UICustomUpdateDeltaComponent>();
         binds.emplace_back(static_cast<UIUpdateComponent*>(component), customDeltaComponent);
+        modified = true;
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT)
     {
@@ -49,6 +52,7 @@ void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* componen
             if (it != binds.end())
             {
                 it->customDeltaComponent = DynamicTypeCheck<UICustomUpdateDeltaComponent*>(component);
+                modified = true;
             }
         }
     }
@@ -62,6 +66,7 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
                                    {
                                        return b.updateComponent == component;
                                    }));
+        modified = true;
     }
     else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT)
     {
@@ -71,6 +76,7 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
         if (it != binds.end())
         {
             it->customDeltaComponent = nullptr;
+            modified = true;
         }
     }
 }
@@ -90,8 +96,25 @@ void UIUpdateSystem::Process(float32 elapsedTime)
         return;
     }
 
-    for (const UpdateBind& b : binds)
+
+    for (UpdateBind& b : binds)
     {
+        b.updated = false;
+    }
+
+    modified = false;
+    auto it = binds.begin();
+    auto itEnd = binds.end();
+    for (; it != itEnd; ++it)
+    {
+        UpdateBind& b = *it;
+
+        if (b.updated)
+        {
+            continue;
+        }
+        b.updated = true;
+
         if (!b.updateComponent->GetUpdateInvisible() && !b.updateComponent->GetControl()->IsVisible())
         {
             // Skip invisible controls if invisible update is disabled
@@ -105,6 +128,14 @@ void UIUpdateSystem::Process(float32 elapsedTime)
         else
         {
             b.updateComponent->GetControl()->Update(elapsedTime);
+        }
+
+        if (modified)
+        {
+            modified = false;
+            it = binds.begin();
+            itEnd = binds.end();
+            continue;
         }
     }
 }

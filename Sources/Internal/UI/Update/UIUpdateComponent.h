@@ -30,6 +30,9 @@ protected:
 
 private:
     bool updateInvisible = false;
+
+public:
+    INTROSPECTION_EXTEND(UIUpdateComponent, UIComponent, nullptr)
 };
 
 inline void UIUpdateComponent::SetUpdateInvisible(bool value)

@@ -26,6 +26,10 @@ protected:
 
 private:
     float32 customDelta = 0.f;
+
+public:
+    INTROSPECTION_EXTEND(UICustomUpdateDeltaComponent, UIComponent,
+        PROPERTY("delta", "Delta", GetDelta, SetDelta, I_SAVE | I_VIEW | I_EDIT))
 };
 
 inline float32 UICustomUpdateDeltaComponent::GetDelta() const

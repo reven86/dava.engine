@@ -38,6 +38,7 @@ void UILayoutSystem::Process(DAVA::float32 elapsedTime)
     }
 
     CheckDirty();
+    
     if (currentScreenTransition.Valid())
     {
         Update(currentScreenTransition.Get());
@@ -46,7 +47,8 @@ void UILayoutSystem::Process(DAVA::float32 elapsedTime)
     {
         Update(currentScreen.Get());
     }
-    else if (popupContainer.Valid())
+
+    if (popupContainer.Valid())
     {
         Update(popupContainer.Get());
     }
