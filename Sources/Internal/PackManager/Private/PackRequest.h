@@ -37,7 +37,7 @@ public:
     void SetFileIndexes(Vector<uint32> fileIndexes_);
 
 private:
-    void InitializeCurrentFileRequest();
+    void InitializeFileRequests();
 
     enum Status : uint32
     {
@@ -50,6 +50,22 @@ private:
         Error
     };
 
+    struct FileRequest
+    {
+        FilePath localFile;
+        String errorMsg;
+        String url;
+        uint32 fileIndex = 0;
+        uint32 hashFromMeta = 0;
+        uint64 startLoadingPos = 0;
+        uint64 sizeOfCompressedFile = 0;
+        uint64 sizeOfUncompressedFile = 0;
+        uint64 prevDownloadedSize = 0;
+        uint32 taskId = 0;
+        Compressor::Type compressionType = Compressor::Type::Lz4HC;
+        Status status = Wait;
+    };
+
     void InitializeFileRequest(const uint32 fileIndex,
                                const FilePath& file,
                                const uint32 hash,
@@ -57,31 +73,15 @@ private:
                                const uint64 fileCompressedSize,
                                const uint64 fileUncompressedSize,
                                const String& url,
-                               const Compressor::Type compressionType_);
-    void UpdateFileRequest();
-
-    bool IsDownloadedFileRequest() const;
-
-    FilePath localFile;
-    String errorMsg;
-    String url;
-    uint32 fileIndex = 0;
-    uint32 hashFromMeta = 0;
-    uint64 startLoadingPos = 0;
-    uint64 sizeOfCompressedFile = 0;
-    uint64 sizeOfUncompressedFile = 0;
-    uint64 prevDownloadedSize = 0;
-    uint32 taskId = 0;
-    Compressor::Type compressionType = Compressor::Type::Lz4HC;
-    Status status = Wait;
+                               const Compressor::Type compressionType_,
+                               FileRequest& fileRequest);
+    void UpdateFileRequests();
 
     DLCManagerImpl& packManagerImpl;
 
+    Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
     String requestedPackName;
-
-    uint32 downloadTaskId = 0;
-    uint32 numOfDownloadedFile = 0;
 
     uint64 totalAllPacksSize = 0;
     uint64 downloadedSize = 0;
