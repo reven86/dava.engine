@@ -702,11 +702,11 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
 
-        Any anyByPtr = rtype->CreateObject(ReflectedType::CreatePolicy::ByPointer);
-        Any anyByValue = rtype->CreateObject(ReflectedType::CreatePolicy::ByValue);
+        DAVA::Any anyByPtr = rtype->CreateObject(ReflectedType::CreatePolicy::ByPointer);
+        DAVA::Any anyByValue = rtype->CreateObject(ReflectedType::CreatePolicy::ByValue);
 
-        Reflection anyByPtrRef = Reflection::Create(anyByPtr);
-        Reflection anyByValueRef = Reflection::Create(anyByValue);
+        DAVA::Reflection anyByPtrRef = DAVA::Reflection::Create(anyByPtr);
+        DAVA::Reflection anyByValueRef = DAVA::Reflection::Create(anyByValue);
 
         std::ostringstream dumpOutput;
 
