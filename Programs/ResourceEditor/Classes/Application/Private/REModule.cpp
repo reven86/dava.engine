@@ -4,7 +4,6 @@
 #include "Main/mainwindow.h"
 #include "TextureCache.h"
 #include "QtTools/Utils/Themes/Themes.h"
-#include "Deprecated/ControlsFactory.h"
 
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/DataProcessing/DataNode.h"
@@ -37,7 +36,7 @@ public:
     TextureCache* textureCache = nullptr;
     QPointer<QtMainWindow> mainWindow;
 
-    DAVA_VIRTUAL_REFLECTION(REGlobalData)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(REGlobalData)
     {
     };
 };
@@ -45,7 +44,6 @@ public:
 
 REModule::~REModule()
 {
-    ControlsFactory::ReleaseFonts();
     GetAccessor()->GetGlobalContext()->DeleteData<REModuleDetail::REGlobalData>();
 }
 

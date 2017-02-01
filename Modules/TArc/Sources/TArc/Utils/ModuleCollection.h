@@ -1,7 +1,8 @@
 #pragma once
 
+#include <Base/BaseTypes.h>
 #include "Base/StaticSingleton.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Functional/Function.h"
 
 namespace DAVA

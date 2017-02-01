@@ -323,6 +323,7 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
 
 ENUM_DECLARE(UIComponent::eType)
 {
+    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");

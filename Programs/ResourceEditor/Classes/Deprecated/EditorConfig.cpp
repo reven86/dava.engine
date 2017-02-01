@@ -1,5 +1,4 @@
 #include "EditorConfig.h"
-#include "ControlsFactory.h"
 
 EditorConfig::EditorConfig()
 {

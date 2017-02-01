@@ -78,7 +78,7 @@ static void dx9_PerfQuery_Delete(Handle handle)
     if (perfQuery)
     {
         DX9Command cmd = { DX9Command::RELEASE, { uint64_t(&perfQuery->query) } };
-        ExecDX9(&cmd, 1, false);
+        ExecDX9(&cmd, 1, true);
         perfQuery->query = nullptr;
     }
 

@@ -16,8 +16,6 @@
 
 #include "TArc/Core/Core.h"
 
-#include "QtTools/Utils/MessageHandler.h"
-
 #include <QFileInfo>
 #include <QCryptographicHash>
 #include <QDir>
@@ -92,8 +90,6 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     engineContext->logger->Log(Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-
-    qInstallMessageHandler(DAVAMessageHandler);
 }
 
 void QEApplication::Cleanup()

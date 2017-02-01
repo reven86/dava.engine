@@ -25,7 +25,7 @@ public:
         return (nullptr == setter || object.IsConst());
     }
 
-    const Type* GetType() const override
+    const Type* GetType(const ReflectedObject& object) const override
     {
         return Type::Instance<GetT>();
     }
@@ -52,6 +52,18 @@ public:
             (*setter)(cls, v);
 
             return true;
+        }
+
+        return false;
+    }
+
+    inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        using UnrefSetT = typename std::remove_reference<SetT>::type;
+
+        if (value.CanCast<UnrefSetT>())
+        {
+            return SetValue(object, value.Cast<UnrefSetT>());
         }
 
         return false;

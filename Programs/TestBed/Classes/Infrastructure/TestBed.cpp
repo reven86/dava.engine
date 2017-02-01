@@ -41,6 +41,7 @@
 #include "Tests/ImGuiTest.h"
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
+#include "Tests/AnyPerformanceTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -50,6 +51,9 @@
 #include "Infrastructure/NativeDelegateMac.h"
 #include "Infrastructure/NativeDelegateIos.h"
 #include "Infrastructure/NativeDelegateWin10.h"
+#ifdef __DAVAENGINE_WIN_UAP__
+#include <Platform/TemplateWin32/UAPNetworkHelper.h>
+#endif
 
 void CheckDeviceInfoValid();
 
@@ -297,6 +301,7 @@ void TestBed::RegisterTests()
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
+    new AnyPerformanceTest(*this);
     
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
@@ -407,6 +412,11 @@ void TestBed::InitNetwork()
 
     eNetworkRole role = SERVER_ROLE;
     Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
+
+#ifdef __DAVAENGINE_WIN_UAP__
+    role = UAPNetworkHelper::GetCurrentNetworkRole();
+    endpoint = UAPNetworkHelper::GetCurrentEndPoint();
+#endif
 
     NetConfig config(role);
     config.AddTransport(TRANSPORT_TCP, endpoint);

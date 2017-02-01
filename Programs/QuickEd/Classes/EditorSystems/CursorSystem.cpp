@@ -11,15 +11,15 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(EditorSystemsManager* parent)
+CursorSystem::CursorSystem(RenderWidget* renderWidget_, EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
+    , renderWidget(renderWidget_)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
-    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
         renderWidget->unsetCursor();
@@ -30,6 +30,18 @@ void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
         renderWidget->setCursor(QCursor(pixmap));
+    }
+}
+
+void CursorSystem::OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState)
+{
+    if (currentState == EditorSystemsManager::DragScreen)
+    {
+        renderWidget->setCursor(Qt::OpenHandCursor);
+    }
+    else if (previousState == EditorSystemsManager::DragScreen)
+    {
+        renderWidget->unsetCursor();
     }
 }
 

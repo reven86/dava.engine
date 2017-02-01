@@ -29,7 +29,7 @@ public:
     std::unique_ptr<EditorCore> editorCore;
     DAVA::TArc::WindowKey windowKey;
 
-    DAVA_VIRTUAL_REFLECTION(QEGlobalData)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(QEGlobalData)
     {
     };
 };
@@ -43,7 +43,7 @@ QEModule::~QEModule()
 void QEModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
     DAVA::Renderer::SetDesiredFPS(60);
-    DAVA::DynamicBufferAllocator::SetPageSize(16 * 1024 * 1024); // 16 mb
+    DAVA::DynamicBufferAllocator::SetPageSize(DAVA::DynamicBufferAllocator::DEFAULT_PAGE_SIZE);
 
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();

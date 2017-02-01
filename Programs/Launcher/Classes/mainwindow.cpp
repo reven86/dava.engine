@@ -11,6 +11,9 @@
 #include "errormessenger.h"
 #include "branchesListModel.h"
 #include "branchesFilterModel.h"
+#include "BAManagerClient.h"
+#include "appscommandssender.h"
+#include "configrefresher.h"
 
 #include <QSet>
 #include <QQueue>
@@ -20,6 +23,7 @@
 #include <QLabel>
 #include <QVariant>
 #include <QComboBox>
+#include <QShortcut>
 
 static const QString stateKey = "mainWindow_state";
 static const QString geometryKey = "mainWindow_geometry";
@@ -51,6 +55,11 @@ bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer
     if (left == right)
     {
         return leftVer.buildNum < rightVer.buildNum;
+    }
+    if (leftVer.isToolSet != rightVer.isToolSet)
+    {
+        //value with toolset == false must be less
+        return leftVer.isToolSet == false;
     }
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
@@ -106,7 +115,7 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, &QTextBrowser::anchorClicked, this, &MainWindow::OnlinkClicked);
-    connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::OnRefreshClicked);
+    connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::Refresh);
     connect(ui->action_downloadAll, &QAction::triggered, this, &MainWindow::OnInstallAll);
     connect(ui->action_removeAll, &QAction::triggered, this, &MainWindow::OnRemoveAll);
     connect(ui->listView, &QListView::clicked, this, &MainWindow::OnListItemClicked);
@@ -115,8 +124,20 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OpenPreferencesEditor);
 
     appManager = new ApplicationManager(this);
+    connect(appManager, &ApplicationManager::BranchChanged, this, &MainWindow::ShowTable);
+
     newsDownloader = new FileDownloader(this);
     configDownloader = new ConfigDownloader(appManager, this);
+    baManagerClient = new BAManagerClient(appManager, this);
+    configRefresher = new ConfigRefresher(this);
+
+    connect(configRefresher, &ConfigRefresher::RefreshConfig, this, &MainWindow::Refresh);
+
+    //create secret shortcut
+    //it will be used to get commands manually for testing reasons
+    QShortcut* shortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this);
+    shortCut->setContext(Qt::ApplicationShortcut);
+    connect(shortCut, &QShortcut::activated, baManagerClient, &BAManagerClient::AskForCommands);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -127,14 +148,14 @@ MainWindow::MainWindow(QWidget* parent)
     ui->listView->setModel(filterModel);
 
     //if run this method directly qApp->exec() will be called twice
-    QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "Refresh", Qt::QueuedConnection);
 
     QSettings settings;
     restoreGeometry(settings.value(geometryKey).toByteArray());
     restoreState(settings.value(stateKey).toByteArray());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::LoadPreferences(fileManager, configDownloader);
+    ::LoadPreferences(fileManager, configDownloader, baManagerClient, configRefresher);
 }
 
 MainWindow::~MainWindow()
@@ -144,7 +165,7 @@ MainWindow::~MainWindow()
     settings.setValue(stateKey, saveState());
 
     FileManager* fileManager = appManager->GetFileManager();
-    ::SavePreferences(fileManager, configDownloader);
+    ::SavePreferences(fileManager, configDownloader, baManagerClient, configRefresher);
     SafeDelete(ui);
 }
 
@@ -208,7 +229,7 @@ void MainWindow::OnRemoveAll()
         GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
         if (!appID.isEmpty() && !insVersionID.isEmpty())
         {
-            appManager->RemoveApplication(selectedBranchID, appID, true);
+            appManager->RemoveApplication(selectedBranchID, appID, true, false);
         }
     }
     ShowTable(selectedBranchID);
@@ -223,7 +244,7 @@ void MainWindow::OnInstall(int rowNumber)
     Application* remoteApplication = appManager->GetRemoteConfig()->GetApplication(selectedBranchID, appID);
     if (newVersion == nullptr || remoteApplication == nullptr)
     {
-        Q_ASSERT(false);
+        ErrorMessenger::LogMessage(QtCriticalMsg, "can not found remote application or version OnInstall");
         return;
     }
     AppVersion* currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);
@@ -246,12 +267,12 @@ void MainWindow::OnRemove(int rowNumber)
                           QMessageBox::Yes | QMessageBox::No);
         int result = msbox.exec();
 
-        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, true))
+        if (result == QMessageBox::Yes && appManager->RemoveApplication(selectedBranchID, appID, true, false))
             RefreshApps();
     }
 }
 
-void MainWindow::OnRefreshClicked()
+void MainWindow::Refresh()
 {
     ui->action_updateConfiguration->setEnabled(false);
     FileManager* fileManager = appManager->GetFileManager();
@@ -322,7 +343,7 @@ void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QBy
 void MainWindow::OpenPreferencesEditor()
 {
     FileManager* fileManager = appManager->GetFileManager();
-    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, this);
+    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, configRefresher, this);
 }
 
 void MainWindow::ShowTable(const QString& branchID)
@@ -444,28 +465,30 @@ void MainWindow::ShowTable(const QString& branchID)
 
 void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
 {
+    if (tasks.isEmpty())
+    {
+        return;
+    }
+    //disable config refresher while update something
+    QSignalBlocker blocker(configRefresher);
+    //self-update
+    if (tasks.front().isSelfUpdate)
+    {
+        FileManager* fileManager = appManager->GetFileManager();
+        SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
+        updater.setWindowModality(Qt::ApplicationModal);
+        updater.exec();
+        if (updater.result() != QDialog::Rejected)
+        {
+            return;
+        }
+        tasks.dequeue();
+    }
     if (!tasks.isEmpty())
     {
-        //self-update
-        if (tasks.front().isSelfUpdate)
-        {
-            FileManager* fileManager = appManager->GetFileManager();
-            SelfUpdater updater(fileManager, tasks.front().newVersion.url, this);
-            updater.setWindowModality(Qt::ApplicationModal);
-            updater.exec();
-            if (updater.result() != QDialog::Rejected)
-            {
-                return;
-            }
-            tasks.dequeue();
-        }
-        if (!tasks.isEmpty())
-        {
-            //application update
-            UpdateDialog dialog(tasks, appManager, this);
-            connect(&dialog, &UpdateDialog::AppInstalled, appManager, &ApplicationManager::OnAppInstalled);
-            dialog.exec();
-        }
+        //application update
+        UpdateDialog dialog(tasks, appManager, this);
+        dialog.exec();
     }
 }
 
@@ -577,7 +600,7 @@ QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID, int ro
         {
             QString appID, insVersionID, avVersionID;
             GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
-            appManager->ShowApplicataionInExplorer(selectedBranchID, appID, insVersionID);
+            appManager->ShowApplicataionInExplorer(selectedBranchID, appID);
         }
     });
 
@@ -605,7 +628,7 @@ QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app, int rowNum)
         comboBox->setFocusPolicy(Qt::NoFocus);
         comboBox->setCurrentIndex(0);
 
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
         comboBox->setMaximumHeight(26);
 #endif
 

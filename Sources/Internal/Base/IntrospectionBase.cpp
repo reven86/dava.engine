@@ -1,8 +1,15 @@
 #include "Base/IntrospectionBase.h"
 #include "Base/Meta.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(InspBase)
+{
+    ReflectionRegistrator<InspBase>::Begin()
+    .End();
+}
+
 InspBase::InspBase() = default;
 InspBase::~InspBase() = default;
 

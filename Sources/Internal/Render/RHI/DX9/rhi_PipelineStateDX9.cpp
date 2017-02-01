@@ -25,7 +25,7 @@ VDeclDX9
     VertexLayout layout;
     IDirect3DVertexDeclaration9* vdecl9;
 
-    static IDirect3DVertexDeclaration9* Get(const VertexLayout& layout, bool force_immediate = false);
+    static IDirect3DVertexDeclaration9* Get(const VertexLayout& layout, bool forceExecute = false);
 
 private:
     static std::vector<VDeclDX9> _VDecl;
@@ -89,7 +89,7 @@ static void DumpShaderTextDX9(const char* code, unsigned code_sz)
 
 //------------------------------------------------------------------------------
 
-IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
+IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool forceExecute)
 {
     IDirect3DVertexDeclaration9* vdecl = nullptr;
 
@@ -186,7 +186,7 @@ IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool forc
 
         DX9Command cmd = { DX9Command::CREATE_VERTEX_DECLARATION, { uint64_t(elem), uint64_t(&vd9) } };
 
-        ExecDX9(&cmd, 1, force_immediate);
+        ExecDX9(&cmd, 1, forceExecute);
 
         if (SUCCEEDED(cmd.retval))
         {
@@ -262,7 +262,7 @@ public:
 
         bool Construct(const void* code, unsigned code_sz, const VertexLayout& vdecl);
         Handle CreateConstBuffer(unsigned buf_i);
-        void SetToRHI(uint32 layoutUID, bool force_immediate = false);
+        void SetToRHI(uint32 layoutUID, bool forceExecute = false);
         void SetupVertexStreams(uint32 layoutUID, unsigned instCount);
 
         struct
@@ -576,7 +576,7 @@ PipelineStateDX9_t::VertexProgDX9::CreateConstBuffer(unsigned buf_i)
 
 //------------------------------------------------------------------------------
 
-void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool force_immediate)
+void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool forceExecute)
 {
     HRESULT hr = _D3D9_Device->SetVertexShader(vs9);
 
@@ -616,7 +616,7 @@ this->vertexLayout.Dump();
 Logger::Info("compatible-layout:");
 layout.Dump();
 */
-                    info.vdecl = VDeclDX9::Get(layout, force_immediate);
+                    info.vdecl = VDeclDX9::Get(layout, forceExecute);
                     info.layoutUID = layoutUID;
                     info.layout = layout;
 

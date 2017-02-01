@@ -2,6 +2,7 @@
 #*.a       # no .a files
 #!lib.a    # but do track lib.a, even though you're ignoring .a files above
 #/TODO     # only ignore the root TODO file, not subdir/TODO
+build
 build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
@@ -51,6 +52,9 @@ Projects/UnitTests/android/assets
 Projects/UnitTests/android/.settings/*
 .vs
 .tup
+.idea
+.gradle
+.externalNativeBuild
 AppPackages
 
 !/Libs/lib_CMake/win10/arm/Debug
@@ -83,3 +87,13 @@ local.properties
 # Python scripts cache
 *.pyc
 Doc/Doxygen/doxygen/
+Tools/support/total_commander_plugins/packer_wcx/.cproject
+Tools/support/total_commander_plugins/packer_wcx/.gitignore
+Tools/support/total_commander_plugins/packer_wcx/.project
+Tools/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
+Tools/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+Programs/support/total_commander_plugins/packer_wcx/.cproject
+Programs/support/total_commander_plugins/packer_wcx/.gitignore
+Programs/support/total_commander_plugins/packer_wcx/.project
+Programs/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
+Programs/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
