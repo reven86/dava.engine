@@ -518,6 +518,8 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         return VariantType(AsVector4());
     else if (insp->Type() == MetaInfo::Instance<FilePath>())
         return VariantType(FilePath(AsString()));
+    else if (insp->Type() == MetaInfo::Instance<FastName>())
+        return VariantType(AsFastName());
 
     DVASSERT(false);
     return VariantType();
