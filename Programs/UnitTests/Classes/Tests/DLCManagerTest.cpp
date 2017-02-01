@@ -15,9 +15,9 @@ class GameClient
 {
 public:
     GameClient(DAVA::DLCManager& packManager_)
-        : packManager(packManager_)
+        : dlcManager(packManager_)
     {
-        sigConnection = packManager.requestUpdated.Connect(this, &GameClient::OnPackStateChange);
+        sigConnection = dlcManager.requestUpdated.Connect(this, &GameClient::OnPackStateChange);
     }
     void OnPackStateChange(const DAVA::DLCManager::IRequest& pack)
     {
@@ -29,7 +29,7 @@ public:
         DAVA::Logger::Info("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
-    DAVA::DLCManager& packManager;
+    DAVA::DLCManager& dlcManager;
 };
 
 DAVA_TESTCLASS (DLCManagerTest)
@@ -51,30 +51,30 @@ DAVA_TESTCLASS (DLCManagerTest)
         String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
 #if defined(__DAVAENGINE_COREV2__)
-        DLCManager& packManager = *Engine::Instance()->GetContext()->packManager;
+        DLCManager& dlcManager = *Engine::Instance()->GetContext()->dlcManager;
 #else
-        DLCManager& packManager = Core::Instance()->GetPackManager();
+        DLCManager& dlcManager = Core::Instance()->GetPackManager();
 #endif
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 
-        Logger::Info("init packManager");
+        Logger::Info("init dlcManager");
 
         try
         {
             Logger::Info("init pack manager");
 
-            packManager.Initialize(downloadedPacksDir, superPackUrl, DLCManager::Hints());
+            dlcManager.Initialize(downloadedPacksDir, superPackUrl, DLCManager::Hints());
 
             Logger::Info("create game client");
 
-            GameClient client(packManager);
+            GameClient client(dlcManager);
 
             Logger::Info("wait till packManagerInitialization done");
 
             size_t oneSecond = 10;
             // wait till initialization done
-            while (!packManager.IsInitialized() && oneSecond-- > 0)
+            while (!dlcManager.IsInitialized() && oneSecond-- > 0)
             {
                 Thread::Sleep(100);
 
@@ -84,27 +84,27 @@ DAVA_TESTCLASS (DLCManagerTest)
 
                 Logger::Info("updata pack manager");
 
-                static_cast<DLCManagerImpl*>(&packManager)->Update(0.1f);
+                static_cast<DLCManagerImpl*>(&dlcManager)->Update(0.1f);
             }
 
-            if (!packManager.IsInitialized())
+            if (!dlcManager.IsInitialized())
             {
-                Logger::Info("can't initialize packManager(remember on build agents network disabled)");
+                Logger::Info("can't initialize dlcManager(remember on build agents network disabled)");
                 return;
             }
 
             Logger::Info("before enable requesting");
 
-            packManager.SetRequestingEnabled(true);
+            dlcManager.SetRequestingEnabled(true);
 
             String packName = "vpack";
 
             Logger::Info("before request pack");
 
-            const DLCManager::IRequest* pack = packManager.RequestPack(packName);
+            const DLCManager::IRequest* pack = dlcManager.RequestPack(packName);
             TEST_VERIFY(pack != nullptr);
 
-            int32 maxIter = 360;
+            int32 maxIter = 36;
 
             Logger::Info("wait till pack loading");
 
@@ -112,9 +112,9 @@ DAVA_TESTCLASS (DLCManagerTest)
             {
                 // wait
                 Thread::Sleep(100);
-                // we have to call Update() for downloadManager and packManager cause we in main thread
+                // we have to call Update() for downloadManager and dlcManager cause we in main thread
                 DownloadManager::Instance()->Update();
-                static_cast<DLCManagerImpl*>(&packManager)->Update(0.1f);
+                static_cast<DLCManagerImpl*>(&dlcManager)->Update(0.1f);
             }
 
             Logger::Info("finish loading pack");

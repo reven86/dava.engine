@@ -8,7 +8,7 @@ namespace DAVA
 /**
  Interface for requesting packs from server.
 
- Topical work flow:
+ Typical work flow:
  1. connect to state change signal and to request update signal
  2. call Initialize to connect to server, wait for state become `Pack::Status::Ready`
  3. request pack from server or mount local automatically on request
