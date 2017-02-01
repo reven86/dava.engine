@@ -103,11 +103,6 @@ void UIList::ScrollTo(float delta)
     scroll->Impulse(delta * -4.8f);
 }
 
-void UIList::SetRect(const Rect& rect)
-{
-    UIControl::SetRect(rect);
-}
-
 void UIList::SetSize(const Vector2& newSize)
 {
     if (orientation == ORIENTATION_HORIZONTAL)
