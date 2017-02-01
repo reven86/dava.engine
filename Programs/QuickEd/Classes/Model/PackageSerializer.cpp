@@ -8,7 +8,6 @@
 #include "PackageHierarchy/StyleSheetNode.h"
 
 #include "ControlProperties/RootProperty.h"
-#include "ControlProperties/BackgroundPropertiesSection.h"
 #include "ControlProperties/ClassProperty.h"
 #include "ControlProperties/ComponentPropertiesSection.h"
 #include "ControlProperties/ControlPropertiesSection.h"
@@ -298,26 +297,11 @@ void PackageSerializer::VisitRootProperty(RootProperty* property)
         }
     }
 
-    if (!hasChanges)
-    {
-        for (const auto section : property->GetBackgroundProperties())
-        {
-            if (section->HasChanges())
-            {
-                hasChanges = true;
-                break;
-            }
-        }
-    }
-
     if (hasChanges)
     {
         BeginMap("components");
 
         for (const auto section : property->GetComponents())
-            section->Accept(this);
-
-        for (const auto section : property->GetBackgroundProperties())
             section->Accept(this);
 
         EndMap();
@@ -338,16 +322,6 @@ void PackageSerializer::VisitComponentSection(ComponentPropertiesSection* proper
             name += Format("%d", property->GetComponentIndex());
 
         BeginMap(name);
-        AcceptChildren(property);
-        EndMap();
-    }
-}
-
-void PackageSerializer::VisitBackgroundSection(BackgroundPropertiesSection* property)
-{
-    if (property->HasChanges())
-    {
-        BeginMap(property->GetName());
         AcceptChildren(property);
         EndMap();
     }

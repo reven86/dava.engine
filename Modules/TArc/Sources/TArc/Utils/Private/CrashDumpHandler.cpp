@@ -1,6 +1,7 @@
 #include "TArc/Utils/Private/CrashDumpHandler.h"
+#include "TArc/Utils/DebuggerDetection.h"
 
-#include "Base/Platform.h"
+#include <Base/Platform.h>
 #if defined(__DAVAENGINE_WIN32__)
     #include <imagehlp.h>
 #endif
@@ -65,7 +66,10 @@ LONG CALLBACK UnhandledHandler(EXCEPTION_POINTERS* e)
 
 void InitCrashDumpHandler()
 {
-    prevFilter = SetUnhandledExceptionFilter(&UnhandledHandler);
+    if (!IsDebuggerPresent())
+    {
+        prevFilter = SetUnhandledExceptionFilter(&UnhandledHandler);
+    }
 }
 #else
 void InitCrashDumpHandler()

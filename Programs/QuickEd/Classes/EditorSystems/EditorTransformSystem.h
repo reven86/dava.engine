@@ -1,6 +1,4 @@
-#ifndef __QUICKED_TRANSFORM_SYSTEM_H__
-#define __QUICKED_TRANSFORM_SYSTEM_H__
-
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -37,13 +35,16 @@ private:
 
     struct MoveInfo;
 
-    bool OnInput(DAVA::UIEvent* currentInput) override;
+    EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
+    bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
+    void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
-    bool ProcessKey(DAVA::Key key);
-    bool ProcessDrag(DAVA::Vector2 point);
+    void ProcessKey(DAVA::Key key);
+    void ProcessDrag(const DAVA::Vector2& point);
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustResizeToMinimumSize(DAVA::Vector2 delta);
@@ -53,7 +54,7 @@ private:
     void MovePivot(DAVA::Vector2 delta);
     DAVA::Vector2 AdjustPivotToNearestArea(DAVA::Vector2& delta);
 
-    bool Rotate(DAVA::Vector2 pos);
+    bool RotateControl(const DAVA::Vector2& pos);
     DAVA::float32 AdjustRotateToFixedAngle(DAVA::float32 deltaAngle, DAVA::float32 originalAngle);
 
     void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);
@@ -68,12 +69,11 @@ private:
     void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
     bool IsShiftPressed() const;
 
-    bool inTransformState = false; //this system can not garantee mouse events order, so she need to remember it state
-
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
-    DAVA::Vector2 prevPos;
     DAVA::Vector2 extraDelta;
+    //this variable is used for rotation only
+    DAVA::Vector2 previousMousePos;
     SelectedControls selectedControlNodes;
     DAVA::List<std::unique_ptr<MoveInfo>> nodesToMoveInfos;
     DAVA::Vector<DAVA::UIControl*> neighbours;
@@ -110,5 +110,3 @@ public:
                   MEMBER(shiftInverted, "Control Transformations/Invert shift button", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 };
-
-#endif // __QUICKED_TRANSFORM_SYSTEM_H__
