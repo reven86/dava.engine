@@ -296,16 +296,16 @@ void DLCManagerTest::OnNetworkReady(bool isReady)
 
 void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    DLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& dm = *engine.GetContext()->dlcManager;
 
     packNameLoading->SetText(L"done: start init");
 
-    pm.networkReady.DisconnectAll();
-    pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
+    dm.networkReady.DisconnectAll();
+    dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
-    pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
+    dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
 
-    pm.SetRequestingEnabled(true);
+    dm.SetRequestingEnabled(true);
 
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
@@ -320,14 +320,14 @@ void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    DLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& dm = *engine.GetContext()->dlcManager;
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
 void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    DLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& dm = *engine.GetContext()->dlcManager;
     std::stringstream ss;
 
     // TODO do I need list loaded packs?
@@ -345,17 +345,17 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    DLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& dm = *engine.GetContext()->dlcManager;
 
-    pm.requestUpdated.DisconnectAll();
-    pm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
+    dm.requestUpdated.DisconnectAll();
+    dm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
 
     String packName = packInput->GetUtf8Text();
 
     try
     {
         packNameLoading->SetUtf8Text("loading: " + packName);
-        pm.RequestPack(packName);
+        dm.RequestPack(packName);
     }
     catch (std::exception& ex)
     {
@@ -365,7 +365,7 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
 void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    DLCManager& pm = *engine.GetContext()->packManager;
+    DLCManager& pm = *engine.GetContext()->dlcManager;
     String packName = packNextInput->GetUtf8Text();
 
     pm.requestUpdated.DisconnectAll();

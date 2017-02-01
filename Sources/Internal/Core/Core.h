@@ -293,7 +293,7 @@ private:
     };
     ScreenMetrics screenMetrics;
 
-    std::unique_ptr<DLCManager> packManager;
+    std::unique_ptr<DLCManager> dlcManager;
     std::unique_ptr<Analytics::Core> analyticsCore;
 };
 

@@ -80,7 +80,7 @@ public:
     ModuleManager* moduleManager = nullptr;
     PluginManager* pluginManager = nullptr;
 
-    DLCManager* packManager = nullptr;
+    DLCManager* dlcManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
     EngineSettings* settings = nullptr;

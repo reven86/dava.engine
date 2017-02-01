@@ -15,7 +15,7 @@ namespace DAVA
 
  example:
  ```
- DLCManager& pm = *engine.GetContext()->packManager;
+ DLCManager& pm = *engine.GetContext()->dlcManager;
  // if init failed we will know about it
  pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
