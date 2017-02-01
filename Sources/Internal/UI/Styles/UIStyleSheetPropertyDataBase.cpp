@@ -13,7 +13,7 @@
 namespace DAVA
 {
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
-    : controlGroup("",  -1, ReflectedTypeDB::Get<UIControl>())
+    : controlGroup("", -1, ReflectedTypeDB::Get<UIControl>())
     , bgGroup("bg", UIComponent::BACKGROUND_COMPONENT, ReflectedTypeDB::Get<UIControlBackground>())
     , staticTextGroup("text", -1, ReflectedTypeDB::Get<UIStaticText>())
     , textFieldGroup("textField", -1, ReflectedTypeDB::Get<UITextField>())
@@ -180,7 +180,7 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
     return properties[index];
 }
 
-int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(int32 componentType, const FastName &name) const
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(int32 componentType, const FastName& name) const
 {
     for (size_t index = 0; index < properties.size(); index++)
     {
@@ -192,5 +192,4 @@ int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(int32 componentType, 
     }
     return -1;
 }
-    
 }

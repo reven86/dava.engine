@@ -14,8 +14,8 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* control_, co
 {
     Reflection controlRef = Reflection::Create(&control);
     Vector<Reflection::Field> fields = controlRef.GetFields();
-    
-    for (const Reflection::Field &field : fields)
+
+    for (const Reflection::Field& field : fields)
     {
         String name = field.key.Get<String>();
         IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);

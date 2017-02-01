@@ -18,8 +18,8 @@ DAVA_REFLECTION_IMPL(StyleSheetProperty)
     .Field("transitionTime", &StyleSheetProperty::GetTransitionTime, &StyleSheetProperty::SetTransitionTime)
     .Field("transitionFunction", &StyleSheetProperty::GetTransitionFunction, &StyleSheetProperty::SetTransitionFunction)
     [
-     EnumMeta::Create<Interpolation::FuncType>()
-     ]
+    EnumMeta::Create<Interpolation::FuncType>()
+    ]
 
     .End();
 }
@@ -37,10 +37,10 @@ StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& propert
     valueProp->SetParent(this);
     AddSubValueProperty(valueProp.Get());
 
-    StyleSheetProperty *pp = this;
+    StyleSheetProperty* pp = this;
     Reflection ref = Reflection::Create(&pp);
     Vector<Reflection::Field> fields = ref.GetFields();
-    for (const Reflection::Field &field : fields)
+    for (const Reflection::Field& field : fields)
     {
         RefPtr<IntrospectionProperty> inspProp(new IntrospectionProperty(this, -1, field.key.Get<String>(), field.ref, nullptr, CT_COPY));
         inspProp->SetValue(field.ref.GetValue());
@@ -69,7 +69,7 @@ StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     if (descr.field_s->meta)
     {
-        const EnumMeta *meta = descr.field_s->meta->GetMeta<EnumMeta>();
+        const EnumMeta* meta = descr.field_s->meta->GetMeta<EnumMeta>();
         if (meta)
         {
             if (meta->IsFlags())
@@ -87,7 +87,7 @@ const EnumMap* StyleSheetProperty::GetEnumMap() const
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     if (descr.field_s->meta)
     {
-        const EnumMeta *meta = descr.field_s->meta->GetMeta<EnumMeta>();
+        const EnumMeta* meta = descr.field_s->meta->GetMeta<EnumMeta>();
         if (meta)
         {
             return meta->GetEnumMap();

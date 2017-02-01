@@ -40,7 +40,7 @@ SubValueProperty::ePropertyType SubValueProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-const Type *SubValueProperty::GetValueType() const
+const Type* SubValueProperty::GetValueType() const
 {
     return GetValueProperty()->GetSubValueType(index);
 }

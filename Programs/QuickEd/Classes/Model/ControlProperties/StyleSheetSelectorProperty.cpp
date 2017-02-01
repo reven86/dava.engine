@@ -39,7 +39,7 @@ void StyleSheetSelectorProperty::Accept(PropertyVisitor* visitor)
     visitor->VisitStyleSheetSelectorProperty(this);
 }
 
-const DAVA::Type *StyleSheetSelectorProperty::GetValueType() const
+const DAVA::Type* StyleSheetSelectorProperty::GetValueType() const
 {
     return nullptr;
 }

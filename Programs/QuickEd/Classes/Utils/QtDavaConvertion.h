@@ -30,6 +30,6 @@ QString VariantToQString(const DAVA::VariantType& val, const DAVA::InspMember* m
 QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field* field);
 DAVA::String AnyToString(const DAVA::Any& any);
 
-DAVA::VariantType AnyToVariantType(const DAVA::Any &any);
-DAVA::Any VariantTypeToAny(const DAVA::VariantType &val);
-const DAVA::Type *VariantTypeToType(DAVA::VariantType::eVariantType type);
+DAVA::VariantType AnyToVariantType(const DAVA::Any& any);
+DAVA::Any VariantTypeToAny(const DAVA::VariantType& val);
+const DAVA::Type* VariantTypeToType(DAVA::VariantType::eVariantType type);

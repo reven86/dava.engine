@@ -67,7 +67,7 @@ void IntegerPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelInde
         editor->setMinimum(0);
         editor->setValue(variant.Get<DAVA::uint64>());
     }
-    
+
     editor->blockSignals(false);
     BasePropertyDelegate::SetValueModified(editor, false);
 }

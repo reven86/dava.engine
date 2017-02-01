@@ -280,7 +280,7 @@ void QuickEdPackageBuilder::EndComponentPropertiesSection()
     currentObject = nullptr;
 }
 
-void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field &field, const DAVA::Any& value)
+void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field& field, const DAVA::Any& value)
 {
     if (currentObject && currentSection)
     {

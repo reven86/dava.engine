@@ -179,7 +179,7 @@ bool EditorTransformSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
     {
         return true;
     }
-        return false;
+    return false;
 }
 
 void EditorTransformSystem::ProcessInput(UIEvent* currentInput)
@@ -192,9 +192,9 @@ void EditorTransformSystem::ProcessInput(UIEvent* currentInput)
 
     case UIEvent::Phase::DRAG:
         if (currentInput->mouseButton == eMouseButtons::LEFT)
-    {
+        {
             ProcessDrag(currentInput->point);
-            }
+        }
         break;
 
     case UIEvent::Phase::ENDED:

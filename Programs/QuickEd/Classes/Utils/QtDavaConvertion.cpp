@@ -192,7 +192,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
 {
     if (field->meta)
     {
-        const EnumMeta *enumMeta = field->meta->GetMeta<EnumMeta>();
+        const EnumMeta* enumMeta = field->meta->GetMeta<EnumMeta>();
         if (enumMeta != nullptr)
         {
             if (enumMeta->IsFlags())
@@ -206,7 +206,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
                     {
                         if (!res.isEmpty())
                             res += " | ";
-                        
+
                         const int32 enumValue = 1 << p;
                         res += QString::fromStdString(enumMeta->GetEnumMap()->ToString(enumValue));
                     }
@@ -270,7 +270,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
     {
         return val.Get<bool>() ? "true" : "false";
     }
-    
+
     return QString("");
 }
 
@@ -324,13 +324,12 @@ String AnyToString(const Any& val)
     {
         return val.Get<bool>() ? "true" : "false";
     }
-    
 
     DVASSERT(false);
     return String("");
 }
 
-VariantType AnyToVariantType(const DAVA::Any &val)
+VariantType AnyToVariantType(const DAVA::Any& val)
 {
     if (val.CanGet<int32>())
     {
@@ -396,125 +395,125 @@ VariantType AnyToVariantType(const DAVA::Any &val)
     {
         return VariantType(val.Get<Vector4>());
     }
-    
+
     DVASSERT(false); // TODO: Implement all cases
     return VariantType();
 }
 
-Any VariantTypeToAny(const VariantType &val)
+Any VariantTypeToAny(const VariantType& val)
 {
     switch (val.GetType())
     {
-        case VariantType::TYPE_NONE:
-            return Any();
-        case VariantType::TYPE_BOOLEAN:
-            return Any(val.AsBool());
-        case VariantType::TYPE_INT8:
-            return Any(val.AsInt8());
-        case VariantType::TYPE_UINT8:
-            return Any(val.AsUInt8());
-        case VariantType::TYPE_INT16:
-            return Any(val.AsInt16());
-        case VariantType::TYPE_UINT16:
-            return Any(static_cast<uint16>(val.AsUInt16()));
-        case VariantType::TYPE_INT32:
-            return Any(val.AsInt32());
-        case VariantType::TYPE_UINT32:
-            return Any(val.AsUInt32());
-        case VariantType::TYPE_INT64:
-            return Any(val.AsInt64());
-        case VariantType::TYPE_UINT64:
-            return Any(val.AsUInt64());
-        case VariantType::TYPE_FLOAT:
-            return Any(val.AsFloat());
-        case VariantType::TYPE_FLOAT64:
-            return Any(val.AsFloat64());
-        case VariantType::TYPE_STRING:
-            return Any(val.AsString());
-        case VariantType::TYPE_WIDE_STRING:
-            return Any(val.AsWideString());
-        case VariantType::TYPE_FASTNAME:
-            return Any(val.AsFastName());
-        case VariantType::TYPE_VECTOR2:
-            return Any(val.AsVector2());
-        case VariantType::TYPE_COLOR:
-            return Any(val.AsColor());
-        case VariantType::TYPE_VECTOR4:
-            return Any(val.AsVector4());
-        case VariantType::TYPE_FILEPATH:
-            return Any(val.AsFilePath());
-            
-        case VariantType::TYPE_BYTE_ARRAY:
-        case VariantType::TYPE_KEYED_ARCHIVE:
-        case VariantType::TYPE_VECTOR3:
-            
-        case VariantType::TYPE_MATRIX2:
-        case VariantType::TYPE_MATRIX3:
-        case VariantType::TYPE_MATRIX4:
-        case VariantType::TYPE_AABBOX3:
-        default:
-            // DVASSERT
-            break;
+    case VariantType::TYPE_NONE:
+        return Any();
+    case VariantType::TYPE_BOOLEAN:
+        return Any(val.AsBool());
+    case VariantType::TYPE_INT8:
+        return Any(val.AsInt8());
+    case VariantType::TYPE_UINT8:
+        return Any(val.AsUInt8());
+    case VariantType::TYPE_INT16:
+        return Any(val.AsInt16());
+    case VariantType::TYPE_UINT16:
+        return Any(static_cast<uint16>(val.AsUInt16()));
+    case VariantType::TYPE_INT32:
+        return Any(val.AsInt32());
+    case VariantType::TYPE_UINT32:
+        return Any(val.AsUInt32());
+    case VariantType::TYPE_INT64:
+        return Any(val.AsInt64());
+    case VariantType::TYPE_UINT64:
+        return Any(val.AsUInt64());
+    case VariantType::TYPE_FLOAT:
+        return Any(val.AsFloat());
+    case VariantType::TYPE_FLOAT64:
+        return Any(val.AsFloat64());
+    case VariantType::TYPE_STRING:
+        return Any(val.AsString());
+    case VariantType::TYPE_WIDE_STRING:
+        return Any(val.AsWideString());
+    case VariantType::TYPE_FASTNAME:
+        return Any(val.AsFastName());
+    case VariantType::TYPE_VECTOR2:
+        return Any(val.AsVector2());
+    case VariantType::TYPE_COLOR:
+        return Any(val.AsColor());
+    case VariantType::TYPE_VECTOR4:
+        return Any(val.AsVector4());
+    case VariantType::TYPE_FILEPATH:
+        return Any(val.AsFilePath());
+
+    case VariantType::TYPE_BYTE_ARRAY:
+    case VariantType::TYPE_KEYED_ARCHIVE:
+    case VariantType::TYPE_VECTOR3:
+
+    case VariantType::TYPE_MATRIX2:
+    case VariantType::TYPE_MATRIX3:
+    case VariantType::TYPE_MATRIX4:
+    case VariantType::TYPE_AABBOX3:
+    default:
+        // DVASSERT
+        break;
     }
     DVASSERT(false);
-    
+
     return Any();
 }
 
-const Type *VariantTypeToType(DAVA::VariantType::eVariantType type)
+const Type* VariantTypeToType(DAVA::VariantType::eVariantType type)
 {
     switch (type)
     {
-        case VariantType::TYPE_NONE:
-            return nullptr;
-        case VariantType::TYPE_BOOLEAN:
-            return Type::Instance<bool>();
-        case VariantType::TYPE_INT8:
-            return Type::Instance<int8>();
-        case VariantType::TYPE_UINT8:
-            return Type::Instance<uint8>();
-        case VariantType::TYPE_INT16:
-            return Type::Instance<int16>();
-        case VariantType::TYPE_UINT16:
-            return Type::Instance<uint16>();
-        case VariantType::TYPE_INT32:
-            return Type::Instance<int32>();
-        case VariantType::TYPE_UINT32:
-            return Type::Instance<uint32>();
-        case VariantType::TYPE_INT64:
-            return Type::Instance<int64>();
-        case VariantType::TYPE_UINT64:
-            return Type::Instance<uint64>();
-        case VariantType::TYPE_FLOAT:
-            return Type::Instance<float32>();
-        case VariantType::TYPE_FLOAT64:
-            return Type::Instance<float64>();
-        case VariantType::TYPE_STRING:
-            return Type::Instance<String>();
-        case VariantType::TYPE_WIDE_STRING:
-            return Type::Instance<WideString>();
-        case VariantType::TYPE_FASTNAME:
-            return Type::Instance<FastName>();
-        case VariantType::TYPE_VECTOR2:
-            return Type::Instance<Vector2>();
-        case VariantType::TYPE_COLOR:
-            return Type::Instance<Color>();
-        case VariantType::TYPE_VECTOR4:
-            return Type::Instance<Vector4>();
-        case VariantType::TYPE_FILEPATH:
-            return Type::Instance<FilePath>();
-            
-        case VariantType::TYPE_BYTE_ARRAY:
-        case VariantType::TYPE_KEYED_ARCHIVE:
-        case VariantType::TYPE_VECTOR3:
-            
-        case VariantType::TYPE_MATRIX2:
-        case VariantType::TYPE_MATRIX3:
-        case VariantType::TYPE_MATRIX4:
-        case VariantType::TYPE_AABBOX3:
-        default:
-            // DVASSERT
-            break;
+    case VariantType::TYPE_NONE:
+        return nullptr;
+    case VariantType::TYPE_BOOLEAN:
+        return Type::Instance<bool>();
+    case VariantType::TYPE_INT8:
+        return Type::Instance<int8>();
+    case VariantType::TYPE_UINT8:
+        return Type::Instance<uint8>();
+    case VariantType::TYPE_INT16:
+        return Type::Instance<int16>();
+    case VariantType::TYPE_UINT16:
+        return Type::Instance<uint16>();
+    case VariantType::TYPE_INT32:
+        return Type::Instance<int32>();
+    case VariantType::TYPE_UINT32:
+        return Type::Instance<uint32>();
+    case VariantType::TYPE_INT64:
+        return Type::Instance<int64>();
+    case VariantType::TYPE_UINT64:
+        return Type::Instance<uint64>();
+    case VariantType::TYPE_FLOAT:
+        return Type::Instance<float32>();
+    case VariantType::TYPE_FLOAT64:
+        return Type::Instance<float64>();
+    case VariantType::TYPE_STRING:
+        return Type::Instance<String>();
+    case VariantType::TYPE_WIDE_STRING:
+        return Type::Instance<WideString>();
+    case VariantType::TYPE_FASTNAME:
+        return Type::Instance<FastName>();
+    case VariantType::TYPE_VECTOR2:
+        return Type::Instance<Vector2>();
+    case VariantType::TYPE_COLOR:
+        return Type::Instance<Color>();
+    case VariantType::TYPE_VECTOR4:
+        return Type::Instance<Vector4>();
+    case VariantType::TYPE_FILEPATH:
+        return Type::Instance<FilePath>();
+
+    case VariantType::TYPE_BYTE_ARRAY:
+    case VariantType::TYPE_KEYED_ARCHIVE:
+    case VariantType::TYPE_VECTOR3:
+
+    case VariantType::TYPE_MATRIX2:
+    case VariantType::TYPE_MATRIX3:
+    case VariantType::TYPE_MATRIX4:
+    case VariantType::TYPE_AABBOX3:
+    default:
+        // DVASSERT
+        break;
     }
     DVASSERT(false);
     return nullptr;

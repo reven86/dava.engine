@@ -198,7 +198,7 @@ void PackageInformationBuilder::EndComponentPropertiesSection()
     // do nothing
 }
 
-void PackageInformationBuilder::ProcessProperty(const Reflection::Field &field, const Any& value)
+void PackageInformationBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
 {
 }
 

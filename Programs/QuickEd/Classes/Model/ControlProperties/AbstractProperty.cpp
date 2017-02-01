@@ -9,7 +9,6 @@ DAVA_REFLECTION_IMPL(AbstractProperty)
     .End();
 }
 
-
 AbstractProperty::AbstractProperty()
     : parent(NULL)
 {
@@ -148,7 +147,7 @@ AbstractProperty* AbstractProperty::FindPropertyByName(const String& name)
     }
     for (DAVA::uint32 index = 0, count = GetCount(); index < count; ++index)
     {
-        AbstractProperty *child = GetProperty(index);
+        AbstractProperty* child = GetProperty(index);
         AbstractProperty* property = child->FindPropertyByName(name);
         if (property != nullptr)
         {

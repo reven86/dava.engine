@@ -148,13 +148,13 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
                     if (debugData != nullptr)
                     {
                         debugData->propertySources[prop.propertyIndex] = styleSheet;
+                    }
                 }
-            }
 
                 if (debugData != nullptr)
                 {
                     debugData->styleSheets.push_back(*styleSheetIter);
-        }
+                }
             }
         }
 
@@ -201,10 +201,10 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
 
     if (recursively)
     {
-    for (UIControl* child : control->GetChildren())
-    {
+        for (UIControl* child : control->GetChildren())
+        {
             ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
-    }
+        }
     }
 }
 

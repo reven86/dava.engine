@@ -19,8 +19,7 @@ DAVA_REFLECTION_IMPL(ValueProperty)
     .End();
 }
 
-
-ValueProperty::ValueProperty(const String& propName, const DAVA::Type *type_, bool builtinSubProps)
+ValueProperty::ValueProperty(const String& propName, const DAVA::Type* type_, bool builtinSubProps)
     : name(propName)
     , valueType(type_ != nullptr ? type_->Decay() : nullptr)
 {
@@ -108,7 +107,7 @@ const String& ValueProperty::GetName() const
     return name;
 }
 
-const DAVA::Type *ValueProperty::GetValueType() const
+const DAVA::Type* ValueProperty::GetValueType() const
 {
     return valueType;
 }
@@ -126,7 +125,7 @@ Any ValueProperty::GetDefaultValue() const
 
 void ValueProperty::SetDefaultValue(const Any& newValue)
 {
-    const Type *valueType = GetValueType();
+    const Type* valueType = GetValueType();
     DVASSERT(newValue.GetType() == valueType);
 
     defaultValue = newValue;
@@ -154,7 +153,7 @@ bool ValueProperty::IsOverriddenLocally() const
     return overridden;
 }
 
-const Type *ValueProperty::GetSubValueType(int32 index) const
+const Type* ValueProperty::GetSubValueType(int32 index) const
 {
     return GetValueTypeComponent(index);
 }
@@ -210,7 +209,7 @@ void ValueProperty::AddSubValueProperty(AbstractProperty* prop)
 
 Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, int32 index) const
 {
-    const Type *valueType = GetValueType();
+    const Type* valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
     if (valueType == Type::Instance<Vector2>())
@@ -257,7 +256,7 @@ Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, 
     {
         const EnumMap* map = GetEnumMap();
         int32 intValue = value.Get<int32>();
-        
+
         int val = 0;
         map->GetValue(index, val);
         if (component.Get<bool>())
@@ -270,9 +269,9 @@ Any ValueProperty::ChangeValueComponent(const Any& value, const Any& component, 
     return Any();
 }
 
-const Type *ValueProperty::GetValueTypeComponent(int32 index) const
+const Type* ValueProperty::GetValueTypeComponent(int32 index) const
 {
-    const Type *valueType = GetValueType();
+    const Type* valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
     if (valueType == Type::Instance<Vector2>())
@@ -304,7 +303,7 @@ const Type *ValueProperty::GetValueTypeComponent(int32 index) const
 
 Any ValueProperty::GetValueComponent(const Any& value, int32 index) const
 {
-    const Type *valueType = GetValueType();
+    const Type* valueType = GetValueType();
     DVASSERT(defaultValue.GetType() == valueType);
 
     if (valueType == Type::Instance<Vector2>())
@@ -346,7 +345,7 @@ void ValueProperty::GenerateBuiltInSubProperties()
 {
     const Vector<String>* componentNames = nullptr;
     Vector<SubValueProperty*> subProperties;
-    const Type *valueType = GetValueType();
+    const Type* valueType = GetValueType();
     if (valueType == Type::Instance<Vector2>())
     {
         componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;

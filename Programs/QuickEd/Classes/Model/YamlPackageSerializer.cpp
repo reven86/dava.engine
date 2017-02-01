@@ -22,8 +22,8 @@ YamlPackageSerializer::~YamlPackageSerializer()
 
 void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::String& value, bool quotes)
 {
-    YamlNode *parent = nodesStack.back();
-    YamlNode *node = YamlNode::CreateStringNode();
+    YamlNode* parent = nodesStack.back();
+    YamlNode* node = YamlNode::CreateStringNode();
     node->Set(value);
     if (!quotes)
     {
@@ -43,8 +43,8 @@ void YamlPackageSerializer::PutValue(const DAVA::String& name, const DAVA::Vecto
 
 void YamlPackageSerializer::PutValue(const DAVA::String& value, bool quotes)
 {
-    YamlNode *parent = nodesStack.back();
-    YamlNode *node = YamlNode::CreateStringNode();
+    YamlNode* parent = nodesStack.back();
+    YamlNode* node = YamlNode::CreateStringNode();
     node->Set(value);
     if (!quotes)
     {

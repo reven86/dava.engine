@@ -54,7 +54,7 @@ public:
     bool IsReadOnly() const override;
 
     const DAVA::String& GetName() const override;
-    const DAVA::Type *GetValueType() const override;
+    const DAVA::Type* GetValueType() const override;
     ePropertyType GetType() const override;
 
     void AddListener(PropertyListener* listener);

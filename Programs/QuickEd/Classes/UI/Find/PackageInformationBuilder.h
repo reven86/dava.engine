@@ -39,7 +39,7 @@ public:
     DAVA::UIComponent* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
-    void ProcessProperty(const DAVA::Reflection::Field &field, const DAVA::Any& value) override;
+    void ProcessProperty(const DAVA::Reflection::Field& field, const DAVA::Any& value) override;
 
     std::shared_ptr<PackageInformation> GetPackage() const;
 

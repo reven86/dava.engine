@@ -63,7 +63,7 @@ protected:
     };
 
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
-    QMap<const DAVA::Type *, AbstractPropertyDelegate*> anyItemDelegates;
+    QMap<const DAVA::Type*, AbstractPropertyDelegate*> anyItemDelegates;
     QMap<PropertyPath, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
 };
 class PropertyWidget : public QWidget

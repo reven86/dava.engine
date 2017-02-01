@@ -431,7 +431,7 @@ QModelIndex PropertiesModel::indexByProperty(const AbstractProperty* property, i
 QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 {
     Any val = property->GetValue();
-    
+
     if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
         return QString::fromStdString(property->GetEnumMeta()->CastToString(val));
@@ -465,27 +465,27 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     {
         return QString();
     }
-    
+
     if (val.CanGet<int8>())
     {
         return QVariant(val.Get<int8>()).toString();
     }
-    
+
     if (val.CanGet<uint8>())
     {
         return QVariant(val.Get<uint8>()).toString();
     }
-    
+
     if (val.CanGet<int16>())
     {
         return QVariant(val.Get<int16>()).toString();
     }
-    
+
     if (val.CanGet<uint16>())
     {
         return QVariant(val.Get<uint16>()).toString();
     }
-    
+
     if (val.CanGet<int32>())
     {
         return QVariant(val.Get<int32>()).toString();

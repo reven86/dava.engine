@@ -30,7 +30,7 @@ public:
 
     const DAVA::String& GetName() const override;
 
-    const DAVA::Type *GetValueType() const override;
+    const DAVA::Type* GetValueType() const override;
     ePropertyType GetType() const override;
 
 protected:
@@ -189,7 +189,7 @@ inline const DAVA::String& PreferencesSectionProperty::GetName() const
     return name;
 }
 
-inline const DAVA::Type *PreferencesSectionProperty::GetValueType() const
+inline const DAVA::Type* PreferencesSectionProperty::GetValueType() const
 {
     return nullptr;
 }

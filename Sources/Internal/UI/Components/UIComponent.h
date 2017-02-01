@@ -15,9 +15,9 @@ public:
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIComponent, BaseObject)
     {
         ReflectionRegistrator<UIComponent>::Begin()
-            .End();
+        .End();
     }
-    
+
     enum eType
     {
         BACKGROUND_COMPONENT,

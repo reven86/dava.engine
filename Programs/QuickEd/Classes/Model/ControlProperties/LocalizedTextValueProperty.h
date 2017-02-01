@@ -6,7 +6,7 @@
 class LocalizedTextValueProperty : public IntrospectionProperty
 {
 public:
-    LocalizedTextValueProperty(DAVA::BaseObject* object, const DAVA::String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    LocalizedTextValueProperty(DAVA::BaseObject* object, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
 protected:
     virtual ~LocalizedTextValueProperty();

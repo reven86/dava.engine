@@ -12,7 +12,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UILinearLayoutComponent)
     .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)
     .Field("orientation", &UILinearLayoutComponent::GetOrientation, &UILinearLayoutComponent::SetOrientation)
     [
-        M::EnumT<eOrientation>()
+    M::EnumT<eOrientation>()
     ]
     .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)
     .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)

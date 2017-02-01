@@ -22,7 +22,7 @@ const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String &name, const DAVA::Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(name, ref.GetValueType(), true)
     , object(SafeRetain(anObject))
     , reflection(ref)
@@ -61,7 +61,7 @@ IntrospectionProperty::~IntrospectionProperty()
     SafeRelease(object);
 }
 
-IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const String &name, const Reflection &ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
+IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
     if (name == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
@@ -113,7 +113,7 @@ uint32 IntrospectionProperty::GetFlags() const
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 {
-    const EnumMeta *enumMeta = reflection.GetMeta<EnumMeta>();
+    const EnumMeta* enumMeta = reflection.GetMeta<EnumMeta>();
     if (enumMeta)
     {
         if (enumMeta->IsFlags())
@@ -122,18 +122,18 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
         }
         return TYPE_ENUM;
     }
-    
+
     return TYPE_VARIANT;
 }
 
 const EnumMap* IntrospectionProperty::GetEnumMap() const
 {
-    const EnumMeta *enumMeta = reflection.GetMeta<EnumMeta>();
+    const EnumMeta* enumMeta = reflection.GetMeta<EnumMeta>();
     if (enumMeta)
     {
         return enumMeta->GetEnumMap();
     }
-    
+
     return nullptr;
 }
 

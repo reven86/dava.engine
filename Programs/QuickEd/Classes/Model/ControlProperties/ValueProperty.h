@@ -8,7 +8,7 @@ class ValueProperty : public AbstractProperty
     DAVA_VIRTUAL_REFLECTION(ValueProperty, AbstractProperty);
 
 public:
-    ValueProperty(const DAVA::String& propName, const DAVA::Type *type, bool builtinSubProps = false);
+    ValueProperty(const DAVA::String& propName, const DAVA::Type* type, bool builtinSubProps = false);
 
 protected:
     virtual ~ValueProperty();
@@ -29,7 +29,7 @@ public:
     //ePropertyType GetType() const override;
     DAVA::int32 GetStylePropertyIndex() const override;
 
-    const DAVA::Type *GetValueType() const override;
+    const DAVA::Type* GetValueType() const override;
     void SetValue(const DAVA::Any& newValue) override;
     DAVA::Any GetDefaultValue() const override;
     void SetDefaultValue(const DAVA::Any& newValue) override;
@@ -37,7 +37,7 @@ public:
     bool IsOverridden() const override;
     bool IsOverriddenLocally() const override;
 
-    virtual const DAVA::Type *GetSubValueType(DAVA::int32 index) const;
+    virtual const DAVA::Type* GetSubValueType(DAVA::int32 index) const;
     virtual DAVA::Any GetSubValue(DAVA::int32 index) const;
     virtual void SetSubValue(DAVA::int32 index, const DAVA::Any& newValue);
     virtual DAVA::Any GetDefaultSubValue(DAVA::int32 index) const;
@@ -52,13 +52,13 @@ protected:
 
 private:
     DAVA::Any ChangeValueComponent(const DAVA::Any& value, const DAVA::Any& component, DAVA::int32 index) const;
-    const DAVA::Type *GetValueTypeComponent(DAVA::int32 index) const;
+    const DAVA::Type* GetValueTypeComponent(DAVA::int32 index) const;
     DAVA::Any GetValueComponent(const DAVA::Any& value, DAVA::int32 index) const;
     void GenerateBuiltInSubProperties();
 
 private:
     DAVA::String name;
-    const DAVA::Type *valueType = nullptr;
+    const DAVA::Type* valueType = nullptr;
     DAVA::Any defaultValue;
     DAVA::Vector<DAVA::RefPtr<AbstractProperty>> children;
     DAVA::int32 stylePropertyIndex = -1;

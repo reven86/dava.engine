@@ -39,29 +39,29 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIStaticText)
     .Field("textColor", &UIStaticText::GetTextColor, &UIStaticText::SetTextColor)
     .Field("textcolorInheritType", &UIStaticText::GetTextColorInheritType, &UIStaticText::SetTextColorInheritType) // TODO: make enum // TODO: camel style
     [
-        M::EnumT<UIControlBackground::eColorInheritType>()
+    M::EnumT<UIControlBackground::eColorInheritType>()
     ]
     .Field("textperPixelAccuracyType", &UIStaticText::GetTextPerPixelAccuracyType, &UIStaticText::SetTextPerPixelAccuracyType) // TODO: make enum // TODO: camel style
     [
-        M::EnumT<UIControlBackground::ePerPixelAccuracyType>()
+    M::EnumT<UIControlBackground::ePerPixelAccuracyType>()
     ]
     .Field("shadowoffset", &UIStaticText::GetShadowOffset, &UIStaticText::SetShadowOffset) // TODO: camel style
     .Field("shadowcolor", &UIStaticText::GetShadowColor, &UIStaticText::SetShadowColor) // TODO: camel style
     .Field("multiline", &UIStaticText::GetMultilineType, &UIStaticText::SetMultilineType) // TODO: make enum
     [
-        M::EnumT<eMultiline>()
+    M::EnumT<eMultiline>()
     ]
     .Field("fitting", &UIStaticText::GetFittingOption, &UIStaticText::SetFittingOption) // TODO: make enum
     [
-        M::FlagsT<TextBlock::eFitType>()
+    M::FlagsT<TextBlock::eFitType>()
     ]
     .Field("textalign", &UIStaticText::GetTextAlign, &UIStaticText::SetTextAlign) // TODO: make enum // TODO: camel style
     [
-        M::FlagsT<eAlign>()
+    M::FlagsT<eAlign>()
     ]
     .Field("textUseRtlAlign", &UIStaticText::GetTextUseRtlAlign, &UIStaticText::SetTextUseRtlAlign) // TODO: make enum
     [
-        M::EnumT<TextBlock::eUseRtlAlign>()
+    M::EnumT<TextBlock::eUseRtlAlign>()
     ]
     .Field("textMargins", &UIStaticText::GetMarginsAsVector4, &UIStaticText::SetMarginsAsVector4)
     .Field("text", &UIStaticText::GetUtf8Text, &UIStaticText::SetUtf8TextWithoutRect)

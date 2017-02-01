@@ -17,7 +17,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
     .DestructorByPointer([](UIList* o) { o->Release(); })
     .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation) // TODO: make enum
     [
-        M::EnumT<eListOrientation>()
+    M::EnumT<eListOrientation>()
     ]
     .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)
     .End();

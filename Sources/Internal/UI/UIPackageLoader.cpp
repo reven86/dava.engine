@@ -356,14 +356,14 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         }
     }
 
-        // load children
-        const YamlNode* childrenNode = node->Get("children");
-        if (childrenNode)
-        {
-            uint32 count = childrenNode->GetCount();
-            for (uint32 i = 0; i < count; i++)
-                LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
-        }
+    // load children
+    const YamlNode* childrenNode = node->Get("children");
+    if (childrenNode)
+    {
+        uint32 count = childrenNode->GetCount();
+        for (uint32 i = 0; i < count; i++)
+            LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
+    }
 
     if (control != nullptr)
     {
@@ -373,11 +373,11 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection &ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     builder->BeginControlPropertiesSection(control->GetClassName());
     Vector<Reflection::Field> fields = ref.GetFields();
-    for (const Reflection::Field &field : fields)
+    for (const Reflection::Field& field : fields)
     {
         String name = field.key.Get<String>();
         if (name == "components" || name == "background")
@@ -409,10 +409,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
-            const ReflectedStructure *structure = component->Dava__GetReflectedType()->GetStrucutre();
+            const ReflectedStructure* structure = component->Dava__GetReflectedType()->GetStrucutre();
             Reflection componentRef = Reflection::Create(&component);
             Vector<Reflection::Field> fields = componentRef.GetFields();
-            for (Reflection::Field &field : fields)
+            for (Reflection::Field& field : fields)
             {
                 Any res;
                 if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
@@ -489,7 +489,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
         {
             Reflection componentRef = Reflection::Create(&component);
             Vector<Reflection::Field> fields = componentRef.GetFields();
-            for (const Reflection::Field &field : fields)
+            for (const Reflection::Field& field : fields)
             {
                 String name = field.key.Get<String>();
                 Any res = ReadAnyFromYamlNode(field.ref, node, legacyAlignsMap[name]);
@@ -543,7 +543,7 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-Any UIPackageLoader::ReadAnyFromYamlNode(const Reflection &ref, const YamlNode* node, const String& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const Reflection& ref, const YamlNode* node, const String& name)
 {
     const YamlNode* valueNode = node->Get(name);
 

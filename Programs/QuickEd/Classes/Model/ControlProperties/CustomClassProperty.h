@@ -23,7 +23,7 @@ public:
     {
         return EF_CAN_RESET;
     };
-    
+
     DAVA::Any GetValue() const override;
 
     const DAVA::String& GetCustomClassName() const;

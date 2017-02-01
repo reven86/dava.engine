@@ -37,7 +37,7 @@ public:
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
-    virtual void ProcessProperty(const Reflection::Field &field, const Any& value) override;
+    virtual void ProcessProperty(const Reflection::Field& field, const Any& value) override;
 
 private:
     void PutImportredPackage(const FilePath& path, UIPackage* package);

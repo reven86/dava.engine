@@ -37,7 +37,7 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
 
     Reflection componentRef = Reflection::Create(&component);
     Vector<Reflection::Field> fields = componentRef.GetFields();
-    for (const Reflection::Field &field : fields)
+    for (const Reflection::Field& field : fields)
     {
         String name = field.key.Get<String>();
         const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
@@ -69,11 +69,11 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
     if (prototypeSection == nullptr)
     {
         prototypeSection = section;
-        
+
         Reflection componentRef = Reflection::Create(&component);
         Vector<Reflection::Field> fields = componentRef.GetFields();
 
-        for (const Reflection::Field &field : fields)
+        for (const Reflection::Field& field : fields)
         {
             String name = field.key.Get<String>();
             ValueProperty* value = FindChildPropertyByName(name);

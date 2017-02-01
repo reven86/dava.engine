@@ -542,7 +542,7 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         }
         DVASSERT(false);
     }
-    else if(field->meta && field->meta->HasMeta<M::Flags>())
+    else if (field->meta && field->meta->HasMeta<M::Flags>())
     {
         int32 val = 0;
         const M::Flags* fmeta = field->meta->GetMeta<M::Flags>();

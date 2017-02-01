@@ -2,7 +2,6 @@
 
 namespace DAVA
 {
-    
 DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBarDelegateComponent)
 {
     ReflectionRegistrator<UIScrollBarDelegateComponent>::Begin()

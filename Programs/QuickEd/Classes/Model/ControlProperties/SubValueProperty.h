@@ -20,7 +20,7 @@ public:
 
     const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
-    const DAVA::Type *GetValueType() const override;
+    const DAVA::Type* GetValueType() const override;
     DAVA::Any GetValue() const override;
     void SetValue(const DAVA::Any& newValue) override;
     DAVA::Any GetDefaultValue() const override;

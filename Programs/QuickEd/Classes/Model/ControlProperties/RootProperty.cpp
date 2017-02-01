@@ -341,7 +341,7 @@ const DAVA::String& RootProperty::GetName() const
     return rootName;
 }
 
-const DAVA::Type *RootProperty::GetValueType() const
+const DAVA::Type* RootProperty::GetValueType() const
 {
     return nullptr;
 }
@@ -380,21 +380,21 @@ void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootPropert
 void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
 {
     // TODO: rewrite code
-//    const InspInfo* baseInfo = typeInfo->BaseInfo();
-//    if (baseInfo)
-//        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
-//
-//    bool hasProperties = false;
-//    for (int i = 0; i < typeInfo->MembersCount(); i++)
-//    {
-//        const InspMember* member = typeInfo->Member(i);
-//        if ((member->Flags() & I_EDIT) != 0)
-//        {
-//            hasProperties = true;
-//            break;
-//        }
-//    }
-//    if (hasProperties)
+    //    const InspInfo* baseInfo = typeInfo->BaseInfo();
+    //    if (baseInfo)
+    //        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
+    //
+    //    bool hasProperties = false;
+    //    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    //    {
+    //        const InspMember* member = typeInfo->Member(i);
+    //        if ((member->Flags() & I_EDIT) != 0)
+    //        {
+    //            hasProperties = true;
+    //            break;
+    //        }
+    //    }
+    //    if (hasProperties)
     {
         ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(control->GetClassName());
         ControlPropertiesSection* section = new ControlPropertiesSection(control, sourceSection, copyType);

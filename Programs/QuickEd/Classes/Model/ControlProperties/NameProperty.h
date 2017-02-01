@@ -21,7 +21,7 @@ public:
 
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
-    
+
     DAVA::Any GetValue() const override;
 
     bool IsOverriddenLocally() const override;
