@@ -3,7 +3,7 @@
 
 #include "Infrastructure/TextureUtils.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if 0 // not working in corev2 defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
 

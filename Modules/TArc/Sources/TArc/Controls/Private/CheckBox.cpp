@@ -79,6 +79,11 @@ void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
 
 void CheckBox::StateChanged(int newState)
 {
+    if (isEnabled() == false)
+    {
+        return;
+    }
+
     if (newState != Qt::PartiallyChecked)
     {
         setTristate(false);
