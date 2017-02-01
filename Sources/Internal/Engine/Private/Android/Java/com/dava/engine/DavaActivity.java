@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,6 +86,8 @@ public final class DavaActivity extends Activity
 
     private static DavaActivity activitySingleton;
     private static Thread nativeThread; // Thread where native C++ code is running
+    private static int nativeThreadId; //
+    private static int uiThreadId;
 
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
@@ -144,6 +147,18 @@ public final class DavaActivity extends Activity
         return nativeThread != null;
     }
 
+    /** Check whether current thread is UI thread */
+    public static boolean isUIThread()
+    {
+        return android.os.Process.myTid() == uiThreadId;
+    }
+
+    /** Check whether current thread is main native thread where C++ code lives */
+    public static boolean isNativeMainThread()
+    {
+        return android.os.Process.myTid() == nativeThreadId;
+    }
+
     /**
         Register a callback to be invoked when DavaActivity lifecycle event occurs.
 
@@ -181,7 +196,7 @@ public final class DavaActivity extends Activity
     public void onNewIntent(Intent intent)
     {
         Log.d(LOG_TAG, "DavaActivity.onNewIntent");
-		super.onNewIntent(intent);
+        super.onNewIntent(intent);
 
         notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
     }
@@ -193,6 +208,7 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
+        uiThreadId = android.os.Process.myTid();
         savedInstanceStateBundle = savedInstanceState;
         
         Application app = getApplication();
@@ -424,6 +440,11 @@ public final class DavaActivity extends Activity
         commandHandler.sendQuit();
     }
 
+    public boolean isPaused()
+    {
+        return isPaused;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void handleResume()
@@ -456,6 +477,7 @@ public final class DavaActivity extends Activity
             nativeThread = new Thread(new Runnable() {
                 @Override public void run()
                 {
+                    nativeThreadId = android.os.Process.myTid();
                     nativeGameThread();
                 }
             }, "DAVA main thread");
