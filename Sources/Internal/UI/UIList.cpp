@@ -10,14 +10,14 @@ namespace DAVA
 {
 static const int32 INVALID_INDEX = -1;
 
-DAVA_REFLECTION_IMPL(UIList)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
 {
     ReflectionRegistrator<UIList>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIList* o) { o->Release(); })
     .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation) // TODO: make enum
     [
-    EnumMeta::Create<eListOrientation>(EnumMeta::EM_NOCAST)
+        M::EnumT<eListOrientation>()
     ]
     .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)
     .End();

@@ -7,7 +7,7 @@ namespace DAVA
 {
 static const FastName UIJOYPAD_STICK_NAME("stick");
 
-DAVA_REFLECTION_IMPL(UIJoypad)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIJoypad)
 {
     ReflectionRegistrator<UIJoypad>::Begin()
     .ConstructorByPointer()

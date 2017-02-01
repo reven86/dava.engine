@@ -31,7 +31,7 @@ const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0
                                                  DAVA::Color(0.0f, 1.0f, 0.0f, 0.4f) };
 #endif
 
-DAVA_REFLECTION_IMPL(UIStaticText)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIStaticText)
 {
     ReflectionRegistrator<UIStaticText>::Begin()
     .ConstructorByPointer()
@@ -39,29 +39,29 @@ DAVA_REFLECTION_IMPL(UIStaticText)
     .Field("textColor", &UIStaticText::GetTextColor, &UIStaticText::SetTextColor)
     .Field("textcolorInheritType", &UIStaticText::GetTextColorInheritType, &UIStaticText::SetTextColorInheritType) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<UIControlBackground::eColorInheritType>(EnumMeta::EM_NOCAST)
+        M::EnumT<UIControlBackground::eColorInheritType>()
     ]
     .Field("textperPixelAccuracyType", &UIStaticText::GetTextPerPixelAccuracyType, &UIStaticText::SetTextPerPixelAccuracyType) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<UIControlBackground::ePerPixelAccuracyType>(EnumMeta::EM_NOCAST)
+        M::EnumT<UIControlBackground::ePerPixelAccuracyType>()
     ]
     .Field("shadowoffset", &UIStaticText::GetShadowOffset, &UIStaticText::SetShadowOffset) // TODO: camel style
     .Field("shadowcolor", &UIStaticText::GetShadowColor, &UIStaticText::SetShadowColor) // TODO: camel style
     .Field("multiline", &UIStaticText::GetMultilineType, &UIStaticText::SetMultilineType) // TODO: make enum
     [
-    EnumMeta::Create<eMultiline>(EnumMeta::EM_NOCAST)
+        M::EnumT<eMultiline>()
     ]
     .Field("fitting", &UIStaticText::GetFittingOption, &UIStaticText::SetFittingOption) // TODO: make enum
     [
-     EnumMeta::Create<TextBlock::eFitType>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
+        M::FlagsT<TextBlock::eFitType>()
     ]
     .Field("textalign", &UIStaticText::GetTextAlign, &UIStaticText::SetTextAlign) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<eAlign>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
+        M::FlagsT<eAlign>()
     ]
     .Field("textUseRtlAlign", &UIStaticText::GetTextUseRtlAlign, &UIStaticText::SetTextUseRtlAlign) // TODO: make enum
     [
-    EnumMeta::Create<TextBlock::eUseRtlAlign>()
+        M::EnumT<TextBlock::eUseRtlAlign>()
     ]
     .Field("textMargins", &UIStaticText::GetMarginsAsVector4, &UIStaticText::SetMarginsAsVector4)
     .Field("text", &UIStaticText::GetUtf8Text, &UIStaticText::SetUtf8TextWithoutRect)

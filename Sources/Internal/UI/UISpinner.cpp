@@ -16,7 +16,7 @@ static const float32 UISPINNER_X_UNDEFINED = 10000;
 static const float32 UISPINNER_SLIDE_GESTURE_SPEED = 20.f;
 static const float32 UISPINNER_SLIDE_GESTURE_TIME = 0.1f;
 
-DAVA_REFLECTION_IMPL(UISpinner)
+DAVA_VIRTUAL_REFLECTION_IMPL(UISpinner)
 {
     ReflectionRegistrator<UISpinner>::Begin()
     .ConstructorByPointer()

@@ -5,7 +5,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIActionComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIActionComponent)
 {
     ReflectionRegistrator<UIActionComponent>::Begin()
     .ConstructorByPointer()

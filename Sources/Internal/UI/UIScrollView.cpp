@@ -8,7 +8,7 @@ namespace DAVA
 {
 static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 
-DAVA_REFLECTION_IMPL(UIScrollView)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollView)
 {
     ReflectionRegistrator<UIScrollView>::Begin()
     .ConstructorByPointer()

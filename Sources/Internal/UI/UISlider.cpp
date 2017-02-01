@@ -15,7 +15,7 @@ static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
 static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
 static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 
-DAVA_REFLECTION_IMPL(UISlider)
+DAVA_VIRTUAL_REFLECTION_IMPL(UISlider)
 {
     ReflectionRegistrator<UISlider>::Begin()
     .ConstructorByPointer()

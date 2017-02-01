@@ -11,7 +11,7 @@ namespace DAVA
 /* this camera is required just for preparing draw data*/
 Camera* UIParticles::defaultCamera = nullptr;
 
-DAVA_REFLECTION_IMPL(UIParticles)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIParticles)
 {
     ReflectionRegistrator<UIParticles>::Begin()
     .ConstructorByPointer()

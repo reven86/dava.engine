@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIIgnoreLayoutComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIIgnoreLayoutComponent)
 {
     ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()
     .ConstructorByPointer()

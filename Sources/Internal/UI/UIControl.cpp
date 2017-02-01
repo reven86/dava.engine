@@ -30,7 +30,7 @@ namespace DAVA
 {
 const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
 
-DAVA_REFLECTION_IMPL(UIControl)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIControl)
 {
     ReflectionRegistrator<UIControl>::Begin()
     .ConstructorByPointer()

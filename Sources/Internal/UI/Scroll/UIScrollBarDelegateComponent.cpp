@@ -3,7 +3,7 @@
 namespace DAVA
 {
     
-DAVA_REFLECTION_IMPL(UIScrollBarDelegateComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBarDelegateComponent)
 {
     ReflectionRegistrator<UIScrollBarDelegateComponent>::Begin()
     .ConstructorByPointer()

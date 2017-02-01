@@ -8,7 +8,7 @@ namespace DAVA
 //use these names for children controls to define UIScrollBar in .yaml
 static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
-DAVA_REFLECTION_IMPL(UIScrollBar)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBar)
 {
     ReflectionRegistrator<UIScrollBar>::Begin()
     .ConstructorByPointer()

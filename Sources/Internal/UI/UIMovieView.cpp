@@ -28,7 +28,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIMovieView)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIMovieView)
 {
     ReflectionRegistrator<UIMovieView>::Begin()
     .ConstructorByPointer()

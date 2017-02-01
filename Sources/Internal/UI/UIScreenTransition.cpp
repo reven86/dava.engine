@@ -13,7 +13,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIScreenTransition)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScreenTransition)
 {
     ReflectionRegistrator<UIScreenTransition>::Begin()
     .ConstructorByPointer()

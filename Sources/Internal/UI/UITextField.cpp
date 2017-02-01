@@ -42,7 +42,7 @@ public:
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UITextField)
+DAVA_VIRTUAL_REFLECTION_IMPL(UITextField)
 {
     ReflectionRegistrator<UITextField>::Begin()
     .ConstructorByPointer()
@@ -55,47 +55,47 @@ DAVA_REFLECTION_IMPL(UITextField)
     .Field("shadowcolor", &UITextField::GetShadowColor, &UITextField::SetShadowColor) // TODO: camel style
     .Field("textalign", &UITextField::GetTextAlign, &UITextField::SetTextAlign) // TODO: make enum // TODO: camel style
     [
-    EnumMeta::Create<eAlign>(EnumMeta::EM_NOCAST | EnumMeta::EM_FLAGS)
+        M::FlagsT<eAlign>()
     ]
     .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlign, &UITextField::SetTextUseRtlAlign)
     [
-    EnumMeta::Create<TextBlock::eUseRtlAlign>()
+        M::EnumT<TextBlock::eUseRtlAlign>()
     ]
     .Field("maxLength", &UITextField::GetMaxLength, &UITextField::SetMaxLength)
     .Field("isPassword", &UITextField::IsPassword, &UITextField::SetIsPassword)
     .Field("isMultiline", &UITextField::IsMultiline, &UITextField::SetMultiline)
     .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType) // TODO: make enum
     [
-    EnumMeta::Create<eAutoCapitalizationType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eAutoCapitalizationType>()
     ]
     .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType) // TODO: make enum
     [
-    EnumMeta::Create<eAutoCorrectionType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eAutoCorrectionType>()
     ]
     .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType) // TODO: make enum
     [
-    EnumMeta::Create<eSpellCheckingType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eSpellCheckingType>()
     ]
     .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType) // TODO: make enum
     [
-    EnumMeta::Create<eKeyboardAppearanceType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eKeyboardAppearanceType>()
     ]
     .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType) // TODO: make enum
     [
-    EnumMeta::Create<eKeyboardType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eKeyboardType>()
     ]
     .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType) // TODO: make enum
     [
-    EnumMeta::Create<eReturnKeyType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eReturnKeyType>()
     ]
     .Field("enableReturnKeyAutomatically", &UITextField::IsEnableReturnKeyAutomatically, &UITextField::SetEnableReturnKeyAutomatically)
     .Field("startEditPolicy", &UITextField::GetStartEditPolicy, &UITextField::SetStartEditPolicy)
     [
-    EnumMeta::Create<eStartEditPolicy>()
+        M::EnumT<eStartEditPolicy>()
     ]
     .Field("stopEditPolicy", &UITextField::GetStopEditPolicy, &UITextField::SetStopEditPolicy)
     [
-    EnumMeta::Create<eStopEditPolicy>()
+        M::EnumT<eStopEditPolicy>()
     ]
     .End();
 }

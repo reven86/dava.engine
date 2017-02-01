@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UITabOrderComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UITabOrderComponent)
 {
     ReflectionRegistrator<UITabOrderComponent>::Begin()
     .ConstructorByPointer()

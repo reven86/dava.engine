@@ -5,7 +5,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIFlowLayoutHintComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutHintComponent)
 {
     ReflectionRegistrator<UIFlowLayoutHintComponent>::Begin()
     .ConstructorByPointer()

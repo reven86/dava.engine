@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIListCell)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIListCell)
 {
     ReflectionRegistrator<UIListCell>::Begin()
     .ConstructorByPointer()

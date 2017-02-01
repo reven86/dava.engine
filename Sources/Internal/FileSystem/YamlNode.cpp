@@ -528,37 +528,39 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
 Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
 {
     // TODO: Make better
-    const Type* type = field->valueWrapper->GetType()->Decay();
-    if (field->meta && field->meta->HasMeta<EnumMeta>())
+    const Type* type = field->valueWrapper->GetType(ReflectedObject())->Decay();
+    if (field->meta && field->meta->HasMeta<M::Enum>())
     {
         int32 val = 0;
-        const EnumMeta* emeta = field->meta->GetMeta<EnumMeta>();
+        const M::Enum* emeta = field->meta->GetMeta<M::Enum>();
         if (GetType() == TYPE_STRING)
         {
             if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
             {
-                return emeta->Cast(val);
+                return Any(val);
             }
-        }
-        else
-        {
-            const uint32 count = GetCount();
-            for (uint32 i = 0; i < count; i++)
-            {
-                const YamlNode* flagNode = Get(i);
-                int32 flag = 0;
-                if (emeta->GetEnumMap()->ToValue(flagNode->AsString().c_str(), flag))
-                {
-                    val |= flag;
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-            return emeta->Cast(val);
         }
         DVASSERT(false);
+    }
+    else if(field->meta && field->meta->HasMeta<M::Flags>())
+    {
+        int32 val = 0;
+        const M::Flags* fmeta = field->meta->GetMeta<M::Flags>();
+        const uint32 count = GetCount();
+        for (uint32 i = 0; i < count; i++)
+        {
+            const YamlNode* flagNode = Get(i);
+            int32 flag = 0;
+            if (fmeta->GetFlagsMap()->ToValue(flagNode->AsString().c_str(), flag))
+            {
+                val |= flag;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        return Any(val);
     }
     else if (type == Type::Instance<bool>()->Decay())
         return Any(AsBool());
@@ -589,36 +591,38 @@ Any YamlNode::AsAny(const Reflection& ref) const
 {
     // TODO: Make better
     const Type* type = ref.GetValueType()->Decay();
-    if (ref.HasMeta<EnumMeta>())
+    if (ref.HasMeta<M::Enum>())
     {
         int32 val = 0;
-        const EnumMeta* emeta = ref.GetMeta<EnumMeta>();
+        const M::Enum* emeta = ref.GetMeta<M::Enum>();
         if (GetType() == TYPE_STRING)
         {
             if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
             {
-                return emeta->Cast(val);
+                return Any(val);
             }
-        }
-        else
-        {
-            const uint32 count = GetCount();
-            for (uint32 i = 0; i < count; i++)
-            {
-                const YamlNode* flagNode = Get(i);
-                int32 flag = 0;
-                if (emeta->GetEnumMap()->ToValue(flagNode->AsString().c_str(), flag))
-                {
-                    val |= flag;
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-            return emeta->Cast(val);
         }
         DVASSERT(false);
+    }
+    else if (ref.HasMeta<M::Flags>())
+    {
+        int32 val = 0;
+        const M::Flags* fmeta = ref.GetMeta<M::Flags>();
+        const uint32 count = GetCount();
+        for (uint32 i = 0; i < count; i++)
+        {
+            const YamlNode* flagNode = Get(i);
+            int32 flag = 0;
+            if (fmeta->GetFlagsMap()->ToValue(flagNode->AsString().c_str(), flag))
+            {
+                val |= flag;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        return Any(val);
     }
     else if (type == Type::Instance<bool>()->Decay())
         return Any(AsBool());

@@ -13,7 +13,7 @@ namespace DAVA
 static const UIControl::eControlState stateArray[] = { UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER };
 static const String statePostfix[] = { "Normal", "PressedOutside", "PressedInside", "Disabled", "Selected", "Hover" };
 
-DAVA_REFLECTION_IMPL(UIButton)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIButton)
 {
     ReflectionRegistrator<UIButton>::Begin()
     .ConstructorByPointer()

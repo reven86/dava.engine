@@ -22,14 +22,14 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIWebView)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIWebView)
 {
     ReflectionRegistrator<UIWebView>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIWebView* o) { o->Release(); })
     .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes) // TODO: make enum
     [
-    EnumMeta::Create<eDataDetectorType>(EnumMeta::EM_NOCAST)
+        M::EnumT<eDataDetectorType>()
     ]
     .End();
 }

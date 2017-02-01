@@ -35,10 +35,10 @@ namespace DAVA
 class InspInfo;
 class KeyedArchive;
 
-class BaseObject : public InspBase, public ReflectionBase
+class BaseObject : public InspBase
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
-    DAVA_VIRTUAL_REFLECTION(BaseObject);
+    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
 
 protected:
     //! Destructor
@@ -132,8 +132,6 @@ public:
     INTROSPECTION(BaseObject,
                   MEMBER(referenceCount, "referenceCount", I_SAVE)
                   )
-
-    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
 };
 
 template <typename T>

@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIFocusComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIFocusComponent)
 {
     ReflectionRegistrator<UIFocusComponent>::Begin()
     .ConstructorByPointer()

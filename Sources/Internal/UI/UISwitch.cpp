@@ -15,7 +15,7 @@ static const int32 UISWITCH_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISWITCH_ANCHOR_UNDEFINED = 10000.f;
 static float32 dragAnchorX = UISWITCH_ANCHOR_UNDEFINED;
 
-DAVA_REFLECTION_IMPL(UISwitch)
+DAVA_VIRTUAL_REFLECTION_IMPL(UISwitch)
 {
     ReflectionRegistrator<UISwitch>::Begin()
     .ConstructorByPointer()

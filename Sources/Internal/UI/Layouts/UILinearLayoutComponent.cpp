@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UILinearLayoutComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UILinearLayoutComponent)
 {
     ReflectionRegistrator<UILinearLayoutComponent>::Begin()
     .ConstructorByPointer()
@@ -12,7 +12,7 @@ DAVA_REFLECTION_IMPL(UILinearLayoutComponent)
     .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)
     .Field("orientation", &UILinearLayoutComponent::GetOrientation, &UILinearLayoutComponent::SetOrientation)
     [
-    EnumMeta::Create<eOrientation>()
+        M::EnumT<eOrientation>()
     ]
     .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)
     .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)

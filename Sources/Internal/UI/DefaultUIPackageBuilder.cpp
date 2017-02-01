@@ -364,11 +364,11 @@ void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, co
 
         if (name == PROPERTY_NAME_TEXT)
         {
-            field.ref.SetValue(Any(LocalizedUtf8String(value.Cast<String>())));
+            field.ref.SetValueWithCast(Any(LocalizedUtf8String(value.Cast<String>())));
         }
         else
         {
-            field.ref.SetValue(value);
+            field.ref.SetValueWithCast(value);
         }
     }
 }

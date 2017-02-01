@@ -5,6 +5,8 @@
 #include "Base/BaseMath.h"
 #include "Base/FastName.h"
 
+#include "Reflection/ReflectedStructure.h"
+
 namespace DAVA
 {
 class KeyedArchive;

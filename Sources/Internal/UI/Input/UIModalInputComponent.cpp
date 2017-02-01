@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UIModalInputComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UIModalInputComponent)
 {
     ReflectionRegistrator<UIModalInputComponent>::Begin()
     .ConstructorByPointer()

@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(UINavigationComponent)
+DAVA_VIRTUAL_REFLECTION_IMPL(UINavigationComponent)
 {
     ReflectionRegistrator<UINavigationComponent>::Begin()
     .ConstructorByPointer()
