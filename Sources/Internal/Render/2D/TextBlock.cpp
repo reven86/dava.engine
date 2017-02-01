@@ -415,6 +415,8 @@ void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 {
     needCalculateCacheParams = true;
     needPrepareInternal = true;
+    cachedLayoutData.size = TextBlockDetail::INVALID_VECTOR;
+    cachedLayoutData.width = TextBlockDetail::INVALID_WIDTH;
 }
 
 void TextBlock::PrepareInternal()
@@ -972,10 +974,10 @@ void TextBlock::CalculateCacheParams()
     cacheOx = ox;
     cacheOy = oy;
 
-    cacheW = int32(std::floor(drawSize.dx));
+    cacheW = int32(std::ceil(drawSize.dx));
     cacheFinalSize.x = float32(textMetrics.drawRect.dx);
     cacheFinalSize.y = float32(textMetrics.drawRect.dy);
-    cacheTextSize = Vector2(float32(textMetrics.width), float32(textMetrics.height));
+    cacheTextSize = Vector2(std::ceil(textMetrics.width), std::ceil(textMetrics.height));
 
     // Align sprite offset
     if (visualAlign & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)

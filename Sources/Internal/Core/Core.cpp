@@ -235,13 +235,11 @@ void Core::CreateSingletons()
     new Random();
     new AnimationManager();
     new FontManager();
+    new VirtualCoordinatesSystem();
     new UIControlSystem();
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-
-    new VirtualCoordinatesSystem();
-    UIControlSystem::Instance()->vcs = VirtualCoordinatesSystem::Instance();
 
     new RenderSystem2D();
 
